@@ -5,7 +5,7 @@ import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from features.boards.resource import DONE, MEANINGS, Board
-from resources.base import COMMISSIONED, REQUESTED, REVISED, SYSTEM, Refused, Resource, titled
+from resources.base import COMMISSIONED, REQUESTED, REVISED, STARTED, SYSTEM, Refused, Resource, titled
 
 
 STAGES = ("To do", "Doing", "Review", "Done")
@@ -98,6 +98,11 @@ class Boards(Controller):
             raise Refused(f"the outline has no section {section!r}; it has {', '.join(part['title'] for part in outline)}")
         marked = [{**part, "state": state, "drafts": int(drafts or part["drafts"])} if part["title"] == section else part for part in outline]
         return self.update(board.n, drafting={**board.drafting, "outline": marked})
+
+    def start(self, n: int):
+        board = self.load(int(n))
+        self.record.emit("board", board.n, STARTED, self.actor)
+        return board
 
     def group(self, n: int, name: str, tickets: str):
         board = self.load(int(n))

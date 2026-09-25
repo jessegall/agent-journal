@@ -182,3 +182,14 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
         agent.score(board.n, "1")
     drafting = boards.load(board.n).drafting
     assert (drafting["phase"], drafting["score"], drafting["turns"]) == ("lost", 0, 5), "five turns below four: it gives up and the score resets"
+
+
+def test_starting_a_board_starts_its_orchestration():
+    from features.sequences.shipped import ship
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    ship(record)
+    board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
+    Boards(record, actor=USER).start(board.n)
+    assert any("Orchestrating a board, step 1 of 6 - Read the board" in line for line in nudges(record)), nudges(record)

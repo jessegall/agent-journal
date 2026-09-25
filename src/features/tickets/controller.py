@@ -10,7 +10,7 @@ from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import keep, merged, tip
+from engine.worktree import branched, keep, merged, present, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -173,8 +173,20 @@ class Tickets(Controller):
         ticket = self.load(int(n))
         if not self._plan_waits(ticket):
             self._refuse(f"{self.type} {ticket.n} has no plan waiting for approval")
-        self._plans(ticket).approve(int(ticket.plan))
+        if self.actor != AGENT:
+            self._plans(ticket).approve(int(ticket.plan))
+            return ticket
+        if self.record.env == ticket.work_environment or not self._orchestrated(ticket):
+            self._refuse(f"only the user approves the plan of {self.type} {ticket.n}, or the orchestrator on a board with "
+                         f"orchestrator_approves_plans set; never the agent that wrote it")
+        Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM).approve(int(ticket.plan))
         return ticket
+
+    def _awaiting_orchestrator(self) -> list:
+        return [ticket for ticket in self._standing() if ticket.work_environment and self._orchestrated(ticket) and self._plan_waits(ticket)]
+
+    def _orchestrated(self, ticket) -> bool:
+        return bool(ticket.board) and Boards(self.record, actor=SYSTEM).load(int(ticket.board)).orchestrator_approves_plans
 
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
         place = ticket.work_environment
@@ -284,7 +296,11 @@ class Tickets(Controller):
         return DRIVERS[ticket.agent].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
-        return merged(self.record.root.parent, self._branch(ticket), ticket.base)
+        return merged(self.record.root.parent, self._branch(ticket), ticket.base, self._into(ticket))
+
+    def _into(self, ticket) -> str:
+        board = Boards(self.record, actor=SYSTEM).load(int(ticket.board)) if ticket.board else None
+        return board.branch if board and board.branch else "HEAD"
 
     def stop(self, n: int):
         ticket = self.load(int(n))
@@ -351,10 +367,13 @@ class Tickets(Controller):
 
     def start(self, n: int, agent: str | None = None):
         from engine.terminal import detached
-        from providers import DRIVERS
+        from providers import DRIVERS, PROVIDERS
         self._confirmed(self.load(int(n)))
         ticket = self.bind(int(n))
-        ticket = self.update(ticket.n, agent=agent or ticket.agent, base=ticket.base or tip(self.record.root.parent))
+        into = self._into(self.load(int(n)))
+        if into != "HEAD" and not present(self.record.root.parent, into):
+            self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
+        ticket = self.update(ticket.n, agent=agent or ticket.agent, base=ticket.base or tip(self.record.root.parent, into))
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
             if self._live(ticket):
@@ -363,7 +382,11 @@ class Tickets(Controller):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             driver, place = DRIVERS[ticket.agent], ticket.work_environment
             earlier = Sessions(self.record.root).last(place, ticket.agent)
+            if earlier and not PROVIDERS[ticket.agent]().conversation_file(earlier):
+                earlier = ""
             args = driver.within([*driver.AUTO_ARGS], place)
+            if into != "HEAD":
+                branched(self.record.root.parent, self._branch(ticket), into)
             detached(self.record.root, self.record.root.parent, place, ticket.agent,
                      driver.resumed(args, earlier) if earlier else driver.prompted(args, self._kickoff(ticket)))
             return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())

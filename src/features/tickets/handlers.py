@@ -12,6 +12,9 @@ class LookAfterTicketBranches(Handler):
         tickets.keep_branches()
         tickets.close_merged()
         tickets.start_queued()
+        for ticket in tickets._awaiting_orchestrator():
+            if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}"):
+                context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
 
 
 class HoldTicketKnowledge(Handler):
