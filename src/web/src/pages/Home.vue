@@ -469,6 +469,7 @@ watch(
                     :schemes="menuPane ? windowSchemes(menuPane.scheme, layout.scheme) : []"
                     :levels="menuPane && menuPane.active === 'terminal' ? levelChoices(menuPane) : []"
                     :chat="!!menuPane && menuPane.active === 'chat'"
+                    :agents="!!menuPane && menuPane.active === 'agents'"
                     :hidden="(menuPane && menuPane.hide) || []"
                     :flushable="!!(menuPane && menuPane.active && views[menuPane.active].canFlush)"
                     :flush="!!(menuPane && menuPane.flush)"
