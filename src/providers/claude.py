@@ -77,6 +77,7 @@ class Crew:
     ids: dict = field(default_factory=dict)
     ended: dict = field(default_factory=dict)
     errors: dict = field(default_factory=dict)
+    moved_to_background: set = field(default_factory=set)
 
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
@@ -446,6 +447,9 @@ class Claude(Provider):
             task = TASK_ID.search(block.result)
             if task:
                 crew.ids[block.tool_use_id] = task.group(1)
+            if BACKGROUNDED.search(block.result) and block.tool_use_id not in crew.moved_to_background:
+                crew.moved_to_background.add(block.tool_use_id)
+                crew.uses.extend(use for use in crew.window if use.id == block.tool_use_id and not use.background)
             crew.ended.setdefault(block.tool_use_id, ("refused" if self.refused_by_hook(block) else "returned", row.at))
             if block.is_error:
                 crew.errors.setdefault(block.tool_use_id, block.result.rpartition("hook error:")[2].strip())
@@ -480,7 +484,7 @@ class Claude(Provider):
                               "status": "" if running else status, "refusal": held.errors.get(use.id),
                               "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session)})
         shells = []
-        for use in (u for u in uses if u.name == "Bash" and u.background):
+        for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):
             status, done = ended.get(use.id, ("", 0.0))
             finished = status not in ("", "returned")
             shells.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": use.command[:160], "task": use.description,
