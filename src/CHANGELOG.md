@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.190.0 — New work sounds encouraging
+
+The lines that rotate in New work while the agent works on a request sound encouraging, still true to how well it understands; after you pick a card the agent suggested, they speak about your pick; and once the drafts appear there is one steady line, such as Writing the cards, instead of rotating ones. The agent drafts at least 6 cards, preferably 8, as many as the request holds. Nothing to do.
+
 ## 2.189.2 — A step waiting on something is nudged less often
 
 While an agent's work waits on something it named, such as a test run a subagent is doing, its sequence step is nudged and reminded at the pace of that wait (every five minutes, work.ask_awaiting_every) instead of every minute. An update card standing alone in the chat is as wide as a message may be, not the whole chat. Nothing to do.
