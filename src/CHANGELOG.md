@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.164.2 — A ticket card follows the agent that reports
+
+A ticket agent can hold two live sessions, its terminal and its conversation; the card read whichever came first and could show starting for as long as the agent worked. It now reads the session that reports, so the card, and the orchestrator's stuck and idle checks, see what the agent does. Nothing to do.
+
 ## 2.164.1 — A ticket started off its board's branch is caught
 
 A started ticket whose branch began at a commit its board's branch does not have is flagged to the orchestrator, with the rebase it needs before it is merged. Nothing to do.
