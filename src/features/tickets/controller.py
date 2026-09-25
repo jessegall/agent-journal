@@ -250,12 +250,17 @@ class Tickets(Controller):
             return CardState("you", f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}")
         if not place:
             return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState.plain()
-        session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
-        row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
+        row = self._reporting(place, sessions)
+        session = row.title if row else ""
         state = self._agent_state(ticket, row, running)
         if self._plan_waits(ticket):
             return CardState("you", f"{state.text} in {place}; its plan waits for your approval", session)
         return CardState(state.kind, f"{state.text} in {place}" + (f" · {state.age}" if state.age else ""), session)
+
+    def _reporting(self, place: str, sessions: dict):
+        agents = Agents(Record(self.record.root, place), actor=SYSTEM)
+        rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents._titled(name))]
+        return max(rows, key=lambda row: float(row.at or 0), default=None)
 
     def _agent_state(self, ticket, row, running: int) -> CardState:
         if row:

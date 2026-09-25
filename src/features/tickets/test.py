@@ -121,6 +121,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     environ = launching(record.root, record.root.parent, f"ticket-{ticket.n}", "claude", [])["environ"]
     assert not {"CLAUDE_CODE_CHILD_SESSION", "CLAUDECODE"} & set(environ), \
         "an agent launched from inside a Claude session does not inherit its markers, so its transcript is saved"
+    Sessions(record.root).bind("claude-7", f"ticket-{ticket.n}", provider="claude")
+    from controllers.types import Agents
+    Agents(Record(record.root, f"ticket-{ticket.n}"), actor=USER).create("claude-7")
     Sessions(record.root).bind("claude-9", f"ticket-{ticket.n}", provider="claude")
     from engine import runtime
     from engine.seats import terminal_of
@@ -133,11 +136,13 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     from tests.kit import report
     report(Record(record.root, f"ticket-{ticket.n}"), "working", "PreToolUse", session="claude-9")
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
-    assert card["reason"].startswith(f"working in ticket-{ticket.n} · "), "the card says what its agent is doing, where, and how long ago"
+    assert card["reason"].startswith(f"working in ticket-{ticket.n} · "), \
+        "the card says what its agent is doing, where, and how long ago, read from the session that reports, not a silent terminal row"
     record.set_setting("tickets", {"running": 1})
     second = tickets.create("Search", board=board.n)
     assert (tickets.move(second.n, "Building").queued, len(launched)) == (True, 1), "past the limit a ticket waits queued instead of launching"
     Sessions(record.root).unbind("claude-9")
+    Sessions(record.root).unbind("claude-7")
     tickets.start_queued()
     assert (tickets.load(second.n).queued, launched[-1][0]) == (False, f"ticket-{second.n}"), "when a slot frees, the queued ticket starts"
     import time
