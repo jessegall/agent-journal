@@ -1,4 +1,5 @@
 <script setup>
+import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {open} from "../domain/records.js";
@@ -357,6 +358,7 @@ const moveTab = (from, to) => {
     const pane = layout.value.panes[from];
     if (pane && pane.active && layout.value.panes[to]) apply(placed(layout.value, pane.active, to, "center", from));
 };
+const chatFirst = (p) => (p.pane && p.pane.tabs.includes("chat") ? 0 : 1);
 const shutPane = (id) => layout.value.panes[id] && apply(paneClosed(layout.value, id));
 
 const pageOpened = Date.now() / 1000;
@@ -383,7 +385,15 @@ watch(
         <template v-else>
             <AgentBar />
             <div class="home-panes">
-                <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" :colors="paneColors" @resize="resize">
+                <PaneGrid
+                    ref="grid"
+                    :panes="panes"
+                    :splits="measured.splits"
+                    :colors="paneColors"
+                    :stacked="narrow"
+                    :rank="chatFirst"
+                    @resize="resize"
+                >
                     <template #pane="{id, pane, state}">
                         <PaneTabs
                             :tabs="tabsOf(id, pane)"
