@@ -1,12 +1,18 @@
 <script setup>
-import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
+import {useScope} from "../composables/scope.js";
 
 defineProps({resource: Object});
+const scope = useScope();
 </script>
 
 <template>
-    <a class="download" :href="api.markdownUrl(resource.type, resource.n)" :download="`${resource.title}.md`" title="Download as Markdown">
+    <a
+        class="download"
+        :href="scope.api.markdownUrl(resource.type, resource.n)"
+        :download="`${resource.title}.md`"
+        title="Download as Markdown"
+    >
         <Icon name="download" />
     </a>
 </template>

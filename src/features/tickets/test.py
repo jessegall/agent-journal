@@ -193,6 +193,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.merge(ticket.n)
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
+    shipped = [card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n]
+    assert [(card["n"], card["state"]) for card in shipped] == [(ticket.n, "done")], "and stays in that column, so the board shows what is done"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
     import engine.terminal
     monkeypatch.setattr(engine.terminal, "detached", lambda *args: 1)

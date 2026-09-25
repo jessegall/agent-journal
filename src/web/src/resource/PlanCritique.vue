@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
@@ -9,6 +9,7 @@ import Dialog from "../kit/Dialog.vue";
 
 const props = defineProps({plan: {type: Object, required: true}});
 const emit = defineEmits(["close"]);
+const scope = useScope();
 
 const AGENTS = [1, 2, 3, 5];
 const SIZES = ["a quick look", "a normal read", "a thorough review"];
@@ -27,7 +28,7 @@ const templateChoices = computed(() => [
 ]);
 
 onMounted(async () => {
-    const rows = await api.all("template").catch(() => []);
+    const rows = await scope.api.all("template").catch(() => []);
     templates.value = rows.filter((t) => !t.completed && !t.deleted && t.data?.purpose === "critique");
 });
 
@@ -37,7 +38,7 @@ async function send() {
     const brief =
         `Please have ${agents.value === 1 ? "one agent" : `${agents.value} agents`} give plan ${props.plan.n} ${size.value}${guide}, ` +
         `and compile what they find into a report linked to the plan.`;
-    await sendMessage(route.value.env, {brief, about: props.plan.ref});
+    await sendMessage(scope.env || route.value.env, {brief, about: props.plan.ref});
     emit("close");
 }
 </script>

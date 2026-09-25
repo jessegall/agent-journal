@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.166.0 — A board keeps what is done, and plans open where you are
+
+A closed ticket stays in its board's done column as a calm card saying how it closed, so the board shows what is done; the Show done switch now works on ticket boards too. A ticket's plan, from its card or its agent's inspector, opens in the plan inspector over the board, read from the ticket's own environment, instead of taking you to that environment's home. Nothing to do.
+
 ## 2.165.3 — A long note is sent once
 
 A note long enough to go in as a paste was taken for stuck while a busy agent kept its queued paste in view, reported as not sent and delivered twice. A pasted note is sent once, whole, and is no longer checked by its placeholder. Nothing to do.

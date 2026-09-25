@@ -1,7 +1,6 @@
 <script setup>
 import CloseButton from "../kit/CloseButton.vue";
 import {computed, inject, ref, watchEffect} from "vue";
-import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import ShareButton from "./ShareButton.vue";
@@ -9,9 +8,9 @@ import SideToggle from "./SideToggle.vue";
 import DownloadLink from "./DownloadLink.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
-import {peek, route} from "../route.js";
+import {peek, peekThere, route} from "../route.js";
 import {state} from "../domain/records.js";
-import {holding, rows} from "../sync/rows.js";
+import {useScope} from "../composables/scope.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
@@ -23,6 +22,8 @@ const emit = defineEmits(["close"]);
 const error = ref("");
 const critiquing = ref(false);
 const talk = inject("talk", null);
+const scope = useScope();
+const open = (row) => (scope.env ? peekThere(scope.env, row.type, row.n) : peek(row.type, row.n));
 const status = computed(() => props.resource.data.status);
 const current = computed(() => props.resource.data.current || 1);
 const phases = computed(() =>
@@ -30,16 +31,16 @@ const phases = computed(() =>
         ...p,
         i: i + 1,
         rows: [
-            ...p.todos.map((n) => rows("todo").find((t) => t.n === n)),
-            ...(p.tickets || []).map((n) => rows("ticket").find((t) => t.n === n)),
+            ...p.todos.map((n) => scope.rows("todo").find((t) => t.n === n)),
+            ...(p.tickets || []).map((n) => scope.rows("ticket").find((t) => t.n === n)),
         ].filter(Boolean),
     }))
 );
 watchEffect(() => {
     if (props.readOnly) return;
-    const known = new Set(rows("todo").map((t) => t.n));
+    const known = new Set(scope.rows("todo").map((t) => t.n));
     const missing = props.resource.data.phases.flatMap((p) => p.todos).filter((n) => !known.has(n));
-    if (missing.length) holding("todo", missing).catch((e) => (error.value = e.message));
+    if (missing.length) scope.holding("todo", missing).catch((e) => (error.value = e.message));
 });
 const done = (p) => p.rows.length > 0 && p.rows.every((t) => t.completed);
 const planned = computed(() => phases.value.flatMap((p) => p.rows));
@@ -60,7 +61,7 @@ const button = computed(
 async function run(action, body = {}) {
     error.value = "";
     try {
-        await api.act("plan", props.resource.n, action, body);
+        await scope.api.act("plan", props.resource.n, action, body);
     } catch (e) {
         error.value = e.message;
     }
@@ -81,7 +82,9 @@ async function run(action, body = {}) {
             <span class="grow" />
             <template v-if="!readOnly">
                 <DownloadLink :resource="resource" />
-                <ShareButton :resource="resource" />
+                <template v-if="!scope.env">
+                    <ShareButton :resource="resource" />
+                </template>
                 <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
                 <CloseButton @click="emit('close')" />
@@ -147,7 +150,7 @@ async function run(action, body = {}) {
                     </template>
                     <template v-for="t in p.rows" :key="`${t.type}-${t.n}`">
                         <div class="line">
-                            <button type="button" :class="['row', {completed: t.completed}]" @click="peek(t.type, t.n)">
+                            <button type="button" :class="['row', {completed: t.completed}]" @click="open(t)">
                                 <template v-if="t.type === 'ticket'">
                                     <Icon class="ticket-mark" name="ticket" :size="12" />
                                 </template>

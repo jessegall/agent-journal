@@ -80,7 +80,7 @@ const opened = computed(() =>
 watchEffect(() => {
     document.title = route.value.env ? `${project.value} · ${route.value.env}` : project.value;
 });
-const keyOf = (open) => `${open.type}:${open.n}`;
+const keyOf = (open) => `${open.type}:${open.n}${open.env ? `@${open.env}` : ""}`;
 const layers = ref([]);
 watch(
     opened,
@@ -218,6 +218,7 @@ watch(
                     <Reader
                         :type="layer.type"
                         :n="layer.n"
+                        :env="layer.env"
                         :depth="depthOf(layer)"
                         :over="layer.leaving || visibleLayers.indexOf(layer) > 0"
                         :leaving="layer.leaving"

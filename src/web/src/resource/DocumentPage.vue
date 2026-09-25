@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, provide, ref, watch} from "vue";
 import {route} from "../route.js";
-import {rows} from "../sync/rows.js";
+import {useScope} from "../composables/scope.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
 import PlanTimelinePanel from "./PlanTimelinePanel.vue";
@@ -22,7 +22,8 @@ const shownAlready = computed(() => [
     ...props.shown,
     ...((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)),
 ]);
-const count = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
+const scope = useScope();
+const count = computed(() => scope.rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
 const talking = ref(props.focus > 0);
 const shifted = ref(talking.value);
 const panel = ref(talking.value);

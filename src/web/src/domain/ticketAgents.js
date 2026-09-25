@@ -10,6 +10,7 @@ const keyOf = (card) => (card.state === "running" ? "working" : SILENT.test(card
 
 export const agentState = (card) => ({key: keyOf(card), ...STATES[keyOf(card)]});
 
-export const workingCards = (lanes) => (lanes || []).flatMap((lane) => lane.cards).filter((card) => card.type === "ticket" && card.session);
+export const workingCards = (lanes) =>
+    (lanes || []).flatMap((lane) => lane.cards).filter((card) => card.type === "ticket" && card.session && card.state !== "done");
 
 export const ticketOf = (n) => rows("ticket").find((ticket) => ticket.n === n) || null;
