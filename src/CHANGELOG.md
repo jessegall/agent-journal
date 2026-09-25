@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.181.2 — Parked and blocked work named every time
+
+Each time the agent ends work or closes a to-do it is told which work is parked and asked whether it can continue it, and each closed to-do asks about every to-do blocked on something outside whether it still is; a to-do waiting on another is left out. Before, parked work was named at most every ten minutes and blocked to-dos every fifth closed to-do; now a minute's pause only keeps a burst of closes from repeating it. Nothing to do.
+
 ## 2.181.1 — Home stacks its panes on a phone
 
 On a screen 700 px wide or narrower, Home stacks a layout's panes at full width, the chat first, instead of squeezing them side by side; each pane is one screen high and scrolls inside itself. Desktop is unchanged. Nothing to do.

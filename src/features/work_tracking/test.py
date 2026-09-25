@@ -176,7 +176,7 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     parked = f"work {first.n}, the slow build, is still parked - can you continue it now?"
     assert nudges(record)[-1] == parked, "ending work reminds the agent of the work it parked"
     todos.complete(todos.create("a row done right after").n, how="done")
-    assert nudges(record).count(parked) == 1, "not again within ten minutes"
+    assert nudges(record).count(parked) == 1, "not again within the minute, so closing several at once says it once"
     record.state("work_tracking").set("parked_named", 0)
     todos.complete(todos.create("a row done later").n, how="done")
     assert nudges(record).count(parked) == 2, "later, closing a to-do reminds it too"
@@ -200,7 +200,7 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     blocked = f"todo {stuck.n}, the migration, is still blocked - is it still?"
     assert nudges(record).count(blocked) == 1, "a row blocked from outside is asked about every second closed to-do, not in between"
     todos.complete(todos.create("one more").n, how="done")
-    assert nudges(record).count(blocked) == 1, "a row just asked about is not asked again within ten minutes, however many close"
+    assert nudges(record).count(blocked) == 1, "a row just asked about is not asked again within the minute, however many close"
     record.state("work_tracking").set("asked", {})
     todos.complete(todos.create("and one more").n, how="done")
     todos.complete(todos.create("and the last").n, how="done")

@@ -11,7 +11,7 @@ from features.work_tracking.next import next
 from resources.types import Work
 from features.status_bar.runs import command_runs
 
-ASKED_AGAIN_AFTER = 600
+ASKED_AGAIN_AFTER = 60
 
 
 @dataclass(frozen=True)
