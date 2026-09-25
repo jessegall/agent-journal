@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.188.1 — The journal starts faster
+
+The command parser the server builds at start takes half as long, because it no longer looks for translations of its messages that the journal does not have, so the first request after an update waits less. The background warm-up now also fills the lists of types that load their rows lazily, such as messages, and the recent events, starting with the environments an agent is working in. Nothing to do.
+
 ## 2.188.0 — Subagents can be named after cartoon characters
 
 Settings has a Cartoon names switch under the journal's laws: turned on, the naming law every agent is handed asks for a cartoon character fitting the role, such as Dora the Explorer for a researcher or Bob Ross for a designer, instead of a famous person with a twist. Saving a row no longer re-sorts every row of its type, so posting a message takes a few milliseconds even with thousands of them. The viewer asks for the journal's summary once per round instead of up to three times, asks for a subagent's tasks once, and asks for one page of work. Nothing to do.
