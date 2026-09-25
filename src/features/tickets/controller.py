@@ -21,7 +21,7 @@ from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
 from controllers.types import Agents, Questions, Todos
-from features.plans.controller import READY, Plans
+from features.plans.controller import READY, WAITING, Plans
 from resources.base import AGENT, SYSTEM, Refused, Resource
 from resources.shapes import LEVELS, priority_level, rank_before
 
@@ -181,25 +181,34 @@ class Tickets(Controller):
         return self.update(ticket.n, stage=started[0]) if started else ticket
 
     def _plan_waits(self, ticket) -> bool:
-        return bool(ticket.plan) and self._plans(ticket).load(int(ticket.plan)).status == READY
+        return self._plan_status(ticket) == READY
 
     def _plans(self, ticket) -> Plans:
         return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)
 
     def approve_plan(self, n: int):
+        return self._decide_plan(n, READY, "approve", Plans.approve, "is approved by the orchestrator: start it now with journal plan start {plan}.")
+
+    def continue_plan(self, n: int):
+        return self._decide_plan(n, WAITING, "continue", Plans.resume, "is past its checkpoint: carry on with its next phase.")
+
+    def _decide_plan(self, n: int, status: str, word: str, act, told: str):
         ticket = self.load(int(n))
-        if not self._plan_waits(ticket):
-            self._refuse(f"{self.type} {ticket.n} has no plan waiting for approval")
+        if self._plan_status(ticket) != status:
+            self._refuse(f"{self.type} {ticket.n} has no plan waiting for you to {word}")
         if self.actor != AGENT:
-            self._plans(ticket).approve(int(ticket.plan))
+            act(self._plans(ticket), int(ticket.plan))
             return ticket
         if not self._orchestrated(ticket) or int(ticket.board) not in self._orchestrating():
-            self._refuse(f"only the user approves the plan of {self.type} {ticket.n}, or the agent orchestrating its board when "
+            self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board when "
                          f"orchestrator_approves_plans is set; never the agent that wrote it")
-        Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM).approve(int(ticket.plan))
+        act(Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM), int(ticket.plan))
         if self.agent_session(ticket.n):
-            self.tell(ticket.n, f"Your plan {ticket.plan} is approved by the orchestrator: start it now with journal plan start {ticket.plan}.")
+            self.tell(ticket.n, f"Your plan {ticket.plan} " + told.format(plan=ticket.plan))
         return ticket
+
+    def _plan_status(self, ticket) -> str:
+        return self._plans(ticket).load(int(ticket.plan)).status if ticket.plan else ""
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
@@ -232,7 +241,7 @@ class Tickets(Controller):
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()
         return [ticket for ticket in self._standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
-                and self._orchestrated(ticket) and self._plan_waits(ticket)]
+                and self._orchestrated(ticket) and self._plan_status(ticket) in (READY, WAITING)]
 
     def _review(self, ticket) -> str:
         read = f"journal --env {ticket.work_environment} plan read {ticket.plan}"

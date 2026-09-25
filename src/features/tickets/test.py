@@ -1,7 +1,7 @@
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh
 
 
@@ -279,7 +279,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "once its dependency closes, the sweep starts it"
 
 
-def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
+def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypatch):
     from features.plans.controller import APPROVED, Plans
     from tests.conftest import refused
     record = fresh()
@@ -319,6 +319,16 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
     assert "Dispatch a reviewer subagent" in tickets._review(tickets.load(ticket.n)), "a board can hand the review to a reviewer subagent"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
+    from features.plans.controller import ACTIVE, WAITING
+    Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status=WAITING)
+    import time
+    started = time.time()
+    monkeypatch.setattr(time, "time", lambda: started + 120)
+    tick(record)
+    assert any(f"the plan of ticket {ticket.n}" in line and "stopped at a checkpoint" in line for line in nudges(record)), \
+        "a ticket's plan that stops at a checkpoint is handed to the orchestrator too"
+    Tickets(record, actor=AGENT).continue_plan(ticket.n)
+    assert plans.load(plan.n).status == ACTIVE, "and the orchestrator lets it go on, so the board does not wait for the user overnight"
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():

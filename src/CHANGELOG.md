@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.165.0 — An orchestrator passes its tickets' plan checkpoints
+
+On a board whose orchestrator approves plans, it is told when a ticket's plan stops at a checkpoint and may let it go on with journal ticket continue_plan <n>, so a board no longer waits for the user overnight; approving and continuing share one set of checks, and the ticket's agent is told either way. The five-minute check-in stays quiet while the orchestrator's work is parked. Nothing to do.
+
 ## 2.164.3 — journal work park and await take the number first
 
 journal work park <n> "<why>" and journal work await <n> "<what>" take the work's number first, as the nudges print them, as journal work log already does; --n still works. Nothing to do.
