@@ -77,8 +77,15 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     engine.agent.driver.send = lambda text="", **rest: typed.append((text, False)) or True
     engine.agent.driver.type_in = lambda text: typed.append((text, True)) or True
     engine.deliver()
-    assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat, so the journal's messages reach you", True)], \
+    assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat in plain words, never [!internal], so the journal's messages reach you", True)], \
         "the greeting is typed into the terminal at once, never marked read as history"
+    from engine.actors import TYPED_TRIES
+    tried = []
+    engine.agent.pending = [event for event in record.events(0) if event.type == "nudge"][-1:]
+    engine.agent.driver.type_in = lambda text: tried.append(text) and False
+    for _ in range(4):
+        engine.agent.flush()
+    assert (len(tried), engine.agent.pending) == (TYPED_TRIES, []), "a typed line whose landing is never confirmed is tried twice at most, never after every turn"
     from controllers.types import Environments
     from engine.record import Record
     Environments(record, actor="system").create("ticket-5", owner="ticket:5")

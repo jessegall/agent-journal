@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.182.2 — A new agent is greeted once, not after every turn
+
+A new agent whose typed lines the journal could not confirm, such as one just started in a worktree, was sent the whole batch of journal lines again after every turn, the ready line and the lines it had already received included. Each line is now marked delivered on its own, a typed line is tried twice at most, and the ready line asks for a hello in plain words, never [!internal]. Checked with a real Haiku agent in a new worktree. Nothing to do.
+
 ## 2.182.1 — A worktree across repositories keeps its own environment
 
 An agent started in a worktree of a folder of repositories was taken for the project's own agent, so both received the same journal lines. The journal now takes the whole working folder as the worktree, wherever in it the agent works, so it has an environment of its own like any other worktree. Nothing to do; an agent already running there moves to its own environment at its next step.

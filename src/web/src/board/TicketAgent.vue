@@ -84,10 +84,10 @@ const tabs = computed(() => [
             <TabBar v-model="tab" :tabs="tabs" />
             <SwitchCase :value="tab">
                 <template #chat>
-                    <SubagentChat class="chat" :turns="turns" :session="card.session" read-only />
+                    <SubagentChat class="fill" :turns="turns" :session="card.session" read-only />
                 </template>
                 <template #transcript>
-                    <TranscriptLog ref="log" :transcript="transcript" :entries="turns" :env="env" />
+                    <TranscriptLog ref="log" class="fill" :transcript="transcript" :entries="turns" :env="env" />
                 </template>
                 <template #history>
                     <template v-if="!works.length">
@@ -109,6 +109,19 @@ const tabs = computed(() => [
     display: flex;
     flex-direction: column;
     gap: 12px;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+}
+
+.ticket-agent > * {
+    flex: none;
+}
+
+.ticket-agent .fill {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
 }
 
 .now {
@@ -150,12 +163,11 @@ const tabs = computed(() => [
     font-size: 12px;
 }
 
-.chat {
-    max-height: 62vh;
-}
-
-.history {
+.ticket-agent .history {
     display: flex;
+    flex: 1;
     flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
 }
 </style>

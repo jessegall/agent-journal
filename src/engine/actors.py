@@ -10,6 +10,7 @@ from engine.drivers import TERMINAL
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
+TYPED_TRIES = 2
 
 
 def settled(record: Record, event: Event) -> bool:
@@ -90,6 +91,7 @@ class Agent(Actor):
         super().__init__(record)
         self.driver = driver
         self.pending: list[Event] = []
+        self.tries: dict[int, int] = {}
 
     def notify(self, event: Event) -> None:
         self.pending.append(event)
@@ -109,16 +111,19 @@ class Agent(Actor):
         typed = [e for e in self.pending if self.typed(e)]
         yielding = [e for e in self.pending if e not in typed and spoken_data(self.record, e).get("yields")]
         line, groups = render([e for e in self.pending if e not in typed and e not in yielding], self.record)
-        landed = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
-        if typed:
-            landed = self.driver.type_in(render(typed, self.record)[0]) and landed
-        if not landed:
-            return ""
-        for e in self.pending:
+        sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
+        entered = self.driver.type_in(render(typed, self.record)[0]) if typed else True
+        for e in typed:
+            self.tries[e.id] = self.tries.get(e.id, 0) + 1
+        done = [e for e in typed if entered or self.tries[e.id] >= TYPED_TRIES] + ([e for e in self.pending if e not in typed] if sent else [])
+        for e in done:
             if TYPES[e.type].stamped_when_notified:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
-        self.pending = []
+            self.tries.pop(e.id, None)
+        self.pending = [e for e in self.pending if e not in done]
+        if not sent:
+            return ""
         return "; ".join([line, *counted(groups)] if line else counted(groups))
 
     def state(self) -> str:

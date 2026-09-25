@@ -8,6 +8,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import ToggleItem from "../kit/ToggleItem.vue";
 import {shownChoices, toggled} from "../domain/chatShown.js";
+import {onlyWorking} from "../composables/agentsShown.js";
 import {useOutside} from "../composables/outside.js";
 import {go, route} from "../route.js";
 
@@ -26,6 +27,7 @@ const props = defineProps({
     flushable: Boolean,
     flush: Boolean,
     chat: Boolean,
+    agents: Boolean,
     hidden: {type: Array, default: () => []},
 });
 const emit = defineEmits([
@@ -173,7 +175,7 @@ function pick(event, ...args) {
                 </MenuItem>
             </template>
         </SwitchCase>
-        <template v-if="!list && (all || schemes.length || flushable || levels.length || chat)">
+        <template v-if="!list && (all || schemes.length || flushable || levels.length || chat || agents)">
             <span class="pane-menu-line" />
             <template v-if="flushable">
                 <MenuItem @click="pick('flush', !flush)">
@@ -187,6 +189,9 @@ function pick(event, ...args) {
                     Verbosity
                     <span class="pane-menu-more">›</span>
                 </MenuItem>
+            </template>
+            <template v-if="agents">
+                <ToggleItem :on="onlyWorking" icon="agents" @click="onlyWorking = !onlyWorking">Only working agents</ToggleItem>
             </template>
             <template v-if="chat">
                 <MenuItem @click="list = 'shown'">

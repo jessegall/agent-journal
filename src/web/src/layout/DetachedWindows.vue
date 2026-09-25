@@ -84,6 +84,7 @@ function away(id) {
             :schemes="menuSchemes"
             :levels="menuLevels"
             :chat="menuFloat.view === 'chat'"
+            :agents="menuFloat.view === 'agents'"
             :hidden="menuFloat.hide || []"
             @verbosity="(id, verbosity) => tune(id, {verbosity})"
             @hide="(id, hide) => tune(id, {hide})"
