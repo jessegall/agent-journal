@@ -383,7 +383,7 @@ class Claude(Provider):
                 turn.who = "user"
             if turn.kind != HUMAN or not turn.parent:
                 continue
-            for previous in reversed(turns[:i]):
+            for previous in (turns[j] for j in range(i - 1, -1, -1)):
                 if previous.kind == AGENT and previous.text.strip():
                     break
                 if previous.kind == HUMAN and previous.parent == turn.parent:
