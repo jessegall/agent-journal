@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.158.2 — Agents are probed and typed to again
+
+2.158.0's input-box check took the name of the prompt pattern the silence probe reads, so a silent Claude agent's probe failed on every tick and every command typed into a Codex agent failed; the check has a name of its own again. While the agent's work waits on something, the chat's working line keeps showing its commands and falls back to what it waits for once they stop; a running subagent reads Waiting for its name and task. Nothing to do.
+
 ## 2.158.1 — The ticket minute check runs again
 
 The minute check of tickets stopped with a NameError in 2.158.0, so an orchestrator was not told when a ticket's plan waited; it runs again, and its test now goes through the check itself. Nothing to do.

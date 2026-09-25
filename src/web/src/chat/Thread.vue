@@ -107,7 +107,7 @@ const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.val
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
 const helping = computed(() => ((agent.value && agent.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
-    agent.value && agent.value.data.status === "compacting" ? "compacting" : helping.value ? `subagent: ${helping.value.task}` : "working"
+    agent.value && agent.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting for ${helping.value.task}` : "working"
 );
 const away = ref(false);
 const planOpen = ref(true);
@@ -523,15 +523,12 @@ watch(
                             >
                                 <div class="thread-meta">
                                     <Dot kind="started" solid :size="6" />
-                                    <template v-if="waiting">
-                                        <span>Waiting {{ waiting }}</span>
-                                    </template>
-                                    <template v-else-if="thought">
+                                    <template v-if="thought && !waiting">
                                         <span>thinking</span>
                                         <span class="thread-meta-on thought">{{ thought }}</span>
                                     </template>
                                     <template v-else>
-                                        <RunningCommand :idle="activity" />
+                                        <RunningCommand :idle="waiting ? `Waiting ${waiting}` : activity" />
                                     </template>
                                 </div>
                             </div>

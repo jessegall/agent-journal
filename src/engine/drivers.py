@@ -35,7 +35,7 @@ class Driver(ABC):
     CLEAR_LINE = b"\x05\x15"
     DISPLAY_HOOK = False
     SHELL = ""
-    PROMPT = b""
+    INPUT_MARK = b""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
@@ -237,7 +237,7 @@ class Driver(ABC):
         time.sleep(ENTER_AFTER)
         if not self._wrote(line.encode()) or not self._entered():
             return False
-        if not confirmed and not self.PROMPT:
+        if not confirmed and not self.INPUT_MARK:
             return True
         for _ in range(RESUBMITS):
             time.sleep(RECHECK)
@@ -250,7 +250,7 @@ class Driver(ABC):
         return not self._still_in_input(line) and (not confirmed or self._submitted(since))
 
     def _still_in_input(self, line: str) -> bool:
-        if not self.PROMPT:
+        if not self.INPUT_MARK:
             return False
         screen = runtime.session_file(self.record.root, self.session, "screen")
         try:
@@ -260,7 +260,7 @@ class Driver(ABC):
         except OSError:
             return False
         plain = b"".join(ANSI.sub(b"", tail).split())
-        return self.PROMPT in plain and b"".join(line.encode().split())[:LINE_START] in plain.rsplit(self.PROMPT, 1)[1]
+        return self.INPUT_MARK in plain and b"".join(line.encode().split())[:LINE_START] in plain.rsplit(self.INPUT_MARK, 1)[1]
 
     def _submitted(self, since: float) -> bool:
         row = self._report()
