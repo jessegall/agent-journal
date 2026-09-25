@@ -121,6 +121,12 @@ class TicketsDetails(FeatureDetails):
             unit="minutes",
         ),
         Setting(
+            name="remind_own_wait_every",
+            default=60,
+            title="Remind the orchestrator of a ticket agent waiting on its own run every",
+            unit="minutes",
+        ),
+        Setting(
             name="running",
             default=3,
             title="Tickets whose agents run at once, 0 for no limit",

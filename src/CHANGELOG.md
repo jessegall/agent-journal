@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.184.2 — An agent waiting on its own run is not repeated every 5 minutes
+
+The orchestrator is reminded every 5 minutes only of what waits on it or on the user: a question, a plan to approve, a checkpoint, a proposed wait, a draft, a plan done with a clean worktree, or an await that names the orchestrator, the user or an approval, decision, answer or review. A ticket agent awaiting its own long run is announced once and again only after an hour, a setting beside the 5 minutes. Nothing to do.
+
 ## 2.184.1 — Agents at work is a steady grid of three
 
 The Agents at work grid is always three columns of square windows: one agent takes one cell and leaves the rest empty, windows never grow tall, more than nine continue in rows of three and scroll, and a narrow pane drops to two or one column with the cells still square. Nothing to do.

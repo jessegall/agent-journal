@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 from dataclasses import asdict, dataclass
@@ -31,6 +32,8 @@ LAUNCHING_FOR = 60.0
 SILENT_AFTER = 300.0
 CARD_EXTRAS: list = []
 REPOSITORY_STATES: dict = {}
+PEOPLE: dict = {}
+WAITS_ON_PEOPLE = re.compile(r"\b(?:orchestrator|user|you|your|approv\w*|decision|decide\w*|answer\w*|review\w*)\b", re.IGNORECASE)
 LOOK_AGAIN_AFTER = 30
 STATES_KEPT = 500
 HELD = ("rule", "doc", "tool")
@@ -373,15 +376,28 @@ class Tickets(Controller):
         owner = str(place.owner) if place else ""
         return int(owner.split(":")[1]) if owner.startswith(f"{kind}:") else 0
 
-    def _calls(self, ticket) -> list[tuple[str, str, dict]]:
+    def _calls(self, ticket) -> list[tuple[str, str, dict, int]]:
         place = Record(self.record.root, ticket.work_environment)
-        asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}) for q in Questions(place, actor=SYSTEM)._standing()]
-        awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}) for w in Works(place, actor=SYSTEM)._standing() if w.awaiting]
+        settings = TicketsDetails.values(self.record)
+        soon, late = int(settings.remind_every), int(settings.remind_own_wait_every)
+        asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}, soon) for q in Questions(place, actor=SYSTEM)._standing()]
+        awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}, soon if self._waits_on_people(w.awaiting) else late)
+                  for w in Works(place, actor=SYSTEM)._standing() if w.awaiting]
         messages = Messages(place, actor=SYSTEM)
         written = [messages.load(row["n"]) for row in messages.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
-        replies = [("ticket_replied", message.ref, {"text": message.title}) for message in written if message.created > ticket.told]
-        done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)})] if self._plan_status(ticket) == "done" and self._clean(ticket) else []
+        replies = [("ticket_replied", message.ref, {"text": message.title}, 0) for message in written if message.created > ticket.told]
+        done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)}, soon)] if self._plan_status(ticket) == "done" and self._clean(ticket) else []
         return asks + awaits + replies + done
+
+    def _waits_on_people(self, text: str) -> bool:
+        return bool(WAITS_ON_PEOPLE.search(text)) or any(name in text.lower() for name in self._people())
+
+    def _people(self) -> list[str]:
+        root = str(self.record.root)
+        if root not in PEOPLE:
+            named = git(self.record.root.parent, "config", "user.name").stdout.strip().lower()
+            PEOPLE[root] = named.split()[:1]
+        return PEOPLE[root]
 
     def _ahead(self, ticket) -> int:
         branch, into = self._branch(ticket), self._into(ticket)
