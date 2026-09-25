@@ -610,8 +610,8 @@ textarea:focus {
 .comment-write {
     position: sticky;
     bottom: 0;
-    margin: 12px -20px 0;
-    padding: 8px 20px 10px;
+    margin: 12px -16px 0;
+    padding: 8px 16px 10px;
     background: var(--bg);
 }
 

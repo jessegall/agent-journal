@@ -125,7 +125,7 @@ const {shown, close, closed} = closing(emit, props);
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 18px 18px 14px 22px;
+    padding: 18px 12px 14px 16px;
     border-bottom: 1px solid var(--border);
 }
 
@@ -150,6 +150,6 @@ h2 {
 .body {
     flex: 1;
     overflow-y: auto;
-    padding: 16px 22px 28px;
+    padding: 16px 16px 28px;
 }
 </style>

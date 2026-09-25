@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.158.0 — Typed lines land, and an orchestrator keeps watch
+
+A line the journal types into an agent is checked after Enter: while it still sits in the agent's input box, Enter is pressed again, a few times at most, so notes such as an orchestrator's to a ticket agent no longer stay unsent. The step-has-waited nudge fires only for sequences with a window the user sits in, so a long orchestration step is no longer called late. While Orchestrating a board runs, an orchestrator idle for five minutes is told to check on its ticket agents. The agent of a deleted ticket is stopped by the minute sweep. The inspector side panels use a 16 px side padding, the same in every side panel. Nothing to do.
+
 ## 2.157.0 — A board runs itself under its orchestrator
 
 journal board start <n> starts a board, and starting it hands the board's own agent the new sequence Orchestrating a board: set the board's branch and plan approval, start the tickets in order, keep a check running, review and approve or refuse each ticket's plan, merge finished tickets into the board's branch, report journal faults to the agent-journal agent, and report the board done. A board can work on a branch of its own (--set branch=<name>): its tickets branch from that branch's tip and close once merged into it. With --set orchestrator_approves_plans=true the board's own agent is told when a ticket's plan waits and may approve it with journal ticket approve_plan; the ticket's own agent never can. A ticket restarted after its conversation was never saved starts fresh instead of failing to resume. Nothing to do.

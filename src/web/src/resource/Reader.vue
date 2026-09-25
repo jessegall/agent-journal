@@ -184,7 +184,7 @@ watch(
     min-height: 0;
     overflow-y: auto;
     margin: 0;
-    padding: 16px 20px 8px;
+    padding: 16px 16px 8px;
 }
 
 .inspector-pages {
@@ -205,7 +205,7 @@ watch(
 }
 
 .inspector-page.small {
-    width: min(460px, 100vw);
+    width: min(480px, 100vw);
 }
 
 .inspector-page.wide {
@@ -217,7 +217,7 @@ watch(
     z-index: 3;
     flex: none;
     margin: 0;
-    padding: 10px 20px 14px;
+    padding: 10px 16px 14px;
     border-top: 1px solid var(--border);
     background: var(--bg);
 }

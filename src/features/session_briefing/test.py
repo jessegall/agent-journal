@@ -221,3 +221,32 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     sent.clear()
     driver.run_command("/effort high")
     assert sent.count(b"\r") == 1, "a command that asks nothing gets no second Enter, even with an old prompt on screen"
+
+
+def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
+    import engine.drivers
+    from engine import runtime
+    from providers import DRIVERS
+    monkeypatch.setattr(engine.drivers, "ENTER_AFTER", 0)
+    monkeypatch.setattr(engine.drivers, "RECHECK", 0)
+    record = fresh()
+    driver = DRIVERS["claude"](record, "claude-7")
+    screen = runtime.session_file(record.root, "claude-7", "screen")
+    screen.parent.mkdir(parents=True, exist_ok=True)
+    screen.write_bytes("❯ [journal] the plan waits\n".encode())
+    pressed = []
+
+    def wrote(raw):
+        pressed.append(raw)
+        if raw == b"\r" and len([key for key in pressed if key == b"\r"]) >= 2:
+            screen.write_bytes("❯ [journal] the plan waits\n  thinking\n❯ \n".encode())
+        return True
+    monkeypatch.setattr(driver, "_wrote", wrote)
+    monkeypatch.setattr(driver, "clear_input", lambda: None)
+    monkeypatch.setattr(driver, "_submitted", lambda since: True)
+    assert driver.type_in("the plan waits") and pressed.count(b"\r") == 2, "Enter is pressed again while the line still sits in the input box"
+    pressed.clear()
+    screen.write_bytes("❯ [journal] stuck for good\n".encode())
+    monkeypatch.setattr(driver, "_wrote", lambda raw: pressed.append(raw) or True)
+    assert not driver.type_in("stuck for good") and pressed.count(b"\r") == 1 + engine.drivers.RESUBMITS, \
+        "a line that never leaves the input box is pressed a few times at most and reported as not sent"

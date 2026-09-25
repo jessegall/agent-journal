@@ -409,15 +409,15 @@ const chaptered = computed(
     flex-direction: column;
     min-width: 0;
     min-height: 100%;
-    padding: 16px 20px 0;
+    padding: 16px 16px 0;
     overflow-wrap: anywhere;
 }
 .head {
     position: sticky;
     top: 0;
     z-index: 2;
-    margin: -16px -20px 0;
-    padding: 16px 20px 8px;
+    margin: -16px -16px 0;
+    padding: 16px 16px 8px;
     background: var(--bg);
     border-bottom: 1px solid var(--border);
 }

@@ -15,6 +15,7 @@ ENTER_AFTER = 0.3
 MARK = "[journal]"
 AGENT_COMMAND = "/"
 RECHECK, RESUBMITS = 1.0, 3
+SCREEN_TAIL, LINE_START = 16384, 40
 DRAFT_LINES = 8
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
@@ -34,6 +35,7 @@ class Driver(ABC):
     CLEAR_LINE = b"\x05\x15"
     DISPLAY_HOOK = False
     SHELL = ""
+    PROMPT = b""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
@@ -235,14 +237,30 @@ class Driver(ABC):
         time.sleep(ENTER_AFTER)
         if not self._wrote(line.encode()) or not self._entered():
             return False
-        if not confirmed:
+        if not confirmed and not self.PROMPT:
             return True
         for _ in range(RESUBMITS):
             time.sleep(RECHECK)
-            if self._submitted(started):
+            if self._landed(line, started, confirmed):
                 return True
             self._wrote(b"\r")
-        return self._submitted(started)
+        return self._landed(line, started, confirmed)
+
+    def _landed(self, line: str, since: float, confirmed: bool) -> bool:
+        return not self._still_in_input(line) and (not confirmed or self._submitted(since))
+
+    def _still_in_input(self, line: str) -> bool:
+        if not self.PROMPT:
+            return False
+        screen = runtime.session_file(self.record.root, self.session, "screen")
+        try:
+            with screen.open("rb") as shown:
+                shown.seek(max(0, screen.stat().st_size - SCREEN_TAIL))
+                tail = shown.read()
+        except OSError:
+            return False
+        plain = b"".join(ANSI.sub(b"", tail).split())
+        return self.PROMPT in plain and b"".join(line.encode().split())[:LINE_START] in plain.rsplit(self.PROMPT, 1)[1]
 
     def _submitted(self, since: float) -> bool:
         row = self._report()
