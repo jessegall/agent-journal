@@ -1,7 +1,7 @@
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
 
 
@@ -228,6 +228,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     elsewhere = Boards(record, actor=USER).create("Gone", stages=["Doing"], meanings={"Doing": "start"}, branch="missing")
     lost = tickets.create("Nowhere", board=elsewhere.n)
     assert "does not exist" in refused(lambda: tickets.start(lost.n)), "a board's branch that does not exist is named, not guessed"
+    racing = tickets.bind(tickets.create("Racing", board=rewrite.n).n)
+    git("branch", f"worktree-{racing.work_environment}", "rewrite")
+    tickets.update(racing.n, base=git("rev-list", "--max-parents=0", "HEAD").stdout.split()[0])
+    monkeypatch.setattr(tickets, "complete", lambda *args, **kwargs: (_ for _ in ()).throw(Refused("not merged after all")))
+    tickets.close_merged()
+    assert tickets.load(racing.n).stage != "Shipped", "a ticket whose close is refused stays where it was, never in Done while its agent works"
+    monkeypatch.undo()
     git("commit", "-q", "--allow-empty", "-m", "only on the checked-out branch")
     stray = tickets.update(tickets.bind(tickets.create("Stray", board=rewrite.n).n).n, base=git("rev-parse", home).stdout.strip())
     assert ("not on rewrite" in tickets._off_branch(stray), tickets._off_branch(tickets.load(later.n))) == (True, ""), \
