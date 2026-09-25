@@ -317,6 +317,7 @@ class AgentRow(Shape, Resource):
         help="The hooks report activity; the engine distinguishes idle, busy, declared work and compaction.",
     )
     type = "agent"
+    indexed = ("parent", "at")
     takes_comments = False
     formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",), "thoughts": ("text",)}
     event_labels = {"reported": "Agent reported", "updated": "Agent updated"}

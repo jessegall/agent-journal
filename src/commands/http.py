@@ -423,7 +423,7 @@ def get_extension_zip(req: Request) -> Reply:
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
     asked = req.query_as(EventsQuery)
-    return Reply(200, [asdict(e) for e in req.record().events(asked.since, asked.last)])
+    return Reply(200, [e.to_json() for e in req.record().events(asked.since, asked.last)])
 
 
 @route("GET", "/api/{env}/settings")
@@ -908,7 +908,7 @@ def get_stream(req: Request) -> Reply:
             while True:
                 try:
                     e = queue.get(timeout=15)
-                    yield f"id: {e.id}\ndata: {json.dumps(asdict(e))}\n\n".encode()
+                    yield f"id: {e.id}\ndata: {json.dumps(e.to_json())}\n\n".encode()
                 except Empty:
                     yield b": keep\n\n"
         finally:
@@ -1028,7 +1028,7 @@ def get_dashboard(req: Request) -> Reply:
     whole = "events" in req.query
     body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
     if whole:
-        body.update(events=[asdict(e) for e in record.events(0, asked.events)], settings=settings(record))
+        body.update(events=[e.to_json() for e in record.events(0, asked.events)], settings=settings(record))
     return Reply(200, body)
 
 
