@@ -18,7 +18,7 @@ import Switch from "../kit/Switch.vue";
 import PlanCritique from "./PlanCritique.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 
-const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean});
+const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const error = ref("");
 const critiquing = ref(false);
@@ -91,7 +91,9 @@ async function run(action, body = {}) {
                 </template>
                 <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
-                <CloseButton @click="emit('close')" />
+                <template v-if="closable">
+                    <CloseButton @click="emit('close')" />
+                </template>
             </template>
         </header>
         <h2 class="title">{{ resource.title }}</h2>

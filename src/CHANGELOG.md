@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.183.2 — The orchestrator's minute check no longer stops on a reply
+
+2.183.1's minute check stopped with an error as soon as a ticket had been told something, so none of its notices reached the orchestrator; it now reads each reply's time from the message itself. The Plan pane in an agent's inspector no longer shows a close button that did nothing. Nothing to do.
+
 ## 2.183.1 — A subagent's question reaches the journal
 
 A subagent that used Claude's question tool had it open in the terminal, because the journal filed that tool only for main agents. It is now filed as a journal question in its environment like any other, so a ticket agent's subagent asking something tells the board's orchestrator, naming the ticket. Nothing else a subagent does changes. Nothing to do.
