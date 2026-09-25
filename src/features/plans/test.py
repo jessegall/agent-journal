@@ -257,3 +257,33 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"
+
+
+def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkeypatch):
+    from controllers.types import Environments
+    features.load()
+    record = fresh()
+    handed, launched = [], []
+
+    def start_agent_in(record, name, worktree, abstract, owner, prompt):
+        Environments(record, actor=SYSTEM).create(name, owner=owner)
+        launched.append(prompt)
+
+    monkeypatch.setattr("features.plans.worker.start_agent_in", start_agent_in)
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: handed.append(n))
+    monkeypatch.setattr("engine.terminal.detached", lambda *args, **kwargs: launched.append("a ticket agent"))
+    board = Boards(record, actor=USER).create("Product")
+    tickets = Tickets(record, actor=USER)
+    first, second = (tickets.create(title, board=board.n) for title in ("Search", "Share"))
+    plans = Plans(record, actor=AGENT)
+    plan = plans.create("Redesign", goal="it looks new")
+    plans.update(plan.n, worktree="shared")
+    plans.phase(plan.n, "Build", when="both built")
+    plans.tickets(plan.n, 1, [first.n, second.n])
+    plans.ready(plan.n)
+    Plans(record, actor=USER).approve(plan.n)
+    plans.start(plan.n)
+    assert {tickets.load(n).work_environment for n in (first.n, second.n)} == {f"plan-{plan.n}"}, \
+        "a shared plan's tickets work in the plan's one environment and worktree"
+    assert (handed, "one ticket after another" in launched[0], "a ticket agent" in launched) == ([first.n, second.n], True, False), \
+        "the plan's own agent is handed each ticket, and no ticket gets an agent of its own"

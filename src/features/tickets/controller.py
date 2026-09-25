@@ -33,6 +33,8 @@ CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
 CARRY_ON = "Carry on with {ref} where you left off."
+HANDED = ("{ref}, {title}, is yours to do in this worktree, after the tickets you already have: {brief} Read it with journal "
+          "ticket show {n}, commit it on this branch, and say when it is done.")
 MOST_RESTARTS = 1
 REVIEWED_BY_SUBAGENT = "subagent"
 SCREEN_LINES, SCREEN_BYTES = 40, 32768
@@ -315,6 +317,21 @@ class Tickets(Controller):
             Features(place, actor=SYSTEM).switch(feature, False)
         return self.update(ticket.n, work_environment=name)
 
+    def _bind_to(self, n: int, name: str):
+        ticket = self.load(int(n))
+        return self.update(ticket.n, work_environment=name, base=ticket.base or tip(self.record.root.parent, self._into(ticket)))
+
+    def _in_plan_worktree(self, ticket) -> bool:
+        place = Environments(self.record, actor=SYSTEM)._titled(ticket.work_environment) if ticket.work_environment else None
+        return bool(place and str(place.owner).startswith("plan:"))
+
+    def _hand_to_plan(self, ticket):
+        try:
+            self.tell(ticket.n, HANDED.format(ref=ticket.ref, title=ticket.title, brief=ticket.brief, n=ticket.n))
+        except Refused:
+            return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
+        return self.update(ticket.n, queued=False, queued_at=0.0)
+
     def agent_session(self, n: int) -> str:
         ticket = self.load(int(n))
         return Sessions(self.record.root).holder(ticket.work_environment) if ticket.work_environment else ""
@@ -408,7 +425,7 @@ class Tickets(Controller):
 
     def _stop(self, ticket) -> None:
         session = self.agent_session(ticket.n)
-        if session:
+        if session and not self._in_plan_worktree(ticket):
             ask_session(self.record.root, terminal_of(self.record.root, session))
 
     def move(self, n: int, stage: str):
@@ -482,9 +499,11 @@ class Tickets(Controller):
         ticket = self.update(ticket.n, agent=agent or ticket.agent, halted=False)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
+            if self._in_plan_worktree(ticket):
+                return self._hand_to_plan(ticket)
             if self._live(ticket):
                 return ticket
-            if self._waiting_on(ticket) or len(self._running()) >= int(TicketsDetails.values(self.record).running):
+            if self._waiting_on(ticket) or len({r.work_environment for r in self._running()}) >= int(TicketsDetails.values(self.record).running):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             driver, place = DRIVERS[ticket.agent], ticket.work_environment
             earlier = Sessions(self.record.root).last(place, ticket.agent)

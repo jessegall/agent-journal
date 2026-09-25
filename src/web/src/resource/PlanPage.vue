@@ -14,6 +14,7 @@ import {useScope} from "../composables/scope.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
+import Switch from "../kit/Switch.vue";
 import PlanCritique from "./PlanCritique.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 
@@ -57,6 +58,9 @@ const button = computed(
             done: ["finish", "Finish"],
         })[status.value] || null
 );
+
+const holdsTickets = computed(() => (props.resource.data.phases || []).some((p) => (p.tickets || []).length));
+const shared = computed(() => props.resource.data.worktree === "shared");
 
 async function run(action, body = {}) {
     error.value = "";
@@ -114,6 +118,14 @@ async function run(action, body = {}) {
                 <template v-if="!['done', 'abandoned'].includes(status)">
                     <Btn title="Ask the agent to have other agents critique this plan" @click="critiquing = true">Ask for a critique</Btn>
                     <Btn kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
+                </template>
+                <template v-if="holdsTickets && !['done', 'abandoned'].includes(status)">
+                    <Switch
+                        :on="shared"
+                        word="One worktree for the whole plan"
+                        title="Every ticket of this plan is done by the plan's own agent in one worktree, one after another, instead of one worktree per ticket"
+                        @change="run('update', {worktree: shared ? 'each' : 'shared'})"
+                    />
                 </template>
                 <template v-if="critiquing">
                     <PlanCritique :plan="resource" @close="critiquing = false" />

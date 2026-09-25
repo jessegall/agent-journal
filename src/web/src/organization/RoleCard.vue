@@ -2,7 +2,7 @@
 import Chip from "../kit/Chip.vue";
 
 defineProps({role: Object, lead: Boolean});
-const CARDINALITY = {worktree: "one per ticket", plural: "any number at once"};
+const CARDINALITY = {worktree: "one per ticket", plural: "any number at once", plan: "one for a whole plan"};
 </script>
 
 <template>

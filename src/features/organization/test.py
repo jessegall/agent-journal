@@ -138,4 +138,11 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
     place, args = launched[0]
     assert (given["agent"], place, "--worktree" in args and args[args.index("--worktree") + 1]) == ("ticket-5-developer-1", "ticket-5-developer-1", "ticket-5"), \
         "a full-agent role gets an environment of its own, working in the ticket's worktree"
+    write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plan"\nruns = "agent"\n')
+    entered = []
+    monkeypatch.setattr("features.organization.agents.enter_into", lambda record, name, text: entered.append(name) or len(entered) > 1)
+    plan = Todos(Record(record.root, "plan-3"), actor=AGENT)
+    agents = [COMMANDS["todo"]["delegate"](plan, task, "engineering")["agent"] for task in ("Draw the header", "Draw the footer")]
+    assert (agents, len(launched)) == (["plan-3-developer", "plan-3-developer"], 2), \
+        "a plan role keeps one agent for the whole plan and hands it each next task"
     assert Todos(ticket, actor=AGENT).load(given["todo"]).data["role_environment"] == "ticket-5-developer-1" and "Nothing to dispatch" in given["brief"]

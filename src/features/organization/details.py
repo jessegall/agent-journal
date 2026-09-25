@@ -15,7 +15,8 @@ class OrganizationDetails(FeatureDetails):
         description, responsible, not_responsible, lead), and domains/<domain>/roles/<role>/role.toml a role under it (title,
         icon, description, responsible, not_responsible, skills, tools, inputs, outputs, cardinality, runs, model). Cardinality is one of
         {', '.join(CARDINALITIES)}: worktree means one running instance per ticket, plural any number, global one for the
-        whole journal, whose tasks wait their turn across every ticket. runs is agent for a role that works as a full agent
+        whole journal, whose tasks wait their turn across every ticket, plan one agent for a whole plan, kept in the plan's one
+        worktree and handed each next task. runs is agent for a role that works as a full agent
         of its own, such as a developer, or subagent (the default) for a short job. journal ticket
         organization shows what is read; a lead that is not one of its domain's roles, or an unknown cardinality or runs, is refused
         with the file that says it.
