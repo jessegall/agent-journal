@@ -36,6 +36,10 @@ def test_a_request_opens_a_session_that_cancel_closes():
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
     assert any("waits for the board-filler" in n for n in nudges(record)) and not any(n.startswith("sequence ") for n in nudges(record)), \
         "the request is handed to the board-filler: the main agent is told to dispatch it, never handed the steps itself"
+    from features.boards.agent_types import FILLER_ALLOWED
+    assert [bool(FILLER_ALLOWED.match(c)) for c in ("journal --agent board-filler sequence follow 14 --about message:1",
+                                                    "journal --agent=board-filler question show 3", "journal todo create x")] == [True, True, False], \
+        "the filler runs the commands its prompt names, with --agent either way, and nothing outside its task"
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
     filler = Sequences(record, actor=AGENT, agent="board-filler")
     filler.follow(exploring.n, about=made.ref)

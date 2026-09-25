@@ -340,9 +340,10 @@ onUnmounted(save);
 /* Steady: in a conversation the choices never leave their place. They rise in 50ms apart; once answered, the chosen one
    carries a check and the rest stay put in muted text. */
 .steady .option {
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 2px 10px;
     min-height: 36px;
     padding: 7px 12px;
     color: var(--text-2);
@@ -350,8 +351,13 @@ onUnmounted(save);
     animation-delay: calc(var(--i) * 50ms + 50ms);
 }
 
-.steady .option .label {
-    flex: 1;
+.steady .option > :not(.tick) {
+    grid-column: 2;
+}
+
+.steady .option .tick {
+    grid-row: 1;
+    margin-top: 2px;
 }
 
 .steady .pick {

@@ -108,7 +108,7 @@ defineExpose({focus: () => nextTick(() => input.value && input.value.focus())});
 .lines {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 10px;
     min-height: 100%;
     padding: 16px 16px 6px;
