@@ -38,7 +38,6 @@ class Driver(ABC):
     DISPLAY_HOOK = False
     SHELL = ""
     INPUT_MARK = b""
-    PASTED_MARK = b""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
@@ -275,7 +274,7 @@ class Driver(ABC):
         if self.INPUT_MARK not in plain:
             return False
         box = plain.rsplit(self.INPUT_MARK, 1)[1]
-        return b"".join(line.encode().split())[:LINE_START] in box or bool(self.PASTED_MARK) and self.PASTED_MARK in box
+        return b"".join(line.encode().split())[:LINE_START] in box
 
     def _submitted(self, since: float) -> bool:
         row = self._report()
