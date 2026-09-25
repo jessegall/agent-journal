@@ -14,6 +14,7 @@ def option_title(option) -> str:
     return Option.from_json(option).title if isinstance(option, dict) else str(option)
 
 class AskInTheJournal(ToolInterceptor):
+    for_subagents = True
     def intercept(self, context: AgentContext, call) -> str:
         if not context.provider.question(call):
             return ""

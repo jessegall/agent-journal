@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.183.1 — A subagent's question reaches the journal
+
+A subagent that used Claude's question tool had it open in the terminal, because the journal filed that tool only for main agents. It is now filed as a journal question in its environment like any other, so a ticket agent's subagent asking something tells the board's orchestrator, naming the ticket. Nothing else a subagent does changes. Nothing to do.
+
 ## 2.183.0 — The orchestrator hears its ticket agents, and an agent's inspector is a small Home
 
 A board's orchestrator is told at once when a ticket's agent asks a question, waits on something, answers after being told something, or finishes its plan with a clean worktree (with how many commits it is ahead); an answer to a ticket's question is handed straight to that ticket's agent. An agent's inspector is now a small Home of its own: a teal band naming the agent, what it works for and its environment, and its chat, terminal (Home's own terminal pane, with its verbosity), transcript, history, file feed, to-dos and plan as panes, in one layout every inspector shares, chosen apart from Home's; subagents get the same, with their own panes. In the Orchestrator layout, the Agents at work pane can show only working agents, each window says when its agent was last active (amber after 5 minutes, red after 15), and the preset descriptions are a few words each. Nothing to do.
