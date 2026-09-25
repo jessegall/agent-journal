@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.169.0 — The organization's domains in the sidebar
+
+The sidebar has an Organization group listing each domain with the number of agents working in it. A domain opens on the Organization page to that domain alone, with a Working now list of its agents: the role, the ticket and the worktree each works in; clicking one opens its ticket where you are. Nothing to do.
+
 ## 2.168.0 — A role's instructions and skills reach its agent
 
 A delegated task's brief points at the role's AGENTS.md, and the domain's, as the instructions to read first, and at every skill in the role's skills/ folder (for that role alone) and the domain's (for every role in it). Nothing to do.

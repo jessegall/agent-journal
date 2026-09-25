@@ -15,9 +15,11 @@ import {usePoll} from "../poll.js";
 
 usePoll(...polled.agents);
 usePoll(...polled.pages);
+usePoll(...polled.organization);
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed && !e.data.owner));
 const pages = computed(() => store.pages || []);
+const domains = computed(() => (store.organization && store.organization.domains) || []);
 const creating = ref(false);
 const folded = reactive({});
 const fold = (key) => {
@@ -73,6 +75,20 @@ function point(e) {
                                 <span :class="['plugin-dot', p.state]" />
                             </a>
                         </template>
+                    </template>
+                </FoldGroup>
+            </template>
+            <template v-if="domains.length">
+                <FoldGroup class="group" label="Organization" :open="!folded.organization" @toggle="fold('organization')">
+                    <template v-for="d in domains" :key="d.name">
+                        <a
+                            :class="['item', {on: route.page === 'organization' && route.n === d.name}]"
+                            :href="`#/${route.env}/organization/${d.name}`"
+                        >
+                            <Icon :name="d.icon || 'agents'" />
+                            <span class="label">{{ d.title || d.name }}</span>
+                            <span :class="['count', {hot: d.working.length}]">{{ d.working.length || "" }}</span>
+                        </a>
                     </template>
                 </FoldGroup>
             </template>

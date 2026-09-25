@@ -9,7 +9,12 @@ class ShowOrganization(Command):
     name = "organization"
 
     def run(self, context: Context, tickets):
-        return organization(context.record.root.parent).shaped()
+        shaped = organization(context.record.root.parent).shaped()
+        working = tickets._role_work()
+        for domain in shaped["domains"]:
+            domain["working"] = [{"role": role["name"], "role_title": role["title"] or role["name"], **ticket}
+                                 for role in domain["roles"] for ticket in working.get((domain["name"], role["name"]), [])]
+        return shaped
 
 
 class Delegate(Command):

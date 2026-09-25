@@ -19,6 +19,7 @@ export const store = reactive({
     online: [],
     journals: [],
     pages: [],
+    organization: null,
     bar: null,
     stream: null,
     booted: false,
