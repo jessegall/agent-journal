@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.193.0 — The agent calls you Sir, and New work is quick
+
+The agent addresses you the way you choose: a new setting, How the agent addresses you, holds a title (Sir by default) and your first name (git's when left empty), and every session start and every start after a compaction tells the agent to call you, say, Sir Jesse. The title is only ever what you set.
+
+New work is much quicker. The board-filler's profile now carries every step of the sequences it follows, so it never reads them back; board score and sequence next each hand it the next step already taken up; the dispatch line lends it the environment and carries your request and your answers; its own commands are no longer refused; a card names the cards it waits on and the clauses it covers when it is made, and a wrong wait is refused before anything is written; it can search the code with Grep and Glob. In trials the first question came in 28 seconds instead of 38 with 15 calls, each answer led to the next question in 9 to 28 seconds, and eight cards were drafted within a minute and a half of the last answer. Its sequences no longer put marks in the main chat, and a New work request files in under 50 ms.
+
+The New work panel fills from the top and scrolls only once it is full, and a question's options put their text under their title.
+
+An agent waiting on its own run, a background command, a subagent, a monitor or a standing await, counts as busy everywhere in the viewer, never idle (your message 514). Nothing to do.
+
 ## 2.192.2 — A ticket agent waiting on its run says so
 
 A ticket whose agent sits behind its own running command, subagent or monitor, or behind a standing await, no longer shows as idle on the board and the orchestrator card: it says "waiting on its run" with what it waits on and for how long, and idle is kept for an agent with nothing running (your message 509). An update now ends with one short line and no report card in the chat, since the pinned card opens it. A viewer request reads the settings and the plugins' chat rules once instead of once per text it formats. Nothing to do.

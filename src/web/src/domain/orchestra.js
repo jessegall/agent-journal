@@ -17,6 +17,7 @@ function standing(e, plan, now) {
     if (e.agent.asking || counts.questions) return {state: "you", reason: "a question waits for you"};
     if (plan && PLAN_WAITS[plan.status]) return {state: "you", reason: PLAN_WAITS[plan.status]};
     if (!isActive(state)) return {state: "idle", reason: "idle"};
+    if (state === "waiting") return {state: "running", reason: e.agent.background_run ? `waiting on its run: ${e.agent.background_run}` : "waiting"};
     if (now - (e.agent.at || now) > SILENT_AFTER) return {state: "you", reason: `silent for ${Math.floor((now - e.agent.at) / 60)}m`};
     return {state: "running", reason: ""};
 }

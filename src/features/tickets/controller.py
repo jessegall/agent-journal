@@ -79,16 +79,7 @@ class Slots:
     waiting: int
 
 
-RUNNING_KINDS = ("shell_rows", "subagent_rows", "monitor_rows")
 RUN_TEXT = 60
-
-
-def running_behind(row) -> list[dict]:
-    return [entry for kind in RUNNING_KINDS for entry in (row.data.get(kind) or []) if entry.get("running")]
-
-
-def busy_behind(row) -> bool:
-    return bool(running_behind(row))
 
 
 class Tickets(Controller):
@@ -346,8 +337,7 @@ class Tickets(Controller):
 
     def _waited_run(self, row, place: str) -> str:
         awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM)._standing() if w.awaiting), "")
-        running = next((entry.get("task") or entry.get("command") or "" for entry in running_behind(row)), "")
-        text = awaited or running
+        text = awaited or row.background_run
         return text if len(text) <= RUN_TEXT else text[:RUN_TEXT - 1].rstrip() + "…"
 
     def _reporting(self, place: str, sessions: dict):
@@ -375,7 +365,7 @@ class Tickets(Controller):
         quiet = time.time() - float(row.at)
         if row.status != IDLE and quiet > SILENT_AFTER:
             return CardState("you", f"silent for {int(quiet // 60)}m")
-        if row.status == IDLE and quiet > SILENT_AFTER and not busy_behind(row):
+        if row.status == IDLE and quiet > SILENT_AFTER and not row.background_run:
             return CardState("you", f"idle for {int(quiet // 60)}m with nothing running in the background")
         waiting = self._waited_run(row, place) if row.status == IDLE else ""
         if waiting:
