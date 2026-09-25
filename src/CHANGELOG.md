@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.185.0 — A sequence step is taken up before anything else
+
+When a sequence hands the agent a step, its writes wait until it takes the step up with journal sequence follow <n>; journal sequence next refuses a step it never took up, so steps can no longer be skipped in a quick loop. The journal's own step moves are unaffected. In an agent's inspector, pane settings such as the file feed's View options now take effect, tabs drag between panes as on Home, the file feed's bar no longer covers the tab row, and lines typed into a ticket or plan agent's terminal show as small marks instead of your own messages. Nothing to do.
+
 ## 2.184.2 — An agent waiting on its own run is not repeated every 5 minutes
 
 The orchestrator is reminded every 5 minutes only of what waits on it or on the user: a question, a plan to approve, a checkpoint, a proposed wait, a draft, a plan done with a clean worktree, or an await that names the orchestrator, the user or an approval, decision, answer or review. A ticket agent awaiting its own long run is announced once and again only after an hour, a setting beside the 5 minutes. Nothing to do.

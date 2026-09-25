@@ -37,6 +37,37 @@ const counted = (tools) =>
         .map(([tool, times]) => (times > 1 ? `${tool} ×${times}` : tool))
         .join(", ");
 
+const FIRST_LINE = 160;
+const JOURNAL = /^\s*\[(journal|internal)\]\s*/i;
+
+const typedMark = (t) => {
+    const text = t.text.trim();
+    const said = text.replace(JOURNAL, "");
+    const first = said.split("\n")[0];
+    return {
+        type: "card",
+        ref: `typed:${t.line}`,
+        n: t.line,
+        who: "agent",
+        title: "",
+        brief: "",
+        refs: [],
+        sections: [],
+        seen: ["user", "agent"],
+        created: t.at,
+        completed: 0,
+        data: {
+            icon: JOURNAL.test(text) ? "book" : "terminal",
+            label: JOURNAL.test(text) ? "The journal told the agent" : "Typed into its terminal",
+            detail: first.length > FIRST_LINE ? `${first.slice(0, FIRST_LINE)}…` : first,
+            title: said,
+        },
+    };
+};
+
+export const typedLines = (turns) =>
+    turns.map((t) => (t.type === "line" && t.who === "user" ? typedMark({line: t.n, at: t.created, text: t.brief}) : t));
+
 export function chatTurns(entries) {
     const out = [];
     let run = null;

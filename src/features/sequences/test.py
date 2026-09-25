@@ -18,9 +18,12 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     assert steps() == [f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything"], "a dump starts the sequence about it"
     handed = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {filing['n']}"))
     assert f"journal dump items {dump.n}" in handed and "<dump n>" not in handed, "the step names the dump it is about"
+    sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
     assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 2 of 3 - File by subject", "done hands the next step"
+    sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
+    sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
     assert sequences.load(filing["n"]).runs == {}, "the last step ends it"
     cards = CONTROLLERS["agent"](record).primary().data["cards"]
@@ -33,6 +36,7 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 4, \
         "a second run waits while the first is in hand"
     for _ in range(3):
+        sequences.follow(filing["n"], about=first.ref)
         sequences.next(filing["n"], about=first.ref)
     assert len(steps()) == 7 and steps()[-1].endswith("step 1 of 3 - Read everything"), "when the first ends, the one that waited is handed its first step"
     report(record, "idle", "Stop")
@@ -71,6 +75,7 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     handle(PROVIDERS["claude"](), record.root, record.env, call)
     assert f"sequence {deploying.n}, After a deploy, step 1 of 2 - Check the site" in nudges(record), "the trigger's words start the sequence"
     about = f"trigger:{trigger.n}"
+    sequences.follow(deploying.n, about=about)
     sequences.next(deploying.n, about=about)
     handle(PROVIDERS["claude"](), record.root, record.env, call)
     assert [run["step"] for run in sequences.load(deploying.n).runs.values()] == [2], "firing again while it runs never starts it over"
@@ -111,6 +116,7 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     late = lambda: [n for n in nudges(record) if "waited" in n]
     tick(record)
     assert len(late()) == 1, "a step handed ten minutes ago is called late"
+    sequences.follow(made.n)
     sequences.next(made.n)
     tick(record)
     assert len(late()) == 1, "the next step, handed just now, is not called late though the run began long ago"
@@ -147,8 +153,32 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     assert [s["title"] for s in sequences._steps(sequences.load(outer.n))] == ["start", "two", "three"], "a range includes those steps"
     assert "never end" in refused(lambda: sequences.include(base.n, outer.n)), "including back would loop"
     sequences.run(outer.n)
+    sequences.follow(outer.n)
     sequences.next(outer.n)
+    sequences.follow(outer.n)
     sequences.next(outer.n)
     assert sequences.load(outer.n).runs, "the run counts the included steps"
+    sequences.follow(outer.n)
     sequences.next(outer.n)
     assert not sequences.load(outer.n).runs, "and ends after the last of them"
+
+
+def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
+    from features.base import held
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    session = Agents(record, actor="system").by_session("claude-1").title
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    made = sequences.create("Two steps")
+    sequences.section(made.n, "First", "do the first")
+    sequences.section(made.n, "Second", "do the second")
+    sequences.run(made.n)
+    assert "handed you step 1" in held(record, session), "a handed step holds the agent's writes until it answers it"
+    sequences.follow(made.n)
+    assert "handed you step" not in held(record, session), "taking the step up releases them, so the step's own work can be done"
+    sequences.follow(made.n)
+    sequences.next(made.n)
+    assert "handed you step 2" in held(record, session), "each next step is taken up the same way, so none is skipped unseen"
+    sequences.abandon(made.n, why="it no longer applies")
+    assert "handed you step" not in held(record, session), "an abandoned run holds nothing"

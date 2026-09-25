@@ -7,7 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Agents
 from features.sequences.resource import Sequence
-from resources.base import SECTION, SYSTEM
+from resources.base import AGENT, SECTION, SYSTEM
 
 BY_HAND = "by hand"
 VIOLET = "#a78bfa"
@@ -111,12 +111,22 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
+        if self.actor == AGENT and r.runs[key].get("followed") != r.runs[key]["step"]:
+            self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up: journal sequence follow {r.n}"
+                         f"{' --about ' + about if about else ''}, do what it says, then move on")
         titles = self._titles(r)
         run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time(), "titles": titles}
         runs = {k: v for k, v in r.runs.items() if k != key}
         going = run["step"] <= len(titles)
         self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0)
         return self.update(r.n, runs={**runs, key: run} if going else runs)
+
+    def follow(self, n: int, about: str = ""):
+        r = self.load(int(n))
+        key = self._key(about)
+        if key not in r.runs:
+            self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
+        return self.update(r.n, runs={**r.runs, key: {**r.runs[key], "followed": r.runs[key]["step"]}})
 
     def _jump(self, n: int, about: str, step: int):
         r = self.load(int(n))
