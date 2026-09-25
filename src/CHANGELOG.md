@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.181.0 — An Orchestrator layout for watching every agent
+
+Home's layout presets have Orchestrator: the chat with the main agent on the left third, and on the right an Agents at work grid with one small window per agent a ticket or a plan runs. Each window says which ticket or plan it is, whether it is working, waiting for you, stuck or stopped, what it is doing right now, and its plan's phase and step; clicking one opens that agent over the page. The grid fills and empties as agents start and finish. Nothing to do.
+
 ## 2.180.0 — A ticket card shows each repository
 
 On a folder of repositories, a started ticket's card on the board shows a chip for each repository: merged, changed (highlighted) or no changes, with its branch on hover. Nothing to do.

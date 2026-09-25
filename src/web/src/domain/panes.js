@@ -1,6 +1,6 @@
 export const AGENT_VIEWS = ["chat", "feed", "terminal"];
 export const PANEL_VIEWS = ["waiting", "question", "suggestion", "todos"];
-export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "family"];
+export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "family", "agents"];
 export const HEADER = 34;
 
 const WHOLE = {x: 0, y: 0, w: 1, h: 1};
@@ -43,6 +43,12 @@ export const PRESETS = [
         name: "Triage",
         text: "Chat, with questions and to-dos stacked beside it",
         shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["question", "waiting"]), shaped(["todos", "suggestion"]))),
+    },
+    {
+        key: "orchestrator",
+        name: "Orchestrator",
+        text: "Chat, with a window for every agent working on the boards",
+        shape: split("row", 0.34, shaped(["chat"]), shaped(["agents"])),
     },
 ];
 

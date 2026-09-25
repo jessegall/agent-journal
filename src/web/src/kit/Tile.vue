@@ -3,7 +3,9 @@ defineProps({
     href: {type: String, default: ""},
     label: {type: String, default: ""},
     wide: Boolean,
+    opens: Boolean,
 });
+const emit = defineEmits(["open"]);
 </script>
 
 <template>
@@ -11,6 +13,9 @@ defineProps({
         <div class="tile-main">
             <template v-if="href">
                 <a class="tile-cover" :href="href" :aria-label="label" />
+            </template>
+            <template v-else-if="opens">
+                <button type="button" class="tile-cover" :aria-label="label" :title="label" @click="emit('open')" />
             </template>
             <template v-if="$slots.head">
                 <div class="tile-head">
@@ -64,6 +69,10 @@ defineProps({
 .tile-cover {
     position: absolute;
     inset: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
 }
 
 .tile-cover:focus-visible {

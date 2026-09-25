@@ -14,6 +14,7 @@ import {
     focusOf,
     journalState,
     leadOf,
+    planMeter,
     totalsOf,
 } from "../sync/hub.js";
 import Btn from "../kit/Btn.vue";
@@ -39,17 +40,6 @@ const home = computed(() => server.value.page((props.journal.summary && props.jo
 const focus = computed(() => focusOf(lead.value));
 const plan = computed(() => lead.value.plans[0] || null);
 const note = computed(() => (state.value === "idle" && lead.value.agent.at ? `last active ${ago(lead.value.agent.at)}` : ""));
-const building = (p) => p.status === "building";
-const meterOf = (p) => ({
-    label: "Plan",
-    title: p.title,
-    figure: building(p) ? "" : `${p.done}/${p.rows}`,
-    detail: building(p) ? "being written" : `phase ${p.current || 1} of ${p.phases}${p.phase ? ` · ${p.phase}` : ""}`,
-    value: p.done,
-    max: Math.max(1, p.rows),
-    busy: building(p),
-    tone: "muted",
-});
 const wordFor = (p) => (planButton({data: p}) || [])[1];
 
 async function manage(fn) {
@@ -88,7 +78,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                     </template>
                 </div>
                 <template v-if="plan">
-                    <Meter v-bind="meterOf(plan)">
+                    <Meter v-bind="planMeter(plan)">
                         <template v-if="wordFor(plan)">
                             <Btn small @click="runStep(lead, plan)">{{ wordFor(plan) }}</Btn>
                         </template>
@@ -152,7 +142,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                         </template>
                     </div>
                     <template v-for="p in e.plans" :key="p.n">
-                        <Meter class="jt-env-plan" v-bind="meterOf(p)">
+                        <Meter class="jt-env-plan" v-bind="planMeter(p)">
                             <template v-if="wordFor(p)">
                                 <Btn small @click="runStep(e, p)">{{ wordFor(p) }}</Btn>
                             </template>

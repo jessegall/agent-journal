@@ -16,14 +16,19 @@ import {age} from "../format/time.js";
 import {usePoll} from "../poll.js";
 import {peekThere} from "../route.js";
 
-const props = defineProps({card: {type: Object, required: true}});
+const props = defineProps({
+    card: {type: Object, required: true},
+    env: {type: String, default: ""},
+    heading: {type: String, default: ""},
+    plan: {type: Number, default: 0},
+});
 const emit = defineEmits(["close", "terminal"]);
 const EVERY = 5000;
 const HISTORY = 30;
 
-const ticket = computed(() => ticketOf(props.card.n));
-const env = computed(() => (ticket.value && ticket.value.data.work_environment) || "");
-const plan = computed(() => (ticket.value && ticket.value.data.plan) || 0);
+const ticket = computed(() => (props.env ? null : ticketOf(props.card.n)));
+const env = computed(() => props.env || (ticket.value && ticket.value.data.work_environment) || "");
+const plan = computed(() => props.plan || (ticket.value && ticket.value.data.plan) || 0);
 const there = api.in(() => env.value);
 const state = computed(() => agentState(props.card));
 
@@ -60,7 +65,7 @@ const tabs = computed(() => [
 </script>
 
 <template>
-    <SidePanel :title="`#${card.n} ${card.title}`" width="wide" @close="emit('close')">
+    <SidePanel :title="heading || `#${card.n} ${card.title}`" width="wide" @close="emit('close')">
         <template #actions>
             <template v-if="plan && env">
                 <Btn small @click="peekThere(env, 'plan', plan)">Open its plan</Btn>

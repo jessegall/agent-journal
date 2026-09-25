@@ -11,6 +11,7 @@ export function useHomeViews() {
         feed: {title: "File feed", icon: "edits", canFlush: true},
         terminal: {title: "Terminal", icon: "terminal"},
         family: {title: "Agent family tree", icon: "family"},
+        agents: {title: "Agents at work", icon: "agents"},
         waiting: {
             title: "Notifications",
             icon: "bell",
