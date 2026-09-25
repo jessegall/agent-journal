@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.166.1 — The family tree opens agents where you are
+
+Clicking an agent or a subagent in the family tree opens it over the page you are on, read from its own environment, instead of switching the viewer's environment. Nothing to do.
+
 ## 2.166.0 — A board keeps what is done, and plans open where you are
 
 A closed ticket stays in its board's done column as a calm card saying how it closed, so the board shows what is done; the Show done switch now works on ticket boards too. A ticket's plan, from its card or its agent's inspector, opens in the plan inspector over the board, read from the ticket's own environment, instead of taking you to that environment's home. Nothing to do.

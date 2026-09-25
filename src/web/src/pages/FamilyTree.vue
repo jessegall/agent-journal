@@ -7,7 +7,7 @@ import Spinner from "../kit/Spinner.vue";
 import {api} from "../api/client.js";
 import {usePoll} from "../poll.js";
 import {follow} from "../composables/pointer.js";
-import {peek, peekIn, route} from "../route.js";
+import {peekThere} from "../route.js";
 import {SIZES, edgeLabel, edgePath, familyCounts, familyTree, live, nodeLook} from "../domain/family.js";
 
 const EVERY = 5000;
@@ -55,8 +55,7 @@ function openNode(node) {
     if (!m.n) return;
     const sub = m.kind === "subagent" ? m.session : "";
     if (m.kind === "subagent" && !sub) return;
-    if (m.environment === route.value.env) return peek("agent", m.n, 0, sub);
-    peekIn(m.environment, "agent", m.n, sub);
+    peekThere(m.environment, "agent", m.n, sub);
 }
 
 function hint(node) {

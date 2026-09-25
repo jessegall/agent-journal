@@ -2,10 +2,11 @@
 import {computed} from "vue";
 import LinkCard from "../kit/LinkCard.vue";
 import {kindOf, standing, useAgentLinks} from "../composables/agentLinks.js";
-import {rows} from "../sync/rows.js";
+import {useScope} from "../composables/scope.js";
 
 const props = defineProps({agent: {type: Number, required: true}, session: {type: String, default: ""}});
-const links = useAgentLinks(() => [props.agent, props.session]);
+const {api, rows} = useScope();
+const links = useAgentLinks(api, () => [props.agent, props.session]);
 const bare = (href) => href.split("?")[0];
 const pinned = computed(() =>
     props.session ? rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && notice.data.link) : []

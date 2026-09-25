@@ -1,5 +1,4 @@
 import {ref, watch} from "vue";
-import {api} from "../api/client.js";
 
 const KINDS = [
     [/claude\.ai\/design\//, "Design"],
@@ -14,7 +13,7 @@ export const kindOf = (href) => (KINDS.find(([pattern]) => pattern.test(href)) |
 
 export const standing = (notice) => Boolean(notice.data.link) && !notice.data.pull && !EVENT.test(notice.data.link);
 
-export function useAgentLinks(source) {
+export function useAgentLinks(api, source) {
     const links = ref([]);
     watch(
         source,

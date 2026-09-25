@@ -4,14 +4,13 @@ import TabBar from "../kit/TabBar.vue";
 import {useTranscript} from "../composables/transcript.js";
 import {withWhispers} from "../domain/transcript.js";
 import {computed, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import CommentToggle from "./CommentToggle.vue";
 import DropList from "../kit/DropList.vue";
 import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
 import {span} from "../format/time.js";
-import {rows} from "../sync/rows.js";
+import {useScope} from "../composables/scope.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import TaskList from "./TaskList.vue";
@@ -22,6 +21,15 @@ import {usePoll} from "../poll.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
+const {env, api, rows, recent} = useScope();
+const ELSEWHERE_EVERY = 5000;
+const ELSEWHERE_LAST = 100;
+if (env)
+    usePoll(
+        `agent-elsewhere:${env}`,
+        () => Promise.all(["work", "nudge", "notice", "message"].map((type) => recent(type, ELSEWHERE_LAST))),
+        ELSEWHERE_EVERY
+    );
 const data = computed(() => props.resource.data);
 const resourceTitle = computed(() => props.resource.title);
 const family = computed(() => modelFamily(data.value.model));
@@ -66,7 +74,7 @@ const tabs = computed(() =>
 const TASKS_EVERY = 4000;
 const tasks = ref([]);
 usePoll(
-    "subagent-tasks",
+    `subagent-tasks:${env}`,
     () => (picked.value ? api.tasks(picked.value.session) : Promise.resolve([])),
     TASKS_EVERY,
     (got) => (tasks.value = got || [])
@@ -78,7 +86,7 @@ watch(
 );
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
-const transcript = useTranscript(() => props.resource.n, session, scroller);
+const transcript = useTranscript(() => props.resource.n, session, scroller, api);
 const {turns, total} = transcript;
 watch(session, () => (tab.value = "transcript"));
 const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.resource.title));
