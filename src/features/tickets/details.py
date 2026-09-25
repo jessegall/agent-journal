@@ -45,6 +45,7 @@ class TicketsDetails(FeatureDetails):
     lines = [
         Line(
             name="plan_checkpoint",
+            while_waiting=True,
             title="the plan of ticket {{ticket}}, {{title}}, stopped at a checkpoint",
             brief="read where it stands with journal --env {{env}} plan progress {{plan}}; when the phase before it is done as it should be, "
                   "let it go on with journal ticket continue_plan {{ticket}}, otherwise tell its agent what to fix first",
@@ -66,39 +67,46 @@ class TicketsDetails(FeatureDetails):
         ),
         Line(
             name="ticket_asks",
+            while_waiting=True,
             title="ticket {{ticket}}, {{title}}, asks question {{question}} - {{text}}",
             brief="answer it when it is yours to decide with journal --env {{env}} question answer {{question}} --how \"<choice>\" "
                   "--set reason=\"<why>\"; its agent is told the answer at once. Otherwise ask the user",
         ),
         Line(
             name="ticket_awaits",
+            while_waiting=True,
             title="ticket {{ticket}}, {{title}}, is waiting - {{text}}",
             brief="if it waits on you, give it what it needs with journal ticket tell {{ticket}} \"<what>\"; if it waits on the user, ask them",
         ),
         Line(
             name="ticket_replied",
+            while_waiting=True,
             title="ticket {{ticket}}, {{title}}, answered - {{text}}",
             brief="read the rest in its chat (journal ticket screen {{ticket}}) and carry on",
         ),
         Line(
             name="ticket_plan_done",
+            while_waiting=True,
             title="ticket {{ticket}}, {{title}}, finished its plan with a clean worktree, {{ahead}} commits ahead",
             brief="review what it did against its card, then merge it with journal ticket merge {{ticket}}",
         ),
         Line(
             name="orchestrator_accepts_waits",
+            while_waiting=True,
             title="ticket {{ticket}}, {{title}}, proposes waits on other tickets for you to decide",
             brief="read them with journal ticket show {{ticket}}; keep the ones that hold with journal ticket accept_dependencies {{ticket}} "
                   "[--only <n,n>] --why \"<reason>\", or journal ticket decline_dependencies {{ticket}} --why \"<reason>\"",
         ),
         Line(
             name="orchestrator_confirms_drafts",
+            while_waiting=True,
             title="ticket {{ticket}}, {{title}}, is a draft waiting for you to confirm it",
             brief="when it is work the board should do, confirm it with journal ticket confirm {{ticket}} --why \"<reason>\"; otherwise "
                   "leave it for the user",
         ),
         Line(
             name="plan_waits",
+            while_waiting=True,
             title="the plan of ticket {{ticket}}, {{title}}, waits for your approval",
             brief="{{review}} When it does the ticket and nothing more, approve it with journal ticket approve_plan {{ticket}}; "
                   "otherwise say what must change with journal ticket tell {{ticket}} \"<the change>\"",
