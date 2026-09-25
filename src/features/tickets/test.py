@@ -223,6 +223,10 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     elsewhere = Boards(record, actor=USER).create("Gone", stages=["Doing"], meanings={"Doing": "start"}, branch="missing")
     lost = tickets.create("Nowhere", board=elsewhere.n)
     assert "does not exist" in refused(lambda: tickets.start(lost.n)), "a board's branch that does not exist is named, not guessed"
+    git("commit", "-q", "--allow-empty", "-m", "only on the checked-out branch")
+    stray = tickets.update(tickets.bind(tickets.create("Stray", board=rewrite.n).n).n, base=git("rev-parse", home).stdout.strip())
+    assert ("not on rewrite" in tickets._off_branch(stray), tickets._off_branch(tickets.load(later.n))) == (True, ""), \
+        "a ticket that started from a commit its board's branch lacks is flagged with the rebase it needs; one on the branch is not"
     assert Boards(record, actor=USER).start(board.n).branch == home, "a board with no branch keeps the branch checked out when it starts"
 
 

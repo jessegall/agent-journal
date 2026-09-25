@@ -106,6 +106,10 @@ def merged_into(project: Path, branch: str, into: str) -> str:
     return (made.stderr.strip() or "no merge commit") if made.returncode else git(project, "update-ref", f"refs/heads/{into}", made.stdout.strip()).stderr.strip()
 
 
+def contains(project: Path, commit: str, branch: str) -> bool:
+    return git(project, "merge-base", "--is-ancestor", commit, branch).returncode == 0
+
+
 def branched(project: Path, branch: str, start: str) -> None:
     if not present(project, f"refs/heads/{branch}"):
         git(project, "branch", branch, start)
