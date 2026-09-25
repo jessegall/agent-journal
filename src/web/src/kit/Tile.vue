@@ -4,12 +4,13 @@ defineProps({
     label: {type: String, default: ""},
     wide: Boolean,
     opens: Boolean,
+    compact: Boolean,
 });
 const emit = defineEmits(["open"]);
 </script>
 
 <template>
-    <article :class="['tile', {wide}]">
+    <article :class="['tile', {wide, compact}]">
         <div class="tile-main">
             <template v-if="href">
                 <a class="tile-cover" :href="href" :aria-label="label" />
@@ -127,5 +128,30 @@ const emit = defineEmits(["open"]);
 .tile-more {
     border-top: 1px solid var(--border);
     background: var(--bg-2);
+}
+
+.tile.compact {
+    overflow: hidden;
+}
+
+.tile.compact .tile-main {
+    min-height: 0;
+}
+
+.tile.compact .tile-head {
+    min-height: 32px;
+    padding: 0 10px 0 12px;
+}
+
+.tile.compact .tile-body {
+    gap: 4px;
+    min-height: 0;
+    padding: 8px 12px;
+    overflow: hidden;
+}
+
+.tile.compact .tile-foot {
+    min-height: 0;
+    padding: 4px 10px 6px 12px;
 }
 </style>

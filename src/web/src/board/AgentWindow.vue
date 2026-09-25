@@ -18,7 +18,13 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 </script>
 
 <template>
-    <Tile opens :class="['agent-window', state.key]" :label="`Open the agent of ${entry.label} ${entry.title}`" @open="emit('open')">
+    <Tile
+        opens
+        compact
+        :class="['agent-window', state.key]"
+        :label="`Open the agent of ${entry.label} ${entry.title}`"
+        @open="emit('open')"
+    >
         <template #head>
             <span class="aw-head">
                 <span class="aw-label">{{ entry.label }}</span>
@@ -96,7 +102,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 
 .aw-title {
     display: -webkit-box;
-    margin: 0 0 4px;
+    margin: 0;
     overflow: hidden;
     color: var(--text);
     font-size: 13.5px;
@@ -108,7 +114,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 
 .aw-seen {
     align-self: flex-start;
-    margin: 0 0 4px;
+    margin: 0;
     color: var(--text-3);
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;

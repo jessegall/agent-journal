@@ -85,7 +85,7 @@ const terminal = ref(null);
 }
 
 .agent-grid > * {
-    aspect-ratio: 6 / 5;
+    aspect-ratio: 1;
 }
 
 @container (max-width: 560px) {
