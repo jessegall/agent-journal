@@ -169,8 +169,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.keep_branches()
     assert git("rev-parse", f"refs/journal/worktrees/{ticket.work_environment}").stdout == git("rev-parse", f"worktree-{ticket.work_environment}").stdout, \
         "the backup ref follows the ticket's branch to its latest commit"
-    git("merge", "-q", "--no-edit", f"worktree-{ticket.work_environment}")
-    tickets.close_merged()
+    tickets.merge(ticket.n)
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
@@ -193,15 +192,12 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     git("merge", "-q", "--no-edit", f"worktree-{part.work_environment}")
     tickets.close_merged()
     assert not tickets.load(part.n).completed, "merged into the checked-out branch instead, it stays open"
-    git("switch", "-q", "rewrite")
-    git("merge", "-q", "--no-edit", f"worktree-{part.work_environment}")
-    git("switch", "-q", home)
     later = tickets.create("Engine on the tree", board=rewrite.n)
     tickets.depend(later.n, part.n)
     tickets.move(later.n, "Doing")
     assert tickets.load(later.n).queued, "a ticket that waits on another queues"
-    tickets.close_merged()
-    assert tickets.load(part.n).completed, "merged into its board's branch, it closes"
+    assert tickets.merge(part.n).completed and git("branch", "--show-current").stdout.strip() == home, \
+        "journal ticket merge lands it on its board's branch without touching the checkout, and it closes"
     tickets.start_queued()
     later = tickets.load(later.n)
     assert later.base == git("rev-parse", "rewrite").stdout.strip() and not later.queued, \

@@ -9,7 +9,7 @@ from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, keep, merged, present, tip
+from engine.worktree import branched, current_branch, keep, merged, merged_into, present, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -320,6 +320,19 @@ class Tickets(Controller):
 
     def _merged(self, ticket) -> bool:
         return merged(self.record.root.parent, self._branch(ticket), ticket.base, self._into(ticket))
+
+    def merge(self, n: int):
+        ticket = self.load(int(n))
+        if not ticket.work_environment:
+            self._refuse(f"{self.type} {ticket.n} was never started, so it has no branch to merge")
+        into = self._into(ticket)
+        if into == "HEAD":
+            into = current_branch(self.record.root.parent)
+        failed = merged_into(self.record.root.parent, self._branch(ticket), into)
+        if failed:
+            self._refuse(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} was not merged into {into}: {failed}")
+        self.close_merged()
+        return self.load(ticket.n)
 
     def _into(self, ticket) -> str:
         board = Boards(self.record, actor=SYSTEM).load(int(ticket.board)) if ticket.board else None
