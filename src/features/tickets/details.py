@@ -65,6 +65,18 @@ class TicketsDetails(FeatureDetails):
             brief="you have been idle five minutes while orchestrating it: journal ticket board shows which ticket runs; see whether its agent works, waits or is stuck (journal ticket agent_session <n> and its screen), unstick what is stuck, approve plans that wait and merge what is done",
         ),
         Line(
+            name="orchestrator_accepts_waits",
+            title="ticket {{ticket}}, {{title}}, proposes waits on other tickets for you to decide",
+            brief="read them with journal ticket show {{ticket}}; keep the ones that hold with journal ticket accept_dependencies {{ticket}} "
+                  "[--only <n,n>] --why \"<reason>\", or journal ticket decline_dependencies {{ticket}} --why \"<reason>\"",
+        ),
+        Line(
+            name="orchestrator_confirms_drafts",
+            title="ticket {{ticket}}, {{title}}, is a draft waiting for you to confirm it",
+            brief="when it is work the board should do, confirm it with journal ticket confirm {{ticket}} --why \"<reason>\"; otherwise "
+                  "leave it for the user",
+        ),
+        Line(
             name="plan_waits",
             title="the plan of ticket {{ticket}}, {{title}}, waits for your approval",
             brief="{{review}} When it does the ticket and nothing more, approve it with journal ticket approve_plan {{ticket}}; "

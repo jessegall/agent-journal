@@ -33,6 +33,9 @@ class LookAfterTicketBranches(Handler):
                 context.agent.whisper("plan_checkpoint", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
             else:
                 context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, review=tickets._review(ticket))
+        for ticket, permission in tickets._awaiting_decisions():
+            if context.once("proposal_waits", f"{ticket.ref}|{permission}|{ticket.updated}"):
+                context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
         self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)
 

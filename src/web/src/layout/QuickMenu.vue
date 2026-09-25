@@ -9,7 +9,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route, showFile} from "../route.js";
 import {open} from "../domain/records.js";
 import {showAway} from "../platform/visibility.js";
-import {agent, autoOn, store} from "../state/store.js";
+import {agent, autoOn, steered, store} from "../state/store.js";
 import {setAuto} from "../actions/work.js";
 import {useNavigation} from "../composables/navigation.js";
 import {activityShown, toggleActivity} from "../actions/panels.js";
@@ -199,7 +199,7 @@ const commands = computed(() => {
             store.wide = !store.wide;
         },
     });
-    rows.push({
+    if (!steered.value) rows.push({
         label: autoOn.value ? "Pause auto mode" : "Resume auto mode",
         keys: "auto mode",
         icon: "auto",

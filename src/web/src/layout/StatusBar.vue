@@ -11,7 +11,7 @@ import Switch from "../kit/Switch.vue";
 import Toast from "../kit/Toast.vue";
 import Spinner from "../kit/Spinner.vue";
 import {peek} from "../route.js";
-import {agent, autoOn, store} from "../state/store.js";
+import {agent, autoOn, steered, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
@@ -107,15 +107,17 @@ async function runBar(p) {
             </Btn>
         </template>
         <span class="statusbar-tools">
-            <Switch
-                :on="autoOn"
-                word="auto"
-                labelled
-                :title="
-                    autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
-                "
-                @change="setAuto"
-            />
+            <template v-if="!steered">
+                <Switch
+                    :on="autoOn"
+                    word="auto"
+                    labelled
+                    :title="
+                        autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
+                    "
+                    @change="setAuto"
+                />
+            </template>
             <Btn
                 kind="icon"
                 class="statusbar-square"

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.174.0 — Auto mode drives the orchestrator and every ticket agent
+
+A board says what its orchestrator may decide, each as a switch: orchestrator_approves_plans, orchestrator_accepts_waits and orchestrator_confirms_drafts. Each counts only while the orchestrator's auto mode is on, and then the orchestrator is told when such a proposal waits for it; with auto off the user decides and the orchestrator hears nothing. A plan is now approved by the orchestrator only under auto mode too. Every environment a ticket, plan or role owns is always in auto mode, and shows no auto switch. For a board already running: journal board update <n> --set orchestrator_accepts_waits=true --set orchestrator_confirms_drafts=true.
+
 ## 2.173.0 — Under auto mode a board's orchestrator decides its agents' proposals
 
 While auto mode is on, the agent orchestrating a board may accept or decline its tickets' proposed waits and confirm drafted tickets, as the user can: journal ticket accept_dependencies <n> --why "<reason>" (or decline_dependencies, or confirm). It must give its reason, and the ticket keeps a comment saying the orchestrator decided and why. Outside auto mode it stays the user's. Nothing to do.

@@ -23,6 +23,8 @@ class Board(Shape, Resource):
         Field(default=dict, name="added"),
         Field(TEXT, "", name="branch"),
         Field(FLAG, False, name="orchestrator_approves_plans"),
+        Field(FLAG, False, name="orchestrator_accepts_waits"),
+        Field(FLAG, False, name="orchestrator_confirms_drafts"),
         Field(TEXT, "orchestrator", name="plan_reviewer"),
     ]
     type = "board"
@@ -35,5 +37,7 @@ class Board(Shape, Resource):
     notified = (USER,)
     labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean",
               "branch": "Branch its tickets land on", "orchestrator_approves_plans": "The orchestrating agent approves ticket plans",
+              "orchestrator_accepts_waits": "The orchestrating agent accepts or declines the waits agents propose between tickets",
+              "orchestrator_confirms_drafts": "The orchestrating agent confirms drafted tickets",
               "plan_reviewer": "Who reviews a ticket's plan: orchestrator, or subagent"}
-    shown_fields = ("stages", "branch", "orchestrator_approves_plans", "plan_reviewer")
+    shown_fields = ("stages", "branch", "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts", "plan_reviewer")
