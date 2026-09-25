@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.175.1 — A skill folder git tracks is never replaced by a link
+
+When a project commits one of the journal's skill folders, such as .claude/skills/journal, the install now writes the current skill files into it instead of replacing it with a link, so git merges in that checkout keep working. A folder that was already replaced gets its real files back at the next upgrade. Nothing to do.
+
 ## 2.175.0 — Your answer to a question shows in the chat
 
 When you answer a question, the chat shows it as a mark on your side, in the question box's orange, naming the question and the answer you gave; clicking it opens the question. Nothing to do.

@@ -1,3 +1,4 @@
+import subprocess
 import features
 
 from controllers.types import Agents, Messages
@@ -90,6 +91,15 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
         publish(tmp_path, ("claude", "codex"))
     assert ((tmp_path / "skills" / "journal").is_symlink(), (tmp_path / "skills" / "journal" / "SKILL.md").is_file()) == (False, True), \
         "a self-pointing link is replaced by the real folder, and linking onto the same folder is skipped"
+    project = tmp_path / "project"
+    (project / ".claude" / "skills" / "journal").mkdir(parents=True)
+    (project / ".claude" / "skills" / "journal" / "SKILL.md").write_text("committed\n")
+    for command in (["init", "-q"], ["add", "."], ["-c", "user.email=a@b", "-c", "user.name=a", "commit", "-qm", "skills"]):
+        subprocess.run(["git", *command], cwd=project, check=True, timeout=30)
+    publish(project, ("claude",))
+    kept = project / ".claude" / "skills" / "journal"
+    assert (kept.is_symlink(), "committed" in (kept / "SKILL.md").read_text(), (project / ".claude" / "skills" / "journal-todos").is_symlink()) == \
+        (False, False, True), "a skill folder git tracks keeps real files, brought up to date; an untracked one is linked"
     import re
     described = [line for f in (tmp_path / "skills").glob("journal*/SKILL.md") for line in f.read_text().splitlines() if line.startswith("description:")]
     assert described and not [line for line in described if re.search(r"[<>]", line)], "no skill description carries angle brackets"

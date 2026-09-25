@@ -11,6 +11,7 @@ from controllers.types import CONTROLLERS
 from providers import PROVIDERS
 from providers.base import LIBRARY
 from engine.package import data
+from engine.worktree import untracked
 
 HERE = data()
 
@@ -124,6 +125,11 @@ def link(project: Path, name: str, agents: tuple[str, ...] = tuple(LINKED)) -> l
         target = project / LINKED[agent] / name
         target.parent.mkdir(parents=True, exist_ok=True)
         if library(project, target.parent):
+            continue
+        if not untracked(project, [target.relative_to(project)]):
+            if target.is_symlink():
+                target.unlink()
+            shutil.copytree(source, target, dirs_exist_ok=True)
             continue
         if target.is_symlink() or target.is_file():
             target.unlink()
