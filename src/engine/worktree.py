@@ -9,6 +9,7 @@ from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
 
 INCLUDED = ".worktreeinclude"
+BRANCHED = "worktree-"
 KEPT = "refs/journal/worktrees"
 
 
@@ -52,8 +53,9 @@ def main_checkout(start: Path) -> Path:
     return Path(common.stdout.strip()).parent if not common.returncode and common.stdout.strip() else start
 
 
-def opened(project: Path, folder: Path, branch: str) -> Path:
-    kept = f"{KEPT}/{folder.name}"
+def opened(project: Path, folder: Path, branch: str, name: str = "") -> Path:
+    name = name or folder.name
+    kept = f"{KEPT}/{name}"
     git(project, "worktree", "prune")
     registered = folder.resolve() in {path.resolve() for path in linked(project).values()}
     if folder.is_dir() and not registered:
@@ -65,8 +67,45 @@ def opened(project: Path, folder: Path, branch: str) -> Path:
         if made.returncode:
             raise SystemExit(f"journal: the worktree {folder.name} could not be made: {made.stderr.strip()}")
         included(project, folder)
-    keep(project, folder.name, branch)
+    keep(project, name, branch)
     return folder
+
+
+def repositories(folder: Path) -> list[Path]:
+    inner = [child for child in sorted(folder.iterdir()) if child.is_dir() and not child.name.startswith(".") and (child / ".git").exists()]
+    return ([folder] if (folder / ".git").exists() else []) + inner
+
+
+def spread(project: Path) -> bool:
+    return repositories(project) not in ([], [project])
+
+
+def workspace(project: Path, folder: Path) -> Path:
+    name = folder.name
+    found = repositories(project)
+    for repo in found:
+        opened(repo, folder / repo.relative_to(project), f"{BRANCHED}{name}", name)
+    if project in found:
+        excluded(folder, [f"/{repo.name}/" for repo in found if repo != project])
+        return folder
+    folder.mkdir(parents=True, exist_ok=True)
+    for entry in project.iterdir():
+        if entry not in found and entry.name not in (".git", ".claude"):
+            linked_to(folder / entry.name, entry.resolve())
+    for entry in (project / ".claude").iterdir() if (project / ".claude").is_dir() else ():
+        if entry.name != "worktrees":
+            linked_to(folder / ".claude" / entry.name, entry.resolve())
+    return folder
+
+
+def workspace_removed(project: Path, folder: Path) -> None:
+    name = folder.name
+    for repo in reversed(repositories(project)):
+        place = folder / repo.relative_to(project)
+        keep(repo, name, f"{BRANCHED}{name}")
+        if place.resolve() in {path.resolve() for path in linked(repo).values()}:
+            git(repo, "worktree", "remove", "--force", str(place))
+    shutil.rmtree(folder, ignore_errors=True)
 
 
 def keep(project: Path, name: str, branch: str) -> None:

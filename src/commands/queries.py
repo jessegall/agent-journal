@@ -362,10 +362,11 @@ def ended(ctx) -> str:
 
 
 def kept_work(cwd: Path) -> None:
-    from engine.worktree import checkout, git, keep, main_checkout
+    from engine.worktree import checkout, git, keep, main_checkout, repositories
     top = checkout(cwd)
-    if top:
-        keep(main_checkout(top), top.name, git(top, "branch", "--show-current").stdout.strip())
+    places = [(top, top.name)] if top else [(repo, cwd.name) for repo in repositories(cwd) if checkout(repo)]
+    for place, name in places:
+        keep(main_checkout(place), name, git(place, "branch", "--show-current").stdout.strip())
 
 
 def healed(ctx) -> str:

@@ -9,7 +9,7 @@ from engine import typist
 from resources.base import SYSTEM
 from engine.wording import counted
 from engine import runtime
-from engine.worktree import environment, linked, main_checkout, opened, unused_name
+from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
@@ -120,7 +120,9 @@ class Driver(ABC):
             raise SystemExit(f"journal: {name!r} cannot name a worktree; use one plain word, without a colon or a slash")
         anchor = main_checkout(project)
         made = linked(anchor).get(name)
-        if not made or made.resolve() == anchor.joinpath(*cls.WORKTREES, name).resolve():
+        if spread(anchor):
+            made = workspace(anchor, anchor.joinpath(*cls.WORKTREES, name))
+        elif not made or made.resolve() == anchor.joinpath(*cls.WORKTREES, name).resolve():
             made = opened(anchor, anchor.joinpath(*cls.WORKTREES, name), cls.branch(name))
         cls.trusted(made)
         return made, cls.unworktreed(args)
@@ -135,7 +137,7 @@ class Driver(ABC):
 
     @classmethod
     def branch(cls, name: str) -> str:
-        return f"worktree-{name}"
+        return f"{BRANCHED}{name}"
 
     @classmethod
     def within(cls, args: list[str], name: str) -> list[str]:

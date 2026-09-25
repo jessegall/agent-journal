@@ -182,6 +182,20 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     for name in ("a:b", "a/b"):
         with pytest.raises(SystemExit):
             ClaudeDriver.placed(project, ["-w", name])
+    folder = tmp_path / "workspace"
+    for repo in ("site", "chronos"):
+        (folder / repo).mkdir(parents=True)
+        for command in (["git", "init", "-q"], [*git, "commit", "-q", "--allow-empty", "-m", "start"]):
+            subprocess.run(command, cwd=folder / repo, check=True, timeout=30)
+    (folder / "CLAUDE.md").write_text("# the whole project\n")
+    made, _ = ClaudeDriver.placed(folder, ["-w", "calm-river"])
+    branches = [subprocess.run(["git", "branch", "--show-current"], cwd=made / repo, capture_output=True, text=True, timeout=30).stdout.strip() for repo in ("site", "chronos")]
+    assert (made, branches, (made / "CLAUDE.md").is_symlink()) == (folder / ".claude" / "worktrees" / "calm-river", ["worktree-calm-river"] * 2, True), \
+        "in a folder of repositories, a worktree holds a worktree of each one on the same branch, with the folder's own files linked in"
+    subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "site work"], cwd=made / "site", check=True, timeout=30)
+    kept_work(made)
+    assert "site work" in subprocess.run(["git", "log", "-1", "--format=%s", "refs/journal/worktrees/calm-river"], cwd=folder / "site", capture_output=True, text=True, timeout=30).stdout, \
+        "leaving it keeps each repository's work under the worktree's name"
 
 
 def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_path):
