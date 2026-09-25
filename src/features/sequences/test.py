@@ -244,10 +244,17 @@ def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked()
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 90}})
     tick(record)
     assert len(late()) == 1, "a step standing still for a minute is nudged, whatever unrelated question is open"
-    CONTROLLERS["question"](record, actor=AGENT).create("Is this step still wanted?", about=made.ref)
+    about_run = CONTROLLERS["question"](record, actor=AGENT).create("Is this step still wanted?", about=made.ref)
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 300}})
     tick(record)
     assert len(late()) == 1, "a question about the run itself pauses its nudge"
+    from controllers.types import Works
+    CONTROLLERS["question"](record, actor=USER).complete(about_run.n, how="yes")
+    Works(record, actor=AGENT).create("Delegated")
+    Works(record, actor=AGENT).action("await")("the auditor's test run")
+    sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 120}})
+    tick(record)
+    assert len(late()) == 1, "while the agent's work awaits something, a step is nudged at the await's pace, not every minute"
 
 
 def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own_run():
