@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.183.3 — The orchestrator is reminded until it answers
+
+While a ticket agent still waits on the orchestrator (a question, what it awaits, a plan to approve, a checkpoint, a proposed wait or a draft), the orchestrator is told at once and then again every 5 minutes until it is dealt with; a reply after being told something is still said once. The interval is a setting of the tickets feature. Nothing to do.
+
 ## 2.183.2 — The orchestrator's minute check no longer stops on a reply
 
 2.183.1's minute check stopped with an error as soon as a ticket had been told something, so none of its notices reached the orchestrator; it now reads each reply's time from the message itself. The Plan pane in an agent's inspector no longer shows a close button that did nothing. Nothing to do.
