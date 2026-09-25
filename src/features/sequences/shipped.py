@@ -172,9 +172,8 @@ WRITING_AN_UPDATE = {
                              "n> <section> <row> \"<title>\", and take out one that is only noise with journal report drop "
                              "<report n> <row>. Then journal sequence next <this sequence> --about <ref>."),
         ("Answer with it", "Reply in one short line that says the update is pinned at the bottom of the chat, like \"Here's "
-                           "the update; I pinned it at the bottom of the chat.\", then the report's reference on a line of "
-                           "its own, like `report 98`, so the chat shows it as a card the user opens. Finish with journal "
-                           "sequence next <this sequence> --about <ref>."),
+                           "the update; I pinned it at the bottom of the chat.\" Leave the report's reference out: the pinned "
+                           "card is how the user opens it. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 }
 FINISHING_WHAT_YOU_WROTE = {

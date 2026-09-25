@@ -20,8 +20,8 @@ class UpdateReportsDetails(FeatureDetails):
         its sentence is the first thing the user reads, so say what got done, what is under way and
         what waits on them. Then journal report note <n> <ref> "<line>" gives a row a short note,
         journal report item <n> <section> <ref> "<title>" adds one the list missed, and journal
-        report drop <n> <ref> takes out noise. Answer with the report's reference on a line of its
-        own, like `report 98`: the chat shows it as a card that opens over the chat.
+        report drop <n> <ref> takes out noise. Answer in one short line that the update is pinned at
+        the bottom of the chat, without the report's reference: the pinned card is how it is opened.
 
         You may also write one on your own when a meaningful piece of work has landed, such as a
         feature finished or a release out, so the user can catch up without asking; it is pinned at
