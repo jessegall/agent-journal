@@ -196,6 +196,9 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     kept_work(made)
     assert "site work" in subprocess.run(["git", "log", "-1", "--format=%s", "refs/journal/worktrees/calm-river"], cwd=folder / "site", capture_output=True, text=True, timeout=30).stdout, \
         "leaving it keeps each repository's work under the worktree's name"
+    from engine.worktree import checkout
+    assert (checkout(made / "site"), environment(checkout(made / "chronos"))) == (made, "calm-river"), \
+        "an agent anywhere in it works the worktree's own environment, never the project's or one repository's"
 
 
 def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_path):

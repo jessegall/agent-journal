@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.182.1 — A worktree across repositories keeps its own environment
+
+An agent started in a worktree of a folder of repositories was taken for the project's own agent, so both received the same journal lines. The journal now takes the whole working folder as the worktree, wherever in it the agent works, so it has an environment of its own like any other worktree. Nothing to do; an agent already running there moves to its own environment at its next step.
+
 ## 2.182.0 — A window's own chat stays in that window
 
 What you write in the dump's chat or the board's New work panel is kept to that window: the agent still hears it, but the main chat no longer shows it, and the dump no longer puts an "Answered in dump" mark in the main chat. While the agent follows a sequence that talks in a window, what it writes is kept out of the main chat too, and it is told once to answer in the window instead; anything you must know outside it, it sends as a message. The sequence's own mark in the chat still shows that it is busy there. Nothing to do.
