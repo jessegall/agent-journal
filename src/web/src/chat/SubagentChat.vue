@@ -1,9 +1,8 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import {standing} from "../composables/agentLinks.js";
 import {chatTurns} from "../domain/transcript.js";
-import {rows} from "../sync/rows.js";
+import {useScope} from "../composables/scope.js";
 import Compose from "./Compose.vue";
 import Notice from "./Notice.vue";
 import Turn from "./Turn.vue";
@@ -15,6 +14,7 @@ const props = defineProps({
     readOnly: Boolean,
 });
 const log = ref(null);
+const {api, rows} = useScope();
 const sent = computed(() => rows("message").filter((m) => m.data.sent_to === props.session && m.seen[0] === "user"));
 const sentTexts = computed(() => new Set(sent.value.map((m) => m.brief.trim())));
 const transcriptLines = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && sentTexts.value.has(t.brief.trim()))));
