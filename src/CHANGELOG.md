@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.176.0 — No limit on ticket agents
+
+Redmar's request: a board can give every started ticket its own agent at once. Step the board's limit down past 1 to none, or set tickets.running to 0; the board then reads Agents 3 running · limit none, and no ticket waits in the queue for a free agent. Nothing to do.
+
 ## 2.175.2 — A ticket plan's checkpoint waits again
 
 Since 2.174.0 a ticket's environment is always in auto mode, and that let its plan pass its checkpoints by itself, so the board's orchestrator was never told. A checkpoint now passes by itself only where you switched auto mode on; in a ticket's environment it waits for the orchestrator (journal ticket continue_plan <n>) or for you. Nothing to do.

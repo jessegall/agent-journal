@@ -6,6 +6,7 @@ const props = defineProps({
     min: {type: Number, default: 1},
     max: {type: Number, default: 99},
     label: {type: String, default: ""},
+    none: {type: String, default: ""},
 });
 const emit = defineEmits(["change"]);
 
@@ -20,7 +21,7 @@ function step(by) {
         <button type="button" class="stepper-button" :disabled="value <= min" aria-label="One fewer" @click="step(-1)">
             <Icon name="minus" :size="11" />
         </button>
-        <span class="stepper-value">{{ value }}</span>
+        <span class="stepper-value">{{ none && value === 0 ? none : value }}</span>
         <button type="button" class="stepper-button" :disabled="value >= max" aria-label="One more" @click="step(1)">
             <Icon name="plus" :size="11" />
         </button>

@@ -12,14 +12,15 @@ const MOST = 20;
     <div class="slots">
         <span class="part">
             <StateDot state="running" />
-            Agents {{ slots.running.length }} of
+            Agents {{ slots.running.length }} running · limit
             <Stepper
                 :value="slots.limit"
+                :min="0"
                 :max="MOST"
-                label="How many ticket agents may run at once. This is one setting for every board."
+                none="none"
+                label="How many ticket agents may run at once, or none to give every started ticket its agent. This is one setting for every board."
                 @change="(n) => emit('limit', n)"
             />
-            running
             <span class="every">(one limit for every board)</span>
         </span>
         <template v-for="ticket in slots.running" :key="ticket.n">

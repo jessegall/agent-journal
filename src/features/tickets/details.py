@@ -34,7 +34,7 @@ class TicketsDetails(FeatureDetails):
         cycle is refused.
 
         At most tickets.running tickets have an agent running at once; a ticket started beyond that waits queued, and the
-        minute sweep starts it when one finishes.
+        minute sweep starts it when one finishes. Set to 0, there is no limit: every started ticket gets its agent at once.
 
         A rule, doc or tool written from a ticket's environment is held as a proposal for that ticket: it is closed and
         binds nothing until the ticket's branch is merged, when it is reopened; if the ticket closes unmerged it is deleted.
@@ -88,7 +88,7 @@ class TicketsDetails(FeatureDetails):
         Setting(
             name="running",
             default=3,
-            title="Tickets whose agents run at once",
+            title="Tickets whose agents run at once, 0 for no limit",
             unit="tickets",
         ),
     ]
