@@ -80,6 +80,15 @@ def spread(project: Path) -> bool:
     return repositories(project) not in ([], [project])
 
 
+def roots(project: Path) -> dict[str, Path]:
+    return {str(repo.relative_to(project)): repo for repo in repositories(project)} if spread(project) else {".": project}
+
+
+def changed(project: Path, branch: str, base: str) -> bool:
+    ref = f"refs/heads/{branch}"
+    return present(project, ref) and tip(project, ref) != base
+
+
 def workspace(project: Path, folder: Path) -> Path:
     name = folder.name
     found = repositories(project)

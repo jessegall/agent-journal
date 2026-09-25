@@ -246,6 +246,26 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert ("not on rewrite" in tickets._off_branch(stray), tickets._off_branch(tickets.load(later.n))) == (True, ""), \
         "a ticket that started from a commit its board's branch lacks is flagged with the rebase it needs; one on the branch is not"
     assert Boards(record, actor=USER).start(board.n).branch == home, "a board with no branch keeps the branch checked out when it starts"
+    many = fresh()
+    for repo in ("site", "chronos"):
+        (many.root.parent / repo).mkdir()
+        for args in (["init", "-q"], ["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "start"]):
+            subprocess.run(["git", *args], cwd=many.root.parent / repo, check=True, capture_output=True, timeout=30)
+    across = Tickets(many, actor=USER)
+    spanning = across.bind(across.create("Across both", board=Boards(many, actor=USER).create("Both", stages=["Shipped"], meanings={"Shipped": "done"}).n).n)
+    spanning = across._based(spanning, across._started_at(spanning, "HEAD"))
+    branch = f"worktree-{spanning.work_environment}"
+    site = lambda *args: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=many.root.parent / "site", check=True, capture_output=True, text=True, timeout=30)
+    for repo in ("site", "chronos"):
+        subprocess.run(["git", "branch", branch], cwd=many.root.parent / repo, check=True, timeout=30)
+    trunk = site("branch", "--show-current").stdout.strip()
+    site("switch", "-q", branch)
+    site("commit", "-q", "--allow-empty", "-m", "site work")
+    site("switch", "-q", trunk)
+    assert (sorted(spanning.bases), across.close_merged()) == (["chronos", "site"], []), \
+        "a ticket across repositories keeps a base for each, and stays open while the one it changed is unmerged"
+    assert across.merge(spanning.n).completed and "site work" in site("log", "-1", "--format=%s").stdout, \
+        "journal ticket merge merges each repository it changed, skips the untouched one, and closes it"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():

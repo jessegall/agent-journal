@@ -9,7 +9,7 @@ from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, contains, current_branch, keep, merged, merged_into, present, tip
+from engine.worktree import branched, changed, contains, current_branch, keep, merged, merged_into, present, roots, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -231,10 +231,24 @@ class Tickets(Controller):
 
     def _off_branch(self, ticket) -> str:
         into = self._into(ticket)
-        if into == "HEAD" or not ticket.base or contains(self.record.root.parent, ticket.base, into):
+        off = [(name, base) for name, place, base in self._repositories(ticket) if into != "HEAD" and base and not contains(place, base, into)]
+        if not off:
             return ""
-        return (f"its branch {self._branch(ticket)} started at {ticket.base[:9]}, which is not on {into}; tell its agent to rebase "
-                f"onto {into} (git rebase --onto {into} {ticket.base[:9]}) before it is merged")
+        name, base = off[0]
+        where = "" if name == "." else f" in {name}"
+        return (f"its branch {self._branch(ticket)}{where} started at {base[:9]}, which is not on {into}; tell its agent to rebase "
+                f"onto {into} (git rebase --onto {into} {base[:9]}) before it is merged")
+
+    def _repositories(self, ticket) -> list[tuple[str, Path, str]]:
+        return [(name, place, ticket.base if name == "." else ticket.bases.get(name, "")) for name, place in roots(self.record.root.parent).items()]
+
+    def _started_at(self, ticket, into: str) -> dict:
+        branch = self._branch(ticket)
+        return {name: tip(place, into) if not base or not present(place, f"refs/heads/{branch}") else base
+                for name, place, base in self._repositories(ticket)}
+
+    def _based(self, ticket, bases: dict):
+        return self.update(ticket.n, base=bases.get(".", ""), bases={name: base for name, base in bases.items() if name != "."})
 
     def _revive(self, ticket) -> bool:
         if ticket.restarts >= MOST_RESTARTS or ticket.queued:
@@ -332,8 +346,8 @@ class Tickets(Controller):
         return self.update(ticket.n, work_environment=name)
 
     def _bind_to(self, n: int, name: str):
-        ticket = self.load(int(n))
-        return self.update(ticket.n, work_environment=name, base=ticket.base or tip(self.record.root.parent, self._into(ticket)))
+        ticket = self.update(int(n), work_environment=name)
+        return self._based(ticket, self._started_at(ticket, self._into(ticket)))
 
     def _plan_owner(self, name: str) -> int:
         place = Environments(self.record, actor=SYSTEM)._titled(name) if name else None
@@ -409,7 +423,8 @@ class Tickets(Controller):
 
     def keep_branches(self) -> None:
         for ticket in (r for r in self._standing() if r.work_environment):
-            keep(self.record.root.parent, ticket.work_environment, self._branch(ticket))
+            for _, place, _ in self._repositories(ticket):
+                keep(place, ticket.work_environment, self._branch(ticket))
 
     @internal
     def close_merged(self) -> list:
@@ -431,18 +446,23 @@ class Tickets(Controller):
         return DRIVERS[ticket.agent].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
-        return merged(self.record.root.parent, self._branch(ticket), ticket.base, self._into(ticket))
+        branch, into = self._branch(ticket), self._into(ticket)
+        states = [(merged(place, branch, base, into), changed(place, branch, base)) for _, place, base in self._repositories(ticket)]
+        return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 
     def merge(self, n: int):
         ticket = self.load(int(n))
         if not ticket.work_environment:
             self._refuse(f"{self.type} {ticket.n} was never started, so it has no branch to merge")
-        into = self._into(ticket)
-        if into == "HEAD":
-            into = current_branch(self.record.root.parent)
-        failed = merged_into(self.record.root.parent, self._branch(ticket), into)
-        if failed:
-            self._refuse(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} was not merged into {into}: {failed}")
+        branch = self._branch(ticket)
+        for name, place, base in self._repositories(ticket):
+            if name != "." and not changed(place, branch, base):
+                continue
+            into = self._into(ticket) if self._into(ticket) != "HEAD" else current_branch(place)
+            failed = merged_into(place, branch, into)
+            if failed:
+                where = "" if name == "." else f" in {name}"
+                self._refuse(f"{self.type} {ticket.n}'s branch {branch}{where} was not merged into {into}: {failed}")
         self.close_merged()
         return self.load(ticket.n)
 
@@ -534,8 +554,10 @@ class Tickets(Controller):
         self._confirmed(self.load(int(n)))
         ticket = self.bind(int(n))
         into = self._into(self.load(int(n)))
-        if into != "HEAD" and not present(self.record.root.parent, into):
-            self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
+        missing = [name for name, place, _ in self._repositories(self.load(int(n))) if into != "HEAD" and not present(place, into)]
+        if missing:
+            where = "" if missing == ["."] else f" in {', '.join(missing)}"
+            self._refuse(f"its board works on the branch {into}, which does not exist{where}; make it, or change the board's branch")
         ticket = self.update(ticket.n, agent=agent or ticket.agent, halted=False)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
@@ -551,10 +573,9 @@ class Tickets(Controller):
                 earlier = ""
             args = driver.within([*driver.AUTO_ARGS], place)
             project = self.record.root.parent
-            fresh = not present(project, f"refs/heads/{self._branch(ticket)}")
-            ticket = self.update(ticket.n, base=tip(project, into) if fresh or not ticket.base else ticket.base)
-            if into != "HEAD":
-                branched(project, self._branch(ticket), ticket.base)
+            ticket = self._based(ticket, self._started_at(ticket, into))
+            for _, place, base in self._repositories(ticket) if into != "HEAD" else ():
+                branched(place, self._branch(ticket), base)
             detached(self.record.root, project, place, ticket.agent,
                      driver.prompted(driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
                      else driver.prompted(args, self._kickoff(ticket)))
