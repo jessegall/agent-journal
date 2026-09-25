@@ -15,6 +15,8 @@ from engine.version import version
 from features.runtime_cleanup.tidy import summary, tidy
 from commands.queries import attached, decided, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
+argparse._ = str
+
 
 def actions(controller: type) -> list[str]:
     return sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)

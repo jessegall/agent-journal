@@ -334,9 +334,10 @@ class Stored:
                 p.unlink()
 
     def _warm(self) -> None:
+        rows = self.summaries()
         if self.resource.loading == LAZY:
             return
-        for row in self.summaries():
+        for row in rows:
             if self.resource.loading == MEMORY:
                 self.load(row["n"])
 

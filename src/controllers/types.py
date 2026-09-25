@@ -33,6 +33,7 @@ WARM_PAUSE = 0.02
 
 
 def warm_record(record: Record, pause: float = 0.0) -> None:
+    record.recent_events()
     for controller in CONTROLLERS.values():
         try:
             controller(record, actor=SYSTEM)._warm()
@@ -54,5 +55,7 @@ def read_transcripts(root: Path) -> None:
 
 
 def warm(root: Path) -> None:
-    for record in environment_records(root):
+    from engine.sessions import Sessions
+    sessions = Sessions(root)
+    for record in sorted(environment_records(root), key=lambda record: not sessions.holder(record.env)):
         warm_record(record, WARM_PAUSE)
