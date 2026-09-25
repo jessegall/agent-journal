@@ -16,6 +16,8 @@ MARK = "[journal]"
 AGENT_COMMAND = "/"
 RECHECK, RESUBMITS = 1.0, 3
 SCREEN_TAIL, LINE_START = 16384, 40
+PASTE_OVER, TYPED_PER_SECOND = 200, 4000
+PASTE_START, PASTE_END = b"\x1b[200~", b"\x1b[201~"
 DRAFT_LINES = 8
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
@@ -36,6 +38,7 @@ class Driver(ABC):
     DISPLAY_HOOK = False
     SHELL = ""
     INPUT_MARK = b""
+    PASTED_MARK = b""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
@@ -238,7 +241,13 @@ class Driver(ABC):
         started = time.time()
         self.clear_input()
         time.sleep(ENTER_AFTER)
-        if not self._wrote(line.encode()) or not self._entered():
+        raw = line.encode()
+        if len(raw) > PASTE_OVER:
+            raw = PASTE_START + raw + PASTE_END
+        if not self._wrote(raw):
+            return False
+        time.sleep(len(raw) / TYPED_PER_SECOND)
+        if not self._entered():
             return False
         if not confirmed and not self.INPUT_MARK:
             return True
@@ -263,7 +272,10 @@ class Driver(ABC):
         except OSError:
             return False
         plain = b"".join(ANSI.sub(b"", tail).split())
-        return self.INPUT_MARK in plain and b"".join(line.encode().split())[:LINE_START] in plain.rsplit(self.INPUT_MARK, 1)[1]
+        if self.INPUT_MARK not in plain:
+            return False
+        box = plain.rsplit(self.INPUT_MARK, 1)[1]
+        return b"".join(line.encode().split())[:LINE_START] in box or bool(self.PASTED_MARK) and self.PASTED_MARK in box
 
     def _submitted(self, since: float) -> bool:
         row = self._report()

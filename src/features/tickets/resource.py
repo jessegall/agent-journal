@@ -33,6 +33,8 @@ class Ticket(Placed, Resource):
         Field(default=list, name="declined"),
         Field(FLAG, False, name="hosted"),
         Field(NUMBER, 0.0, name="idle_since"),
+        Field(FLAG, False, name="halted"),
+        Field(NUMBER, 0, name="restarts"),
     ]
     type = "ticket"
     icon = "ticket"

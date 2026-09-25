@@ -5,6 +5,9 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
+import TicketAgent from "../board/TicketAgent.vue";
+import WorkingAgents from "../board/WorkingAgents.vue";
+import {workingCards} from "../domain/ticketAgents.js";
 import AgentSlots from "../board/AgentSlots.vue";
 import RolesTree from "../board/RolesTree.vue";
 import AgentStrip from "../board/AgentStrip.vue";
@@ -146,6 +149,26 @@ const watching = ref(null);
 const noting = ref(null);
 const askNote = (ask) => (noting.value = ask);
 const watchAgent = (card) => (watching.value = card);
+const opened = ref(null);
+const openAgent = (card) => (opened.value = card);
+const allCards = computed(() => (store.board.lanes || []).flatMap((lane) => lane.cards));
+const agentCard = computed(
+    () => opened.value && (allCards.value.find((card) => card.type === "ticket" && card.n === opened.value.n) || opened.value)
+);
+const working = computed(() => (tickets.value ? workingCards(store.board.lanes) : []));
+const starting = ref(false);
+
+async function startBoard() {
+    starting.value = true;
+    try {
+        await api.act("board", current.value.n, "start");
+        toast.value = {text: `Started ${current.value.title}`};
+    } catch (e) {
+        refuse(e);
+    } finally {
+        starting.value = false;
+    }
+}
 const LIVE_STATES = ["running", "you"];
 const refusal = ref("");
 let clearing = 0;
@@ -220,7 +243,7 @@ async function shift(card, lane, words) {
     }
 }
 
-provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent, askNote});
+provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent, openAgent, askNote});
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
@@ -284,8 +307,19 @@ const ask = usePoll(
                     </template>
                 </div>
             </template>
-            <span class="grow" />
+            <template v-if="working.length">
+                <WorkingAgents :cards="working" @open="openAgent" />
+            </template>
+            <template v-else>
+                <span class="grow" />
+            </template>
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
+            <template v-if="tickets && current">
+                <Btn small :busy="starting" title="Starts the board's orchestration on the board's own agent" @click="startBoard">
+                    <Icon name="start" />
+                    Start
+                </Btn>
+            </template>
             <Btn kind="primary" small title="New work (N)" @click="newWork('')">New work</Btn>
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>
@@ -333,6 +367,9 @@ const ask = usePoll(
         <Toast :toast="toast" @done="toast = null" />
         <template v-if="noting">
             <NotePrompt :ask="noting" @send="sendNote" @close="noting = null" />
+        </template>
+        <template v-if="agentCard">
+            <TicketAgent :card="agentCard" @close="opened = null" @terminal="watching = agentCard" />
         </template>
         <template v-if="watching">
             <AgentDrawer :card="watching" @close="watching = null" @stopped="refresh" />

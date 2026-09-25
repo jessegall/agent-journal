@@ -11,6 +11,7 @@ import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
+import FamilyTree from "./FamilyTree.vue";
 
 defineProps({
     view: {type: String, required: true},
@@ -44,6 +45,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
             <template #question><RailWaiting type="question" /></template>
             <template #suggestion><RailWaiting type="suggestion" /></template>
             <template #todos><RailTodos /></template>
+            <template #family><FamilyTree /></template>
             <template #default><RailWaiting /></template>
         </SwitchCase>
     </div>

@@ -8,7 +8,8 @@ from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
 from features.sequences.controller import BY_HAND
 from features.triggers.resource import FIRED
-from resources.base import SECTION
+from controllers.types import CONTROLLERS
+from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 
 STEP = "step"
@@ -49,6 +50,10 @@ def board_of(context: Context, about: str) -> int:
     return next((int(ref.split(":")[1]) for ref in refs if ref.startswith("board:")), 0)
 
 
+def matches(found, values: dict) -> bool:
+    return all(found.data.get(key) == value for key, value in values.items())
+
+
 class StartOnMoment(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if event.type == "sequence" or event.type not in TYPES:
@@ -63,6 +68,9 @@ class StartOnMoment(Handler):
             if row.get("started_by") and row["started_by"] != event.actor:
                 continue
             if row.get("only_when_idle") and sequences._in_hand():
+                continue
+            unless = sequences.load(row["n"]).unless
+            if unless and event.type in CONTROLLERS and matches(CONTROLLERS[event.type](context.record, actor=SYSTEM).load(event.n), unless):
                 continue
             about = f"{event.type}:{event.n}"
             if not sequences._running(sequences.load(row["n"]), about):

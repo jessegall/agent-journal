@@ -346,6 +346,10 @@ export class ApiClient {
         return this.post(this.here("/ticket/organization"), {});
     }
 
+    family() {
+        return this.get(this.here("/family"));
+    }
+
     agentScreen(session, since) {
         return this.get(this.here(`/agent/${encoded(session)}/screen${query({since})}`));
     }

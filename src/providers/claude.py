@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
-from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
+from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from providers.base import BackgroundTasks, Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
@@ -113,7 +113,7 @@ class Claude(Provider):
     name = "claude"
     sleeping_tools = ("ScheduleWakeup",)
     echoes_typed = True
-    tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall}
+    tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall, "CronCreate": LoopCall, "CronDelete": LoopEndCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"
@@ -554,6 +554,7 @@ class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
     INPUT_MARK = "❯".encode()
+    PASTED_MARK = b"[Pastedtext"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)

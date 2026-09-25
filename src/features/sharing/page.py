@@ -175,9 +175,6 @@ def document(title: str, body: str, expires: float, back: str = "") -> str:
     )
 
 
-def ended() -> str:
-    return document("This link has ended", "<h1>This link has ended</h1><p class=\"abstract\">Ask the person who shared it for a new one.</p>", 0)
-
-
-def missing() -> str:
-    return document("Not found", "<h1>Not found</h1><p class=\"abstract\">There is nothing at this address.</p>", 0)
+def unshared() -> str:
+    return document("Nothing is shared here", "<h1>Nothing is shared on this link</h1><p class=\"abstract\">It may have been stopped, or "
+                    "it has ended. Ask the person who shared it for a new link.</p>", 0)

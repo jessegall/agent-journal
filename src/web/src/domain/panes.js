@@ -1,6 +1,6 @@
 export const AGENT_VIEWS = ["chat", "feed", "terminal"];
 export const PANEL_VIEWS = ["waiting", "question", "suggestion", "todos"];
-export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS];
+export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "family"];
 export const HEADER = 34;
 
 const WHOLE = {x: 0, y: 0, w: 1, h: 1};

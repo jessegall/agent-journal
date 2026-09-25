@@ -7,6 +7,7 @@ from features.tickets.controller import HELD, Tickets
 from resources.base import SYSTEM
 
 CHECK_AFTER = 300
+LOOK_AGAIN = 900
 
 
 class LookAfterTicketBranches(Handler):
@@ -22,6 +23,14 @@ class LookAfterTicketBranches(Handler):
             if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{tickets._plans(ticket).load(int(ticket.plan)).updated}"):
                 context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
         self.check_on_board(context, tickets)
+        self.look_at_tickets(context, tickets)
+
+    def look_at_tickets(self, context: AgentContext, tickets: Tickets) -> None:
+        for ticket, state in tickets._needing_a_look(tickets._orchestrating()):
+            if state.kind == "stopped" and tickets._revive(ticket):
+                context.agent.whisper("ticket_restarted", ticket=ticket.n, title=ticket.title)
+            elif context.once("ticket_attention", f"{ticket.ref}|{state.kind}|{int(time.time() // LOOK_AGAIN)}"):
+                context.agent.whisper("ticket_attention", ticket=ticket.n, title=ticket.title, reason=state.text)
 
     def check_on_board(self, context: AgentContext, tickets: Tickets) -> None:
         row = context.agent.row

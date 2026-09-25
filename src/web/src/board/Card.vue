@@ -7,7 +7,8 @@ import PriorityIcon from "../kit/PriorityIcon.vue";
 import StateDot from "../kit/StateDot.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
 import {api} from "../api/client.js";
-import {peek} from "../route.js";
+import {peek, peekIn} from "../route.js";
+import {ticketOf} from "../domain/ticketAgents.js";
 import {store} from "../state/store.js";
 import CardMenu from "./CardMenu.vue";
 
@@ -60,6 +61,10 @@ function closeMenu() {
     self.value.focus();
 }
 const plan = computed(() => props.card.plan);
+const ticketPlan = computed(() => {
+    const ticket = props.card.type === "ticket" ? ticketOf(props.card.n) : null;
+    return ticket && ticket.data.plan && ticket.data.work_environment ? {n: ticket.data.plan, env: ticket.data.work_environment} : null;
+});
 const opener = ref(null);
 const titleOf = (name) => ([...store.board.agents, ...store.board.roles].find((who) => who.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
@@ -114,7 +119,7 @@ function begin(event) {
                     <span class="reason">{{ card.reason }}</span>
                 </template>
                 <template v-if="card.session">
-                    <button type="button" class="watch" @click.stop="board.watchAgent(card)">Watch agent</button>
+                    <button type="button" class="watch" @click.stop="board.openAgent(card)">Open agent</button>
                 </template>
                 <template v-if="card.link">
                     <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>{{ card.link_label }} ↗</a>
@@ -152,6 +157,11 @@ function begin(event) {
         </template>
         <template v-if="plan">
             <Chip @click.stop="peek('plan', plan.n)">Plan {{ plan.n }} · phase {{ plan.phase }}</Chip>
+        </template>
+        <template v-else-if="ticketPlan">
+            <Chip title="Opens in the ticket's environment" @click.stop="peekIn(ticketPlan.env, 'plan', ticketPlan.n)">
+                Plan {{ ticketPlan.n }}
+            </Chip>
         </template>
         <template v-if="menu">
             <CardMenu :card="card" :anchor="opener" @close="closeMenu" />

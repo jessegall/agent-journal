@@ -35,7 +35,8 @@ class PluginsDetails(FeatureDetails):
         each one and starts it again from the new code. A service keeps what it writes in $JOURNAL_PLUGIN_DATA, which
         outlives upgrades, never in the plugin's own folder or the project. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
-        host drains a few at a time. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
+        host drains a few at a time. Answering an event, that file belongs to the event's environment and its commands run
+        there; a line that names --env is refused. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
         manifest declares, with the same card and activity item as an answer that raises it. An event is declared as
         "events": {"<name>": {"title": "...", "tone": "...", "card": {"label", "icon", "color", "collapsed"}}}: the card
         shows it in the chat, and "collapsed": true makes its item in the activity list start folded to its title, opening

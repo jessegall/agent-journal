@@ -23,6 +23,7 @@ from surfaces.summary import lately_summarized
 from surfaces.color import identity, set_color
 from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
+from features.family_tree.tree import family
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
 from engine.files import found_files
@@ -685,6 +686,11 @@ def get_agent_links(req: Request) -> Reply:
 def get_subagent_links(req: Request) -> Reply:
     found = transcript_at(req, req.params["session"])
     return Reply(200, {"links": found.provider.work_links(found.path)})
+
+
+@route("GET", "/api/{env}/family")
+def get_family(req: Request) -> Reply:
+    return Reply(200, family(req.record()))
 
 
 @route("GET", "/api/{env}/agent/{n}/transcript")

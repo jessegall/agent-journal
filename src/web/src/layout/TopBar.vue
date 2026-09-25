@@ -12,7 +12,7 @@ import {activityShown, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
 import {project, tint} from "../identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
-import {useFloatingChat} from "../composables/floatingChat.js";
+import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js";
 
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
@@ -20,6 +20,7 @@ const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const full = computed(() => route.value.page === "kanban");
 const {floatingChat, toggleChat} = useFloatingChat();
+const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
 </script>
 
 <template>
@@ -53,6 +54,16 @@ const {floatingChat, toggleChat} = useFloatingChat();
                 @click="toggleChat"
             >
                 <Icon name="chat" />
+            </button>
+            <button
+                type="button"
+                :class="['icon-btn', {on: floatingFamily}]"
+                :title="
+                    floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, dispatched and messaged whom'
+                "
+                @click="toggleFamily"
+            >
+                <Icon name="family" />
             </button>
             <template v-if="sharingOn">
                 <ShareTunnel />
@@ -109,6 +120,7 @@ const {floatingChat, toggleChat} = useFloatingChat();
     font-size: 13px;
     color: var(--text-2);
     min-width: 0;
+    overflow: hidden;
 }
 .crumb b {
     color: var(--text);

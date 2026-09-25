@@ -58,6 +58,10 @@ export function peek(type, n, comment = 0, sub = "") {
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);
 }
 
+export function peekIn(env, type, n, sub = "") {
+    location.hash = `#/${env}?open=${type}:${n}${sub ? `&sub=${sub}` : ""}`;
+}
+
 export function peekRef(ref) {
     const [type, n] = ref.split(":");
     peek(type, Number(n));
