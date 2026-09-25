@@ -128,6 +128,23 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     idle(auto)
     assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"]) == ("active", 4), \
         "auto switched on while a plan waits: the next agent activity continues it"
+    from controllers.types import Environments
+    Environments(auto, actor=USER).create("ticket-8", owner="ticket:8")
+    steered = Record(auto.root, "ticket-8")
+    steered_todos = Todos(steered, actor=USER)
+    e, f = steered_todos.create("fifth").n, steered_todos.create("sixth").n
+    gated = Plans(steered, actor=AGENT)
+    held = gated.create("Ticket plan", goal="reviewed at its gate")
+    gated.phase(held.n, "Risky", checkpoint=True)
+    gated.phase(held.n, "Rest")
+    gated.place(held.n, 1, [e])
+    gated.place(held.n, 2, [f])
+    gated.ready(held.n)
+    Plans(steered, actor=USER).approve(held.n)
+    Plans(steered, actor=USER).start(held.n)
+    steered_todos.complete(e, "done")
+    assert gated.load(held.n).data["status"] == "waiting", \
+        "a ticket's environment is always in auto, yet its plan's checkpoint waits for the orchestrator or the user"
 
 
 def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):

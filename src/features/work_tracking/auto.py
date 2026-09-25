@@ -23,6 +23,10 @@ def automatic(record) -> bool:
     return "work_tracking" in FEATURES and bool(FEATURES["work_tracking"].on(record, "auto"))
 
 
+def passes_checkpoints(record) -> bool:
+    return automatic(record) and not steered(record)
+
+
 QUIET_FOR = 300.0
 ASK_AGAIN = 300.0
 STILL_THERE = "journal: you have been quiet for {minutes} minutes with work still open. Are you still working? Say where it stands, or carry on."

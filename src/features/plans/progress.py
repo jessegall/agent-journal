@@ -1,6 +1,6 @@
 from controllers.types import Todos
 from features.plans.controller import ACTIVE, DONE, ENDED, Plans, RUNNING, WAITING
-from features.work_tracking.auto import automatic
+from features.work_tracking.auto import passes_checkpoints
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
 from features.plans.resource import PHASE
@@ -47,7 +47,7 @@ def step(record, plan) -> bool:
         return False
     i = plan.current
     last = i == len(plan.phases)
-    waits = bool(phase[PHASE.checkpoint]) and not automatic(record)
+    waits = bool(phase[PHASE.checkpoint]) and not passes_checkpoints(record)
     plan.status = status_after(last, waits)
     plan.current = i if last or waits else i + 1
     plans = Plans(record, actor=SYSTEM)
