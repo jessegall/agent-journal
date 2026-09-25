@@ -264,9 +264,9 @@ def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
     steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped["steps"]]
     idle = shipped.get("only_when_idle", False)
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
-    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, shipped.get("talks_in", ""), steps)
-    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.sections) == shape):
+    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, shipped.get("talks_in", ""), shipped.get("lasting", False), steps)
+    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.sections) == shape):
         return False
-    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.sections = shape
+    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.sections = shape
     sequences.save(row, "updated")
     return True

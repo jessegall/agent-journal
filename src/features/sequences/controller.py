@@ -136,9 +136,9 @@ class Sequences(Controller):
 
     def _in_hand(self):
         live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
-        mine = [(run["at"], sequence, key, run) for sequence in live for key, run in sequence.runs.items()
+        mine = [(sequence.lasting, run["at"], sequence, key, run) for sequence in live for key, run in sequence.runs.items()
                 if key.split("|", 1)[0] == self.record.env]
-        return min(mine, key=lambda found: found[0])[1:] if mine else None
+        return min(mine, key=lambda found: found[:2])[2:] if mine else None
 
     def abandon(self, n: int, about: str = "", why: str = ""):
         r = self.load(int(n))

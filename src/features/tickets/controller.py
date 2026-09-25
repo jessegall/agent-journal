@@ -5,7 +5,6 @@ from dataclasses import asdict, dataclass
 import controllers.types as types_module
 from controllers.types import Environments, Features
 from engine.record import Record
-from engine import typist
 from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
@@ -33,6 +32,7 @@ SILENT_AFTER = 300.0
 CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
+CARRY_ON = "Carry on with {ref} where you left off."
 
 
 def ordinal(n: int) -> str:
@@ -155,7 +155,10 @@ class Tickets(Controller):
         session = self.agent_session(ticket.n)
         if not session:
             self._refuse(f"{self.type} {ticket.n} has no agent running to tell")
-        typist.send(self.record.root, terminal_of(self.record.root, session), f"{note.strip()}\r".encode())
+        from providers import DRIVERS
+        driver = DRIVERS[ticket.agent](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+        if not driver.enter(note.strip()):
+            self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return ticket
 
     def send_back(self, n: int, note: str):
@@ -176,14 +179,25 @@ class Tickets(Controller):
         if self.actor != AGENT:
             self._plans(ticket).approve(int(ticket.plan))
             return ticket
-        if self.record.env == ticket.work_environment or not self._orchestrated(ticket):
-            self._refuse(f"only the user approves the plan of {self.type} {ticket.n}, or the orchestrator on a board with "
-                         f"orchestrator_approves_plans set; never the agent that wrote it")
+        if not self._orchestrated(ticket) or int(ticket.board) not in self._orchestrating():
+            self._refuse(f"only the user approves the plan of {self.type} {ticket.n}, or the agent orchestrating its board when "
+                         f"orchestrator_approves_plans is set; never the agent that wrote it")
         Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM).approve(int(ticket.plan))
+        if self.agent_session(ticket.n):
+            self.tell(ticket.n, f"Your plan {ticket.plan} is approved by the orchestrator: start it now with journal plan start {ticket.plan}.")
         return ticket
 
+    def _orchestrating(self) -> list[int]:
+        from features.sequences.controller import Sequences
+        from features.sequences.orchestration import ORCHESTRATION
+        sequence = Sequences(self.record, actor=SYSTEM)._titled(ORCHESTRATION["title"])
+        keys = sequence.runs if sequence else {}
+        return [int(key.rsplit(":", 1)[1]) for key in keys if key.startswith(f"{self.record.env}|board:")]
+
     def _awaiting_orchestrator(self) -> list:
-        return [ticket for ticket in self._standing() if ticket.work_environment and self._orchestrated(ticket) and self._plan_waits(ticket)]
+        boards = self._orchestrating()
+        return [ticket for ticket in self._standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
+                and self._orchestrated(ticket) and self._plan_waits(ticket)]
 
     def _orchestrated(self, ticket) -> bool:
         return bool(ticket.board) and Boards(self.record, actor=SYSTEM).load(int(ticket.board)).orchestrator_approves_plans
@@ -361,7 +375,14 @@ class Tickets(Controller):
         return seen
 
     def _waiting_on(self, ticket) -> list:
-        return [ref for ref in self._confirmed_refs(ticket) if not self._at(ref).completed]
+        return [ref for ref in self._confirmed_refs(ticket) if self._open(ref)]
+
+    def _open(self, ref: str) -> bool:
+        try:
+            other = self._at(ref)
+        except Refused:
+            return False
+        return not other.completed and not other.deleted
 
     def _confirmed_refs(self, ticket) -> list:
         return [ref for ref, stance in ticket.dependencies.items() if stance == CONFIRMED]
@@ -382,7 +403,7 @@ class Tickets(Controller):
         into = self._into(self.load(int(n)))
         if into != "HEAD" and not present(self.record.root.parent, into):
             self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
-        ticket = self.update(ticket.n, agent=agent or ticket.agent, base=ticket.base or tip(self.record.root.parent, into))
+        ticket = self.update(ticket.n, agent=agent or ticket.agent)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
             if self._live(ticket):
@@ -394,17 +415,22 @@ class Tickets(Controller):
             if earlier and not PROVIDERS[ticket.agent]().conversation_file(earlier):
                 earlier = ""
             args = driver.within([*driver.AUTO_ARGS], place)
+            project = self.record.root.parent
+            fresh = not present(project, f"refs/heads/{self._branch(ticket)}")
+            base = tip(project, into) if fresh or not ticket.base else ticket.base
             if into != "HEAD":
-                branched(self.record.root.parent, self._branch(ticket), into)
-            detached(self.record.root, self.record.root.parent, place, ticket.agent,
-                     driver.resumed(args, earlier) if earlier else driver.prompted(args, self._kickoff(ticket)))
-            return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
+                branched(project, self._branch(ticket), into)
+            detached(self.record.root, project, place, ticket.agent,
+                     driver.prompted(driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
+                     else driver.prompted(args, self._kickoff(ticket)))
+            return self.update(ticket.n, base=base, queued=False, queued_at=0.0, launched=time.time())
 
     def _kickoff(self, ticket) -> str:
         return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
-                f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. "
-                f"Decide whether it waits for the user's approval: work that is risky, reaches outside the project or touches production "
-                f"waits (journal plan ready and say so in the chat); other work starts at once. Hand domain work out with journal todo delegate."
+                + (f"Continue its plan {ticket.plan}: journal plan progress {ticket.plan} says where it stands. " if ticket.plan else
+                   f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. ")
+                + f"When it is complete, mark it ready with journal plan ready; it starts once it is approved, by the user or by the agent "
+                f"orchestrating the board, and you are told when. Hand domain work out with journal todo delegate."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
                 + (f" The user declined its proposed wait on {', '.join(ticket.declined)}: do not wait for them." if ticket.declined else "")
                 + "".join(f" It came from {ref}: read that request and the questions answered on it before you plan."
@@ -413,8 +439,11 @@ class Tickets(Controller):
     @internal
     def start_queued(self) -> None:
         for n in self._queue():
-            if self.start(n).queued:
-                return
+            try:
+                if self.start(n).queued:
+                    return
+            except Refused:
+                continue
 
     def _queue(self) -> list:
         return [r.n for r in sorted((r for r in self._standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.queued_at)]
