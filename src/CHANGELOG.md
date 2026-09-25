@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.162.0 — Test runs show in the chat, and the tunnel heals itself
+
+A test run the agent starts shows in the chat as a mark while it runs, and turns into Tests passed or Tests failed with its counts when it ends. The share tunnel is checked every minute while a share is open: when its public link has not answered for a minute, the tunnel is restarted, at most every five minutes. Orchestrating a board no longer asks the orchestrator to set up a loop of its own: the journal tells it when a plan waits, when a ticket needs a look, and every five idle minutes to check on its tickets. Nothing to do.
+
 ## 2.161.0 — Watch a board, and see the whole agent family
 
 The board page shows every agent working on a ticket in its top bar, marked when it waits for you or is stuck, has a Start button that starts the board's orchestration, and edits the board's branch and plan approval in its settings; a ticket's agent opens read-only with its chat, transcript and history, and its plan opens in the plan inspector. A new window, opened from a tree button in the top bar, draws the agent family tree: which agent started which ticket or plan agent, which dispatched which subagent, and which agents messaged each other. The agent session bar shows the loops an agent has scheduled.
