@@ -37,6 +37,7 @@ class Ticket(Placed, Resource):
         Field(FLAG, False, name="halted"),
         Field(NUMBER, 0, name="restarts"),
         Field(NUMBER, 0.0, name="told"),
+        Field(NUMBER, 0.0, name="agent_seen"),
     ]
     type = "ticket"
     moments = ("created", "completed", PLAN_WAITS, CHECKPOINT, FINISHED, STUCK)
