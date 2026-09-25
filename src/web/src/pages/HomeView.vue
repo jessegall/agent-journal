@@ -1,4 +1,5 @@
 <script setup>
+import AgentGrid from "../board/AgentGrid.vue";
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -46,6 +47,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
             <template #suggestion><RailWaiting type="suggestion" /></template>
             <template #todos><RailTodos /></template>
             <template #family><FamilyTree /></template>
+            <template #agents><AgentGrid /></template>
             <template #default><RailWaiting /></template>
         </SwitchCase>
     </div>

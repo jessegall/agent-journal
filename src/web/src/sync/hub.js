@@ -87,6 +87,19 @@ export function focusOf(e) {
     return {title: "Nothing worked on yet", caption: "", current: false, known: false};
 }
 
+const building = (p) => p.status === "building";
+
+export const planMeter = (p) => ({
+    label: "Plan",
+    title: p.title,
+    figure: building(p) ? "" : `${p.done}/${p.rows}`,
+    detail: building(p) ? "being written" : `phase ${p.current || 1} of ${p.phases}${p.phase ? ` · ${p.phase}` : ""}`,
+    value: p.done,
+    max: Math.max(1, p.rows),
+    busy: building(p),
+    tone: "muted",
+});
+
 export function agentLine(e) {
     if (!e.agent || envState(e) === "stopped") return "";
     return `${e.agent.model || e.agent.provider} · context ${Math.round(e.agent.context || 0)}%`;
