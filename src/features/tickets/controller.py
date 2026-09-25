@@ -9,7 +9,7 @@ from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, changed, contains, current_branch, keep, merged, merged_into, present, roots, tip
+from engine.worktree import branched, changed, contains, current_branch, keep, merged, merged_into, present, roots, spread, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -30,6 +30,9 @@ PROPOSED, CONFIRMED = "proposed", "confirmed"
 LAUNCHING_FOR = 60.0
 SILENT_AFTER = 300.0
 CARD_EXTRAS: list = []
+REPOSITORY_STATES: dict = {}
+LOOK_AGAIN_AFTER = 30
+STATES_KEPT = 500
 HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
 CARRY_ON = "Carry on with {ref} where you left off."
@@ -143,7 +146,20 @@ class Tickets(Controller):
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""),
-                    link_label=next((more.link_label for more in extras if more.link_label), ""))
+                    link_label=next((more.link_label for more in extras if more.link_label), ""),
+                    repositories=self._repository_states(ticket))
+
+    def _repository_states(self, ticket) -> list:
+        if not ticket.work_environment or ticket.completed or not spread(self.record.root.parent):
+            return []
+        key = (str(self.record.root), ticket.n, ticket.updated, int(time.time() // LOOK_AGAIN_AFTER))
+        if key not in REPOSITORY_STATES:
+            if len(REPOSITORY_STATES) > STATES_KEPT:
+                REPOSITORY_STATES.clear()
+            branch, into = self._branch(ticket), self._into(ticket)
+            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": "merged" if merged(place, branch, base, into) else
+                                       "changed" if changed(place, branch, base) else "untouched"} for name, place, base in self._repositories(ticket)]
+        return REPOSITORY_STATES[key]
 
     def _actions(self, ticket, session: str) -> list:
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())

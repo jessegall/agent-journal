@@ -30,6 +30,7 @@ class Card:
     link_label: str = ""
     state: str = ""
     session: str = ""
+    repositories: list = field(default_factory=list)
 
 
 @dataclass
