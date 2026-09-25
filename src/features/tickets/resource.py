@@ -22,6 +22,7 @@ class Ticket(Placed, Resource):
         Field(TEXT, name="owner"),
         Field(TEXT, name="work_environment"),
         Field(TEXT, "", name="base"),
+        Field(default=dict, name="bases"),
         Field(TEXT, AGENT_CLI, name="agent"),
         Field(NUMBER, 0.0, name="launched"),
         Field(NUMBER, 0.0, name="queued_at"),
