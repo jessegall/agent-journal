@@ -6,11 +6,11 @@ import {agent} from "../state/store.js";
 
 const EVERY = 2000;
 
-export function useTerminal(level) {
+export function useTerminal(level, shown = () => agent.value, client = api) {
     const lines = ref([]);
     usePoll(
-        `terminal:${route.value.env}:${level}`,
-        () => (agent.value ? api.terminal(agent.value.n, level) : Promise.resolve({lines: []})),
+        `terminal:${client.env() || route.value.env}:${level}`,
+        () => (shown() ? client.terminal(shown().n, level) : Promise.resolve({lines: []})),
         EVERY,
         (got) => (lines.value = got.lines)
     );

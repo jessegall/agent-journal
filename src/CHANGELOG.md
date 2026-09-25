@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.183.0 — The orchestrator hears its ticket agents, and an agent's inspector is a small Home
+
+A board's orchestrator is told at once when a ticket's agent asks a question, waits on something, answers after being told something, or finishes its plan with a clean worktree (with how many commits it is ahead); an answer to a ticket's question is handed straight to that ticket's agent. An agent's inspector is now a small Home of its own: a teal band naming the agent, what it works for and its environment, and its chat, terminal (Home's own terminal pane, with its verbosity), transcript, history, file feed, to-dos and plan as panes, in one layout every inspector shares, chosen apart from Home's; subagents get the same, with their own panes. In the Orchestrator layout, the Agents at work pane can show only working agents, each window says when its agent was last active (amber after 5 minutes, red after 15), and the preset descriptions are a few words each. Nothing to do.
+
 ## 2.182.2 — A new agent is greeted once, not after every turn
 
 A new agent whose typed lines the journal could not confirm, such as one just started in a worktree, was sent the whole batch of journal lines again after every turn, the ready line and the lines it had already received included. Each line is now marked delivered on its own, a typed line is tried twice at most, and the ready line asks for a hello in plain words, never [!internal]. Checked with a real Haiku agent in a new worktree. Nothing to do.

@@ -1,12 +1,15 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import TextInput from "../kit/TextInput.vue";
-import {agent} from "../state/store.js";
+import {agent as own} from "../state/store.js";
+import {useScope} from "../composables/scope.js";
 import {useTerminal} from "../composables/terminal.js";
 import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import CommandLog from "./CommandLog.vue";
 
+const props = defineProps({level: {type: String, default: DEFAULT_LEVEL}, agent: {type: Object, default: null}});
+const scope = useScope();
+const agent = computed(() => props.agent || own.value);
 const listed = computed(() => (agent.value && agent.value.data.queued_commands) || []);
 const sending = ref([]);
 const queued = computed(() => [...listed.value, ...sending.value.filter((s) => !listed.value.some((q) => q.command === s.command))]);
@@ -16,8 +19,7 @@ watch(
     () => agent.value && agent.value.updated,
     () => (sending.value = sending.value.filter((s) => !s.sent))
 );
-const props = defineProps({level: {type: String, default: DEFAULT_LEVEL}});
-const lines = useTerminal(props.level);
+const lines = useTerminal(props.level, () => agent.value, scope.api);
 const command = ref("");
 const input = ref(null);
 
@@ -35,7 +37,7 @@ async function send(line, now) {
     if (line === command.value) command.value = "";
     if (!now) sending.value = [...sending.value, {at, command: line, sent: false}];
     try {
-        await api.runShell(agent.value.title, line, now);
+        await scope.api.runShell(agent.value.title, line, now);
         sending.value = sending.value.map((s) => (s.at === at ? {...s, sent: true} : s));
     } catch (e) {
         drop(at);

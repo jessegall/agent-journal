@@ -15,6 +15,7 @@ import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import TaskList from "./TaskList.vue";
 import TranscriptLog from "./TranscriptLog.vue";
+import AgentHome from "../board/AgentHome.vue";
 import AgentLinks from "./AgentLinks.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import {usePoll} from "../poll.js";
@@ -79,6 +80,19 @@ usePoll(
     TASKS_EVERY,
     (got) => (tasks.value = got || [])
 );
+const subagentBand = computed(() => ({
+    kicker: "Subagent",
+    label: picked.value.type || "general",
+    title: picked.value.task,
+    state: picked.value.running
+        ? {key: "working", word: "Working", dot: "running"}
+        : {
+              key: "idle",
+              word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Finished",
+              dot: "done",
+          },
+    reason: `subagent of agent ${props.resource.n} · ${picked.value.model || "inherited model"}`,
+}));
 const tab = ref(picked.value ? "chat" : "transcript");
 watch(
     () => picked.value && picked.value.session,
@@ -93,132 +107,151 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
 </script>
 
 <template>
-    <article class="body agent-page">
-        <div class="agent-head">
-            <header class="top">
-                <span class="kind">
-                    <Icon name="agents" :size="13" />
-                    Agent {{ resource.n }}
-                </span>
-                <span :class="['state', state]">{{ state }}</span>
-                <span class="grow" />
-                <CommentToggle :resource="resource" />
-                <CloseButton @click="emit('close')" />
-            </header>
-            <template v-if="picked">
-                <h2 class="title">{{ picked.task }}</h2>
-                <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
-                <div class="facts">
-                    <span class="fact">
-                        <Icon name="agents" />
-                        {{ picked.type || "general" }} · {{ picked.model || "inherited model" }}
+    <template v-if="picked">
+        <article class="agent-page subagent-page">
+            <AgentHome subagent :band="subagentBand" :agent="resource" :session="picked.session" :chat-session="picked.session">
+                <template #actions>
+                    <DropList
+                        icon="agents"
+                        :label="sessionLabel"
+                        :items="sessions"
+                        :picked="session || ''"
+                        empty="No subagents yet"
+                        @pick="(item) => showSession(item.key)"
+                    />
+                    <CloseButton @click="emit('close')" />
+                </template>
+            </AgentHome>
+        </article>
+    </template>
+    <template v-else>
+        <article class="body agent-page">
+            <div class="agent-head">
+                <header class="top">
+                    <span class="kind">
+                        <Icon name="agents" :size="13" />
+                        Agent {{ resource.n }}
                     </span>
-                    <span class="fact">
-                        <Icon name="reminders" />
-                        {{
-                            picked.running
-                                ? `up ${span(Date.now() / 1000 - picked.at)}`
-                                : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
-                        }}
-                    </span>
-                    <span class="fact">
-                        <Icon name="book" />
-                        {{ skills.length }} skills
-                    </span>
-                </div>
-            </template>
-            <template v-else>
-                <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
-                <p class="session">session {{ resource.title }}</p>
-                <div class="facts">
-                    <template v-if="data.branch">
+                    <span :class="['state', state]">{{ state }}</span>
+                    <span class="grow" />
+                    <CommentToggle :resource="resource" />
+                    <CloseButton @click="emit('close')" />
+                </header>
+                <template v-if="picked">
+                    <h2 class="title">{{ picked.task }}</h2>
+                    <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
+                    <div class="facts">
                         <span class="fact">
-                            <Icon name="branch" />
-                            {{ data.branch }}
+                            <Icon name="agents" />
+                            {{ picked.type || "general" }} · {{ picked.model || "inherited model" }}
+                        </span>
+                        <span class="fact">
+                            <Icon name="reminders" />
+                            {{
+                                picked.running
+                                    ? `up ${span(Date.now() / 1000 - picked.at)}`
+                                    : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
+                            }}
+                        </span>
+                        <span class="fact">
+                            <Icon name="book" />
+                            {{ skills.length }} skills
+                        </span>
+                    </div>
+                </template>
+                <template v-else>
+                    <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
+                    <p class="session">session {{ resource.title }}</p>
+                    <div class="facts">
+                        <template v-if="data.branch">
+                            <span class="fact">
+                                <Icon name="branch" />
+                                {{ data.branch }}
+                            </span>
+                        </template>
+                        <span class="fact">
+                            <Icon name="reminders" />
+                            {{ data.started ? `up ${span(Date.now() / 1000 - data.started)}` : "just started" }}
+                        </span>
+                        <span class="fact">
+                            <Icon name="activity" />
+                            context {{ Math.round(Number(data.context || 0)) }}%
+                        </span>
+                        <span class="fact">
+                            <Icon name="terminal" />
+                            {{ data.shells || 0 }} shells
+                        </span>
+                        <span class="fact">
+                            <Icon name="agents" />
+                            {{ data.subagents || 0 }} subagents
+                        </span>
+                        <span class="fact">
+                            <Icon name="book" />
+                            {{ (data.skills || []).length }} skills
+                        </span>
+                    </div>
+                </template>
+                <div class="pickers">
+                    <DropList
+                        icon="agents"
+                        :label="sessionLabel"
+                        :items="sessions"
+                        :picked="session || ''"
+                        empty="No subagents yet"
+                        @pick="(item) => showSession(item.key)"
+                    />
+                    <DropList
+                        icon="book"
+                        :label="`${skills.length} skills in this window`"
+                        :items="skillItems"
+                        empty="No skill loaded in this window"
+                        @pick="() => go(route.env, 'skills')"
+                    />
+                    <AgentLinks :agent="resource.n" :session="picked ? picked.session : ''" />
+                </div>
+                <TabBar v-model="tab" class="agent-tabs" :tabs="tabs">
+                    <template v-if="tab === 'transcript'">
+                        <span class="tab-note">
+                            {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
                         </span>
                     </template>
-                    <span class="fact">
-                        <Icon name="reminders" />
-                        {{ data.started ? `up ${span(Date.now() / 1000 - data.started)}` : "just started" }}
-                    </span>
-                    <span class="fact">
-                        <Icon name="activity" />
-                        context {{ Math.round(Number(data.context || 0)) }}%
-                    </span>
-                    <span class="fact">
-                        <Icon name="terminal" />
-                        {{ data.shells || 0 }} shells
-                    </span>
-                    <span class="fact">
-                        <Icon name="agents" />
-                        {{ data.subagents || 0 }} subagents
-                    </span>
-                    <span class="fact">
-                        <Icon name="book" />
-                        {{ (data.skills || []).length }} skills
-                    </span>
-                </div>
-            </template>
-            <div class="pickers">
-                <DropList
-                    icon="agents"
-                    :label="sessionLabel"
-                    :items="sessions"
-                    :picked="session || ''"
-                    empty="No subagents yet"
-                    @pick="(item) => showSession(item.key)"
-                />
-                <DropList
-                    icon="book"
-                    :label="`${skills.length} skills in this window`"
-                    :items="skillItems"
-                    empty="No skill loaded in this window"
-                    @pick="() => go(route.env, 'skills')"
-                />
-                <AgentLinks :agent="resource.n" :session="picked ? picked.session : ''" />
+                </TabBar>
             </div>
-            <TabBar v-model="tab" class="agent-tabs" :tabs="tabs">
-                <template v-if="tab === 'transcript'">
-                    <span class="tab-note">
-                        {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
-                    </span>
-                </template>
-            </TabBar>
-        </div>
-        <template v-if="tab === 'work'">
-            <section class="block">
-                <template v-for="w in works" :key="w.n">
-                    <div class="work">
-                        <span :class="['dot', {open: !w.completed}]" />
-                        <span class="work-title">{{ w.title }}</span>
-                        <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
-                    </div>
-                    <Trace :resource="w" />
-                </template>
-                <template v-if="!works.length">
-                    <p class="none">{{ picked ? "No work filed by this subagent." : "No work on this agent yet." }}</p>
-                </template>
+            <template v-if="tab === 'work'">
+                <section class="block">
+                    <template v-for="w in works" :key="w.n">
+                        <div class="work">
+                            <span :class="['dot', {open: !w.completed}]" />
+                            <span class="work-title">{{ w.title }}</span>
+                            <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
+                        </div>
+                        <Trace :resource="w" />
+                    </template>
+                    <template v-if="!works.length">
+                        <p class="none">{{ picked ? "No work filed by this subagent." : "No work on this agent yet." }}</p>
+                    </template>
+                </section>
+            </template>
+            <template v-if="tab === 'chat' && picked">
+                <section class="block chat-block">
+                    <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
+                </section>
+            </template>
+            <template v-if="tab === 'tasks' && picked">
+                <section class="block">
+                    <TaskList :tasks="tasks" />
+                </section>
+            </template>
+            <template v-if="tab === 'hooks'">
+                <section class="block">
+                    <AgentHooks :provider="data.provider" />
+                </section>
+            </template>
+            <section v-show="tab === 'transcript'" class="block">
+                <TranscriptLog ref="log" :transcript="transcript" :entries="entries" />
             </section>
-        </template>
-        <template v-if="tab === 'chat' && picked">
-            <section class="block chat-block">
-                <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
-            </section>
-        </template>
-        <template v-if="tab === 'tasks' && picked">
-            <section class="block">
-                <TaskList :tasks="tasks" />
-            </section>
-        </template>
-        <template v-if="tab === 'hooks'">
-            <section class="block">
-                <AgentHooks :provider="data.provider" />
-            </section>
-        </template>
-        <section v-show="tab === 'transcript'" class="block">
-            <TranscriptLog ref="log" :transcript="transcript" :entries="entries" />
-        </section>
-    </article>
+        </article>
+    </template>
 </template>
 
 <style scoped>
@@ -229,6 +262,13 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
     box-sizing: border-box;
     height: 100%;
     padding-top: 0;
+}
+
+.subagent-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
 }
 
 .block.chat-block {

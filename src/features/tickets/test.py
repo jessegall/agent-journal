@@ -332,6 +332,9 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     tickets = Tickets(record, actor=USER)
     ticket = tickets.update(tickets.create("Dark mode", board=board.n).n, work_environment="ticket-1")
     plans = Plans(Record(record.root, "ticket-1"), actor=AGENT)
+    from controllers.types import Works
+    waiting = Works(Record(record.root, "ticket-1"), actor=AGENT)
+    waiting.update(waiting.create("the theme").n, awaiting="the user's pick of theme")
     plan = plans.create("Dark mode plan", goal="a dark theme")
     plans.phase(plan.n, "Build it", when="it is built")
     plans.stage(plan.n, "todos")
@@ -370,10 +373,21 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
     import time
     started = time.time()
+    from controllers.types import Environments, Questions
+    place = Record(record.root, "ticket-1")
+    asked = Questions(place, actor=AGENT).create("Which theme?")
     monkeypatch.setattr(time, "time", lambda: started + 120)
     tick(record)
     assert any(f"the plan of ticket {ticket.n}" in line and "stopped at a checkpoint" in line for line in nudges(record)), \
         "a ticket's plan that stops at a checkpoint is handed to the orchestrator too"
+    assert (f"ticket {ticket.n}, Dark mode, asks question {asked.n} - Which theme?" in nudges(record),
+            f"ticket {ticket.n}, Dark mode, is waiting - the user's pick of theme" in nudges(record)) == (True, True), \
+        "the orchestrator is told when a ticket's agent asks a question or waits on something"
+    told = []
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: told.append((n, note)))
+    Environments(record, actor=SYSTEM).create("ticket-1", owner=ticket.ref)
+    Questions(place, actor=USER).complete(asked.n, how="Dark")
+    assert told == [(ticket.n, f"Your question {asked.n}, Which theme?, is answered: Dark")], "an answered question wakes the ticket's agent with the answer"
     assert any(f"ticket {drafted.n}, A drafted card, is a draft waiting for you" in line for line in nudges(record)), \
         "under auto mode the orchestrator is told when a proposal it may decide waits"
     monkeypatch.setattr(Tickets, "agent_session", lambda self, n: "claude-t1")

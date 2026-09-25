@@ -37,11 +37,25 @@ function entryOf(e, now) {
         title,
         now: tool || (focus.known ? focus.title : ""),
         plan,
+        at: (e.agent && e.agent.at) || 0,
+        waits: Boolean((e.work && e.work.awaiting) || (e.counts || {}).questions || (e.agent && e.agent.asking)),
         card: {type: "ticket", n: Number(n), title, session: "", state, reason: reason || tool},
     };
 }
 
 export const orchestraOf = (environments, now) => (environments || []).filter((e) => e.owner).map((e) => entryOf(e, now));
+
+const AMBER_AFTER = 300;
+const RED_AFTER = 900;
+
+export function quietOf(at, now) {
+    const quiet = Math.max(0, now - at);
+    const minutes = Math.floor(quiet / 60);
+    return {
+        ago: quiet < 60 ? "just now" : minutes < 60 ? `${minutes} min ago` : `${Math.floor(minutes / 60)} h ${minutes % 60} min ago`,
+        tone: quiet > RED_AFTER ? "red" : quiet > AMBER_AFTER ? "amber" : "",
+    };
+}
 
 export function gridColumns(count) {
     if (count <= 1) return 1;

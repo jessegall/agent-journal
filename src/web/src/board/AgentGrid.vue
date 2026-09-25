@@ -51,7 +51,8 @@ const terminal = ref(null);
             <TicketAgent
                 :card="opened.card"
                 :env="opened.env"
-                :heading="`${opened.label} ${opened.title}`"
+                :kind="opened.kind || 'ticket'"
+                :label="opened.label"
                 :plan="opened.plan ? opened.plan.n : 0"
                 @close="openedKey = ''"
                 @terminal="terminal = opened.card"

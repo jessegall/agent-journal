@@ -28,6 +28,7 @@ const props = defineProps({
     flush: Boolean,
     chat: Boolean,
     agents: Boolean,
+    floats: {type: Boolean, default: true},
     hidden: {type: Array, default: () => []},
 });
 const emit = defineEmits([
@@ -160,10 +161,12 @@ function pick(event, ...args) {
                     Move to…
                     <span class="pane-menu-more">›</span>
                 </MenuItem>
-                <MenuItem data-step="detach" :disabled="!title" @click="pick('float')">
-                    <Icon name="float" :size="14" />
-                    Detach
-                </MenuItem>
+                <template v-if="floats">
+                    <MenuItem data-step="detach" :disabled="!title" @click="pick('float')">
+                        <Icon name="float" :size="14" />
+                        Detach
+                    </MenuItem>
+                </template>
                 <span class="pane-menu-line" />
                 <MenuItem :disabled="!closable" @click="pick('shut')">
                     <Icon name="x" :size="14" />

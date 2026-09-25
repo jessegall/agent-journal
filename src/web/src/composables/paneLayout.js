@@ -1,33 +1,34 @@
 import {computed, effectScope, ref, watch} from "vue";
-import {fresh, leaves, measure, opened, resized, valid} from "../domain/panes.js";
+import {INSPECTOR_VIEWS, VIEWS, fresh, freshInspector, leaves, measure, opened, resized, valid} from "../domain/panes.js";
 import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
 import {route} from "../route.js";
 
-const KEY = "layout";
 const SAVE_AFTER = 500;
 const FOLD = 380;
-const tabKey = () => `journal.layout.${route.value.env}`;
+const HOME = {key: "layout", tab: () => `journal.layout.${route.value.env}`, views: VIEWS, fresh};
+const INSPECTOR = {key: "inspector_layout", tab: () => "journal.inspector-layout", views: INSPECTOR_VIEWS, fresh: freshInspector};
 
-function tabLayout() {
+function tabLayout(kind) {
     try {
-        return JSON.parse(sessionStorage.getItem(tabKey()));
+        return JSON.parse(sessionStorage.getItem(kind.tab()));
     } catch (e) {
         return null;
     }
 }
 
-function keepInTab(layout) {
+function keepInTab(kind, layout) {
     try {
-        sessionStorage.setItem(tabKey(), JSON.stringify(layout));
+        sessionStorage.setItem(kind.tab(), JSON.stringify(layout));
     } catch (e) {
         return;
     }
 }
 
-function shared() {
-    const stored = () => viewerSetting(KEY, null);
-    const own = tabLayout();
-    const layout = ref(valid(own) ? own : valid(stored()) ? stored() : fresh());
+function shared(kind) {
+    const fits = (layout) => valid(layout, kind.views);
+    const stored = () => viewerSetting(kind.key, null);
+    const own = tabLayout(kind);
+    const layout = ref(fits(own) ? own : fits(stored()) ? stored() : kind.fresh());
     const born = ref({});
     const dying = ref({});
     let loaded = settingsLoaded();
@@ -38,18 +39,18 @@ function shared() {
         ([ready, got]) => {
             if (!ready || loaded) return;
             loaded = true;
-            if (!valid(own) && valid(got)) layout.value = got;
+            if (!fits(own) && fits(got)) layout.value = got;
         },
         {immediate: true}
     );
 
     function keep() {
-        keepInTab(layout.value);
+        keepInTab(kind, layout.value);
         if (!loaded) return;
         clearTimeout(saving);
         saving = setTimeout(() => {
             saving = 0;
-            saveViewerSetting(KEY, layout.value);
+            saveViewerSetting(kind.key, layout.value);
         }, SAVE_AFTER);
     }
 
@@ -100,9 +101,9 @@ function shared() {
     return {layout, measured, panes, open, apply, replace, resize, stage};
 }
 
-let one = null;
+const made = {};
+const madeFor = (kind) => (made[kind.key] = made[kind.key] || effectScope(true).run(() => shared(kind)));
 
-export function usePaneLayout() {
-    one = one || effectScope(true).run(shared);
-    return one;
-}
+export const usePaneLayout = () => madeFor(HOME);
+
+export const useInspectorLayout = () => madeFor(INSPECTOR);

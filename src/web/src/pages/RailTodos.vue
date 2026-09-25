@@ -3,12 +3,16 @@ import {computed} from "vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
-import {peek, route} from "../route.js";
-import {groupOf, GROUPS, open, planOf} from "../domain/records.js";
+import {peek, peekThere, route} from "../route.js";
+import {useScope} from "../composables/scope.js";
+import {groupOf, GROUPS, planOf} from "../domain/records.js";
+
+const scope = useScope();
+const show = (type, n) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n));
 
 const groups = computed(() => {
     const buckets = {};
-    for (const r of open("todo")) (buckets[groupOf(r)] ||= []).push(r);
+    for (const r of scope.rows("todo").filter((t) => !t.completed && !t.deleted)) (buckets[groupOf(r)] ||= []).push(r);
     for (const rows of Object.values(buckets))
         rows.sort((a, b) => Number(b.data.priority ?? 100) - Number(a.data.priority ?? 100) || a.n - b.n);
     return Object.keys(GROUPS)
@@ -31,7 +35,7 @@ const groups = computed(() => {
                 <span class="rail-group-n">{{ g.rows.length }}</span>
             </div>
             <template v-for="t in g.rows" :key="t.n">
-                <button type="button" :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]" @click="peek('todo', t.n)">
+                <button type="button" :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]" @click="show('todo', t.n)">
                     <span class="rail-row-marks">
                         <Dot :kind="g.key" />
                         <PriorityIcon :value="Number(t.data.priority ?? 100)" />
@@ -40,7 +44,7 @@ const groups = computed(() => {
                             <span
                                 class="rail-row-plan"
                                 :title="`Plan ${planOf(t).n}: ${planOf(t).title}`"
-                                @click.stop="peek('plan', planOf(t).n)"
+                                @click.stop="show('plan', planOf(t).n)"
                             >
                                 Plan {{ planOf(t).n }}
                             </span>
