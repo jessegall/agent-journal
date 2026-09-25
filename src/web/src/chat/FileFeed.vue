@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, ref} from "vue";
 import {route, showFile} from "../route.js";
-import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import FeedBar from "./FeedBar.vue";
 import DiffCard from "../kit/DiffCard.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -12,6 +12,7 @@ import {useNow} from "../composables/now.js";
 import {fresh} from "../format/time.js";
 
 const props = defineProps({agent: {type: Number, required: true}, flush: Boolean, options: {type: Object, default: null}});
+const scope = useScope();
 const emit = defineEmits(["options"]);
 const DEFAULTS = {
     lines: 0,
@@ -31,7 +32,7 @@ const SIZES = {"-1": ["10.5px", "17px"], 0: ["11.5px", "19px"], 1: ["13px", "21p
 const scroller = ref(null);
 const follow = useFollow(scroller);
 const {following, unseen, jump, scrolled, wheeled} = follow;
-const {cards, ready, latest, older, loadOlder} = useFileFeed(props.agent, follow);
+const {cards, ready, latest, older, loadOlder} = useFileFeed(props.agent, follow, scope.api);
 const now = useNow();
 const empty = computed(() => ready.value && !cards.value.length);
 const view = computed(() => ({...DEFAULTS, ...(props.options || {})}));
@@ -59,7 +60,7 @@ async function whole(c) {
     wholes.value = {...wholes.value, [c.id]: {}};
     folds.value = {...folds.value, [c.id]: false};
     try {
-        const got = await api.editedFile(props.agent, c.latest, "after");
+        const got = await scope.api.editedFile(props.agent, c.latest, "after");
         wholes.value = {...wholes.value, [c.id]: {text: got.text}};
     } catch (e) {
         wholes.value = {...wholes.value, [c.id]: {error: "This version of the file is no longer kept."}};
@@ -97,7 +98,7 @@ function onScroll(e) {
                         :whole="wholes[c.id] || null"
                         @fold="fold(c)"
                         @whole="whole(c)"
-                        @open="(path) => showFile(route.env, path)"
+                        @open="(path) => showFile(scope.env || route.env, path)"
                         :path="c.path"
                         :kind="c.kind"
                         :added="c.added"

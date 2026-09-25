@@ -41,7 +41,7 @@ function land(cards, edit) {
     return [...before, ...kept, {...card, half: fits, alone: fits && !waiting}];
 }
 
-export function useFileFeed(agent, follow) {
+export function useFileFeed(agent, follow, client = api) {
     const cards = ref([]);
     const ready = ref(false);
     const latest = ref("");
@@ -51,8 +51,8 @@ export function useFileFeed(agent, follow) {
     let oldest = null;
 
     usePoll(
-        `edits:${route.value.env}:${agent}`,
-        () => api.edits(agent, cursor, ready.value ? undefined : PAGE),
+        `edits:${client.env() || route.value.env}:${agent}`,
+        () => client.edits(agent, cursor, ready.value ? undefined : PAGE),
         EVERY,
         (got) => {
             cursor = got.cursor;
@@ -71,7 +71,7 @@ export function useFileFeed(agent, follow) {
         if (loading.value || !older.value || oldest === null) return false;
         loading.value = true;
         try {
-            const got = await api.olderEdits(agent, oldest, PAGE);
+            const got = await client.olderEdits(agent, oldest, PAGE);
             older.value = !!got.older;
             if (!got.edits.length) return false;
             oldest = got.edits[0].at;

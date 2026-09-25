@@ -1,12 +1,14 @@
 import time
+from dataclasses import dataclass
+from typing import ClassVar
 
 from engine.actors import IDLE
-from engine.events import ClockTicked, ResourceCreated
+from engine.events import ClockTicked, ResourceCreated, ResourceEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING
 from features.tickets.controller import HELD, Tickets
-from resources.base import SYSTEM
+from resources.base import SYSTEM, Refused
 
 CHECK_AFTER = 300
 LOOK_AGAIN = 900
@@ -36,6 +38,11 @@ class LookAfterTicketBranches(Handler):
         for ticket, permission in tickets._awaiting_decisions():
             if context.once("proposal_waits", f"{ticket.ref}|{permission}|{ticket.updated}"):
                 context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
+        boards = tickets._orchestrating()
+        for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards]:
+            for kind, key, values in tickets._calls(ticket):
+                if context.once(kind, f"{ticket.ref}|{key}"):
+                    context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
         self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)
 
@@ -60,3 +67,21 @@ class HoldTicketKnowledge(Handler):
     def handle(self, context: Context, event: ResourceCreated) -> None:
         if event.type in HELD:
             Tickets(context.record, actor=SYSTEM).hold(event.type, event.n)
+
+
+@dataclass(frozen=True)
+class QuestionAnswered(ResourceEvent):
+    on: ClassVar[str] = "question.completed"
+
+
+class WakeTheTicketAgent(Handler):
+    def handle(self, context: Context, event: QuestionAnswered) -> None:
+        tickets = Tickets(context.record, actor=SYSTEM)
+        n = tickets._owned_by(context.record.env, "ticket")
+        if not n:
+            return
+        question = context.journal.of("question").load(event.n)
+        try:
+            tickets.tell(n, f"Your question {question.n}, {question.title}, is answered: {question.outcome}")
+        except Refused:
+            return

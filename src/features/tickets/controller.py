@@ -9,7 +9,7 @@ from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, changed, contains, current_branch, keep, merged, merged_into, present, roots, spread, tip
+from engine.worktree import branched, changed, contains, current_branch, git, keep, linked, merged, merged_into, present, roots, spread, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -20,7 +20,7 @@ from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
-from controllers.types import Agents, Questions, Todos
+from controllers.types import Agents, Messages, Questions, Todos, Works
 from features.plans.controller import READY, WAITING, Plans
 from resources.base import AGENT, SYSTEM, Refused, Resource
 from resources.shapes import LEVELS, priority_level, rank_before
@@ -187,7 +187,7 @@ class Tickets(Controller):
         driver = DRIVERS[ticket.agent](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
         if not driver.enter(note.strip()):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
-        return ticket
+        return self.update(ticket.n, told=time.time())
 
     def screen(self, n: int, lines: int = SCREEN_LINES) -> str:
         from providers import DRIVERS
@@ -366,9 +366,30 @@ class Tickets(Controller):
         return self._based(ticket, self._started_at(ticket, self._into(ticket)))
 
     def _plan_owner(self, name: str) -> int:
+        return self._owned_by(name, "plan")
+
+    def _owned_by(self, name: str, kind: str) -> int:
         place = Environments(self.record, actor=SYSTEM)._titled(name) if name else None
         owner = str(place.owner) if place else ""
-        return int(owner.split(":")[1]) if owner.startswith("plan:") else 0
+        return int(owner.split(":")[1]) if owner.startswith(f"{kind}:") else 0
+
+    def _calls(self, ticket) -> list[tuple[str, str, dict]]:
+        place = Record(self.record.root, ticket.work_environment)
+        asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}) for q in Questions(place, actor=SYSTEM)._standing()]
+        awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}) for w in Works(place, actor=SYSTEM)._standing() if w.awaiting]
+        replies = [("ticket_replied", f"message:{row['n']}", {"text": row["title"]}) for row in Messages(place, actor=SYSTEM).summaries()
+                   if ticket.told and row["seen"][:1] == [AGENT] and row["created"] > ticket.told and not row["deleted"]]
+        done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)})] if self._plan_status(ticket) == "done" and self._clean(ticket) else []
+        return asks + awaits + replies + done
+
+    def _ahead(self, ticket) -> int:
+        branch, into = self._branch(ticket), self._into(ticket)
+        counts = [git(place, "rev-list", "--count", f"{into}..refs/heads/{branch}").stdout.strip() for _, place, _ in self._repositories(ticket)]
+        return sum(int(count) for count in counts if count.isdigit())
+
+    def _clean(self, ticket) -> bool:
+        folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
+        return all(folder and not git(folder, "status", "--porcelain").stdout.strip() for folder in folders)
 
     def _in_plan_worktree(self, ticket) -> bool:
         return bool(self._plan_owner(ticket.work_environment))

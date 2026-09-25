@@ -65,6 +65,27 @@ class TicketsDetails(FeatureDetails):
             brief="you have been idle five minutes while orchestrating it: journal ticket board shows which ticket runs; see whether its agent works, waits or is stuck (journal ticket agent_session <n> and its screen), unstick what is stuck, approve plans that wait and merge what is done",
         ),
         Line(
+            name="ticket_asks",
+            title="ticket {{ticket}}, {{title}}, asks question {{question}} - {{text}}",
+            brief="answer it when it is yours to decide with journal --env {{env}} question answer {{question}} --how \"<choice>\" "
+                  "--set reason=\"<why>\"; its agent is told the answer at once. Otherwise ask the user",
+        ),
+        Line(
+            name="ticket_awaits",
+            title="ticket {{ticket}}, {{title}}, is waiting - {{text}}",
+            brief="if it waits on you, give it what it needs with journal ticket tell {{ticket}} \"<what>\"; if it waits on the user, ask them",
+        ),
+        Line(
+            name="ticket_replied",
+            title="ticket {{ticket}}, {{title}}, answered - {{text}}",
+            brief="read the rest in its chat (journal ticket screen {{ticket}}) and carry on",
+        ),
+        Line(
+            name="ticket_plan_done",
+            title="ticket {{ticket}}, {{title}}, finished its plan with a clean worktree, {{ahead}} commits ahead",
+            brief="review what it did against its card, then merge it with journal ticket merge {{ticket}}",
+        ),
+        Line(
             name="orchestrator_accepts_waits",
             title="ticket {{ticket}}, {{title}}, proposes waits on other tickets for you to decide",
             brief="read them with journal ticket show {{ticket}}; keep the ones that hold with journal ticket accept_dependencies {{ticket}} "

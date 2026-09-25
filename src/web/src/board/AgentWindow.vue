@@ -5,11 +5,16 @@ import StateDot from "../kit/StateDot.vue";
 import Tile from "../kit/Tile.vue";
 import {agentState} from "../domain/ticketAgents.js";
 import {planMeter} from "../sync/hub.js";
+import {clock} from "../format/time.js";
+import {useNow} from "../composables/now.js";
+import {quietOf} from "../domain/orchestra.js";
 
 const props = defineProps({entry: {type: Object, required: true}});
 const emit = defineEmits(["open"]);
 const state = computed(() => agentState(props.entry.card));
 const asks = computed(() => state.value.key !== "working" && props.entry.card.reason);
+const now = useNow();
+const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value) : null));
 </script>
 
 <template>
@@ -23,6 +28,11 @@ const asks = computed(() => state.value.key !== "working" && props.entry.card.re
             </span>
         </template>
         <p class="aw-title">{{ entry.title }}</p>
+        <template v-if="quiet">
+            <p :class="['aw-seen', quiet.tone, {waits: entry.waits && quiet.tone}]" :title="`Its last hook report or transcript write`">
+                Last active {{ clock(entry.at) }} · {{ quiet.ago }}
+            </p>
+        </template>
         <template v-if="asks">
             <p class="aw-asks">{{ entry.card.reason }}</p>
         </template>
@@ -94,6 +104,36 @@ const asks = computed(() => state.value.key !== "working" && props.entry.card.re
     line-height: 1.35;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+}
+
+.aw-seen {
+    align-self: flex-start;
+    margin: 0 0 4px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+.aw-seen.amber {
+    color: var(--tone-warn);
+}
+
+.aw-seen.red {
+    color: var(--danger);
+}
+
+.aw-seen.waits {
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-weight: 600;
+}
+
+.aw-seen.waits.amber {
+    background: color-mix(in srgb, var(--tone-warn) 18%, transparent);
+}
+
+.aw-seen.waits.red {
+    background: color-mix(in srgb, var(--danger) 20%, transparent);
 }
 
 .aw-now,
