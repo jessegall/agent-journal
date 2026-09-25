@@ -257,6 +257,17 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     monkeypatch.setattr(driver, "_wrote", lambda raw: pressed.append(raw) or True)
     assert not driver.type_in("stuck for good") and pressed.count(b"\r") == 1 + engine.drivers.RESUBMITS, \
         "a line that never leaves the input box is pressed a few times at most and reported as not sent"
+    import json
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+    pressed.clear()
+    note = "You're restarted: ticket 8 merged, carry on with the parity run"
+    screen.write_bytes(f"❯ {note}\n".encode())
+    transcript = record.root / "t.jsonl"
+    transcript.write_text(json.dumps({"type": "user", "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "message": {"content": note}}) + "\n")
+    monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(transcript=str(transcript)))
+    assert driver.enter(note) and pressed.count(b"\r") == 1, \
+        "a note already in the agent's transcript has landed, though a freshly started agent's screen still shows it last"
     pressed.clear()
     screen.write_bytes("❯ [Pasted text #1 +2 lines]\n".encode())
     monkeypatch.setattr(engine.drivers, "TYPED_PER_SECOND", 10 ** 9)

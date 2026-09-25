@@ -1,5 +1,6 @@
 import {envState, focusOf, isActive} from "../sync/hub.js";
 import {rows} from "../sync/rows.js";
+import {agentState} from "./ticketAgents.js";
 
 const SILENT_AFTER = 300;
 const OWNED = /^(ticket|plan):(\d+)$/;
@@ -57,7 +58,63 @@ export function quietOf(at, now) {
     };
 }
 
-export function gridColumns(count) {
-    if (count <= 1) return 1;
-    return count <= 4 ? 2 : 3;
+export const AGENT_VIEW = {
+    states: {working: true, waiting: true, idle: true, stopped: true},
+    kinds: {ticket: true, plan: true},
+    unfinished: false,
+    order: "state",
+};
+
+export const STATE_SWITCHES = [
+    {key: "working", label: "Working", icon: "agents", hidden: (n) => `${n} working`},
+    {key: "waiting", label: "Waiting for you or stuck", icon: "warn", hidden: (n) => `${n} waiting or stuck`},
+    {key: "idle", label: "Idle", icon: "pause", hidden: (n) => `${n} idle`},
+    {key: "stopped", label: "Not running", icon: "x", hidden: (n) => `${n} not running`},
+];
+
+export const KIND_SWITCHES = [
+    {key: "ticket", label: "Ticket agents", icon: "ticket", hidden: (n) => `${n} ${n === 1 ? "ticket agent" : "ticket agents"}`},
+    {key: "plan", label: "Plan agents", icon: "flag", hidden: (n) => `${n} ${n === 1 ? "plan agent" : "plan agents"}`},
+];
+
+export const ORDERS = [
+    {key: "state", label: "By state", icon: "list"},
+    {key: "ticket", label: "By ticket", icon: "ticket"},
+    {key: "active", label: "By last active", icon: "clock"},
+];
+
+const GROUP = {working: "working", waiting: "waiting", stuck: "waiting", idle: "idle", stopped: "stopped"};
+export const stateGroup = (entry) => GROUP[agentState(entry.card).key] || "idle";
+const unfinished = (entry) => Boolean(entry.plan) && entry.plan.status !== "done";
+
+export function hiddenBy(entry, view) {
+    if (!view.states[stateGroup(entry)]) return stateGroup(entry);
+    if (!view.kinds[entry.kind || "ticket"]) return entry.kind || "ticket";
+    if (view.unfinished && !unfinished(entry)) return "unfinished";
+    return "";
+}
+
+const RANK = {waiting: 0, working: 1, idle: 2, stopped: 3};
+const BY = {
+    state: (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)] || b.at - a.at,
+    ticket: (a, b) => (a.kind || "").localeCompare(b.kind || "") || a.n - b.n,
+    active: (a, b) => b.at - a.at,
+};
+
+export const ordered = (entries, order) => [...entries].sort(BY[order] || BY.state);
+
+const WORDS = Object.fromEntries(
+    [...STATE_SWITCHES, ...KIND_SWITCHES, {key: "unfinished", hidden: (n) => `${n} without an unfinished plan`}].map((s) => [
+        s.key,
+        s.hidden,
+    ])
+);
+
+export function hiddenSummary(entries, view) {
+    const counts = {};
+    entries.forEach((entry) => {
+        const why = hiddenBy(entry, view);
+        if (why) counts[why] = (counts[why] || 0) + 1;
+    });
+    return Object.entries(counts).map(([why, n]) => WORDS[why](n));
 }

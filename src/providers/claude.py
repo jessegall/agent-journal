@@ -17,7 +17,7 @@ from engine.stored import read_json, tail, write_json, write_text
 from engine import runtime
 from engine.sessions import Sessions
 from engine.worktree import WORKTREES
-from engine.drivers import ANSI, CHOICE, Driver
+from engine.drivers import ANSI, CHOICE, LINE_START, Driver, joined
 from engine.fields import Loaded
 
 ASKS = frozenset({"AskUserQuestion"})
@@ -644,6 +644,16 @@ class ClaudeDriver(Driver):
         if row.type != "user":
             return ""
         return row.text if row.text is not None else "\n".join(block.result for block in row.of_type("tool_result"))
+
+    def _landed(self, line: str, since: float, confirmed: bool) -> bool:
+        return self._in_transcript(line, since) or super()._landed(line, since, confirmed)
+
+    def _in_transcript(self, line: str, since: float) -> bool:
+        last = self.last_report()
+        wanted = " ".join(joined(line).split())[:LINE_START]
+        if not wanted or not last or not last.transcript:
+            return False
+        return any(float(row.at or 0) >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent(Path(last.transcript)))
 
     def _delivering(self) -> bool:
         handed = runtime.session_file(self.record.root, self.session, HANDED)
