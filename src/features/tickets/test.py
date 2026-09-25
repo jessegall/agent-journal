@@ -310,6 +310,12 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     user, agent = Tickets(record, actor=USER), Tickets(record, actor=AGENT)
     api, ui = user.create("An API", board=board.n), user.create("Its screen", board=board.n)
+    before = len(user.summaries())
+    assert "already made" in refused(lambda: agent.create("Its docs", board=board.n, after="999")) and len(user.summaries()) == before, \
+        "a card waiting on a card that does not exist is refused before anything is written"
+    docs = agent.create("Its docs", board=board.n, after=str(api.n), covers=2)
+    assert (docs.covers, list(docs.dependencies)) == (["2"], [api.ref]), "a card names its waits and one clause as it is made"
+    agent.delete(docs.n, why="only a check")
     agent.depend(ui.n, api.n)
     assert user.load(ui.n).dependencies == {api.ref: "proposed"}, "the agent only proposes a dependency"
     user.decline_dependencies(ui.n)

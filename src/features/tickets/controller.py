@@ -102,6 +102,11 @@ class Tickets(Controller):
         if data.get("draft") and self.actor == AGENT and Boards(self.record, actor=self.actor).cancelled_lately(data["board"]):
             self._refuse(f"the request on board {data['board']} was cancelled, so stop drafting")
         after = [word.strip() for word in str(data.pop("after", "") or "").split(",") if word.strip()]
+        unknown = [word for word in after if not word.isdigit() or not self._exists(int(word))]
+        if unknown:
+            self._refuse(f"a card waits only on cards already made; not {', '.join(unknown)}")
+        if isinstance(data.get("covers"), int):
+            data["covers"] = [str(data["covers"])]
         opening = self._stages(data.get("board"))[:1]
         made = super().create(title, abstract, brief, source=source, **{**dict(zip(["stage"], opening)), **data})
         for other in after:
