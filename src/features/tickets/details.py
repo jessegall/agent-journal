@@ -45,7 +45,7 @@ class TicketsDetails(FeatureDetails):
         Line(
             name="ticket_attention",
             title="ticket {{ticket}}, {{title}}, needs a look - {{reason}}",
-            brief="journal ticket agent_session {{ticket}} names its agent; unstick it with journal ticket tell {{ticket}} \"<what to do>\", or restart it with journal ticket stop {{ticket}} then journal ticket start {{ticket}}",
+            brief="journal ticket screen {{ticket}} shows what its terminal says; unstick it with journal ticket tell {{ticket}} \"<what to do>\", or restart it with journal ticket stop {{ticket}} then journal ticket start {{ticket}}",
         ),
         Line(
             name="ticket_restarted",
@@ -60,7 +60,8 @@ class TicketsDetails(FeatureDetails):
         Line(
             name="plan_waits",
             title="the plan of ticket {{ticket}}, {{title}}, waits for your approval",
-            brief="read it with journal --env {{env}} plan read {{plan}}; when it fits the ticket, approve it with journal ticket approve_plan {{ticket}}",
+            brief="{{review}} When it does the ticket and nothing more, approve it with journal ticket approve_plan {{ticket}}; "
+                  "otherwise say what must change with journal ticket tell {{ticket}} \"<the change>\"",
         ),
     ]
 

@@ -34,6 +34,8 @@ HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
 CARRY_ON = "Carry on with {ref} where you left off."
 MOST_RESTARTS = 1
+REVIEWED_BY_SUBAGENT = "subagent"
+SCREEN_LINES, SCREEN_BYTES = 40, 32768
 NEEDS_A_LOOK = ("you", "stopped")
 
 
@@ -163,6 +165,16 @@ class Tickets(Controller):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return ticket
 
+    def screen(self, n: int, lines: int = SCREEN_LINES) -> str:
+        from providers import DRIVERS
+        ticket = self.load(int(n))
+        session = self.agent_session(ticket.n)
+        if not session:
+            self._refuse(f"{self.type} {ticket.n} has no agent running to look at")
+        driver = DRIVERS[ticket.agent](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+        shown = [line.rstrip() for line in driver.last_printed(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
+        return "\n".join(shown[-int(lines):])
+
     def send_back(self, n: int, note: str):
         ticket = self.tell(n, note)
         started = [stage for stage, meaning in Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if meaning == START]
@@ -212,6 +224,12 @@ class Tickets(Controller):
         boards = self._orchestrating()
         return [ticket for ticket in self._standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
                 and self._orchestrated(ticket) and self._plan_waits(ticket)]
+
+    def _review(self, ticket) -> str:
+        read = f"journal --env {ticket.work_environment} plan read {ticket.plan}"
+        if Boards(self.record, actor=SYSTEM).load(int(ticket.board)).plan_reviewer == REVIEWED_BY_SUBAGENT:
+            return f"Dispatch a reviewer subagent to check it against the ticket's card; it reads it with {read}."
+        return f"Review it yourself against the ticket's card: {read}."
 
     def _orchestrated(self, ticket) -> bool:
         return bool(ticket.board) and Boards(self.record, actor=SYSTEM).load(int(ticket.board)).orchestrator_approves_plans

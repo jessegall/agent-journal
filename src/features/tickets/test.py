@@ -122,6 +122,12 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert not {"CLAUDE_CODE_CHILD_SESSION", "CLAUDECODE"} & set(environ), \
         "an agent launched from inside a Claude session does not inherit its markers, so its transcript is saved"
     Sessions(record.root).bind("claude-9", f"ticket-{ticket.n}", provider="claude")
+    from engine import runtime
+    from engine.seats import terminal_of
+    printed = runtime.session_file(record.root, terminal_of(record.root, "claude-9"), "printed")
+    printed.parent.mkdir(parents=True, exist_ok=True)
+    printed.write_bytes("\x1b[2KReading the tree contract\r\n\x1b[1m❯ \x1b[0m\r\n".encode())
+    assert "Reading the tree contract" in tickets.screen(ticket.n), "journal ticket screen shows what the ticket agent's terminal says"
     tickets.start(ticket.n)
     assert len(launched) == 1, "a ticket whose agent runs is not started twice"
     from tests.kit import report
@@ -299,6 +305,9 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
     tick(record)
     assert any(f"the plan of ticket {ticket.n}" in line and "waits for your approval" in line for line in nudges(record)), \
         "the minute check tells the orchestrator the plan waits"
+    assert "Review it yourself" in tickets._review(tickets.load(ticket.n)), "by default the orchestrator reviews the plan itself"
+    Boards(record, actor=USER).update(board.n, plan_reviewer="subagent")
+    assert "Dispatch a reviewer subagent" in tickets._review(tickets.load(ticket.n)), "a board can hand the review to a reviewer subagent"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
 

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.163.0 — See a ticket agent's screen, and choose who reviews plans
+
+journal ticket screen <n> shows the last lines a ticket agent's terminal printed, so the orchestrator can see what it is doing without opening it. A board says who reviews its tickets' plans, the orchestrator itself or a reviewer subagent it dispatches (plan_reviewer, in the board's settings), and the waiting-plan notice says which. The session bar shows the running agent before a stopped one, so a new agent in an environment shows its own context. Nothing to do.
+
 ## 2.162.0 — Test runs show in the chat, and the tunnel heals itself
 
 A test run the agent starts shows in the chat as a mark while it runs, and turns into Tests passed or Tests failed with its counts when it ends. The share tunnel is checked every minute while a share is open: when its public link has not answered for a minute, the tunnel is restarted, at most every five minutes. Orchestrating a board no longer asks the orchestrator to set up a loop of its own: the journal tells it when a plan waits, when a ticket needs a look, and every five idle minutes to check on its tickets. Nothing to do.

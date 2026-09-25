@@ -52,8 +52,11 @@ export const meta = (type) => store.spec.types[type];
 export const word = (type, method) => meta(type).command_names[method] || method;
 export const label = (type, field, fallback) => meta(type).labels[field] || fallback;
 export const counted = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;
+const stopped = (a) => (a.data.status === "stopped" ? 1 : 0);
 export const agent = computed(
-    () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
+    () =>
+        [...store.agents].filter((a) => !a.data.parent).sort((a, b) => stopped(a) - stopped(b) || (b.data.at || 0) - (a.data.at || 0))[0] ||
+        null
 );
 export const feedOn = computed(() => !store.settings || store.settings.features.file_feed !== false);
 export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
