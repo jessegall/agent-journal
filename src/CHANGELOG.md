@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.165.2 — An orchestrator's approval stands on its own
+
+journal ticket approve_plan refused when its note to the ticket's agent stayed in the input box, and the refusal rolled the approval back. The approval now stands: the ticket's agent hears it through the journal's own delivery, as it does when the user approves, and a note typed after continue_plan is only a best effort. Nothing to do.
+
 ## 2.165.1 — A starting ticket is never taken for merged
 
 A ticket's new start commit is saved before its branch is made, so a minute check running at the same moment can no longer read the old one and take a ticket that just started for merged; and a ticket moves to its board's done stage only once it has really closed. Nothing to do.

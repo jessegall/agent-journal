@@ -334,8 +334,11 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     tick(record)
     assert any(f"the plan of ticket {ticket.n}" in line and "stopped at a checkpoint" in line for line in nudges(record)), \
         "a ticket's plan that stops at a checkpoint is handed to the orchestrator too"
+    monkeypatch.setattr(Tickets, "agent_session", lambda self, n: "claude-t1")
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("the note stayed in its input box")))
     Tickets(record, actor=AGENT).continue_plan(ticket.n)
-    assert plans.load(plan.n).status == ACTIVE, "and the orchestrator lets it go on, so the board does not wait for the user overnight"
+    assert plans.load(plan.n).status == ACTIVE, \
+        "the orchestrator lets it go on, so the board does not wait for the user overnight, even when its note to the agent does not land"
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():

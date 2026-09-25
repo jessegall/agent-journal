@@ -7,7 +7,7 @@ from features.plans.progress import catch_up
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import automatic
 from features.parts import AgentContext, Context, Handler
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 
 WRITTEN = ("created", "updated", "linked")
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
@@ -31,7 +31,7 @@ class StartBuilding(Handler):
 class StartApproved(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
         agent = context.journal.agents.primary()
-        if event.action != "updated" or event.actor != USER or not agent:
+        if event.action != "updated" or event.actor not in (USER, SYSTEM) or not agent:
             return
         plan = context.journal.plans.load(event.n)
         speaking = context.speaking_to(agent)
