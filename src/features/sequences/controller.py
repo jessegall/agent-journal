@@ -205,6 +205,8 @@ class Sequences(Controller):
                 self.abandon(row["n"], about=about, why=why)
 
     def _mark(self, r, label: str, step: int, why: str = "", about: str = "") -> None:
+        if r.dispatch:
+            return
         agents = Agents(self.record, actor=SYSTEM)
         row = agents.primary()
         if not row:
