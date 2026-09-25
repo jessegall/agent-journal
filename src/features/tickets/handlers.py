@@ -19,6 +19,9 @@ class LookAfterTicketBranches(Handler):
         tickets.close_merged()
         tickets.start_queued()
         tickets._stop_orphaned()
+        for ticket in tickets._awaiting_orchestrator():
+            if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}"):
+                context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
         self.check_on_board(context)
 
     def check_on_board(self, context: AgentContext) -> None:
@@ -29,9 +32,6 @@ class LookAfterTicketBranches(Handler):
         quiet = time.time() - float(row.at)
         if quiet >= CHECK_AFTER and context.once("check_board", f"{found[1]}|{int(row.at)}|{int(quiet // CHECK_AFTER)}"):
             context.agent.whisper("check_board", about=found[1].split("|", 1)[-1].replace(":", " "))
-        for ticket in tickets._awaiting_orchestrator():
-            if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}"):
-                context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
 
 
 class HoldTicketKnowledge(Handler):
