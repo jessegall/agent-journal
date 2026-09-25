@@ -22,6 +22,7 @@ from engine.fields import Loaded
 PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
 HEARTBEAT = 2.0
 PORT_WAIT = 30.0
+SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
 
@@ -168,6 +169,10 @@ def available(root: Path, prefer: int = 0) -> int:
         if free(port):
             return port
     raise OSError("no viewer port available from 8420 through 8439")
+
+
+def free_from(start: int) -> int:
+    return next((port for port in sorted(PORTS, key=lambda port: (port < start, port)) if free(port)), 0)
 
 
 def last(root: Path) -> ViewerMark:

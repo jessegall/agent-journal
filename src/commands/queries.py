@@ -411,7 +411,8 @@ def tail(path: Path, lines: int) -> str:
 
 def serve_forever(ctx) -> str:
     from serve import run
-    run(ctx["record"].root, ctx["port"])
+    from engine.viewer import SERVED_ON, free_from
+    run(ctx["record"].root, ctx["port"] or free_from(SERVED_ON))
     return ""
 
 def decided(ctx) -> str:

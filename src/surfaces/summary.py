@@ -69,6 +69,8 @@ def lately_summarized(root: Path) -> dict:
 
 def summarize(root: Path) -> dict:
     m = manifest(root)
-    names = dict.fromkeys([m["environment"], *(e.title for e in Environments(Record(root, m["environment"]), actor=SYSTEM)._standing())])
+    standing = Environments(Record(root, m["environment"]), actor=SYSTEM)._standing()
+    owners = {e.title: e.owner for e in standing}
+    names = dict.fromkeys([m["environment"], *(e.title for e in standing)])
     return {"project": m["project"], "root": str(root), "version": m["version"], "start": m["environment"], "color": identity(root)["color"],
-            "environments": [environment(Record(root, name)) for name in names]}
+            "environments": [{**environment(Record(root, name)), "owner": owners.get(name, "")} for name in names]}

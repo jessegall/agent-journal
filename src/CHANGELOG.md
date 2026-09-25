@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.167.0 — The viewer finds a free port, and Redmar's board requests
+
+journal serve with no --port takes port 8430, or the next free port after it when that one is taken, and records the port it got, so the link and the agents follow it. Codex sessions get a Fast mode control beside model and effort, which types /fast into the Codex terminal. The Hub shows "Steered by ticket N" in place of the auto switch for an environment a ticket, plan or role owns. A ticket board has a stepper for how many ticket agents run at once. A ticket environment's breadcrumb opens that ticket over its board. Nothing to do.
+
 ## 2.166.1 — The family tree opens agents where you are
 
 Clicking an agent or a subagent in the family tree opens it over the page you are on, read from its own environment, instead of switching the viewer's environment. Nothing to do.

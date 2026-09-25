@@ -158,6 +158,16 @@ const agentCard = computed(
 const working = computed(() => (tickets.value ? workingCards(store.board.lanes) : []));
 const starting = ref(false);
 
+async function setLimit(n) {
+    store.board.slots = {...store.board.slots, limit: n};
+    try {
+        store.settings = await api.saveSettings({tickets: {...((store.settings && store.settings.tickets) || {}), running: n}});
+    } catch (e) {
+        refuse(e);
+    }
+    refresh();
+}
+
 async function startBoard() {
     starting.value = true;
     try {
@@ -343,7 +353,7 @@ const ask = usePoll(
                 <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
             </template>
             <template v-if="tickets && slots">
-                <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" />
+                <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" @limit="setLimit" />
             </template>
             <template v-if="tickets && store.board.roles.length">
                 <RolesTree :roles="store.board.roles" />
