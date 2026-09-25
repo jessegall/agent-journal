@@ -463,16 +463,15 @@ class Tickets(Controller):
         stance = PROPOSED if self.actor == AGENT else CONFIRMED
         return self.update(ticket.n, dependencies={**ticket.dependencies, other.ref: stance})
 
-    def accept_dependencies(self, n: int, only: str = ""):
-        return self._decide_dependencies(n, kept=lambda ref: not only or ref.split(":")[-1] in only.split(","))
+    def accept_dependencies(self, n: int, only: str = "", why: str = ""):
+        return self._decide_dependencies(n, lambda ref: not only or ref.split(":")[-1] in only.split(","), "Accepted its proposed waits", why)
 
-    def decline_dependencies(self, n: int):
-        return self._decide_dependencies(n, kept=lambda ref: False)
+    def decline_dependencies(self, n: int, why: str = ""):
+        return self._decide_dependencies(n, lambda ref: False, "Declined its proposed waits", why)
 
-    def _decide_dependencies(self, n: int, kept):
-        if self.actor == AGENT:
-            self._refuse(f"only the user accepts or declines a {self.type}'s proposed dependencies")
+    def _decide_dependencies(self, n: int, kept, done: str, why: str):
         ticket = self.load(int(n))
+        self._as_orchestrator(ticket, f"accepts or declines a {self.type}'s proposed dependencies", done, why)
         proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
         decided = {ref: CONFIRMED for ref in ticket.dependencies if ref not in proposed or kept(ref)}
         return self.update(ticket.n, dependencies=decided, declined=[r for r in [*ticket.declined, *proposed] if r not in decided])
@@ -503,10 +502,20 @@ class Tickets(Controller):
     def _at(self, ref: str):
         return self.load(int(ref.split(":")[1]))
 
-    def confirm(self, n: int):
-        if self.actor == AGENT:
-            self._refuse(f"only the user confirms a drafted {self.type}: they do it with its button or in the viewer")
-        return self.update(int(n), draft=False)
+    def confirm(self, n: int, why: str = ""):
+        ticket = self.load(int(n))
+        self._as_orchestrator(ticket, f"confirms a drafted {self.type}, with its button or in the viewer", "Confirmed the draft", why)
+        return self.update(ticket.n, draft=False)
+
+    def _as_orchestrator(self, ticket, gate: str, done: str, why: str) -> None:
+        from features.work_tracking.auto import automatic
+        if self.actor != AGENT:
+            return
+        if not (ticket.board and int(ticket.board) in self._orchestrating() and automatic(self.record)):
+            self._refuse(f"only the user {gate}, or the agent orchestrating its board while auto mode is on")
+        if not why.strip():
+            self._refuse("say why, as the board's orchestrator: --why \"<reason>\"")
+        self.comment(ticket.n, f"{done} as the board's orchestrator, under auto mode: {why.strip()}")
 
     def start(self, n: int, agent: str | None = None):
         from engine.terminal import detached

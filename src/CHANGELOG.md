@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.173.0 — Under auto mode a board's orchestrator decides its agents' proposals
+
+While auto mode is on, the agent orchestrating a board may accept or decline its tickets' proposed waits and confirm drafted tickets, as the user can: journal ticket accept_dependencies <n> --why "<reason>" (or decline_dependencies, or confirm). It must give its reason, and the ticket keeps a comment saying the orchestrator decided and why. Outside auto mode it stays the user's. Nothing to do.
+
 ## 2.172.0 — A journal line is acted on, never answered in the chat
 
 The chat etiquette skill and the channel's own instructions now say that a line from the journal is an instruction to the agent, not a message: it acts on it or notes it, and never answers or mentions it in the chat, while anything the user needs to know still goes to the chat. Every 20 journal lines the agent is reminded of it; Settings changes the count, in a new unit, journal lines. Nothing to do.

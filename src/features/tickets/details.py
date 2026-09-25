@@ -28,7 +28,8 @@ class TicketsDetails(FeatureDetails):
         journal ticket depend <n> <other> says ticket n waits on ticket other. From the agent it is only a proposal: the user
         never sees it while picking cards in New work, and adding cards keeps the waits between the cards added and drops a wait
         on a card left out (journal ticket accept_dependencies <n> / decline_dependencies <n> decide it by hand); from the user
-        it holds at once, and a declined proposal holds nothing. A ticket waiting on an open
+        it holds at once, and a declined proposal holds nothing. While auto mode is on, the agent orchestrating a board may accept or
+        decline its tickets' proposed waits and confirm its drafts too, with --why "<reason>"; the ticket keeps a comment saying so. A ticket waiting on an open
         one queues instead of starting, and the minute sweep starts it once the other closes. A dependency that would make a
         cycle is refused.
 

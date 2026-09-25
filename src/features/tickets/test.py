@@ -281,6 +281,14 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert (kept.dependencies, kept.declined) == ({api.ref: "confirmed"}, [docs.ref]), "only the links the user kept hold"
     assert f"declined its proposed wait on {docs.ref}" in user._kickoff(kept), "the ticket's agent hears which wait was declined"
     assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
+    agent.depend(docs.n, api.n)
+    assert "only the user" in refused(lambda: agent.accept_dependencies(docs.n, why="docs follow the API")), "an agent never decides a proposal"
+    monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [board.n])
+    monkeypatch.setattr("features.work_tracking.auto.automatic", lambda record: True)
+    assert "say why" in refused(lambda: agent.accept_dependencies(docs.n)), "the board's orchestrator gives its reason"
+    agent.accept_dependencies(docs.n, why="the docs describe the API")
+    assert (user.load(docs.n).dependencies, "as the board's orchestrator, under auto mode: the docs describe the API" in user.comments(docs.n)[0].brief) == \
+        ({api.ref: "confirmed"}, True), "under auto mode the board's orchestrator decides it, and the ticket shows who and why"
     user.move(ui.n, "Building")
     assert (launched, user.load(ui.n).queued) == ([], True), "a ticket waiting on an open one does not start"
     user.complete(api.n, how="shipped")
