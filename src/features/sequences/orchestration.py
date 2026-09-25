@@ -16,9 +16,10 @@ ORCHESTRATION = {
         ("Start the tickets", "Move every ticket into the board's start stage, in the order they must run: journal ticket move "
                               "<n> \"<start stage>\". Each agent starts in its own worktree; beyond the running limit, and behind "
                               "the tickets they wait on, they queue and start as slots free."),
-        ("Keep a check running", "Set a recurring check on the board with your scheduling tool, every 15 minutes: which ticket "
-                                 "runs, whether its agent works, waits or is stuck (journal ticket agent_session <n> and its "
-                                 "screen), and what is queued. Say in the chat what you set up."),
+        ("Know how you are kept informed", "You need no loop of your own. While this runs, the journal tells you when a ticket's plan "
+                                          "waits for you, when a started ticket needs a look (waiting on a prompt, silent, or its agent "
+                                          "gone), and, every five minutes you sit idle, to check on the ticket agents. Act on each as it "
+                                          "comes; journal ticket board shows the whole board at any time."),
         ("See every ticket through", "Until every ticket is done: when you are told a ticket's plan waits, review it before you "
                                      "approve anything. Read it against its card (journal --env <ticket env> plan read <plan n>), "
                                      "or dispatch a reviewer subagent to check it. Approve only a plan that does the ticket and "
@@ -28,7 +29,7 @@ ORCHESTRATION = {
                                      "board's branch with journal ticket merge <n>, never by hand; it closes and the next one starts. When an agent is stuck on the journal "
                                      "itself, send the agent-journal agent the exact command, its output and the rows involved, "
                                      "wait for the fix, and carry on once it is installed. Move on only when every ticket is closed."),
-        ("Report the board done", "Stop the recurring check, then write an update for the user: journal report changes, then "
+        ("Report the board done", "When every ticket is closed, write an update for the user: journal report changes, then "
                                   "journal report recap \"<what landed on the board's branch>\"."),
     ],
 }

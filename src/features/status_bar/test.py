@@ -170,3 +170,9 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert agents.by_session("claude-1").data["loops"]["749f34bc"]["schedule"] == "7,22,37,52 * * * *", "a loop the agent schedules is kept on its row"
     handle(claude, record.root, record.env, {**loop, "tool_name": "CronDelete", "tool_input": {"id": "749f34bc"}, "tool_response": {}})
     assert agents.by_session("claude-1").data["loops"] == {}, "and dropped when it deletes it"
+    tests = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "pytest -q"}, "hook_event_name": "PreToolUse"}
+    handle(claude, record.root, record.env, tests)
+    marks = lambda: [(card["label"], card["state"]) for card in agents.by_session("claude-1").data.get("cards", []) if card.get("key", "").startswith("tests:")]
+    assert marks() == [("Running tests", "running")], "a test run shows as a mark while it runs"
+    handle(claude, record.root, record.env, {**tests, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "3 passed, 1 failed in 0.2s"}})
+    assert marks() == [("Tests failed", "failed")], "and turns red in place when a test fails"

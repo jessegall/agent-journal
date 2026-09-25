@@ -111,3 +111,27 @@ def test_a_link_with_nothing_shared_lands_on_one_calm_page_for_a_week():
     shares.update(share.n, expires=time.time() - KEEP_AFTER - 60)
     assert share_services(record.root, set()) == [], "a week later it stops"
     assert "Nothing is shared on this link" in unshared(), "every stopped, ended or unknown link lands on one calm page"
+
+
+def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
+    import features
+    import features.sharing.watchdog as watchdog
+    from engine import runtime
+    from tests.kit import report, tick
+    features.load()
+    record = fresh()
+    monkeypatch.setattr(runtime, "env", lambda root: record.env)
+    report(record, "working", "PreToolUse")
+    share, doc = shared_with_comments(record)
+    Shares(record, actor=USER).update(share.n, approved=True)
+    asked = []
+    monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
+    monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
+    monkeypatch.setattr(Shares, "reachable", lambda self, n: {"reachable": False})
+    tick(record)
+    assert asked == [], "one missed check is not enough"
+    tick(record)
+    assert asked == [watchdog.TUNNEL], "a link that has not answered for a minute gets its tunnel restarted"
+    tick(record)
+    tick(record)
+    assert asked == [watchdog.TUNNEL], "and not again within five minutes"
