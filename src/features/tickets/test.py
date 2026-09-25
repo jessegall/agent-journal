@@ -373,16 +373,19 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
     import time
     started = time.time()
-    from controllers.types import Environments, Questions
+    from controllers.types import Environments, Messages, Questions
     place = Record(record.root, "ticket-1")
     asked = Questions(place, actor=AGENT).create("Which theme?")
+    tickets.update(ticket.n, told=time.time() - 1)
+    Messages(place, actor=AGENT).create("Dark it is, as the card says")
     monkeypatch.setattr(time, "time", lambda: started + 120)
     tick(record)
     assert any(f"the plan of ticket {ticket.n}" in line and "stopped at a checkpoint" in line for line in nudges(record)), \
         "a ticket's plan that stops at a checkpoint is handed to the orchestrator too"
     assert (f"ticket {ticket.n}, Dark mode, asks question {asked.n} - Which theme?" in nudges(record),
-            f"ticket {ticket.n}, Dark mode, is waiting - the user's pick of theme" in nudges(record)) == (True, True), \
-        "the orchestrator is told when a ticket's agent asks a question or waits on something"
+            f"ticket {ticket.n}, Dark mode, is waiting - the user's pick of theme" in nudges(record),
+            f"ticket {ticket.n}, Dark mode, answered - Dark it is, as the card says" in nudges(record)) == (True, True, True), \
+        "the orchestrator is told when a ticket's agent asks a question, waits on something, or answers after being told"
     told = []
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: told.append((n, note)))
     Environments(record, actor=SYSTEM).create("ticket-1", owner=ticket.ref)

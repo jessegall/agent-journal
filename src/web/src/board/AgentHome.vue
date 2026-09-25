@@ -211,7 +211,7 @@ function pickPreset(key) {
                     <template #plan>
                         <template v-if="planRow">
                             <div class="fill scroll padded">
-                                <PlanPage :resource="planRow" />
+                                <PlanPage :resource="planRow" :closable="false" />
                             </div>
                         </template>
                         <template v-else>

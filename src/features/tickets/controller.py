@@ -377,8 +377,9 @@ class Tickets(Controller):
         place = Record(self.record.root, ticket.work_environment)
         asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}) for q in Questions(place, actor=SYSTEM)._standing()]
         awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}) for w in Works(place, actor=SYSTEM)._standing() if w.awaiting]
-        replies = [("ticket_replied", f"message:{row['n']}", {"text": row["title"]}) for row in Messages(place, actor=SYSTEM).summaries()
-                   if ticket.told and row["seen"][:1] == [AGENT] and row["created"] > ticket.told and not row["deleted"]]
+        messages = Messages(place, actor=SYSTEM)
+        written = [messages.load(row["n"]) for row in messages.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
+        replies = [("ticket_replied", message.ref, {"text": message.title}) for message in written if message.created > ticket.told]
         done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)})] if self._plan_status(ticket) == "done" and self._clean(ticket) else []
         return asks + awaits + replies + done
 
