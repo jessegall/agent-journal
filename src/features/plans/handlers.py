@@ -5,7 +5,7 @@ from engine.events import AgentReported, AnyEvent, ResourceEvent
 from features.plans.controller import ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE, rows_of
-from features.work_tracking.auto import automatic
+from features.work_tracking.auto import passes_checkpoints
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 
@@ -67,7 +67,7 @@ class GuideBuilding(Handler):
 
 class PassCheckpointsInAuto(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if not automatic(context.record):
+        if not passes_checkpoints(context.record):
             return
         plans = context.journal.plans
         for plan in plans._every():
