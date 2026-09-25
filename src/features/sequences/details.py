@@ -1,5 +1,5 @@
 from features.base import FeatureDetails, Line
-from features.sequences.handlers import IN_CHAT, STEP, UNFINISHED, WAITING
+from features.sequences.handlers import IN_CHAT, STEP, STEP_HELD, UNFINISHED, WAITING
 
 
 class SequencesDetails(FeatureDetails):
@@ -28,8 +28,10 @@ class SequencesDetails(FeatureDetails):
         already has are not written twice: journal sequence include <n> <other> [--steps 2-3]
         adds a step that hands out that sequence's steps, or only the ones named, in its place.
         journal sequence run <n>
-        --about <ref> hands you the first step; journal sequence next <n> --about <ref>
-        marks the step in hand done and hands the next, and the last one ends it.
+        --about <ref> hands you the first step, and your writes wait until you take it up with
+        journal sequence follow <n> --about <ref>; journal sequence next <n> --about <ref>
+        marks the step in hand done and hands the next, and the last one ends it. A step you
+        never took up cannot be moved past.
         --set starts_on starts it by itself, about the row it started on: <type>.created or
         <type>.completed for any row type (dump.created, plan.completed), or trigger:<n> to start
         when trigger n fires. Any other value is refused. To start on words or a command, such as a
@@ -66,6 +68,11 @@ class SequencesDetails(FeatureDetails):
         Line(
             name=STEP,
             title="sequence {{n}}, {{title}}, step {{step}} of {{count}} - {{name}}",
-            brief="{{body}}{{chat_rule}} When it is done: journal sequence next {{n}}{{about}}",
+            brief="{{body}}{{chat_rule}} Take it up first with journal sequence follow {{n}}{{about}}; when it is done: journal sequence next {{n}}{{about}}",
+        ),
+        Line(
+            name=STEP_HELD,
+            title="sequence {{n}}, {{title}}, handed you step {{step}} - take it up with journal sequence follow {{n}}{{about}} before any other write",
+            brief="then do what the step says and journal sequence next {{n}}{{about}}; if it no longer applies, journal sequence abandon {{n}}{{about}} --why \"<why>\"",
         ),
     ]

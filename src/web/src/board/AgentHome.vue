@@ -157,11 +157,11 @@ function pickPreset(key) {
                 <PresetList :presets="presets" @pick="pickPreset" />
             </MenuPanel>
         </template>
-        <AgentPanes ref="panes" :views="VIEWS" :available="available">
-            <template #view="{view, pane}">
+        <AgentPanes ref="panes" :views="VIEWS" :available="available" :flushable="['feed']">
+            <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
-                        <SubagentChat :turns="turns" :session="chatSession || session" read-only />
+                        <SubagentChat :turns="turns" :session="chatSession || session" :typed="!subagent" read-only />
                     </template>
                     <template #transcript>
                         <TranscriptLog ref="log" class="fill" :transcript="transcript" :entries="turns" :env="env" />
@@ -197,7 +197,13 @@ function pickPreset(key) {
                     </template>
                     <template #feed>
                         <template v-if="agent">
-                            <FileFeed :key="agent.n" :agent="agent.n" />
+                            <FileFeed
+                                :key="agent.n"
+                                :agent="agent.n"
+                                :flush="!!pane.flush"
+                                :options="pane.feed || null"
+                                @options="(feed) => tune({feed})"
+                            />
                         </template>
                         <template v-else>
                             <EmptyState title="No agent yet">Its edits show here once the agent starts.</EmptyState>

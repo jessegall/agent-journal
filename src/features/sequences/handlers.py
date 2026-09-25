@@ -13,6 +13,7 @@ from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 
 STEP = "step"
+STEP_HELD = "step held"
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
@@ -111,9 +112,15 @@ class HandStepToAgent(Handler):
         agent = working_agent(context)
         found = context.journal.sequences._in_hand() if event.action == "updated" and agent else None
         if not found:
+            if agent and event.action == "updated":
+                context.speaking_to(agent).release(STEP)
             return
         sequence, key, run = found
         speaking = context.speaking_to(agent)
+        if run.get("followed") == run["step"]:
+            speaking.release(STEP)
+            return
+        speaking.hold(STEP_HELD, STEP, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
         if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run.get('stepped', run['at'])}"):
             steps = context.journal.sequences._steps(sequence)
             part = steps[run["step"] - 1]
