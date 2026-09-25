@@ -84,8 +84,11 @@ class Context:
     def release(self, behaviour: str = "") -> None:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
-    def once(self, kind: str, key: str) -> bool:
-        return self.record.state("once", self.agent.session).claim(f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}", time.time(), keep=ONCE_KEPT)
+    def once(self, kind: str, key: str, then=None) -> bool:
+        store, name = self.record.state("once", self.agent.session), f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}"
+        if then and (store.get(name) is not None or not then()):
+            return False
+        return store.claim(name, time.time(), keep=ONCE_KEPT)
 
     @property
     def state(self) -> "State":

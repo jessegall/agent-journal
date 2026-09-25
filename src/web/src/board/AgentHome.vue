@@ -12,6 +12,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import FileFeed from "../chat/FileFeed.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
+import Thread from "../chat/Thread.vue";
 import RailTodos from "../pages/RailTodos.vue";
 import PlanPage from "../resource/PlanPage.vue";
 import TaskList from "../resource/TaskList.vue";
@@ -35,6 +36,7 @@ const props = defineProps({
     subagent: Boolean,
 });
 const EVERY = 5000;
+const CHAT_TYPES = ["message", "comment", "question", "reaction", "doc", "agent", "work", "plan", "report", "todo", "notice"];
 const HISTORY = 30;
 const VIEWS = {
     chat: {title: "Chat", icon: "chat"},
@@ -87,7 +89,7 @@ usePoll(
     async () => {
         if (!scope) return null;
         if (props.plan) await scope.holding("plan", [props.plan]);
-        return scope.recent("todo", 80);
+        return scope.recentAll(CHAT_TYPES, 80);
     },
     EVERY,
     () => {}
@@ -161,7 +163,12 @@ function pickPreset(key) {
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
-                        <SubagentChat :turns="turns" :session="chatSession || session" :typed="!subagent" read-only />
+                        <template v-if="subagent">
+                            <SubagentChat :turns="turns" :session="chatSession || session" read-only />
+                        </template>
+                        <template v-else>
+                            <Thread view="chat" />
+                        </template>
                     </template>
                     <template #transcript>
                         <TranscriptLog ref="log" class="fill" :transcript="transcript" :entries="turns" :env="env" />

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.186.0 — Sequences always finish
+
+Every sequence line now reaches the agent, even while its work waits on something, and counts as said only once it was sent; before, a step handed during a long wait was lost for good. Sequences nest like function calls: one started while another runs is handed first, and the one it interrupted comes back when it ends, its marks indented under it in the chat. Starting a sequence that is already open about the same row starts it again with a Sequence restarted mark, a run started by a message is about that message, and starts_on=trigger:<n> is refused for a trigger that does not start. The agent is told that finishing a sequence comes first, nudged every minute while a step stands still (Settings changes the minute), and reminded each time it stops with a run open. A step not yet taken up also holds journal commands. Abandoning names the steps it would skip and needs --sure, and a step never taken up cannot be abandoned. A trigger that starts a sequence no longer shows its own mark. The inspector of a ticket or plan agent now shows Home's own chat, and Agents at work shows subagents, marked as subagents. Nothing to do.
+
 ## 2.185.0 — A sequence step is taken up before anything else
 
 When a sequence hands the agent a step, its writes wait until it takes the step up with journal sequence follow <n>; journal sequence next refuses a step it never took up, so steps can no longer be skipped in a quick loop. The journal's own step moves are unaffected. In an agent's inspector, pane settings such as the file feed's View options now take effect, tabs drag between panes as on Home, the file feed's bar no longer covers the tab row, and lines typed into a ticket or plan agent's terminal show as small marks instead of your own messages. Nothing to do.

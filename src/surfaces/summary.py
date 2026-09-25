@@ -12,6 +12,18 @@ from resources.base import SYSTEM, USER
 from surfaces.color import identity
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
+RECENTLY_ENDED = 600.0
+SUBAGENT_FIELDS = ("session", "task", "type", "model", "at", "ended", "status", "running")
+
+
+def subagents(agent) -> list[dict]:
+    if not agent:
+        return []
+    live = (agent.status or "stopped") != "stopped"
+    now = time.time()
+    kept = [sub for sub in agent.subagent_rows or [] if sub.get("session")
+            and ((sub.get("running") and live) or now - float(sub.get("ended") or 0) < RECENTLY_ENDED)]
+    return [{**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": bool(sub.get("running") and live), "parent": agent.n} for sub in kept]
 
 KEPT_FOR = 1.0
 KEPT: dict[Path, tuple[float, dict]] = {}
@@ -48,6 +60,7 @@ def environment(record: Record) -> dict:
         "work": work(current),
         "last": work(last),
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM)._standing() if p.status in SHOWN],
+        "subagents": subagents(agent),
         "auto": automatic(record),
         "counts": {
             "messages": sum(USER not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()),

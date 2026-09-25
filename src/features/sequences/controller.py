@@ -7,6 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Agents
 from features.sequences.resource import Sequence
+from features.triggers.resource import START
 from resources.base import AGENT, SECTION, SYSTEM
 
 BY_HAND = "by hand"
@@ -85,7 +86,10 @@ class Sequences(Controller):
         if not start or start in self._moments():
             return
         kind, _, n = start.partition(":")
-        if kind == TRIGGER and n.isdigit() and not types_module.CONTROLLERS[TRIGGER](self.record, actor=SYSTEM).load(int(n)).completed:
+        trigger = types_module.CONTROLLERS[TRIGGER](self.record, actor=SYSTEM).load(int(n)) if kind == TRIGGER and n.isdigit() else None
+        if trigger and trigger.does != START:
+            self._refuse(f"trigger {trigger.n} does {trigger.does}, so it starts nothing: journal trigger update {trigger.n} --set does=start first")
+        if trigger and not trigger.completed:
             return
         self._refuse(f"starts_on {start!r} is no moment: use <type>.created or <type>.completed for a row type "
                      f"({', '.join(sorted(t for t in resources_module.TYPES if t != 'sequence'))}), or trigger:<n> to start when trigger n fires")
@@ -97,10 +101,7 @@ class Sequences(Controller):
         r = self.load(int(n))
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
-        if self._running(r, about):
-            self._refuse(f"sequence {r.n} is already running, at step {r.runs[self._key(about)]['step']}: "
-                         f"journal sequence next {r.n} moves it on")
-        self._mark(r, "Sequence started", 1, about=about)
+        self._mark(r, "Sequence restarted" if self._running(r, about) else "Sequence started", 1, about=about)
         return self.update(r.n, runs={**r.runs, self._key(about): {"step": 1, "at": time.time(), "titles": self._titles(r)}})
 
     def _running(self, r, about: str) -> bool:
@@ -119,7 +120,10 @@ class Sequences(Controller):
         runs = {k: v for k, v in r.runs.items() if k != key}
         going = run["step"] <= len(titles)
         self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0)
-        return self.update(r.n, runs={**runs, key: run} if going else runs)
+        moved = self.update(r.n, runs={**runs, key: run} if going else runs)
+        if not going:
+            self._resume()
+        return moved
 
     def follow(self, n: int, about: str = ""):
         r = self.load(int(n))
@@ -134,7 +138,8 @@ class Sequences(Controller):
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")
         self._mark(r, "Sequence moved on", step)
-        return self.update(r.n, runs={**r.runs, key: {**r.runs[key], "step": step, "stepped": time.time(), "titles": self._titles(r)}})
+        run = {k: v for k, v in r.runs[key].items() if k != "followed"}
+        return self.update(r.n, runs={**r.runs, key: {**run, "step": step, "stepped": time.time(), "titles": self._titles(r)}})
 
     def _finish(self, n: int, about: str):
         r = self.load(int(n))
@@ -142,25 +147,47 @@ class Sequences(Controller):
         if key not in r.runs:
             return r
         self._mark(r, "Sequence finished", 0)
-        return self.update(r.n, runs={k: v for k, v in r.runs.items() if k != key})
+        finished = self.update(r.n, runs={k: v for k, v in r.runs.items() if k != key})
+        self._resume()
+        return finished
+
+    def _resume(self) -> None:
+        found = self._in_hand()
+        if not found:
+            return
+        sequence, key, run = found
+        handed = {k: v for k, v in run.items() if k != "followed"}
+        self.update(sequence.n, runs={**sequence.runs, key: {**handed, "stepped": time.time()}})
 
     def _in_hand(self):
         live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
         mine = [(sequence.lasting, run["at"], sequence, key, run) for sequence in live for key, run in sequence.runs.items()
                 if key.split("|", 1)[0] == self.record.env]
-        return min(mine, key=lambda found: found[:2])[2:] if mine else None
+        return min(mine, key=lambda found: (found[0], -found[1]))[2:] if mine else None
 
-    def abandon(self, n: int, about: str = "", why: str = ""):
+    def _left(self, r, run: dict) -> list[str]:
+        return (run.get("titles") or self._titles(r))[run["step"] - 1:]
+
+    def abandon(self, n: int, about: str = "", why: str = "", sure: bool = False):
         r = self.load(int(n))
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")
         if not why.strip():
             self._refuse("say why it is abandoned: --why \"<why>\"")
+        flag = f"{' --about ' + about if about else ''}"
+        if self.actor == AGENT and r.runs[key].get("followed") != r.runs[key]["step"]:
+            self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up, so you cannot know it no longer applies: "
+                         f"journal sequence follow {r.n}{flag} and read it first")
+        if self.actor == AGENT and not sure:
+            self._refuse(f"abandoning skips {'; '.join(self._left(r, r.runs[key]))}. If none of these still applies, "
+                         f"journal sequence abandon {r.n}{flag} --why \"<why>\" --sure")
         runs = {k: v for k, v in r.runs.items() if k != key}
         left = {"about": key, "step": r.runs[key]["step"], "why": why.strip(), "at": time.time()}
         self._mark(r, "Sequence abandoned", 0, why.strip())
-        return self.update(r.n, runs=runs, abandoned=[*(r.data.get("abandoned") or []), left])
+        abandoned = self.update(r.n, runs=runs, abandoned=[*(r.data.get("abandoned") or []), left])
+        self._resume()
+        return abandoned
 
     @internal
     def give_up(self, about: str, why: str) -> None:
@@ -174,7 +201,12 @@ class Sequences(Controller):
         if not row:
             return
         parts = [r.title, f"step {step}, {self._steps(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
-        agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref)
+        depth = max(0, self._open() - (label != "Sequence started"))
+        agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref, depth=depth)
+
+    def _open(self) -> int:
+        live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
+        return sum(1 for sequence in live for key in sequence.runs if key.split("|", 1)[0] == self.record.env)
 
     def _key(self, about: str) -> str:
         return f"{self.record.env}|{about.strip() or BY_HAND}"

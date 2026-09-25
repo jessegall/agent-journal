@@ -52,7 +52,7 @@ from features.plugins.source import data
 from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching
 from commands.dispatch import JSON, KEEP_SHAPED, Missing, PLAIN, Reply, Request, represented, route, settled, shaped
-from features.format import VIEWER
+from features.format import VIEWER, formatted
 from commands.dispatch import dispatch  # noqa: F401
 
 
@@ -669,11 +669,17 @@ def transcript_at(req: Request, session: str | None) -> Transcript:
     return Transcript(provider, path)
 
 
+SPOKEN = ("agent", "human", "injected")
+
+
 def transcript_of(req: Request, session: str | None = None) -> Reply:
     found = transcript_at(req, session)
     turns = found.provider.transcript(found.path) if found.path else []
     asked = req.query_as(TranscriptQuery)
-    return Reply(200, page(turns, asked.since, asked.before, asked.last))
+    got = page(turns, asked.since, asked.before, asked.last)
+    record = req.record()
+    got["turns"] = [{**t, "said": formatted(t["text"], record, VIEWER)} if t["kind"] in SPOKEN and t["text"] else t for t in got["turns"]]
+    return Reply(200, got)
 
 
 @route("GET", "/api/{env}/agent/{n}/links")
