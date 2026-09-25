@@ -23,7 +23,8 @@ UNFINISHED = "unfinished"
 WAITING = "waiting"
 MINUTE = 60
 JOURNAL_CALL = re.compile(r"(?:^|[;&|(\n])\s*(journal\s[^;&|\n]*)")
-FREE_WHILE_HELD = re.compile(r"journal\s+(?:--\S+\s+)*(?:sequence\s+(?:follow|next|abandon|show|all)|message\s)")
+FREE_WHILE_HELD = re.compile(r"journal\s+(?:--\S+\s+)*(?:sequence\s+(?:follow|next|abandon)|message\s|(?:search|carry|status|user|conversation)\b"
+                             r"|\S+\s+(?:show|all|progress|search|unread|board|screen|paths|find|linked_to|members|tasks|revisions|revision|changes|files|--help)\b)")
 
 
 @dataclass(frozen=True)

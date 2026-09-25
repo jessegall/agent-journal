@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.191.2 — Reading the journal is never held
+
+While a sequence step waits to be taken up, only journal writes wait; reading the journal (show, all, progress, search and the like) goes through, so a read in the same command no longer holds back the journal sequence follow beside it. Nothing to do.
+
 ## 2.191.1 — The orchestrator hears when a ticket agent dies or idles
 
 A ticket whose agent had started and then died was never looked at again, because the mark of its launch was cleared as soon as the agent reported; the orchestrator now hears it (Unsticking a ticket agent starts) however long ago it launched. A ticket agent sitting idle for five minutes with no background command, subagent or monitor running is reported the same way, instead of reading as busy behind its wait. Nothing to do.
