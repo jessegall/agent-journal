@@ -63,8 +63,8 @@ class SequencesDetails(FeatureDetails):
             while_waiting=True,
             title="board {{board}} waits for the {{kind}} ({{why}}) - dispatch it now",
             brief="dispatch it and carry on with your own work: the Agent tool with subagent_type \"{{kind}}\", model \"{{model}}\", a "
-                  "description that starts with a name, and this prompt: \"You fill board {{board}} for {{about}}. Your steps are sequence "
-                  "{{n}}, {{title}}: read them with journal sequence show {{n}}. Take up the step in hand with journal --agent {{kind}} "
+                  "description that starts with a name, and this prompt: \"You fill board {{board}} for {{about}}. The request: "
+                  "'{{request}}'. Now: {{why}}. Your steps are sequence {{n}}, {{title}}. Take up the step in hand with journal --agent {{kind}} "
                   "sequence follow {{n}} --about {{about}}, do it, then journal --agent {{kind}} sequence next {{n}} --about {{about}}, and "
                   "go on the same way; when the drafting sequence starts after the rating of 5, find it with journal sequence all and "
                   "follow it too. Run every journal command with --agent {{kind}}. When you have asked the user a question, stop and "

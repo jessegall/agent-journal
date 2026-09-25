@@ -7,8 +7,9 @@ from features.sequences.exploration import FILLER
 from features.parts import AgentContext, ToolInterceptor
 from providers.payload import WriteCall
 
-FILLER_ALLOWED = re.compile(r"^journal\s+(?:--\S+\s+)*(?:board\s+(?:show|paths|score|ask|expect|say|log|group|outline|progress|stall)"
-                            r"|ticket\s+(?:board|show|create|update|delete|depend)|message\s+show|sequence\s+(?:follow|next|show))\b")
+FILLER_ALLOWED = re.compile(r"^journal\s+(?:--\S+(?:=\S+|\s+\S+)\s+)*(?:board\s+(?:show|paths|score|ask|expect|say|log|group|outline|progress|stall)"
+                            r"|ticket\s+(?:board|show|create|update|delete|depend)|message\s+show|question\s+show"
+                            r"|sequence\s+(?:follow|next|show|all))\b")
 JOURNAL_CALLS = re.compile(r"(?:^|[;&|(\n])\s*(\S+)")
 
 
@@ -24,8 +25,8 @@ class AgentType:
 AGENT_TYPES = (
     AgentType(FILLER, "Fills a board with the cards that reach the user's goal, following the board's sequences. Dispatch it for a New work "
               "request on a board.", "Bash, Read", "filler_model",
-              "You fill one board and do nothing else. Follow the sequence steps the journal hands you, one at a time, with journal "
-              "sequence follow and next. Use only the journal board and ticket commands the steps name; read an attached document with "
+              "You fill one board and do nothing else. The journal command is on your PATH: run it as journal --agent board-filler "
+              "<noun> <word>. Follow the sequence steps the journal hands you, one at a time, with journal sequence follow and next. Use only the journal board and ticket commands the steps name; read an attached document with "
               "Read. Never load skills, write in the chat, start the board, move tickets, edit files or run git. When the last step is "
               "done, answer with one line: drafted <count> cards on board <n>."),
     AgentType("ticket-reviewer", "Reviews a finished ticket before it is merged: runs its tests and checks its diff against each done-when "

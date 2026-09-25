@@ -19,6 +19,7 @@ from resources.types import TYPES
 STEP = "step"
 STEP_HELD = "step held"
 DISPATCH = "dispatch"
+REQUEST_TEXT = 400
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
@@ -134,7 +135,16 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, run: dict, w
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{run['at']}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board_of(context, about),
-        model=BoardsDetails.values(context.record).filler_model, why=why))
+        model=BoardsDetails.values(context.record).filler_model, why=why, request=request_of(context, about)))
+
+
+def request_of(context: Context, about: str) -> str:
+    kind, _, n = about.partition(":")
+    if kind != "message" or not n.isdigit():
+        return ""
+    message = context.journal.messages.load(int(n))
+    text = " ".join((message.brief or message.title).split())
+    return text if len(text) <= REQUEST_TEXT else text[:REQUEST_TEXT - 1].rstrip() + "…"
 
 
 class HandStepToAgent(Handler):
@@ -244,4 +254,4 @@ class DispatchAgainOnAnswer(Handler):
                 continue
             for key, run in sequence.runs.items():
                 if key.split("|", 1)[0] == context.record.env and f"board:{board_of(context, key.split('|', 1)[1])}" in boards:
-                    dispatched_by_line(context, agent, sequence, key, run, f"answer {question.n}")
+                    dispatched_by_line(context, agent, sequence, key, run, f"question {question.n} answered: {question.outcome}")
