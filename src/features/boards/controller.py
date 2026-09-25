@@ -6,10 +6,12 @@ from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from engine.worktree import current_branch
 from features.boards.resource import DONE, MEANINGS, Board
-from resources.base import COMMISSIONED, REQUESTED, REVISED, STARTED, SYSTEM, Refused, Resource, titled
+from resources.base import COMMISSIONED, PAUSED, REQUESTED, RESUMED, REVISED, Refused, Resource, STARTED, SYSTEM, titled
 
 
 READING = 120
+FEWEST = 6
+STALLED = "stalled"
 STAGES = ("To do", "Doing", "Review", "Done")
 START_OVER = "Start over"
 CANCEL_HOLDS = 600
@@ -105,7 +107,24 @@ class Boards(Controller):
         board = self.load(int(n))
         if not board.branch and current_branch(self.record.root.parent):
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
+        board = self.update(board.n, started=board.started or time.time())
         self.record.emit("board", board.n, STARTED, self.actor)
+        return board
+
+    def pause(self, n: int):
+        board = self.load(int(n))
+        if not board.started or board.paused:
+            raise Refused(f"board {board.n} is not running, so there is nothing to pause")
+        board = self.update(board.n, paused=time.time())
+        self.record.emit("board", board.n, PAUSED, self.actor)
+        return board
+
+    def resume(self, n: int):
+        board = self.load(int(n))
+        if not board.paused:
+            raise Refused(f"board {board.n} is not paused")
+        board = self.update(board.n, paused=0.0)
+        self.record.emit("board", board.n, RESUMED, self.actor)
         return board
 
     def group(self, n: int, name: str, tickets: str):
@@ -164,7 +183,7 @@ class Boards(Controller):
         self.record.emit("message", made.n, moment, self.actor)
         return made
 
-    def score(self, n: int, score: str, reading: str = ""):
+    def score(self, n: int, score: str, reading: str = "", goal: str = "", done: str = ""):
         from features.sequences.controller import Sequences
         from features.sequences.drafting import DRAFTING
         from features.sequences.exploration import EXPLORATION
@@ -187,11 +206,44 @@ class Boards(Controller):
             sequences._jump(exploring.n, about, rated + 1)
             phase = EXPLORING
         read = reading.strip()[:READING] or board.drafting.get("reading", "")
+        board = self._goal_set(board, goal, done)
         return self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns, "reading": read})
 
-    def expect(self, n: int, count: str):
+    def stall(self, n: int, why: str):
+        board = self._drafting(n)
+        if not why.strip():
+            raise Refused("say why filling the board cannot go on: journal board stall <n> \"<why>\"")
+        return self.update(board.n, drafting={**board.drafting, "phase": STALLED, "stalled": why.strip(),
+                                              "stalled_from": board.drafting.get("stalled_from") or board.drafting.get("phase", EXPLORING)})
+
+    def retry(self, n: int):
+        board = self._drafting(n)
+        if board.drafting.get("phase") != STALLED:
+            raise Refused(f"board {board.n} is not stalled: nothing to retry")
+        from features.sequences.controller import Sequences
+        asked = board.drafting.get("asked") or []
+        sequences = Sequences(self.record, actor=SYSTEM)
+        for row in sequences.summaries():
+            sequence = sequences.load(row["n"]) if not row["completed"] and not row["deleted"] else None
+            for key, run in (sequence.runs.items() if sequence and sequence.dispatch else ()):
+                if key.split("|", 1)[1] in asked:
+                    handed = {k: v for k, v in run.items() if k != "agent"}
+                    sequences.update(sequence.n, runs={**sequence.runs, key: {**handed, "retried": time.time()}})
+        restored = {k: v for k, v in board.drafting.items() if k not in ("stalled", "stalled_from")}
+        return self.update(board.n, drafting={**restored, "phase": board.drafting.get("stalled_from") or EXPLORING})
+
+    def _goal_set(self, board, goal: str, done: str):
+        clauses = [clause.strip() for clause in done.split("|") if clause.strip()]
+        if not goal.strip() and not clauses:
+            return board
+        kept = list(board.done_when) if board.started else []
+        return self.update(board.n, goal=goal.strip() or board.goal, done_when=kept + [c for c in clauses if c not in kept])
+
+    def expect(self, n: int, count: str, fewer: str = ""):
         if not str(count).isdigit():
             raise Refused(f"the count is how many tickets you will draft, a whole number like 3; not {count!r}")
+        if int(count) < FEWEST and not fewer.strip():
+            raise Refused(f"a board is filled with at least {FEWEST} cards, preferably 8; for fewer, say why with --fewer \"<why>\"")
         shown = self.load(int(n)).expected
         if int(count) < shown:
             raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")

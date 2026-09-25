@@ -2,7 +2,7 @@ import re
 
 from features.sequences.controller import Sequences
 from features.sequences.drafting import DRAFTING
-from features.sequences.exploration import EXPLORATION, PANEL
+from features.sequences.exploration import EXPLORATION, FILLER, PANEL
 from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
 from features.triggers.controller import Triggers
 from features.triggers.resource import FROM_USER, START
@@ -69,6 +69,7 @@ REVISING_THE_DRAFTS = {
     "starts_on": "message.revised",
     "started_by": USER,
     "talks_in": PANEL,
+    "dispatch": FILLER,
     "steps": [
         ("Read the change", "Read their words and the drafts made for this request on the board. Work out which cards the "
                             "change is about. When it is unclear, ask one short question on the board with the cards it might "
@@ -79,6 +80,9 @@ REVISING_THE_DRAFTS = {
                               "For a card they asked to add, first raise the count to the total the panel should show: journal "
                               "board expect <board n> <count>, then journal ticket create as in drafting. When they ask you to choose cards for them, check the ones you would keep: journal board pick <board n> \"<ticket>, <ticket>\". When every change is "
                               "made: journal sequence next <this sequence> --about <ref>."),
+        ("Recheck the drafts", "Check the drafts still meet every clause of the goal (journal board show <board n>), that at "
+                               "least 6 remain unless they asked for fewer, and that the order between cards still holds (journal "
+                               "ticket depend). Draft what a removal left uncovered. Then journal sequence next <this sequence> --about <ref>."),
         ("Say one line", "Say it in the panel in one short line with journal board say <board n> \"<line>\", of at most 200 characters about what changed, like \"Made the "
                          "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Finish with "
                          "journal sequence next <this sequence> --about <ref>."),
@@ -121,13 +125,19 @@ DRAFTING_FROM_A_DOCUMENT = {
              "over means they closed the panel: the run is given up for you, so write nothing more to the board.",
     "starts_on": "message.commissioned",
     "started_by": USER,
+    "dispatch": FILLER,
     "steps": [
         ("Read the document", "journal message show <ref> names the file under document and gives the user's note as its "
                               "text; journal board paths <board n> gives the file's path. Read all of it, and the board's "
                               "cards (journal ticket board <board n>), before you write anything. Then show its sections "
                               "in order, which the panel lists while you work: journal board outline <board n> "
-                              "\"<section>|<section>|...\". Then journal sequence next <this sequence> --about <ref>."),
-        ("Draft the tickets", "Say how many you will draft, on the low side: journal board expect <board n> <count>. Then, "
+                              "\"<section>|<section>|...\". Then state the goal and what done means as the document gives "
+                              "them: journal board score <board n> 5 --goal \"<goal>\" --done \"<clause>|<clause>\". Then journal "
+                              "sequence next <this sequence> --about <ref>."),
+        ("Draft the tickets", "Say how many you will draft, at least 6 unless the document holds less work (then give the "
+                              "reason with --fewer \"<why>\"): journal board expect <board n> <count>. Map the work the document "
+                              "leaves out as well, such as tests, migrations and documentation, and mark those cards --set "
+                              "source_id=\"added: not in the document\". Give every card the clauses it serves with --set covers=<n,n>. Then, "
                               "section by section, one ticket per piece that can be built, reviewed and merged on its own: "
                               "journal ticket create \"<the work>\" --abstract \"<one line>\" --brief \"<What, Why, Touches, Done "
                               "when, Risk>\" --set about=<ref> --set board=<board n> --set draft=true --set source=\"<document>\" "
@@ -268,10 +278,10 @@ def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
     idle = shipped.get("only_when_idle", False)
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
     shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, shipped.get("talks_in", ""), shipped.get("lasting", False),
-             shipped.get("unless", {}), steps)
+             shipped.get("unless", {}), shipped.get("dispatch", ""), steps)
     if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless,
-                                 row.sections) == shape):
+                                 row.dispatch, row.sections) == shape):
         return False
-    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless, row.sections = shape
+    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless, row.dispatch, row.sections = shape
     sequences.save(row, "updated")
     return True

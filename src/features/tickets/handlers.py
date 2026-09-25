@@ -7,6 +7,7 @@ from engine.events import ClockTicked, ResourceCreated, ResourceEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING
+from features.boards.controller import Boards
 from features.tickets.controller import HELD, Tickets
 from features.tickets.details import TicketsDetails
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
@@ -40,7 +41,8 @@ class LookAfterTicketBranches(Handler):
         tickets.close_merged()
         tickets.start_queued()
         tickets._stop_orphaned()
-        for ticket in tickets._awaiting_orchestrator():
+        paused = {board.n for board in Boards(context.record, actor=SYSTEM)._standing() if board.paused}
+        for ticket in [t for t in tickets._awaiting_orchestrator() if not (t.board and int(t.board) in paused)]:
             plan = tickets._plans(ticket).load(int(ticket.plan))
             if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
                 context.record.emit("ticket", ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS, SYSTEM)
@@ -48,7 +50,7 @@ class LookAfterTicketBranches(Handler):
             if context.once("proposal_waits", f"{ticket.ref}|{permission}|{reminder(context)}"):
                 context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
         boards = tickets._orchestrating()
-        for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards]:
+        for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards and int(t.board) not in paused]:
             for kind, key, values, every in tickets._calls(ticket):
                 if not (called_again(context, f"{kind}|{ticket.ref}|{key}", every) if every else context.once(kind, f"{ticket.ref}|{key}")):
                     continue
@@ -98,3 +100,22 @@ class WakeTheTicketAgent(Handler):
             tickets.tell(n, f"Your question {question.n}, {question.title}, is answered: {question.outcome}")
         except Refused:
             return
+
+
+@dataclass(frozen=True)
+class TicketClosed(ResourceEvent):
+    on: ClassVar[str] = "ticket.completed"
+
+
+class FinishTheBoardWithItsLastTicket(Handler):
+    def handle(self, context: Context, event: TicketClosed) -> None:
+        tickets = Tickets(context.record, actor=SYSTEM)
+        ticket = tickets.load(event.n)
+        boards = Boards(context.record, actor=SYSTEM)
+        board = boards.load(int(ticket.board)) if ticket.board else None
+        if not board or not board.started or board.finished:
+            return
+        if any(int(other.board or 0) == board.n for other in tickets._standing()):
+            return
+        boards.update(board.n, finished=time.time())
+        context.record.emit("board", board.n, FINISHED, SYSTEM)

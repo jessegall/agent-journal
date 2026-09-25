@@ -1,7 +1,7 @@
 from typing import ClassVar
 
-from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, NUMBER, TEXT, Field, Placed, Shape
+from resources.base import CHECKPOINT, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
+from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed, Shape
 
 AGENT_CLI = "claude"
 
@@ -38,9 +38,11 @@ class Ticket(Placed, Resource):
         Field(NUMBER, 0, name="restarts"),
         Field(NUMBER, 0.0, name="told"),
         Field(NUMBER, 0.0, name="agent_seen"),
+        Field(LIST, list, name="covers"),
+        Field(NUMBER, 0, name="sent_back"),
     ]
     type = "ticket"
-    moments = ("created", "completed", PLAN_WAITS, CHECKPOINT, FINISHED, STUCK)
+    moments = ("created", "completed", PLAN_WAITS, CHECKPOINT, FINISHED, STUCK, ESCALATED)
     icon = "ticket"
     scope = PROJECT
     created_in_viewer = True

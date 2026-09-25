@@ -1,10 +1,10 @@
 <script setup>
-defineProps({options: {type: Array, required: true}, value: {type: String, default: ""}});
+defineProps({options: {type: Array, required: true}, value: {type: String, default: ""}, fill: Boolean});
 const emit = defineEmits(["pick"]);
 </script>
 
 <template>
-    <span class="segmented" role="radiogroup">
+    <span :class="['segmented', {fill}]" role="radiogroup">
         <template v-for="o in options" :key="o.key">
             <button
                 type="button"
@@ -46,5 +46,15 @@ const emit = defineEmits(["pick"]);
 .segmented-option.on {
     background: var(--sel);
     color: var(--text);
+}
+.segmented.fill {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.segmented.fill .segmented-option {
+    flex: 1;
+    min-height: 40px;
 }
 </style>

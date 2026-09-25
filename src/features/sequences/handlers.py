@@ -18,6 +18,7 @@ from resources.types import TYPES
 
 STEP = "step"
 STEP_HELD = "step held"
+DISPATCH = "dispatch"
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
@@ -127,9 +128,23 @@ def working_agent(context: Context):
     return (context.journal.agents._titled(holder) if holder else None) or context.journal.agents.primary()
 
 
+def dispatched_by_line(context: Context, agent, sequence, key: str, run: dict, why: str) -> None:
+    from features.boards.details import BoardsDetails
+    about = key.split("|", 1)[1]
+    speaking = context.speaking_to(agent)
+    speaking.once(DISPATCH, f"{sequence.n}|{key}|{run['at']}|{why}", lambda: speaking.agent.say(
+        DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board_of(context, about),
+        model=BoardsDetails.values(context.record).filler_model, why=why))
+
+
 class HandStepToAgent(Handler):
     def handle(self, context: Context, event: SequenceMoved) -> None:
         agent = working_agent(context)
+        sequence = context.journal.sequences.load(event.n) if agent and event.action != "deleted" else None
+        if sequence and sequence.dispatch:
+            for key, run in sequence.runs.items():
+                if key.split("|", 1)[0] == context.record.env and not run.get("agent"):
+                    dispatched_by_line(context, agent, sequence, key, run, f"retry {int(run['retried'])}" if run.get("retried") else "a new request")
         found = context.journal.sequences._in_hand() if agent else None
         if not found:
             if agent:
@@ -209,3 +224,24 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
         held = [found for command in call.commands for found in JOURNAL_CALL.findall(command) if not FREE_WHILE_HELD.match(found)]
         return (f"sequence {sequence.n}, {sequence.title}, handed you step {run['step']}: take it up with journal sequence follow "
                 f"{sequence.n}{about_flag(key)} first") if held else ""
+
+
+@dataclass(frozen=True)
+class BoardQuestionAnswered(ResourceEvent):
+    on: ClassVar[str] = "question.completed"
+
+
+class DispatchAgainOnAnswer(Handler):
+    def handle(self, context: Context, event: BoardQuestionAnswered) -> None:
+        agent = working_agent(context)
+        question = context.journal.of("question").load(event.n)
+        boards = [ref for ref in question.refs if ref.startswith("board:")]
+        if not agent or not boards:
+            return
+        for row in context.journal.sequences.summaries():
+            sequence = context.journal.sequences.load(row["n"]) if not row["completed"] and not row["deleted"] else None
+            if not sequence or not sequence.dispatch:
+                continue
+            for key, run in sequence.runs.items():
+                if key.split("|", 1)[0] == context.record.env and f"board:{board_of(context, key.split('|', 1)[1])}" in boards:
+                    dispatched_by_line(context, agent, sequence, key, run, f"answer {question.n}")

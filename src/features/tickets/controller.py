@@ -23,13 +23,14 @@ from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
 from controllers.types import Agents, Messages, Questions, Todos, Works
 from features.plans.controller import READY, WAITING, Plans
-from resources.base import AGENT, SYSTEM, Refused, Resource
+from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
 from resources.shapes import LEVELS, priority_level, rank_before
 
 
 PROPOSED, CONFIRMED = "proposed", "confirmed"
 LAUNCHING_FOR = 60.0
 SILENT_AFTER = 300.0
+RETURNS_BEFORE_ESCALATING = 2
 CARD_EXTRAS: list = []
 REPOSITORY_STATES: dict = {}
 PEOPLE: dict = {}
@@ -209,7 +210,10 @@ class Tickets(Controller):
     def send_back(self, n: int, note: str):
         ticket = self.tell(n, note)
         started = [stage for stage, meaning in Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if meaning == START]
-        return self.update(ticket.n, stage=started[0]) if started else ticket
+        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **({"stage": started[0]} if started else {}))
+        if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
+            self.record.emit(self.type, ticket.n, ESCALATED, self.actor)
+        return ticket
 
     def _plan_waits(self, ticket) -> bool:
         return self._plan_status(ticket) == READY

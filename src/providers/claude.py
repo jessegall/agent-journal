@@ -223,6 +223,18 @@ class Claude(Provider):
             return int(float(value))
         return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
 
+    def agent_types(self, project: Path, chosen: list) -> list[Path]:
+        folder = project / ".claude" / "agents"
+        written = []
+        for kind, model in chosen:
+            text = f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.prompt}\n"
+            target = folder / f"{kind.name}.md"
+            if not target.is_file() or target.read_text() != text:
+                folder.mkdir(parents=True, exist_ok=True)
+                write_text(target, text)
+                written.append(target)
+        return written
+
     def present(self, project: Path) -> bool:
         return (project / ".claude").is_dir() or shutil.which("claude") is not None
 

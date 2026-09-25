@@ -1,4 +1,5 @@
 from features.base import FeatureDetails, Line
+from features.settings import Setting
 from features.boards.resource import MEANINGS
 
 
@@ -38,16 +39,29 @@ class BoardsDetails(FeatureDetails):
         "<line>" puts one short line in the panel, at most 200 characters, answering what was asked there.
     """
 
+    settings = [
+        Setting(
+            name="filler_model",
+            default="sonnet",
+            title="Model of the agent that fills a board",
+            abstract="The board-filler asks, drafts and hands the cards over; it needs quick reasoning more than deep logic",
+        ),
+        Setting(
+            name="reviewer_model",
+            default="sonnet",
+            title="Model of the agents that review plans, tickets and the board's goal",
+        ),
+    ]
+
     lines = [
         Line(
             name="added",
             title="the user added {{count}} cards to board {{n}}, {{title}}",
             brief="""
-                they are {{tickets}}. Say in the chat, in one or two plain lines, what you added, and offer to set their
-                priorities and move them into their columns: journal message create "<your lines>" --set
-                buttons='[{"label": "Prioritize them", "say": "Yes, set their priorities and move them into their columns"},
-                {"label": "Not now", "say": "Not now"}]'. When they say yes, set each with journal ticket priority <n>
-                low|default|high|critical and journal ticket move <n> "<stage>".
+                they are {{tickets}}. Say in the chat in one line that they are in To do and that Play runs them, with a
+                Play button: journal message create "{{count}} cards are in To do. Press Play and I'll run them, each with its own
+                agent in its own worktree." --set buttons='[{"label": "Play", "type": "board", "n": {{n}}, "action": "start",
+                "choice": "play"}, {"label": "Not now", "say": "Not now", "choice": "play"}]'.{{uncovered}}
             """,
         ),
     ]

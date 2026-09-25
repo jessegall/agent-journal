@@ -102,7 +102,8 @@ class Sequences(Controller):
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
         self._mark(r, "Sequence restarted" if self._running(r, about) else "Sequence started", 1, about=about)
-        return self.update(r.n, runs={**r.runs, self._key(about): {"step": 1, "at": time.time(), "titles": self._titles(r)}})
+        run = {"step": 1, "at": time.time(), "titles": self._titles(r), **({"agent": self.agent} if self.agent else {})}
+        return self.update(r.n, runs={**r.runs, self._key(about): run})
 
     def _running(self, r, about: str) -> bool:
         return self._key(about) in r.runs
@@ -130,7 +131,8 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
-        return self.update(r.n, runs={**r.runs, key: {**r.runs[key], "followed": r.runs[key]["step"]}})
+        taken = {"followed": r.runs[key]["step"], **({"agent": self.agent} if self.agent else {})}
+        return self.update(r.n, runs={**r.runs, key: {**r.runs[key], **taken}})
 
     def _jump(self, n: int, about: str, step: int):
         r = self.load(int(n))
@@ -161,8 +163,8 @@ class Sequences(Controller):
 
     def _in_hand(self):
         live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
-        mine = [(sequence.lasting, run["at"], sequence, key, run) for sequence in live for key, run in sequence.runs.items()
-                if key.split("|", 1)[0] == self.record.env]
+        mine = [(sequence.lasting, run["at"], sequence, key, run) for sequence in live if not sequence.dispatch
+                for key, run in sequence.runs.items() if key.split("|", 1)[0] == self.record.env]
         return min(mine, key=lambda found: (found[0], -found[1]))[2:] if mine else None
 
     def _left(self, r, run: dict) -> list[str]:

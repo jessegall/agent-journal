@@ -6,14 +6,11 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
 
 <template>
     <div :class="['asked', {chat}]">
-        <template v-if="chat">
-            <span class="tag">Question</span>
-        </template>
         <p class="title">{{ question.title }}</p>
         <template v-if="question.abstract">
             <p class="context">{{ question.abstract }}</p>
         </template>
-        <OptionsPicker class="choices" :resource="question" buttons-only immediate :tiles="!chat" />
+        <OptionsPicker class="choices" :resource="question" buttons-only immediate :tiles="!chat" :steady="chat" />
     </div>
 </template>
 
@@ -22,6 +19,10 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.asked.chat {
+    animation: asked-rise 0.24s var(--ease) both;
 }
 
 .asked:not(.chat) {
@@ -39,15 +40,14 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
     margin-top: 14px;
 }
 
-.tag {
-    color: var(--accent-text);
-    font-size: 11px;
-    letter-spacing: 0.02em;
-}
-
 .chat .title {
     font-size: 14px;
+    font-weight: 500;
     line-height: 20px;
+}
+
+.chat .choices {
+    margin: 8px 0 0;
 }
 
 .title {
@@ -63,5 +63,24 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
     color: var(--text-2);
     font-size: 13px;
     line-height: 1.5;
+}
+
+.chat .context {
+    margin: 2px 0 0;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+@keyframes asked-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .asked.chat {
+        animation: none;
+    }
 }
 </style>

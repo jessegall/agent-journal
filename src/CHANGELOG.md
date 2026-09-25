@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.192.0 — A board goes from a goal to done
+
+A board now turns a goal into the tickets that reach it and runs them. New work is filled by a fast board-filler agent (Sonnet by default, set in Settings) that asks for the goal, the scope, what done means and the first slice, stores the goal with numbered done-when clauses, and drafts at least 6 cards, each saying which clauses it covers, checked so every clause is met. It has only the board-filling commands; the main agent is only asked to dispatch it, again after each of your answers, and a fill that stalls can be retried. When you add the cards you get a Play button. Play turns the main agent into the board's orchestrator: it says so once, then each moment of a ticket comes as a short sequence of its own (reviewing a plan, passing a checkpoint, merging with a ticket-reviewer, resolving a conflict, escalating a ticket sent back twice, unsticking an agent), boards can be paused and resumed, and when the last ticket closes a goal-verifier checks every clause and you get an update. The journal ships four agent types for this, for Claude in .claude/agents and for Codex in .codex/agents: board-filler, ticket-reviewer, plan-reviewer and goal-verifier. The New work dialog is redesigned: one steady width, a line saying what the agent thinks you want, questions as choices and checklists, the drafts beside the conversation, and Play, Pause and the goal on the board page. Nothing to do.
+
 ## 2.191.2 — Reading the journal is never held
 
 While a sequence step waits to be taken up, only journal writes wait; reading the journal (show, all, progress, search and the like) goes through, so a read in the same command no longer holds back the journal sequence follow beside it. Nothing to do.

@@ -9,7 +9,7 @@ import {sendMessage} from "../chat/outbox.js";
 import {answer, answered} from "../chat/answers.js";
 import {route} from "../route.js";
 
-const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean});
+const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean, steady: Boolean});
 const emit = defineEmits(["elaborated"]);
 const question = computed(() => answered(props.resource));
 const own = ref("");
@@ -30,11 +30,14 @@ const options = computed(() =>
     })
 );
 const pick = computed(() => props.resource.data.pick || 0);
+const multiple = computed(() => Boolean(props.resource.data.multiple));
+const MANY = "; ";
+const chosenMany = computed(() => (multiple.value && question.value.completed ? String(question.value.outcome || "").split(MANY) : []));
 const settled = computed(() => !!question.value.completed && !changing.value);
 const chosen = computed(() =>
     question.value.data.chosen ? question.value.data.chosen - 1 : options.value.findIndex((o) => o.title === question.value.outcome)
 );
-const ownWords = computed(() => settled.value && chosen.value < 0);
+const ownWords = computed(() => settled.value && chosen.value < 0 && !chosenMany.value.length);
 
 function submit(text) {
     const choice = String(text || "").trim();
@@ -66,7 +69,11 @@ async function elaborate() {
             :disabled="settled"
             :immediate="immediate"
             :tiles="tiles"
+            :steady="steady"
+            :multiple="multiple"
+            :chosen-many="chosenMany"
             @pick="(i) => submit(options[i].title)"
+            @picks="(all) => submit(all.map((i) => options[i].title).join(MANY))"
         />
         <template v-if="question.unsaved">
             <p class="unsaved">
@@ -74,7 +81,7 @@ async function elaborate() {
                 <button type="button" @click="submit(question.unsaved)">Try again</button>
             </p>
         </template>
-        <template v-if="settled">
+        <template v-if="settled && !steady">
             <template v-if="ownWords">
                 <div class="own-words">
                     <span>Your own words</span>

@@ -9,6 +9,7 @@ const props = defineProps({
     docked: Boolean,
     page: Boolean,
     escapes: {type: Boolean, default: true},
+    brisk: Boolean,
 });
 const emit = defineEmits(["close"]);
 const onKey = (e) => props.open && e.key === "Escape" && emit("close");
@@ -19,7 +20,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 <template>
     <Teleport to="body">
         <Transition name="focus-stage" appear>
-            <div v-show="open" :class="['focus-stage', {spread, docked, page}]">
+            <div v-show="open" :class="['focus-stage', {spread, docked, page, brisk}]">
                 <div class="veil" />
                 <template v-if="glow">
                     <div class="glow" />
@@ -185,6 +186,31 @@ kbd {
 .focus-stage-enter-from .glow,
 .focus-stage-leave-to .glow {
     transform: scale(0.92);
+}
+
+/* Brisk: open in 240ms, close in 180ms, the body rising 8px from .985. */
+.focus-stage-enter-active.brisk {
+    transition: opacity 0.24s ease-out;
+}
+
+.focus-stage-leave-active.brisk {
+    transition: opacity 0.18s ease-in;
+}
+
+.focus-stage-enter-active.brisk .body {
+    transition: transform 0.24s var(--ease);
+}
+
+.focus-stage-leave-active.brisk .body {
+    transition: transform 0.18s ease-in;
+}
+
+.focus-stage-enter-from.brisk .body {
+    transform: translateY(8px) scale(0.985);
+}
+
+.focus-stage-leave-to.brisk .body {
+    transform: scale(0.98);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -34,8 +34,22 @@ def test_a_request_opens_a_session_that_cancel_closes():
     drafting = boards.load(board.n).drafting
     assert (made.refs, drafting["idempotency"], drafting["since"]) == ([board.ref], "panel-1", made.created), \
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
-    assert any(n.startswith("sequence ") and "Read the request" in n for n in nudges(record)), \
-        "the request starts the exploring sequence at its first step"
+    assert any("waits for the board-filler" in n for n in nudges(record)) and not any(n.startswith("sequence ") for n in nudges(record)), \
+        "the request is handed to the board-filler: the main agent is told to dispatch it, never handed the steps itself"
+    exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
+    filler = Sequences(record, actor=AGENT, agent="board-filler")
+    filler.follow(exploring.n, about=made.ref)
+    assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT)._in_hand() is None, \
+        "the filler's run is its own: the main agent never has it in hand"
+    asked = Boards(record, actor=AGENT, agent="board-filler").ask(board.n, "Which goal?", options=[{"title": "A"}, {"title": "B"}])
+    before = sum("board-filler" in n for n in nudges(record))
+    Questions(record, actor=USER).complete(asked.n, how="A")
+    assert sum("board-filler" in n for n in nudges(record)) == before + 1, "the user's answer asks the main agent to dispatch the filler again"
+    Boards(record, actor=AGENT, agent="board-filler").stall(board.n, "the document would not open")
+    assert boards.load(board.n).drafting["phase"] == "stalled", "the filler can say it cannot go on"
+    boards.retry(board.n)
+    assert (boards.load(board.n).drafting["phase"], sum("board-filler" in n for n in nudges(record))) == ("exploring", before + 2), \
+        "Retry puts the board back where it stalled and asks for the filler again"
     more = boards.follow_up(board.n, "Also by mail")
     assert boards.load(board.n).drafting["asked"] == [made.ref, more.ref], "a follow-up joins the request, so a cancel covers it too"
     drafter = Tickets(record, actor=AGENT)
@@ -59,7 +73,9 @@ def test_the_agent_says_how_many_drafts_are_coming():
     record = fresh()
     boards = Boards(record, actor=AGENT)
     board = boards.create("Shared Journal")
-    assert boards.expect(board.n, "4").expected == 4, "the count shows as that many placeholders"
+    assert "at least 6" in refused(lambda: boards.expect(board.n, "4")), "a board is filled with at least 6 cards"
+    assert boards.expect(board.n, "4", fewer="the document holds four pieces").expected == 4, \
+        "fewer is allowed with a reason, and the count shows as that many placeholders"
     assert "whole number" in refused(lambda: boards.expect(board.n, "a few")), "a count that is no number is refused in words"
     Boards(record, actor=USER).request(board.n, "Something else")
     assert boards.load(board.n).expected == 0, "a new request starts with no placeholders"
@@ -105,7 +121,7 @@ def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
     made = boards.hand(board.n, "spec.md", "Only the first release", idempotency="panel-2")
     assert (made.data["document"], made.brief, boards.load(board.n).drafting["asked"]) == ("spec.md", "Only the first release", [made.ref]), \
         "the request carries its document and opens a drafting session the panel can cancel"
-    assert any(n.startswith("sequence ") and "Read the document" in n for n in nudges(record)), "it starts drafting from the document"
+    assert any("waits for the board-filler" in n for n in nudges(record)), "drafting from the document is handed to the board-filler"
     agent = Boards(record, actor=AGENT)
     agent.outline(board.n, "Background|Who can invite")
     agent.progress(board.n, "Who can invite", "read", drafts="2")
@@ -123,10 +139,11 @@ def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
     Boards(record, actor=USER).create("Old board")
     board = boards.create("Shared Journal")
     boards.request(board.n, "I want to share")
-    steps = [n.brief for n in Nudges(record).all() if n.title.startswith("sequence ")]
-    assert any(f"journal board show {board.n}" in step and "<board n>" not in step for step in steps), "the step names the board it is about"
-    assert "on its board" in refused(lambda: Plans(record, actor=AGENT).create("Sharing")), "no plan of its own while the board sequence runs"
-    assert "on its board" in refused(lambda: Questions(record, actor=AGENT).create("Which one?")), "no chat question either"
+    briefs = [n.brief for n in Nudges(record).all() if "board-filler" in n.title]
+    assert any(f"You fill board {board.n}" in brief for brief in briefs), "the dispatch names the board the filler fills"
+    assert "on its board" in refused(lambda: Plans(record, actor=AGENT, agent="board-filler").create("Sharing")), \
+        "the board-filler makes no plan of its own: its work goes on the board"
+    assert "on its board" in refused(lambda: Questions(record, actor=AGENT, agent="board-filler").create("Which one?")), "no chat question either"
     assert Boards(record, actor=AGENT).ask(board.n, "Which one?", options=[{"title": "A"}]).hidden, "the board's own question goes through"
 
 
@@ -150,8 +167,13 @@ def test_added_cards_make_the_agent_offer_to_place_them():
     record = fresh()
     report(record, "working", "PreToolUse")
     board = Boards(record, actor=USER).create("Refactor To Go")
-    Boards(record, actor=USER).added(board.n, "3, 4")
-    assert any(n.startswith("the user added 2 cards to board") for n in nudges(record)), "the agent is told to offer placing the added cards"
+    Boards(record, actor=USER).update(board.n, goal="The tool runs in Go", done_when=["It builds", "Its tests pass"])
+    tickets = Tickets(record, actor=AGENT)
+    first, second = tickets.create("Port the core", board=board.n, covers=[1]), tickets.create("Port the CLI", board=board.n, covers=[1])
+    Boards(record, actor=USER).added(board.n, f"{first.n}, {second.n}")
+    told = next(n for n in Nudges(record).all() if n.title.startswith("the user added 2 cards to board"))
+    assert '"action": "start"' in told.brief and "Its tests pass" in told.brief and "It builds" not in told.brief.split("miss")[-1], \
+        "the agent offers Play for the added cards and names the clause no kept card covers"
 
 
 def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
@@ -167,15 +189,40 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     drafting = boards.load(board.n).drafting
     assert (drafting["phase"], drafting["score"], drafting["turns"]) == ("exploring", 2, 1), "the score and the turn are kept on the board"
     assert drafting["reading"] == "You want people signed in before they can edit", "the agent's one-line reading is kept for the panel"
-    assert any("Pin it down (score 2)" in n for n in nudges(record)), "the score hands the step for it"
+    agent.score(board.n, "3", goal="Only signed-in people edit", done="A visitor can read|Editing asks to sign in")
+    kept = boards.load(board.n)
+    assert (kept.goal, kept.done_when) == ("Only signed-in people edit", ["A visitor can read", "Editing asks to sign in"]), \
+        "the goal and its numbered clauses are kept on the board, not in the drafting state"
+    boards.update(board.n, started=1.0)
+    agent.score(board.n, "3", done="Sessions expire after a day")
+    assert boards.load(board.n).done_when[-1] == "Sessions expire after a day" and len(boards.load(board.n).done_when) == 3, \
+        "a request on a started board adds clauses instead of replacing the goal"
+    from engine.hooks import handle
+    from features.boards.agent_types import written
+    from providers import PROVIDERS
+    (record.root.parent / ".claude").mkdir(exist_ok=True)
+    record.set_setting("boards", {"filler_model": "haiku"})
+    files = {f.stem: f.read_text() for f in written(record.root.parent, record) if f.suffix == ".md"}
+    assert set(files) == {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"} and "model: haiku" in files["board-filler"], \
+        "the four agent types are written for Claude, the filler with the model Settings chose"
+    call = lambda command: {"session_id": "claude-1", "agent_id": "sub-1", "agent_type": "board-filler", "tool_name": "Bash",
+                            "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
+    said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason") or "")
+    assert "board-filler may only" in said("git status") and "board-filler may only" not in said(f"journal board show {board.n}"), \
+        "the board-filler is refused anything but the board-filling journal commands"
+    exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
+    assert [run["step"] for run in exploring.runs.values()] == [4] and exploring.sections[3]["title"] == "Say what done means (score 3)", \
+        "the score moves the filler's run to the step for it"
     agent.score(board.n, "4")
-    assert boards.load(board.n).drafting["phase"] == "exploring" and any("Settle the scope (score 4)" in n for n in nudges(record)), \
-        "at four it may settle the scope first"
+    at = [run["step"] for run in Sequences(record, actor=SYSTEM).load(exploring.n).runs.values()]
+    assert boards.load(board.n).drafting["phase"] == "exploring" and at == [5], \
+        "at four it may choose the first slice first"
     agent.score(board.n, "5")
     assert boards.load(board.n).drafting["phase"] == "drafting", "at five it moves on"
-    assert any("Guess the count" in n for n in nudges(record)), "and the drafting sequence starts"
+    drafting = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Drafting the board's cards")
+    assert [run["step"] for run in drafting.runs.values()] == [1], "and the drafting sequence starts, for the board-filler to follow"
     assert "past exploring" in refused(lambda: agent.score(board.n, "3")), "no more scores once drafting"
-    agent.expect(board.n, "2")
+    agent.expect(board.n, "2", fewer="a two-card test")
     Tickets(record, actor=AGENT).create("Share a link", abstract="Share a link", board=board.n, draft=True)
     assert "draft the rest" in refused(lambda: agent.say(board.n, "Done.")), "it cannot finish with fewer cards than it guessed"
     boards.request(board.n, "Something vague")
@@ -185,7 +232,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     assert (drafting["phase"], drafting["score"], drafting["turns"]) == ("lost", 0, 5), "five turns below four: it gives up and the score resets"
 
 
-def test_starting_a_board_starts_its_orchestration():
+def test_starting_a_board_starts_its_orchestration(monkeypatch):
     from features.sequences.shipped import ship
     features.load()
     record = fresh()
@@ -193,4 +240,21 @@ def test_starting_a_board_starts_its_orchestration():
     ship(record)
     board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
     Boards(record, actor=USER).start(board.n)
-    assert any("Orchestrating a board, step 1 of 6 - Read the board" in line for line in nudges(record)), nudges(record)
+    assert any("Orchestrating a board, step 1 of 5 - Tell the user" in line for line in nudges(record)), nudges(record)
+    assert Boards(record, actor=USER).load(board.n).started, "the board remembers when Play was pressed"
+    Boards(record, actor=USER).pause(board.n)
+    assert any("Pausing a board, step 1 of 1" in line for line in nudges(record)), "pausing hands the orchestrator the pause"
+    Boards(record, actor=USER).resume(board.n)
+    assert any("Resuming a board, step 1 of 1" in line for line in nudges(record)), "resuming hands it the restart of the halted tickets"
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: self.load(int(n)))
+    tickets = Tickets(record, actor=AGENT)
+    first, second = tickets.create("Port the core", board=board.n), tickets.create("Port the CLI", board=board.n)
+    tickets.send_back(first.n, "the tests fail")
+    assert not any("Escalating a ticket" in line for line in nudges(record)), "one return is not yet escalated"
+    tickets.send_back(first.n, "the tests still fail")
+    assert any("Escalating a ticket, step 1 of 3" in line for line in nudges(record)), "a ticket sent back twice is escalated to the user"
+    tickets.complete(first.n, how="merged", yes=True)
+    assert not Boards(record, actor=USER).load(board.n).finished, "the board runs on while a ticket is open"
+    tickets.complete(second.n, how="merged", yes=True)
+    assert Boards(record, actor=USER).load(board.n).finished and any("Closing a board, step 1 of 3" in line for line in nudges(record)), \
+        "the last ticket closing finishes the board and starts closing it"
