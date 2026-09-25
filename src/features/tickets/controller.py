@@ -78,6 +78,10 @@ class Slots:
     waiting: int
 
 
+def busy_behind(row) -> bool:
+    return any(entry.get("running") for kind in ("shell_rows", "subagent_rows", "monitor_rows") for entry in (row.data.get(kind) or []))
+
+
 class Tickets(Controller):
     resource = Ticket
 
@@ -242,8 +246,8 @@ class Tickets(Controller):
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
-        started = [ticket for ticket in self._standing() if ticket.work_environment and ticket.launched and time.time() - ticket.launched > LAUNCHING_FOR and not ticket.halted
-                   and ticket.board and int(ticket.board) in boards]
+        started = [ticket for ticket in self._standing() if ticket.work_environment and not ticket.halted and (ticket.agent_seen or ticket.launched)
+                   and time.time() - ticket.launched > LAUNCHING_FOR and ticket.board and int(ticket.board) in boards]
         looked = [(ticket, self._runtime(ticket, sessions, running)) for ticket in started]
         return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK] + \
                [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
@@ -344,6 +348,8 @@ class Tickets(Controller):
         quiet = time.time() - float(row.at)
         if row.status != IDLE and quiet > SILENT_AFTER:
             return CardState("you", f"silent for {int(quiet // 60)}m")
+        if row.status == IDLE and quiet > SILENT_AFTER and not busy_behind(row):
+            return CardState("you", f"idle for {int(quiet // 60)}m with nothing running in the background")
         step = f"{row.tool} {Path(row.file).name}".strip() if row.tool else row.status
         return CardState("running", step, age=ago(quiet))
 
@@ -690,8 +696,8 @@ class Tickets(Controller):
 
     def _live(self, ticket) -> bool:
         if self.agent_session(ticket.n):
-            if ticket.launched:
-                self.update(ticket.n, launched=0.0)
+            if ticket.launched or not ticket.agent_seen:
+                self.update(ticket.n, launched=0.0, agent_seen=time.time())
             return True
         return time.time() - ticket.launched < LAUNCHING_FOR
 

@@ -158,6 +158,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
         "with no limit, every started ticket gets its agent at once"
     import time
     record.set_setting("tickets", {"running": 5})
+    assert tickets.load(ticket.n).agent_seen and not tickets.load(ticket.n).launched, "an agent that reported is remembered as seen"
+    assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
+        "a ticket whose agent was seen working and then died needs a look, long after its launch"
     tickets.update(ticket.n, launched=time.time() - 120)
     assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
         "a started ticket whose agent is gone needs a look; one launched a moment ago does not yet"
