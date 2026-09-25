@@ -13,7 +13,6 @@ import {span} from "../format/time.js";
 import {useScope} from "../composables/scope.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
-import TaskList from "./TaskList.vue";
 import TranscriptLog from "./TranscriptLog.vue";
 import AgentHome from "../board/AgentHome.vue";
 import AgentLinks from "./AgentLinks.vue";
@@ -69,17 +68,7 @@ const TABS = [
     {key: "work", title: "Work"},
     {key: "hooks", title: "Hooks"},
 ];
-const tabs = computed(() =>
-    picked.value ? [{key: "chat", title: "Chat"}, TABS[0], {key: "tasks", title: "Tasks"}, ...TABS.slice(1)] : TABS
-);
-const TASKS_EVERY = 4000;
-const tasks = ref([]);
-usePoll(
-    `subagent-tasks:${env}`,
-    () => (picked.value ? api.tasks(picked.value.session) : Promise.resolve([])),
-    TASKS_EVERY,
-    (got) => (tasks.value = got || [])
-);
+const tabs = TABS;
 const subagentBand = computed(() => ({
     kicker: "Subagent",
     label: picked.value.type || "general",
@@ -109,14 +98,7 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
 <template>
     <template v-if="picked">
         <article class="agent-page subagent-page">
-            <AgentHome
-                subagent
-                :band="subagentBand"
-                :env="env"
-                :agent="resource"
-                :session="picked.session"
-                :chat-session="picked.session"
-            >
+            <AgentHome subagent :band="subagentBand" :env="env" :agent="resource" :session="picked.session" :chat-session="picked.session">
                 <template #actions>
                     <DropList
                         icon="agents"
@@ -242,11 +224,6 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
             <template v-if="tab === 'chat' && picked">
                 <section class="block chat-block">
                     <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
-                </section>
-            </template>
-            <template v-if="tab === 'tasks' && picked">
-                <section class="block">
-                    <TaskList :tasks="tasks" />
                 </section>
             </template>
             <template v-if="tab === 'hooks'">

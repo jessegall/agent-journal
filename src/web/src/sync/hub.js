@@ -4,6 +4,7 @@ import {store} from "../state/store.js";
 import {usePoll} from "../poll.js";
 import {age} from "../format/time.js";
 import {stateOf} from "../layout/statusline.js";
+import {readSummary} from "./summary.js";
 
 const LINGER = 60000;
 const SCAN_EVERY = 2000;
@@ -190,7 +191,7 @@ async function reread(j) {
         return;
     }
     try {
-        j.summary = await api.journal(j).summary();
+        j.summary = await (j.current ? readSummary() : api.journal(j).summary());
         j.gone = 0;
         j.fresh = Date.now();
         j.unreadable = false;

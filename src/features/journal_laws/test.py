@@ -169,3 +169,13 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
         refused = hook(tool, given)
         assert refused.get("decision") == "block" and "print a range with sed -n" in refused.get("reason", ""), (tool, refused)
     assert hook("exec", {"input": "sed -n '1,50p' long.py"}).get("decision") != "block", "a range passes"
+
+
+def test_the_naming_law_follows_the_chosen_style():
+    from features.journal_laws.policy import carry, laws
+    record = fresh()
+    assert "a human name, a little quirky" in carry(record) and "Dr. Einstein" in dict((law.name, law.reason) for law in laws(record))["L5"], \
+        "by default subagents are named after famous people with a twist"
+    record.set_setting("journal_laws", {"cartoon_names": True})
+    assert "a cartoon character" in start_block(record) and "Dora the Explorer" in dict((law.name, law.reason) for law in laws(record))["L5"], \
+        "with cartoon names on, the law every session is handed asks for a cartoon character"

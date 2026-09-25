@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.188.0 — Subagents can be named after cartoon characters
+
+Settings has a Cartoon names switch under the journal's laws: turned on, the naming law every agent is handed asks for a cartoon character fitting the role, such as Dora the Explorer for a researcher or Bob Ross for a designer, instead of a famous person with a twist. Saving a row no longer re-sorts every row of its type, so posting a message takes a few milliseconds even with thousands of them. The viewer asks for the journal's summary once per round instead of up to three times, asks for a subagent's tasks once, and asks for one page of work. Nothing to do.
+
 ## 2.187.0 — The journal answers quickly again
 
 Hooks and the viewer's dashboard stop reloading what did not change: the recent events stay in memory and only new lines are read, the working agent is found without loading every agent, and the check that asks plugins to refuse a call no longer loads uninstalled plugins, so a hook and a dashboard request each take a few milliseconds instead of tens. After a compaction the agent is asked to load only the every-start skills and the five it loaded last, and a skill it had loaded before is no longer demanded again by a command or a keyword, one batch per tool call. The context meter uses the window size Claude reports, so a 1M-token model no longer reads as nearly full. The channel that carries lines to the agent tries a new build before switching to it, so an update can no longer leave it dead. The you-answered mark names the question without the answer. Agents at work always draws its grid, with empty cells, and shows each subagent's last activity from its transcript; a comment reply in an inspector chat opens at the comment. A bad sequence nudge setting can no longer stop the clock, and the step hold sees journal writes on every line of a command. Nothing to do.

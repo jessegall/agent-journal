@@ -33,14 +33,28 @@ LAWS = (
         "A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as \"Dr. Einstein: profile the slow hooks\" or \"Coco Rams: draw the plan card\". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.",
         ("subagent", "spawn_agent", "dispatch"), "everything"),
 )
+CARTOON = Law("L5", "Every subagent dispatch names the agent: a cartoon character that fits its role.",
+              "A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as \"Dora the Explorer: research the slow hooks\" or \"Bob Ross: paint the plan card\". A researcher can borrow from explorers and detectives, a designer from cartoon painters and builders.",
+              ("subagent", "spawn_agent", "dispatch"), "everything")
+
+
+def laws(record=None) -> tuple[Law, ...]:
+    if record is None or not cartoon_names(record):
+        return LAWS
+    return tuple(CARTOON if law.name == CARTOON.name else law for law in LAWS)
+
+
+def cartoon_names(record) -> bool:
+    from features.journal_laws.details import LawDetails
+    return bool(LawDetails.values(record).cartoon_names)
 BEGIN = "<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->"
 END = "<!-- END: agent-journal law -->"
 BLOCK = re.compile(rf"\n?{re.escape(BEGIN)}.*?{re.escape(END)}\n?", re.DOTALL)
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
 
 
-def carry() -> str:
-    rows = "\n".join(f"  - {law.text}  [{law.name}]" for law in LAWS)
+def carry(record=None) -> str:
+    rows = "\n".join(f"  - {law.text}  [{law.name}]" for law in laws(record))
     return f"LAWS THE JOURNAL SHIPS, always in force:\n{rows}"
 
 
@@ -70,11 +84,15 @@ def brief(project: Path) -> list[Path]:
 NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")
 
 
-def refusal(dispatch) -> str:
+NAMING = {False: "Start the description with a human name, a little quirky and fitting the role, then a colon and the task, like \"Dr. Einstein: profile the slow hooks\".",
+          True: "Start the description with a cartoon character fitting the role, then a colon and the task, like \"Dora the Explorer: research the slow hooks\"."}
+
+
+def refusal(dispatch, cartoon: bool = False) -> str:
     if dispatch.kind in GENERIC and dispatch.task in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
     if dispatch.model_supported and not dispatch.model:
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
     if dispatch.name_supported and not NAMED.match(dispatch.description):
-        return "Journal law L5 requires a name on every subagent dispatch. Start the description with a human name, a little quirky and fitting the role, then a colon and the task, like \"Dr. Einstein: profile the slow hooks\"."
+        return f"Journal law L5 requires a name on every subagent dispatch. {NAMING[cartoon]}"
     return ""

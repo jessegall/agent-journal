@@ -1,6 +1,7 @@
 import os
 import time
 import zipfile
+from bisect import bisect_left
 from dataclasses import dataclass
 from pathlib import Path
 from resources.base import LAZY, MEMORY, OWNER, PART_OF, Refused, Resource
@@ -132,12 +133,18 @@ class Stored:
         held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
         if not held or known is None or held[0] != before:
             return
+        rows = list(held[1])
+        at = bisect_left(rows, n, key=lambda row: row["n"])
+        if at < len(rows) and rows[at]["n"] == n:
+            del rows[at]
         if r is None:
             known.pop(n, None)
         else:
             found = self.path(n).stat()
             known[n] = self._row(r, f"{found.st_mtime_ns}-{found.st_size}")
-        self._summarised(folder, self._moved(folder), [known[m] for m in sorted(known) if not known[m].get(DAMAGED)])
+            if not (known[n].get(PART_OF) or known[n].get(DRAFT_OF)):
+                rows.insert(at, known[n])
+        SUMMARIES[str(folder)] = (self._moved(folder), rows)
 
     def _row(self, r: Resource, stamp: str) -> dict:
         return {"n": r.n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,

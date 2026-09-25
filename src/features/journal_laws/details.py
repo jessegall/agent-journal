@@ -55,6 +55,12 @@ class LawDetails(FeatureDetails):
 
     settings = [
         Setting(
+            name="cartoon_names",
+            default=False,
+            title="Name subagents after cartoon characters",
+            abstract="Dora the Explorer researches and Bob Ross designs, instead of famous people with a twist",
+        ),
+        Setting(
             name="whole_read_lines",
             default=300,
             title="Refuse reading a whole file longer than",
