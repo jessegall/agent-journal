@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.165.3 — A long note is sent once
+
+A note long enough to go in as a paste was taken for stuck while a busy agent kept its queued paste in view, reported as not sent and delivered twice. A pasted note is sent once, whole, and is no longer checked by its placeholder. Nothing to do.
+
 ## 2.165.2 — An orchestrator's approval stands on its own
 
 journal ticket approve_plan refused when its note to the ticket's agent stayed in the input box, and the refusal rolled the approval back. The approval now stands: the ticket's agent hears it through the journal's own delivery, as it does when the user approves, and a note typed after continue_plan is only a best effort. Nothing to do.

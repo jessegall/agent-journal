@@ -554,7 +554,6 @@ class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
     INPUT_MARK = "❯".encode()
-    PASTED_MARK = b"[Pastedtext"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)

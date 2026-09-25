@@ -253,8 +253,8 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     pressed.clear()
     screen.write_bytes("❯ [Pasted text #1 +2 lines]\n".encode())
     monkeypatch.setattr(engine.drivers, "TYPED_PER_SECOND", 10 ** 9)
-    assert not driver.enter("a long review note " * 30) and pressed[0].startswith(engine.drivers.PASTE_START), \
-        "a long line goes in as one paste, and a paste still sitting in the input box is not taken for sent"
+    assert driver.enter("a long review note " * 30) and pressed[0].startswith(engine.drivers.PASTE_START) and pressed.count(b"\r") == 1, \
+        "a long line goes in as one paste and is sent once: a busy agent keeps a queued paste's placeholder in view, which is no sign it is stuck"
     claude = DRIVERS["claude"](record, "claude-8")
     monkeypatch.setattr(claude, "last_printed", lambda: "done\n❯ ")
     assert claude.at_prompt(), "the silence probe still reads Claude's prompt: the input-box mark never replaces the prompt pattern"
