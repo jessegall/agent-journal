@@ -43,6 +43,12 @@ class TicketsDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="plan_checkpoint",
+            title="the plan of ticket {{ticket}}, {{title}}, stopped at a checkpoint",
+            brief="read where it stands with journal --env {{env}} plan progress {{plan}}; when the phase before it is done as it should be, "
+                  "let it go on with journal ticket continue_plan {{ticket}}, otherwise tell its agent what to fix first",
+        ),
+        Line(
             name="ticket_attention",
             title="ticket {{ticket}}, {{title}}, needs a look - {{reason}}",
             brief="journal ticket screen {{ticket}} shows what its terminal says; unstick it with journal ticket tell {{ticket}} \"<what to do>\", or restart it with journal ticket stop {{ticket}} then journal ticket start {{ticket}}",
