@@ -14,6 +14,7 @@ from resources.base import AGENT
 def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     record = fresh()
     f = record.root / "runtime" / f"start-{record.env}.md"
+    record.set_setting("form_of_address", {"first_name": "Ada"})
     Rules(record, actor=USER).create("name the model on every dispatch", keywords="word")
     Facts(record, actor=AGENT).create("v2 imports nothing old", keywords="word")
     Works(record, actor=AGENT).create("the header")
@@ -22,12 +23,15 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     block = f.read_text()
     assert block == start_block(record), "every write rewrites the start block"
     assert [line for line in block.splitlines() if line and not line.startswith("  ")] == \
-        ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", QUIET, "LAWS THE JOURNAL SHIPS, always in force:",
+        ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", QUIET,
+         'ADDRESS THE USER as "Sir Ada" when you speak to them, now and after every compaction.', "LAWS THE JOURNAL SHIPS, always in force:",
          "STILL OPEN, from this or an earlier session (1):", "RULES, in force on every environment (1):", "FACTS about this environment (1):",
          "1 docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all.",
          "1 TO-DOS waiting — delayed work, not an instruction to start any of it."], \
         "it says the environment, the rules, the pins, the open work, how to find the docs and the count of to-dos"
     assert "The engine" not in block, "no doc is listed, so an old one cannot put the agent on the wrong track"
+    record.set_setting("form_of_address", {"title": "Madam", "first_name": "Ada"})
+    assert '"Madam Ada"' in start_block(record), "the agent calls the user by the title they chose, with their name"
 
     provider = PROVIDERS["claude"]()
     out = handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1"})
