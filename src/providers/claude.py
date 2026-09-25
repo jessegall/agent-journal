@@ -229,7 +229,7 @@ class Claude(Provider):
         folder = project / ".claude" / "agents"
         written = []
         for kind, model in chosen:
-            text = f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.prompt}\n"
+            text = f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.instructions}\n"
             target = folder / f"{kind.name}.md"
             if not target.is_file() or target.read_text() != text:
                 folder.mkdir(parents=True, exist_ok=True)

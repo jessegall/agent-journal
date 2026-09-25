@@ -2,16 +2,16 @@ from resources.base import USER
 
 PANEL = "the New work panel"
 FILLER = "board-filler"
-LOG = ("While you work, tell the panel what you are doing in a few words, at every step and whenever a step takes a while: "
-       "journal board log <board n> \"<short status>\".")
+LOG = ("The panel shows which step you are on by itself; only when a step takes longer than half a minute, tell it what you are "
+       "doing in a few words: journal board log <board n> \"<short status>\".")
 
 RULES = ("A request typed into a board's New work panel is explored until you know the goal: what the user wants to reach, for "
          "whom, and what done means. The board then holds the cards that reach it. The panel is a place of "
          "clicking, not reading: every turn is one question on the board, never a paragraph and never in the chat, and you talk "
          "only about the feature and its tickets, never about rows, chips, ticket numbers, commands or the journal. After every "
          "answer, rate how well you now understand what they want, 1 to 5, and say in one short line what you think they want: "
-         "journal board score <board n> <score> --reading \"<what you think they want>\". The panel shows that line, never the score. The score hands "
-         "you the step for it; at 4 you may settle the scope first, and at 5 the drafting starts by itself. You have five ratings: if the fifth is still below 4, the "
+         "journal board score <board n> <score> --reading \"<what you think they want>\". The panel shows that line, never the score. The score answers "
+         "with the step for it, already taken up, so do it at once; at 4 you may settle the scope first, and at 5 the drafting starts by itself. You have five ratings: if the fifth is still below 4, the "
          "panel tells them you do not know what they want and offers to start over. A typed answer counts as its turn; if it "
          "names a feature none of your options did, it replaces the request. An answer of Start over means they closed the "
          "panel: write nothing more to the board. Use judgment: the board's name, its brief and the cards already on it carry "

@@ -66,8 +66,8 @@ class SequencesDetails(FeatureDetails):
                   "description that starts with a name, and this prompt: \"You fill board {{board}} for {{about}}. The request: "
                   "'{{request}}'. Now: {{why}}. Your steps are sequence {{n}}, {{title}}. Take up the step in hand with journal --agent {{kind}} "
                   "sequence follow {{n}} --about {{about}}, do it, then journal --agent {{kind}} sequence next {{n}} --about {{about}}, and "
-                  "go on the same way; when the drafting sequence starts after the rating of 5, find it with journal sequence all and "
-                  "follow it too. Run every journal command with --agent {{kind}}. When you have asked the user a question, stop and "
+                  "that answers with the next step, already taken up, as journal board score does: do it at once. After a 5 the step is "
+                  "the drafting sequence's, whose number it names: go on with that number. The steps are in your profile. Run every journal command with --agent {{kind}}. When you have asked the user a question, stop and "
                   "answer with the question: you are dispatched again with the answer.\"",
         ),
         Line(

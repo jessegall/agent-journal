@@ -132,6 +132,7 @@ def working_agent(context: Context):
 def dispatched_by_line(context: Context, agent, sequence, key: str, run: dict, why: str) -> None:
     from features.boards.details import BoardsDetails
     about = key.split("|", 1)[1]
+    Sessions(context.record.root).grant(agent.title, context.record.env)
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{run['at']}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board_of(context, about),

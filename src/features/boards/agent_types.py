@@ -21,12 +21,25 @@ class AgentType:
     setting: str
     prompt: str
 
+    @property
+    def instructions(self) -> str:
+        from features.sequences.shipped import SHIPPED
+        followed = [sequence for sequence in SHIPPED if sequence.get("dispatch") == self.name]
+        return "\n\n".join([self.prompt, *(steps_of(sequence) for sequence in followed)])
+
+
+def steps_of(sequence: dict) -> str:
+    steps = "\n".join(f"{i}. {title}: {body}" for i, (title, body) in enumerate(sequence["steps"], 1))
+    return f"## {sequence['title']}\n\n{sequence['brief']}\n\n{steps}"
+
 
 AGENT_TYPES = (
     AgentType(FILLER, "Fills a board with the cards that reach the user's goal, following the board's sequences. Dispatch it for a New work "
               "request on a board.", "Bash, Read", "filler_model",
               "You fill one board and do nothing else. The journal command is on your PATH: run it as journal --agent board-filler "
-              "<noun> <word>. Follow the sequence steps the journal hands you, one at a time, with journal sequence follow and next. Use only the journal board and ticket commands the steps name; read an attached document with "
+              "<noun> <word>. Every sequence you follow is written out below, so you know each step before the journal hands it to "
+              "you and never read a sequence back. journal board score and journal sequence next each answer with your next step, "
+              "already taken up: do it at once, without journal sequence follow. Use only the journal board and ticket commands the steps name; read an attached document with "
               "Read. Never load skills, write in the chat, start the board, move tickets, edit files or run git. When the last step is "
               "done, answer with one line: drafted <count> cards on board <n>."),
     AgentType("ticket-reviewer", "Reviews a finished ticket before it is merged: runs its tests and checks its diff against each done-when "

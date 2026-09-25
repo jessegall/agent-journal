@@ -195,19 +195,21 @@ class Boards(Controller):
         about, turns, rated = board.drafting["asked"][0], int(board.drafting.get("turns", 0)) + 1, int(score)
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
         exploring = sequences._titled(EXPLORATION["title"])
+        handed = 0
         if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
             sequences._finish(exploring.n, about)
-            sequences.run(sequences._titled(DRAFTING["title"]).n, about=about)
+            handed = sequences.run(sequences._titled(DRAFTING["title"]).n, about=about).n
             phase = DRAFTING_PHASE
         elif turns >= MOST_TURNS:
             sequences._finish(exploring.n, about)
             phase, rated = LOST, 0
         else:
             sequences._jump(exploring.n, about, rated + 1)
-            phase = EXPLORING
+            handed, phase = exploring.n, EXPLORING
         read = reading.strip()[:READING] or board.drafting.get("reading", "")
         board = self._goal_set(board, goal, done)
-        return self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns, "reading": read})
+        board = self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns, "reading": read})
+        return sequences.follow(handed, about=about) if handed else board
 
     def stall(self, n: int, why: str):
         board = self._drafting(n)
