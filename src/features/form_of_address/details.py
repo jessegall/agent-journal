@@ -13,7 +13,8 @@ class AddressDetails(FeatureDetails):
         Every session start, and every start after a compaction, tells the agent how to address you:
         the title from Settings, Sir by default, followed by your first name when it is known, like
         Sir Jesse. The name is the one set here, or else the first name git knows you by. The title is
-        only ever what you set here, never guessed from a name.
+        only ever what you set here, never guessed from a name. Now and then, when it fits, the agent answers
+        with a sense of humor: a 🎩 when you call it sir, or a funny reaction on a message, never on every one.
     """
 
     settings = [

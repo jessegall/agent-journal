@@ -26,7 +26,7 @@ import {render} from "../text/index.js";
 import {standaloneUpdates} from "../text/cards.js";
 import "../text/all.js";
 
-const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
+const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "edit", "grew", "pin"]);
 const picking = ref(false);

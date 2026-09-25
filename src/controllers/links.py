@@ -1,7 +1,7 @@
 import time
 from resources.base import Refused, Resource, titled
 
-FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
+FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩")
 TWICE_WITHIN = 10.0
 
 
