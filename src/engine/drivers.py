@@ -214,6 +214,9 @@ class Driver(ABC):
     def run_shell(self, command: str) -> bool:
         return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)
 
+    def enter(self, text: str) -> bool:
+        return self._typed(joined(text), confirmed=False)
+
     def run_command(self, command: str) -> bool:
         return self._typed(command.strip(), confirmed=False)
 

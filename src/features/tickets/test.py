@@ -196,8 +196,18 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     git("switch", "-q", "rewrite")
     git("merge", "-q", "--no-edit", f"worktree-{part.work_environment}")
     git("switch", "-q", home)
+    later = tickets.create("Engine on the tree", board=rewrite.n)
+    tickets.depend(later.n, part.n)
+    tickets.move(later.n, "Doing")
+    assert tickets.load(later.n).queued, "a ticket that waits on another queues"
     tickets.close_merged()
     assert tickets.load(part.n).completed, "merged into its board's branch, it closes"
+    tickets.start_queued()
+    later = tickets.load(later.n)
+    assert later.base == git("rev-parse", "rewrite").stdout.strip() and not later.queued, \
+        "a queued ticket starts from its board branch's tip at launch, after what it waited on landed"
+    tickets.close_merged()
+    assert not tickets.load(later.n).completed, "so it is not taken for merged the minute after it starts"
     elsewhere = Boards(record, actor=USER).create("Gone", stages=["Doing"], meanings={"Doing": "start"}, branch="missing")
     lost = tickets.create("Nowhere", board=elsewhere.n)
     assert "does not exist" in refused(lambda: tickets.start(lost.n)), "a board's branch that does not exist is named, not guessed"
@@ -267,12 +277,18 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
         "a plan waiting for approval puts Approve plan and Read plan on its ticket's card, and the card waits on the user"
     assert "only the user" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "only the user approves a ticket's plan"
     Boards(record, actor=USER).update(board.n, orchestrator_approves_plans=True)
-    assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, "ticket-1"), actor=AGENT).approve_plan(ticket.n)), \
-        "on a board whose orchestrator approves plans, the ticket's own agent still cannot approve the plan it wrote"
     import features
+    from features.sequences.shipped import ship
     from tests.kit import nudges, report, tick
     features.load()
     report(record, "working", "PreToolUse")
+    ship(record)
+    assert "never the agent that wrote it" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), \
+        "before the board is started, no agent orchestrates it, so none may approve"
+    Boards(record, actor=USER).start(board.n)
+    for elsewhere in ("ticket-1", "ticket-2"):
+        assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, elsewhere), actor=AGENT).approve_plan(ticket.n)), \
+            "neither the ticket's own agent nor a sibling ticket's may approve the plan"
     tick(record)
     assert any(f"the plan of ticket {ticket.n}" in line and "waits for your approval" in line for line in nudges(record)), \
         "the minute check tells the orchestrator the plan waits"

@@ -11,6 +11,7 @@ class Sequence(Shape, Resource):
         Field(FLAG, False, name="system"),
         Field(FLAG, False, name="only_when_idle"),
         Field(default="", name="talks_in"),
+        Field(FLAG, False, name="lasting"),
         Field(default=dict, name="runs"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(

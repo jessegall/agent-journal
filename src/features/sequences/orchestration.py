@@ -6,15 +6,16 @@ ORCHESTRATION = {
              "report every fault in the journal itself to the agent-journal agent, who fixes it.",
     "starts_on": "board.started",
     "started_by": "",
+    "lasting": True,
     "steps": [
         ("Read the board", "Read the board and its cards: journal board show <board n> and journal ticket board <board n>. Note "
                            "the order the tickets must run in, the waits between them, and which are queued, running or done."),
         ("Set the board up", "Ask the user which branch the work lands on if you do not know it, and set it: journal board update "
                              "<board n> --set branch=<branch>. Tickets then branch from it and close once merged into it. Take "
                              "on plan approval: journal board update <board n> --set orchestrator_approves_plans=true."),
-        ("Start the tickets", "Move the first tickets into the board's start stage in the order they must run: journal ticket move "
-                              "<n> \"<start stage>\". Their agents start in their own worktrees; the rest queue and start as "
-                              "slots free."),
+        ("Start the tickets", "Move every ticket into the board's start stage, in the order they must run: journal ticket move "
+                              "<n> \"<start stage>\". Each agent starts in its own worktree; beyond the running limit, and behind "
+                              "the tickets they wait on, they queue and start as slots free."),
         ("Keep a check running", "Set a recurring check on the board with your scheduling tool, every 15 minutes: which ticket "
                                  "runs, whether its agent works, waits or is stuck (journal ticket agent_session <n> and its "
                                  "screen), and what is queued. Say in the chat what you set up."),

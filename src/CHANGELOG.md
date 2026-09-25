@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.159.0 — A board's tickets start fresh and hear their approvals
+
+A ticket queued behind another takes its start commit when its branch is made at launch, not when it queues, so once the ticket before it merges it is no longer taken for merged a minute after starting. When the agent orchestrating a board approves a ticket's plan, the ticket's agent is told to start it; journal ticket tell types through the agent's driver, so the note is checked to leave the input box. Orchestrating a board is a lasting sequence: shorter runs such as a bug escalation are handed over while it runs, and it is never called late. Only the environment orchestrating a board is told about and may approve its tickets' plans, and it is told again whenever a plan changes. A deleted dependency no longer blocks, one ticket that cannot start no longer stops the minute sweep, a restarted ticket agent is told to carry on, and one with a plan continues it. Nothing to do.
+
 ## 2.158.2 — Agents are probed and typed to again
 
 2.158.0's input-box check took the name of the prompt pattern the silence probe reads, so a silent Claude agent's probe failed on every tick and every command typed into a Codex agent failed; the check has a name of its own again. While the agent's work waits on something, the chat's working line keeps showing its commands and falls back to what it waits for once they stop; a running subagent reads Waiting for its name and task. Nothing to do.
