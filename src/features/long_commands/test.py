@@ -37,18 +37,21 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     import json
     from providers.claude import Claude
 
-    def use(n):
+    def use(n, background=True):
         return {"type": "assistant", "timestamp": "2026-09-23T00:00:00Z",
-                "message": {"content": [{"type": "tool_use", "id": f"t{n}", "name": "Bash", "input": {"command": f"sleep {n}", "run_in_background": True}}]}}
+                "message": {"content": [{"type": "tool_use", "id": f"t{n}", "name": "Bash", "input": {"command": f"sleep {n}", "run_in_background": background}}]}}
 
-    def result(n, error):
+    def result(n, error, content="started"):
         return {"type": "user", "timestamp": "2026-09-23T00:00:01Z",
-                "message": {"content": [{"type": "tool_result", "tool_use_id": f"t{n}", "is_error": error, "content": "hook error" if error else "started"}]}}
+                "message": {"content": [{"type": "tool_result", "tool_use_id": f"t{n}", "is_error": error, "content": "hook error" if error else content}]}}
 
     transcript = tmp_path / "s.jsonl"
-    transcript.write_text("\n".join(json.dumps(row) for row in (use(1), result(1, True), use(2), result(2, False))) + "\n")
+    moved = "Command was manually backgrounded by user with ID: b3x. Output is being written to: /tmp/b3x.output"
+    rows = (use(1), result(1, True), use(2), result(2, False), use(3, False), result(3, False, moved), use(4, False), result(4, False, "done"))
+    transcript.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
     shells = {row["command"]: row["running"] for row in Claude().crew(transcript)["shell_rows"]}
-    assert shells == {"sleep 1": False, "sleep 2": True}, "a refused call never started; one that started runs until it ends"
+    assert shells == {"sleep 1": False, "sleep 2": True, "sleep 3": True}, \
+        "a refused call never started; one that started, or was moved to the background, runs until it ends"
 
 
 def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch):
