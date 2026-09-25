@@ -34,3 +34,14 @@ export function useBeingWritten(resource) {
     const runs = useRuns(resource);
     return computed(() => resource().type !== "sequence" && runs.value.length > 0);
 }
+
+export function useStepAbout(refs) {
+    return computed(() => {
+        const run = rows("sequence")
+            .filter((s) => !s.deleted)
+            .flatMap(runsOf)
+            .filter((r) => refs().includes(r.about))
+            .reduce((last, r) => (!last || r.at > last.at ? r : last), null);
+        return run ? run.titles[run.step - 1] || "" : "";
+    });
+}
