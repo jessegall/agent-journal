@@ -1,4 +1,4 @@
-from features.base import FeatureDetails, Setting
+from features.base import FeatureDetails, Line, Setting
 from features.trigger import MINUTES, Trigger
 
 
@@ -40,6 +40,14 @@ class TicketsDetails(FeatureDetails):
     """
 
     trigger = Trigger(every=1, unit=MINUTES)
+
+    lines = [
+        Line(
+            name="plan_waits",
+            title="the plan of ticket {{ticket}}, {{title}}, waits for your approval",
+            brief="read it with journal --env {{env}} plan read {{plan}}; when it fits the ticket, approve it with journal ticket approve_plan {{ticket}}",
+        ),
+    ]
 
     settings = [
         Setting(

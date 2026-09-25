@@ -3,6 +3,7 @@ import re
 from features.sequences.controller import Sequences
 from features.sequences.drafting import DRAFTING
 from features.sequences.exploration import EXPLORATION, PANEL
+from features.sequences.orchestration import ORCHESTRATION
 from features.triggers.controller import Triggers
 from features.triggers.resource import FROM_USER, START
 from resources.base import AGENT, SECTION, SYSTEM, USER
@@ -222,7 +223,7 @@ WRITING_A_REPORT = {
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT)
+           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION)
 
 
 def ship(record) -> list[str]:

@@ -136,7 +136,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert (tickets.load(second.n).queued, launched[-1][0]) == (False, f"ticket-{second.n}"), "when a slot frees, the queued ticket starts"
 
 
-def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
+def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkeypatch):
     import subprocess
     from tests.conftest import refused
     record = fresh()
@@ -174,6 +174,33 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
+    import engine.terminal
+    monkeypatch.setattr(engine.terminal, "detached", lambda *args: 1)
+    git("branch", "rewrite")
+    git("switch", "-q", "rewrite")
+    git("commit", "-q", "--allow-empty", "-m", "the contract")
+    git("switch", "-q", home)
+    rewrite = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Shipped"], meanings={"Doing": "start", "Shipped": "done"}, branch="rewrite")
+    part = tickets.create("Tree contract", board=rewrite.n)
+    tickets.move(part.n, "Doing")
+    part = tickets.load(part.n)
+    started = git("rev-parse", "rewrite").stdout.strip()
+    assert (part.base, git("rev-parse", f"worktree-{part.work_environment}").stdout.strip()) == (started, started), \
+        "a board on a branch of its own starts each ticket's branch from that branch's tip, not the checked-out one"
+    git("switch", "-q", f"worktree-{part.work_environment}")
+    git("commit", "-q", "--allow-empty", "-m", "the tree")
+    git("switch", "-q", home)
+    git("merge", "-q", "--no-edit", f"worktree-{part.work_environment}")
+    tickets.close_merged()
+    assert not tickets.load(part.n).completed, "merged into the checked-out branch instead, it stays open"
+    git("switch", "-q", "rewrite")
+    git("merge", "-q", "--no-edit", f"worktree-{part.work_environment}")
+    git("switch", "-q", home)
+    tickets.close_merged()
+    assert tickets.load(part.n).completed, "merged into its board's branch, it closes"
+    elsewhere = Boards(record, actor=USER).create("Gone", stages=["Doing"], meanings={"Doing": "start"}, branch="missing")
+    lost = tickets.create("Nowhere", board=elsewhere.n)
+    assert "does not exist" in refused(lambda: tickets.start(lost.n)), "a board's branch that does not exist is named, not guessed"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
@@ -239,8 +266,12 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
     assert ([action["label"] for action in card["actions"]], card["state"]) == (["Approve plan", "Read plan"], "you"), \
         "a plan waiting for approval puts Approve plan and Read plan on its ticket's card, and the card waits on the user"
     assert "only the user" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "only the user approves a ticket's plan"
-    tickets.approve_plan(ticket.n)
-    assert plans.load(plan.n).status == APPROVED, "approving from the card approves the plan in the ticket's own environment"
+    Boards(record, actor=USER).update(board.n, orchestrator_approves_plans=True)
+    assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, "ticket-1"), actor=AGENT).approve_plan(ticket.n)), \
+        "on a board whose orchestrator approves plans, the ticket's own agent still cannot approve the plan it wrote"
+    assert [t.n for t in tickets._awaiting_orchestrator()] == [ticket.n], "the waiting plan is handed to the orchestrator"
+    Tickets(record, actor=AGENT).approve_plan(ticket.n)
+    assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
