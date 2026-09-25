@@ -76,7 +76,7 @@ class WorkDetails(FeatureDetails):
         ),
         Setting(
             name="ask_blocked_every",
-            default=5,
+            default=1,
             title="Ask whether a blocked to-do is still blocked every",
             unit="closed to-dos",
         ),
