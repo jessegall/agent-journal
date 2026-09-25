@@ -3,11 +3,20 @@ from features.tickets.launch import start_agent_in
 from resources.base import Refused, SYSTEM
 
 
+SHARED = "shared"
+
+
 def worker_environment(plan) -> str:
     return f"plan-{plan.n}"
 
 
 def kickoff(plan) -> str:
+    if plan.worktree == SHARED:
+        return (f"You are the agent of plan {plan.n}, {plan.title}, with this environment and one worktree for the whole plan. Its "
+                f"phases hold board tickets, and the journal hands you each phase's tickets once the phase before is done. You do "
+                f"every ticket's work yourself, here, one ticket after another: follow the plan (journal plan show {plan.n}) and each "
+                f"ticket (journal ticket show <n>), commit on this worktree's branch, and say when a ticket is done. Never merge "
+                f"the branch yourself.")
     return (f"You are the worker agent of plan {plan.n}, {plan.title}, with this environment and a worktree of your own. Its phases "
             f"hold board tickets, and the journal starts each phase's tickets once the phase before is done. You orchestrate: "
             f"follow the plan (journal plan show {plan.n}) and its tickets (journal ticket show <n>), answer their agents when "
@@ -29,6 +38,9 @@ def start_phase_tickets(record, plan) -> list[int]:
     tickets = Tickets(record, actor=SYSTEM)
     waiting = [ticket for ticket in map(tickets.load, plan.phases[plan.current - 1].get(PHASE.tickets, []))
                if not ticket.completed and not ticket.work_environment]
+    if plan.worktree == SHARED:
+        for ticket in waiting:
+            tickets._bind_to(ticket.n, worker_environment(plan))
     return [ticket.n for ticket in waiting if started_ticket(tickets, ticket.n)]
 
 

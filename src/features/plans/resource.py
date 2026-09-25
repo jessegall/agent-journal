@@ -18,6 +18,7 @@ class Plan(Shape, Resource):
         Field(default=1, name="current"),
         Field(default="normal", name="depth"),
         Field(FLAG, False, name="dismissed"),
+        Field(default="each", name="worktree"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Plan",
@@ -25,6 +26,7 @@ class Plan(Shape, Resource):
         help="A plan is drafted by the agent, approved and continued by the user, and worked phase by phase. While it is being written the agent says which stage it is at with journal plan stage <n> phases|todos, so the viewer knows whether the phases or the rows under them are still to come. journal plan build takes a plan that is ready back to being written, for when there is more to add.",
     )
     listed_open = True
+    choices = {"worktree": ["each", "shared"]}
     type = "plan"
     notify_actions = ("updated",)
     event_labels = {"created": "Plan started", "completed": "Plan finished"}

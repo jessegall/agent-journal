@@ -6,8 +6,8 @@ from engine.fields import Loaded
 from resources.base import Refused
 
 FOLDER = "agentic-organization"
-WORKTREE, PLURAL, GLOBAL = "worktree", "plural", "global"
-CARDINALITIES = (WORKTREE, PLURAL, GLOBAL)
+WORKTREE, PLURAL, GLOBAL, PLAN = "worktree", "plural", "global", "plan"
+CARDINALITIES = (WORKTREE, PLURAL, GLOBAL, PLAN)
 AGENT, SUBAGENT = "agent", "subagent"
 RUNS = (AGENT, SUBAGENT)
 
