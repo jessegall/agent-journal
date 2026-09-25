@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.160.0 — journal ticket merge lands a ticket on its board's branch
+
+journal ticket merge <n> merges a finished ticket's branch into its board's branch and closes it, so the next ticket starts. Where that branch is checked out it merges there, and git refuses rather than touch uncommitted work in the way; where no checkout holds it, the merge commit is made without touching any checkout. A conflict is refused with what conflicts. Orchestrating a board now merges with it, never by hand. Nothing to do.
+
 ## 2.159.0 — A board's tickets start fresh and hear their approvals
 
 A ticket queued behind another takes its start commit when its branch is made at launch, not when it queues, so once the ticket before it merges it is no longer taken for merged a minute after starting. When the agent orchestrating a board approves a ticket's plan, the ticket's agent is told to start it; journal ticket tell types through the agent's driver, so the note is checked to leave the input box. Orchestrating a board is a lasting sequence: shorter runs such as a bug escalation are handed over while it runs, and it is never called late. Only the environment orchestrating a board is told about and may approve its tickets' plans, and it is told again whenever a plan changes. A deleted dependency no longer blocks, one ticket that cannot start no longer stops the minute sweep, a restarted ticket agent is told to carry on, and one with a plan continues it. Nothing to do.

@@ -81,6 +81,31 @@ def merged(project: Path, branch: str, base: str, into: str = "HEAD") -> bool:
     return git(project, "merge-base", "--is-ancestor", ref, into).returncode == 0
 
 
+def current_branch(project: Path) -> str:
+    return git(project, "symbolic-ref", "--short", "HEAD").stdout.strip()
+
+
+def checked_out(project: Path, branch: str) -> Path | None:
+    listed = git(project, "worktree", "list", "--porcelain").stdout.split("\n\n")
+    held = [block.splitlines() for block in listed if f"branch refs/heads/{branch}" in block.splitlines()]
+    return Path(held[0][0].split(" ", 1)[1]) if held else None
+
+
+def merged_into(project: Path, branch: str, into: str) -> str:
+    place = checked_out(project, into)
+    if place:
+        done = git(place, "merge", "--no-edit", branch)
+        if done.returncode:
+            git(place, "merge", "--abort")
+            return (done.stderr or done.stdout).strip()
+        return ""
+    tree = git(project, "merge-tree", "--write-tree", into, branch)
+    if tree.returncode:
+        return f"it conflicts with {into}: {tree.stdout.strip().splitlines()[-1] if tree.stdout.strip() else tree.stderr.strip()}"
+    made = git(project, "commit-tree", tree.stdout.split()[0], "-p", into, "-p", branch, "-m", f"Merge {branch} into {into}")
+    return (made.stderr.strip() or "no merge commit") if made.returncode else git(project, "update-ref", f"refs/heads/{into}", made.stdout.strip()).stderr.strip()
+
+
 def branched(project: Path, branch: str, start: str) -> None:
     if not present(project, f"refs/heads/{branch}"):
         git(project, "branch", branch, start)

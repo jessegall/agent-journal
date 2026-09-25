@@ -24,8 +24,8 @@ ORCHESTRATION = {
                                      "or dispatch a reviewer subagent to check it. Approve only a plan that does the ticket and "
                                      "nothing more: journal ticket approve_plan <n>. Otherwise refuse it: tell its agent what must "
                                      "change and why with journal ticket tell <n> \"<the change>\"; it revises the plan, which waits "
-                                     "for you again. When a ticket's work is finished and reviewed, merge its branch into the "
-                                     "board's branch; it closes and the next one starts. When an agent is stuck on the journal "
+                                     "for you again. When a ticket's work is finished and reviewed, merge it into the "
+                                     "board's branch with journal ticket merge <n>, never by hand; it closes and the next one starts. When an agent is stuck on the journal "
                                      "itself, send the agent-journal agent the exact command, its output and the rows involved, "
                                      "wait for the fix, and carry on once it is installed. Move on only when every ticket is closed."),
         ("Report the board done", "Stop the recurring check, then write an update for the user: journal report changes, then "
