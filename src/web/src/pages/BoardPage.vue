@@ -16,6 +16,8 @@ import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
 import NewBoard from "../board/NewBoard.vue";
 import NewWork from "../board/NewWork.vue";
+import PlayStrip from "../board/PlayStrip.vue";
+import BoardGoal from "../board/BoardGoal.vue";
 import BoardMenu from "../board/BoardMenu.vue";
 import BuildStrip from "../board/BuildStrip.vue";
 import {remember, remembered} from "../composables/remembered.js";
@@ -44,6 +46,7 @@ const slots = computed(() => store.board.slots);
 const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
 const building = computed(() => tickets.value && current.value && (current.value.data.building || {}).since);
+const waitingCount = computed(() => (tickets.value ? ((store.board.lanes || [])[0] || {cards: []}).cards.length : 0));
 const ticketCount = computed(() => (store.board.lanes || []).reduce((sum, lane) => sum + lane.cards.length, 0));
 const removed = (n) => settle(boards.value.filter((board) => board.n !== n));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
@@ -172,7 +175,17 @@ async function startBoard() {
     starting.value = true;
     try {
         await api.act("board", current.value.n, "start");
-        toast.value = {text: `Started ${current.value.title}`};
+        toast.value = {text: `The main agent runs ${current.value.title}`};
+    } catch (e) {
+        refuse(e);
+    } finally {
+        starting.value = false;
+    }
+}
+async function boardAction(action) {
+    starting.value = true;
+    try {
+        await api.act("board", current.value.n, action);
     } catch (e) {
         refuse(e);
     } finally {
@@ -324,10 +337,10 @@ const ask = usePoll(
                 <span class="grow" />
             </template>
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
-            <template v-if="tickets && current">
-                <Btn small :busy="starting" title="Starts the board's orchestration on the board's own agent" @click="startBoard">
+            <template v-if="tickets && current && !current.data.started">
+                <Btn small :busy="starting" title="Hands this board to the main agent, which runs its tickets in order" @click="startBoard">
                     <Icon name="start" />
-                    Start
+                    Play
                 </Btn>
             </template>
             <Btn kind="primary" small title="New work (N)" @click="newWork('')">New work</Btn>
@@ -351,6 +364,18 @@ const ask = usePoll(
             <AgentStrip />
             <template v-if="building">
                 <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
+            </template>
+            <template v-if="tickets && current && !building">
+                <PlayStrip
+                    :board="current"
+                    :running="working.length"
+                    :waiting="waitingCount"
+                    :busy="starting"
+                    @play="startBoard"
+                    @pause="boardAction('pause')"
+                    @resume="boardAction('resume')"
+                />
+                <BoardGoal :board="current" />
             </template>
             <template v-if="tickets && slots">
                 <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" @limit="setLimit" />

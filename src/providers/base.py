@@ -408,6 +408,9 @@ class Provider(ABC):
     @abstractmethod
     def present(self, project: Path) -> bool: ...
 
+    def agent_types(self, project: Path, chosen: list) -> list[Path]:
+        return []
+
     def settings(self, project: Path) -> dict:
         return read_json(self.config(project), {})
 

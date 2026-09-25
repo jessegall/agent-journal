@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import COMMISSIONED, PROJECT, STARTED, USER, WIDE, Resource, ResourceDetails
+from resources.base import COMMISSIONED, FINISHED, PAUSED, PROJECT, RESUMED, Resource, ResourceDetails, STARTED, USER, WIDE
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Shape
 
 START, REVIEW, DONE = "start", "review", "done"
@@ -22,6 +22,11 @@ class Board(Shape, Resource):
         Field(default=dict, name="building"),
         Field(default=dict, name="added"),
         Field(TEXT, "", name="branch"),
+        Field(TEXT, "", name="goal"),
+        Field(LIST, list, name="done_when"),
+        Field(NUMBER, 0.0, name="started"),
+        Field(NUMBER, 0.0, name="paused"),
+        Field(NUMBER, 0.0, name="finished"),
         Field(FLAG, False, name="orchestrator_approves_plans"),
         Field(FLAG, False, name="orchestrator_accepts_waits"),
         Field(FLAG, False, name="orchestrator_confirms_drafts"),
@@ -32,7 +37,7 @@ class Board(Shape, Resource):
     scope = PROJECT
     view = WIDE
     in_sidebar = False
-    moments = ("created", "completed", COMMISSIONED, STARTED)
+    moments = ("created", "completed", COMMISSIONED, STARTED, PAUSED, RESUMED, FINISHED)
     created_in_viewer = True
     notified = (USER,)
     labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean",

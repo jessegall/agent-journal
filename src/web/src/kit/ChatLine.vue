@@ -9,9 +9,11 @@ const props = defineProps({
     thinking: Boolean,
     notes: {type: Array, default: () => []},
     shuffled: Boolean,
+    bare: Boolean,
+    kind: {type: String, default: ""},
 });
-const NOTE_SOONEST = 3000;
-const NOTE_LATEST = 7000;
+const NOTE_SOONEST = 4000;
+const NOTE_LATEST = 5000;
 const order = ref([]);
 const step = ref(0);
 const noteAt = computed(() => order.value[step.value] ?? 0);
@@ -47,7 +49,24 @@ const writing = computed(() => props.typed && count.value < props.text.length);
 </script>
 
 <template>
-    <template v-if="mine">
+    <template v-if="bare">
+        <div class="bare" aria-hidden="true">
+            <span class="dots">
+                <i />
+                <i />
+                <i />
+            </span>
+            <span class="bare-notes">
+                <Transition name="bare-note">
+                    <span :key="`${step}-${notes[noteAt]}`" class="bare-note">{{ notes[noteAt] }}</span>
+                </Transition>
+            </span>
+        </div>
+    </template>
+    <template v-else-if="kind">
+        <div :class="['msg', 'agent', kind]">{{ text }}</div>
+    </template>
+    <template v-else-if="mine">
         <div class="msg me">{{ text }}</div>
     </template>
     <template v-else>
@@ -81,7 +100,114 @@ const writing = computed(() => props.typed && count.value < props.text.length);
     font-size: 13px;
     line-height: 1.5;
     white-space: pre-wrap;
-    animation: fade-in var(--fade) both;
+    animation: line-rise 0.24s var(--ease) both;
+}
+
+.msg.lead {
+    max-width: none;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 26px;
+    text-wrap: pretty;
+}
+
+.msg.aside {
+    max-width: none;
+    color: var(--text-3);
+    text-wrap: pretty;
+}
+
+.bare {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+    min-width: 0;
+}
+
+.dots {
+    display: flex;
+    flex: none;
+    gap: 3px;
+}
+
+.dots i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-3);
+    animation: dim 1.2s infinite ease-in-out;
+}
+
+.dots i:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.dots i:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.bare-notes {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 20px;
+}
+
+.bare-note {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 12.5px;
+    line-height: 20px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bare-note-enter-active {
+    transition:
+        opacity 0.18s ease-out 0.06s,
+        transform 0.18s var(--ease) 0.06s;
+}
+
+.bare-note-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.bare-note-enter-from {
+    opacity: 0;
+    transform: translateY(3px);
+}
+
+.bare-note-leave-to {
+    opacity: 0;
+    transform: translateY(-3px);
+}
+
+@keyframes line-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .msg {
+        animation: none;
+    }
+
+    .dots i {
+        animation: none;
+    }
+
+    .bare-note-enter-active,
+    .bare-note-leave-active {
+        transition: none;
+    }
 }
 
 .msg.agent {

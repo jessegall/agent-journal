@@ -448,6 +448,9 @@ def post_settings(req: Request) -> Reply:
             record.set_setting(key, {**record.viewer, **value})
             continue
         record.set_setting(key, value)
+    if "boards" in req.body:
+        from features.boards.agent_types import written
+        written(record.root.parent, record)
     after = switches(record)
     aliases = renamed()
     turned = [f"{name} {'on' if on else 'off'}" for name, on in after.items() if name not in aliases and before.get(name) != on]

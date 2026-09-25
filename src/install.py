@@ -200,6 +200,9 @@ def configure(project: Path, root: Path) -> list[str]:
     done.append(f"{len(written)} skills in {LIBRARY}" + (f", linked from {', '.join(LINKED[a] for a in present if a in LINKED)}" if linked else ""))
     written = brief(project)
     done.append(f"the journal's law in {', '.join(f.name for f in written) or 'AGENTS.md and CLAUDE.md'}")
+    written = agent_types(project, Record(root, default_env(root)))
+    if written:
+        done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
     return done
 
@@ -435,7 +438,10 @@ def package() -> dict:
     from providers import PROVIDERS
     from providers.base import LIBRARY
     from skills import LINKED, publish
-    return {"served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS,
+    from features.boards.agent_types import written as agent_types
+    from engine.record import Record
+    from engine.hooks import default_env
+    return {"agent_types": agent_types, "Record": Record, "default_env": default_env, "served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS,
             "LIBRARY": LIBRARY, "LINKED": LINKED, "publish": publish}
 
 

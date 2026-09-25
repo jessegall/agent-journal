@@ -1,6 +1,6 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
-from features.sequences.handlers import IN_CHAT, STEP, STEP_HELD, UNFINISHED, WAITING
+from features.sequences.handlers import DISPATCH, IN_CHAT, STEP, STEP_HELD, UNFINISHED, WAITING
 
 
 class SequencesDetails(FeatureDetails):
@@ -58,6 +58,18 @@ class SequencesDetails(FeatureDetails):
     ]
 
     lines = [
+        Line(
+            name=DISPATCH,
+            while_waiting=True,
+            title="board {{board}} waits for the {{kind}} ({{why}}) - dispatch it now",
+            brief="dispatch it and carry on with your own work: the Agent tool with subagent_type \"{{kind}}\", model \"{{model}}\", a "
+                  "description that starts with a name, and this prompt: \"You fill board {{board}} for {{about}}. Your steps are sequence "
+                  "{{n}}, {{title}}: read them with journal sequence show {{n}}. Take up the step in hand with journal --agent {{kind}} "
+                  "sequence follow {{n}} --about {{about}}, do it, then journal --agent {{kind}} sequence next {{n}} --about {{about}}, and "
+                  "go on the same way; when the drafting sequence starts after the rating of 5, find it with journal sequence all and "
+                  "follow it too. Run every journal command with --agent {{kind}}. When you have asked the user a question, stop and "
+                  "answer with the question: you are dispatched again with the answer.\"",
+        ),
         Line(
             name=IN_CHAT,
             title="what you wrote during {{title}} was kept out of the chat",

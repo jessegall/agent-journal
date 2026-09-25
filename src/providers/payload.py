@@ -438,6 +438,7 @@ def call_of(raw: dict, kinds: dict) -> ToolUse:
 class Hook(Loaded):
     aliases = {"event": ("hook_event_name",), "session": ("session_id",), "transcript": ("transcript_path",),
                "last_message": ("last_assistant_message",), "agent": ("agent_id",)}
+    agent_type: str = ""
     event: str = ""
     session: str = ""
     transcript: Path | None = None

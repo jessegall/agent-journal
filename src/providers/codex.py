@@ -11,7 +11,7 @@ from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
 from engine.fields import Loaded
 from resources.types import AgentRow
-from engine.stored import tail
+from engine.stored import tail, write_text
 from engine.drivers import ANSI, MARK, Driver
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
@@ -205,6 +205,20 @@ class Codex(Provider):
     def move(start: int, target: int) -> str:
         key = "\x1b[B" if target >= start else "\x1b[A"
         return key * abs(target - start)
+
+    def agent_types(self, project: Path, chosen: list) -> list[Path]:
+        folder = project / ".codex" / "agents"
+        written = []
+        for kind, _ in chosen:
+            sandbox = "workspace-write" if "Bash" in kind.tools and "Grep" not in kind.tools else "read-only"
+            text = (f"name = {json.dumps(kind.name)}\ndescription = {json.dumps(kind.description)}\nsandbox_mode = {json.dumps(sandbox)}\n"
+                    f"developer_instructions = {json.dumps(kind.prompt)}\n")
+            target = folder / f"{kind.name}.toml"
+            if not target.is_file() or target.read_text() != text:
+                folder.mkdir(parents=True, exist_ok=True)
+                write_text(target, text)
+                written.append(target)
+        return written
 
     def present(self, project: Path) -> bool:
         return (project / ".codex").is_dir() or shutil.which("codex") is not None

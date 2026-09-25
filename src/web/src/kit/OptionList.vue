@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
 import {store} from "../state/store.js";
+import Btn from "./Btn.vue";
 
 const HOLD_SECONDS = 3;
 const props = defineProps({
@@ -13,14 +14,27 @@ const props = defineProps({
     reason: {type: String, default: ""},
     immediate: Boolean,
     tiles: Boolean,
+    steady: Boolean,
+    multiple: Boolean,
+    chosenMany: {type: Array, default: () => []},
 });
-const emit = defineEmits(["pick"]);
+const emit = defineEmits(["pick", "picks"]);
+const ticked = ref([]);
+const isChosen = (o) => (props.chosen && props.chosen === o.title) || props.chosenMany.includes(o.title);
+const tick = (i) => (ticked.value = ticked.value.includes(i) ? ticked.value.filter((t) => t !== i) : [...ticked.value, i]);
+const settle = () =>
+    ticked.value.length &&
+    emit(
+        "picks",
+        [...ticked.value].sort((a, b) => a - b)
+    );
 const holding = ref(-1);
 const pressed = ref(-1);
 let timer = 0;
 const held = computed(() => Number(store.settings?.ask_questions?.hold ?? HOLD_SECONDS) * 1000);
 
 function choose(i) {
+    if (props.multiple) return tick(i);
     if (props.immediate) {
         if (pressed.value >= 0) return;
         pressed.value = i;
@@ -46,7 +60,7 @@ onUnmounted(save);
 </script>
 
 <template>
-    <div :class="['options', {tiles}]" :style="{'--tone': color}">
+    <div :class="['options', {tiles, steady, multiple}]" :style="{'--tone': color}">
         <template v-for="(o, i) in options" :key="i">
             <button
                 type="button"
@@ -54,7 +68,8 @@ onUnmounted(save);
                     'option',
                     {
                         suggested: i === suggested && !disabled,
-                        chosen: chosen && chosen === o.title,
+                        chosen: isChosen(o),
+                        ticked: multiple && ticked.includes(i),
                         holding: holding === i,
                         pressed: pressed === i,
                     },
@@ -65,6 +80,9 @@ onUnmounted(save);
             >
                 <template v-if="tiles">
                     <span class="mark" />
+                </template>
+                <template v-if="steady">
+                    <span class="tick">✓</span>
                 </template>
                 <template v-if="i === suggested && !disabled">
                     <span class="pick">The agent's pick</span>
@@ -87,6 +105,11 @@ onUnmounted(save);
                     <span class="hold-bar" :style="{'--hold': `${held}ms`}" />
                 </template>
             </button>
+        </template>
+        <template v-if="multiple && !disabled">
+            <div class="settle">
+                <Btn kind="primary" small :disabled="!ticked.length" @click="settle">Continue</Btn>
+            </div>
         </template>
     </div>
 </template>
@@ -314,7 +337,93 @@ onUnmounted(save);
     }
 }
 
+/* Steady: in a conversation the choices never leave their place. They rise in 50ms apart; once answered, the chosen one
+   carries a check and the rest stay put in muted text. */
+.steady .option {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-height: 36px;
+    padding: 7px 12px;
+    color: var(--text-2);
+    animation: option-rise 0.24s var(--ease) both;
+    animation-delay: calc(var(--i) * 50ms + 50ms);
+}
+
+.steady .option .label {
+    flex: 1;
+}
+
+.steady .pick {
+    display: none;
+}
+
+.options.steady:has(.pressed) .option:not(.pressed),
+.steady .option:disabled {
+    opacity: 1;
+    pointer-events: none;
+}
+
+.steady .option:disabled:not(.chosen) {
+    border-color: var(--border);
+    background: transparent;
+    color: var(--text-3);
+}
+
+.steady .option.chosen,
+.steady .option.ticked,
+.steady .option.pressed {
+    border-color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 16%, var(--raised));
+    color: var(--text);
+}
+
+.tick {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border-3);
+    border-radius: 50%;
+    box-sizing: border-box;
+    color: transparent;
+    font-size: 10px;
+    transition:
+        border-color 0.12s ease-out,
+        background 0.12s ease-out,
+        color 0.12s ease-out;
+}
+
+.multiple .tick {
+    border-radius: 4px;
+}
+
+.chosen .tick,
+.ticked .tick,
+.pressed .tick {
+    border-color: var(--tone);
+    background: var(--tone);
+    color: #fff;
+}
+
+.settle {
+    display: flex;
+    margin-top: 2px;
+}
+
+@keyframes option-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
+    .steady .option {
+        animation: none;
+    }
+
     .tiles .option {
         animation: none;
         transition-duration: 0.01ms;

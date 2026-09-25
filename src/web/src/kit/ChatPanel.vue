@@ -1,29 +1,18 @@
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref, useSlots, watch} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "./Btn.vue";
-import Icon from "./Icon.vue";
 
 const props = defineProps({
     placeholder: String,
     action: {type: String, default: "Send"},
     locked: Boolean,
-    fill: Boolean,
     limit: Number,
-    withoutInput: Boolean,
-    waiting: Boolean,
-    echo: String,
-    closable: Boolean,
-    hint: String,
-    snug: Boolean,
 });
-const emit = defineEmits(["send", "close"]);
+const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
 const log = ref(null);
 const lines = ref(null);
 const input = ref(null);
-const slots = useSlots();
-const actions = Boolean(slots.actions);
-const head = Boolean(slots.head);
 const NEAR = 24;
 let pinned = true;
 const follow = () => pinned && (log.value.scrollTop = log.value.scrollHeight);
@@ -31,7 +20,7 @@ const watchScroll = () => (pinned = log.value.scrollHeight - log.value.scrollTop
 const sized = new ResizeObserver(follow);
 const added = new MutationObserver(() => ((pinned = true), follow()));
 
-onMounted(() => (sized.observe(lines.value), sized.observe(log.value), added.observe(lines.value, {childList: true})));
+onMounted(() => (sized.observe(lines.value), sized.observe(log.value), added.observe(lines.value, {childList: true, subtree: true})));
 onUnmounted(() => (sized.disconnect(), added.disconnect()));
 
 function send() {
@@ -39,7 +28,7 @@ function send() {
     emit("send", words.value.trim());
 }
 
-const MOST_LINES = 8;
+const MOST_LINES = 6;
 
 function grow() {
     const box = input.value;
@@ -50,86 +39,47 @@ function grow() {
 
 watch(words, () => nextTick(grow));
 
-const focusInput = () => input.value.focus();
-const typing = () => !props.withoutInput && !props.waiting;
-defineExpose({focus: () => nextTick(() => typing() && input.value && focusInput())});
-
-const focusEntered = (el) => el === input.value && focusInput();
+defineExpose({focus: () => nextTick(() => input.value && input.value.focus())});
 </script>
 
 <template>
-    <div :class="['chat', {fill, snug}]">
-        <Transition name="close-fade">
-            <template v-if="closable">
-                <button type="button" class="close" title="Cancel" @click="emit('close')">
-                    <Icon name="close" />
-                </button>
-            </template>
-        </Transition>
-        <template v-if="head">
+    <div class="chat">
+        <template v-if="$slots.head">
             <slot name="head" />
         </template>
-        <div ref="log" class="log" @scroll="watchScroll">
+        <div ref="log" class="log" role="log" @scroll="watchScroll">
             <div ref="lines" class="lines">
                 <slot />
             </div>
         </div>
-        <template v-if="actions">
-            <div class="actions">
-                <slot name="actions" />
-            </div>
-        </template>
-        <div class="hint-row">
-            <Transition name="hint" mode="out-in">
-                <template v-if="hint">
-                    <em :key="hint" class="hint">{{ hint }}</em>
-                </template>
-            </Transition>
+        <div class="row">
+            <slot name="row" />
         </div>
-        <div class="echo-slot">
-            <Transition name="echo">
-                <template v-if="echo">
-                    <p :key="echo" class="echo">{{ echo }}</p>
+        <form :class="['compose', {locked}]" @submit.prevent="send">
+            <template v-if="$slots.tool">
+                <span class="tool">
+                    <slot name="tool" />
+                </span>
+            </template>
+            <textarea
+                ref="input"
+                v-model="words"
+                rows="1"
+                :placeholder="placeholder"
+                :aria-label="placeholder"
+                :disabled="locked"
+                :maxlength="limit || null"
+                spellcheck="false"
+                @input="grow"
+                @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), send())"
+            />
+            <span class="tail">
+                <template v-if="limit && words.length > limit * 0.8">
+                    <span class="left">{{ limit - words.length }}</span>
                 </template>
-            </Transition>
-        </div>
-        <template v-if="$slots.attached">
-            <div class="attached">
-                <slot name="attached" />
-            </div>
-        </template>
-        <div :class="['compose-slot', {waiting}]">
-            <Transition name="input-step" @after-enter="() => typing() && focusInput()">
-                <template v-if="!withoutInput">
-                    <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
-                        <Transition name="swap" mode="out-in" @after-enter="focusEntered">
-                            <template v-if="waiting">
-                                <span class="resting">{{ placeholder }}</span>
-                            </template>
-                            <template v-else>
-                                <textarea
-                                    ref="input"
-                                    v-model="words"
-                                    rows="1"
-                                    :placeholder="placeholder"
-                                    :disabled="locked"
-                                    :maxlength="limit || null"
-                                    spellcheck="false"
-                                    @input="grow"
-                                    @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), send())"
-                                />
-                            </template>
-                        </Transition>
-                        <span class="tail">
-                            <template v-if="limit">
-                                <span class="left">{{ limit - words.length }}</span>
-                            </template>
-                            <Btn kind="primary" small :disabled="locked || waiting || !words.trim()" @click="send">{{ action }}</Btn>
-                        </span>
-                    </form>
-                </template>
-            </Transition>
-        </div>
+                <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
+            </span>
+        </form>
     </div>
 </template>
 
@@ -137,11 +87,10 @@ const focusEntered = (el) => el === input.value && focusInput();
 .chat {
     position: relative;
     display: flex;
-    flex: none;
     flex-direction: column;
-    align-self: center;
-    width: min(680px, 100%);
-    height: min(400px, 52vh);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     border: 1px solid var(--border-2);
     border-radius: 16px;
     background: rgba(24, 25, 28, 0.94);
@@ -149,69 +98,58 @@ const focusEntered = (el) => el === input.value && focusInput();
     box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
 }
 
-.chat.fill {
-    align-self: stretch;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
 .log {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    scrollbar-width: none;
 }
 
 .lines {
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
     gap: 10px;
     min-height: 100%;
     padding: 16px 16px 6px;
     box-sizing: border-box;
 }
 
-.chat.snug .log {
-    display: flex;
-    flex-direction: column;
-}
-
-.chat.snug .lines {
-    flex: 0 1 auto;
-    min-height: 0;
-}
-
-.attached {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    gap: 8px;
-    padding: 0 16px 10px;
-}
-
-.actions {
+.row {
     position: relative;
     flex: none;
-    height: 44px;
+    height: var(--chat-row, 36px);
+    margin: 0 8px;
 }
 
 .compose {
     display: flex;
+    flex: none;
     align-items: flex-end;
     gap: 10px;
-    margin: 8px;
+    margin: 0 8px 8px;
     padding: 5px 5px 5px 12px;
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--side);
     transition:
-        opacity var(--fade),
-        background var(--fade),
-        border-color var(--fade);
+        opacity 0.18s ease-out,
+        border-color 0.18s ease-out;
 }
 
 .compose:focus-within {
     border-color: var(--accent);
+}
+
+.compose.locked {
+    opacity: 0.5;
+}
+
+.tool {
+    display: flex;
+    flex: none;
+    align-items: center;
+    height: 32px;
 }
 
 .tail {
@@ -220,206 +158,12 @@ const focusEntered = (el) => el === input.value && focusInput();
     align-items: center;
     gap: 10px;
     height: 32px;
-    transition: opacity var(--fade);
 }
 
 .left {
     color: var(--text-4);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
-}
-
-.close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: 0;
-    border-radius: 7px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.close-fade-enter-active,
-.close-fade-leave-active {
-    transition: opacity var(--fade);
-}
-
-.close-fade-enter-from,
-.close-fade-leave-to {
-    opacity: 0;
-}
-
-.close:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.hint-row {
-    flex: none;
-    min-height: 0;
-    margin: 0 20px;
-    animation: fade-in var(--fade) 2s both;
-}
-
-.hint {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--text-4);
-    font-size: 13px;
-    line-height: 18px;
-}
-
-.hint-enter-active,
-.hint-leave-active {
-    transition:
-        opacity var(--fade),
-        transform var(--move);
-}
-
-.hint-enter-from {
-    opacity: 0;
-    transform: translateY(4px);
-}
-
-.hint-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
-
-.echo-slot {
-    display: flex;
-    flex: none;
-    justify-content: flex-end;
-    min-height: 26px;
-}
-
-.chat:has(.close) .lines {
-    padding-right: 48px;
-}
-
-.echo {
-    align-self: flex-end;
-    max-width: 80%;
-    margin: 0 14px 8px;
-    color: var(--text-3);
-    font-size: 13px;
-    font-style: italic;
-    line-height: 18px;
-    overflow-wrap: anywhere;
-}
-
-.echo-enter-active {
-    transition:
-        opacity var(--fade) 0.1s,
-        transform var(--move) 0.1s;
-}
-
-.echo-leave-active {
-    transition: opacity var(--fade);
-}
-
-.echo-enter-from {
-    opacity: 0;
-    transform: translateY(8px);
-}
-
-.echo-leave-to {
-    opacity: 0;
-}
-
-.compose-slot {
-    display: grid;
-    flex: none;
-    min-height: 60px;
-    max-height: 240px;
-    transition:
-        min-height 0.6s var(--ease),
-        max-height 0.6s var(--ease),
-        opacity 0.4s ease,
-        transform 0.6s var(--ease),
-        filter 0.6s ease;
-}
-
-.compose-slot.waiting {
-    min-height: 0;
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-    filter: blur(2px);
-    pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .compose-slot {
-        transition: opacity 0.2s ease;
-    }
-}
-
-.compose-slot > .compose {
-    grid-area: 1 / 1;
-    align-self: end;
-}
-
-.input-step-enter-active {
-    transition:
-        opacity var(--fade),
-        transform var(--move);
-}
-
-.input-step-leave-active {
-    transition: opacity var(--fade) 0.15s;
-}
-
-.input-step-enter-from {
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-.input-step-leave-to {
-    opacity: 0;
-}
-
-.compose.waiting {
-    border-color: var(--border);
-    opacity: 0.55;
-}
-
-.compose.waiting .tail {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.resting {
-    flex: 1;
-    min-width: 0;
-    height: 32px;
-    overflow: hidden;
-    color: var(--text-4);
-    font-size: 14px;
-    line-height: 32px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.swap-enter-active,
-.swap-leave-active {
-    transition: opacity var(--fade);
-}
-
-.swap-enter-from,
-.swap-leave-to {
-    opacity: 0;
-}
-
-.compose.locked {
-    opacity: 0.5;
 }
 
 .compose textarea {
@@ -438,6 +182,9 @@ const focusEntered = (el) => el === input.value && focusInput();
 }
 
 .compose textarea::placeholder {
+    overflow: hidden;
     color: var(--text-4);
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 </style>

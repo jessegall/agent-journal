@@ -13,7 +13,7 @@ import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {useFloatingChat} from "../composables/floatingChat.js";
 import {useStepAbout} from "../composables/sequenceRuns.js";
-import {FIRST_STEP, PICKED_LINES, STEP_LINES} from "./stepLines.js";
+import {FIRST_STEP, PICKED_LINES, STEP_LINES, STEP_WORDS} from "./stepLines.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
 import DraftDetail from "./DraftDetail.vue";
@@ -28,34 +28,37 @@ const since = ref(0);
 const lastSent = ref(0);
 const picked = ref([]);
 const adding = ref(false);
+const added = ref(0);
 const panel = ref(null);
 const revealed = ref([]);
 const docked = ref(false);
+const tab = ref("chat");
+const discarding = ref(false);
+const failed = ref("");
+const openedAt = ref(0);
 const INPUT_LIMIT = 280;
-const OPEN_TURNS = 2;
-const GROW_MS = 450;
-const tall = ref(false);
 const resumed = ref(false);
-const grown = ref(false);
-let growTimer = 0;
 let resetTimer = 0;
 let inFlight = null;
 let sessions = 0;
 const PENDING = Infinity;
-let typedAnswer = false;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
+const HELD = 400;
 const EXAMPLES = [
-    "I want people to sign in before they can change anything",
-    "Let someone invite a teammate to this project",
+    "People sign in before they can change anything",
+    "The board gets slow with many cards",
     "Show who changed a card and when",
-    "The board gets slow once there are many cards",
-    "A weekly summary of what moved",
 ];
-const EXAMPLE_MS = 6000;
-const example = ref(0);
-let exampleTimer = 0;
+
+const WIDE = window.matchMedia("(min-width: 1160px)");
+const SMALL = window.matchMedia("(max-width: 760px)");
+const tabs = ref(!WIDE.matches);
+const phone = ref(SMALL.matches);
+const viewHeight = ref(window.visualViewport ? window.visualViewport.height : window.innerHeight);
+const fits = () => ((tabs.value = !WIDE.matches), (phone.value = SMALL.matches));
+const measured = () => (viewHeight.value = window.visualViewport ? window.visualViewport.height : window.innerHeight);
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -64,13 +67,13 @@ const replies = computed(() => {
 });
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
-const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || store.board.expected > 0);
 const TYPING_FASTEST = 4;
 const typingSpeed = computed(() => Math.min(TYPING_FASTEST, 1 + Math.max(0, drafts.value.length - 1) * 0.3));
 const drafting = computed(() => (since.value && store.board.drafting) || {});
 const phase = computed(() => drafting.value.phase || "");
 const lost = computed(() => phase.value === "lost");
+const halted = computed(() => phase.value === "stalled");
 const step = useStepAbout(() => drafting.value.asked || []);
 const stepAt = ref(0);
 watch(step, () => (stepAt.value = Date.now() / 1000), {immediate: true});
@@ -90,12 +93,14 @@ const conversation = computed(() =>
                   .filter((m) => !lines.value.some((line) => line.id === m.data.idempotency))
                   .map((m) => ({id: m.ref, mine: true, at: m.created, text: m.brief || m.title}))
             : []),
-        ...replies.value.map((c) => ({id: c.ref, mine: false, typed: true, at: c.created, text: quoted(c.brief || c.title).text})),
+        ...replies.value.map((c) => ({id: c.ref, typed: true, at: c.created, text: quoted(c.brief || c.title).text})),
+        ...boardQuestions.value.map((q) => ({id: q.ref, question: q, at: q.created})),
         ...boardQuestions.value
-            .filter((q) => q.completed)
-            .map((q) => ({id: q.ref, record: true, at: q.completed, text: `Asked: ${q.title} → ${q.outcome}`})),
+            .filter((q) => q.completed && q.outcome && q.outcome !== START_OVER)
+            .map((q) => ({id: `${q.ref}-answer`, mine: true, at: q.completed, text: q.outcome})),
     ].sort((a, b) => a.at - b.at)
 );
+const spoken = computed(() => conversation.value.filter((line) => line.text || line.question));
 const drafts = computed(() =>
     rows("ticket").filter(
         (t) =>
@@ -111,38 +116,29 @@ const documentName = computed(
         ""
 );
 const pointed = ref(null);
-const view = ref("drafts");
-const views = computed(() => [
-    {key: "drafts", label: `Drafts ${drafts.value.length}`},
-    {key: "document", label: "Document"},
-]);
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
-const agentsTurn = computed(() => writing.value && !asking.value && !lost.value);
-const RESIZE_FADE = 220;
-const RESIZE_MS = 700;
-const narrow = ref(agentsTurn.value);
-const hushed = ref(false);
-let resizing = [];
-watch(agentsTurn, (on) => {
-    resizing.forEach(clearTimeout);
-    if (docked.value) return ((narrow.value = on), (hushed.value = false));
-    hushed.value = true;
-    resizing = [setTimeout(() => (narrow.value = on), RESIZE_FADE), setTimeout(() => (hushed.value = false), RESIZE_FADE + RESIZE_MS)];
-});
-onUnmounted(() => resizing.forEach(clearTimeout));
-const spoken = computed(() => conversation.value.filter((line) => line.text));
-const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
-const agentLine = computed(() => conversation.value.findLast((line) => !line.mine && !line.record && line.text));
-const held = computed(() => replies.value.length > 0 && !grown.value);
-const latest = computed(() => ((asking.value && grown.value) || held.value || !agentLine.value ? [] : [agentLine.value]));
-const agentAnswered = computed(() => Boolean(asking.value) || replies.value.length > 0);
-const dockedAt = ref(0);
-const echo = computed(() =>
-    docked.value || drafts.value.length || (words.value && !writing.value) || lastMine.value < 0
-        ? ""
-        : conversation.value[lastMine.value].text
+const revising = computed(() => writing.value && drafts.value.length > 0);
+const empty = computed(
+    () => docked.value && phase.value === "drafting" && !writing.value && !asking.value && !drafts.value.length && !reading.value
 );
+
+const goal = computed(() => props.board.data.goal || props.board.goal || "");
+const doneWhen = computed(() => props.board.data.done_when || props.board.done_when || []);
+const clauseOf = (served) =>
+    (typeof served === "number" || /^\d+$/.test(String(served)) ? doneWhen.value[Number(served) - 1] : served) || "";
+const covers = (ticket) => (ticket ? (ticket.data.covers || ticket.covers || []).map(clauseOf).filter(Boolean) : []);
+
+const summary = computed(() => {
+    if (!since.value) return {text: "", step: ""};
+    if (lost.value) return {text: drafting.value.reading || "Not clear yet", step: "Still reading the request"};
+    const text = drafting.value.reading || (writing.value ? "Not clear yet" : "");
+    if (phase.value === "drafting" && !writing.value && drafts.value.length) return {text, step: `${drafts.value.length} drafts ready`};
+    if (asking.value) return {text, step: "Asking you"};
+    return {text, step: STEP_WORDS[step.value] || (writing.value ? "Reading the request" : "")};
+});
+const summaryKey = computed(() => `${summary.value.text}|${summary.value.step}`);
+
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
     const ahead = writing.value && confirmed.value ? Math.max(store.board.expected - drafts.value.length, 0) : 0;
@@ -161,17 +157,54 @@ watch([writing, asking, () => drafts.value.length, progress], ([on]) => {
     stalled.value = false;
     if (on) stallTimer = setTimeout(() => (stalled.value = writing.value && !asking.value), STALLED_AFTER);
 });
+
+const row = computed(() => {
+    if (discarding.value) return "discard";
+    if (failed.value) return "failed";
+    if (!since.value) return handed.value ? "upload" : "chips";
+    if (stalled.value || halted.value) return "stalled";
+    if (writing.value && !asking.value) return "status";
+    return "";
+});
+const placeholder = computed(() => {
+    if (handing.value) return "Anything I should know? Optional";
+    if (asking.value) return "Pick one, or answer in your own words";
+    if (drafts.value.length) return "Change these drafts…";
+    if (since.value) return "Anything to add?";
+    return "Describe the work in your own words";
+});
+const tabOptions = computed(() => [
+    {key: "chat", label: "Chat"},
+    {key: "drafts", label: `Drafts ${drafts.value.length}`},
+]);
+
 const first = computed(() => props.stage || props.board.data.stages[0]);
-const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
 const proposed = (ticket) =>
     Object.entries(ticket.data.dependencies || {})
         .filter(([, stance]) => stance === "proposed")
         .map(([ref]) => Number(ref.split(":")[1]));
+const pickedDrafts = computed(() => drafts.value.filter((t) => picked.value.includes(t.n)));
+const served = computed(() => new Set(pickedDrafts.value.flatMap(covers)));
+const missing = computed(() => (picked.value.length ? doneWhen.value.filter((clause) => !served.value.has(clause)) : []));
 const note = computed(() => {
-    if (asking.value) return "Pick one above, or type your own.";
-    if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to pick it.`;
-    if (!picked.value.length) return "Click a card to pick it.";
-    return props.starts ? `They go to ${first.value}; their agents start as room frees up.` : `They go to ${first.value}, ready to start.`;
+    if (added.value) return `Added to ${first.value}`;
+    if (revising.value) return "Redrafting…";
+    if (writing.value && !drafts.value.length) return reading.value ? "Reading…" : "Drafting…";
+    if (empty.value) return "No drafts";
+    if (!picked.value.length)
+        return writing.value
+            ? `${drafts.value.length} drafted so far · click a card to pick it`
+            : `${drafts.value.length} drafts · click the ones to add`;
+    if (doneWhen.value.length)
+        return `${picked.value.length} picked · covers ${doneWhen.value.length - missing.value.length} of ${doneWhen.value.length} done points`;
+    return props.starts
+        ? `${picked.value.length} picked · they go to ${first.value}; their agents start as room frees up`
+        : `${picked.value.length} picked · they go to ${first.value}`;
+});
+const addLabel = computed(() => {
+    if (added.value) return `Added ${added.value}`;
+    if (adding.value) return `Adding ${picked.value.length}`;
+    return picked.value.length ? `Add ${picked.value.length} to ${first.value}` : `Add to ${first.value}`;
 });
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
 const sameSet = (a, b) => a.length === b.length && a.every((n) => b.includes(n));
@@ -193,13 +226,15 @@ const FLASH_MS = 1600;
 const flashed = ref([]);
 let appliedPicks = 0;
 let flashTimer = 0;
-const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
+const toggle = (n) => added.value || (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
+const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
-const say = (mine, text, id = `line-${lines.value.length}`) =>
-    (lines.value = [...lines.value, {id, mine, text, typed: !mine, at: (conversation.value.at(-1)?.at || 0) + 0.001}]);
+const say = (mine, text, id = `line-${lines.value.length}`, kind = "") =>
+    (lines.value = [...lines.value, {id, mine, kind, text, at: (conversation.value.at(-1)?.at || 0) + 0.001}]);
 
 function onKey(e) {
     if (!props.open || shownDraft.value) return;
+    if (e.key === "Escape") return (e.preventDefault(), escape());
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && picked.value.length) return (e.preventDefault(), add());
     const shown = shownDrafts.value[Number(e.key) - 1];
     if (shown && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(shown.n));
@@ -216,89 +251,67 @@ watch([() => store.board.drafting.picks?.at || 0, since], ([at]) => {
 });
 
 watch(
-    () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS || reading.value || phase.value === "drafting",
-    (dock) => dock && ((dockedAt.value = conversation.value.at(-1)?.at || 0), (docked.value = true)),
+    () => drafts.value.length >= 1 || reading.value || phase.value === "drafting",
+    (dock) => dock && (docked.value = true),
     {immediate: true}
 );
 
 const {openChat} = useFloatingChat();
-const need = ref(0);
-const partsOf = () => {
-    const chat = panel.value?.$el;
-    const log = chat?.querySelector(".log");
-    return {chat, log, lines: log?.firstElementChild};
-};
-
-function measure() {
-    const {chat, log, lines} = partsOf();
-    if (!lines) return;
-    const hidden = [...lines.querySelectorAll(".choices")].reduce((sum, el) => sum + el.scrollHeight - el.clientHeight, 0);
-    need.value = chat.offsetHeight - log.offsetHeight + lines.offsetHeight + hidden;
-}
-
-const sizes = new ResizeObserver(() => requestAnimationFrame(measure));
-function watchSizes() {
-    const {chat, lines} = partsOf();
-    sizes.disconnect();
-    [chat, lines, ...(lines ? lines.querySelectorAll(".choices > *") : [])].forEach((el) => el && sizes.observe(el));
-    requestAnimationFrame(measure);
-}
-const changes = new MutationObserver(watchSizes);
-watch(
-    () => panel.value?.$el,
-    (chat) => {
-        changes.disconnect();
-        const {lines} = partsOf();
-        if (!chat || !lines) return;
-        changes.observe(lines, {childList: true, subtree: true, characterData: true});
-        watchSizes();
-    },
-    {flush: "post"}
-);
-onUnmounted(() => (sizes.disconnect(), changes.disconnect()));
 
 const LISTENERS = {keydown: onKey, dragover: (e) => hovering(e), drop: (e) => dropped(e), paste: (e) => pastedFile(e)};
-onMounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener)));
+onMounted(() => {
+    Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener));
+    WIDE.addEventListener("change", fits);
+    SMALL.addEventListener("change", fits);
+    window.visualViewport && window.visualViewport.addEventListener("resize", measured);
+});
 onUnmounted(() => {
     Object.entries(LISTENERS).forEach(([event, listener]) => window.removeEventListener(event, listener));
-    clearInterval(exampleTimer);
-    clearTimeout(growTimer);
+    WIDE.removeEventListener("change", fits);
+    SMALL.removeEventListener("change", fits);
+    window.visualViewport && window.visualViewport.removeEventListener("resize", measured);
     clearTimeout(resetTimer);
     clearTimeout(flashTimer);
+    clearTimeout(stallTimer);
 });
 
-const greet = () => say(false, `What do you want to get done on ${props.board.title}?`);
-
-function showExamples() {
-    clearInterval(exampleTimer);
-    example.value = 0;
-    exampleTimer = setInterval(() => (example.value = (example.value + 1) % EXAMPLES.length), EXAMPLE_MS);
+function greet() {
+    say(false, `What do you want to get done on ${props.board.title}?`, "greet", "lead");
+    say(
+        false,
+        "Say it in a sentence. I ask a few short questions until I understand, then draft tickets for you to pick from.",
+        "intro",
+        "aside"
+    );
 }
 
 watch(
     () => props.open,
     (open) => {
-        if (!open) return clearInterval(exampleTimer);
+        if (!open) return;
         if (resetTimer) (clearTimeout(resetTimer), (resetTimer = 0), startAnew());
+        openedAt.value = Date.now() / 1000;
         if (!lines.value.length) greet();
         if (!since.value && store.board.drafting.since) resume(store.board.drafting);
-        if (!since.value) showExamples();
-        nextTick(() => panel.value.focus());
+        nextTick(() => panel.value && panel.value.focus());
     },
     {immediate: true}
 );
 
 async function send(text) {
-    const id = crypto.randomUUID();
-    say(true, text, id);
-    clearInterval(exampleTimer);
-    lastSent.value = PENDING;
+    discarding.value = false;
+    if (handing.value) return hand();
     if (asking.value) {
-        typedAnswer = true;
+        words.value = "";
+        lastSent.value = PENDING;
         const done = await api.act("question", asking.value.n, word("question", "complete"), {how: text});
         lastSent.value = done.completed;
         return;
     }
+    const id = crypto.randomUUID();
+    say(true, text, id);
+    words.value = "";
+    lastSent.value = PENDING;
     lastAsked.value = text;
     await ask(text, id);
 }
@@ -309,28 +322,39 @@ const handing = computed(() => Boolean(handed.value) && !since.value);
 
 function take(file) {
     if (since.value || !file) return;
+    failed.value = "";
     handed.value = file;
 }
 
 async function hand() {
     const text = words.value.trim();
     const file = handed.value;
+    failed.value = "";
     words.value = "";
-    say(true, text || `Draft tickets from ${file.name}`);
-    clearInterval(exampleTimer);
+    say(true, text || `Draft tickets from ${file.name}`, `hand-${sessions}`);
     lastSent.value = PENDING;
     since.value = PENDING;
     const id = crypto.randomUUID();
     const session = sessions;
     sent.value = [...sent.value, id];
-    await api.upload("board", props.board.n, file);
-    inFlight = api.handWork(props.board.n, file.name, text, id);
-    const made = await inFlight;
-    inFlight = null;
-    handed.value = null;
-    if (session !== sessions) return;
-    if (since.value === PENDING) since.value = made.created;
-    lastSent.value = made.created;
+    try {
+        await api.upload("board", props.board.n, file);
+        inFlight = api.handWork(props.board.n, file.name, text, id);
+        const made = await inFlight;
+        inFlight = null;
+        handed.value = null;
+        if (session !== sessions) return;
+        if (since.value === PENDING) since.value = made.created;
+        lastSent.value = made.created;
+    } catch (e) {
+        inFlight = null;
+        if (session !== sessions) return;
+        lines.value = lines.value.filter((line) => line.id !== `hand-${sessions}`);
+        sent.value = sent.value.filter((s) => s !== id);
+        since.value = 0;
+        lastSent.value = 0;
+        failed.value = file.name;
+    }
 }
 
 function dropped(e) {
@@ -370,15 +394,36 @@ async function ask(text, id = crypto.randomUUID()) {
 function askAgain() {
     stalled.value = false;
     lastSent.value = PENDING;
-    ask(lastAsked.value);
+    ask(lastAsked.value || asked.value[0]?.brief || asked.value[0]?.title || "");
+}
+
+const retrying = ref(false);
+
+async function retry() {
+    retrying.value = true;
+    try {
+        await api.act("board", props.board.n, "retry");
+        lastSent.value = Date.now() / 1000;
+    } finally {
+        retrying.value = false;
+    }
+}
+
+function example(text) {
+    words.value = text;
+    panel.value.focus();
 }
 
 function again() {
+    tab.value = "chat";
     say(false, "What should the new set do differently?");
     panel.value.focus();
 }
 
+const pause = (ms) => new Promise((done) => setTimeout(done, ms));
+
 async function add() {
+    if (adding.value || added.value) return;
     adding.value = true;
     const drafted = [...drafts.value];
     const keep = drafted.map((t) => t.n).filter((n) => picked.value.includes(n));
@@ -390,11 +435,11 @@ async function add() {
             : api.act("ticket", t.n, "decline_dependencies"));
     }
     if (props.starts || first.value !== props.board.data.stages[0]) for (const n of keep) await api.moveTicket(n, first.value);
-    if (keep.length) {
-        await api.act("board", props.board.n, "added", {tickets: keep.join(",")});
-        openChat();
-    }
+    if (keep.length) await api.act("board", props.board.n, "added", {tickets: keep.join(",")});
     adding.value = false;
+    added.value = keep.length;
+    await pause(HELD);
+    if (keep.length) openChat();
     emit("added", keep.length);
     finish();
 }
@@ -403,37 +448,38 @@ function startOver() {
     Promise.resolve(inFlight).finally(() => api.cancelWork(props.board.n));
     startAnew();
     greet();
-    showExamples();
     nextTick(() => panel.value.focus());
 }
 
+function escape() {
+    if (added.value) return finish();
+    if (adding.value) return;
+    if (discarding.value) return (discarding.value = false);
+    cancel();
+}
+
+function cancel() {
+    if (since.value && !discarding.value) return (discarding.value = true);
+    finish();
+}
+
 function finish() {
+    discarding.value = false;
     emit("close");
     Promise.resolve(inFlight).finally(() => api.cancelWork(props.board.n));
     resetTimer = setTimeout(() => ((resetTimer = 0), startAnew()), FADED);
 }
 
-watch(agentAnswered, (on) => {
-    if (!on || tall.value) return;
-    tall.value = true;
-    growTimer = setTimeout(() => (grown.value = true), GROW_MS);
-});
-
 watch(asking, (current, before) => {
     if (!before || current || startedOver.value) return;
-    if (!typedAnswer) say(true, "");
-    typedAnswer = false;
     lastSent.value = boardQuestions.value.find((q) => q.n === before.n)?.completed || lastSent.value;
 });
-
-watch(choosing, (final) => final && (words.value = ""));
 
 watch(startedOver, async (q) => {
     if (!q) return;
     await drop(unpicked());
     startAnew();
     greet();
-    showExamples();
 });
 
 function resume(drafting) {
@@ -445,17 +491,14 @@ function resume(drafting) {
 
 function startAnew() {
     sessions += 1;
-    clearTimeout(growTimer);
-    typedAnswer = false;
     resumed.value = false;
     docked.value = false;
-    dockedAt.value = 0;
+    tab.value = "chat";
+    discarding.value = false;
+    failed.value = "";
     revealed.value = [];
     pointed.value = null;
-    view.value = "drafts";
     stalled.value = false;
-    tall.value = false;
-    grown.value = false;
     words.value = "";
     handed.value = null;
     lines.value = [];
@@ -463,156 +506,214 @@ function startAnew() {
     since.value = 0;
     lastSent.value = 0;
     picked.value = [];
+    added.value = 0;
     flashed.value = [];
     appliedPicks = 0;
 }
 </script>
 
 <template>
-    <FocusStage :open="open" glow spread :docked="docked" :escapes="false">
-        <Transition name="rail">
-            <template v-if="reading">
-                <div :class="['rail', {shown: view === 'document'}]">
-                    <ReadingRail :name="documentName" :sections="outline" :drafted="drafts.length" :pointed="pointed" />
+    <FocusStage :open="open" glow spread brisk :docked="docked" :escapes="false">
+        <div
+            :class="['new-work', {docked, tabs, phone, drafted: tabs && tab === 'drafts', revising, confirmed: added > 0}]"
+            :style="{'--view': `${viewHeight}px`}"
+        >
+            <div class="stage">
+                <div class="talk">
+                    <ChatPanel
+                        ref="panel"
+                        v-model="words"
+                        :locked="adding || added > 0"
+                        :limit="INPUT_LIMIT"
+                        :placeholder="placeholder"
+                        @send="send"
+                    >
+                        <template #head>
+                            <div class="head">
+                                <span class="head-title">
+                                    New work
+                                    <span class="head-board">{{ board.title }}</span>
+                                </span>
+                                <Btn small @click="cancel">Cancel</Btn>
+                            </div>
+                            <div class="sub">
+                                <Transition name="layer">
+                                    <template v-if="tabs && docked">
+                                        <div key="tabs" class="sub-layer">
+                                            <Segmented fill :options="tabOptions" :value="tab" @pick="(key) => (tab = key)" />
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <div key="reading" class="sub-layer">
+                                            <Transition name="layer">
+                                                <div :key="summaryKey" class="reading" :title="summary.text">
+                                                    <template v-if="summary.text">
+                                                        <span class="reading-text">{{ summary.text }}</span>
+                                                    </template>
+                                                    <template v-else>
+                                                        <span class="reading-text quiet">I'll say here what I think you mean.</span>
+                                                    </template>
+                                                    <span class="reading-step">{{ summary.step }}</span>
+                                                </div>
+                                            </Transition>
+                                        </div>
+                                    </template>
+                                </Transition>
+                            </div>
+                            <p class="announce" aria-live="polite">{{ summary.text }}</p>
+                        </template>
+                        <template v-for="line in spoken" :key="line.id">
+                            <template v-if="line.question">
+                                <AskedQuestion :question="line.question" chat />
+                            </template>
+                            <template v-else-if="line.kind">
+                                <ChatLine :kind="line.kind" :text="line.text" />
+                            </template>
+                            <template v-else>
+                                <ChatLine :text="line.text" :mine="line.mine" :typed="Boolean(line.typed) && line.at > openedAt" />
+                            </template>
+                        </template>
+                        <template v-if="lost">
+                            <div class="lost">
+                                <ChatLine
+                                    text="I still don't know what you want. Let's start over: say it again in other words, or give me an example."
+                                />
+                                <Btn kind="primary" small @click="startOver">
+                                    <Icon name="restore" :size="12" />
+                                    Start over
+                                </Btn>
+                            </div>
+                        </template>
+                        <template #row>
+                            <Transition name="layer">
+                                <template v-if="row === 'chips'">
+                                    <div key="chips" class="row-layer chips">
+                                        <template v-for="text in EXAMPLES" :key="text">
+                                            <Btn small @click="example(text)">{{ text }}</Btn>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template v-else-if="row === 'upload'">
+                                    <div key="upload" class="row-layer">
+                                        <FileSlip class="slip" :file="handed" removable @remove="handed = null" />
+                                        <Btn kind="primary" small @click="hand">Read it and draft tickets</Btn>
+                                    </div>
+                                </template>
+                                <template v-else-if="row === 'failed'">
+                                    <div key="failed" class="row-layer">
+                                        <span class="row-text bad">Couldn't upload {{ failed }}.</span>
+                                        <Btn small @click="hand">Try again</Btn>
+                                    </div>
+                                </template>
+                                <template v-else-if="row === 'stalled'">
+                                    <div key="stalled" class="row-layer">
+                                        <span class="row-text">
+                                            {{
+                                                halted
+                                                    ? drafting.stalled || "The drafting stopped."
+                                                    : "No answer yet. The agent may be busy with other work."
+                                            }}
+                                        </span>
+                                        <template v-if="halted">
+                                            <Btn small :busy="retrying" @click="retry">Retry</Btn>
+                                        </template>
+                                        <template v-else>
+                                            <Btn small @click="askAgain">Ask again</Btn>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template v-else-if="row === 'status'">
+                                    <div key="status" class="row-layer">
+                                        <ChatLine bare shuffled :notes="thinking" />
+                                    </div>
+                                </template>
+                                <template v-else-if="row === 'discard'">
+                                    <div key="discard" class="row-layer">
+                                        <span class="row-text">Discard this conversation?</span>
+                                        <Btn small @click="discarding = false">Keep</Btn>
+                                        <Btn kind="danger" small @click="finish">Discard</Btn>
+                                    </div>
+                                </template>
+                            </Transition>
+                        </template>
+                        <template #tool>
+                            <template v-if="!since">
+                                <Btn small title="Draft tickets from a document" @click="picker.click()">
+                                    <Icon name="paperclip" />
+                                </Btn>
+                            </template>
+                            <input ref="picker" type="file" hidden @change="take($event.target.files[0])" />
+                        </template>
+                    </ChatPanel>
                 </div>
-            </template>
-        </Transition>
-        <div :class="['work', {on: docked, reading, document: view === 'document'}]">
-            <template v-if="reading">
-                <div class="views">
-                    <Segmented :options="views" :value="view" @pick="(key) => (view = key)" />
-                </div>
-            </template>
-            <div class="bar">
-                <span class="note">{{ note }}</span>
-                <div :class="['bar-actions', {on: shownDrafts.length}]">
-                    <Segmented class="presets" :options="presets" :value="preset" @pick="choose" />
-                    <Btn small @click="again">Ask for a different set</Btn>
-                    <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
-                        {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
-                    </Btn>
-                </div>
-            </div>
-            <TransitionGroup tag="div" name="pick" class="picks">
-                <template v-for="card in cards" :key="card.key">
-                    <Suggestion
-                        :ticket="card.ticket"
-                        :order="card.order"
-                        :active="Boolean(card.ticket) && card.ticket === turn"
-                        :paused="Boolean(asking)"
-                        :speed="typingSpeed"
-                        :hurry="drafts.length > 0 && !writing"
-                        :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
-                        @toggle="toggle(card.ticket.n)"
-                        @revealed="reveal(card.ticket.n)"
-                        @more="(from) => (shownDraft = {ticket: card.ticket, from})"
-                        :class="{flash: Boolean(card.ticket) && flashed.includes(card.ticket.n)}"
-                        @mouseenter="pointed = card.ticket"
-                        @mouseleave="pointed = null"
-                    />
-                </template>
-            </TransitionGroup>
-        </div>
-        <div :class="['dock', {docked, short: !tall && !lost, reading, thinking: narrow, hushed}]" :style="{'--need': `${need}px`}">
-            <ChatPanel
-                ref="panel"
-                v-model="words"
-                fill
-                :snug="!docked"
-                :closable="!docked"
-                @close="finish"
-                :locked="adding"
-                :limit="docked ? 0 : INPUT_LIMIT"
-                :without-input="choosing || lost"
-                :waiting="narrow"
-                :echo="echo"
-                :hint="since ? '' : `“${EXAMPLES[example]}”`"
-                :placeholder="
-                    handing
-                        ? 'Anything I should know? Optional'
-                        : drafts.length
-                          ? 'Say what to change'
-                          : 'Describe the work in your own words'
-                "
-                @send="send"
-            >
-                <template v-if="!since" #attached>
-                    <template v-if="handed">
-                        <FileSlip :file="handed" removable @remove="handed = null" />
-                        <div class="hand-row">
-                            <span class="hand-note">
-                                I read all of it, then draft one ticket per piece of work. Nothing goes on the board until you pick it.
-                            </span>
-                            <Btn kind="primary" small @click="hand">Read it and draft tickets</Btn>
+                <section class="pane" aria-label="Drafts">
+                    <div class="bar">
+                        <div class="note">
+                            <span class="note-main">{{ note }}</span>
+                            <template v-if="missing.length">
+                                <span class="note-sub" :title="missing.join('; ')">Missing: {{ missing.join("; ") }}</span>
+                            </template>
                         </div>
-                    </template>
-                    <template v-else>
-                        <span class="hand-offer">
-                            <Btn small @click="picker.click()">
-                                <Icon name="paperclip" />
-                                From a document
-                            </Btn>
-                        </span>
-                    </template>
-                    <input ref="picker" type="file" hidden @change="take($event.target.files[0])" />
-                </template>
-                <template #head>
-                    <div :class="['head', {on: docked}]">
-                        <span class="head-title">
-                            New work
-                            <span class="head-board">{{ board.title }}</span>
-                        </span>
-                        <Btn small title="Cancel" @click="finish">Cancel</Btn>
+                        <template v-if="presets.length > 1 && !phone">
+                            <Segmented class="presets" :options="presets" :value="preset" @pick="choose" />
+                        </template>
+                        <Btn small :disabled="!shownDrafts.length || writing || added > 0" @click="again">Ask for a different set</Btn>
+                        <Btn kind="primary" small class="add" :busy="adding" :disabled="!picked.length || added > 0" @click="add">
+                            {{ addLabel }}
+                        </Btn>
                     </div>
-                </template>
-                <template v-if="docked">
-                    <template v-for="line in spoken" :key="line.id">
-                        <template v-if="line.record">
-                            <span class="record">{{ line.text }}</span>
-                        </template>
-                        <template v-else>
-                            <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed && line.at > dockedAt" />
-                        </template>
-                    </template>
-                </template>
-                <template v-else>
-                    <Transition name="said" mode="out-in" appear>
-                        <template v-if="latest.length">
-                            <p :key="latest[0].id" class="prompt">{{ latest[0].text }}</p>
-                        </template>
-                    </Transition>
-                </template>
-                <Transition name="fold">
-                    <template v-if="!since">
-                        <div class="context">
-                            <p>Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.</p>
-                        </div>
-                    </template>
-                </Transition>
-                <Transition name="asked" mode="out-in">
-                    <template v-if="asking && (grown || docked)">
-                        <AskedQuestion :key="`question-${asking.n}`" :question="asking" :chat="docked" />
-                    </template>
-                    <template v-else-if="lost">
-                        <div key="lost" class="lost">
-                            <ChatLine
-                                text="I still don't know what you want. Let's start over: say it again in other words, or give me an example."
+                    <div class="pane-body">
+                        <template v-if="reading">
+                            <ReadingRail
+                                class="rail"
+                                :name="documentName"
+                                :sections="outline"
+                                :drafted="drafts.length"
+                                :pointed="pointed"
                             />
-                            <Btn kind="primary" small @click="startOver">
-                                <Icon name="restore" :size="12" />
-                                Start over
-                            </Btn>
+                        </template>
+                        <div class="grid">
+                            <template v-if="goal || doneWhen.length">
+                                <div class="brief">
+                                    <template v-if="goal">
+                                        <p class="brief-goal">{{ goal }}</p>
+                                    </template>
+                                    <template v-if="doneWhen.length">
+                                        <ol class="brief-done">
+                                            <template v-for="clause in doneWhen" :key="clause">
+                                                <li :class="{missing: missing.includes(clause)}">{{ clause }}</li>
+                                            </template>
+                                        </ol>
+                                    </template>
+                                </div>
+                            </template>
+                            <TransitionGroup tag="div" name="pick" class="picks">
+                                <template v-for="card in cards" :key="card.key">
+                                    <Suggestion
+                                        :ticket="card.ticket"
+                                        :order="card.order"
+                                        :active="Boolean(card.ticket) && card.ticket === turn"
+                                        :paused="Boolean(asking)"
+                                        :speed="typingSpeed"
+                                        :hurry="drafts.length > 0 && !writing"
+                                        :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
+                                        :covers="covers(card.ticket)[0] || ''"
+                                        :class="{flash: Boolean(card.ticket) && flashed.includes(card.ticket.n)}"
+                                        @toggle="toggle(card.ticket.n)"
+                                        @revealed="reveal(card.ticket.n)"
+                                        @more="(from) => (shownDraft = {ticket: card.ticket, from})"
+                                        @mouseenter="pointed = card.ticket"
+                                        @mouseleave="pointed = null"
+                                    />
+                                </template>
+                            </TransitionGroup>
+                            <template v-if="empty">
+                                <p class="empty">No tickets came out of this. Say more in the chat, or ask for a different set.</p>
+                            </template>
                         </div>
-                    </template>
-                    <template v-else-if="writing || asking">
-                        <ChatLine key="thinking" thinking shuffled :notes="thinking" />
-                    </template>
-                </Transition>
-                <template v-if="stalled">
-                    <ChatLine text="No answer yet. The agent may be busy with other work." />
-                    <Btn small @click="askAgain">Ask again</Btn>
-                </template>
-            </ChatPanel>
+                    </div>
+                </section>
+            </div>
         </div>
         <template v-if="shownDraft">
             <DraftDetail
@@ -628,140 +729,72 @@ function startAnew() {
 </template>
 
 <style scoped>
-.hand-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.hand-note {
-    flex: 1;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.hand-offer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.dock {
-    --least: min(400px, 52vh);
-    --height: min(max(var(--least), var(--need, 0px)), calc(100% - 64px));
+/* One stage, fixed from the first frame: nothing in it changes width or height. The conversation keeps its 680px
+   and only moves (transform); the drafts pane is revealed by a wipe (clip-path). Only opacity, transform and
+   clip-path animate. */
+.new-work {
+    --w: min(1400px, calc(100vw - 48px));
+    --h: min(720px, calc(var(--view, 100dvh) - 48px));
+    --talk: 680px;
+    --gap: 16px;
 
     position: absolute;
-    top: min(calc(50% - min(200px, 26vh)), calc(50% - var(--height) / 2));
-    left: calc(50% - min(340px, 50% - 16px));
-    width: min(680px, calc(100% - 32px));
-    height: var(--height);
-    transition:
-        top var(--move),
-        left var(--move),
-        width var(--move),
-        height var(--move);
+    inset: 0;
 }
 
-.dock.short:not(.docked) {
-    --least: min(260px, 40vh);
+.new-work.tabs {
+    --w: min(680px, calc(100vw - 16px));
+    --h: min(820px, calc(var(--view, 100dvh) - 16px));
 }
 
-.dock :deep(.chat > :not(.compose-slot)) {
-    transition: opacity 0.22s ease;
-}
-
-.dock :deep(.compose) {
-    transition:
-        opacity 0.22s ease,
-        background var(--fade),
-        border-color var(--fade);
-}
-
-.dock.hushed :deep(.chat > :not(.compose-slot)),
-.dock.hushed :deep(.compose) {
-    opacity: 0;
-}
-
-.dock:not(.docked) :deep(.lines > *) {
-    flex-shrink: 0;
-}
-
-.dock:not(.docked) :deep(.asked:not(.chat)) {
-    flex: 0 1 auto;
-    min-height: 0;
-}
-
-.dock:not(.docked) :deep(.asked:not(.chat) .choices) {
-    min-height: 0;
-    overflow-y: auto;
-}
-
-.dock:not(.docked) {
-    transition-duration: 0.7s;
-}
-
-.dock.thinking:not(.docked) {
-    left: calc(50% - min(300px, 50% - 28px));
-    width: min(600px, calc(100% - 56px));
-}
-
-.lost {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.dock.docked {
-    top: 20px;
-    left: 20px;
-    width: 400px;
-    height: calc(100% - 40px);
-}
-
-.dock.docked.reading {
-    left: calc(100% - 360px);
-    width: 340px;
-}
-
-.rail {
+.stage {
     position: absolute;
-    top: 20px;
-    bottom: 20px;
-    left: 20px;
-    display: flex;
-    flex-direction: column;
-    width: 284px;
-    padding: 16px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 16px;
-    background: rgba(24, 25, 28, 0.94);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
-    box-sizing: border-box;
+    top: calc((var(--view, 100dvh) - var(--h)) / 2);
+    left: calc((100vw - var(--w)) / 2);
+    width: var(--w);
+    height: var(--h);
 }
 
-.rail-enter-active {
+.talk {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--talk);
+    transform: translateX(calc((var(--w) - var(--talk)) / 2));
+    transition: transform 0.42s var(--ease);
+}
+
+.docked .talk {
+    transform: none;
+}
+
+.tabs .talk {
+    width: 100%;
+    transform: none;
+}
+
+.phone .talk {
+    --chat-row: 52px;
+}
+
+.talk :deep(.log),
+.talk :deep(.row),
+.talk :deep(.compose) {
     transition:
-        opacity var(--fade) 0.08s,
-        transform var(--move) 0.08s;
+        opacity 0.32s ease-out,
+        transform 0.32s var(--ease);
 }
 
-.rail-leave-active {
-    transition: opacity var(--fade);
-}
-
-.rail-enter-from {
+.drafted .talk :deep(.log),
+.drafted .talk :deep(.row),
+.drafted .talk :deep(.compose) {
     opacity: 0;
-    transform: translateX(-16px);
-}
-
-.rail-leave-to {
-    opacity: 0;
-}
-
-.views {
-    display: none;
+    transform: translateX(-20%);
+    pointer-events: none;
+    transition:
+        opacity 0.32s ease-in,
+        transform 0.32s var(--ease);
 }
 
 .head {
@@ -769,25 +802,10 @@ function startAnew() {
     flex: none;
     align-items: center;
     gap: 10px;
-    height: 0;
-    overflow: hidden;
+    height: 52px;
     padding: 0 8px 0 16px;
-    border-bottom: 1px solid transparent;
-    opacity: 0;
-    transition:
-        height var(--move),
-        opacity 0.2s,
-        border-color 0.2s;
-}
-
-.head.on {
-    height: 48px;
-    border-bottom-color: var(--border);
-    opacity: 1;
-    transition:
-        height var(--move),
-        opacity var(--fade) 0.2s,
-        border-color var(--fade) 0.2s;
+    border-bottom: 1px solid var(--border);
+    box-sizing: border-box;
 }
 
 .head-title {
@@ -805,71 +823,253 @@ function startAnew() {
     font-weight: 400;
 }
 
-.work {
+.sub {
+    position: relative;
+    flex: none;
+    height: 49px;
+    border-bottom: 1px solid var(--border);
+    box-sizing: border-box;
+}
+
+.sub-layer {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    bottom: 20px;
-    left: 440px;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.tabs .sub-layer:has(.segmented) {
+    padding: 0 6px;
+}
+
+.reading {
+    position: absolute;
+    inset: 0 16px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.reading-text {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.reading-text.quiet {
+    color: var(--text-4);
+}
+
+.reading-step {
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 16px;
+}
+
+.announce {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.row-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.chips {
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.chips > :deep(*) {
+    flex: none;
+}
+
+.row-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 12.5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.phone .row-text {
+    line-height: 16px;
+    white-space: normal;
+}
+
+.row-text.bad {
+    color: var(--danger);
+}
+
+.slip {
+    flex: 1;
+    min-width: 0;
+}
+
+.lost {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
+}
+
+/* The fixed rows swap by crossfade: out 120ms, in 180ms starting 60ms later, 3px of travel. */
+.layer-enter-active {
+    transition:
+        opacity 0.18s ease-out 0.06s,
+        transform 0.18s var(--ease) 0.06s;
+}
+
+.layer-leave-active {
+    transition:
+        opacity 0.12s ease-in,
+        transform 0.12s ease-in;
+}
+
+.layer-enter-from {
     opacity: 0;
+    transform: translateY(3px);
+}
+
+.layer-leave-to {
+    opacity: 0;
+    transform: translateY(-3px);
+}
+
+.pane {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: calc(var(--talk) + var(--gap));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-2);
+    border-radius: 16px;
+    background: rgba(24, 25, 28, 0.94);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    clip-path: inset(0 100% 0 0 round 16px);
     pointer-events: none;
-    transform: translateX(16px);
     transition:
-        opacity var(--fade),
-        transform var(--move),
-        left var(--move),
-        right var(--move);
+        opacity 0.24s ease-in,
+        clip-path 0.24s ease-in;
 }
 
-.work.on {
+.docked .pane {
     opacity: 1;
+    clip-path: inset(0 0 0 0 round 16px);
     pointer-events: auto;
-    transform: none;
     transition:
-        opacity var(--fade) 0.08s,
-        transform var(--move) 0.08s,
-        left var(--move),
-        right var(--move);
+        opacity 0.24s ease-out 0.12s,
+        clip-path 0.42s var(--ease) 0.12s;
 }
 
-.work.reading {
-    right: 380px;
-    left: 324px;
+.tabs .pane,
+.tabs.docked .pane {
+    top: 102px;
+    right: 1px;
+    bottom: 1px;
+    left: 1px;
+    border: 0;
+    border-radius: 0 0 15px 15px;
+    background: var(--raised);
+    box-shadow: none;
+    backdrop-filter: none;
+    clip-path: none;
+    opacity: 0;
+    transform: translateX(calc(100% + 16px));
+    pointer-events: none;
+    transition:
+        opacity 0.32s ease-in,
+        transform 0.32s var(--ease);
+}
+
+.tabs.drafted .pane {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    transition:
+        opacity 0.32s ease-out,
+        transform 0.32s var(--ease);
 }
 
 .bar {
     display: flex;
     flex: none;
     align-items: center;
-    gap: 10px;
-    height: 44px;
-    padding: 0 6px 0 14px;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: rgba(24, 25, 28, 0.94);
-    backdrop-filter: blur(20px);
-}
-
-.bar-actions {
-    display: flex;
-    min-width: 0;
-    align-items: center;
     gap: 8px;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(3px);
-    transition:
-        opacity var(--fade),
-        transform var(--move);
+    height: 52px;
+    padding: 0 8px 0 16px;
+    border-bottom: 1px solid var(--border);
 }
 
-.bar-actions.on {
-    opacity: 1;
-    pointer-events: auto;
-    transform: none;
+.tabs .bar {
+    order: 2;
+    flex-wrap: wrap;
+    align-content: center;
+    row-gap: 6px;
+    height: 88px;
+    padding: 0 8px;
+    border-top: 1px solid var(--border);
+    border-bottom: 0;
+}
+
+.note {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    line-height: 16px;
+}
+
+.tabs .note {
+    flex: 1 0 100%;
+    flex-direction: row;
+    gap: 8px;
+    height: 20px;
+    align-items: center;
+}
+
+.note-main,
+.note-sub {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.note-main {
+    color: var(--text-3);
+    font-size: 13px;
+}
+
+.tabs .note-main {
+    flex: none;
+    font-size: 12.5px;
+}
+
+.note-sub {
+    color: var(--warn, var(--blocking));
+    font-size: 11.5px;
 }
 
 .presets {
@@ -883,7 +1083,139 @@ function startAnew() {
     white-space: nowrap;
 }
 
-.picks > .flash {
+.add {
+    min-width: 140px;
+    font-variant-numeric: tabular-nums;
+}
+
+.tabs .bar > :deep(.btn) {
+    flex: 1;
+}
+
+.tabs .note {
+    justify-content: flex-start;
+}
+
+.phone .head > :deep(.btn),
+.phone .bar > :deep(.btn),
+.phone .row-layer > :deep(.btn) {
+    min-height: 40px;
+}
+
+.pane-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.tabs .pane-body {
+    flex-direction: column;
+}
+
+.rail {
+    flex: none;
+    width: 240px;
+    padding: 16px 12px 16px 16px;
+    border-right: 1px solid var(--border);
+}
+
+.tabs .rail {
+    width: auto;
+    max-height: 40%;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.grid {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px;
+    scrollbar-width: none;
+}
+
+.tabs .grid {
+    padding: 12px;
+}
+
+.brief {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.brief-goal {
+    margin: 0;
+    color: var(--text);
+    font-weight: 500;
+}
+
+.brief-done {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+
+.brief-done li.missing {
+    color: var(--warn, var(--blocking));
+}
+
+.picks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-auto-rows: minmax(200px, auto);
+    align-content: start;
+    gap: 12px;
+}
+
+.tabs .picks {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(150px, auto);
+    gap: 10px;
+}
+
+.picks > :deep(.pick) {
+    transition:
+        opacity 0.24s ease-out,
+        border-color 0.12s ease-out,
+        box-shadow 0.12s ease-out,
+        transform 0.25s var(--ease);
+}
+
+.revising .picks > :deep(.pick) {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.confirmed .picks > :deep(.pick:not(.picked)) {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+}
+
+.pick-move {
+    transition: transform 0.32s var(--ease);
+}
+
+.pick-leave-active {
+    transition: opacity 0.12s ease-in;
+}
+
+.pick-leave-to {
+    opacity: 0;
+}
+
+.flash {
     animation: pick-flash 1.6s ease-out;
 }
 
@@ -895,194 +1227,41 @@ function startAnew() {
     }
 }
 
-.picks {
-    display: grid;
-    flex: 1 1 auto;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    grid-auto-rows: minmax(220px, auto);
-    align-content: start;
-    gap: 14px;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 2px 2px 8px;
-    scrollbar-width: none;
-}
-
-.pick-move {
-    transition: transform var(--move);
-}
-
-.pick-leave-active {
-    transition:
-        opacity 0.2s cubic-bezier(0.4, 0, 1, 1),
-        transform 0.2s cubic-bezier(0.4, 0, 1, 1);
-}
-
-.pick-leave-to {
-    opacity: 0;
-    transform: scale(0.98);
-}
-
-.context {
-    display: grid;
-    grid-template-rows: 1fr;
-    animation: stage-in var(--fade) 0.55s backwards;
-}
-
-.context > p {
-    min-height: 0;
-    margin: 0;
-    overflow: hidden;
+.empty {
+    margin: 48px auto 0;
+    max-width: 320px;
     color: var(--text-3);
-    font-size: 13px;
-    line-height: 20px;
-}
-
-.fold-leave-active {
-    transition:
-        opacity var(--fade),
-        grid-template-rows var(--move) 0.15s,
-        margin-bottom var(--move) 0.15s;
-}
-
-.fold-leave-to {
-    grid-template-rows: 0fr;
-    margin-bottom: -10px;
-    opacity: 0;
-}
-
-@keyframes stage-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-}
-
-.asked-enter-active,
-.said-enter-active {
-    transition:
-        opacity var(--fade),
-        transform var(--move);
-}
-
-.asked-leave-active,
-.said-leave-active {
-    transition: opacity var(--fade);
-}
-
-.asked-enter-from,
-.said-enter-from {
-    opacity: 0;
-    transform: translateY(6px);
-}
-
-.asked-leave-to,
-.said-leave-to {
-    opacity: 0;
-}
-
-.prompt {
-    margin: 0;
-    color: var(--text);
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 26px;
-}
-
-.record {
-    align-self: flex-start;
-    color: var(--text-3);
-    font-size: 12px;
-    animation: fade-in var(--fade) both;
-}
-
-.note {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-3);
-    font-size: 13px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-@media (max-width: 760px) {
-    .dock:not(.docked, .short) {
-        --least: min(560px, 72vh);
-
-        top: min(calc(50% - min(280px, 36vh)), calc(50% - var(--height) / 2));
-    }
-
-    .dock.docked {
-        top: 50%;
-        left: 12px;
-        width: calc(100% - 24px);
-        height: calc(50% - 12px);
-    }
-
-    .work {
-        top: 12px;
-        right: 12px;
-        bottom: calc(50% + 12px);
-        left: 12px;
-    }
-
-    .picks {
-        grid-template-columns: 1fr;
-    }
-
-    .dock.docked.reading {
-        left: 12px;
-        width: calc(100% - 24px);
-    }
-
-    .work.reading {
-        right: 12px;
-        left: 12px;
-    }
-
-    .views {
-        display: flex;
-        flex: none;
-        height: 32px;
-    }
-
-    .work.document .bar,
-    .work.document .picks {
-        visibility: hidden;
-    }
-
-    .rail {
-        top: 56px;
-        right: 12px;
-        bottom: calc(50% + 12px);
-        left: 12px;
-        width: auto;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity var(--fade);
-    }
-
-    .rail.shown {
-        opacity: 1;
-        pointer-events: auto;
-    }
+    text-align: center;
+    text-wrap: pretty;
+    animation: fade-in 0.24s ease-out 0.18s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dock,
-    .head,
-    .rail,
-    .rail-enter-active,
-    .work,
-    .bar-actions,
-    .asked-enter-active,
-    .asked-leave-active,
-    .said-enter-active,
-    .said-leave-active,
-    .fold-leave-active {
-        transition-duration: 0.01ms;
+    .talk,
+    .pane,
+    .docked .pane,
+    .tabs .pane,
+    .tabs.drafted .pane,
+    .talk :deep(.log),
+    .talk :deep(.row),
+    .talk :deep(.compose),
+    .layer-enter-active,
+    .layer-leave-active {
+        transition-duration: 0.12s;
         transition-delay: 0s;
+    }
+
+    .talk,
+    .docked .talk,
+    .tabs .pane,
+    .drafted .talk :deep(.log),
+    .drafted .talk :deep(.row),
+    .drafted .talk :deep(.compose) {
+        transform: none;
+    }
+
+    .flash {
+        animation: none;
     }
 }
 </style>

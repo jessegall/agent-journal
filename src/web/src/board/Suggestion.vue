@@ -15,6 +15,7 @@ const props = defineProps({
     order: Number,
     speed: {type: Number, default: 1},
     hurry: Boolean,
+    covers: {type: String, default: ""},
 });
 const emit = defineEmits(["toggle", "revealed", "more"]);
 const TITLE_MS = 900;
@@ -102,7 +103,8 @@ async function save(field, text) {
 
 <template>
     <div
-        :class="['pick', stage, `order-${order % 3}`, {picked}]"
+        :class="['pick', stage, {picked}]"
+        :style="{'--order': Math.min(order, 8)}"
         role="button"
         tabindex="0"
         :aria-pressed="picked"
@@ -141,6 +143,9 @@ async function save(field, text) {
                 <span class="owner">For {{ owner }}</span>
             </template>
         </SkeletonLine>
+        <template v-if="shown.done && covers">
+            <span class="covers" :title="`Done when: ${covers}`">Done when: {{ covers }}</span>
+        </template>
         <template v-if="shown.done && origin">
             <span class="origin" :title="`From ${ticket.data.source}`">{{ origin }}</span>
         </template>
@@ -153,6 +158,17 @@ async function save(field, text) {
 </template>
 
 <style scoped>
+.covers {
+    order: 4;
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    animation: fade-in 0.16s both;
+}
+
 .origin {
     overflow: hidden;
     color: var(--text-4);
@@ -178,17 +194,10 @@ async function save(field, text) {
     text-align: left;
     cursor: default;
     animation: rise 0.32s var(--ease) both;
+    animation-delay: calc(var(--order, 0) * 50ms);
     transition:
         border-color 0.2s,
         transform 0.25s var(--ease);
-}
-
-.pick.order-1 {
-    animation-delay: 0.06s;
-}
-
-.pick.order-2 {
-    animation-delay: 0.12s;
 }
 
 .pick.waiting,
@@ -334,7 +343,13 @@ async function save(field, text) {
 @keyframes rise {
     from {
         opacity: 0;
-        transform: translateX(18px);
+        transform: translateY(12px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pick {
+        animation: none;
     }
 }
 </style>
