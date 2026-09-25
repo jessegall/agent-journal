@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.184.0 — Choose which agents show in Agents at work
+
+The Agents at work pane's menu has a View submenu, built like the terminal's verbosity menu: show agents that are working, waiting for you or stuck, idle, or not running, for tickets or for plans, only those with an unfinished plan, ordered by state, by ticket or by last active; the choice is kept in your browser, and when every agent is hidden the pane says how many and by which switch. A note sent to a freshly started agent is no longer called stuck in its input box once it has reached the agent's transcript. Nothing to do.
+
 ## 2.183.4 — Ticket notices reach an orchestrator that is waiting
 
 An orchestrator that declared it waits on its tickets, as it nearly always does, never received their notices: the journal holds a feature's lines back from an agent whose work awaits something. The notices about its tickets (a question, a wait, a reply, a plan done, a plan to approve, a checkpoint, a proposed wait or a draft) are now said while it waits. Nothing to do.

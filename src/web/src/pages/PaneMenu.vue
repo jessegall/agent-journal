@@ -8,7 +8,8 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import ToggleItem from "../kit/ToggleItem.vue";
 import {shownChoices, toggled} from "../domain/chatShown.js";
-import {onlyWorking} from "../composables/agentsShown.js";
+import {agentView, resetAgentView} from "../composables/agentsShown.js";
+import {KIND_SWITCHES, ORDERS, STATE_SWITCHES} from "../domain/orchestra.js";
 import {useOutside} from "../composables/outside.js";
 import {go, route} from "../route.js";
 
@@ -96,6 +97,52 @@ function pick(event, ...args) {
                         </template>
                     </MenuItem>
                 </template>
+            </template>
+            <template #agentView>
+                <MenuItem class="pane-menu-back" @click="list = ''">
+                    <Icon name="back" :size="14" />
+                    View
+                </MenuItem>
+                <MenuLabel>Show agents that are</MenuLabel>
+                <template v-for="s in STATE_SWITCHES" :key="s.key">
+                    <ToggleItem
+                        :class="{'pane-menu-off': !agentView.states[s.key]}"
+                        :on="agentView.states[s.key]"
+                        :icon="s.icon"
+                        @click="agentView.states[s.key] = !agentView.states[s.key]"
+                    >
+                        {{ s.label }}
+                    </ToggleItem>
+                </template>
+                <MenuLabel>Working for</MenuLabel>
+                <template v-for="s in KIND_SWITCHES" :key="s.key">
+                    <ToggleItem
+                        :class="{'pane-menu-off': !agentView.kinds[s.key]}"
+                        :on="agentView.kinds[s.key]"
+                        :icon="s.icon"
+                        @click="agentView.kinds[s.key] = !agentView.kinds[s.key]"
+                    >
+                        {{ s.label }}
+                    </ToggleItem>
+                </template>
+                <ToggleItem :on="agentView.unfinished" icon="flag" @click="agentView.unfinished = !agentView.unfinished">
+                    Only with an unfinished plan
+                </ToggleItem>
+                <MenuLabel>Order</MenuLabel>
+                <template v-for="o in ORDERS" :key="o.key">
+                    <MenuItem :aria-current="agentView.order === o.key" @click="agentView.order = o.key">
+                        <Icon :name="o.icon" :size="14" />
+                        {{ o.label }}
+                        <template v-if="agentView.order === o.key">
+                            <span class="pane-menu-dot" />
+                        </template>
+                    </MenuItem>
+                </template>
+                <span class="pane-menu-line" />
+                <MenuItem @click="resetAgentView">
+                    <Icon name="restore" :size="14" />
+                    Show every agent
+                </MenuItem>
             </template>
             <template #shown>
                 <MenuItem class="pane-menu-back" @click="list = ''">
@@ -194,7 +241,11 @@ function pick(event, ...args) {
                 </MenuItem>
             </template>
             <template v-if="agents">
-                <ToggleItem :on="onlyWorking" icon="agents" @click="onlyWorking = !onlyWorking">Only working agents</ToggleItem>
+                <MenuItem @click="list = 'agentView'">
+                    <Icon name="eye" :size="14" />
+                    View
+                    <span class="pane-menu-more">›</span>
+                </MenuItem>
             </template>
             <template v-if="chat">
                 <MenuItem @click="list = 'shown'">

@@ -17,9 +17,15 @@ const EDGE = 8;
 const GAP = 4;
 const drawn = ref({w: 0, h: 0});
 const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
+const onScreen = (r) => ({
+    left: Math.max(0, r.left),
+    top: Math.max(0, r.top),
+    right: Math.min(window.innerWidth, r.right),
+    bottom: Math.min(window.innerHeight, r.bottom),
+});
 const windowOf = (anchor) => {
     const win = anchor.closest(".pane, .float-window");
-    return win ? win.getBoundingClientRect() : viewport();
+    return win ? onScreen(win.getBoundingClientRect()) : viewport();
 };
 const clampTo = (value, low, high) => Math.max(low, Math.min(high, value));
 const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : room)}px`;
