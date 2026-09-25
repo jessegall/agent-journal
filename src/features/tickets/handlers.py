@@ -8,10 +8,16 @@ from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING
 from features.tickets.controller import HELD, Tickets
+from features.tickets.details import TicketsDetails
 from resources.base import SYSTEM, Refused
 
 CHECK_AFTER = 300
+ONE_OFF = ("ticket_replied",)
 LOOK_AGAIN = 900
+
+
+def reminder(context) -> int:
+    return int(time.time() // (max(1, int(TicketsDetails.values(context.record).remind_every)) * 60))
 
 
 def all_parked(works: list) -> bool:
@@ -29,19 +35,19 @@ class LookAfterTicketBranches(Handler):
         tickets._stop_orphaned()
         for ticket in tickets._awaiting_orchestrator():
             plan = tickets._plans(ticket).load(int(ticket.plan))
-            if not context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
+            if not context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}|{reminder(context)}"):
                 continue
             if plan.status == WAITING:
                 context.agent.whisper("plan_checkpoint", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
             else:
                 context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, review=tickets._review(ticket))
         for ticket, permission in tickets._awaiting_decisions():
-            if context.once("proposal_waits", f"{ticket.ref}|{permission}|{ticket.updated}"):
+            if context.once("proposal_waits", f"{ticket.ref}|{permission}|{reminder(context)}"):
                 context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
         boards = tickets._orchestrating()
         for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards]:
             for kind, key, values in tickets._calls(ticket):
-                if context.once(kind, f"{ticket.ref}|{key}"):
+                if context.once(kind, f"{ticket.ref}|{key}" + ("" if kind in ONE_OFF else f"|{reminder(context)}")):
                     context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
         self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)

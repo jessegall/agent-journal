@@ -107,6 +107,12 @@ class TicketsDetails(FeatureDetails):
 
     settings = [
         Setting(
+            name="remind_every",
+            default=5,
+            title="Remind the orchestrator of a ticket agent still waiting every",
+            unit="minutes",
+        ),
+        Setting(
             name="running",
             default=3,
             title="Tickets whose agents run at once, 0 for no limit",

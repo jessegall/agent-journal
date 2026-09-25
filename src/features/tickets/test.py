@@ -386,6 +386,11 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
             f"ticket {ticket.n}, Dark mode, is waiting - the user's pick of theme" in nudges(record),
             f"ticket {ticket.n}, Dark mode, answered - Dark it is, as the card says" in nudges(record)) == (True, True, True), \
         "the orchestrator is told when a ticket's agent asks a question, waits on something, or answers after being told"
+    asked_count = lambda: nudges(record).count(f"ticket {ticket.n}, Dark mode, asks question {asked.n} - Which theme?")
+    tick(record)
+    monkeypatch.setattr(time, "time", lambda: started + 120 + 300)
+    tick(record)
+    assert asked_count() == 2, "while the question still waits, the orchestrator is reminded every five minutes, not every minute"
     told = []
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: told.append((n, note)))
     Environments(record, actor=SYSTEM).create("ticket-1", owner=ticket.ref)
