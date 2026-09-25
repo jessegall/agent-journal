@@ -135,7 +135,7 @@ def asked_since(context: AgentContext, at: float) -> bool:
 class NudgeWaitingStep(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         found = context.journal.sequences._in_hand()
-        if not found:
+        if not found or not found[0].talks_in:
             return
         sequence, key, run = found
         handed = run.get("stepped", run["at"])

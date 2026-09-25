@@ -553,6 +553,7 @@ def claude_state() -> Path:
 class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
+    PROMPT = "❯".encode()
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)

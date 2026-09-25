@@ -277,6 +277,15 @@ class Tickets(Controller):
         return [(rows, r) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD) for r in rows._every() if r.data.get("proposed_for") == ticket.ref]
 
     @internal
+    def _stop_orphaned(self) -> list[str]:
+        kept = {row.ref for row in self._every() if not row.deleted}
+        owned = [env.title for env in Environments(self.record, actor=SYSTEM)._every()
+                 if not env.deleted and env.owner.startswith(f"{self.type}:") and env.owner not in kept]
+        stopped = [place for place in owned if Sessions(self.record.root).holder(place)]
+        for place in stopped:
+            ask_session(self.record.root, terminal_of(self.record.root, Sessions(self.record.root).holder(place)))
+        return stopped
+
     def keep_branches(self) -> None:
         for ticket in (r for r in self._standing() if r.work_environment):
             keep(self.record.root.parent, ticket.work_environment, self._branch(ticket))

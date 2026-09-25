@@ -102,7 +102,7 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     record = fresh()
     report(record, "working", "PreToolUse")
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    made = sequences.create("Two steps")
+    made = sequences.create("Two steps", talks_in="the dump window")
     sequences.section(made.n, "First", "do the first")
     sequences.section(made.n, "Second", "do the second")
     sequences.run(made.n)

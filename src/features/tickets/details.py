@@ -43,6 +43,11 @@ class TicketsDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="check_board",
+            title="check on the ticket agents of {{about}}",
+            brief="you have been idle five minutes while orchestrating it: journal ticket board shows which ticket runs; see whether its agent works, waits or is stuck (journal ticket agent_session <n> and its screen), unstick what is stuck, approve plans that wait and merge what is done",
+        ),
+        Line(
             name="plan_waits",
             title="the plan of ticket {{ticket}}, {{title}}, waits for your approval",
             brief="read it with journal --env {{env}} plan read {{plan}}; when it fits the ticket, approve it with journal ticket approve_plan {{ticket}}",
