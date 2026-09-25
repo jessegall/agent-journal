@@ -12,6 +12,8 @@ import {quoted} from "../format/quote.js";
 import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {useFloatingChat} from "../composables/floatingChat.js";
+import {useStepAbout} from "../composables/sequenceRuns.js";
+import {FIRST_STEP, STEP_LINES} from "./stepLines.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
 import DraftDetail from "./DraftDetail.vue";
@@ -54,171 +56,6 @@ const EXAMPLES = [
 const EXAMPLE_MS = 6000;
 const example = ref(0);
 let exampleTimer = 0;
-const UNSURE = [
-    "Reading what you wrote",
-    "Taking in your words",
-    "Looking for the heart of it",
-    "Reading it once more, slowly",
-    "Finding where to begin",
-    "Listening for what you need",
-    "Getting a first sense of it",
-    "Noting the words that matter",
-    "Looking at the board for context",
-    "Seeing who this is for",
-    "Sorting the ask from the detail",
-    "Working out the kind of work",
-    "Checking what the board already has",
-    "Looking for the problem behind it",
-    "Picturing what you have in mind",
-    "Starting from your own words",
-    "Gathering the first clues",
-    "Holding off on guesses",
-    "Finding the question to ask",
-    "Getting my bearings",
-];
-const UNDERSTANDING = [
-    "Still working out what you mean",
-    "Trying another reading",
-    "Looking for what I missed",
-    "Weighing two ways to read it",
-    "Asking myself what you'd expect",
-    "Checking my guess against your words",
-    "Finding the part I'm unsure of",
-    "Looking for a clearer angle",
-    "Working out what done looks like",
-    "Thinking about who uses it",
-    "Trying to see it your way",
-    "Figuring out the scope",
-    "Separating the wish from the must",
-    "Looking for an example to hold on to",
-    "Reading between the lines",
-    "Tracing it back to the problem",
-    "Finding the one question that helps",
-    "Setting my first guess aside",
-    "Seeing what's still open",
-    "Getting closer",
-];
-const PINNING = [
-    "Pinning it down",
-    "Narrowing it to what matters",
-    "Drawing the edges",
-    "Deciding what's in and what's out",
-    "Checking the parts fit together",
-    "Naming the pieces",
-    "Settling the open questions",
-    "Finding the smallest useful version",
-    "Lining up the details",
-    "Checking it against the board",
-    "Ruling out what it isn't",
-    "Firming up the scope",
-    "Choosing between two readings",
-    "Tightening the wording",
-    "Checking what depends on what",
-    "Spotting what's still vague",
-    "Matching it to what exists",
-    "Holding the shape steady",
-    "Closing the last gaps",
-    "Almost there",
-];
-const CONCRETE = [
-    "Making it concrete",
-    "Turning it into steps",
-    "Picturing the finished thing",
-    "Working out the first piece",
-    "Sketching how it splits",
-    "Checking each piece stands alone",
-    "Giving each part a name",
-    "Deciding the order",
-    "Thinking about how you'd check it",
-    "Writing down what done means",
-    "Putting numbers on it",
-    "Finding where it touches the code",
-    "Weighing the size of each part",
-    "Checking nothing is missing",
-    "Keeping the steps small",
-    "Looking for the risky bit",
-    "Getting the shape right",
-    "Checking it reads plainly",
-    "Getting the first draft ready",
-    "Nearly ready to draft",
-];
-const SCOPING = [
-    "Settling the scope",
-    "Nearly there",
-    "Weighing how big the first version is",
-    "Deciding what can wait",
-    "Finding the first useful slice",
-    "Checking it isn't too broad",
-    "Drawing the line for version one",
-    "Sorting now from later",
-    "Keeping the first step small",
-    "Checking the scope with you in mind",
-    "Deciding where it stops",
-    "Trimming what isn't needed yet",
-    "Picking what matters most",
-    "Checking one question is worth asking",
-    "Choosing between broad and narrow",
-    "Keeping it to what you asked",
-    "Looking at the size of it",
-    "Marking what comes after",
-    "Getting ready to draft",
-    "One last check before drafting",
-];
-const EXPLORING = [UNSURE, UNDERSTANDING, PINNING, CONCRETE, SCOPING];
-const DRAFTING = [
-    "Looking at what is already there",
-    "Deciding what can ship on its own",
-    "Splitting it into pieces",
-    "Keeping each piece small enough",
-    "Checking each piece stands alone",
-    "Weighing what comes first",
-    "Finding what waits on what",
-    "Naming each ticket",
-    "Writing a line for each card",
-    "Writing what each one does",
-    "Writing why each one matters",
-    "Writing what each one touches",
-    "Writing when each one is done",
-    "Checking for risk outside the project",
-    "Linking what was read for it",
-    "Checking the cards on other boards",
-    "Making sure nothing is drafted twice",
-    "Leaving out what you did not ask for",
-    "Keeping the steps inside the tickets",
-    "Putting them in the order they run",
-    "Checking the count",
-    "Reading the drafts again",
-    "Tidying the wording",
-    "Writing the tickets",
-    "Getting the drafts ready to pick",
-];
-const REVISING = [
-    "Reading your change",
-    "Finding the cards it is about",
-    "Leaving the other cards alone",
-    "Checking what you asked to drop",
-    "Checking what you asked to add",
-    "Rewording the card",
-    "Changing the line on the card",
-    "Changing what the card says it does",
-    "Checking the order still holds",
-    "Checking what waits on what",
-    "Making the new card fit the others",
-    "Keeping the change small",
-    "Checking nothing else moved",
-    "Reading the drafts again",
-    "Checking the count",
-    "Tidying the wording",
-    "Checking the change against your words",
-    "Making sure it reads plainly",
-    "Checking no card says it twice",
-    "Checking the new card stands alone",
-    "Keeping the steps inside the tickets",
-    "Linking what was read for it",
-    "Checking for risk outside the project",
-    "Writing one line about it",
-    "Getting the drafts back to you",
-];
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -229,21 +66,13 @@ const boardQuestions = computed(() => (since.value ? store.board.questions.filte
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || store.board.expected > 0);
-const answeredQuestions = computed(() => boardQuestions.value.filter((q) => q.completed && q.outcome !== START_OVER).length);
 const TYPING_FASTEST = 4;
 const typingSpeed = computed(() => Math.min(TYPING_FASTEST, 1 + Math.max(0, drafts.value.length - 1) * 0.3));
-const allDrafted = computed(() => drafts.value.length > 0 && drafts.value.length >= store.board.expected);
 const drafting = computed(() => (since.value && store.board.drafting) || {});
 const phase = computed(() => drafting.value.phase || "");
 const lost = computed(() => phase.value === "lost");
-const scored = computed(() => (phase.value === "exploring" ? drafting.value.score || 0 : answeredQuestions.value ? 2 : 0));
-const thinking = computed(() =>
-    allDrafted.value
-        ? REVISING
-        : confirmed.value || phase.value === "drafting"
-          ? DRAFTING
-          : EXPLORING[Math.min(scored.value, EXPLORING.length - 1)]
-);
+const step = useStepAbout(() => drafting.value.asked || []);
+const thinking = computed(() => STEP_LINES[step.value] || STEP_LINES[FIRST_STEP]);
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
     [
