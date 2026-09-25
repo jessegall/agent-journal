@@ -210,7 +210,7 @@ class Boards(Controller):
 
     def _filed(self, board, text: str, idempotency: str, **data):
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency, **data)
+            titled(text), brief=text.strip(), about=board.ref, window=board.ref, new_work=True, idempotency=idempotency, **data)
 
     def build(self, n: int, name: str = "", steer: str = ""):
         board = self.load(int(n))

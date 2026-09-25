@@ -126,7 +126,7 @@ class Dumps(Controller):
         r = self._choosing(n)
         said = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
         types_module.CONTROLLERS["message"](self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(how), brief=how.strip(), about=r.ref)
+            titled(how), brief=how.strip(), about=r.ref, window=r.ref)
         return self.update(r.n, chosen=said, said=[*(r.data.get("said") or []), said][-LOG_KEPT:])
 
     def _choosing(self, n: int):
@@ -224,12 +224,7 @@ class Dumps(Controller):
         if len(text.strip()) > ANSWER:
             raise Refused(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
         entry = {ENTRY.at: time.time(), ENTRY.text: text.strip(), ENTRY.on: "", ENTRY.making: "", ENTRY.detail: "", "answer": True}
-        made = self.update(r.n, log=[*(r.data.get("log") or []), entry][-LOG_KEPT:])
-        agents = types_module.CONTROLLERS["agent"](self.record, actor=SYSTEM)
-        row = agents.primary()
-        if row:
-            agents.card(row.n, label=f"Answered in dump {r.n}", icon="inbox", row=r.ref)
-        return made
+        return self.update(r.n, log=[*(r.data.get("log") or []), entry][-LOG_KEPT:])
 
     def ask(self, n: int, question: str, guesses: str = ""):
         r = self.load(int(n))

@@ -44,8 +44,8 @@ class SequencesDetails(FeatureDetails):
     lines = [
         Line(
             name=IN_CHAT,
-            title="you wrote in the chat during {{title}}",
-            brief="the user is in {{place}} and does not read the chat while it runs; say it there, or not at all",
+            title="what you wrote during {{title}} was kept out of the chat",
+            brief="the user is in {{place}}, so say it there with its own command; what the user must know outside it goes in journal message create",
         ),
         Line(
             name=UNFINISHED,

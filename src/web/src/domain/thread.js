@@ -134,7 +134,7 @@ const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.key
 
 export function threadTurns(rows, pending, env, older = false, hidden = []) {
     const keys = new Map();
-    const live = rows.message.filter((m) => !m.deleted);
+    const live = rows.message.filter((m) => !m.deleted && !m.data.window);
     const floor = older && live.length ? Math.min(...live.map((m) => m.created)) : 0;
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [

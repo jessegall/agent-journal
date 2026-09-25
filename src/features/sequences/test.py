@@ -1,5 +1,5 @@
 import features
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Agents
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, nudges, report
@@ -114,6 +114,17 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     sequences.next(made.n)
     tick(record)
     assert len(late()) == 1, "the next step, handed just now, is not called late though the run began long ago"
+    from engine import chat
+    sent = []
+    import engine.bus
+    real = engine.bus.emit
+    engine.bus.emit = lambda event, record=None: (sent.append(event.data.get("text")) if event.action == "message.sent" else None, real(event, record))[1]
+    try:
+        chat.send(record, Agents(record, actor="system").by_session("claude-1"), "Filed the second item.")
+    finally:
+        engine.bus.emit = real
+    assert (sent, [n for n in nudges(record) if "kept out of the chat" in n][:1]) == ([], ["what you wrote during Two steps was kept out of the chat"]), \
+        "while a sequence that talks in a window runs, the agent's words stay out of the main chat, and it is told so once"
 
 
 def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
