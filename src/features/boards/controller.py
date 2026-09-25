@@ -9,6 +9,7 @@ from features.boards.resource import DONE, MEANINGS, Board
 from resources.base import COMMISSIONED, REQUESTED, REVISED, STARTED, SYSTEM, Refused, Resource, titled
 
 
+READING = 120
 STAGES = ("To do", "Doing", "Review", "Done")
 START_OVER = "Start over"
 CANCEL_HOLDS = 600
@@ -163,7 +164,7 @@ class Boards(Controller):
         self.record.emit("message", made.n, moment, self.actor)
         return made
 
-    def score(self, n: int, score: str):
+    def score(self, n: int, score: str, reading: str = ""):
         from features.sequences.controller import Sequences
         from features.sequences.drafting import DRAFTING
         from features.sequences.exploration import EXPLORATION
@@ -185,7 +186,8 @@ class Boards(Controller):
         else:
             sequences._jump(exploring.n, about, rated + 1)
             phase = EXPLORING
-        return self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns})
+        read = reading.strip()[:READING] or board.drafting.get("reading", "")
+        return self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns, "reading": read})
 
     def expect(self, n: int, count: str):
         if not str(count).isdigit():
