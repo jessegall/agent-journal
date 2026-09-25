@@ -1,16 +1,26 @@
 <script setup>
 import StateDot from "../kit/StateDot.vue";
+import Stepper from "../kit/Stepper.vue";
 import {peek} from "../route.js";
 
 defineProps({slots: Object, only: String});
-const emit = defineEmits(["only"]);
+const emit = defineEmits(["only", "limit"]);
+const MOST = 20;
 </script>
 
 <template>
     <div class="slots">
         <span class="part">
             <StateDot state="running" />
-            Agents {{ slots.running.length }} of {{ slots.limit }} running
+            Agents {{ slots.running.length }} of
+            <Stepper
+                :value="slots.limit"
+                :max="MOST"
+                label="How many ticket agents may run at once. This is one setting for every board."
+                @change="(n) => emit('limit', n)"
+            />
+            running
+            <span class="every">(one limit for every board)</span>
         </span>
         <template v-for="ticket in slots.running" :key="ticket.n">
             <button type="button" class="ticket" @click="peek('ticket', ticket.n)">#{{ ticket.n }} {{ ticket.title }}</button>
@@ -31,6 +41,11 @@ const emit = defineEmits(["only"]);
 </template>
 
 <style scoped>
+.every {
+    color: var(--text-4);
+    font-size: 11.5px;
+}
+
 .slots {
     display: flex;
     flex-wrap: wrap;

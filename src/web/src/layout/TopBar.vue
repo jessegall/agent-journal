@@ -5,6 +5,7 @@ import Icon from "../kit/Icon.vue";
 import RailWaiting from "../pages/RailWaiting.vue";
 import ShareTunnel from "./ShareTunnel.vue";
 import {route} from "../route.js";
+import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
 import {meta, sharingOn, store, types} from "../state/store.js";
 import {useOutside} from "../composables/outside.js";
@@ -19,6 +20,14 @@ const drop = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const full = computed(() => route.value.page === "kanban");
+const place = computed(() => rows("environment").find((e) => e.title === route.value.env && !e.deleted) || null);
+const owner = computed(() => (place.value && place.value.data.owner) || "");
+const from = computed(() => (place.value && place.value.data.launched_from) || "");
+const envLink = computed(() =>
+    owner.value && from.value
+        ? `#/${from.value}${owner.value.startsWith("ticket:") ? "/kanban" : ""}?open=${owner.value}`
+        : `#/${route.value.env}`
+);
 const {floatingChat, toggleChat} = useFloatingChat();
 const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
 </script>
@@ -39,7 +48,9 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 {{ project }}
             </a>
             <span class="sep">/</span>
-            <a class="crumb-link" :href="`#/${route.env}`">{{ route.env }}</a>
+            <a class="crumb-link" :href="envLink" :title="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
+                {{ route.env }}
+            </a>
             <span class="sep">/</span>
             <b>{{ title }}</b>
             <template v-if="route.page && meta(route.page)">

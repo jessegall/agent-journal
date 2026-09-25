@@ -133,16 +133,23 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                             </template>
                         </span>
                         <span class="jt-env-agent">{{ agentLine(e) }}</span>
-                        <Switch
-                            :on="e.auto"
-                            word="auto"
-                            :title="
-                                e.auto
-                                    ? 'The agent works through the to-do list without asking'
-                                    : 'The agent asks before picking up the next to-do'
-                            "
-                            @change="(on) => switchAuto(e, on)"
-                        />
+                        <template v-if="e.owner">
+                            <Chip :title="`The journal steers this agent for ${e.owner.replace(':', ' ')}; it needs no auto mode`">
+                                Steered by {{ e.owner.replace(":", " ") }}
+                            </Chip>
+                        </template>
+                        <template v-else>
+                            <Switch
+                                :on="e.auto"
+                                word="auto"
+                                :title="
+                                    e.auto
+                                        ? 'The agent works through the to-do list without asking'
+                                        : 'The agent asks before picking up the next to-do'
+                                "
+                                @change="(on) => switchAuto(e, on)"
+                            />
+                        </template>
                     </div>
                     <template v-for="p in e.plans" :key="p.n">
                         <Meter class="jt-env-plan" v-bind="meterOf(p)">

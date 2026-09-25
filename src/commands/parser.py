@@ -121,7 +121,7 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "help", "what one command does", lambda ctx: help_text(ctx["word"]), ("word", {"nargs": "?", "default": ""}))
     for name in DRIVERS:
         add_query(cmds, name, f"start {name} supervised, on this environment; everything after the word is forwarded to {name}", lambda ctx, name=name: supervise(ctx, name))
-    add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
+    add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 0}))
     add_query(cmds, "attach", "watch a session that runs without a terminal and type into it; Ctrl+] leaves it running",
               lambda ctx: attached(ctx), ("target", {}))
     add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
