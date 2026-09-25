@@ -69,7 +69,7 @@ def environment(record: Record) -> dict:
         "name": record.env,
         "agent": {"status": agent.status or "stopped", "provider": agent.provider, "model": agent.model, "context": agent.context,
                   "uses": agent.uses, "started": agent.started, "at": agent.at, "tool": agent.tool, "file": agent.file,
-                  "asking": bool(agent.asking)} if agent else None,
+                  "asking": bool(agent.asking), "background_run": agent.background_run} if agent else None,
         "work": work(current),
         "last": work(last),
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM)._standing() if p.status in SHOWN],

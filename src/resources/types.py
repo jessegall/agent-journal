@@ -325,6 +325,11 @@ class AgentRow(Shape, Resource):
     in_sidebar = False
     notified = ()
 
+    @property
+    def background_run(self) -> str:
+        return next((entry.get("task") or entry.get("command") or "a background run"
+                     for kind in ("shell_rows", "subagent_rows", "monitor_rows") for entry in self.data.get(kind) or [] if entry.get("running")), "")
+
 
 class Notification(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
