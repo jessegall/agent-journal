@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.183.4 — Ticket notices reach an orchestrator that is waiting
+
+An orchestrator that declared it waits on its tickets, as it nearly always does, never received their notices: the journal holds a feature's lines back from an agent whose work awaits something. The notices about its tickets (a question, a wait, a reply, a plan done, a plan to approve, a checkpoint, a proposed wait or a draft) are now said while it waits. Nothing to do.
+
 ## 2.183.3 — The orchestrator is reminded until it answers
 
 While a ticket agent still waits on the orchestrator (a question, what it awaits, a plan to approve, a checkpoint, a proposed wait or a draft), the orchestrator is told at once and then again every 5 minutes until it is dealt with; a reply after being told something is still said once. The interval is a setting of the tickets feature. Nothing to do.

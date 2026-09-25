@@ -373,7 +373,9 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
     import time
     started = time.time()
-    from controllers.types import Environments, Messages, Questions
+    from controllers.types import Environments, Messages, Questions, Works
+    orchestrating = Works(record, actor=AGENT)
+    orchestrating.update(orchestrating.create("run the board", force="the orchestrator's own work").n, awaiting="the tickets to finish")
     place = Record(record.root, "ticket-1")
     asked = Questions(place, actor=AGENT).create("Which theme?")
     tickets.update(ticket.n, told=time.time() - 1)
