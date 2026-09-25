@@ -61,7 +61,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     assert gate("claude-1") == "", "claimed back: released"
 
     assert allowed(sessions, "claude-1", "t", "agent-7", "todo") == \
-        "environment 't' is not lent to this session's subagents: journal environment <n> grant first", \
+        "environment 't' is not lent to this session's subagents: journal environment grant <n> first", \
         "no grant: refused, saying how to lend"
     one.grant(env.n)
     assert allowed(sessions, "claude-1", "t", "agent-7", "todo") == "", "granted: a to-do is allowed"
@@ -85,7 +85,7 @@ def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the
     root, record, sessions = env
 
     code, out = cli(root, "todo", "create", "a row from a subagent", agent="runner-1")
-    assert (code, out) == (1, "! environment 'main' is not lent to this session's subagents: journal environment <n> grant first"), \
+    assert (code, out) == (1, "! environment 'main' is not lent to this session's subagents: journal environment grant <n> first"), \
         "without a grant a subagent's write is refused, and told what the dispatcher must do"
     code, out = cli(root, "todo", "all", agent="runner-1")
     assert code == 0, "its reads are never refused"

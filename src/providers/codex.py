@@ -212,7 +212,7 @@ class Codex(Provider):
         for kind, _ in chosen:
             sandbox = "workspace-write" if "Bash" in kind.tools and "Grep" not in kind.tools else "read-only"
             text = (f"name = {json.dumps(kind.name)}\ndescription = {json.dumps(kind.description)}\nsandbox_mode = {json.dumps(sandbox)}\n"
-                    f"developer_instructions = {json.dumps(kind.prompt)}\n")
+                    f"developer_instructions = {json.dumps(kind.instructions)}\n")
             target = folder / f"{kind.name}.toml"
             if not target.is_file() or target.read_text() != text:
                 folder.mkdir(parents=True, exist_ok=True)

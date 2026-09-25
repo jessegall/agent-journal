@@ -28,7 +28,7 @@ class Sequence(Shape, Resource):
     type = "sequence"
     listed_under = SIDEBAR
     event_labels = {"created": "Sequence written", "updated": "Sequence moved on", "completed": "Sequence retired"}
-    indexed = ("starts_on", "started_by", "only_when_idle")
+    indexed = ("starts_on", "started_by", "only_when_idle", "runs")
     progress = ("runs", "abandoned")
     labels = {"brief": "What it is for"}
     icon = "list"

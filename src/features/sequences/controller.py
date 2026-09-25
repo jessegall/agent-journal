@@ -113,7 +113,8 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
-        if self.actor == AGENT and r.runs[key].get("followed") != r.runs[key]["step"]:
+        handing = bool(r.dispatch) and self.agent == r.dispatch
+        if self.actor == AGENT and not handing and r.runs[key].get("followed") != r.runs[key]["step"]:
             self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up: journal sequence follow {r.n}"
                          f"{' --about ' + about if about else ''}, do what it says, then move on")
         titles = self._titles(r)
@@ -124,7 +125,7 @@ class Sequences(Controller):
         moved = self.update(r.n, runs={**runs, key: run} if going else runs)
         if not going:
             self._resume()
-        return moved
+        return self.follow(r.n, about=about) if going and handing else moved
 
     def follow(self, n: int, about: str = ""):
         r = self.load(int(n))
@@ -132,7 +133,9 @@ class Sequences(Controller):
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
         taken = {"followed": r.runs[key]["step"], **({"agent": self.agent} if self.agent else {})}
-        return self.update(r.n, runs={**r.runs, key: {**r.runs[key], **taken}})
+        r = self.update(r.n, runs={**r.runs, key: {**r.runs[key], **taken}})
+        steps, step = self._steps(r), r.runs[key]["step"]
+        return f"Step {step} of {len(steps)} of sequence {r.n}, {steps[step - 1][SECTION.title]}: {steps[step - 1][SECTION.body]}"
 
     def _jump(self, n: int, about: str, step: int):
         r = self.load(int(n))
@@ -161,8 +164,12 @@ class Sequences(Controller):
         handed = {k: v for k, v in run.items() if k != "followed"}
         self.update(sequence.n, runs={**sequence.runs, key: {**handed, "stepped": time.time()}})
 
+    def _running_here(self) -> list:
+        return [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]
+                and any(key.split("|", 1)[0] == self.record.env for key in row.get("runs") or {})]
+
     def _in_hand(self):
-        live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
+        live = self._running_here()
         mine = [(sequence.lasting, run["at"], sequence, key, run) for sequence in live if not sequence.dispatch
                 for key, run in sequence.runs.items() if key.split("|", 1)[0] == self.record.env]
         return min(mine, key=lambda found: (found[0], -found[1]))[2:] if mine else None
@@ -193,9 +200,9 @@ class Sequences(Controller):
 
     @internal
     def give_up(self, about: str, why: str) -> None:
-        for sequence in self.all(last=0):
-            if self._key(about) in sequence.runs:
-                self.abandon(sequence.n, about=about, why=why)
+        for row in self.summaries():
+            if not row["completed"] and not row["deleted"] and self._key(about) in (row.get("runs") or {}):
+                self.abandon(row["n"], about=about, why=why)
 
     def _mark(self, r, label: str, step: int, why: str = "", about: str = "") -> None:
         agents = Agents(self.record, actor=SYSTEM)
@@ -207,8 +214,8 @@ class Sequences(Controller):
         agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref, depth=depth)
 
     def _open(self) -> int:
-        live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
-        return sum(1 for sequence in live for key in sequence.runs if key.split("|", 1)[0] == self.record.env)
+        return sum(1 for row in self.summaries() if not row["completed"] and not row["deleted"]
+                   for key in row.get("runs") or {} if key.split("|", 1)[0] == self.record.env)
 
     def _key(self, about: str) -> str:
         return f"{self.record.env}|{about.strip() or BY_HAND}"

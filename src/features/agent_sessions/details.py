@@ -19,7 +19,7 @@ class AgentsDetails(FeatureDetails):
         saying working or idle with no word from it for agents.quiet minutes is marked stopped,
         because a session that ended without its last hook would say working for ever.
 
-        A subagent is lent an environment (journal environment <n> grant) and names itself with
+        A subagent is lent an environment (journal environment grant <n>) and names itself with
         --agent on every command; its rows carry that mark in the same record. agents.lapse is
         how long it may go silent before an assignment clears.
     """
