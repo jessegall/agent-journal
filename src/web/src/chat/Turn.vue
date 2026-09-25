@@ -221,7 +221,7 @@ function markClick(data) {
             </div>
         </template>
         <template #card>
-            <div class="thread-turn card" :data-ref="turn.ref">
+            <div :class="['thread-turn', 'card', {mine: turn.data.side === 'user'}]" :data-ref="turn.ref">
                 <ChatMark v-bind="turn.data" :at="turn.created" v-on="markClick(turn.data)" />
             </div>
         </template>
@@ -543,6 +543,11 @@ function markClick(data) {
     border-radius: 12px;
     background: var(--raised);
     line-height: 1.65;
+}
+
+.thread-turn.card.mine {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .thread-turn.mine .thread-bubble {

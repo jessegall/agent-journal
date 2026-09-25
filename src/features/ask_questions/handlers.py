@@ -8,11 +8,17 @@ from features.ask_questions.choices import offers_choices
 from resources.base import USER
 
 ASKING = "asking"
+ANSWER_SHOWN = 80
 
 
 @dataclass(frozen=True)
 class QuestionAsked(ResourceEvent):
     on: ClassVar[str] = "question.created"
+
+
+@dataclass(frozen=True)
+class QuestionAnswered(ResourceEvent):
+    on: ClassVar[str] = "question.completed"
 
 
 class AskInsteadOfProse(Handler):
@@ -38,3 +44,14 @@ class ReleaseOnceAnswered(Handler):
 class ReleaseOnceAsked(Handler):
     def handle(self, context: Context, event: QuestionAsked) -> None:
         context.release(ASKING)
+
+
+class MarkTheAnswer(Handler):
+    def handle(self, context: Context, event: QuestionAnswered) -> None:
+        question = context.journal.of("question").load(event.n)
+        agents = context.journal.of("agent")
+        row = agents.primary()
+        if event.actor != USER or question.hidden or not row:
+            return
+        agents.card(row.n, label=f"You answered question {question.n}", name=question.outcome[:ANSWER_SHOWN], icon="question",
+                    color="var(--blocking)", side=USER, row=question.ref)

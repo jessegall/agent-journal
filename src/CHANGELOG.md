@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.175.0 — Your answer to a question shows in the chat
+
+When you answer a question, the chat shows it as a mark on your side, in the question box's orange, naming the question and the answer you gave; clicking it opens the question. Nothing to do.
+
 ## 2.174.0 — Auto mode drives the orchestrator and every ticket agent
 
 A board says what its orchestrator may decide, each as a switch: orchestrator_approves_plans, orchestrator_accepts_waits and orchestrator_confirms_drafts. Each counts only while the orchestrator's auto mode is on, and then the orchestrator is told when such a proposal waits for it; with auto off the user decides and the orchestrator hears nothing. A plan is now approved by the orchestrator only under auto mode too. Every environment a ticket, plan or role owns is always in auto mode, and shows no auto switch. For a board already running: journal board update <n> --set orchestrator_accepts_waits=true --set orchestrator_confirms_drafts=true.
