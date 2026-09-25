@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch, watchEffect} from "vue";
+import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route, swap, unpeek} from "../route.js";
@@ -17,10 +17,38 @@ import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 import UpdateReport from "./UpdateReport.vue";
 import {isUpdate} from "../domain/updates.js";
+import {scopeIn} from "../composables/scope.js";
+import {usePoll} from "../poll.js";
 
-const props = defineProps({type: String, n: Number, depth: {type: Number, default: 0}, over: Boolean, leaving: Boolean});
+const props = defineProps({
+    type: String,
+    n: Number,
+    env: {type: String, default: ""},
+    depth: {type: Number, default: 0},
+    over: Boolean,
+    leaving: Boolean,
+});
 const emit = defineEmits(["gone"]);
-const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
+const ELSEWHERE_EVERY = 5000;
+const scope = props.env && props.env !== route.value.env ? scopeIn(props.env) : null;
+if (scope) provide("scope", scope);
+const rowsHere = scope ? scope.rows : rows;
+const resource = computed(() => (props.type ? rowsHere(props.type).find((r) => r.n === props.n) : null) || null);
+
+async function readElsewhere() {
+    await scope.holding(props.type, [props.n]);
+    const phases = (resource.value && resource.value.data.phases) || [];
+    await scope.holding(
+        "todo",
+        phases.flatMap((p) => p.todos || [])
+    );
+    await scope.holding(
+        "ticket",
+        phases.flatMap((p) => p.tickets || [])
+    );
+    await scope.recent("comment", 100);
+}
+if (scope) usePoll(`elsewhere:${props.env}:${props.type}:${props.n}`, readElsewhere, ELSEWHERE_EVERY);
 const broken = computed(() => (!resource.value && props.type ? damaged[`${props.type}:${props.n}`] : "") || "");
 const repairAsked = ref(false);
 
@@ -29,7 +57,7 @@ async function askRepair() {
     repairAsked.value = true;
 }
 watchEffect(() => {
-    if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
+    if (!scope && props.type && props.n && !resource.value) holding(props.type, [props.n]);
 });
 watchEffect(() => {
     const part = resource.value && resource.value.data.part_of;

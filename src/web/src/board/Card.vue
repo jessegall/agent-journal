@@ -7,7 +7,7 @@ import PriorityIcon from "../kit/PriorityIcon.vue";
 import StateDot from "../kit/StateDot.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
 import {api} from "../api/client.js";
-import {peek, peekIn} from "../route.js";
+import {peek, peekThere} from "../route.js";
 import {ticketOf} from "../domain/ticketAgents.js";
 import {store} from "../state/store.js";
 import CardMenu from "./CardMenu.vue";
@@ -61,6 +61,7 @@ function closeMenu() {
     self.value.focus();
 }
 const plan = computed(() => props.card.plan);
+const done = computed(() => props.card.state === "done");
 const ticketPlan = computed(() => {
     const ticket = props.card.type === "ticket" ? ticketOf(props.card.n) : null;
     return ticket && ticket.data.plan && ticket.data.work_environment ? {n: ticket.data.plan, env: ticket.data.work_environment} : null;
@@ -85,7 +86,7 @@ function begin(event) {
     <div
         :class="[
             'card',
-            {moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n, before: over},
+            {done, moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n, before: over},
         ]"
         ref="self"
         role="button"
@@ -118,7 +119,7 @@ function begin(event) {
                     <StateDot :state="card.state" />
                     <span class="reason">{{ card.reason }}</span>
                 </template>
-                <template v-if="card.session">
+                <template v-if="card.session && !done">
                     <button type="button" class="watch" @click.stop="board.openAgent(card)">Open agent</button>
                 </template>
                 <template v-if="card.link">
@@ -143,7 +144,7 @@ function begin(event) {
                 <Chip tone="danger" title="A question waits on you" @click.stop="peek('question', card.question)">!</Chip>
             </template>
         </span>
-        <template v-if="card.actions.length">
+        <template v-if="card.actions.length && !done">
             <span class="actions">
                 <template v-for="(action, i) in card.actions" :key="action.label">
                     <template v-if="action.href">
@@ -159,9 +160,7 @@ function begin(event) {
             <Chip @click.stop="peek('plan', plan.n)">Plan {{ plan.n }} · phase {{ plan.phase }}</Chip>
         </template>
         <template v-else-if="ticketPlan">
-            <Chip title="Opens in the ticket's environment" @click.stop="peekIn(ticketPlan.env, 'plan', ticketPlan.n)">
-                Plan {{ ticketPlan.n }}
-            </Chip>
+            <Chip @click.stop="peekThere(ticketPlan.env, 'plan', ticketPlan.n)">Plan {{ ticketPlan.n }}</Chip>
         </template>
         <template v-if="menu">
             <CardMenu :card="card" :anchor="opener" @close="closeMenu" />
@@ -299,6 +298,16 @@ function begin(event) {
     line-height: 1.4;
 }
 
+.meta .reason {
+    flex: 1 1 0;
+    min-width: 120px;
+}
+
+.meta :deep(.state-dot) {
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
 .number {
     display: flex;
     align-items: center;
@@ -307,6 +316,18 @@ function begin(event) {
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     line-height: 20px;
+}
+
+.card.done {
+    background: color-mix(in srgb, var(--raised) 55%, transparent);
+}
+
+.card.done .title {
+    color: var(--text-2);
+}
+
+.card.done .reason {
+    color: var(--text-3);
 }
 
 .watch {

@@ -135,7 +135,7 @@ const matches = (card) =>
 const lanes = computed(() =>
     store.board.loaded
         ? store.board.lanes
-              .filter((lane) => store.board.lens.done !== false || lane.key !== "done")
+              .filter((lane) => store.board.lens.done !== false || meaningOf(lane.key) !== "done")
               .map((lane) => ({...lane, cards: lane.cards.filter(matches)}))
         : SKELETON
 );

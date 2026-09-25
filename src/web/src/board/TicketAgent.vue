@@ -14,7 +14,7 @@ import {useTranscript} from "../composables/transcript.js";
 import {agentState, ticketOf} from "../domain/ticketAgents.js";
 import {age} from "../format/time.js";
 import {usePoll} from "../poll.js";
-import {peekIn} from "../route.js";
+import {peekThere} from "../route.js";
 
 const props = defineProps({card: {type: Object, required: true}});
 const emit = defineEmits(["close", "terminal"]);
@@ -63,7 +63,7 @@ const tabs = computed(() => [
     <SidePanel :title="`#${card.n} ${card.title}`" width="wide" @close="emit('close')">
         <template #actions>
             <template v-if="plan && env">
-                <Btn small title="Opens in the ticket's environment" @click="peekIn(env, 'plan', plan)">Open its plan</Btn>
+                <Btn small @click="peekThere(env, 'plan', plan)">Open its plan</Btn>
             </template>
             <Btn small title="The agent's live terminal, where you can type to it" @click="emit('terminal')">Open its terminal</Btn>
         </template>

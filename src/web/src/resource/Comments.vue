@@ -1,6 +1,6 @@
 <script setup>
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
-import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,7 +8,6 @@ import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
-import {rows} from "../sync/rows.js";
 import {markPassage, passageIn} from "../composables/passage.js";
 import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
@@ -22,9 +21,10 @@ const props = defineProps({
 });
 const emit = defineEmits(["sent"]);
 const talk = inject("talk", null);
+const scope = useScope();
 const list = ref(null);
 const {pending, promise, change, keep, link, keyOf} = usePromised();
-const saved = computed(() => rows("comment").filter((c) => !c.deleted));
+const saved = computed(() => scope.rows("comment").filter((c) => !c.deleted));
 const unsaved = computed(() => pending.value.filter((p) => !p.written || !saved.value.some((c) => c.ref === p.written)));
 watch(unsaved, keep);
 const alive = computed(() => [...saved.value, ...unsaved.value]);
@@ -84,7 +84,7 @@ function edit(c) {
 async function save() {
     editing.error = "";
     try {
-        await api.act("comment", editing.n, "update", {brief: editing.text.trim()});
+        await scope.api.act("comment", editing.n, "update", {brief: editing.text.trim()});
         editing.n = 0;
     } catch (e) {
         editing.error = e.message;
@@ -92,7 +92,7 @@ async function save() {
 }
 
 async function remove(c) {
-    await api.act("comment", c.n, "delete", {why: "deleted from the viewer"});
+    await scope.api.act("comment", c.n, "delete", {why: "deleted from the viewer"});
 }
 
 const replying = reactive({n: 0, text: ""});
@@ -104,7 +104,7 @@ function reply(c) {
 async function post(made) {
     change(made, {failed: false});
     try {
-        const written = await api.act(made.target.type, made.target.n, "comment", {text: made.brief});
+        const written = await scope.api.act(made.target.type, made.target.n, "comment", {text: made.brief});
         link(`comment:${written.n}`, made.ref);
         change(made, {written: `comment:${written.n}`});
     } catch (e) {

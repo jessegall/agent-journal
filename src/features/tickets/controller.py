@@ -90,7 +90,7 @@ class Tickets(Controller):
 
     def board(self, n: int) -> dict:
         stages = self._stages(n)
-        tickets = sorted((r for r in self._standing() if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
+        tickets = sorted((r for r in self._standing(closed_since=1) if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
         sessions = Sessions(self.record.root).all()
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
@@ -256,6 +256,8 @@ class Tickets(Controller):
         return bool(ticket.board) and Boards(self.record, actor=SYSTEM).load(int(ticket.board)).orchestrator_approves_plans
 
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
+        if ticket.completed:
+            return CardState("done", ticket.outcome or "done")
         place = ticket.work_environment
         proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
         if proposed:

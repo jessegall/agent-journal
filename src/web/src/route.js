@@ -13,8 +13,9 @@ export const route = computed(() => {
         .split(",")
         .filter(Boolean)
         .map((entry) => {
-            const [type = "", n = "", comment = ""] = entry.split(":");
-            return {type, n: Number(n), comment: Number(comment) || 0};
+            const [part, env = ""] = entry.split("@");
+            const [type = "", n = "", comment = ""] = part.split(":");
+            return {type, n: Number(n), comment: Number(comment) || 0, env};
         });
     return {
         env,
@@ -37,7 +38,7 @@ export function showFile(env, path, line = 0) {
     location.hash = `#/${env}/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}`;
 }
 
-const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}`;
+const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
 
 function opening(stack, sub = "") {
     const [path] = location.hash.replace(/^#/, "").split("?");
@@ -56,6 +57,13 @@ export function peek(type, n, comment = 0, sub = "") {
     const stack = route.value.stack;
     const at = stack.findIndex((open) => open.type === type && open.n === n);
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);
+}
+
+export function peekThere(env, type, n) {
+    if (env === route.value.env) return peek(type, n);
+    const stack = route.value.stack;
+    const at = stack.findIndex((open) => open.type === type && open.n === n && open.env === env);
+    opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment: 0, env}]);
 }
 
 export function peekIn(env, type, n, sub = "") {
