@@ -24,6 +24,7 @@ import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {age} from "../format/time.js";
 import {usePoll} from "../poll.js";
+import {PAGE} from "../sync/rows.js";
 import {route} from "../route.js";
 
 const props = defineProps({
@@ -37,7 +38,7 @@ const props = defineProps({
 });
 const EVERY = 5000;
 const CHAT_TYPES = ["message", "comment", "question", "reaction", "doc", "agent", "work", "plan", "report", "todo", "notice"];
-const HISTORY = 30;
+const HISTORY = PAGE;
 const VIEWS = {
     chat: {title: "Chat", icon: "chat"},
     terminal: {title: "Terminal", icon: "terminal"},

@@ -17,15 +17,10 @@ import {rows} from "../sync/rows.js";
 import {matches} from "./featureSettings.js";
 
 const props = defineProps({query: {type: String, default: ""}});
-const summary = ref(null);
+const summary = computed(() => store.summary);
 const ask = ref({});
 
-usePoll(
-    "settings-summary",
-    () => api.summary(),
-    5000,
-    (got) => (summary.value = got)
-);
+usePoll(...polled.summary);
 usePoll(...polled.online);
 
 const summaryOf = (name) => ((summary.value && summary.value.environments) || []).find((e) => e.name === name) || null;

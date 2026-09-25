@@ -18,6 +18,7 @@ export const store = reactive({
     agents: [],
     online: [],
     journals: [],
+    summary: null,
     pages: [],
     organization: null,
     bar: null,
