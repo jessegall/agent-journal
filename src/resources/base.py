@@ -101,6 +101,9 @@ class Event:
     pid: int = 0
     handled: bool = False
 
+    def to_json(self) -> dict:
+        return dict(vars(self))
+
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
         declare(cls)

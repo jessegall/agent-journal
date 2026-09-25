@@ -45,5 +45,6 @@ class Agents(Controller):
         return self.update(int(n), stopping={"task": task.strip(), "description": description.strip() or task.strip(), "at": time.time()})
 
     def primary(self):
-        rows = [row for row in self._standing() if not row.parent]
-        return max(rows, key=lambda row: float(row.at), default=None)
+        rows = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
+        found = max(rows, key=lambda row: float(row.get("at") or 0), default=None)
+        return self.load(found["n"]) if found else None

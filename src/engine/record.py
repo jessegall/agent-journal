@@ -13,6 +13,8 @@ from engine.state import State
 from engine.stored import held_back, read_json, write_json, write_text
 
 RESOURCES = "project"
+KEPT_EVENTS = 2000
+RECENT: dict[str, tuple[int, list[Event]]] = {}
 
 
 SETTINGS: dict[str, tuple] = {}
@@ -115,6 +117,34 @@ class Record:
         return release()
 
     def events(self, since: int = 0, last: int = 0) -> list[Event]:
+        recent = self.recent_events()
+        newer = [e for e in recent if e.id > since]
+        if len(recent) < KEPT_EVENTS or (recent and recent[0].id <= since) or (last and len(newer) >= last):
+            return newer[-last:] if last else newer
+        return self.events_back(since, last)
+
+    def recent_events(self) -> list[Event]:
+        log = self.home / "events.jsonl"
+        try:
+            size = log.stat().st_size
+        except OSError:
+            return []
+        held = RECENT.get(str(log))
+        if held and held[0] == size:
+            return held[1]
+        if held and held[0] < size:
+            with log.open("rb") as fh:
+                fh.seek(held[0])
+                added = fh.read(size - held[0])
+            whole = added[:added.rfind(b"\n") + 1]
+            kept = (held[1] + parsed(whole.split(b"\n")))[-KEPT_EVENTS:]
+            RECENT[str(log)] = (held[0] + len(whole), kept)
+            return kept
+        kept = self.events_back(0, KEPT_EVENTS)
+        RECENT[str(log)] = (size, kept)
+        return kept
+
+    def events_back(self, since: int = 0, last: int = 0) -> list[Event]:
         out = []
         for raw in self.lines_back():
             try:
@@ -207,3 +237,13 @@ class Record:
         f = self.home / "settings.json"
         with self.locked():
             write_json(f, {**read_json(f, {}), key: value}, indent=2)
+
+
+def parsed(lines: list[bytes]) -> list[Event]:
+    out = []
+    for raw in lines:
+        try:
+            out.append(Event(**json.loads(raw)))
+        except (ValueError, TypeError):
+            continue
+    return out

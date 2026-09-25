@@ -59,7 +59,7 @@ class AskPluginsToRefuse(ToolInterceptor):
         record, hook = context.record, context.hook
         writes = commands.writes(hook)
         left = ALTOGETHER
-        for row in context.journal.plugins._every():
+        for row in context.journal.plugins._standing():
             manifest = declared(row)
             asking = manifest.refuse
             if not row.enabled or row.completed or not asking or left <= 0:
@@ -92,7 +92,7 @@ class AskPluginsToCancel(Canceler):
 
     def cancel(self, context: Context, data) -> str:
         record = context.record
-        for row in context.journal.plugins._every():
+        for row in context.journal.plugins._standing():
             manifest = declared(row)
             asking = manifest.cancels.get(self.event)
             if not row.enabled or row.completed or not asking:
