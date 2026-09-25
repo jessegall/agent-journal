@@ -10,7 +10,9 @@ const running = ref(-1);
 const error = ref("");
 const all = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
 const pressed = computed(() => [].concat(props.resource.data.pressed || []));
-const spent = (button) => !button.again && pressed.value.includes(button.label);
+const chosen = computed(() => new Set(all.value.filter((b) => b.choice && pressed.value.includes(b.label)).map((b) => b.choice)));
+const spent = (button) =>
+    (!button.again && pressed.value.includes(button.label)) || Boolean(button.choice && chosen.value.has(button.choice));
 const buttons = computed(() => all.value.filter((b) => !spent(b)));
 
 async function press(button, i) {

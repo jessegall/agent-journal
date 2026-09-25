@@ -3,7 +3,7 @@ import re
 from features.sequences.controller import Sequences
 from features.sequences.drafting import DRAFTING
 from features.sequences.exploration import EXPLORATION, PANEL
-from features.sequences.orchestration import ORCHESTRATION
+from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
 from features.triggers.controller import Triggers
 from features.triggers.resource import FROM_USER, START
 from resources.base import AGENT, SECTION, SYSTEM, USER
@@ -182,9 +182,11 @@ FINISHING_WHAT_YOU_WROTE = {
                                     "it only mentions in passing. Then journal sequence next <this sequence> --about <ref>."),
         ("Offer the next step", "If it asks the user to decide or approve something, give it buttons: journal <type> update "
                                 "<ref n> --set buttons='[{\"label\": \"Accept this proposal\", \"say\": \"I accept this "
-                                "proposal\"}, {\"label\": \"Change it first\", \"say\": \"I want changes first\"}]'. A "
-                                "button with say sends those words to you as the user's message; one naming a type, n and "
-                                "action runs that command. Skip this when nothing waits on the user. Then journal sequence next "
+                                "proposal\", \"choice\": \"answer\"}, {\"label\": \"Change it first\", \"say\": \"I want "
+                                "changes first\", \"choice\": \"answer\"}]'. A button with say sends those words to you as the "
+                                "user's message; one naming a type, n and action runs that command. Buttons of one decision share "
+                                "a choice, so the others go once one is pressed. Skip this when nothing waits on the user. Then "
+                                "journal sequence next "
                                 "<this sequence> --about <ref>."),
         ("Answer with it", "Say in one or two plain lines what it concludes, then its reference on a line of its own, like "
                            "`doc 41` or `report 98`. Finish with journal sequence next <this sequence> --about <ref>."),
@@ -224,7 +226,7 @@ WRITING_A_REPORT = {
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION)
+           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
 
 
 def ship(record) -> list[str]:

@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import PROJECT, USER, Resource, ResourceDetails
+from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Placed, Shape
 
 AGENT_CLI = "claude"
@@ -39,6 +39,7 @@ class Ticket(Placed, Resource):
         Field(NUMBER, 0.0, name="told"),
     ]
     type = "ticket"
+    moments = ("created", "completed", PLAN_WAITS, CHECKPOINT, FINISHED, STUCK)
     icon = "ticket"
     scope = PROJECT
     created_in_viewer = True

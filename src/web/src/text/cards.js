@@ -16,11 +16,11 @@ function alone(text, context) {
     return kind ? {at: plain.index, length: plain[0].length, type: kind.name, n: Number(plain[2]), label: plain[0]} : null;
 }
 
-function updateCard(row) {
+function updateCard(row, standalone = false) {
     const facts = updateCounts(row)
         .map((c) => `${c.n} ${escape(c.label)}`)
         .join(" · ");
-    return `<a class="row-card update-card" href="#" data-peek="report:${row.n}" data-update="${row.n}"><span class="update-card-head"><span>${escape(updateLabel(row))}</span><span>${escape(age(row.created))}</span></span><span class="row-card-title">${escape(words(row.title))}</span>${row.abstract ? `<span class="update-card-lead">${escape(words(row.abstract))}</span>` : ""}${facts ? `<span class="update-card-facts">${facts}</span>` : ""}</a>`;
+    return `<a class="row-card update-card${standalone ? " standalone" : ""}" href="#" data-peek="report:${row.n}" data-update="${row.n}"><span class="update-card-head"><span>${escape(updateLabel(row))}</span><span>${escape(age(row.created))}</span></span><span class="row-card-title">${escape(words(row.title))}</span>${row.abstract ? `<span class="update-card-lead">${escape(words(row.abstract))}</span>` : ""}${facts ? `<span class="update-card-facts">${facts}</span>` : ""}</a>`;
 }
 
 function card(type, n, label, context) {
@@ -30,6 +30,20 @@ function card(type, n, label, context) {
     const title = words(row ? row.title : label);
     const line = row ? words(row.abstract || String(row.brief || "").split("\n")[0]).slice(0, 160) : "";
     return `<a class="row-card" href="#" data-peek="${type}:${n}"><span class="row-card-kind">${escape(kind ? kind.title : type)} ${n}</span><span class="row-card-title">${escape(title)}</span>${line ? `<span class="row-card-line">${escape(line)}</span>` : ""}</a>`;
+}
+
+export function standaloneUpdates(text, context) {
+    const cards = [];
+    const kept = String(text || "")
+        .split("\n")
+        .filter((line) => {
+            const found = alone(line.trim(), context);
+            const row = found && rows(found.type).find((r) => r.n === found.n);
+            if (!found || found.length !== line.trim().length || !isUpdate(row)) return true;
+            cards.push(updateCard(row, true));
+            return false;
+        });
+    return {text: kept.join("\n").trim(), cards};
 }
 
 register(
