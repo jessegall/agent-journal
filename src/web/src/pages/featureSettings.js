@@ -50,7 +50,7 @@ export function marks(f, value) {
     if (at.length) setTrigger(f, {unit: "percent", at});
 }
 
-const UNIT_WORDS = {percent: "% of the context window", uses: "tool calls", minutes: "minutes"};
+const UNIT_WORDS = {percent: "% of the context window", uses: "tool calls", minutes: "minutes", notices: "journal lines"};
 const EVENT_WORDS = {
     idle: "each time the agent comes to rest",
     worked: "when the agent comes to rest after working",

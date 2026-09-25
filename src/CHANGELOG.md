@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.172.0 — A journal line is acted on, never answered in the chat
+
+The chat etiquette skill and the channel's own instructions now say that a line from the journal is an instruction to the agent, not a message: it acts on it or notes it, and never answers or mentions it in the chat, while anything the user needs to know still goes to the chat. Every 20 journal lines the agent is reminded of it; Settings changes the count, in a new unit, journal lines. Nothing to do.
+
 ## 2.171.0 — A plan's one worktree, from start to merge
 
 An agent working for a whole plan is listed in its domain as working for that plan, and opens the plan. The plan inspector names a shared plan's branch and whether it is merged yet. Once that branch is merged, the plan's tickets close together, and the plan's agent and the role agents it started are stopped; the worktree stays. Nothing to do.

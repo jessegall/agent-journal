@@ -1,7 +1,9 @@
 import re
 
-from engine.events import AgentMessageSent
-from features.chat_etiquette.details import SHOP
+from engine.events import AgentMessageSent, CommandRan
+from engine.ran import DELIVERED
+from features import trigger
+from features.chat_etiquette.details import REMIND, SHOP
 from features.parts import AgentContext, Handler
 
 QUOTES = ('"', "“", "'")
@@ -23,3 +25,12 @@ class NameShopTalk(Handler):
         found = next((m for m in SHOP_TALK.finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
         if found:
             context.agent.whisper(SHOP, words=found.group(0))
+
+
+class RemindOfEtiquette(Handler):
+    def handle(self, context: AgentContext, event: CommandRan) -> None:
+        if event.tool != DELIVERED or not context.agent:
+            return
+        trigger.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
+        if context.due(REMIND):
+            context.agent.whisper(REMIND)

@@ -6,8 +6,8 @@ from resources.base import names
 from engine.stored import read_json, write_json
 from engine import runtime
 
-PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
-UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
+PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES = "percent", "uses", "minutes", "idle", "worked", "start", "notices"
+UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES)
 HELD: dict[str, "Mark"] = {}
 TRIGGER = names("unit", "on", "every", "at")
 
@@ -39,6 +39,7 @@ class Mark(Loaded):
     edits: int = 0
     since: float = 0.0
     notified: bool | None = None
+    notices: int = 0
     viewer_opened: bool = False
 
 
@@ -83,6 +84,8 @@ def due(record, agent, name: str, default: Trigger) -> bool:
         return agent.status == IDLE and status != IDLE and int(agent.uses) > uses
     if unit == START:
         return agent.event == "SessionStart" and event != "SessionStart"
+    if unit == NOTICES:
+        return was.notices >= every
     return False
 
 
@@ -100,4 +103,8 @@ def observe(record, agent, name: str, was: Mark) -> None:
 
 
 def fired(record, agent, name: str) -> None:
-    write(record, agent, name, at=time.time(), context=agent.context, uses=agent.uses)
+    write(record, agent, name, at=time.time(), context=agent.context, uses=agent.uses, notices=0)
+
+
+def noticed(record, agent, name: str) -> None:
+    write(record, agent, name, notices=last(record, agent.title, name).notices + 1)
