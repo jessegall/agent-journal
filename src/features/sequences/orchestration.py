@@ -21,17 +21,75 @@ ORCHESTRATION = {
                                           "waits for you, when a started ticket needs a look (waiting on a prompt, silent, or its agent "
                                           "gone), and, every five minutes you sit idle, to check on the ticket agents. Act on each as it "
                                           "comes; journal ticket board shows the whole board, and journal ticket screen <n> what a ticket agent's terminal says, at any time."),
-        ("See every ticket through", "Until every ticket is done: when you are told a ticket's plan waits, review it before you "
-                                     "approve anything, the way the board says (plan_reviewer: yourself, or a reviewer subagent "
-                                     "you dispatch); the notice names which. Approve only a plan that does the ticket and "
-                                     "nothing more: journal ticket approve_plan <n>. Otherwise refuse it: tell its agent what must "
-                                     "change and why with journal ticket tell <n> \"<the change>\"; it revises the plan, which waits "
-                                     "for you again. When a ticket's plan stops at a checkpoint, check the phase before it and let it go "
-                                     "on with journal ticket continue_plan <n>, so the board never waits for the user overnight. When a ticket's work is finished and reviewed, merge it into the "
-                                     "board's branch with journal ticket merge <n>, never by hand; it closes and the next one starts. When an agent is stuck on the journal "
-                                     "itself, send the agent-journal agent the exact command, its output and the rows involved, "
-                                     "wait for the fix, and carry on once it is installed. Move on only when every ticket is closed."),
+        ("See every ticket through", "Until every ticket is closed, each moment of a ticket is handed to you as a short sequence of its own, "
+                                     "ahead of this one: a plan to review, a checkpoint to pass, finished work to merge, an agent that is "
+                                     "stuck. Follow each to its end; this step waits until every ticket on the board is closed. You may "
+                                     "stop and start a ticket's agent yourself; tell the agent-journal agent only what a restart does not fix."),
         ("Report the board done", "When every ticket is closed, write an update for the user: journal report changes, then "
                                   "journal report recap \"<what landed on the board's branch>\"."),
     ],
 }
+
+
+FIND_IT = "journal ticket show <ticket n> names its environment and its plan."
+
+REVIEWING_A_PLAN = {
+    "title": "Reviewing a ticket's plan",
+    "brief": "A ticket's plan waits for your approval. Review it against the ticket before you approve anything.",
+    "starts_on": "ticket.plan_waits",
+    "started_by": "",
+    "steps": [
+        ("Read the ticket and its plan", f"{FIND_IT} Read the ticket's card and the plan with journal --env <its environment> plan read "
+                                         "<its plan>. If the board's plan_reviewer is a subagent, dispatch a reviewer subagent to do this "
+                                         "and the next step."),
+        ("Check it does the ticket and nothing more", "Every phase and to-do serves the ticket's card, none does work the card does not ask "
+                                                      "for, and it ends with the card's done-when true."),
+        ("Approve it or send it back", "Approve it with journal ticket approve_plan <ticket n>, or tell its agent what must change and why "
+                                       "with journal ticket tell <ticket n> \"<the change>\"; the revised plan comes back as a new review."),
+    ],
+}
+
+PASSING_A_CHECKPOINT = {
+    "title": "Passing a checkpoint",
+    "brief": "A ticket's plan stopped at a checkpoint. Check the phase before it, then let it go on, so the board never waits overnight.",
+    "starts_on": "ticket.checkpoint",
+    "started_by": "",
+    "steps": [
+        ("Check the phase before it", f"{FIND_IT} Read where it stands with journal --env <its environment> plan progress <its plan>, and "
+                                      "check the phase before the checkpoint did what it says."),
+        ("Let it go on", "Continue it with journal ticket continue_plan <ticket n>, or tell its agent what to fix first with journal ticket "
+                         "tell <ticket n> \"<what>\"."),
+    ],
+}
+
+MERGING_A_TICKET = {
+    "title": "Merging a ticket",
+    "brief": "A ticket finished its plan with a clean worktree. Check its work before it lands on the board's branch.",
+    "starts_on": "ticket.finished",
+    "started_by": "",
+    "steps": [
+        ("Run the tests on its branch", f"{FIND_IT} Run the project's tests in the ticket's worktree. When they fail, tell its agent what "
+                                        "failed with journal ticket tell <ticket n> \"<what failed>\" and abandon this run: it comes back "
+                                        "when the ticket finishes again."),
+        ("Have its work reviewed", "Dispatch a reviewer subagent to read the branch's diff against the ticket's card: does it do the card, "
+                                   "and only the card? Send back what it finds the same way."),
+        ("Merge it", "Merge it into the board's branch with journal ticket merge <ticket n>, never by hand; the ticket closes and the next "
+                     "one starts."),
+    ],
+}
+
+UNSTICKING_A_TICKET_AGENT = {
+    "title": "Unsticking a ticket agent",
+    "brief": "A ticket's agent is waiting on a prompt, silent, or gone. Get it working again.",
+    "starts_on": "ticket.stuck",
+    "started_by": "",
+    "steps": [
+        ("Look at its screen", "journal ticket screen <ticket n> shows what its terminal says."),
+        ("Get it going", "Answer what it waits on with journal ticket tell <ticket n> \"<what to do>\", or restart it with journal ticket "
+                         "stop <ticket n> then journal ticket start <ticket n>."),
+        ("Report what a restart does not fix", "If it is stuck again after a restart, the fault is in the journal: send the agent-journal "
+                                               "agent the exact command, its output and the ticket, then carry on with the other tickets."),
+    ],
+}
+
+ORCHESTRATING_MOMENTS = (REVIEWING_A_PLAN, PASSING_A_CHECKPOINT, MERGING_A_TICKET, UNSTICKING_A_TICKET_AGENT)

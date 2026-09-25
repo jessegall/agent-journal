@@ -20,7 +20,9 @@ class ButtonsDetails(FeatureDetails):
         the message is written.
 
         A button goes once it is pressed, and the message says which one; "again": true keeps it
-        there to be pressed as often as the user likes.
+        there to be pressed as often as the user likes. Buttons that are one decision, such as Accept
+        option A and Accept option B, share a "choice" name: pressing one takes away every other
+        button of that choice.
 
         A document or a report you write can carry buttons too, with --set buttons when you create it.
         A button with "say" instead of a command sends that text to you as the user's message about

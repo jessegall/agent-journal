@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.189.0 — Each moment of a ticket is its own short sequence
+
+An orchestrator is handed each moment of a ticket as a short sequence of its own, ahead of the board it runs: Reviewing a ticket's plan when a plan waits, Passing a checkpoint when a plan stops at one, Merging a ticket when its work is finished (tests on its branch, a reviewer, then journal ticket merge), and Unsticking a ticket agent when one waits on a prompt, goes silent or is gone. They replace the one-line notices for those moments, so the minute nudge keeps the orchestrator on each one until it is done, and Orchestrating a board now says the orchestrator may restart a ticket's agent itself. A repeated notice about a ticket waits the full interval since the last one, instead of possibly coming twice around the hour. Buttons that are one decision can share a choice, and pressing one takes the others away; a proposal's Accept and Change buttons do this by default. An update the agent answers with stands alone in the chat, as a card of its own under the message. Nothing to do.
+
 ## 2.188.1 — The journal starts faster
 
 The command parser the server builds at start takes half as long, because it no longer looks for translations of its messages that the journal does not have, so the first request after an update waits less. The background warm-up now also fills the lists of types that load their rows lazily, such as messages, and the recent events, starting with the environments an agent is working in. Nothing to do.

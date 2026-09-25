@@ -23,6 +23,7 @@ import {meta, store, types} from "../state/store.js";
 import {words as plain} from "../text/words.js";
 import {optimistic} from "../sync/rows.js";
 import {render} from "../text/index.js";
+import {standaloneUpdates} from "../text/cards.js";
 import "../text/all.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
@@ -107,7 +108,14 @@ const state = computed(() => {
     return turn.data && turn.data.delivered ? "delivered" : "sent";
 });
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
-const html = computed(() => render(words.value.text, {types: types.value, env: env.value}));
+const split = computed(() => standaloneUpdates(words.value.text, {types: types.value}));
+const html = computed(() => render(split.value.text, {types: types.value, env: env.value}));
+const bubbled = computed(
+    () =>
+        Boolean(split.value.text) ||
+        !split.value.cards.length ||
+        Boolean(words.value.quote || files.value.length || results.value.length || resourceComment.value || props.turn.type !== "message")
+);
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
 const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: env.value}));
@@ -292,6 +300,7 @@ function markClick(data) {
                         long,
                         lit: store.focus === turn.ref,
                         'comment-origin': resourceComment,
+                        'has-update': split.cards.length > 0,
                     },
                 ]"
                 :data-ref="turn.ref"
@@ -300,7 +309,7 @@ function markClick(data) {
                 <template v-if="turn.who === 'system'">
                     <span class="thread-from">journal</span>
                 </template>
-                <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
+                <div v-show="bubbled" ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
                     <template v-if="resourceComment">
                         <BubbleHeader
                             icon="bubble"
@@ -352,6 +361,9 @@ function markClick(data) {
                         <Attachments :resource="turn" @grew="emit('grew')" />
                     </template>
                 </div>
+                <template v-for="(card, i) in split.cards" :key="`update-${i}`">
+                    <div class="thread-update" @click="chipOrUpdate" v-html="card" />
+                </template>
                 <div :class="['thread-tools', {picking}]">
                     <template v-if="picking">
                         <div class="thread-face-row">
@@ -469,6 +481,17 @@ function markClick(data) {
 
     gap: 3px;
     max-width: min(78%, calc(100% - var(--turn-gutter)));
+}
+
+.thread-turn.has-update {
+    align-self: stretch;
+    max-width: none;
+}
+
+.thread-update {
+    align-self: stretch;
+    width: 100%;
+    margin: 2px 0;
 }
 
 .thread-turn.peer .thread-bubble {

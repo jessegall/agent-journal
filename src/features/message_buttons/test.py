@@ -23,6 +23,8 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
     assert (shaped(record, "go"), shaped(record, [7])) == ([], []), "what is not a list of objects is nothing"
     assert len(shaped(record, [start] * (MOST + 3))) == MOST, "no more than five are kept"
     assert shaped(record, [{**start, "again": True}]) == [{**start, "again": True}], "a button may say it can be pressed again"
+    options = [{"label": "Accept option A", "say": "A", "choice": "option"}, {"label": "Accept option B", "say": "B", "choice": "option"}]
+    assert [b.get("choice") for b in shaped(record, options)] == ["option", "option"], "buttons that are one decision keep their shared choice"
 
     made = rows.create("Ready when you are", buttons=[start, {"label": "Go", "type": "plan", "n": 1, "action": "detonate"}])
     assert rows.load(made.n).data["buttons"] == [start], "the message keeps the button that runs and drops the one that does not"

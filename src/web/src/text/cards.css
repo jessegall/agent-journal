@@ -41,6 +41,13 @@
     background: var(--raised);
 }
 
+.update-card.standalone {
+    display: flex;
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
 .update-card:hover {
     border-color: var(--border-2);
 }

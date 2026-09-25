@@ -9,7 +9,7 @@ from controllers.types import Works
 from features.plans.controller import WAITING
 from features.tickets.controller import HELD, Tickets
 from features.tickets.details import TicketsDetails
-from resources.base import SYSTEM, Refused
+from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
 
 CHECK_AFTER = 300
 LOOK_AGAIN = 900
@@ -23,6 +23,14 @@ def all_parked(works: list) -> bool:
     return bool(works) and all(work.parked for work in works)
 
 
+def called_again(context: AgentContext, name: str, every: int) -> bool:
+    last = float(context.state.get(name) or 0)
+    if time.time() - last < max(1, every) * 60:
+        return False
+    context.state.set(name, time.time())
+    return True
+
+
 class LookAfterTicketBranches(Handler):
     behaviour = WHOLE_FEATURE
 
@@ -34,19 +42,19 @@ class LookAfterTicketBranches(Handler):
         tickets._stop_orphaned()
         for ticket in tickets._awaiting_orchestrator():
             plan = tickets._plans(ticket).load(int(ticket.plan))
-            if not context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}|{reminder(context)}"):
-                continue
-            if plan.status == WAITING:
-                context.agent.whisper("plan_checkpoint", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
-            else:
-                context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, review=tickets._review(ticket))
+            if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
+                context.record.emit("ticket", ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS, SYSTEM)
         for ticket, permission in tickets._awaiting_decisions():
             if context.once("proposal_waits", f"{ticket.ref}|{permission}|{reminder(context)}"):
                 context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
         boards = tickets._orchestrating()
         for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards]:
             for kind, key, values, every in tickets._calls(ticket):
-                if context.once(kind, f"{ticket.ref}|{key}" + (f"|{int(time.time() // (max(1, every) * 60))}" if every else "")):
+                if not (called_again(context, f"{kind}|{ticket.ref}|{key}", every) if every else context.once(kind, f"{ticket.ref}|{key}")):
+                    continue
+                if kind == "ticket_plan_done":
+                    context.record.emit("ticket", ticket.n, FINISHED, SYSTEM)
+                else:
                     context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
         self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)
@@ -56,7 +64,7 @@ class LookAfterTicketBranches(Handler):
             if state.kind == "stopped" and tickets._revive(ticket):
                 context.agent.whisper("ticket_restarted", ticket=ticket.n, title=ticket.title)
             elif context.once("ticket_attention", f"{ticket.ref}|{state.kind}|{int(time.time() // LOOK_AGAIN)}"):
-                context.agent.whisper("ticket_attention", ticket=ticket.n, title=ticket.title, reason=state.text)
+                context.record.emit("ticket", ticket.n, STUCK, SYSTEM, reason=state.text)
 
     def check_on_board(self, context: AgentContext, tickets: Tickets) -> None:
         row = context.agent.row

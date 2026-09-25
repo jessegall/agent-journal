@@ -370,8 +370,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
         assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, elsewhere), actor=AGENT).approve_plan(ticket.n)), \
             "neither the ticket's own agent nor a sibling ticket's may approve the plan"
     tick(record)
-    assert any(f"the plan of ticket {ticket.n}" in line and "waits for your approval" in line for line in nudges(record)), \
-        "the minute check tells the orchestrator the plan waits"
+    assert any("Reviewing a ticket's plan, step 1 of 3" in line for line in nudges(record)), \
+        "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
     assert "Review it yourself" in tickets._review(tickets.load(ticket.n)), "by default the orchestrator reviews the plan itself"
     Boards(record, actor=USER).update(board.n, plan_reviewer="subagent")
     assert "Dispatch a reviewer subagent" in tickets._review(tickets.load(ticket.n)), "a board can hand the review to a reviewer subagent"
@@ -391,7 +391,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     Messages(place, actor=AGENT).create("Dark it is, as the card says")
     monkeypatch.setattr(time, "time", lambda: started + 120)
     tick(record)
-    assert any(f"the plan of ticket {ticket.n}" in line and "stopped at a checkpoint" in line for line in nudges(record)), \
+    assert any("Passing a checkpoint, step 1 of 2" in line for line in nudges(record)), \
         "a ticket's plan that stops at a checkpoint is handed to the orchestrator too"
     assert (f"ticket {ticket.n}, Dark mode, asks question {asked.n} - Which theme?" in nudges(record),
             f"ticket {ticket.n}, Dark mode, is waiting - the user's pick of theme" in nudges(record),
