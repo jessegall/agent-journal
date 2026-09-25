@@ -9,6 +9,7 @@ import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import DownloadLink from "./DownloadLink.vue";
 import Icon from "../kit/Icon.vue";
+import {openPictures} from "../platform/view.js";
 import {peek, route} from "../route.js";
 import {byRef, parkedFor, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
@@ -49,6 +50,15 @@ const talk = inject("talk", null);
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
+const PICTURE = /\.(png|jpe?g|gif|webp)$/i;
+const pictures = computed(() =>
+    files.value.filter(([name]) => PICTURE.test(name)).map(([name]) => ({name, url: fileUrl(props.resource.type, props.resource.n, name)}))
+);
+const showPicture = (name) =>
+    openPictures(
+        pictures.value,
+        pictures.value.findIndex((p) => p.name === name)
+    );
 const template = computed(() => props.resource.data.template || "");
 const blocked = computed(() => props.resource.data.blocked || "");
 const seenBy = computed(() => props.resource.seen.join(", ") || "nobody");
@@ -353,6 +363,11 @@ const chaptered = computed(
                             </template>
                         </span>
                     </a>
+                    <template v-if="PICTURE.test(name)">
+                        <button type="button" class="file-preview" :title="`Show ${name}`" @click="showPicture(name)">
+                            <img :src="fileUrl(resource.type, resource.n, name)" :alt="name" loading="lazy" />
+                        </button>
+                    </template>
                 </template>
             </section>
         </template>
@@ -632,6 +647,28 @@ const chaptered = computed(
     padding: 3px 0;
     color: var(--accent-text);
 }
+.file-preview {
+    display: block;
+    margin: 2px 0 8px 19px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--raised);
+    cursor: zoom-in;
+}
+
+.file-preview img {
+    display: block;
+    max-width: 220px;
+    max-height: 140px;
+    object-fit: cover;
+}
+
+.file-preview:hover {
+    border-color: var(--border-3);
+}
+
 .file .ico {
     flex-shrink: 0;
     margin-top: 2px;

@@ -9,6 +9,7 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
+from features.sharing.controller import LAYOUT_FILE  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from resources.base import Refused  # noqa: E402
 
@@ -52,6 +53,11 @@ class ShareHandler(BaseHTTPRequestHandler):
         if not self.shares._unlocked(share, self.password()):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         rest = parts[2:]
+        if share.layout:
+            if rest != [LAYOUT_FILE]:
+                return self.page(404, unshared())
+            self.shares._layout_opened(share)
+            return self.send(200, json.dumps(share.layout).encode(), {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"})
         app = APP_DIR / APP_PAGE
         if not rest and app.is_file():
             if not self.path.split("?", 1)[0].endswith("/"):
@@ -164,7 +170,7 @@ def main(argv: list[str]) -> None:
     import features
     from engine import runtime
     from engine.record import Record
-    from features.sharing.controller import Shares
+    from features.sharing.controller import LAYOUT_FILE, Shares
     from resources.base import SYSTEM
     root = Path(argv[0])
     features.load(root)

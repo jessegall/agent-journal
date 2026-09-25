@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.164.0 — Share a layout as a link, and see images on shared pages
+
+A saved layout's share button offers Download file or a copied link that opens once or works for 1 hour, 1 day or 7 days; Import a layout takes such a link as well as a file, and a used or ended link says so plainly. An image file on a shared page, and in the viewer's own inspector, shows a small preview that opens the image viewer. Nothing to do.
+
 ## 2.163.0 — See a ticket agent's screen, and choose who reviews plans
 
 journal ticket screen <n> shows the last lines a ticket agent's terminal printed, so the orchestrator can see what it is doing without opening it. A board says who reviews its tickets' plans, the orchestrator itself or a reviewer subagent it dispatches (plan_reviewer, in the board's settings), and the waiting-plan notice says which. The session bar shows the running agent before a stopped one, so a new agent in an environment shows its own context. Nothing to do.

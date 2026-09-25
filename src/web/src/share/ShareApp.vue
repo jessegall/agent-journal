@@ -13,6 +13,7 @@ import ShareComments from "./ShareComments.vue";
 import ShareStrip from "./ShareStrip.vue";
 import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
+import Lightbox from "../kit/Lightbox.vue";
 import {peek, route} from "../route.js";
 import {store} from "../state/store.js";
 
@@ -221,6 +222,7 @@ watch(shownRef, () => (read.value = 0));
                 <span class="loading-bar short" />
             </main>
         </template>
+        <Lightbox />
     </div>
 </template>
 
