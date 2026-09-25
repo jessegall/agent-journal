@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -15,6 +16,8 @@ PROTOCOL = "2025-06-18"
 NAME = "journal"
 WAIT = 0.3
 READ_AT = "JOURNAL_CHANNEL_READ_AT"
+CHECKING = "JOURNAL_CHANNEL_CHECK"
+CHECK_FOR = 20
 
 queue, alive = runtime.channel_queue, runtime.channel_alive
 
@@ -75,6 +78,14 @@ def renewed(root: Path, began: Path) -> bool:
     return build(root) != began and build(root).is_file()
 
 
+def starts() -> bool:
+    try:
+        return subprocess.run(sys.orig_argv, env={**os.environ, CHECKING: "1"}, stdin=subprocess.DEVNULL, capture_output=True,
+                              timeout=CHECK_FOR).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def push(root: Path, pid: int) -> None:
     f = queue(root, pid)
     at = start(f)
@@ -82,6 +93,9 @@ def push(root: Path, pid: int) -> None:
     while True:
         time.sleep(WAIT)
         if renewed(root, began):
+            if not starts():
+                began = build(root)
+                continue
             sys.stdout.flush()
             os.environ[READ_AT] = str(at)
             os.execv(sys.executable, sys.orig_argv)
@@ -114,6 +128,8 @@ def answer(asked: Asked) -> dict | None:
 
 
 def main(argv: list[str]) -> int:
+    if os.environ.get(CHECKING):
+        return 0
     root = Path(argv[0]) if argv else Path.cwd() / ".journal"
     pid = agent_pid(os.getppid())
     queue(root, pid).parent.mkdir(parents=True, exist_ok=True)

@@ -64,11 +64,11 @@ class SkillsDetails(FeatureDetails):
             unit="tool uses",
         ),
         Setting(
-            name="recent_share",
-            default=25,
-            title="After a compaction, also reload the skills used in the last",
-            abstract="Besides the every-start skills, the ones loaded in this last part of the context before it was compacted",
-            unit="percent of the context",
+            name="recent",
+            default=5,
+            title="After a compaction, also reload the skills last used, this many",
+            abstract="Besides the every-start skills, the ones loaded most recently before the context was compacted; other skills are asked for again only if they were never loaded",
+            unit="skills",
         ),
     ]
 

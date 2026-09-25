@@ -219,6 +219,8 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     call = lambda command: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
     refused = lambda command: str(handle(claude, record.root, record.env, call(command)).get("reason") or "")
     assert "take it up with journal sequence follow" in refused("journal todo create 'other work'"), "a journal write waits for the step"
+    assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal todo create 'other work'"), \
+        "a write on a later line of the same command waits too, whatever else the command does"
     assert "take it up" not in refused(f"journal sequence follow {made.n}") and "take it up" not in refused("journal message reply 3 'on it'"), \
         "taking the step up and answering the user are never held"
     sequences.follow(made.n)

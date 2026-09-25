@@ -1,7 +1,8 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import EmptyState from "../kit/EmptyState.vue";
+import Icon from "../kit/Icon.vue";
+import Tile from "../kit/Tile.vue";
 import AgentDrawer from "./AgentDrawer.vue";
 import AgentWindow from "./AgentWindow.vue";
 import TicketAgent from "./TicketAgent.vue";
@@ -25,29 +26,36 @@ const entries = computed(() =>
         agentView.order
     )
 );
+const LEAST = 9;
+const ROW = 3;
+const empties = computed(() => Math.max(LEAST, Math.ceil(entries.value.length / ROW) * ROW) - entries.value.length);
 const hidden = computed(() => every.value.length - entries.value.length);
 const why = computed(() => hiddenSummary(every.value, agentView).join(", "));
 const openedKey = ref("");
 const opened = computed(() => entries.value.find((e) => e.key === openedKey.value) || null);
 const terminal = ref(null);
-const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.parent, entry.session) : (openedKey.value = entry.key));
+const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.parent, 0, entry.session) : (openedKey.value = entry.key));
 </script>
 
 <template>
     <div class="agent-grid-view">
-        <template v-if="summary && !entries.length && hidden">
-            <EmptyState :title="`All ${hidden} ${hidden === 1 ? 'agent is' : 'agents are'} hidden`">
-                Hidden by this pane's view: {{ why }}. Change it under View in this pane's menu.
-            </EmptyState>
-        </template>
-        <template v-else-if="summary && !entries.length">
-            <EmptyState title="No agent is working on a board">
-                When a ticket or a plan starts its own agent, it shows here with what it is doing.
-            </EmptyState>
+        <template v-if="summary && !entries.length">
+            <p class="agent-grid-note">
+                {{
+                    hidden
+                        ? `All ${hidden} ${hidden === 1 ? "agent is" : "agents are"} hidden by this pane's view: ${why}. Change it under View in this pane's menu.`
+                        : "No agent is working on a board. When a ticket or a plan starts its own agent, it shows here."
+                }}
+            </p>
         </template>
         <div class="agent-grid">
             <template v-for="entry in entries" :key="entry.key">
                 <AgentWindow :entry="entry" @open="openEntry(entry)" />
+            </template>
+            <template v-for="at in empties" :key="`empty-${at}`">
+                <Tile compact class="agent-empty" aria-hidden="true">
+                    <Icon name="agents" :size="22" />
+                </Tile>
             </template>
         </div>
         <template v-if="opened">
@@ -88,6 +96,25 @@ const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.pa
 
 .agent-grid > * {
     aspect-ratio: 1;
+}
+
+.agent-grid-note {
+    flex: none;
+    margin: 0;
+    padding: 10px 14px;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.agent-empty {
+    pointer-events: none;
+}
+
+.agent-empty :deep(.tile-body) {
+    align-items: center;
+    justify-content: center;
+    color: var(--text-4);
+    opacity: 0.35;
 }
 
 @container (max-width: 560px) {

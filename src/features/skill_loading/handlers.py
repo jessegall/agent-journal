@@ -70,7 +70,7 @@ class RequireAlwaysSkills(Handler):
         now = time.time()
         present = {skill[SKILL.name] for skill in catalogue(context.record.root.parent)}
         current = set(loaded_at(context.agent.row))
-        recent = set() if current else present & recent_before_compaction(context.agent.row, int(context.settings.recent_share) / 100)
+        recent = set() if current else present & recent_before_compaction(context.agent.row, int(context.settings.recent))
         require_only(context.record, context.agent.session, {name: now for name in {*chosen(context.record), *recent} - current})
         context.state.set(refusals(RefuseUntilLoaded), 0)
 

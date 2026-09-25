@@ -9,11 +9,18 @@ from engine.manifest import manifest
 from engine.record import Record
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
+from providers import PROVIDERS
 from surfaces.color import identity
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
-RECENTLY_ENDED = 600.0
+RECENT = 600.0
 SUBAGENT_FIELDS = ("session", "task", "type", "model", "at", "ended", "status", "running")
+
+
+def last_written(agent, session: str) -> float:
+    provider = PROVIDERS[agent.provider]() if agent.provider in PROVIDERS and agent.transcript else None
+    found = provider.subagent_transcript(Path(agent.transcript), session) if provider else None
+    return found.stat().st_mtime if found else 0.0
 
 
 def subagents(agent) -> list[dict]:
@@ -21,9 +28,15 @@ def subagents(agent) -> list[dict]:
         return []
     live = (agent.status or "stopped") != "stopped"
     now = time.time()
-    kept = [sub for sub in agent.subagent_rows or [] if sub.get("session")
-            and ((sub.get("running") and live) or now - float(sub.get("ended") or 0) < RECENTLY_ENDED)]
-    return [{**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": bool(sub.get("running") and live), "parent": agent.n} for sub in kept]
+    shown = []
+    for sub in agent.subagent_rows or []:
+        if not sub.get("session"):
+            continue
+        active = max(float(sub.get("at") or 0), last_written(agent, sub["session"]))
+        running = bool(sub.get("running")) and live and now - active < RECENT
+        if running or now - float(sub.get("ended") or 0) < RECENT:
+            shown.append({**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": running, "active": active, "parent": agent.n})
+    return shown
 
 KEPT_FOR = 1.0
 KEPT: dict[Path, tuple[float, dict]] = {}
