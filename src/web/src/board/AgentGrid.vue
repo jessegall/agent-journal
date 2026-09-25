@@ -7,6 +7,7 @@ import AgentWindow from "./AgentWindow.vue";
 import TicketAgent from "./TicketAgent.vue";
 import {hiddenBy, hiddenSummary, orchestraOf, ordered} from "../domain/orchestra.js";
 import {usePoll} from "../poll.js";
+import {peekThere} from "../route.js";
 import {agentView} from "../composables/agentsShown.js";
 
 const EVERY = 4000;
@@ -29,6 +30,7 @@ const why = computed(() => hiddenSummary(every.value, agentView).join(", "));
 const openedKey = ref("");
 const opened = computed(() => entries.value.find((e) => e.key === openedKey.value) || null);
 const terminal = ref(null);
+const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.parent, entry.session) : (openedKey.value = entry.key));
 </script>
 
 <template>
@@ -45,7 +47,7 @@ const terminal = ref(null);
         </template>
         <div class="agent-grid">
             <template v-for="entry in entries" :key="entry.key">
-                <AgentWindow :entry="entry" @open="openedKey = entry.key" />
+                <AgentWindow :entry="entry" @open="openEntry(entry)" />
             </template>
         </div>
         <template v-if="opened">

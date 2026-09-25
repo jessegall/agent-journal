@@ -90,6 +90,7 @@ const cards = (agents) =>
                 side: c.side,
                 state: c.state === "running" && !c.started ? "" : c.state,
                 started: c.started,
+                depth: c.depth || 0,
                 ended: c.ended,
             })
         )

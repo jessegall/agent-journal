@@ -1,6 +1,6 @@
 import features
 from controllers.types import CONTROLLERS, Agents
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, nudges, report
 
@@ -32,18 +32,23 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
         and {c for _, c in marks} == {"#a78bfa"} and all(c["detail"].startswith("Filing a dump") for c in cards), \
         f"the chat shows a violet mark for a shipped sequence as it starts, moves on and finishes, its name under it: {marks}"
     first = CONTROLLERS["dump"](record, actor=USER).create("Planning", brief="notes")
-    CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
-    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 4, \
-        "a second run waits while the first is in hand"
+    second = CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
+    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 5, \
+        "a run started while another runs is handed at once, like a call"
     for _ in range(3):
-        sequences.follow(filing["n"], about=first.ref)
-        sequences.next(filing["n"], about=first.ref)
-    assert len(steps()) == 7 and steps()[-1].endswith("step 1 of 3 - Read everything"), "when the first ends, the one that waited is handed its first step"
+        sequences.follow(filing["n"], about=second.ref)
+        sequences.next(filing["n"], about=second.ref)
+    assert len(steps()) == 8 and steps()[-1].endswith("step 1 of 3 - Read everything"), "when the inner run ends, the one it interrupted is handed its step again"
     report(record, "idle", "Stop")
     assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Filing a dump, is still at step 1 of 3 - carry on with it"], \
         "stopping with a run unfinished earns a reminder"
     review = next(key for key in sequences.load(filing["n"]).runs).split("|", 1)[1]
-    sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")
+    assert "never taken up" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
+        "a step never taken up cannot be given up"
+    sequences.follow(filing["n"], about=review)
+    assert "skips Read everything; File by subject" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
+        "abandoning names the steps it would skip"
+    sequences.abandon(filing["n"], about=review, why="the dump was a duplicate", sure=True)
     assert (sequences.load(filing["n"]).runs, sequences.load(filing["n"]).data["abandoned"][-1]["why"]) == ({}, "the dump was a duplicate"), \
         "an abandoned run is dropped with its reason kept"
     other = CONTROLLERS["dump"](record, actor=USER).create("Retro", brief="notes")
@@ -78,8 +83,8 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     sequences.follow(deploying.n, about=about)
     sequences.next(deploying.n, about=about)
     handle(PROVIDERS["claude"](), record.root, record.env, call)
-    assert [run["step"] for run in sequences.load(deploying.n).runs.values()] == [2], "firing again while it runs never starts it over"
-    assert "already running, at step 2" in refused(lambda: sequences.run(deploying.n, about=about)), "nor does starting it by hand"
+    assert [run["step"] for run in sequences.load(deploying.n).runs.values()] == [1], "firing again while it runs starts it over"
+    assert CONTROLLERS["agent"](record).primary().data["cards"][-1]["label"] == "Sequence restarted", "and the chat says so"
 
 
 def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
@@ -113,7 +118,7 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     sequences.run(made.n)
     key = next(iter(sequences.load(made.n).runs))
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 600}})
-    late = lambda: [n for n in nudges(record) if "waited" in n]
+    late = lambda: [n for n in nudges(record) if "how is it going" in n]
     tick(record)
     assert len(late()) == 1, "a step handed ten minutes ago is called late"
     sequences.follow(made.n)
@@ -180,5 +185,87 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     sequences.follow(made.n)
     sequences.next(made.n)
     assert "handed you step 2" in held(record, session), "each next step is taken up the same way, so none is skipped unseen"
-    sequences.abandon(made.n, why="it no longer applies")
+    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(made.n, why="it no longer applies")
     assert "handed you step" not in held(record, session), "an abandoned run holds nothing"
+
+
+def test_a_step_reaches_an_agent_whose_work_waits_on_something():
+    from controllers.types import Works
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    works = Works(record, actor=AGENT)
+    works.create("Ship it")
+    works.action("await")("the CI run on main")
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    made = sequences.create("Writing an update")
+    sequences.section(made.n, "Gather", "list what changed")
+    sequences.run(made.n)
+    assert f"sequence {made.n}, Writing an update, step 1 of 1 - Gather" in nudges(record), \
+        "a step handed while the agent's work waits on something still reaches it"
+
+
+def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer_it():
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    features.load()
+    record, claude = fresh(), PROVIDERS["claude"]()
+    report(record, "working", "PreToolUse")
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    made = sequences.create("Two steps")
+    sequences.section(made.n, "First", "do the first")
+    sequences.section(made.n, "Second", "do the second")
+    sequences.run(made.n)
+    call = lambda command: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
+    refused = lambda command: str(handle(claude, record.root, record.env, call(command)).get("reason") or "")
+    assert "take it up with journal sequence follow" in refused("journal todo create 'other work'"), "a journal write waits for the step"
+    assert "take it up" not in refused(f"journal sequence follow {made.n}") and "take it up" not in refused("journal message reply 3 'on it'"), \
+        "taking the step up and answering the user are never held"
+    sequences.follow(made.n)
+    assert "take it up" not in refused("journal todo create 'other work'"), "once taken up, journal commands go through"
+
+
+def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked():
+    import time
+    from tests.kit import tick
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    made = sequences.create("Two steps")
+    sequences.section(made.n, "First", "do the first")
+    sequences.section(made.n, "Second", "do the second")
+    sequences.run(made.n)
+    key = next(iter(sequences.load(made.n).runs))
+    late = lambda: [n for n in nudges(record) if "how is it going" in n]
+    CONTROLLERS["question"](record, actor=AGENT).create("Which colour for the button?")
+    sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 90}})
+    tick(record)
+    assert len(late()) == 1, "a step standing still for a minute is nudged, whatever unrelated question is open"
+    CONTROLLERS["question"](record, actor=AGENT).create("Is this step still wanted?", about=made.ref)
+    sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 300}})
+    tick(record)
+    assert len(late()) == 1, "a question about the run itself pauses its nudge"
+
+
+def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own_run():
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    triggers = CONTROLLERS["trigger"](record, actor=USER)
+    nudging = triggers.create("Deploy talk", words="deploy", does="nudge", text="careful")
+    starting = triggers.create("TLDR", words="tldr", words_in="user", does="start")
+    sequences = CONTROLLERS["sequence"](record, actor=USER)
+    update = sequences.create("Writing an update")
+    sequences.section(update.n, "Gather", "list what changed")
+    sequences.section(update.n, "Write", "write it")
+    assert "starts nothing" in refused(lambda: sequences.set(update.n, "starts_on", nudging.ref)), "a trigger that does not start cannot start one"
+    sequences.set(update.n, "starts_on", starting.ref)
+    messages = CONTROLLERS["message"](record, actor=USER)
+    first, second = messages.create("give me the tldr"), messages.create("tldr again please")
+    runs = sequences.load(update.n).runs
+    assert sorted(key.split("|", 1)[1] for key in runs) == [first.ref, second.ref], "each message that fires the trigger gets a run of its own"
+    assert sequences._in_hand()[1].endswith(second.ref), "the newest run is the one in hand"
+    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(update.n, about=second.ref, why="asked twice")
+    assert sequences._in_hand()[1].endswith(first.ref) and "followed" not in sequences._in_hand()[2], \
+        "when the inner run ends, the one it interrupted is handed again, to be taken up anew"

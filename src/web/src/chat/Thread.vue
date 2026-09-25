@@ -3,7 +3,6 @@ import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import {markSeen} from "../sync/seen.js";
 import {sendMessage, token} from "./outbox.js";
 import {usePromised} from "../composables/promised.js";
@@ -15,7 +14,8 @@ import {threadTurns} from "../domain/thread.js";
 import {agent, feedOn, store} from "../state/store.js";
 import {cardPlan, waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
-import {earlier, paging, rows} from "../sync/rows.js";
+import {earlier, paging} from "../sync/rows.js";
+import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import UpdateOverlay from "./UpdateOverlay.vue";
@@ -40,16 +40,24 @@ const IDLE = 30000;
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => []}});
 const pane = computed(() => props.view || store.pane);
+const scope = useScope();
+const here = !scope.env;
+const rows = (type) => scope.rows(type);
+const owner = computed(() =>
+    here
+        ? agent.value
+        : [...rows("agent")].filter((a) => !a.deleted && !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
+);
 const threadRoot = ref(null);
 const askHere = (n) => !!threadRoot.value?.offsetParent && (openQuestion(n, threadRoot.value), true);
 let unask = () => {};
-onMounted(() => (unask = openInChat("question", askHere)));
+onMounted(() => here && (unask = openInChat("question", askHere)));
 onUnmounted(() => unask());
 const dumpHere = computed(() => store.dumping && !props.view);
 const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
 const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
-const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(agent.value));
-const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
+const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(owner.value));
+const feedKey = computed(() => (owner.value ? `${owner.value.n}:${owner.value.data.transcript}` : ""));
 const quote = ref({text: "", ref: ""});
 const editing = ref(null);
 const pageTools = chatOnly
@@ -98,16 +106,16 @@ function editLast() {
 function unedit() {
     editing.value = null;
 }
-const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
+const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
 const planCard = computed(() => cardPlan(rows("plan")));
 const reportDock = computed(() => dockedReport(rows("report")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
 const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.value].filter(Boolean).length);
-const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
-const helping = computed(() => ((agent.value && agent.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
+const thought = computed(() => (owner.value && owner.value.data.thinking) || "");
+const helping = computed(() => ((owner.value && owner.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
-    agent.value && agent.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting for ${helping.value.task}` : "working"
+    owner.value && owner.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting for ${helping.value.task}` : "working"
 );
 const away = ref(false);
 const planOpen = ref(true);
@@ -135,7 +143,7 @@ const unseen = computed(() =>
         .map((m) => m.n)
 );
 
-watch([unseen, ready], ([numbers, isReady]) => isReady && markSeen("message", numbers), {immediate: true});
+watch([unseen, ready], ([numbers, isReady]) => here && isReady && markSeen("message", numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
 const AHEAD = "200px 0px 0px 0px";
@@ -146,7 +154,7 @@ let prepending = false;
 
 async function older() {
     const s = scroller.value;
-    if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
+    if (!here || !ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
     prepending = true;
     try {
         await keepingPlace(scroller, () => earlier("message", "comment"));
@@ -194,11 +202,11 @@ const thread = computed(() => {
             question: rows("question"),
             reaction: rows("reaction"),
             doc: rows("doc"),
-            agent: store.agents,
+            agent: here ? store.agents : rows("agent"),
         },
         pending.value,
-        route.value.env,
-        !!paging.more.message,
+        scope.env || route.value.env,
+        here && !!paging.more.message,
         props.hidden
     );
     made.keys.forEach((placeholder, ref) => link(ref, placeholder));
@@ -350,7 +358,7 @@ function markActive() {
 
 async function post(text, files) {
     if (editing.value) {
-        await api.act("message", editing.value.n, "edit", {text: withQuote(editing.value.quote, text)});
+        await scope.api.act("message", editing.value.n, "edit", {text: withQuote(editing.value.quote, text)});
         editing.value = null;
         return;
     }
@@ -362,7 +370,7 @@ async function post(text, files) {
     await nextTick();
     toBottom(true);
     try {
-        await sendMessage(route.value.env, {brief: body, about}, files, id);
+        await sendMessage(scope.env || route.value.env, {brief: body, about}, files, id);
     } catch (e) {
         drop(placeholder);
         throw e;
@@ -395,7 +403,7 @@ async function promised(body, files, idempotency) {
 }
 
 async function pin(text, about = "") {
-    await api.create("notice", {brief: text, about: about || undefined});
+    await scope.api.create("notice", {brief: text, about: about || undefined});
 }
 
 watch(busy, async () => {
@@ -468,8 +476,8 @@ watch(
                     :up="editLast"
                     :down="unedit"
                     :tools="composeTools"
-                    :many="dumpOffer"
-                    :idle="dumpIdle"
+                    :many="here ? dumpOffer : null"
+                    :idle="here ? dumpIdle : null"
                 />
             </div>
             <template v-if="!ready">
@@ -537,7 +545,7 @@ watch(
                 </div>
                 <Transition name="pane">
                     <template v-if="feeding">
-                        <FileFeed :key="feedKey" :agent="agent.n" />
+                        <FileFeed :key="feedKey" :agent="owner.n" />
                     </template>
                 </Transition>
             </div>

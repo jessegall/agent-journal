@@ -1,4 +1,5 @@
 from features.base import FeatureDetails, Line
+from features.settings import Setting
 from features.sequences.handlers import IN_CHAT, STEP, STEP_HELD, UNFINISHED, WAITING
 
 
@@ -37,11 +38,24 @@ class SequencesDetails(FeatureDetails):
         when trigger n fires. Any other value is refused. To start on words or a command, such as a
         deploy, make a trigger that only starts it: journal trigger create "<what it watches for>"
         --set words="<word>,<word>" --set words_in=commands --set does=start, then set the
-        sequence's starts_on=trigger:<its n>. One run is in your hands at a time; one
-        that starts meanwhile waits its turn. Stopping with a run unfinished earns a reminder, and
-        journal sequence abandon <n> --about <ref> --why "<why>" gives one up. Some sequences ship
+        sequence's starts_on=trigger:<its n>. Sequences nest like function calls: one that starts
+        while another runs is handed to you first, and the one it interrupted comes back when it
+        ends; starting one already running about the same row starts it again. Finishing a sequence
+        comes before anything else you do. A step standing still is nudged every minute, and
+        stopping with a run unfinished sends you back to it. journal sequence abandon <n> --about
+        <ref> --why "<why>" gives one up that no longer applies: it names the steps it would skip,
+        and takes --sure once you have read them. Some sequences ship
         with the journal; they are system sequences and cannot be changed or removed.
     """
+
+    settings = [
+        Setting(
+            name="nudge_every",
+            default=1,
+            title="Nudge the agent about a sequence step standing still every",
+            unit="minutes",
+        ),
+    ]
 
     lines = [
         Line(
@@ -51,28 +65,32 @@ class SequencesDetails(FeatureDetails):
         ),
         Line(
             name=UNFINISHED,
+            while_waiting=True,
             title="sequence {{n}}, {{title}}, is still at step {{step}} of {{count}} - carry on with it",
             brief="""
-                finish the step and journal sequence next {{n}}{{about}}; if it no longer applies,
-                journal sequence abandon {{n}}{{about}} --why "<why>"
+                finishing it comes before anything else. Still to do: {{left}}. Finish the step and
+                journal sequence next {{n}}{{about}}
             """,
         ),
         Line(
             name=WAITING,
-            title="sequence {{n}}, {{title}}: step {{step}} of {{count}} has waited two minutes - {{name}}",
+            while_waiting=True,
+            title="you have a sequence going: {{title}}, step {{step}} of {{count}}, {{name}} - how is it going?",
             brief="""
-                the user is waiting on this step; do it now. {{body}} When it is done: journal sequence next
-                {{n}}{{about}}
+                finishing it comes before anything else; do the step now. {{body}}{{then}}
             """,
         ),
         Line(
             name=STEP,
+            while_waiting=True,
             title="sequence {{n}}, {{title}}, step {{step}} of {{count}} - {{name}}",
-            brief="{{body}}{{chat_rule}} Take it up first with journal sequence follow {{n}}{{about}}; when it is done: journal sequence next {{n}}{{about}}",
+            brief="Finishing this sequence comes before anything else you do; everything else waits until it is finished or abandoned. "
+                  "Take it up first with journal sequence follow {{n}}{{about}}. {{body}}{{chat_rule}}{{then}}",
         ),
         Line(
             name=STEP_HELD,
+            while_waiting=True,
             title="sequence {{n}}, {{title}}, handed you step {{step}} - take it up with journal sequence follow {{n}}{{about}} before any other write",
-            brief="then do what the step says and journal sequence next {{n}}{{about}}; if it no longer applies, journal sequence abandon {{n}}{{about}} --why \"<why>\"",
+            brief="then do what the step says and journal sequence next {{n}}{{about}}",
         ),
     ]

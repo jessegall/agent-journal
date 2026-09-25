@@ -21,7 +21,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
     <Tile
         opens
         compact
-        :class="['agent-window', state.key]"
+        :class="['agent-window', state.key, {sub: entry.sub}]"
         :label="`Open the agent of ${entry.label} ${entry.title}`"
         @open="emit('open')"
     >
@@ -30,7 +30,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                 <span class="aw-label">{{ entry.label }}</span>
                 <StateDot :state="state.dot" />
                 <span class="aw-state">{{ state.word }}</span>
-                <span class="aw-env">{{ entry.env }}</span>
+                <span class="aw-env">{{ entry.of ? `${entry.of} · ${entry.env}` : entry.env }}</span>
             </span>
         </template>
         <p class="aw-title">{{ entry.title }}</p>
@@ -55,6 +55,21 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 .agent-window {
     min-height: 0;
     overflow: hidden;
+}
+
+.agent-window.sub {
+    border-right-style: dashed;
+    border-bottom-style: dashed;
+    background: var(--bg-2);
+}
+
+.agent-window.sub :deep(.tile-head) {
+    box-shadow: inset 3px 0 0 var(--tone-commit);
+}
+
+.agent-window.sub .aw-label {
+    color: var(--tone-commit);
+    font-weight: 600;
 }
 
 .aw-head {

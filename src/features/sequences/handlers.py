@@ -1,3 +1,4 @@
+import re
 import time
 from dataclasses import dataclass
 from typing import ClassVar
@@ -5,9 +6,9 @@ from typing import ClassVar
 from engine.events import AgentMessageSending, AgentReported, AnyEvent, ClockTicked, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
-from features.parts import AgentContext, Context, Handler
+from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.sequences.controller import BY_HAND
-from features.triggers.resource import FIRED
+from features.triggers.resource import FIRED, START
 from controllers.types import CONTROLLERS
 from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
@@ -17,12 +18,20 @@ STEP_HELD = "step held"
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
-NUDGE_EVERY = 120
+MINUTE = 60
+JOURNAL_CALL = re.compile(r"(?:^|[;&|(]\s*)journal\s")
+FREE_WHILE_HELD = re.compile(r"journal\s+(?:--\S+\s+)*(?:sequence\s+(?:follow|next|abandon|show|all)|message\s)")
 
 
 @dataclass(frozen=True)
 class SequenceMoved(ResourceEvent):
     on: ClassVar[str] = "sequence"
+
+
+@dataclass(frozen=True)
+class TriggerFired(ResourceEvent):
+    on: ClassVar[str] = f"trigger.{FIRED}"
+    about: str = ""
 
 
 def about_flag(key: str) -> str:
@@ -57,25 +66,30 @@ def matches(found, values: dict) -> bool:
 
 class StartOnMoment(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type == "sequence" or event.type not in TYPES:
+        if event.type == "sequence" or event.type not in TYPES or event.action not in TYPES[event.type].moments:
             return
-        if event.action not in TYPES[event.type].moments and event.action != FIRED:
-            return
-        sequences = context.journal.sequences
-        moment = f"{event.type}:{event.n}" if event.action == FIRED else f"{event.type}.{event.action}"
-        for row in sequences.summaries():
-            if row["completed"] or row["deleted"] or row.get("starts_on") != moment:
-                continue
-            if row.get("started_by") and row["started_by"] != event.actor:
-                continue
-            if row.get("only_when_idle") and sequences._in_hand():
-                continue
-            unless = sequences.load(row["n"]).unless
-            if unless and event.type in CONTROLLERS and matches(CONTROLLERS[event.type](context.record, actor=SYSTEM).load(event.n), unless):
-                continue
-            about = f"{event.type}:{event.n}"
-            if not sequences._running(sequences.load(row["n"]), about):
-                sequences.run(row["n"], about=about)
+        start(context, f"{event.type}.{event.action}", event, f"{event.type}:{event.n}")
+
+
+class StartOnTrigger(Handler):
+    def handle(self, context: Context, event: TriggerFired) -> None:
+        if CONTROLLERS["trigger"](context.record, actor=SYSTEM).load(event.n).does == START:
+            start(context, f"trigger:{event.n}", event, event.about or f"trigger:{event.n}")
+
+
+def start(context: Context, moment: str, event: ResourceEvent, about: str) -> None:
+    sequences = context.journal.sequences
+    for row in sequences.summaries():
+        if row["completed"] or row["deleted"] or row.get("starts_on") != moment:
+            continue
+        if row.get("started_by") and row["started_by"] != event.actor:
+            continue
+        if row.get("only_when_idle") and sequences._in_hand():
+            continue
+        unless = sequences.load(row["n"]).unless
+        if unless and event.type in CONTROLLERS and matches(CONTROLLERS[event.type](context.record, actor=SYSTEM).load(event.n), unless):
+            continue
+        sequences.run(row["n"], about=about)
 
 
 class EndWithItsRow(Handler):
@@ -98,8 +112,10 @@ class RemindUnfinished(Handler):
         if not found:
             return
         sequence, key, run = found
-        if context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
-            context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(context.journal.sequences._steps(sequence)), about=about_flag(key))
+        left = context.journal.sequences._left(sequence, run)
+        context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{int(time.time() // MINUTE)}", lambda: context.agent.say(
+            UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(context.journal.sequences._steps(sequence)),
+            about=about_flag(key), left="; ".join(left)))
 
 
 def working_agent(context: Context):
@@ -110,9 +126,9 @@ def working_agent(context: Context):
 class HandStepToAgent(Handler):
     def handle(self, context: Context, event: SequenceMoved) -> None:
         agent = working_agent(context)
-        found = context.journal.sequences._in_hand() if event.action == "updated" and agent else None
+        found = context.journal.sequences._in_hand() if agent else None
         if not found:
-            if agent and event.action == "updated":
+            if agent:
                 context.speaking_to(agent).release(STEP)
             return
         sequence, key, run = found
@@ -121,12 +137,16 @@ class HandStepToAgent(Handler):
             speaking.release(STEP)
             return
         speaking.hold(STEP_HELD, STEP, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
-        if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run.get('stepped', run['at'])}"):
-            steps = context.journal.sequences._steps(sequence)
-            part = steps[run["step"] - 1]
-            speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps),
-                               name=part[SECTION.title], body=filled(context, sequence.n, key, part[SECTION.body]), about=about_flag(key),
-                               chat_rule=chat_rule(sequence))
+        steps = context.journal.sequences._steps(sequence)
+        part = steps[run["step"] - 1]
+        speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run.get('stepped', run['at'])}", lambda: speaking.agent.say(
+            STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps), name=part[SECTION.title],
+            body=filled(context, sequence.n, key, part[SECTION.body]), about=about_flag(key), chat_rule=chat_rule(sequence),
+            then=then_next(sequence.n, key, part[SECTION.body])))
+
+
+def then_next(n: int, key: str, body: str) -> str:
+    return "" if "sequence next" in body else f" When it is done: journal sequence next {n}{about_flag(key)}."
 
 
 def chat_rule(sequence) -> str:
@@ -144,8 +164,9 @@ class KeepOutOfTheChat(Handler):
             context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
-def asked_since(context: AgentContext, at: float) -> bool:
-    return any(not row["completed"] and not row["deleted"] and row["updated"] >= at for row in context.journal.questions.summaries())
+def asked_since(context: AgentContext, at: float, about: set) -> bool:
+    return any(not row["completed"] and not row["deleted"] and row["updated"] >= at and about & set(row["refs"])
+               for row in context.journal.questions.summaries())
 
 
 class NudgeWaitingStep(Handler):
@@ -155,10 +176,22 @@ class NudgeWaitingStep(Handler):
             return
         sequence, key, run = found
         handed = run.get("stepped", run["at"])
-        waited = int((time.time() - handed) // NUDGE_EVERY)
-        if waited < 1 or asked_since(context, handed) or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{handed}|{waited}"):
+        waited = int((time.time() - handed) // (max(1, int(context.settings.nudge_every)) * MINUTE))
+        if waited < 1 or asked_since(context, handed, {sequence.ref, key.split("|", 1)[1]}):
             return
         steps = context.journal.sequences._steps(sequence)
         step = steps[run["step"] - 1]
-        context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps),
-                          name=step[SECTION.title], body=filled(context, sequence.n, key, step[SECTION.body]), about=about_flag(key))
+        context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{handed}|{waited}", lambda: context.agent.say(
+            WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps), name=step[SECTION.title],
+            body=filled(context, sequence.n, key, step[SECTION.body]), about=about_flag(key), then=then_next(sequence.n, key, step[SECTION.body])))
+
+
+class HoldJournalWritesForTheStep(ToolInterceptor):
+    def intercept(self, context: AgentContext, call) -> str:
+        found = context.journal.sequences._in_hand()
+        if not found or found[2].get("followed") == found[2]["step"]:
+            return ""
+        sequence, key, run = found
+        held = [command for command in call.commands if JOURNAL_CALL.search(command) and not FREE_WHILE_HELD.search(command)]
+        return (f"sequence {sequence.n}, {sequence.title}, handed you step {run['step']}: take it up with journal sequence follow "
+                f"{sequence.n}{about_flag(key)} first") if held else ""

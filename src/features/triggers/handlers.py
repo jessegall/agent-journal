@@ -17,14 +17,15 @@ def firing(context, text_of, from_user: bool = False) -> list:
             if (from_user or row.words_in != FROM_USER) and mentioned(row.words, text_of(str(row.words_in or "both")))]
 
 
-def fire(context, agent, row, done: str = "") -> None:
-    context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
-                                               tone="danger" if row.does == DENY else "note", title=row.text or row.brief, ref=row.ref)
+def fire(context, agent, row, done: str = "", about: str = "") -> None:
+    if row.does != START:
+        context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
+                                                   tone="danger" if row.does == DENY else "note", title=row.text or row.brief, ref=row.ref)
     if row.does == MESSAGE:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)
     elif row.does in (NUDGE, INSTRUCT):
         context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.text or row.brief)
-    context.record.emit("trigger", row.n, FIRED, SYSTEM)
+    context.record.emit("trigger", row.n, FIRED, SYSTEM, about=about)
 
 
 class WatchWhatTheAgentDoes(ToolInterceptor):
@@ -64,4 +65,4 @@ class WatchWhatTheUserWrites(Handler):
         text = f"{message.title} {message.brief}"
         for row in firing(context, lambda scope: "" if scope == COMMANDS else text, from_user=True):
             if agent and row.does != DENY:
-                fire(context, agent, row)
+                fire(context, agent, row, about=f"message:{message.n}")

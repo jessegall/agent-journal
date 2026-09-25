@@ -109,7 +109,14 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
 <template>
     <template v-if="picked">
         <article class="agent-page subagent-page">
-            <AgentHome subagent :band="subagentBand" :agent="resource" :session="picked.session" :chat-session="picked.session">
+            <AgentHome
+                subagent
+                :band="subagentBand"
+                :env="env"
+                :agent="resource"
+                :session="picked.session"
+                :chat-session="picked.session"
+            >
                 <template #actions>
                     <DropList
                         icon="agents"

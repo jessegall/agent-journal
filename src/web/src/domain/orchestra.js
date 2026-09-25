@@ -44,7 +44,37 @@ function entryOf(e, now) {
     };
 }
 
-export const orchestraOf = (environments, now) => (environments || []).filter((e) => e.owner).map((e) => entryOf(e, now));
+function subagentsOf(e) {
+    const [, kind = "", n = "0"] = OWNED.exec(e.owner) || [];
+    const parent = kind ? LABELS[kind](n) : "the main agent";
+    return (e.subagents || []).map((sub) => ({
+        key: `${e.name}:${sub.session}`,
+        env: e.name,
+        kind: "subagent",
+        n: 0,
+        sub: true,
+        parent: sub.parent,
+        session: sub.session,
+        label: "Subagent",
+        of: `of ${parent}`,
+        title: sub.task || sub.session,
+        now: [sub.type, sub.model].filter(Boolean).join(" · "),
+        plan: null,
+        at: sub.running ? sub.at : sub.ended || sub.at,
+        waits: false,
+        card: {
+            type: "agent",
+            n: sub.parent,
+            title: sub.task,
+            session: sub.session,
+            state: sub.running ? "running" : "idle",
+            reason: sub.running ? "" : sub.status || "finished",
+        },
+    }));
+}
+
+export const orchestraOf = (environments, now) =>
+    (environments || []).flatMap((e) => [...(e.owner ? [entryOf(e, now)] : []), ...subagentsOf(e)]);
 
 const AMBER_AFTER = 300;
 const RED_AFTER = 900;
@@ -60,7 +90,7 @@ export function quietOf(at, now) {
 
 export const AGENT_VIEW = {
     states: {working: true, waiting: true, idle: true, stopped: true},
-    kinds: {ticket: true, plan: true},
+    kinds: {ticket: true, plan: true, subagent: true},
     unfinished: false,
     order: "state",
 };
@@ -75,6 +105,7 @@ export const STATE_SWITCHES = [
 export const KIND_SWITCHES = [
     {key: "ticket", label: "Ticket agents", icon: "ticket", hidden: (n) => `${n} ${n === 1 ? "ticket agent" : "ticket agents"}`},
     {key: "plan", label: "Plan agents", icon: "flag", hidden: (n) => `${n} ${n === 1 ? "plan agent" : "plan agents"}`},
+    {key: "subagent", label: "Subagents", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "subagent" : "subagents"}`},
 ];
 
 export const ORDERS = [

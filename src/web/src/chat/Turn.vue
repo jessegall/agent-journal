@@ -2,7 +2,6 @@
 import TextDisplay from "../kit/TextDisplay.vue";
 import ReplyTool from "./ReplyTool.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import BubbleHeader from "../kit/BubbleHeader.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -15,13 +14,14 @@ import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import MadeCard from "./MadeCard.vue";
 import {openUpdate} from "./updateView.js";
-import {peek, peekChip, peekRef, route} from "../route.js";
+import {peek, peekChip, peekThere, route} from "../route.js";
+import {useScope} from "../composables/scope.js";
 import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
 import {words as plain} from "../text/words.js";
-import {optimistic, rows} from "../sync/rows.js";
+import {optimistic} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 
@@ -37,9 +37,24 @@ const PEER_FOLD_AT = 140;
 const PEER_KEEP = 96;
 const text = ref(null);
 
+const scope = useScope();
+const rowsOf = (type) => scope.rows(type);
+const env = computed(() => scope.env || route.value.env);
+const open = (type, n, comment = 0) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n, comment));
+const openRef = (ref) => open(ref.split(":")[0], Number(ref.split(":")[1]));
+
+function openChip(e) {
+    if (!scope.env) return peekChip(e);
+    const chip = e.target.closest("[data-peek]");
+    if (!chip) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openRef(chip.dataset.peek);
+}
+
 function chipOrUpdate(e) {
     const update = e.target.closest("[data-update]");
-    if (!update) return peekChip(e);
+    if (!update) return openChip(e);
     e.preventDefault();
     e.stopPropagation();
     openUpdate(Number(update.dataset.update), update);
@@ -73,7 +88,7 @@ onMounted(() =>
 );
 const mine = computed(() => props.turn.who === "user");
 const subagentTask = (id) =>
-    rows("agent")
+    rowsOf("agent")
         .flatMap((agent) => agent.data.subagent_rows || [])
         .find((sub) => sub.task_id === id)?.task;
 const called = (id) => subagentTask(id) ?? `agent ${id}`;
@@ -92,10 +107,10 @@ const state = computed(() => {
     return turn.data && turn.data.delivered ? "delivered" : "sent";
 });
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
-const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
+const html = computed(() => render(words.value.text, {types: types.value, env: env.value}));
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
-const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: route.value.env}));
+const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: env.value}));
 const commentParent = computed(() => {
     if (props.turn.type !== "comment") return null;
     const parent = props.turn.refs.find((ref) => {
@@ -118,14 +133,14 @@ const messageReply = computed(() => commentParent.value?.type === "message");
 const resourceComment = computed(() => !!commentParent.value && !messageReply.value);
 
 function openComment() {
-    if (commentParent.value) peek(commentParent.value.type, commentParent.value.n, props.turn.n);
+    if (commentParent.value) open(commentParent.value.type, commentParent.value.n, props.turn.n);
 }
 
 function toQuoted() {
-    const ref = props.turn.refs.find((r) => rows(r.split(":")[0]).length && r !== props.turn.ref);
+    const ref = props.turn.refs.find((r) => rowsOf(r.split(":")[0]).length && r !== props.turn.ref);
     if (ref && focusTurn(ref)) return;
     const head = words.value.quote.slice(0, 40);
-    const hit = rows("message").find((m) => m.n !== props.turn.n && quoted(m.brief || m.title).text.startsWith(head));
+    const hit = rowsOf("message").find((m) => m.n !== props.turn.n && quoted(m.brief || m.title).text.startsWith(head));
     if (hit) focusTurn(hit.ref);
 }
 
@@ -151,7 +166,7 @@ const results = computed(() => {
 });
 const faces = computed(() => {
     const seen = {};
-    for (const r of rows("reaction").filter((r) => r.refs.includes(props.turn.ref) && !r.deleted))
+    for (const r of rowsOf("reaction").filter((r) => r.refs.includes(props.turn.ref) && !r.deleted))
         (seen[r.data.face] ||= []).push(r.seen[0]);
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
@@ -179,16 +194,17 @@ async function react(face) {
         data: {face},
         deleted: 0,
     };
-    await optimistic("reaction", pending, () => api.act(props.turn.type, props.turn.n, "react", {face}));
+    const reacting = () => scope.api.act(props.turn.type, props.turn.n, "react", {face});
+    await (scope.env ? reacting() : optimistic("reaction", pending, reacting));
 }
 
 async function drop() {
-    await api.act(props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
+    await scope.api.act(props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
 }
 
 function markClick(data) {
     if (data.page) return {click: () => (store.pluginPage = {plugin: data.name, open: data.page})};
-    return data.row ? {click: () => peekRef(data.row)} : {};
+    return data.row ? {click: () => openRef(data.row)} : {};
 }
 </script>
 
@@ -262,7 +278,7 @@ function markClick(data) {
         </template>
         <template #receipt>
             <div class="thread-turn receipt" :data-ref="turn.ref">
-                <div class="thread-receipt" @click="peekChip" v-html="html" />
+                <div class="thread-receipt" @click="openChip" v-html="html" />
             </div>
         </template>
         <template #default>
@@ -303,7 +319,7 @@ function markClick(data) {
                                 <p class="thread-ask-label">Question</p>
                             </template>
                             <template v-for="(b, i) in results" :key="i">
-                                <button type="button" class="thread-pill" :title="b.part" @click.stop="peek(b.type, b.n)">
+                                <button type="button" class="thread-pill" :title="b.part" @click.stop="open(b.type, b.n)">
                                     {{ b.word }}
                                 </button>
                             </template>

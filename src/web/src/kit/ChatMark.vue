@@ -19,13 +19,14 @@ const props = defineProps({
     state: {type: String, default: ""},
     started: {type: Number, default: 0},
     ended: {type: Number, default: 0},
+    depth: {type: Number, default: 0},
 });
 
 const attrs = useAttrs();
 const tag = computed(() => (attrs.onClick ? "button" : "span"));
 const shade = computed(() => props.color || (props.tone ? `var(--tone-${props.tone})` : ""));
 const hover = computed(() => [props.title, props.at ? clock(props.at) : ""].filter(Boolean).join(" · "));
-const tint = computed(() => (shade.value ? {"--mark": shade.value} : {}));
+const tint = computed(() => ({...(shade.value ? {"--mark": shade.value} : {}), ...(props.depth ? {"--depth": props.depth} : {})}));
 const now = ref(Date.now() / 1000);
 let ticking = 0;
 watchEffect(() => {
@@ -43,7 +44,7 @@ const took = computed(() => {
     <component
         :is="tag"
         :type="tag === 'button' ? 'button' : undefined"
-        :class="['mark', {tinted: shade, console: command, [`ended-${state}`]: ended}]"
+        :class="['mark', {tinted: shade, console: command, nested: depth > 0, [`ended-${state}`]: ended}]"
         :style="tint"
         :title="hover"
     >
@@ -81,6 +82,23 @@ const took = computed(() => {
     width: 5px;
     height: 5px;
     border-width: 1px;
+}
+
+.mark.nested {
+    position: relative;
+    margin-left: calc(var(--depth) * 16px);
+}
+
+.mark.nested::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: -9px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--mark, var(--border-3));
+    opacity: 0.7;
 }
 
 .mark {
