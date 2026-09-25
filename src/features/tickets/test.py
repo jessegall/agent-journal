@@ -269,7 +269,13 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
     Boards(record, actor=USER).update(board.n, orchestrator_approves_plans=True)
     assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, "ticket-1"), actor=AGENT).approve_plan(ticket.n)), \
         "on a board whose orchestrator approves plans, the ticket's own agent still cannot approve the plan it wrote"
-    assert [t.n for t in tickets._awaiting_orchestrator()] == [ticket.n], "the waiting plan is handed to the orchestrator"
+    import features
+    from tests.kit import nudges, report, tick
+    features.load()
+    report(record, "working", "PreToolUse")
+    tick(record)
+    assert any(f"the plan of ticket {ticket.n}" in line and "waits for your approval" in line for line in nudges(record)), \
+        "the minute check tells the orchestrator the plan waits"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
 

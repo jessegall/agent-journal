@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.158.1 — The ticket minute check runs again
+
+The minute check of tickets stopped with a NameError in 2.158.0, so an orchestrator was not told when a ticket's plan waited; it runs again, and its test now goes through the check itself. Nothing to do.
+
 ## 2.158.0 — Typed lines land, and an orchestrator keeps watch
 
 A line the journal types into an agent is checked after Enter: while it still sits in the agent's input box, Enter is pressed again, a few times at most, so notes such as an orchestrator's to a ticket agent no longer stay unsent. The step-has-waited nudge fires only for sequences with a window the user sits in, so a long orchestration step is no longer called late. While Orchestrating a board runs, an orchestrator idle for five minutes is told to check on its ticket agents. The agent of a deleted ticket is stopped by the minute sweep. The inspector side panels use a 16 px side padding, the same in every side panel. Nothing to do.
