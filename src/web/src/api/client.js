@@ -100,6 +100,18 @@ export class ApiClient {
         return `${this.base}/extension.zip`;
     }
 
+    shareLayout(name, layout, {expires = "7d", once = false} = {}) {
+        return this.command("share", "share_layout", {name, layout: JSON.stringify(layout), expires, once});
+    }
+
+    async layoutFrom(url) {
+        const got = await fetch(url).catch(() => null);
+        if (got && got.ok) return got.json();
+        throw new Error(
+            got && got.status === 410 ? "That link was for one opening and has been used." : "That link doesn't answer any more."
+        );
+    }
+
     services() {
         return this.get("/services");
     }

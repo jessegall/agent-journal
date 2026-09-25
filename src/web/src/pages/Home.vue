@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {api} from "../api/client.js";
 import {open} from "../domain/records.js";
 import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
@@ -172,10 +173,16 @@ const updatePreset = (key) =>
     keepPresets(
         savedPresets.value.map((p) => (p.key === key ? {...p, shape: snapshot(layout.value), scheme: layout.value.scheme || ""} : p))
     );
+const layoutOf = (preset) => ({name: preset.name, shape: preset.shape, scheme: preset.scheme || ""});
+const linkPreset = async (key, lasting) => {
+    const preset = savedPresets.value.find((p) => p.key === key);
+    return (await api.shareLayout(preset.name, layoutOf(preset), lasting)).abstract;
+};
+const readLayoutLink = (url) => api.layoutFrom(url);
 const sharePreset = (key) => {
     const preset = savedPresets.value.find((p) => p.key === key);
     if (!preset) return;
-    const file = new Blob([JSON.stringify({name: preset.name, shape: preset.shape, scheme: preset.scheme || ""}, null, 2)], {
+    const file = new Blob([JSON.stringify(layoutOf(preset), null, 2)], {
         type: "application/json",
     });
     const link = Object.assign(document.createElement("a"), {
@@ -225,6 +232,8 @@ provide("views", {
     removePreset,
     sharePreset,
     importPreset,
+    linkPreset,
+    readLayoutLink,
     schemes: computed(() => schemeChoices(layout.value.scheme)),
     scheme: (key) => replace(schemed(layout.value, key)),
 });

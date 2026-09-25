@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import re
 import secrets
 import time
@@ -30,6 +31,7 @@ REACH_SECONDS = 3
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 UNLOCKED: dict[int, str] = {}
+LAYOUT_FILE = "layout.json"
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
 
@@ -77,6 +79,22 @@ class Shares(Controller):
         if not made.approved:
             self._ask_to_open(made, target)
         return made
+
+    def share_layout(self, name: str, layout: str, expires: str = "7d", once: bool = False):
+        if self.actor != USER:
+            raise Refused("only the user shares a layout, from its menu in the viewer")
+        try:
+            shape = json.loads(layout)
+        except ValueError as error:
+            raise Refused(f"the layout is not JSON: {error}") from error
+        token = str(uuid.uuid4())
+        return super().create(f"Layout {name.strip() or 'without a name'}", abstract=f"{self._link(token)}/{LAYOUT_FILE}",
+                              brief="one-time link" if once else f"link until {expires}", token=token, layout=shape, once=bool(once),
+                              expires=until(expires), approved=True)
+
+    def _layout_opened(self, share) -> None:
+        if share.once:
+            self.complete(share.n, "opened once")
 
     def approve(self, n: int):
         if self.actor != USER:

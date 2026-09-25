@@ -20,6 +20,8 @@ class Share(Shape, Resource):
         Field(FLAG, False, name="approved"),
         Field(TEXT, name="password"),
         Field(FLAG, False, name="comments"),
+        Field(default=dict, name="layout"),
+        Field(FLAG, False, name="once"),
     ]
     type = "share"
     icon = "share"
