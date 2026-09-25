@@ -22,7 +22,7 @@ class QuestionsDetails(FeatureDetails):
         moment before it is saved, and clicking it again in that moment takes it back.
         questions.hold sets the moment in seconds, three by default. The card marks the answer
         as the user's; when you answer a question yourself, journal question answer <n>
-        "<choice>" --set reason="<why>" is required, and the card shows your answer with
+        --how "<choice>" --set reason="<why>" is required, and the card shows your answer with
         that reason beneath it. Elaborate on an open question sends you a message about it:
         delete that question with journal question delete <n> --why "<asked again>" and ask it
         again, with more context in each option's text and which you would pick in its brief,

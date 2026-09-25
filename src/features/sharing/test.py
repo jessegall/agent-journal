@@ -93,6 +93,13 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
         status, made = post({"Content-Type": "application/json", "X-Shared-Comment": "1"})
         assert status == 201 and made["name"] == "Redmar" and made["text"] == "Looks good", (status, made)
         assert Shares(record, actor=USER)._shared_data(share)["comments"][0]["text"] == "Looks good", "the page shows it back"
+        page = f"http://127.0.0.1:{server.server_port}/s/{share.token}/"
+        with urllib.request.urlopen(page, timeout=5) as got:
+            html = got.read().decode()
+        with urllib.request.urlopen(f"{page}preview.png", timeout=5) as got:
+            picture = got.read()
+        assert (f'property="og:title" content="{doc.title}"' in html, f'content="{page}preview.png"' in html, picture[:4]) == (True, True, b"\x89PNG"), \
+            "the page carries its preview for Slack and WhatsApp: the shared item's title and a picture card"
     finally:
         server.shutdown()
 

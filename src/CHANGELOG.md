@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.177.0 — A shared link shows a proper preview
+
+A share link pasted into Slack, WhatsApp or anywhere else that previews links now shows the shared item's title, its one-line abstract and a picture: its first attached image, or a card in the project's colour. The ask-questions skill now shows the right form for answering a question yourself: journal question answer <n> --how "<choice>" --set reason="<why>". Nothing to do.
+
 ## 2.176.0 — No limit on ticket agents
 
 Redmar's request: a board can give every started ticket its own agent at once. Step the board's limit down past 1 to none, or set tickets.running to 0; the board then reads Agents 3 running · limit none, and no ticket waits in the queue for a free agent. Nothing to do.
