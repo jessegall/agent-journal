@@ -12,6 +12,7 @@ const props = defineProps({
     turns: {type: Array, required: true},
     session: {type: String, required: true},
     task: {type: String, default: ""},
+    readOnly: Boolean,
 });
 const log = ref(null);
 const sent = computed(() => rows("message").filter((m) => m.data.sent_to === props.session && m.seen[0] === "user"));
@@ -46,9 +47,11 @@ watch(
                 <p class="none">Nothing said yet.</p>
             </template>
         </div>
-        <div class="composer">
-            <Compose :send="send" :placeholder="task ? `Message ${task}` : 'Message the subagent'" />
-        </div>
+        <template v-if="!readOnly">
+            <div class="composer">
+                <Compose :send="send" :placeholder="task ? `Message ${task}` : 'Message the subagent'" />
+            </div>
+        </template>
     </div>
 </template>
 

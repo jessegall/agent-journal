@@ -162,3 +162,11 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert (refused(call), refused({**call, "agent_id": "sub-1"})) == (PAUSED, PAUSED), "the agent and its subagents stand still while paused"
     agents.update(agents.by_session("claude-1").n, paused=0)
     assert refused(call) != PAUSED, "resuming lets tool calls through again"
+    import features
+    features.load()
+    loop = {"session_id": "claude-1", "hook_event_name": "PostToolUse", "tool_name": "CronCreate",
+            "tool_input": {"cron": "7,22,37,52 * * * *", "prompt": "Check the ticket agents"}, "tool_response": {"id": "749f34bc"}}
+    handle(claude, record.root, record.env, loop)
+    assert agents.by_session("claude-1").data["loops"]["749f34bc"]["schedule"] == "7,22,37,52 * * * *", "a loop the agent schedules is kept on its row"
+    handle(claude, record.root, record.env, {**loop, "tool_name": "CronDelete", "tool_input": {"id": "749f34bc"}, "tool_response": {}})
+    assert agents.by_session("claude-1").data["loops"] == {}, "and dropped when it deletes it"

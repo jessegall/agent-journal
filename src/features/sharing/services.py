@@ -11,6 +11,7 @@ from features.sharing.tunnel import subdomain, tunler
 from resources.base import SYSTEM
 
 SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
+KEEP_AFTER = 7 * 24 * 3600
 
 
 def open_shares(root: Path) -> list:
@@ -20,8 +21,16 @@ def open_shares(root: Path) -> list:
             and not (row.get("expires") and row["expires"] < now)]
 
 
+def lately_shared(root: Path) -> bool:
+    now = time.time()
+    shares = Shares(Record(root, runtime.env(root)), actor=SYSTEM)
+    ends = [min(end for end in (row["completed"], row.get("expires") or 0) if end) for row in shares.summaries()
+            if row.get("token") and row.get("approved") and not row["deleted"] and (row["completed"] or row.get("expires"))]
+    return any(now - end < KEEP_AFTER for end in ends)
+
+
 def share_services(root: Path, taken: set) -> list:
-    if not open_shares(root):
+    if not open_shares(root) and not lately_shared(root):
         return []
     port, blocked = allocate(root, SERVER, None, taken)
     taken.add(port)

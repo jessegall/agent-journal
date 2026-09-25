@@ -1,7 +1,6 @@
 <script setup>
 import CloseButton from "../kit/CloseButton.vue";
 import TabBar from "../kit/TabBar.vue";
-import {useSighted} from "../composables/scrollback.js";
 import {useTranscript} from "../composables/transcript.js";
 import {withWhispers} from "../domain/transcript.js";
 import {computed, ref, watch} from "vue";
@@ -13,15 +12,13 @@ import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
 import {span} from "../format/time.js";
 import {rows} from "../sync/rows.js";
-import {render} from "../text/index.js";
-import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import TaskList from "./TaskList.vue";
+import TranscriptLog from "./TranscriptLog.vue";
 import AgentLinks from "./AgentLinks.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import {usePoll} from "../poll.js";
-import {stamp} from "../format/time.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -79,28 +76,12 @@ watch(
     () => picked.value && picked.value.session,
     (session) => (tab.value = session ? "chat" : "transcript")
 );
-const scroller = ref(null);
-const topMark = ref(null);
-const WHO = {
-    human: "You",
-    agent: "Agent",
-    tool: "Tool result",
-    injected: "Journal",
-    task: "Task",
-    peer: "Another session",
-    summary: "Summary",
-    superseded: "You, edited",
-    whisper: "Journal said",
-};
-
-const {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry} = useTranscript(
-    () => props.resource.n,
-    session,
-    scroller
-);
+const log = ref(null);
+const scroller = computed(() => log.value && log.value.scroller);
+const transcript = useTranscript(() => props.resource.n, session, scroller);
+const {turns, total} = transcript;
 watch(session, () => (tab.value = "transcript"));
 const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.resource.title));
-useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 </script>
 
 <template>
@@ -227,64 +208,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
             </section>
         </template>
         <section v-show="tab === 'transcript'" class="block">
-            <div ref="scroller" class="transcript">
-                <div ref="topMark" class="edge">
-                    {{
-                        paging
-                            ? "Loading earlier rows…"
-                            : atStart
-                              ? "Start of the transcript."
-                              : turns.length
-                                ? "Earlier rows load as you scroll up."
-                                : ""
-                    }}
-                </div>
-                <template v-if="error">
-                    <p class="read-error">
-                        {{ error }}
-                        <button type="button" @click="retry">Try again</button>
-                    </p>
-                </template>
-                <template v-if="loading && !turns.length">
-                    <p class="none">Loading…</p>
-                </template>
-                <template v-else-if="!turns.length && !error">
-                    <p class="none">Nothing printed yet, or no transcript on this row.</p>
-                </template>
-                <template v-for="t in entries" :key="t.line">
-                    <div :class="['turn', t.kind, {folded: folded.has(t.line)}]">
-                        <div class="meta">
-                            <button
-                                type="button"
-                                class="who"
-                                :aria-expanded="t.text ? !folded.has(t.line) : undefined"
-                                @click="toggle(t.line)"
-                            >
-                                {{ WHO[t.kind] || t.kind }}
-                                <template v-if="t.text">
-                                    <span class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
-                                </template>
-                            </button>
-                            <span class="when">{{ stamp(t.at) }}</span>
-                            <span class="line">{{ t.kind === "whisper" ? t.line : `#${t.line}` }}</span>
-                            <template v-if="t.tools.length">
-                                <span class="tools">used {{ t.tools.join(", ") }}</span>
-                            </template>
-                        </div>
-                        <template v-if="t.text && !folded.has(t.line)">
-                            <template v-if="t.kind === 'agent' || t.kind === 'human'">
-                                <div class="turn-text" v-html="render(t.text, {types: [], env: route.env})" />
-                            </template>
-                            <template v-else>
-                                <pre class="raw">{{ t.text }}</pre>
-                            </template>
-                            <template v-if="t.clipped">
-                                <span class="clipped">Cut short here.</span>
-                            </template>
-                        </template>
-                    </div>
-                </template>
-            </div>
+            <TranscriptLog ref="log" :transcript="transcript" :entries="entries" />
         </section>
     </article>
 </template>

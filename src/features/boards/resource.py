@@ -32,5 +32,6 @@ class Board(Shape, Resource):
     moments = ("created", "completed", COMMISSIONED, STARTED)
     created_in_viewer = True
     notified = (USER,)
-    labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean"}
-    shown_fields = ("stages",)
+    labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean",
+              "branch": "Branch its tickets land on", "orchestrator_approves_plans": "The orchestrating agent approves ticket plans"}
+    shown_fields = ("stages", "branch", "orchestrator_approves_plans")

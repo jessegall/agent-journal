@@ -9,6 +9,7 @@ import MenuItem from "../kit/MenuItem.vue";
 import MenuSlide from "../kit/MenuSlide.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
+import LoopList from "./LoopList.vue";
 import AgentAppoint from "./AgentAppoint.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentUsage from "./AgentUsage.vue";
@@ -78,6 +79,7 @@ const counts = computed(() => [
     },
 ]);
 const skillCount = computed(() => counts.value[0]);
+const loops = computed(() => Object.keys((data.value && data.value.loops) || {}).length);
 
 function readSkill(name) {
     store.skill = name;
@@ -226,6 +228,18 @@ function openSkills() {
                         {{ c.n }}
                     </button>
                 </template>
+                <template v-if="loops">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', 'agent-loops', {open: open === 'loops'}]"
+                        :title="`${loops} scheduled loop${loops === 1 ? '' : 's'}: prompts the agent set to run again on a schedule`"
+                        :aria-expanded="open === 'loops'"
+                        @click="toggle('loops', $event)"
+                    >
+                        <Icon name="loop" />
+                        {{ loops }}
+                    </button>
+                </template>
                 <template v-if="data.branch && data.branch_url">
                     <a
                         class="agent-fact agent-count"
@@ -370,6 +384,9 @@ function openSkills() {
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />
+                    </template>
+                    <template #loops>
+                        <LoopList :loops="data.loops" />
                     </template>
                     <template #monitors>
                         <CrewList

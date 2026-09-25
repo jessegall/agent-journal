@@ -1,3 +1,4 @@
+from pathlib import Path
 import json
 import shutil
 import socket
@@ -136,6 +137,17 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     row = installed(record, "linter", "exit 0", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token)["QUIET"] == "", "unchanged, a setting is its default"
+    from controllers.types import Environments, Todos
+    from engine.record import Record
+    from features.plugins.queue import drain
+    Environments(record, actor=SYSTEM).create("other")
+    queued = environment(record.root, "linter", Manifest.of(row.manifest), row.token, env="other")["JOURNAL_QUEUE"]
+    Path(queued).parent.mkdir(parents=True, exist_ok=True)
+    Path(queued).write_text('todo create "From the event"\ntodo create "Somewhere else" --env ' + record.env + "\n")
+    drain(record.root, "linter", record.env)
+    titles = lambda env: [t.title for t in Todos(Record(record.root, env), actor=SYSTEM).all()]
+    assert (titles("other"), "Somewhere else" in titles(record.env)) == (["From the event"], False), \
+        "what a plugin queues answering an event runs in that event's environment, and a queued --env is refused"
     Configure().run(None, plugins, row.n, "quiet", "SourceReminder")
     chosen = (plugins.load(row.n).settings or {}).get(CHOSEN)
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"

@@ -296,6 +296,7 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="subagents"),
         Field(default=list, name="shell_rows"),
         Field(default=list, name="subagent_rows"),
+        Field(default=dict, name="loops"),
         Field(default=0, name="monitors"),
         Field(default=list, name="monitor_rows"),
         Field(default="", name="parent"),
@@ -446,7 +447,7 @@ class Environment(Shape, Resource):
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
         help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
     )
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner")]
+    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from")]
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment removed"}
     status_labels = {"create": "preparing", "complete": "removing"}

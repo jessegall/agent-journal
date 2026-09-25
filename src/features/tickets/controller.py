@@ -33,6 +33,8 @@ CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
 CARRY_ON = "Carry on with {ref} where you left off."
+MOST_RESTARTS = 1
+NEEDS_A_LOOK = ("you", "stopped")
 
 
 def ordinal(n: int) -> str:
@@ -187,6 +189,18 @@ class Tickets(Controller):
             self.tell(ticket.n, f"Your plan {ticket.plan} is approved by the orchestrator: start it now with journal plan start {ticket.plan}.")
         return ticket
 
+    def _needing_a_look(self, boards: list[int]) -> list[tuple]:
+        sessions, running = Sessions(self.record.root).all(), len(self._running())
+        started = [ticket for ticket in self._standing() if ticket.work_environment and ticket.launched and time.time() - ticket.launched > LAUNCHING_FOR and not ticket.halted
+                   and ticket.board and int(ticket.board) in boards]
+        return [(ticket, state) for ticket in started for state in [self._runtime(ticket, sessions, running)] if state.kind in NEEDS_A_LOOK]
+
+    def _revive(self, ticket) -> bool:
+        if ticket.restarts >= MOST_RESTARTS or ticket.queued:
+            return False
+        self.update(ticket.n, restarts=ticket.restarts + 1)
+        return not self.start(ticket.n).queued
+
     def _orchestrating(self) -> list[int]:
         from features.sequences.controller import Sequences
         from features.sequences.orchestration import ORCHESTRATION
@@ -248,7 +262,7 @@ class Tickets(Controller):
         name = f"{self.type}-{ticket.n}"
         environments = Environments(self.record, actor=self.actor)
         if not environments._titled(name):
-            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref)
+            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref, launched_from=self.record.env)
         place = Record(self.record.root, name)
         prompted(place)
         for feature in QUIET_IN_TICKETS:
@@ -341,7 +355,7 @@ class Tickets(Controller):
     def stop(self, n: int):
         ticket = self.load(int(n))
         self._stop(ticket)
-        return ticket
+        return self.update(ticket.n, halted=True)
 
     def _stop(self, ticket) -> None:
         session = self.agent_session(ticket.n)
@@ -416,7 +430,7 @@ class Tickets(Controller):
         into = self._into(self.load(int(n)))
         if into != "HEAD" and not present(self.record.root.parent, into):
             self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
-        ticket = self.update(ticket.n, agent=agent or ticket.agent)
+        ticket = self.update(ticket.n, agent=agent or ticket.agent, halted=False)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
             if self._live(ticket):
@@ -439,11 +453,15 @@ class Tickets(Controller):
             return self.update(ticket.n, base=base, queued=False, queued_at=0.0, launched=time.time())
 
     def _kickoff(self, ticket) -> str:
+        into = self._into(ticket)
         return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
                 + (f"Continue its plan {ticket.plan}: journal plan progress {ticket.plan} says where it stands. " if ticket.plan else
                    f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. ")
                 + f"When it is complete, mark it ready with journal plan ready; it starts once it is approved, by the user or by the agent "
-                f"orchestrating the board, and you are told when. Hand domain work out with journal todo delegate."
+                f"orchestrating the board, and you are told when. Hand domain work out with journal todo delegate. "
+                f"Commit your work on your own branch and say when it is done: whoever runs the board merges it into "
+                f"{into if into != 'HEAD' else 'the project branch'} with journal ticket merge. "
+                f"Never merge it yourself, into that branch or any other."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
                 + (f" The user declined its proposed wait on {', '.join(ticket.declined)}: do not wait for them." if ticket.declined else "")
                 + "".join(f" It came from {ref}: read that request and the questions answered on it before you plan."

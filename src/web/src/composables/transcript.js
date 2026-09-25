@@ -1,6 +1,5 @@
 import {computed, ref, unref, watch} from "vue";
 import {api} from "../api/client.js";
-import {route} from "../route.js";
 import {usePoll} from "../poll.js";
 import {PAGE} from "../sync/rows.js";
 import {keepingPlace} from "./scrollback.js";
@@ -8,7 +7,7 @@ import {keepingPlace} from "./scrollback.js";
 const EVERY = 3000;
 const NEAR_BOTTOM = 60;
 
-export function useTranscript(agent, session, scroller) {
+export function useTranscript(agent, session, scroller, client = api) {
     const turns = ref([]);
     const total = ref(0);
     const first = ref(0);
@@ -18,7 +17,7 @@ export function useTranscript(agent, session, scroller) {
     const paging = ref(false);
     let fetching = false;
 
-    const key = () => `${route.value.env}:${agent()}:${unref(session) || ""}`;
+    const key = () => `${client.env()}:${agent()}:${unref(session) || ""}`;
     const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
     const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
 
@@ -36,12 +35,12 @@ export function useTranscript(agent, session, scroller) {
     }
 
     async function fetchTurns() {
-        if (fetching) return;
+        if (fetching || !agent()) return;
         fetching = true;
         try {
             const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
             const asked = key();
-            const got = await api.transcript(agent(), unref(session), {since, last: PAGE});
+            const got = await client.transcript(agent(), unref(session), {since, last: PAGE});
             if (asked !== key()) return;
             error.value = "";
             total.value = got.total;
@@ -66,7 +65,7 @@ export function useTranscript(agent, session, scroller) {
         try {
             await keepingPlace(scroller, async () => {
                 const asked = key();
-                const got = await api.transcript(agent(), unref(session), {before: earliest.value, last: PAGE});
+                const got = await client.transcript(agent(), unref(session), {before: earliest.value, last: PAGE});
                 if (asked !== key()) return false;
                 error.value = "";
                 foldTools(got.turns);
@@ -81,7 +80,7 @@ export function useTranscript(agent, session, scroller) {
 
     const retry = () => (turns.value.length && !atStart.value ? earlier() : fetchTurns());
 
-    watch(session, () => {
+    watch([() => unref(session), agent], () => {
         turns.value = [];
         total.value = 0;
         first.value = 0;

@@ -93,3 +93,18 @@ def test_a_commit_reminds_the_agent_it_may_write_an_update_at_most_hourly():
     record.set_cursor_text("close_from_commits", "ccc")
     report(record, "idle", "Stop")
     assert len(offers()) == 1, "another commit within the hour says nothing more"
+
+
+def test_an_update_report_never_starts_the_sequence_for_research_reports():
+    from features.sequences.controller import Sequences
+    from features.sequences.shipped import ship
+    from resources.base import AGENT
+    features.load()
+    record = fresh()
+    report(record, "idle", "Stop")
+    ship(record)
+    writing = Sequences(record, actor=SYSTEM)._titled("Writing a report")
+    Reports(record, actor=AGENT).action("recap")("Two fixes landed.")
+    assert not Sequences(record, actor=SYSTEM).load(writing.n).runs, "an update is written by recap, not part by part"
+    Reports(record, actor=AGENT).create("What the review found", brief="the answer")
+    assert Sequences(record, actor=SYSTEM).load(writing.n).runs, "a research report still starts it"

@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import {meta} from "../state/store.js";
 import ChoiceList from "../kit/ChoiceList.vue";
 import LineList from "../kit/LineList.vue";
+import Switch from "../kit/Switch.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TextInput from "../kit/TextInput.vue";
 
@@ -27,11 +28,14 @@ const choices = (field) =>
 <template>
     <section class="data-fields">
         <template v-for="field in shown" :key="field.name">
-            <div class="data-field">
+            <div :class="['data-field', field.shape]">
                 <span class="data-label">{{ field.label }}</span>
                 <SwitchCase :value="field.shape">
                     <template #list>
                         <LineList :value="lines(field.value)" @change="(value) => save(field.name, value.split('\n').filter(Boolean))" />
+                    </template>
+                    <template #flag>
+                        <Switch :on="Boolean(field.value)" :title="field.label" @change="(on) => save(field.name, on)" />
                     </template>
                     <template #choice>
                         <ChoiceList :choices="choices(field)" @pick="(value) => save(field.name, value)" />
@@ -57,6 +61,13 @@ const choices = (field) =>
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.data-field.flag {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .data-label {

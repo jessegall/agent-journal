@@ -111,7 +111,13 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
     text, code = captured(["work", "list"], record.root)
     assert (code, "invalid choice: 'list'" in text) == (2, True), text
     text, code = captured(["work", "log"], record.root)
-    assert (code, "arguments are required: text" in text) == (2, True), text
+    assert (code != 0, "say what was decided or done" in text) == (True, True), text
+    made = Works(record, actor=AGENT).create("Logging from the command line")
+    for said in (["--env", record.env, "--as", AGENT, "work", "log", str(made.n), "the number first, as the nudges say"], ["--env", record.env, "--as", AGENT, "work", "log", "with the flag", "--n", str(made.n)]):
+        text, code = captured(said, record.root)
+        assert code == 0, text
+    assert [part["body"] for part in Works(record, actor=AGENT).load(made.n).sections] == ["the number first, as the nudges say", "with the flag"], \
+        "journal work log takes the work's number first or as --n"
 
 
 def test_one_to_do_is_in_hand_until_it_is_parked_or_done():

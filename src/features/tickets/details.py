@@ -43,6 +43,16 @@ class TicketsDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="ticket_attention",
+            title="ticket {{ticket}}, {{title}}, needs a look - {{reason}}",
+            brief="journal ticket agent_session {{ticket}} names its agent; unstick it with journal ticket tell {{ticket}} \"<what to do>\", or restart it with journal ticket stop {{ticket}} then journal ticket start {{ticket}}",
+        ),
+        Line(
+            name="ticket_restarted",
+            title="ticket {{ticket}}, {{title}}, had lost its agent and was started again",
+            brief="it carries on in its conversation; if it stops again you are told instead",
+        ),
+        Line(
             name="check_board",
             title="check on the ticket agents of {{about}}",
             brief="you have been idle five minutes while orchestrating it: journal ticket board shows which ticket runs; see whether its agent works, waits or is stuck (journal ticket agent_session <n> and its screen), unstick what is stuck, approve plans that wait and merge what is done",

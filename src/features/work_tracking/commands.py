@@ -17,8 +17,12 @@ def in_hand(works: Works, n: int = 0):
 class LogWork(Command):
     name = "log"
 
-    def run(self, context: Context, works: Works, text: str, n: int = 0):
-        row = in_hand(works, n)
+    def run(self, context: Context, works: Works, *words: str, n: int = 0):
+        numbered = len(words) > 1 and words[0].isdigit()
+        text = " ".join(words[1:] if numbered else words).strip()
+        if not text:
+            raise Refused("say what was decided or done: journal work log <n> \"<text>\"")
+        row = in_hand(works, int(words[0]) if numbered else n)
         return works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
 
 

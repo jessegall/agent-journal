@@ -12,7 +12,7 @@ def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, 
     from providers import DRIVERS
     environments = Environments(record, actor=SYSTEM)
     if not environments._titled(name):
-        environments.create(name, abstract=abstract, owner=owner)
+        environments.create(name, abstract=abstract, owner=owner, launched_from=record.env)
     place = Record(record.root, name)
     prompted(place)
     for feature in QUIET:

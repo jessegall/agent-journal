@@ -10,6 +10,7 @@ export function useHomeViews() {
         chat: {title: "Chat", icon: "chat", all: {page: "message", label: "View all messages"}},
         feed: {title: "File feed", icon: "edits", canFlush: true},
         terminal: {title: "Terminal", icon: "terminal"},
+        family: {title: "Agent family tree", icon: "family"},
         waiting: {
             title: "Notifications",
             icon: "bell",

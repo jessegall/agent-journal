@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.161.0 — Watch a board, and see the whole agent family
+
+The board page shows every agent working on a ticket in its top bar, marked when it waits for you or is stuck, has a Start button that starts the board's orchestration, and edits the board's branch and plan approval in its settings; a ticket's agent opens read-only with its chat, transcript and history, and its plan opens in the plan inspector. A new window, opened from a tree button in the top bar, draws the agent family tree: which agent started which ticket or plan agent, which dispatched which subagent, and which agents messaged each other. The agent session bar shows the loops an agent has scheduled.
+
+For a board run unattended: the orchestrator is told which started ticket needs a look, and a ticket whose agent died is started again once; a board with no branch keeps the branch checked out when it starts; the ticket kickoff says whoever runs the board merges its branch, never its agent; a long note typed into an agent goes in as one paste and is checked to have left the input box. Also: journal work log takes the work's number first, as the nudges say; an update report no longer starts the report sequence; a fact, rule or reminder an agent writes shows in the chat; a plugin's queued commands run in the environment of the event they answer, and a queued --env is refused; a share link with nothing shared on it lands on one calm page, and the share server keeps answering for a week after the last share ends. Nothing to do.
+
 ## 2.160.0 — journal ticket merge lands a ticket on its board's branch
 
 journal ticket merge <n> merges a finished ticket's branch into its board's branch and closes it, so the next ticket starts. Where that branch is checked out it merges there, and git refuses rather than touch uncommitted work in the way; where no checkout holds it, the merge commit is made without touching any checkout. A conflict is refused with what conflicts. Orchestrating a board now merges with it, never by hand. Nothing to do.

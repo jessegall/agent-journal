@@ -95,3 +95,19 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
         assert Shares(record, actor=USER)._shared_data(share)["comments"][0]["text"] == "Looks good", "the page shows it back"
     finally:
         server.shutdown()
+
+
+def test_a_link_with_nothing_shared_lands_on_one_calm_page_for_a_week():
+    import time
+    from features.sharing.page import unshared
+    from features.sharing.services import KEEP_AFTER, share_services
+    record = fresh()
+    share, doc = shared_with_comments(record)
+    shares = Shares(record, actor=USER)
+    shares.update(share.n, approved=True)
+    assert share_services(record.root, set()), "an open share runs the server"
+    shares.complete(share.n, "stopped")
+    assert share_services(record.root, set()), "after the last share stops, the server keeps answering its link"
+    shares.update(share.n, expires=time.time() - KEEP_AFTER - 60)
+    assert share_services(record.root, set()) == [], "a week later it stops"
+    assert "Nothing is shared on this link" in unshared(), "every stopped, ended or unknown link lands on one calm page"

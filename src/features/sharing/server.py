@@ -9,7 +9,7 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
-from features.sharing.page import PICTURES, Page, document, ended, missing  # noqa: E402
+from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from resources.base import Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")
@@ -43,12 +43,12 @@ class ShareHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if len(parts) < 2 or parts[0] != "s":
-            return self.page(404, missing())
+            return self.page(404, unshared())
         share = self.shares._by_token(parts[1])
         if share is None or not share.approved:
-            return self.page(404, missing())
+            return self.page(404, unshared())
         if share.completed or (share.expires and share.expires < time.time()):
-            return self.page(410, ended())
+            return self.page(410, unshared())
         if not self.shares._unlocked(share, self.password()):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         rest = parts[2:]
@@ -70,7 +70,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.file(share, f"{rest[1]}:{rest[2]}", rest[3])
         if len(rest) == 2:
             return self.shown(share, f"{rest[0]}:{rest[1]}")
-        return self.page(404, missing())
+        return self.page(404, unshared())
 
     def do_POST(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
@@ -78,7 +78,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.refused()
         share = self.shares._by_token(parts[1])
         if share is None or not share.approved or share.completed or (share.expires and share.expires < time.time()):
-            return self.page(404, missing())
+            return self.page(404, unshared())
         if not self.shares._unlocked(share, self.password()):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         if self.headers.get(COMMENT_HEADER) != "1" or not self.headers.get("Content-Type", "").startswith("application/json"):
@@ -111,7 +111,7 @@ class ShareHandler(BaseHTTPRequestHandler):
     def shown(self, share, ref: str) -> None:
         scope = self.shares._scope(share)
         if ref not in scope:
-            return self.page(404, missing())
+            return self.page(404, unshared())
         page = Page(share.token, scope)
         row = self.shares._shared_row(share, ref)
         members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
@@ -121,10 +121,10 @@ class ShareHandler(BaseHTTPRequestHandler):
 
     def file(self, share, ref: str, name: str) -> None:
         if ref not in self.shares._scope(share):
-            return self.page(404, missing())
+            return self.page(404, unshared())
         found = self.shares._shared_file(share, ref, name)
         if found is None:
-            return self.page(404, missing())
+            return self.page(404, unshared())
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
         inline = found.suffix.lower() in PICTURES
         headers = {"Content-Type": kind, "Content-Disposition": f"{'inline' if inline else 'attachment'}; filename*=UTF-8''{quote(found.name)}"}
@@ -133,7 +133,7 @@ class ShareHandler(BaseHTTPRequestHandler):
     def asset(self, name: str) -> None:
         found = (APP_DIR / "assets" / name).resolve()
         if found.parent != (APP_DIR / "assets").resolve() or not found.is_file():
-            return self.page(404, missing())
+            return self.page(404, unshared())
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
         self.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
 

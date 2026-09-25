@@ -115,6 +115,9 @@ class ToolCall(Loaded):
         return self.skill if self.name == "Skill" else ""
 
 
+LOOP_ID = re.compile(r"\b([0-9a-f]{8})\b")
+
+
 def response_text(response) -> str:
     if isinstance(response, str):
         return response
@@ -329,6 +332,25 @@ class FetchCall(ToolUse):
     @property
     def subject(self) -> str:
         return self.host
+
+
+@dataclass(frozen=True)
+class LoopCall(ToolUse):
+    aliases = {"schedule": ("cron", "schedule"), "prompt": ("prompt",)}
+    schedule: str = ""
+    prompt: str = ""
+
+    @property
+    def loop(self) -> str:
+        given = self.response.get("id") or self.response.get("job_id") if isinstance(self.response, dict) else ""
+        found = LOOP_ID.search(response_text(self.response))
+        return str(given) if given else found[1] if found else ""
+
+
+@dataclass(frozen=True)
+class LoopEndCall(ToolUse):
+    aliases = {"loop": ("id", "job_id")}
+    loop: str = ""
 
 
 @dataclass(frozen=True)

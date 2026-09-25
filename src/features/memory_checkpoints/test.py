@@ -54,3 +54,18 @@ def test_every_standing_rule_and_fact_is_read_again_a_week_on():
     assert sorted(r.ref for r in standing(record)) == ["fact:1", "rule:1"], "the reading pass is every standing rule and fact"
     Rules(record, actor=AGENT).action("reread")()
     assert owed(record) is False, "read: no longer owed"
+
+
+def test_a_fact_rule_or_reminder_the_agent_writes_shows_in_the_chat():
+    import features
+    from controllers.types import CONTROLLERS
+    from resources.base import AGENT, SYSTEM, USER
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    CONTROLLERS["fact"](record, actor=AGENT).create("The server runs the installed copy", brief="fact 13", keywords=["server"])
+    CONTROLLERS["reminder"](record, actor=AGENT).create("Log each turn")
+    CONTROLLERS["rule"](record, actor=USER).create("Never push on Fridays", brief="the user's own", keywords=["push"])
+    marks = [(card["label"], card["detail"]) for card in CONTROLLERS["agent"](record).primary().data.get("cards", [])]
+    assert marks == [("Wrote a fact", "The server runs the installed copy"), ("Set a reminder", "Log each turn")], \
+        "what the agent keeps shows as a mark in the chat; what the user writes needs none"

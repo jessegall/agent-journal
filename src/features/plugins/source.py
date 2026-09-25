@@ -68,10 +68,14 @@ def address(source: str) -> str:
     raise Refused(f"{given!r} is neither a repository URL, an owner/repo, nor a folder on this machine")
 
 
+def queue_path(root: Path, name: str, env: str = "") -> Path:
+    return Path(root) / "runtime" / "plugins" / (f"{name}.{env}.queue" if env else f"{name}.queue")
+
+
 def values(root: Path, name: str, token: str, ports: dict | None = None, env: str = "") -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)), "project": str(Path(root).parent),
             "journal.url": running(Path(root)) or "", "journal.env": env or default_env(Path(root)), "token": token,
-            "queue": str(Path(root) / "runtime" / "plugins" / f"{name}.queue"),
+            "queue": str(queue_path(root, name, env)),
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
 

@@ -17,7 +17,7 @@ useOutside(menu, () => emit("close"));
     <MenuPanel ref="menu" :anchor="anchor" :min-width="210" :max-width="280" @click.stop @close="emit('close')">
         <template v-if="board">
             <SectionHeading class="heading">{{ board.title }}</SectionHeading>
-            <MenuItem @click="(emit('close'), peek('board', board.n))">Stages and what each means</MenuItem>
+            <MenuItem @click="(emit('close'), peek('board', board.n))">Board settings</MenuItem>
             <MenuItem @click="emit('archive', board)">Archive this board</MenuItem>
         </template>
         <template v-if="archived.length">

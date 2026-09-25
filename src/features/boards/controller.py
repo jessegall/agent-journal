@@ -4,6 +4,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
+from engine.worktree import current_branch
 from features.boards.resource import DONE, MEANINGS, Board
 from resources.base import COMMISSIONED, REQUESTED, REVISED, STARTED, SYSTEM, Refused, Resource, titled
 
@@ -101,6 +102,8 @@ class Boards(Controller):
 
     def start(self, n: int):
         board = self.load(int(n))
+        if not board.branch and current_branch(self.record.root.parent):
+            board = self.update(board.n, branch=current_branch(self.record.root.parent))
         self.record.emit("board", board.n, STARTED, self.actor)
         return board
 

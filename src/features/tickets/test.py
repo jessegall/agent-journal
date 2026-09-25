@@ -134,6 +134,16 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     Sessions(record.root).unbind("claude-9")
     tickets.start_queued()
     assert (tickets.load(second.n).queued, launched[-1][0]) == (False, f"ticket-{second.n}"), "when a slot frees, the queued ticket starts"
+    import time
+    record.set_setting("tickets", {"running": 5})
+    tickets.update(ticket.n, launched=time.time() - 120)
+    assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
+        "a started ticket whose agent is gone needs a look; one launched a moment ago does not yet"
+    assert tickets._revive(tickets.load(ticket.n)) and launched[-1][0] == f"ticket-{ticket.n}", "its agent is started again, once"
+    tickets.update(ticket.n, launched=time.time() - 120)
+    assert not tickets._revive(tickets.load(ticket.n)), "a second loss is told to the orchestrator instead of restarted"
+    tickets.stop(ticket.n)
+    assert tickets._needing_a_look([board.n]) == [], "a ticket stopped on purpose is left alone"
 
 
 def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkeypatch):
@@ -207,6 +217,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     elsewhere = Boards(record, actor=USER).create("Gone", stages=["Doing"], meanings={"Doing": "start"}, branch="missing")
     lost = tickets.create("Nowhere", board=elsewhere.n)
     assert "does not exist" in refused(lambda: tickets.start(lost.n)), "a board's branch that does not exist is named, not guessed"
+    assert Boards(record, actor=USER).start(board.n).branch == home, "a board with no branch keeps the branch checked out when it starts"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
