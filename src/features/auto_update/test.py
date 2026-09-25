@@ -128,7 +128,10 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or ["package refreshed"])
     monkeypatch.setattr(launch.os, "execv", lambda python, argv: ran.append("started again"))
     launch.latest_first(record)
-    assert ran == ["upgrade", "started again"], "a newer published version is installed, then the launch starts again on it"
+    assert ran == [], "installing is off by default: the launch leaves the newer version to the banner"
+    record.set_setting("features", {**record.features, "auto_update.install": True})
+    launch.latest_first(record)
+    assert ran == ["upgrade", "started again"], "with install on, a newer published version is installed, then the launch starts again on it"
     ran.clear()
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"

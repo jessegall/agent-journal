@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.191.0 — A newer version waits for you
+
+Installing a newer journal by itself is now off by default (Settings, Auto-update, Install a newer version by itself). While it is off, a banner at the top of the viewer says when a newer version is out, with Update and Update and turn on auto-update; the check behind it answers from what is saved and asks GitHub again at most every 15 minutes, in the background. The agent's New work rating now carries a one-line reading of what the user wants (journal board score <n> <1-5> --reading), for the coming New work redesign to show in place of the score. Nothing to do; turn auto-update on if you want updates to install themselves.
+
 ## 2.190.0 — New work sounds encouraging
 
 The lines that rotate in New work while the agent works on a request sound encouraging, still true to how well it understands; after you pick a card the agent suggested, they speak about your pick; and once the drafts appear there is one steady line, such as Writing the cards, instead of rotating ones. The agent drafts at least 6 cards, preferably 8, as many as the request holds. Nothing to do.

@@ -460,7 +460,8 @@ def post_settings(req: Request) -> Reply:
 def get_upstream(req: Request) -> Reply:
     installed = version()
     latest = upstream(req.root)
-    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed)})
+    installs = features.FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root)), "install") if "auto_update" in features.FEATURES else False
+    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs})
 
 
 @route("POST", "/api/upgrade")

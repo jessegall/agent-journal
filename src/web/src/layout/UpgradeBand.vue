@@ -14,7 +14,9 @@ const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
-const visible = computed(() => upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
+const visible = computed(
+    () => upstream.value && upstream.value.newer && !upstream.value.installs && dismissed.value !== upstream.value.latest
+);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
 const stale = computed(() => {
     const serving = store.spec && store.spec.build;
@@ -49,10 +51,12 @@ function dismiss() {
     remember("journal.upgrade.dismissed", dismissed.value);
 }
 
-async function upgrade() {
+async function upgrade(always = false) {
     running.value = true;
     try {
-        lines.value = (await api.upgrade()).lines;
+        if (always) await api.saveSettings({features: {"auto_update.install": true}});
+        await api.update();
+        lines.value = [`Installing ${upstream.value.latest}; this page reloads once it runs`];
     } catch (e) {
         lines.value = [e.message];
     } finally {
@@ -77,11 +81,12 @@ async function upgrade() {
             <span class="text">
                 Agent journal {{ upstream.latest }} is out — this is {{ upstream.installed }}.
                 <template v-if="lines.length">
-                    <span class="done">{{ lines.join(" · ") }} — restart the viewer and journal claude.</span>
+                    <span class="done">{{ lines.join(" · ") }}</span>
                 </template>
             </span>
             <template v-if="!lines.length">
-                <Btn kind="primary" small :disabled="running" @click="upgrade">{{ running ? "Upgrading…" : "Upgrade" }}</Btn>
+                <Btn kind="primary" small :disabled="running" @click="upgrade(false)">{{ running ? "Updating…" : "Update" }}</Btn>
+                <Btn small :disabled="running" @click="upgrade(true)">Update and turn on auto-update</Btn>
             </template>
             <Btn small @click="dismiss">Not now</Btn>
         </div>

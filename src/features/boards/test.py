@@ -163,9 +163,10 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     board = boards.create("Shared Journal")
     boards.request(board.n, "I want to share")
     assert "1 to 5" in refused(lambda: agent.score(board.n, "7")), "a score is 1 to 5"
-    agent.score(board.n, "2")
+    agent.score(board.n, "2", reading="You want people signed in before they can edit")
     drafting = boards.load(board.n).drafting
     assert (drafting["phase"], drafting["score"], drafting["turns"]) == ("exploring", 2, 1), "the score and the turn are kept on the board"
+    assert drafting["reading"] == "You want people signed in before they can edit", "the agent's one-line reading is kept for the panel"
     assert any("Pin it down (score 2)" in n for n in nudges(record)), "the score hands the step for it"
     agent.score(board.n, "4")
     assert boards.load(board.n).drafting["phase"] == "exploring" and any("Settle the scope (score 4)" in n for n in nudges(record)), \
