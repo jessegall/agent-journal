@@ -55,7 +55,7 @@ function openNode(node) {
     if (!m.n) return;
     const sub = m.kind === "subagent" ? m.session : "";
     if (m.kind === "subagent" && !sub) return;
-    peekThere(m.environment, "agent", m.n, sub);
+    peekThere(m.environment, "agent", m.n, 0, sub);
 }
 
 function hint(node) {

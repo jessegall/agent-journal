@@ -8,6 +8,7 @@ from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.sequences.controller import BY_HAND
+from features.triggers.controller import Triggers
 from features.triggers.resource import FIRED, START
 from controllers.types import CONTROLLERS
 from resources.base import SECTION, SYSTEM
@@ -19,7 +20,7 @@ IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
 MINUTE = 60
-JOURNAL_CALL = re.compile(r"(?:^|[;&|(]\s*)journal\s")
+JOURNAL_CALL = re.compile(r"(?:^|[;&|(\n])\s*(journal\s[^;&|\n]*)")
 FREE_WHILE_HELD = re.compile(r"journal\s+(?:--\S+\s+)*(?:sequence\s+(?:follow|next|abandon|show|all)|message\s)")
 
 
@@ -73,7 +74,7 @@ class StartOnMoment(Handler):
 
 class StartOnTrigger(Handler):
     def handle(self, context: Context, event: TriggerFired) -> None:
-        if CONTROLLERS["trigger"](context.record, actor=SYSTEM).load(event.n).does == START:
+        if Triggers(context.record, actor=SYSTEM).load(event.n).does == START:
             start(context, f"trigger:{event.n}", event, event.about or f"trigger:{event.n}")
 
 
@@ -164,6 +165,10 @@ class KeepOutOfTheChat(Handler):
             context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
+def minutes(value) -> int:
+    return max(1, int(value)) if str(value).strip().isdigit() else 1
+
+
 def asked_since(context: AgentContext, at: float, about: set) -> bool:
     return any(not row["completed"] and not row["deleted"] and row["updated"] >= at and about & set(row["refs"])
                for row in context.journal.questions.summaries())
@@ -176,7 +181,7 @@ class NudgeWaitingStep(Handler):
             return
         sequence, key, run = found
         handed = run.get("stepped", run["at"])
-        waited = int((time.time() - handed) // (max(1, int(context.settings.nudge_every)) * MINUTE))
+        waited = int((time.time() - handed) // (minutes(context.settings.nudge_every) * MINUTE))
         if waited < 1 or asked_since(context, handed, {sequence.ref, key.split("|", 1)[1]}):
             return
         steps = context.journal.sequences._steps(sequence)
@@ -192,6 +197,6 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
         if not found or found[2].get("followed") == found[2]["step"]:
             return ""
         sequence, key, run = found
-        held = [command for command in call.commands if JOURNAL_CALL.search(command) and not FREE_WHILE_HELD.search(command)]
+        held = [found for command in call.commands for found in JOURNAL_CALL.findall(command) if not FREE_WHILE_HELD.match(found)]
         return (f"sequence {sequence.n}, {sequence.title}, handed you step {run['step']}: take it up with journal sequence follow "
                 f"{sequence.n}{about_flag(key)} first") if held else ""

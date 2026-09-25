@@ -8,7 +8,6 @@ from features.ask_questions.choices import offers_choices
 from resources.base import USER
 
 ASKING = "asking"
-ANSWER_SHOWN = 80
 
 
 @dataclass(frozen=True)
@@ -53,5 +52,5 @@ class MarkTheAnswer(Handler):
         row = agents.primary()
         if event.actor != USER or question.hidden or not row:
             return
-        agents.card(row.n, label=f"You answered question {question.n}", name=question.outcome[:ANSWER_SHOWN], icon="question",
+        agents.card(row.n, label=f"You answered question {question.n}", icon="question",
                     color="var(--blocking)", side=USER, row=question.ref)

@@ -40,7 +40,7 @@ const text = ref(null);
 const scope = useScope();
 const rowsOf = (type) => scope.rows(type);
 const env = computed(() => scope.env || route.value.env);
-const open = (type, n, comment = 0) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n, comment));
+const open = (type, n, comment = 0) => (scope.env ? peekThere(scope.env, type, n, comment) : peek(type, n, comment));
 const openRef = (ref) => open(ref.split(":")[0], Number(ref.split(":")[1]));
 
 function openChip(e) {

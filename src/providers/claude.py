@@ -174,6 +174,9 @@ class Claude(Provider):
         return found if isinstance(found, dict) else {}
 
     def window(self, hook: Hook, used: int) -> int:
+        reported = self.reported(hook.transcript, "context_window").get("context_window_size")
+        if isinstance(reported, int) and reported > 0:
+            return reported
         configured = self.setting(Path(hook.cwd or "."), "model")
         return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
 

@@ -59,11 +59,11 @@ export function peek(type, n, comment = 0, sub = "") {
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);
 }
 
-export function peekThere(env, type, n, sub = "") {
-    if (env === route.value.env) return peek(type, n, 0, sub);
+export function peekThere(env, type, n, comment = 0, sub = "") {
+    if (env === route.value.env) return peek(type, n, comment, sub);
     const stack = route.value.stack;
     const at = stack.findIndex((open) => open.type === type && open.n === n && open.env === env);
-    opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment: 0, env}], sub);
+    opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment, env}], sub);
 }
 
 export function peekIn(env, type, n) {

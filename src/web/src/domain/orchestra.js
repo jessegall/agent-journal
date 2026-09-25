@@ -60,7 +60,7 @@ function subagentsOf(e) {
         title: sub.task || sub.session,
         now: [sub.type, sub.model].filter(Boolean).join(" · "),
         plan: null,
-        at: sub.running ? sub.at : sub.ended || sub.at,
+        at: sub.running ? sub.active || sub.at : sub.ended || sub.at,
         waits: false,
         card: {
             type: "agent",

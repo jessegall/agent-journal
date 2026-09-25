@@ -95,8 +95,8 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     Questions(record, actor=USER).complete(asked.n, how="this one")
     assert Questions(record, actor=USER).load(asked.n).data.get("kept") is False, "the answer takes it off the panel it was kept on"
     mark = Agents(record, actor=USER).primary().data["cards"][-1]
-    assert (mark["label"], mark["name"], mark["side"]) == (f"You answered question {asked.n}", "this one", USER), \
-        "the user's answer shows in the chat as a mark on their side"
+    assert (mark["label"], mark.get("name"), mark["side"]) == (f"You answered question {asked.n}", None, USER), \
+        "the user's answer shows in the chat as a mark on their side, naming the question without the answer"
 
 
 def test_a_question_keeps_who_answered_and_the_agent_must_say_why():

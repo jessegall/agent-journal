@@ -4,7 +4,7 @@ import time
 from features import trigger
 from features.parts import AgentContext, ToolInterceptor
 from features.recital import mentioned
-from features.skill_loading.catalogue import keywords, loaded_at
+from features.skill_loading.catalogue import keywords, loaded_at, loaded_before_compaction
 from features.skill_loading.required import outstanding, require
 from providers.base import LIBRARY
 
@@ -23,7 +23,7 @@ class RequireCommandSkill(ToolInterceptor):
         row = context.agent.row
         since = trigger.last(context.record, row.title, context.feature.name).since
         at = loaded_at(row).get(skill, 0.0)
-        if not at or at < since:
+        if (not at or at < since) and skill not in loaded_before_compaction(row):
             require(context.record, row.title, {skill: since})
         return ""
 
@@ -38,7 +38,7 @@ class RequireKeywordSkill(ToolInterceptor):
 
 
 def require_named(record, row, text: str) -> None:
-    loaded = loaded_at(row)
+    loaded = {**loaded_before_compaction(row), **loaded_at(row)}
     named = {name: time.time() for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}
     if named:
         require(record, row.title, named)

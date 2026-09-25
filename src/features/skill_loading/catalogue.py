@@ -126,12 +126,16 @@ def loaded_at(agent) -> dict[str, float]:
     return provider().loaded_skills(Path(agent.transcript))
 
 
-def recent_before_compaction(agent, share: float) -> set[str]:
+def loaded_before_compaction(agent) -> dict[str, float]:
     provider = PROVIDERS.get(agent.provider)
     if not provider or not agent.transcript:
-        return set()
-    prior = provider().prior_window(Path(agent.transcript))
-    return {name for name, used in prior.prior_loads.items() if used >= prior.prior_used * (1 - share)}
+        return {}
+    return provider().prior_window(Path(agent.transcript)).prior_loads
+
+
+def recent_before_compaction(agent, count: int) -> set[str]:
+    loads = loaded_before_compaction(agent)
+    return set(sorted(loads, key=loads.get, reverse=True)[:count])
 
 
 def chosen(record: Record) -> list[str]:
