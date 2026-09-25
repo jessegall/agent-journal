@@ -81,12 +81,19 @@ def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal
     assert result.get("decision") == "block" and f"question {question.n}" in result.get("reason", ""), "the call is refused with the number"
 
 
-def test_an_answered_question_leaves_the_notifications_panel():
+def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_on_the_users_side():
+    from controllers.types import Agents
+    from tests.kit import report
+    features.load()
     record = fresh()
+    report(record, "working", "PreToolUse")
     asked = Questions(record, actor=AGENT).create("which one?")
     Questions(record, actor=USER).set(asked.n, "kept", "true")
     Questions(record, actor=USER).complete(asked.n, how="this one")
     assert Questions(record, actor=USER).load(asked.n).data.get("kept") is False, "the answer takes it off the panel it was kept on"
+    mark = Agents(record, actor=USER).primary().data["cards"][-1]
+    assert (mark["label"], mark["name"], mark["side"]) == (f"You answered question {asked.n}", "this one", USER), \
+        "the user's answer shows in the chat as a mark on their side"
 
 
 def test_a_question_keeps_who_answered_and_the_agent_must_say_why():
