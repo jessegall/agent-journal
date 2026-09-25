@@ -118,6 +118,11 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
         assert code == 0, text
     assert [part["body"] for part in Works(record, actor=AGENT).load(made.n).sections] == ["the number first, as the nudges say", "with the flag"], \
         "journal work log takes the work's number first or as --n"
+    for said in (["await", str(made.n), "the build"], ["park", str(made.n), "something else goes first"]):
+        text, code = captured(["--env", record.env, "--as", AGENT, "work", *said], record.root)
+        assert code == 0, text
+    parked = Works(record, actor=AGENT).load(made.n)
+    assert (parked.parked, parked.awaiting) == ("something else goes first", ""), "park and await take the number first too, as the nudges print them"
 
 
 def test_one_to_do_is_in_hand_until_it_is_parked_or_done():

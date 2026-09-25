@@ -14,32 +14,37 @@ def in_hand(works: Works, n: int = 0):
     return row
 
 
+def numbered(words: tuple, n: int, ask: str) -> tuple[int, str]:
+    first = len(words) > 1 and words[0].isdigit()
+    text = " ".join(words[1:] if first else words).strip()
+    if not text:
+        raise Refused(ask)
+    return (int(words[0]) if first else n), text
+
+
 class LogWork(Command):
     name = "log"
 
     def run(self, context: Context, works: Works, *words: str, n: int = 0):
-        numbered = len(words) > 1 and words[0].isdigit()
-        text = " ".join(words[1:] if numbered else words).strip()
-        if not text:
-            raise Refused("say what was decided or done: journal work log <n> \"<text>\"")
-        row = in_hand(works, int(words[0]) if numbered else n)
+        n, text = numbered(words, n, "say what was decided or done: journal work log <n> \"<text>\"")
+        row = in_hand(works, n)
         return works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
 
 
 class ParkWork(Command):
     name = "park"
 
-    def run(self, context: Context, works: Works, why: str, n: int = 0):
+    def run(self, context: Context, works: Works, *words: str, n: int = 0):
+        n, why = numbered(words, n, "say why it waits: journal work park <n> \"<why>\"")
         return works.update(in_hand(works, n).n, parked=why, awaiting="")
 
 
 class AwaitWork(Command):
     name = "await"
 
-    def run(self, context: Context, works: Works, awaiting: str, n: int = 0):
-        if not awaiting.strip():
-            raise Refused("say what you are waiting for")
-        return works.update(in_hand(works, n).n, awaiting=awaiting.strip(), awaiting_since=time.time())
+    def run(self, context: Context, works: Works, *words: str, n: int = 0):
+        n, awaiting = numbered(words, n, "say what you are waiting for: journal work await <n> \"<what>\"")
+        return works.update(in_hand(works, n).n, awaiting=awaiting, awaiting_since=time.time())
 
 
 class ResumeWork(Command):

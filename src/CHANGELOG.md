@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.164.3 — journal work park and await take the number first
+
+journal work park <n> "<why>" and journal work await <n> "<what>" take the work's number first, as the nudges print them, as journal work log already does; --n still works. Nothing to do.
+
 ## 2.164.2 — A ticket card follows the agent that reports
 
 A ticket agent can hold two live sessions, its terminal and its conversation; the card read whichever came first and could show starting for as long as the agent worked. It now reads the session that reports, so the card, and the orchestrator's stuck and idle checks, see what the agent does. Nothing to do.
