@@ -344,8 +344,8 @@ class Driver(ABC):
         except OSError:
             return 0.0
 
-    def last_printed(self) -> str:
+    def last_printed(self, size: int = 400) -> str:
         try:
-            return ANSI.sub(b"", self.printed.read_bytes()[-400:]).decode(errors="replace")
+            return ANSI.sub(b"", self.printed.read_bytes()[-size:]).decode(errors="replace")
         except OSError:
             return ""

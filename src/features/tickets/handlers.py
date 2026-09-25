@@ -21,7 +21,7 @@ class LookAfterTicketBranches(Handler):
         tickets._stop_orphaned()
         for ticket in tickets._awaiting_orchestrator():
             if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{tickets._plans(ticket).load(int(ticket.plan)).updated}"):
-                context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, env=ticket.work_environment, plan=ticket.plan)
+                context.agent.whisper("plan_waits", ticket=ticket.n, title=ticket.title, review=tickets._review(ticket))
         self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)
 

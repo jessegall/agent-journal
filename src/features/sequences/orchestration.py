@@ -19,10 +19,10 @@ ORCHESTRATION = {
         ("Know how you are kept informed", "You need no loop of your own. While this runs, the journal tells you when a ticket's plan "
                                           "waits for you, when a started ticket needs a look (waiting on a prompt, silent, or its agent "
                                           "gone), and, every five minutes you sit idle, to check on the ticket agents. Act on each as it "
-                                          "comes; journal ticket board shows the whole board at any time."),
+                                          "comes; journal ticket board shows the whole board, and journal ticket screen <n> what a ticket agent's terminal says, at any time."),
         ("See every ticket through", "Until every ticket is done: when you are told a ticket's plan waits, review it before you "
-                                     "approve anything. Read it against its card (journal --env <ticket env> plan read <plan n>), "
-                                     "or dispatch a reviewer subagent to check it. Approve only a plan that does the ticket and "
+                                     "approve anything, the way the board says (plan_reviewer: yourself, or a reviewer subagent "
+                                     "you dispatch); the notice names which. Approve only a plan that does the ticket and "
                                      "nothing more: journal ticket approve_plan <n>. Otherwise refuse it: tell its agent what must "
                                      "change and why with journal ticket tell <n> \"<the change>\"; it revises the plan, which waits "
                                      "for you again. When a ticket's work is finished and reviewed, merge it into the "
