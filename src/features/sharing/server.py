@@ -11,12 +11,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
 from features.sharing.controller import LAYOUT_FILE  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
+from features.sharing.preview import card, tags  # noqa: E402
+from surfaces.color import identity  # noqa: E402
 from resources.base import Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")
 BODY_LIMIT = 8192
 COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
+PREVIEW = "preview.png"
 APP_HEADERS = {"Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
                                           "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}
 
@@ -63,7 +66,10 @@ class ShareHandler(BaseHTTPRequestHandler):
             if not self.path.split("?", 1)[0].endswith("/"):
                 return self.send(301, b"", {"Location": f"/s/{share.token}/"})
             self.shares._count_view(share.n)
-            return self.send(200, app.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **APP_HEADERS})
+            html = app.read_text().replace("</head>", f"{self.preview(share)}</head>", 1)
+            return self.send(200, html.encode(), {"Content-Type": "text/html; charset=utf-8", **APP_HEADERS})
+        if rest == [PREVIEW]:
+            return self.send(200, card(identity(self.shares.record.root)["color"]), {"Content-Type": "image/png", "Cache-Control": "max-age=3600"})
         if rest == ["data.json"]:
             body = json.dumps(self.shares._shared_data(share)).encode()
             return self.send(200, body, {"Content-Type": "application/json", **APP_HEADERS})
@@ -124,6 +130,14 @@ class ShareHandler(BaseHTTPRequestHandler):
         body = page.collection(row, members) if members else page.row(row)
         back = "" if ref == share.target else f"/s/{share.token}"
         self.page(200, document(row.title, body, share.expires, back))
+
+    def preview(self, share) -> str:
+        row = self.shares._shared_row(share, share.target)
+        host = self.headers.get("Host", "")
+        page = f"{'http' if host.startswith(('127.0.0.1', 'localhost')) else 'https'}://{host}/s/{share.token}"
+        picture = next((name for name in row.files if Path(name).suffix.lower() in PICTURES), "")
+        image = f"{page}/files/{row.type}/{row.n}/{quote(picture)}" if picture else f"{page}/{PREVIEW}"
+        return tags(row.title, row.abstract or row.brief, image, f"{page}/", identity(self.shares.record.root)["project"])
 
     def file(self, share, ref: str, name: str) -> None:
         if ref not in self.shares._scope(share):
