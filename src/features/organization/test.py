@@ -92,7 +92,7 @@ def test_the_board_counts_each_role_by_the_tickets_where_its_work_is_in_hand():
     tickets = Tickets(record, actor=AGENT)
     tickets._running = lambda: [SimpleNamespace(n=7, title="Search", work_environment="ticket-7")]
     roles = {role["name"]: role["tickets"] for role in tickets._roles()}
-    working = [{"n": 7, "title": "Search", "env": "", "worktree": "ticket-7"}]
+    working = [{"n": 7, "plan": 0, "title": "Search", "env": "", "worktree": "ticket-7"}]
     assert roles == {"engineering/developer": working, "engineering/lead": []}, roles
     domain = COMMANDS["ticket"]["organization"](tickets)["domains"][0]
     assert domain["working"] == [{"role": "developer", "role_title": "Developer", **working[0]}], "a domain lists the agents working in it"

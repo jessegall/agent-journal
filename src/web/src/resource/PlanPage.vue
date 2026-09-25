@@ -127,6 +127,12 @@ async function run(action, body = {}) {
                         @change="run('update', {worktree: shared ? 'each' : 'shared'})"
                     />
                 </template>
+                <template v-if="shared && resource.data.branch">
+                    <span class="note">
+                        One worktree on the branch {{ resource.data.branch }},
+                        {{ resource.data.merged ? "merged" : "not merged yet" }}
+                    </span>
+                </template>
                 <template v-if="critiquing">
                     <PlanCritique :plan="resource" @close="critiquing = false" />
                 </template>
