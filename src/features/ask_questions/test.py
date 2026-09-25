@@ -79,6 +79,9 @@ def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal
     assert (question.title, [o["title"] for o in question.data["options"]], question.seen[:1]) == \
         ("Which store - files or SQLite?", ["Files", "SQLite"], [AGENT]), "the question and its options are filed as the agent's"
     assert result.get("decision") == "block" and f"question {question.n}" in result.get("reason", ""), "the call is refused with the number"
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "agent_id": "sub-1",
+                                                            "tool_name": "AskUserQuestion", "tool_input": {"questions": [{"question": "Keep the old parser?", "options": [{"label": "Yes"}, {"label": "No"}]}]}})
+    assert Questions(record, actor=AGENT).all()[-1].title == "Keep the old parser?", "a subagent's question tool is filed in the journal too, where its parent and the orchestrator see it"
 
 
 def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_on_the_users_side():

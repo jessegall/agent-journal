@@ -55,7 +55,7 @@ JOURNAL = re.compile(r"(?:\A|[|;&\n]|\$\()[ \t]*(journal[ \t]+[^|;&\n]+)")
 
 def serving(policy, provider, hook) -> bool:
     feature = getattr(policy, "feature", None)
-    return not feature or feature.runs_for_subagents or not provider.is_subagent(hook)
+    return not feature or feature.runs_for_subagents or getattr(policy, "for_subagents", False) or not provider.is_subagent(hook)
 
 
 def alongside(hook) -> str:
