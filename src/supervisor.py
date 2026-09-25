@@ -13,6 +13,7 @@ import sys
 import termios
 import time
 import tty
+from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -22,6 +23,7 @@ GRACE, STEP = 3.0, 0.05
 EXITING = 8.0
 CLEAR_LINE = b"\x05\x15"
 LONGEST = 65536
+INBOX = 1 << 20
 TYPED_EVERY = 1.0
 HEADLESS_SIZE = (40, 120)
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
@@ -123,6 +125,7 @@ class Supervisor:
         self.inbox = self.listen()
         self.sources = [self.fd, self.inbox] if self.headless else [self.fd, self.inbox, self.stdin]
         self.typed_at = 0.0
+        self.pending: deque[bytes] = deque()
         self.record_launch()
         self.resize(self.fd)
 
@@ -144,6 +147,7 @@ class Supervisor:
         where.parent.mkdir(parents=True, exist_ok=True)
         where.unlink(missing_ok=True)
         inbox = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        inbox.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, INBOX)
         inbox.bind(str(where))
         inbox.setblocking(False)
         return inbox
@@ -224,10 +228,11 @@ class Supervisor:
             self.worker.wait()
 
     def relay(self) -> int | None:
-        ready, _, _ = select.select(self.sources, [], [], 0.5)
+        ready, writable, _ = select.select(self.sources, [self.fd] if self.pending else [], [], 0.5)
+        if self.fd in writable:
+            self.feed()
         if self.inbox in ready:
-            for raw in self.received():
-                os.write(self.fd, raw)
+            self.pending.extend(self.received())
         if self.fd in ready:
             try:
                 data = os.read(self.fd, LONGEST)
@@ -240,9 +245,24 @@ class Supervisor:
             data = os.read(self.stdin, LONGEST)
             if not data:
                 return self.stop_agent()
-            os.write(self.fd, data)
+            self.pending.append(data)
             self.typing(data)
         return None
+
+    def feed(self) -> None:
+        flags = fcntl.fcntl(self.fd, fcntl.F_GETFL)
+        fcntl.fcntl(self.fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+        try:
+            sent = os.write(self.fd, self.pending[0])
+        except (BlockingIOError, InterruptedError):
+            sent = 0
+        except OSError:
+            sent = len(self.pending[0])
+        finally:
+            fcntl.fcntl(self.fd, fcntl.F_SETFL, flags)
+        rest = self.pending.popleft()[sent:]
+        if rest:
+            self.pending.appendleft(rest)
 
     def output(self, data: bytes) -> None:
         os.write(self.stdout, data)

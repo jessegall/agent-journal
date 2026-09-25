@@ -76,7 +76,8 @@ def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
     root.mkdir()
     spec = {"root": str(root), "cwd": str(tmp_path), "env": "ticket-1", "agent": "claude", "worker": ["sleep", "20"], "heal": ["true"],
             "ended": ["true"], "args": [], "headless": True,
-            "command": [sys.executable, "-c", "import time; print('agent up', flush=True); time.sleep(20)"], "environ": dict(os.environ)}
+            "command": [sys.executable, "-c", "import time, tty\ntty.setraw(0)\nprint('agent up', flush=True)\nfor n in range(200): print(f'tick {n}', flush=True); time.sleep(0.1)"],
+            "environ": dict(os.environ)}
     supervisor = Path(__file__).resolve().parents[2] / "supervisor.py"
     child = subprocess.Popen([sys.executable, str(supervisor), json.dumps(spec)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                              stderr=subprocess.DEVNULL, start_new_session=True)
@@ -88,6 +89,12 @@ def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
         time.sleep(1)
         assert (b"agent up" in printed(), child.poll()) == (True, None), \
             "the agent starts, its output is captured, and with no keyboard it keeps running"
+        from engine import typist
+        session = next((root / "runtime" / "sessions").glob("*/printed")).parent.name
+        assert typist.send(root, session, b"x" * 8192), "the typing reaches the supervisor"
+        before = len(printed())
+        time.sleep(1.5)
+        assert len(printed()) > before, "typing an agent never reads never stops its output being captured"
     finally:
         for launched in (root / "runtime" / "sessions").glob("*/launched.json"):
             os.kill(json.loads(launched.read_text())["pid"], signal.SIGKILL)

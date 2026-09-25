@@ -82,7 +82,8 @@ def live(root: Path, within: float = ONLINE_FOR) -> list[tuple[Seat, LiveAgent]]
 
 
 def terminal_of(root: Path, session: str) -> str:
-    return next((seat.terminal for seat in seats(root) if session in (seat.session, seat.terminal)), "")
+    matching = [seat for seat in seats(root) if session in (seat.session, seat.terminal)]
+    return max(matching, key=lambda seat: seat.at).terminal if matching else ""
 
 
 def seats(root: Path, within: float | None = None) -> list[Seat]:

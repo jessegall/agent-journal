@@ -109,7 +109,7 @@ class EndWithItsRow(Handler):
 class RemindUnfinished(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         found = context.journal.sequences._in_hand() if context.agent.row.status == IDLE else None
-        if not found:
+        if not found or found[0].lasting:
             return
         sequence, key, run = found
         left = context.journal.sequences._left(sequence, run)

@@ -1,8 +1,11 @@
+import errno
 import hashlib
 import socket
+import time
 from pathlib import Path
 
-LONGEST = 65536
+PACKET = 2048
+FULL_FOR = 2.0
 
 
 def folder(root: Path) -> Path:
@@ -40,13 +43,25 @@ def close(inbox: socket.socket, root: Path, session: str) -> None:
 def send(root: Path, session: str, raw: bytes) -> bool:
     mouth = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     try:
-        for at in range(0, len(raw), LONGEST):
-            mouth.sendto(raw[at:at + LONGEST], str(path(root, session)))
-        return True
-    except OSError:
-        return False
+        return all(sent(mouth, raw[at:at + PACKET], str(path(root, session))) for at in range(0, len(raw), PACKET))
     finally:
         mouth.close()
+
+
+def sent(mouth: socket.socket, packet: bytes, where: str) -> bool:
+    until = time.time() + FULL_FOR
+    while True:
+        try:
+            mouth.sendto(packet, where)
+            return True
+        except (BlockingIOError, InterruptedError):
+            pass
+        except OSError as e:
+            if e.errno != errno.ENOBUFS or time.time() > until:
+                return False
+        if time.time() > until:
+            return False
+        time.sleep(0.01)
 
 
 def live(root: Path) -> list[str]:
