@@ -223,6 +223,8 @@ class Record:
         return self.settings().get(key, default)
 
     def settings(self) -> dict:
+        if self.memo is not None and "settings" in self.memo:
+            return self.memo["settings"]
         f = self.home / "settings.json"
         try:
             stamp = f.stat().st_mtime_ns
@@ -231,12 +233,16 @@ class Record:
         held = SETTINGS.get(str(f))
         if not held or held[0] != stamp:
             held = SETTINGS[str(f)] = (stamp, read_json(f, {}))
+        if self.memo is not None:
+            self.memo["settings"] = held[1]
         return held[1]
 
     def set_setting(self, key: str, value) -> None:
         f = self.home / "settings.json"
         with self.locked():
             write_json(f, {**read_json(f, {}), key: value}, indent=2)
+        if self.memo is not None:
+            self.memo.pop("settings", None)
 
 
 def parsed(lines: list[bytes]) -> list[Event]:

@@ -39,6 +39,15 @@ class PluginChatRules(TextFormatter):
         return result
 
     def rules(self, context: Context) -> list:
+        memo = context.record.memo
+        if memo is not None and "plugin rules" in memo:
+            return memo["plugin rules"]
+        found = self.kept_rules(context)
+        if memo is not None:
+            memo["plugin rules"] = found
+        return found
+
+    def kept_rules(self, context: Context) -> list:
         plugins = context.journal.plugins
         stamp = tuple((row["n"], row["stamp"]) for row in plugins.summaries())
         kept = KEPT_RULES.get(str(context.record.home))
