@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.192.2 — A ticket agent waiting on its run says so
+
+A ticket whose agent sits behind its own running command, subagent or monitor, or behind a standing await, no longer shows as idle on the board and the orchestrator card: it says "waiting on its run" with what it waits on and for how long, and idle is kept for an agent with nothing running (your message 509). An update now ends with one short line and no report card in the chat, since the pinned card opens it. A viewer request reads the settings and the plugins' chat rules once instead of once per text it formats. Nothing to do.
+
 ## 2.192.1 — Claude's effort changes at once
 
 A reasoning effort chosen in the agent bar is typed into Claude's terminal right away, even while it works, instead of waiting for its turn to end; a model change still waits, and so does everything for Codex. A ticket agent waiting on a command the journal moved to the background is no longer reported stuck: that command now counts as a running shell until it ends (reported from code-commandments, where it nearly restarted a 51-minute run). Nothing to do.

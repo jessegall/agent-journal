@@ -79,8 +79,16 @@ class Slots:
     waiting: int
 
 
+RUNNING_KINDS = ("shell_rows", "subagent_rows", "monitor_rows")
+RUN_TEXT = 60
+
+
+def running_behind(row) -> list[dict]:
+    return [entry for kind in RUNNING_KINDS for entry in (row.data.get(kind) or []) if entry.get("running")]
+
+
 def busy_behind(row) -> bool:
-    return any(entry.get("running") for kind in ("shell_rows", "subagent_rows", "monitor_rows") for entry in (row.data.get(kind) or []))
+    return bool(running_behind(row))
 
 
 class Tickets(Controller):
@@ -327,6 +335,12 @@ class Tickets(Controller):
             return CardState("you", f"{state.text} in {place}; its plan waits for your approval", session)
         return CardState(state.kind, f"{state.text} in {place}" + (f" · {state.age}" if state.age else ""), session)
 
+    def _waited_run(self, row, place: str) -> str:
+        awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM)._standing() if w.awaiting), "")
+        running = next((entry.get("task") or entry.get("command") or "" for entry in running_behind(row)), "")
+        text = awaited or running
+        return text if len(text) <= RUN_TEXT else text[:RUN_TEXT - 1].rstrip() + "…"
+
     def _reporting(self, place: str, sessions: dict):
         agents = Agents(Record(self.record.root, place), actor=SYSTEM)
         rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents._titled(name))]
@@ -334,7 +348,7 @@ class Tickets(Controller):
 
     def _agent_state(self, ticket, row, running: int) -> CardState:
         if row:
-            return self._live_state(row)
+            return self._live_state(row, ticket.work_environment)
         waits = self._waiting_on(ticket)
         if waits:
             return CardState("blocked", f"waiting on {', '.join(ref.replace(':', ' ') for ref in waits)}")
@@ -344,7 +358,7 @@ class Tickets(Controller):
                              else f"{position} in the queue, starts with the next minute's check")
         return CardState("stopped", "stopped")
 
-    def _live_state(self, row) -> CardState:
+    def _live_state(self, row, place: str) -> CardState:
         if row.asking:
             return CardState("you", "waiting for you")
         if not float(row.at or 0):
@@ -354,6 +368,9 @@ class Tickets(Controller):
             return CardState("you", f"silent for {int(quiet // 60)}m")
         if row.status == IDLE and quiet > SILENT_AFTER and not busy_behind(row):
             return CardState("you", f"idle for {int(quiet // 60)}m with nothing running in the background")
+        waiting = self._waited_run(row, place) if row.status == IDLE else ""
+        if waiting:
+            return CardState("running", f"waiting on its run: {waiting}", age=ago(quiet))
         step = f"{row.tool} {Path(row.file).name}".strip() if row.tool else row.status
         return CardState("running", step, age=ago(quiet))
 

@@ -145,6 +145,11 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert card["reason"].startswith(f"working in ticket-{ticket.n} · "), \
         "the card says what its agent is doing, where, and how long ago, read from the session that reports, not a silent terminal row"
+    report(Record(record.root, f"ticket-{ticket.n}"), "idle", "Stop", session="claude-9",
+           shell_rows=[{"command": "go test ./engine/...", "running": True}])
+    card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
+    assert card["reason"].startswith(f"waiting on its run: go test ./engine/... in ticket-{ticket.n} · "), \
+        "an agent idle behind its own running command is waiting on it, never idle"
     record.set_setting("tickets", {"running": 1})
     second = tickets.create("Search", board=board.n)
     assert (tickets.move(second.n, "Building").queued, len(launched)) == (True, 1), "past the limit a ticket waits queued instead of launching"
