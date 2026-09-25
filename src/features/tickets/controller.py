@@ -9,7 +9,7 @@ from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, current_branch, keep, merged, merged_into, present, tip
+from engine.worktree import branched, contains, current_branch, keep, merged, merged_into, present, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -205,7 +205,16 @@ class Tickets(Controller):
         sessions, running = Sessions(self.record.root).all(), len(self._running())
         started = [ticket for ticket in self._standing() if ticket.work_environment and ticket.launched and time.time() - ticket.launched > LAUNCHING_FOR and not ticket.halted
                    and ticket.board and int(ticket.board) in boards]
-        return [(ticket, state) for ticket in started for state in [self._runtime(ticket, sessions, running)] if state.kind in NEEDS_A_LOOK]
+        looked = [(ticket, self._runtime(ticket, sessions, running)) for ticket in started]
+        return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK] + \
+               [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
+
+    def _off_branch(self, ticket) -> str:
+        into = self._into(ticket)
+        if into == "HEAD" or not ticket.base or contains(self.record.root.parent, ticket.base, into):
+            return ""
+        return (f"its branch {self._branch(ticket)} started at {ticket.base[:9]}, which is not on {into}; tell its agent to rebase "
+                f"onto {into} (git rebase --onto {into} {ticket.base[:9]}) before it is merged")
 
     def _revive(self, ticket) -> bool:
         if ticket.restarts >= MOST_RESTARTS or ticket.queued:

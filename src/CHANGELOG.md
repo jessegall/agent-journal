@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.164.1 — A ticket started off its board's branch is caught
+
+A started ticket whose branch began at a commit its board's branch does not have is flagged to the orchestrator, with the rebase it needs before it is merged. Nothing to do.
+
 ## 2.164.0 — Share a layout as a link, and see images on shared pages
 
 A saved layout's share button offers Download file or a copied link that opens once or works for 1 hour, 1 day or 7 days; Import a layout takes such a link as well as a file, and a used or ended link says so plainly. An image file on a shared page, and in the viewer's own inspector, shows a small preview that opens the image viewer. Nothing to do.
