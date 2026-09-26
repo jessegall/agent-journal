@@ -150,6 +150,14 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert card["reason"].startswith(f"waiting on its run: go test ./engine/... in ticket-{ticket.n} · "), \
         "an agent idle behind its own running command is waiting on it, never idle"
+    from features.sequences.controller import Sequences
+    merging = Sequences(record, actor=USER).create("Merging a ticket", starts_on="ticket.finished")
+    Sequences(record, actor=USER).section(merging.n, "Review its work", "Dispatch the ticket-reviewer.")
+    Sequences(record, actor=SYSTEM).run(merging.n, about=ticket.ref)
+    card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
+    assert (card["state"], card["reason"].startswith(f"under review ({merging.title})")) == ("running", True), \
+        "a ticket the orchestrator is reviewing waits on that review; it is never stuck"
+    Sequences(record, actor=SYSTEM).abandon(merging.n, about=ticket.ref, why="only a check", sure=True)
     record.set_setting("tickets", {"running": 1})
     second = tickets.create("Search", board=board.n)
     assert (tickets.move(second.n, "Building").queued, len(launched)) == (True, 1), "past the limit a ticket waits queued instead of launching"
