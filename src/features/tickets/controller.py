@@ -22,7 +22,7 @@ from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket, card_back
 from controllers.types import Agents, Messages, Questions, Todos, Works
-from features.plans.controller import READY, WAITING, Plans
+from features.plans.controller import ACTIVE, DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
 from resources.shapes import LEVELS, priority_level, rank_before
 
@@ -254,7 +254,13 @@ class Tickets(Controller):
         return ticket
 
     def _plan_status(self, ticket) -> str:
-        return self._plans(ticket).load(int(ticket.plan)).status if ticket.plan else ""
+        from features.plans.progress import first_open_phase
+        if not ticket.plan:
+            return ""
+        plan = self._plans(ticket).load(int(ticket.plan))
+        if plan.status == DONE and first_open_phase(Record(self.record.root, ticket.work_environment), plan):
+            return ACTIVE
+        return plan.status
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
