@@ -2,6 +2,8 @@ const WAIT_MS = 20000;
 const READ_WAIT_MS = 5000;
 const UPLOAD_WAIT_MS = 300000;
 export const LONG_WAIT_MS = 600000;
+const RELOAD_TRIES = 6;
+const RELOAD_PAUSE_MS = 500;
 
 class Transport {
     constructor() {
@@ -19,15 +21,25 @@ class Transport {
         this.written = fn;
     }
 
-    async send(method, url, body, wait = 0) {
+    async reach(method, url, body, wait, tries) {
         const raw = body instanceof FormData;
+        try {
+            return await fetch(url, {
+                method,
+                headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
+                body: body === undefined || raw ? body : JSON.stringify(body),
+                signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : method === "GET" ? READ_WAIT_MS : WAIT_MS)),
+            });
+        } catch (error) {
+            if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) throw error;
+            await new Promise((resolve) => setTimeout(resolve, RELOAD_PAUSE_MS));
+            return this.reach(method, url, body, wait, tries - 1);
+        }
+    }
+
+    async send(method, url, body, wait = 0) {
         this.watcher("sent", method, url, body);
-        const res = await fetch(url, {
-            method,
-            headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
-            body: body === undefined || raw ? body : JSON.stringify(body),
-            signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : method === "GET" ? READ_WAIT_MS : WAIT_MS)),
-        }).finally(() => this.watcher("answered", method, url, body));
+        const res = await this.reach(method, url, body, wait, RELOAD_TRIES).finally(() => this.watcher("answered", method, url, body));
         if (!res.ok) {
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error || `${res.status} ${res.statusText}`);
