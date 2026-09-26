@@ -25,8 +25,6 @@ class FactsDetails(FeatureDetails):
 
     aliases = ("pins",)
 
-    runs_for_subagents = True
-
     trigger = Trigger(every=25, unit=PERCENT)
 
     lines = LINES

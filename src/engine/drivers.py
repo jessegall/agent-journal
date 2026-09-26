@@ -49,6 +49,7 @@ class Driver(ABC):
     MOVE_TO_BACKGROUND = b""
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
+    ELSEWHERE = ""
     name = ""
     ALLOW, DENY = b"1", b"\x1b"
 
@@ -238,7 +239,15 @@ class Driver(ABC):
         time.sleep(ENTER_AFTER)
         return self._wrote(b"\r")
 
+    def elsewhere(self) -> bool:
+        if not self.ELSEWHERE:
+            return False
+        tail = self.last_printed(SCREEN_TAIL)
+        return tail.rfind(self.ELSEWHERE) > tail.rfind(self.INPUT_MARK.decode())
+
     def _typed(self, line: str, confirmed: bool) -> bool:
+        if self.elsewhere():
+            return False
         started = time.time()
         self.clear_input()
         time.sleep(ENTER_AFTER)

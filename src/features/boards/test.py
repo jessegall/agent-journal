@@ -36,10 +36,6 @@ def test_a_request_opens_a_session_that_cancel_closes():
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
     assert any("waits for the board-filler" in n for n in nudges(record)) and not any(n.startswith("sequence ") for n in nudges(record)), \
         "the request is handed to the board-filler: the main agent is told to dispatch it, never handed the steps itself"
-    from features.boards.agent_types import FILLER_ALLOWED
-    assert [bool(FILLER_ALLOWED.match(c)) for c in ("journal --agent board-filler sequence follow 14 --about message:1",
-                                                    "journal --agent=board-filler question show 3", "journal todo create x")] == [True, True, False], \
-        "the filler runs the commands its prompt names, with --agent either way, and nothing outside its task"
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
     filler = Sequences(record, actor=AGENT, agent="board-filler")
     filler.follow(exploring.n, about=made.ref)
@@ -212,8 +208,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     call = lambda command: {"session_id": "claude-1", "agent_id": "sub-1", "agent_type": "board-filler", "tool_name": "Bash",
                             "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
     said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason") or "")
-    assert "board-filler may only" in said("git status") and "board-filler may only" not in said(f"journal board show {board.n}"), \
-        "the board-filler is refused anything but the board-filling journal commands"
+    assert said("git status") == "", "a subagent gets no journal guard, the board-filler included"
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
     assert [run["step"] for run in exploring.runs.values()] == [4] and exploring.sections[3]["title"] == "Say what done means (score 3)", \
         "the score moves the filler's run to the step for it"

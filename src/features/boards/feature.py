@@ -1,5 +1,4 @@
 from features.base import Feature
-from features.boards.agent_types import KeepTheFillerToItsTask
 from features.boards.controller import Boards
 from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards
@@ -16,4 +15,3 @@ class BoardsFeature(Feature):
         journal.commands.intercept("create", BoardWorkStaysOnTheBoard())
         journal.events.handler(OfferToPlaceAddedCards())
         journal.events.handler(MarkQuietFillingStalled())
-        journal.agent.interceptor(KeepTheFillerToItsTask())
