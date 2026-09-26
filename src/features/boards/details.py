@@ -59,8 +59,8 @@ class BoardsDetails(FeatureDetails):
             title="the user added {{count}} cards to board {{n}}, {{title}}",
             brief="""
                 they are {{tickets}}. Say in the chat in one line that they are in To do and that Play runs them, with a
-                Play button: journal message create "{{count}} cards are in To do. Press Play and I'll run them, each with its own
-                agent in its own worktree." --set buttons='[{"label": "Play", "type": "board", "n": {{n}}, "action": "start",
+                Play button: journal message create "{{count}} cards are in To do" --brief "Press Play and I'll run them, each
+                with its own agent in its own worktree." --set buttons='[{"label": "Play", "type": "board", "n": {{n}}, "action": "start",
                 "choice": "play"}, {"label": "Not now", "say": "Not now", "choice": "play"}]'.{{uncovered}}
             """,
         ),
