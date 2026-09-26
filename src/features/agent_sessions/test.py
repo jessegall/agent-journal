@@ -78,6 +78,8 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     from commands.queries import asked_for
     from engine.record import Record
     sessions.bind("busy", "t", pid=os.getpid(), provider="claude")
+    for moved_away in ("conversation-9", "claude-7272"):
+        sessions.unbind(moved_away)
     assert asked_for(Record(record.root, "t"), answering=False) == "u", "a quiet start never lands in an environment another live agent holds"
 
 
