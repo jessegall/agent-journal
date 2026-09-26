@@ -20,7 +20,7 @@ from features.boards.resource import DONE, REVIEW, START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
-from features.tickets.resource import Ticket
+from features.tickets.resource import Ticket, card_back
 from controllers.types import Agents, Messages, Questions, Todos, Works
 from features.plans.controller import READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
@@ -99,7 +99,7 @@ class Tickets(Controller):
         if isinstance(data.get("covers"), int):
             data["covers"] = [str(data["covers"])]
         opening = self._stages(data.get("board"))[:1]
-        made = super().create(title, abstract, brief, source=source, **{**dict(zip(["stage"], opening)), **data})
+        made = super().create(title, abstract, card_back(brief), source=source, **{**dict(zip(["stage"], opening)), **data})
         for other in after:
             made = self.depend(made.n, int(other))
         return made
@@ -724,6 +724,16 @@ class Tickets(Controller):
     def _confirmed(self, ticket) -> None:
         if ticket.draft:
             self._refuse(f"{self.type} {ticket.n} is a draft: the user confirms it before it starts")
+
+    def _field_choices(self, r: Resource) -> dict:
+        from features.organization.files import organization
+        boards = [{"key": str(board.n), "label": board.title, "first_stage": (board.stages or [""])[0]}
+                  for board in Boards(self.record, actor=SYSTEM)._standing()]
+        try:
+            domains = [{"key": domain.name, "label": domain.title or domain.name} for domain in organization(self.record.root.parent).domains]
+        except Refused:
+            domains = []
+        return {"board": boards, "stage": [{"key": stage, "label": stage} for stage in self._stages(r.board)], "owner": domains}
 
     def _stages(self, board) -> list:
         return Boards(self.record, actor=self.actor).load(int(board)).stages if board else []

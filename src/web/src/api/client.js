@@ -178,6 +178,10 @@ export class ApiClient {
         return this.post(this.here(`/${type}`), body);
     }
 
+    fieldChoices(type, n) {
+        return this.get(this.here(`/${type}/${n}/choices`));
+    }
+
     act(type, n, action, body = {}) {
         return this.post(this.here(`/${type}/${n}/${action}`), body);
     }
