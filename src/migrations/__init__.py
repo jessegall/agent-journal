@@ -61,11 +61,11 @@ def restored(root: Path, backup: Path) -> None:
     for name in RECORD:
         current, kept = root / name, backup / name
         if current.is_dir():
-            shutil.rmtree(current)
+            shutil.rmtree(current, ignore_errors=True)
         elif current.exists():
             current.unlink()
         if kept.is_dir():
-            shutil.copytree(kept, current, symlinks=True)
+            shutil.copytree(kept, current, symlinks=True, dirs_exist_ok=True)
         elif kept.is_file():
             shutil.copy2(kept, current)
 
