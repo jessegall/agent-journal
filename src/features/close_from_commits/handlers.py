@@ -6,6 +6,7 @@ from engine.proc import git
 from features.parts import AgentContext, Context, Handler
 from resources.base import Refused
 
+MADE_HERE = "commit"
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:, *\d+)*)(?: (.*))?$", re.MULTILINE)
 
 
@@ -14,7 +15,7 @@ class CloseRowsFromCommits(Handler):
         self.seen: dict[str, int] = {}
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        project = context.record.root.parent
+        project = self.worktree(context)
         if not self.moved(project):
             return
         commits = self.log(project)
@@ -23,16 +24,22 @@ class CloseRowsFromCommits(Handler):
         seen = context.record.cursor_text(context.feature.name)
         if seen:
             branch = git(["branch", "--show-current"], project).strip() or "a detached head"
-            for sha, subject, body in commits:
+            for sha, action, subject, body in commits:
                 if sha == seen:
                     break
+                if not action.startswith(MADE_HERE):
+                    continue
                 context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on {branch}", icon="branch", tone="commit", title=subject)
                 self.close(context, sha, subject, body)
         context.record.set_cursor_text(context.feature.name, commits[0][0])
 
-    def log(self, project) -> list[tuple[str, str, str]]:
-        out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", "-n", "50"], project)
-        return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
+    def worktree(self, context: AgentContext) -> Path:
+        cwd = Path(context.agent.row.cwd) if context.agent.row.cwd else None
+        return cwd if cwd and cwd.is_dir() else context.record.root.parent
+
+    def log(self, project) -> list[tuple[str, str, str, str]]:
+        out = git(["log", "-g", "--format=%H%x1f%gs%x1f%s%x1f%B%x1e", "-n", "50"], project)
+        return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
 
     def close(self, context: AgentContext, sha: str, subject: str, body: str) -> None:
         todos, works = context.journal.todos, context.journal.works
@@ -53,10 +60,20 @@ class CloseRowsFromCommits(Handler):
 
     def moved(self, project) -> bool:
         try:
-            stamp = (Path(project) / ".git" / "logs" / "HEAD").stat().st_mtime_ns
+            stamp = (head_log(Path(project))).stat().st_mtime_ns
         except OSError:
             return False
         if self.seen.get(str(project)) == stamp:
             return False
         self.seen[str(project)] = stamp
         return True
+
+
+def head_log(project: Path) -> Path:
+    for folder in (project, *project.parents):
+        dot_git = folder / ".git"
+        if dot_git.is_file():
+            return Path(dot_git.read_text().removeprefix("gitdir:").strip()) / "logs" / "HEAD"
+        if dot_git.is_dir():
+            return dot_git / "logs" / "HEAD"
+    return project / ".git" / "logs" / "HEAD"

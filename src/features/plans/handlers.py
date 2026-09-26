@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, AnyEvent, ResourceEvent
-from features.plans.controller import ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, WAITING
+from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import passes_checkpoints
@@ -92,3 +92,24 @@ class AdvancePlans(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if (event.type, event.action) in ADVANCES:
             catch_up(context.record)
+
+
+@dataclass(frozen=True)
+class RowReopened(ResourceEvent):
+    on: ClassVar[str] = "reopened"
+
+
+class ReopenPlansWithTheirRows(Handler):
+    def handle(self, context: Context, event: RowReopened) -> None:
+        field = {"todo": PHASE.todos, "ticket": PHASE.tickets}.get(event.type)
+        if not field:
+            return
+        plans = Plans(context.record, actor=SYSTEM)
+        for plan in plans._every():
+            found = next((p for p, phase in enumerate(plan.phases, 1) if event.n in phase.get(field, [])), 0)
+            if not found or plan.status == ABANDONED or (plan.status in RUNNING and plan.current <= found):
+                continue
+            if plan.completed:
+                plan = plans.reopen(plan.n, why=f"{event.type} {event.n} of phase {found} was reopened")
+            plan.status, plan.current = ACTIVE, found
+            plans.save(plan, "updated", phase=found, status=ACTIVE)

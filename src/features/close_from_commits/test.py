@@ -51,3 +51,11 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     sha = git("rev-parse", "HEAD").stdout.strip()
     marks = [card["label"] for card in Agents(record, actor=SYSTEM).by_session("claude-1").data["cards"]]
     assert (len(marks), marks[-1]) == (6, f"Agent committed {sha[:8]} on {branch}"), "every commit after the first look is marked in the chat with its hash and branch"
+    todos.create("fourth")
+    elsewhere = tmp_path.parent / f"{tmp_path.name}-other"
+    git("worktree", "add", "-q", "-b", "other", str(elsewhere))
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "another ticket\n\nJournal: todos done 4"],
+                   cwd=elsewhere, capture_output=True, timeout=5, check=True)
+    git("-c", "user.name=t", "-c", "user.email=t@t", "merge", "-q", "--no-edit", "other")
+    report(record, "working", "PostToolUse")
+    assert todos.load(4).completed == 0.0, "a trailer merged in from another worktree's commit closes nothing here"
