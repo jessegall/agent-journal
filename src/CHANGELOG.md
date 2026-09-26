@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.194.0 — A ticket's panel picks from lists
+
+A ticket's panel now picks its board by name, its stage from that board's own stages and its owner from your organization's domains, each from a dropdown; where it came from, the environment it works in and its plan are shown, not edited, since the journal sets them. A card's back reads as labelled parts, What, Why, Touches, Done when and Risk, each on its own line, for the cards already made too.
+
+🎩 is one of the reactions, and the agent keeps a sense of humor: now and then, when it fits, it tips its hat when you call it sir, or puts a funny reaction on a message, never on every one. The Play offer after you add cards is a message the journal accepts. A fresh viewer load never asks the server without an environment, and a read that fails while the server reloads is tried again quietly. Nothing to do.
+
 ## 2.193.0 — The agent calls you Sir, and New work is quick
 
 The agent addresses you the way you choose: a new setting, How the agent addresses you, holds a title (Sir by default) and your first name (git's when left empty), and every session start and every start after a compaction tells the agent to call you, say, Sir Jesse. The title is only ever what you set.
