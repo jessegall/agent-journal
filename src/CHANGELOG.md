@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.194.1 — Subagents are left alone
+
+A subagent gets none of the journal's guards any more: no holds, whispers, rule or fact reminders, and no gate on its questions or commands; only the worktree link reaches it. And the journal no longer types its lines into a subagent's view: while your terminal shows one ("Message @…"), each line waits and goes to the main conversation once you are back, so a finished subagent is never woken again and again (your messages 11603, 11604 and 11606). Nothing to do.
+
 ## 2.194.0 — A ticket's panel picks from lists
 
 A ticket's panel now picks its board by name, its stage from that board's own stages and its owner from your organization's domains, each from a dropdown; where it came from, the environment it works in and its plan are shown, not edited, since the journal sets them. A card's back reads as labelled parts, What, Why, Touches, Done when and Risk, each on its own line, for the cards already made too.

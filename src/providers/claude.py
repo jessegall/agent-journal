@@ -586,6 +586,7 @@ class ClaudeDriver(Driver):
     CHANNEL = ("--dangerously-load-development-channels", f"server:{SERVER}")
     LISTENING = 15.0
     MOVE_TO_BACKGROUND = b"\x02"
+    ELSEWHERE = "Message @"
     name = "claude"
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:

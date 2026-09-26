@@ -1,16 +1,8 @@
-import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from engine.record import Record
 from features.sequences.exploration import FILLER
-from features.parts import AgentContext, ToolInterceptor
-from providers.payload import WriteCall
-
-FILLER_ALLOWED = re.compile(r"^journal\s+(?:--\S+(?:=\S+|\s+\S+)\s+)*(?:board\s+(?:show|paths|score|ask|expect|say|log|group|outline|progress|stall)"
-                            r"|ticket\s+(?:board|show|create|update|delete|depend)|message\s+show|question\s+show"
-                            r"|sequence\s+(?:follow|next|show|all))\b")
-JOURNAL_CALLS = re.compile(r"(?:^|[;&|(\n])\s*(\S+)")
 
 
 @dataclass(frozen=True)
@@ -65,15 +57,3 @@ def written(project: Path, record: Record) -> list[Path]:
     values = BoardsDetails.values(record)
     chosen = [(kind, str(getattr(values, kind.setting))) for kind in AGENT_TYPES]
     return [path for cls in PROVIDERS.values() if cls().present(project) for path in cls().agent_types(project, chosen)]
-
-
-class KeepTheFillerToItsTask(ToolInterceptor):
-    for_subagents = True
-
-    def intercept(self, context: AgentContext, call) -> str:
-        if not context.hook or context.hook.agent_type != FILLER:
-            return ""
-        if isinstance(call, WriteCall):
-            return "the board-filler never edits files; fill the board with journal board and ticket commands"
-        outside = [command.strip() for command in call.commands if command.strip() and not FILLER_ALLOWED.match(command.strip())]
-        return (f"the board-filler may only run the board-filling journal commands; not: {outside[0][:120]}") if outside else ""

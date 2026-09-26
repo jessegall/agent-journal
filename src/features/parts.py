@@ -252,7 +252,6 @@ class AgentHooks:
             refused = interceptor.intercept(context, hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.feature = feature
-        policy.for_subagents = getattr(interceptor, "for_subagents", False)
         if interceptor.before_checks:
             POLICIES.insert(0, policy)
             return

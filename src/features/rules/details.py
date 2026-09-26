@@ -28,8 +28,6 @@ class RulesDetails(FeatureDetails):
         file paths, searches and URLs included).
     """
 
-    runs_for_subagents = True
-
     trigger = Trigger(every=25, unit=PERCENT)
 
     lines = [
