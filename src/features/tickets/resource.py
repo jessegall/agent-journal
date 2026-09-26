@@ -1,9 +1,21 @@
+import re
 from typing import ClassVar
 
 from resources.base import CHECKPOINT, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed, Shape
 
 AGENT_CLI = "claude"
+
+
+CARD_PARTS = re.compile(r"(?:\*\*)?\b(What|Why|Touches|Done when|Risk):(?:\*\*)?\s*")
+
+
+def card_back(brief: str) -> str:
+    pieces = CARD_PARTS.split(brief or "")
+    if len(pieces) < 5:
+        return brief
+    head, parts = pieces[0].strip(), zip(pieces[1::2], pieces[2::2])
+    return "\n\n".join([*([head] if head else []), *(f"**{label}:** {text.strip()}" for label, text in parts)])
 
 
 class Ticket(Placed, Resource):
@@ -51,3 +63,4 @@ class Ticket(Placed, Resource):
     labels = {"brief": "What is wanted", "outcome": "How it ended", "board": "Board", "stage": "Stage", "source": "Source",
               "source_id": "Id at the source", "owner": "Owner", "work_environment": "Works in", "plan": "Plan"}
     shown_fields = ("board", "stage", "source", "owner", "work_environment", "plan")
+    fixed_fields = ("source", "work_environment", "plan")

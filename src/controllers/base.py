@@ -112,6 +112,9 @@ class Controller(Stored, Files, Links):
                 return taken
         return None
 
+    def _field_choices(self, r: Resource) -> dict:
+        return {}
+
     def _shaped(self, data: dict) -> dict:
         fields = self.resource.fields
         return {k: checked_field(fields, k, v) for k, v in data.items()}

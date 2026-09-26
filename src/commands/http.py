@@ -1059,6 +1059,12 @@ def get_one(req: Request) -> Reply:
         raise Missing(str(e)) from e
 
 
+@route("GET", "/api/{env}/{type}/{n}/choices")
+def get_choices(req: Request) -> Reply:
+    controller = req.controller()
+    return Reply(200, controller._field_choices(controller.load(int(req.params["n"]))))
+
+
 @route("GET", "/api/{env}/{type}/{n}/markdown")
 def get_markdown(req: Request) -> Reply:
     from features.format import markdown

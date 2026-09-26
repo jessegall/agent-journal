@@ -154,6 +154,7 @@ class Resource:
     pruned_when: ClassVar[str] = ""   # which rows may be pruned: any (""), those the user has "seen", or those "closed"
     indexed: ClassVar[tuple] = ()
     shown_fields: ClassVar[tuple] = ()   # data fields its panel shows and edits
+    fixed_fields: ClassVar[tuple] = ()   # shown fields the journal sets, which the panel shows but never edits
     choices: ClassVar[dict] = {}         # the values a shown field may take, where they are fixed
     own_folder: ClassVar[bool] = False  # each row lives in a folder of its own, beside its files
     read_whole: ClassVar[bool] = False  # its files are read whole by the agent, however long

@@ -10,6 +10,7 @@ const props = defineProps({
     items: {type: Array, default: () => []},
     picked: {type: String, default: ""},
     empty: {type: String, default: "Nothing here"},
+    wide: Boolean,
 });
 const emit = defineEmits(["pick"]);
 const open = ref(false);
@@ -35,7 +36,7 @@ onUnmounted(() => document.removeEventListener("click", away, true));
 </script>
 
 <template>
-    <div ref="root" class="drop">
+    <div ref="root" :class="['drop', {wide}]">
         <button type="button" :class="['drop-head', {on: open}]" :aria-expanded="open" @click="toggle">
             <template v-if="icon">
                 <Icon :name="icon" :size="12" />
@@ -71,6 +72,16 @@ onUnmounted(() => document.removeEventListener("click", away, true));
 .drop {
     position: relative;
     display: inline-flex;
+}
+
+.drop.wide {
+    display: flex;
+}
+
+.wide .drop-head {
+    flex: 1;
+    justify-content: space-between;
+    max-width: none;
 }
 
 .drop-head {
