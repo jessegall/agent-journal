@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.194.3 — A plan with open rows is never finished
+
+A plan never reads done while one of its to-dos or tickets is still open, so a ticket's "finished" moment, and the merge that follows it, cannot fire for work that is not done. On install, any plan that was marked done while rows of it were open, such as the one a merged-in commit wrongly finished, goes back to its first unfinished phase. Nothing to do.
+
 ## 2.194.2 — A merged-in commit never closes your to-dos
 
 A commit's "Journal: todos done" trailer now closes rows only when the agent made that commit in its own worktree. Before, the journal read the main project's history and applied every new trailer, including those of another ticket's commits that arrived by a merge, to the reporting agent's environment: that is how ticket 13's to-dos were closed by ticket 10's commits and its plan read done. Commits that arrive by a merge, pull, rebase or cherry-pick close nothing now. And when a to-do or ticket of a plan's phase is reopened, the plan goes back to that phase and runs again, reopening a plan that had finished (reported from code-commandments). Nothing to do; a plan that was wrongly finished comes back as soon as its rows are reopened.

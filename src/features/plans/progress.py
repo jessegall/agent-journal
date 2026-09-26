@@ -41,6 +41,10 @@ def phase_complete(record, phase: dict) -> bool:
     return all(todos.load(n).completed for n in phase[PHASE.todos]) and all(tickets.load(n).completed for n in phase.get(PHASE.tickets, []))
 
 
+def first_open_phase(record, plan) -> int:
+    return next((p for p, phase in enumerate(plan.phases, 1) if not phase_complete(record, phase)), 0)
+
+
 def step(record, plan) -> bool:
     phase = current_phase(plan)
     if plan.status != ACTIVE or phase is None or not phase_complete(record, phase):
