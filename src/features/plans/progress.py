@@ -35,10 +35,14 @@ def status_after(last: bool, waits: bool) -> str:
     return ACTIVE
 
 
+def closed(rows, n: int) -> bool:
+    return not rows._exists(int(n)) or bool(rows.load(int(n)).completed)
+
+
 def phase_complete(record, phase: dict) -> bool:
     from features.tickets.controller import Tickets
     todos, tickets = Todos(record, actor=SYSTEM), Tickets(record, actor=SYSTEM)
-    return all(todos.load(n).completed for n in phase[PHASE.todos]) and all(tickets.load(n).completed for n in phase.get(PHASE.tickets, []))
+    return all(closed(todos, n) for n in phase[PHASE.todos]) and all(closed(tickets, n) for n in phase.get(PHASE.tickets, []))
 
 
 def first_open_phase(record, plan) -> int:

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.194.4 — A failed upgrade restores the whole record
+
+When a migration fails during an upgrade, the journal puts back the copy of the record it took just before; that restore could stop half-way if the running server recreated a folder meanwhile, leaving environments with most of their rows missing (it happened once, here, and was repaired from that copy). The restore now copies over whatever it finds. And a plan's phase that names a row which no longer exists counts that row as closed, so it can neither block the plan nor break the migration that reopens plans. Nothing to do.
+
 ## 2.194.3 — A plan with open rows is never finished
 
 A plan never reads done while one of its to-dos or tickets is still open, so a ticket's "finished" moment, and the merge that follows it, cannot fire for work that is not done. On install, any plan that was marked done while rows of it were open, such as the one a merged-in commit wrongly finished, goes back to its first unfinished phase. Nothing to do.
