@@ -130,7 +130,9 @@ class Supervisor:
         self.resize(self.fd)
 
     def record_launch(self) -> None:
-        (self.folder / "launched.json").write_text(json.dumps({"pid": self.pid, "command": self.command, "args": self.args, "cwd": str(self.cwd), "launch": self.launch}))
+        written = self.folder / "launched.json.writing"
+        written.write_text(json.dumps({"pid": self.pid, "command": self.command, "args": self.args, "cwd": str(self.cwd), "launch": self.launch}))
+        os.replace(written, self.folder / "launched.json")
 
     def spawn(self, command: list[str], environ: dict) -> tuple[int, int]:
         pid, fd = pty.fork()
