@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.194.2 — A merged-in commit never closes your to-dos
+
+A commit's "Journal: todos done" trailer now closes rows only when the agent made that commit in its own worktree. Before, the journal read the main project's history and applied every new trailer, including those of another ticket's commits that arrived by a merge, to the reporting agent's environment: that is how ticket 13's to-dos were closed by ticket 10's commits and its plan read done. Commits that arrive by a merge, pull, rebase or cherry-pick close nothing now. And when a to-do or ticket of a plan's phase is reopened, the plan goes back to that phase and runs again, reopening a plan that had finished (reported from code-commandments). Nothing to do; a plan that was wrongly finished comes back as soon as its rows are reopened.
+
 ## 2.194.1 — Subagents are left alone
 
 A subagent gets none of the journal's guards any more: no holds, whispers, rule or fact reminders, and no gate on its questions or commands; only the worktree link reaches it. And the journal no longer types its lines into a subagent's view: while your terminal shows one ("Message @…"), each line waits and goes to the main conversation once you are back, so a finished subagent is never woken again and again (your messages 11603, 11604 and 11606). Nothing to do.

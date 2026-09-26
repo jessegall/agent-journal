@@ -5,6 +5,7 @@ from features.plans.handlers import (
     AdvancePlans,
     GuideBuilding,
     PassCheckpointsInAuto,
+    ReopenPlansWithTheirRows,
     StartApproved,
     StartBuilding,
     TakeStruckRowsOutOfUnapprovedPlans,
@@ -23,6 +24,7 @@ class PlansFeature(Feature):
         journal.events.handler(GuideBuilding())
         journal.events.handler(PassCheckpointsInAuto())
         journal.events.handler(AdvancePlans())
+        journal.events.handler(ReopenPlansWithTheirRows())
         journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans())
         journal.agent.interceptor(RefusePlanMode())
         journal.commands.intercept("work.open", HoldWhilePlanned())
