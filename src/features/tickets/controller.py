@@ -80,6 +80,7 @@ class Slots:
 
 
 RUN_TEXT = 60
+REVIEW_MOMENTS = ("ticket.plan_waits", "ticket.checkpoint", "ticket.finished")
 
 
 class Tickets(Controller):
@@ -325,6 +326,12 @@ class Tickets(Controller):
         return [(ticket, WAITS) for ticket in on_board if PROPOSED in ticket.dependencies.values() and self._orchestrator_may(ticket, WAITS)] + \
                [(ticket, DRAFTS) for ticket in on_board if ticket.draft and self._orchestrator_may(ticket, DRAFTS)]
 
+    def _reviewing(self, ticket) -> str:
+        from features.sequences.controller import Sequences
+        return next((row["title"] for row in Sequences(self.record, actor=SYSTEM).summaries()
+                     if not row["completed"] and not row["deleted"] and row.get("starts_on") in REVIEW_MOMENTS
+                     and any(key.endswith(f"|{ticket.ref}") for key in row.get("runs") or {})), "")
+
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
         if ticket.completed:
             return CardState("done", ticket.outcome or "done")
@@ -334,6 +341,9 @@ class Tickets(Controller):
             return CardState("you", f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}")
         if not place:
             return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState.plain()
+        reviewing = self._reviewing(ticket)
+        if reviewing:
+            return CardState("running", f"under review ({reviewing}) in {place}")
         row = self._reporting(place, sessions)
         session = row.title if row else ""
         state = self._agent_state(ticket, row, running)
