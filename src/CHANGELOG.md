@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.195.4 — Sir, like a butler says it
+
+The agent uses your title the way a good butler would: when it answers one of your messages, and now and then otherwise, never in every message it writes. The first page load after an update no longer waits on a cold request, since the server warms it when it starts. Nothing to do; each agent picks up the new wording at its next start or compaction.
+
 ## 2.195.3 — A ticket is merged only once it has done work
 
 The minute sweep closed a ticket as merged when it was only waiting: its branch was made when it was started, but the commit it was cut from is recorded only when its agent launches, and with none recorded a branch sitting on the board's history looked merged. So ticket 16 closed without any work and released the ticket waiting on it. Now a branch without a recorded start is never counted as merged, the sweep never closes a ticket that is queued, waiting on another ticket or has not run, and journal ticket merge still closes the ticket it merges (reported from code-commandments). Nothing to do.
