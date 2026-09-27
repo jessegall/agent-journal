@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.195.2 — The board-filler is only asked for on a real board
+
+The line asking the main agent to dispatch the board-filler could fire for a run that was about no board at all, naming "board 0" with an empty request; it now says nothing unless the run is about a board's request. And between drafting rounds the placeholders left from the last one no longer set a floor: a gap fill after a board is closed can say it will draft 3 with journal board expect, even when 11 showed before (both reported from code-commandments). Nothing to do.
+
 ## 2.195.1 — A trailer closes every number it names
 
 "Journal: todos done 46 47 49 50" closed only to-do 46 and read the rest as the note on how it was done. The numbers may now be separated by spaces, commas or "and", and each one closes; the note starts at the first word that is not a number (reported from code-commandments). Nothing to do.
