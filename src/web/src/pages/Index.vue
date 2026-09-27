@@ -9,7 +9,9 @@ import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
 import {groupOf, GROUPS, open} from "../domain/records.js";
-import {counted, meta, word} from "../state/store.js";
+import {counted, meta, store, word} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {usePoll} from "../poll.js";
 import {earlier, paging, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
@@ -77,6 +79,8 @@ const listed = computed(() =>
         .filter((r) => !r.data?.hidden)
         .sort((a, b) => b.created - a.created || b.n - a.n)
 );
+usePoll(...polled.ticketTodos);
+
 const groups = computed(() => {
     const buckets = {};
     for (const r of listed.value) (buckets[groupOf(r)] ||= []).push(r);
@@ -87,8 +91,15 @@ const groups = computed(() => {
             title:
                 k === "open" && filter.value !== "open" ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
             list: buckets[k],
-        }));
+        }))
+        .concat(held.value);
 });
+
+const held = computed(() =>
+    props.type === "todo" && filter.value === "open"
+        ? store.ticketTodos.map((h) => ({key: `ticket-${h.ticket}`, title: `Ticket ${h.ticket} · ${h.title} (${h.env})`, list: h.todos, env: h.env}))
+        : []
+);
 
 async function select(n) {
     adding.value = false;

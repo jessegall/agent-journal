@@ -6,6 +6,11 @@ import PriorityIcon from "../kit/PriorityIcon.vue";
 import {peek, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {groupOf, GROUPS, planOf} from "../domain/records.js";
+import {store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.ticketTodos);
 
 const scope = useScope();
 const show = (type, n) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n));
@@ -22,7 +27,7 @@ const groups = computed(() => {
 </script>
 
 <template>
-    <template v-if="!groups.length">
+    <template v-if="!groups.length && !store.ticketTodos.length">
         <div class="home-rail-empty">
             <Icon name="work" />
             <p>Nothing is on the list.</p>
@@ -49,6 +54,22 @@ const groups = computed(() => {
                                 Plan {{ planOf(t).n }}
                             </span>
                         </template>
+                    </span>
+                    <span class="rail-row-title">{{ t.title }}</span>
+                </button>
+            </template>
+        </template>
+        <template v-for="held in store.ticketTodos" :key="held.ticket">
+            <div class="rail-group" :title="`Held by ticket ${held.ticket}'s agent, in environment ${held.env}`">
+                Ticket {{ held.ticket }} · {{ held.title }}
+                <span class="rail-group-n">{{ held.todos.length }}</span>
+            </div>
+            <template v-for="t in held.todos" :key="t.n">
+                <button type="button" class="rail-row" @click="peekThere(held.env, 'todo', t.n)">
+                    <span class="rail-row-marks">
+                        <PriorityIcon :value="Number(t.data.priority ?? 100)" />
+                        <span class="rail-row-n">#{{ t.n }}</span>
+                        <span class="rail-row-plan">{{ held.env }}</span>
                     </span>
                     <span class="rail-row-title">{{ t.title }}</span>
                 </button>

@@ -19,9 +19,9 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
                     v-for="(r, i) in g.list"
                     :key="r.n"
                     :resource="r"
-                    :selected="r.n === route.n"
+                    :selected="r.n === route.n && (g.env || route.env) === route.env"
                     :style="{'--i': i}"
-                    @click="go(route.env, type, r.n)"
+                    @click="go(g.env || route.env, type, r.n)"
                 />
             </TransitionGroup>
         </div>
