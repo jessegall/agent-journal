@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.195.5 — A ticket starts from its board's branch
+
+Starting a ticket reused a branch of the same name left from earlier work, 318 commits behind the board's branch in one case, so its agent would have worked on an old tree, and the recorded start could differ from where the branch really was, which let the minute sweep close the ticket as merged before it did anything. Now a ticket's first launch prepares its branch from the board's branch: it is cut there if missing, moved up if it is only behind, and set aside under another name when it holds older work, with the launch refused if that old branch is checked out somewhere. The start is recorded from the branch it prepared, and a branch counts as merged only when it grew out of that start and landed on the board's branch (reported from code-commandments). Nothing to do.
+
 ## 2.195.4 — Sir, like a butler says it
 
 The agent uses your title the way a good butler would: when it answers one of your messages, and now and then otherwise, never in every message it writes. The first page load after an update no longer waits on a cold request, since the server warms it when it starts. Nothing to do; each agent picks up the new wording at its next start or compaction.

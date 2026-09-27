@@ -675,9 +675,14 @@ class Tickets(Controller):
                 earlier = ""
             args = driver.within([*driver.AUTO_ARGS], place)
             project = self.record.root.parent
+            fresh = not ticket.base
             ticket = self._based(ticket, self._started_at(ticket, into))
             for _, place, base in self._repositories(ticket) if into != "HEAD" else ():
-                branched(place, self._branch(ticket), base)
+                stuck = branched(place, self._branch(ticket), base, fresh)
+                if stuck:
+                    self._refuse(stuck)
+            if fresh and into != "HEAD":
+                ticket = self._based(ticket, {name: tip(place, f"refs/heads/{self._branch(ticket)}") for name, place, _ in self._repositories(ticket)})
             detached(self.record.root, project, place, ticket.agent,
                      driver.prompted(driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
                      else driver.prompted(args, self._kickoff(ticket)))

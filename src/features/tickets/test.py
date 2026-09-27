@@ -200,6 +200,19 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets = Tickets(record, actor=USER)
     ticket = tickets.bind(tickets.create("Dark mode", board=board.n).n)
     home = git("branch", "--show-current").stdout.strip()
+    from engine.worktree import branched
+    git("branch", "behind")
+    git("branch", "elsewhere")
+    git("switch", "-q", "elsewhere")
+    git("commit", "-q", "--allow-empty", "-m", "an older ticket's work")
+    git("switch", "-q", home)
+    git("commit", "-q", "--allow-empty", "-m", "the board moved")
+    board_tip = git("rev-parse", home).stdout.strip()
+    for name in ("behind", "elsewhere"):
+        branched(project, name, board_tip, fresh=True)
+    aside = [line.strip() for line in git("branch", "--list", "elsewhere-set-aside-*").stdout.splitlines()]
+    assert (git("rev-parse", "behind").stdout.strip(), git("rev-parse", "elsewhere").stdout.strip(), len(aside)) == (board_tip, board_tip, 1), \
+        "a new ticket's branch starts at the board's tip: one only behind moves up, one with other work is set aside"
     git("branch", f"worktree-{ticket.work_environment}")
     git("commit", "-q", "--allow-empty", "-m", "the board moved on")
     assert tickets.close_merged() == [], "a branch with no recorded base and a ticket that never ran is never merged, however the board moved"

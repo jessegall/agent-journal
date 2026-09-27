@@ -1,4 +1,5 @@
 import fcntl
+import time
 import os
 import random
 import shutil
@@ -130,7 +131,8 @@ def merged(project: Path, branch: str, base: str, into: str = "HEAD") -> bool:
     ref = f"refs/heads/{branch}"
     if not base or not present(project, ref) or tip(project, ref) == base:
         return False
-    return git(project, "merge-base", "--is-ancestor", ref, into).returncode == 0
+    grew = git(project, "merge-base", "--is-ancestor", base, ref).returncode == 0
+    return grew and git(project, "merge-base", "--is-ancestor", ref, into).returncode == 0
 
 
 def current_branch(project: Path) -> str:
@@ -162,9 +164,23 @@ def contains(project: Path, commit: str, branch: str) -> bool:
     return git(project, "merge-base", "--is-ancestor", commit, branch).returncode == 0
 
 
-def branched(project: Path, branch: str, start: str) -> None:
-    if not present(project, f"refs/heads/{branch}"):
+def branched(project: Path, branch: str, start: str, fresh: bool = False) -> str:
+    ref = f"refs/heads/{branch}"
+    if not present(project, ref):
         git(project, "branch", branch, start)
+        return ""
+    if not fresh or tip(project, ref) == tip(project, start):
+        return ""
+    holder = checked_out(project, branch)
+    if git(project, "merge-base", "--is-ancestor", ref, start).returncode == 0:
+        git(holder, "merge", "--ff-only", "-q", start) if holder else git(project, "branch", "-f", branch, start)
+        return ""
+    if holder:
+        return f"its branch {branch} holds work from before and is checked out in {holder}; move that work away first"
+    aside = f"{branch}-set-aside-{int(time.time())}"
+    git(project, "branch", "-m", branch, aside)
+    git(project, "branch", branch, start)
+    return ""
 
 
 def tip(project: Path, ref: str = "HEAD") -> str:
