@@ -161,6 +161,7 @@ def warm_viewer(root: Path, env: str) -> None:
     from controllers.types import CONTROLLERS
     parser()
     dispatch("GET", f"/api/{env}/dashboard", root, {"types": ",".join(CONTROLLERS), "completed": "1", "last": "25", "events": "100"}, {})
+    dispatch("GET", f"/api/{env}/family", root, {}, {})
 
 
 def run(root: Path, port: int = 8430) -> None:
