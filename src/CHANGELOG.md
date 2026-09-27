@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.195.1 — A trailer closes every number it names
+
+"Journal: todos done 46 47 49 50" closed only to-do 46 and read the rest as the note on how it was done. The numbers may now be separated by spaces, commas or "and", and each one closes; the note starts at the first word that is not a number (reported from code-commandments). Nothing to do.
+
 ## 2.195.0 — A ticket's to-dos are in plain sight
 
 The to-dos a ticket's agent holds, in the ticket's own environment, now show on the main To-dos page and in the to-dos sidebar, grouped under their ticket ("Ticket 11 · Distribution and switch-over (ticket-11)"); opening one opens it in the ticket's environment. journal ticket todos lists the same. A row named in text can say where it lives, "ticket-11 to-do 46" or "to-do 46 in ticket-11", and its chip opens it there; a number that matches no row where it points stays plain words, never a link that opens nothing (both asked for from code-commandments).

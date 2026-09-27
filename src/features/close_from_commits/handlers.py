@@ -7,7 +7,7 @@ from features.parts import AgentContext, Context, Handler
 from resources.base import Refused
 
 MADE_HERE = "commit"
-TRAILER = re.compile(r"^Journal: todos done (\d+(?:, *\d+)*)(?: (.*))?$", re.MULTILINE)
+TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +)\d+\b)*)(?: +(.*))?$", re.MULTILINE)
 
 
 class CloseRowsFromCommits(Handler):
