@@ -71,8 +71,9 @@ export function peekIn(env, type, n) {
 }
 
 export function peekRef(ref) {
-    const [type, n] = ref.split(":");
-    peek(type, Number(n));
+    const [row, env] = ref.split("@");
+    const [type, n] = row.split(":");
+    return env ? peekThere(env, type, Number(n)) : peek(type, Number(n));
 }
 
 export function peekChip(e) {

@@ -12,21 +12,43 @@ KEPT = re.compile(r"`[^`]*`|" + MARKER.pattern)
 
 
 @cache
-def named() -> tuple[dict[str, str], re.Pattern]:
+def named(places: tuple = ()) -> tuple[dict[str, str], re.Pattern]:
     names = {spelling: name for name, type_ in TYPES.items() for spelling in (name, type_.details.title.lower()) if spelling}
-    return names, re.compile(r"\b(" + "|".join(sorted(map(re.escape, names), key=len, reverse=True)) + r")s?\s+#?(\d+)\b"
-                             r"((?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)#?\d+\b)*)", re.IGNORECASE)
+    spelled = "|".join(sorted(map(re.escape, names), key=len, reverse=True))
+    where = "|".join(sorted(map(re.escape, places), key=len, reverse=True)) or r"(?!)"
+    return names, re.compile(rf"(?:\b({where})\s+)?\b({spelled})s?\s+#?(\d+)\b"
+                             r"((?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)#?\d+\b)*)"
+                             rf"(?:\s+in\s+({where})\b)?", re.IGNORECASE)
 
 
-def chipped(text: str) -> str:
-    names, found = named()
+def environments(record) -> tuple:
+    from controllers.types import Environments
+    from resources.base import SYSTEM
+    return tuple(row["title"] for row in Environments(record, actor=SYSTEM).summaries() if not row["deleted"] and row["title"] != record.env)
+
+
+def exists(record, env: str, name: str, n: int) -> bool:
+    from controllers.types import CONTROLLERS
+    from engine.record import Record
+    from resources.base import SYSTEM
+    return CONTROLLERS[name](Record(record.root, env) if env else record, actor=SYSTEM)._exists(n)
+
+
+def chipped(text: str, record=None) -> str:
+    places = environments(record) if record is not None else ()
+    names, found = named(places)
 
     def chip(m) -> str:
-        name, more = names[m.group(1).lower()], re.findall(r"\d+", m.group(3))
-        if not more:
-            return marked("chip", f"{name}:{m.group(2)}", m.group(0))
-        chips = [marked("chip", f"{name}:{n}", f"{m.group(1)} {n}") for n in (m.group(2), *more)]
-        return f"{', '.join(chips[:-1])} and {chips[-1]}"
+        name, env = names[m.group(2).lower()], m.group(1) or m.group(5) or ""
+        numbers = [m.group(3), *re.findall(r"\d+", m.group(4))]
+        if record is not None and not all(exists(record, env, name, int(n)) for n in numbers):
+            return m.group(0)
+        ref = lambda n: f"{name}:{n}@{env}" if env else f"{name}:{n}"
+        if len(numbers) == 1:
+            return marked("chip", ref(numbers[0]), m.group(0))
+        chips = [marked("chip", ref(n), f"{m.group(2)} {n}") for n in numbers]
+        there = f" in {env}" if env else ""
+        return f"{', '.join(chips[:-1])} and {chips[-1]}{there}"
 
     return found.sub(chip, text)
 
@@ -43,7 +65,7 @@ class MarkRows(TextFormatter):
     surfaces = (VIEWER,)
 
     def format(self, context: Context, text: str) -> str:
-        return outside(KEPT, text, chipped)
+        return outside(KEPT, text, lambda part: chipped(part, context.record))
 
 
 EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml|ini|sh|zsh|bash|svg|png|jpg|jpeg|gif|webp|csv|lock|php|cs|"
