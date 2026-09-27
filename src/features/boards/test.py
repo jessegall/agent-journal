@@ -77,6 +77,8 @@ def test_the_agent_says_how_many_drafts_are_coming():
     assert boards.expect(board.n, "4", fewer="the document holds four pieces").expected == 4, \
         "fewer is allowed with a reason, and the count shows as that many placeholders"
     assert "whole number" in refused(lambda: boards.expect(board.n, "a few")), "a count that is no number is refused in words"
+    assert boards.expect(board.n, "3", fewer="only what is missing").expected == 3, \
+        "between drafting rounds the leftover placeholders are no floor: a gap fill sets its own smaller count"
     Boards(record, actor=USER).request(board.n, "Something else")
     assert boards.load(board.n).expected == 0, "a new request starts with no placeholders"
 
