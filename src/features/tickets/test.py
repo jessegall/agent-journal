@@ -1,3 +1,4 @@
+import time
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
@@ -198,9 +199,11 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     board = Boards(record, actor=USER).create("Features", stages=["Doing", "Shipped"], meanings={"Shipped": "done"})
     tickets = Tickets(record, actor=USER)
     ticket = tickets.bind(tickets.create("Dark mode", board=board.n).n)
-    ticket = tickets.update(ticket.n, base=git("rev-parse", "HEAD").stdout.strip())
     home = git("branch", "--show-current").stdout.strip()
     git("branch", f"worktree-{ticket.work_environment}")
+    git("commit", "-q", "--allow-empty", "-m", "the board moved on")
+    assert tickets.close_merged() == [], "a branch with no recorded base and a ticket that never ran is never merged, however the board moved"
+    ticket = tickets.update(ticket.n, base=git("rev-parse", f"worktree-{ticket.work_environment}").stdout.strip(), launched=time.time())
     assert tickets.close_merged() == [], "a branch still at the commit its ticket started from is not merged: the ticket has done nothing yet"
     git("switch", "-q", f"worktree-{ticket.work_environment}")
     git("commit", "-q", "--allow-empty", "-m", "dark mode")

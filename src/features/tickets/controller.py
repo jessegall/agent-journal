@@ -524,7 +524,9 @@ class Tickets(Controller):
 
     @internal
     def close_merged(self) -> list:
-        merged = [r for r in self._standing() if r.work_environment and self._merged(r)]
+        return self._closed([r for r in self._standing() if r.work_environment and self._ran(r) and self._merged(r)])
+
+    def _closed(self, merged: list) -> list:
         for ticket in merged:
             finished = [stage for stage, meaning in (Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if ticket.board else ()) if meaning == DONE]
             try:
@@ -536,6 +538,9 @@ class Tickets(Controller):
         for place in {ticket.work_environment for ticket in merged if self._in_plan_worktree(ticket)}:
             self._close_plan_worktree(place)
         return merged
+
+    def _ran(self, ticket) -> bool:
+        return not ticket.queued and not self._waiting_on(ticket) and bool(ticket.agent_seen or ticket.launched or self._in_plan_worktree(ticket))
 
     def _branch(self, ticket) -> str:
         from providers import DRIVERS
@@ -559,7 +564,8 @@ class Tickets(Controller):
             if failed:
                 where = "" if name == "." else f" in {name}"
                 self._refuse(f"{self.type} {ticket.n}'s branch {branch}{where} was not merged into {into}: {failed}")
-        self.close_merged()
+        ticket = self.load(ticket.n)
+        self._closed([ticket] if self._merged(ticket) else [])
         return self.load(ticket.n)
 
     def _into(self, ticket) -> str:
