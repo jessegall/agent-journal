@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.195.3 — A ticket is merged only once it has done work
+
+The minute sweep closed a ticket as merged when it was only waiting: its branch was made when it was started, but the commit it was cut from is recorded only when its agent launches, and with none recorded a branch sitting on the board's history looked merged. So ticket 16 closed without any work and released the ticket waiting on it. Now a branch without a recorded start is never counted as merged, the sweep never closes a ticket that is queued, waiting on another ticket or has not run, and journal ticket merge still closes the ticket it merges (reported from code-commandments). Nothing to do.
+
 ## 2.195.2 — The board-filler is only asked for on a real board
 
 The line asking the main agent to dispatch the board-filler could fire for a run that was about no board at all, naming "board 0" with an empty request; it now says nothing unless the run is about a board's request. And between drafting rounds the placeholders left from the last one no longer set a floor: a gap fill after a board is closed can say it will draft 3 with journal board expect, even when 11 showed before (both reported from code-commandments). Nothing to do.
