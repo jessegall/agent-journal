@@ -21,6 +21,7 @@ export const store = reactive({
     summary: null,
     pages: [],
     organization: null,
+    ticketTodos: [],
     bar: null,
     stream: null,
     booted: false,

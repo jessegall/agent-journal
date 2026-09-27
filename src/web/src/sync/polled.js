@@ -11,6 +11,7 @@ export const polled = {
     agents: ["agents", () => api.agents(LIVE), 1000, (got) => (store.agents = got)],
     pages: ["pages", () => api.pages(), 5000, (got) => (store.pages = got)],
     organization: ["organization", () => api.organization(), 10000, (got) => (store.organization = got)],
+    ticketTodos: ["ticketTodos", () => api.ticketTodos(), 10000, (got) => Array.isArray(got) && (store.ticketTodos = got)],
     online: ["online", () => api.onlineAgents(), 5000, (got) => (store.online = got)],
     journals: ["journals", () => api.journals(), 10000, (got) => (store.journals = got)],
     summary: ["summary", readSummary, 4000],

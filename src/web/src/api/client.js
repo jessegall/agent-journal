@@ -360,6 +360,10 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/permit`), {allow});
     }
 
+    ticketTodos() {
+        return this.post(this.here("/ticket/todos"), {});
+    }
+
     organization() {
         return this.post(this.here("/ticket/organization"), {});
     }
