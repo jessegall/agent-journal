@@ -16,13 +16,8 @@ class AgentType:
     @property
     def instructions(self) -> str:
         from features.sequences.shipped import SHIPPED
-        followed = [sequence for sequence in SHIPPED if sequence.get("dispatch") == self.name]
-        return "\n\n".join([self.prompt, *(steps_of(sequence) for sequence in followed)])
-
-
-def steps_of(sequence: dict) -> str:
-    steps = "\n".join(f"{i}. {title}: {body}" for i, (title, body) in enumerate(sequence["steps"], 1))
-    return f"## {sequence['title']}\n\n{sequence['brief']}\n\n{steps}"
+        followed = [sequence for sequence in SHIPPED if sequence.dispatch == self.name]
+        return "\n\n".join([self.prompt, *(sequence.written_out() for sequence in followed)])
 
 
 AGENT_TYPES = (

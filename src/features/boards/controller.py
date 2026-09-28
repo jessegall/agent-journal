@@ -121,7 +121,7 @@ class Boards(Controller):
             from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
             sequences = Sequences(self.record, actor=SYSTEM)
             for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
-                sequence = sequences._titled(shipped["title"])
+                sequence = sequences._titled(shipped.title)
                 for key in [key for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|")]:
                     sequences._finish(sequence.n, key.split("|", 1)[1])
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
@@ -226,11 +226,11 @@ class Boards(Controller):
             raise Refused(f"board {board.n} is past exploring: the request is {board.drafting.get('phase')}")
         about, turns, rated = board.drafting["asked"][0], int(board.drafting.get("turns", 0)) + 1, int(score)
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        exploring = sequences._titled(EXPLORATION["title"])
+        exploring = sequences._titled(EXPLORATION.title)
         handed = 0
         if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
             sequences._finish(exploring.n, about)
-            handed = sequences.run(sequences._titled(DRAFTING["title"]).n, about=about).n
+            handed = sequences.run(sequences._titled(DRAFTING.title).n, about=about).n
             phase = DRAFTING_PHASE
         elif turns >= MOST_TURNS:
             sequences._finish(exploring.n, about)

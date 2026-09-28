@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 from engine.stored import read_json, write_json
+from typing import TypedDict
 
 
 PALETTE = ("#e5484d", "#f76b15", "#ffc53d", "#30a46c", "#12a594", "#0090ff", "#3e63dd", "#8e4ec6", "#d6409f", "#a18072")
@@ -38,7 +39,14 @@ def set_color(root: Path, value: str | None) -> None:
     write_json(file(root), values, indent=2)
 
 
-def identity(root: Path) -> dict:
+class Identity(TypedDict):
+    project: str
+    color: str
+    default_color: str
+    custom_color: str | None
+
+
+def identity(root: Path) -> Identity:
     project = root.resolve().parent.name
     fallback = default(project)
     chosen = custom(root)

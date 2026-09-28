@@ -1,16 +1,17 @@
+from features.sequences.shipping import ShippedSequence
 from features.sequences.exploration import FILLER, LOG, PANEL
 
-DRAFTING = {
-    "title": "Drafting the board's cards",
-    "brief": "You know the goal and what done means (journal board show <board n>). Draft the cards that reach it, one by one, "
+DRAFTING = ShippedSequence(
+    title="Drafting the board's cards",
+    brief="You know the goal and what done means (journal board show <board n>). Draft the cards that reach it, one by one, "
              "so each appears on the board while you write, then say one short line. Together the cards must meet every clause of "
              "the goal, including the work the user did not think of. Talk only about the feature and its tickets, never about rows, chips, ticket numbers, "
              "commands or the journal. " + LOG,
-    "starts_on": "",
-    "started_by": "",
-    "talks_in": PANEL,
-    "dispatch": FILLER,
-    "steps": [
+    starts_on="",
+    started_by="",
+    talks_in=PANEL,
+    dispatch=FILLER,
+    steps=[
         ("Guess the count", "Before your first card, guess how many you will write, at least 6 and preferably 8: journal board "
                             "expect <board n> <count>. The panel shows that many placeholders. You may not finish with fewer cards "
                             "than you guessed. Then journal sequence next <this sequence> --about <ref>."),
@@ -42,4 +43,4 @@ DRAFTING = {
                          "cards, like \"Five tickets drafted. Pick the ones to keep.\" No numbers such as #12, rows, chips, "
                          "commands or the journal. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
-}
+)

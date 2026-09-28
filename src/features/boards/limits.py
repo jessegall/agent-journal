@@ -4,7 +4,7 @@ from features.sequences.controller import Sequences
 from features.sequences.exploration import FILLER
 from features.sequences.shipped import BUILDING_A_BOARD, DRAFTING, DRAFTING_FROM_A_DOCUMENT, EXPLORATION, REVISING_THE_DRAFTS
 
-BOARD_SEQUENCES = {shipped["title"] for shipped in (EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, DRAFTING_FROM_A_DOCUMENT, BUILDING_A_BOARD)}
+BOARD_SEQUENCES = {shipped.title for shipped in (EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, DRAFTING_FROM_A_DOCUMENT, BUILDING_A_BOARD)}
 HELD = ("plan", "question")
 
 
