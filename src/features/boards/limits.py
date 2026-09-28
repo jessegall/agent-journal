@@ -8,12 +8,18 @@ BOARD_SEQUENCES = {shipped["title"] for shipped in (EXPLORATION, DRAFTING, REVIS
 HELD = ("plan", "question")
 
 
+def filling(controller) -> str:
+    if controller.agent == FILLER:
+        return FILLER
+    found = Sequences(controller.record, actor=controller.actor)._in_hand()
+    return found[0].title if found and found[0].title in BOARD_SEQUENCES else ""
+
+
 class BoardWorkStaysOnTheBoard(ActionInterceptor):
     def intercept(self, feature_context: Context, controller, **args):
         if controller.actor != AGENT or controller.type not in HELD or args.get("hidden"):
             return None
-        found = Sequences(controller.record, actor=controller.actor)._in_hand()
-        running = FILLER if controller.agent == FILLER else found[0].title if found and found[0].title in BOARD_SEQUENCES else ""
+        running = filling(controller)
         if running:
             raise Refused(f"the {running} is filling the board: the work goes on its board, so ask with journal board ask "
                           f"and draft tickets with journal ticket create; no {controller.type} of its own")

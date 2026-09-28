@@ -47,3 +47,7 @@ class Board(Shape, Resource):
               "orchestrator_confirms_drafts": "The orchestrating agent confirms drafted tickets",
               "plan_reviewer": "Who reviews a ticket's plan: orchestrator, or subagent"}
     shown_fields = ("stages", "branch", "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts", "plan_reviewer")
+
+    @property
+    def asked(self) -> list[str]:
+        return self.drafting.get("asked") or []

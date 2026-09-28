@@ -5,7 +5,6 @@ from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked,
 
 
 class Message(Shape, Resource):
-    moments = ("created", "completed", REQUESTED, REVISED, COMMISSIONED)
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="idempotency"),
         Field(name="delivered"),
@@ -15,6 +14,7 @@ class Message(Shape, Resource):
         abstract="What the user left for the agent, or the agent for the user",
         help="A message is read once by the other side and processed part by part; what each part became is written on it.",
     )
+    moments = ("created", "completed", REQUESTED, REVISED, COMMISSIONED)
     deduplicates = True
     filters = ()
     created_in_viewer = False
@@ -38,7 +38,7 @@ class Todo(Ranked, Placed, Resource):
         Field(default="", name="assigned"),
         Field(name="blocked"),
         Field(name="reported"),
-        Field(name="after"),
+        Field(default=list, name="after"),
         Field(name="struck"),
         Field(FLAG, False, name="hidden"),
     ]

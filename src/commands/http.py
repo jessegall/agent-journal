@@ -659,20 +659,34 @@ def get_project_files_found(req: Request) -> Reply:
 
 @dataclass(frozen=True)
 class Transcript:
-    provider: Provider | None
-    path: Path | None
+    provider: Provider
+    path: Path
+
+    def turns(self) -> list:
+        return self.provider.transcript(self.path)
+
+    def links(self) -> list:
+        return self.provider.work_links(self.path)
 
 
-def transcript_at(req: Request, session: str | None) -> Transcript:
+class NoTranscript:
+    def turns(self) -> list:
+        return []
+
+    def links(self) -> list:
+        return []
+
+
+def transcript_at(req: Request, session: str | None) -> Transcript | NoTranscript:
     row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
-    provider = PROVIDERS[row.provider]() if row.provider in PROVIDERS and row.transcript else None
-    path = Path(row.transcript) if provider else None
-    if session is not None:
-        known = any(r.get("session") == session for r in row.subagent_rows)
-        path = provider.subagent_transcript(path, session) if provider and known else None
-        if not path:
-            raise Missing("no such subagent session")
-    return Transcript(provider, path)
+    kept = row.provider in PROVIDERS and row.transcript
+    if session is None:
+        return Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if kept else NoTranscript()
+    known = kept and any(r.get("session") == session for r in row.subagent_rows)
+    path = PROVIDERS[row.provider]().subagent_transcript(Path(row.transcript), session) if known else None
+    if not path:
+        raise Missing("no such subagent session")
+    return Transcript(PROVIDERS[row.provider](), path)
 
 
 SPOKEN = ("agent", "human", "injected")
@@ -680,7 +694,7 @@ SPOKEN = ("agent", "human", "injected")
 
 def transcript_of(req: Request, session: str | None = None) -> Reply:
     found = transcript_at(req, session)
-    turns = found.provider.transcript(found.path) if found.path else []
+    turns = found.turns()
     asked = req.query_as(TranscriptQuery)
     got = page(turns, asked.since, asked.before, asked.last)
     record = req.record()
@@ -691,13 +705,13 @@ def transcript_of(req: Request, session: str | None = None) -> Reply:
 @route("GET", "/api/{env}/agent/{n}/links")
 def get_agent_links(req: Request) -> Reply:
     found = transcript_at(req, None)
-    return Reply(200, {"links": found.provider.work_links(found.path) if found.path else []})
+    return Reply(200, {"links": found.links()})
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/links")
 def get_subagent_links(req: Request) -> Reply:
     found = transcript_at(req, req.params["session"])
-    return Reply(200, {"links": found.provider.work_links(found.path)})
+    return Reply(200, {"links": found.links()})
 
 
 @route("GET", "/api/{env}/family")

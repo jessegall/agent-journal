@@ -71,7 +71,7 @@ class Boards(Controller):
         from features.sequences.controller import Sequences
         from features.tickets.controller import Tickets
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        for about in board.drafting.get("asked") or []:
+        for about in board.asked:
             sequences.give_up(about, why="The request on the board was cancelled")
         tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for left in self._drafts(board) if board.drafting.get("since") else []:
@@ -169,7 +169,7 @@ class Boards(Controller):
 
     def say(self, n: int, line: str):
         board = self._drafting(n)
-        asked = board.drafting.get("asked") or []
+        asked = board.asked
         if not asked:
             raise Refused(f"nothing was asked on board {board.n} to answer")
         drafted = len(self._drafts(board))
@@ -243,14 +243,19 @@ class Boards(Controller):
         if board.drafting.get("phase") != STALLED:
             raise Refused(f"board {board.n} is not stalled: nothing to retry")
         from features.sequences.controller import Sequences
-        asked = board.drafting.get("asked") or []
+        asked = board.asked
         sequences = Sequences(self.record, actor=SYSTEM)
         for row in sequences.summaries():
-            sequence = sequences.load(row["n"]) if not row["completed"] and not row["deleted"] else None
-            for key, run in (sequence.runs.items() if sequence and sequence.dispatch else ()):
-                if key.split("|", 1)[1] in asked:
-                    handed = {k: v for k, v in run.items() if k != "agent"}
-                    sequences.update(sequence.n, runs={**sequence.runs, key: {**handed, "retried": time.time()}})
+            if row["completed"] or row["deleted"]:
+                continue
+            sequence = sequences.load(row["n"])
+            if not sequence.dispatch:
+                continue
+            for key, run in sequence.runs.items():
+                if key.split("|", 1)[1] not in asked:
+                    continue
+                handed = {k: v for k, v in run.items() if k != "agent"}
+                sequences.update(sequence.n, runs={**sequence.runs, key: {**handed, "retried": time.time()}})
         restored = {k: v for k, v in board.drafting.items() if k not in ("stalled", "stalled_from")}
         return self.update(board.n, drafting={**restored, "phase": board.drafting.get("stalled_from") or EXPLORING})
 
@@ -282,7 +287,7 @@ class Boards(Controller):
         board = self.load(int(n))
         made = self._filed(board, text, idempotency)
         if board.drafting.get("since"):
-            self.update(board.n, drafting={**board.drafting, "asked": [*(board.drafting.get("asked") or []), made.ref]})
+            self.update(board.n, drafting={**board.drafting, "asked": [*board.asked, made.ref]})
         return made
 
     def _filed(self, board, text: str, idempotency: str, **data):

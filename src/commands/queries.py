@@ -229,7 +229,8 @@ def banner(agent: str, project: Path) -> str:
     lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
              "A question or two first: move with ↑ ↓ and pick with Enter."]
     rule = "─" * width
-    return "\x1b[2J\x1b[H" + "\n".join([f"┌{rule}┐", *(f"│ {line:<{width - 2}} │" for line in lines), f"└{rule}┘", ""]) + SAVED_CURSOR
+    body = "\n".join(f"│ {line:<{width - 2}} │" for line in lines)
+    return f"\x1b[2J\x1b[H┌{rule}┐\n{body}\n└{rule}┘\n{SAVED_CURSOR}"
 
 
 def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
@@ -364,7 +365,9 @@ def ended(ctx) -> str:
 def kept_work(cwd: Path) -> None:
     from engine.worktree import checkout, git, keep, main_checkout, repositories
     top = checkout(cwd)
-    for place in ([top] if (top / ".git").exists() else repositories(top)) if top else []:
+    if not top:
+        return
+    for place in [top] if (top / ".git").exists() else repositories(top):
         keep(main_checkout(place), top.name, git(place, "branch", "--show-current").stdout.strip())
 
 

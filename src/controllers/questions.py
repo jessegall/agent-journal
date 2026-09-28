@@ -32,12 +32,9 @@ class Questions(Controller):
             raise Refused(f'you are answering question {n} yourself: say why with --set reason="<why>"')
         return super().complete(n, how=how, **{**data, "kept": False, ANSWERED_BY: self.actor, CHOSEN: self.load(n).chosen_for(how)})
 
-    def _standing(self, closed_since: float = 0, closed_last: int = 0) -> list:
-        return [r for r in super()._standing(closed_since, closed_last) if not r.hidden]
-
     @internal
     def about(self, ref: str) -> list:
-        return [r for r in super()._standing(closed_since=time.time() - ANSWERED_SHOWN) if ref in r.refs]
+        return [r for r in self._kept(closed_since=time.time() - ANSWERED_SHOWN) if ref in r.refs]
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         chosen = {CHOSEN: self.load(n).chosen_for(outcome), "dismissed": False} if outcome is not None else {}

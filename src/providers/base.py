@@ -75,6 +75,13 @@ class SkillWindows:
     prior_used: int = 0
     prior_loads: dict[str, int] = field(default_factory=dict)
 
+    def begin(self) -> None:
+        self.prior_used, self.prior_loads = self.used, self.loads
+        self.used, self.loads = 0, {}
+
+    def loaded(self, skill: str) -> None:
+        self.loads[skill] = self.used
+
 
 @dataclass(frozen=True)
 class Decision(Loaded):
@@ -109,6 +116,8 @@ class Provider(ABC):
     tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
                                   "Skill": SkillCall, "Agent": AgentCall, "Task": AgentCall}
+    session_variable: ClassVar[str] = ""
+    session_markers: ClassVar[tuple[str, ...]] = ()
     name = ""
     question_tools = frozenset()
     briefing_file = ""
@@ -162,9 +171,6 @@ class Provider(ABC):
 
     def shell_command(self, tool) -> str | None:
         return tool.command if isinstance(tool, BashCall) else None
-
-    session_variable: ClassVar[str] = ""
-    session_markers: ClassVar[tuple[str, ...]] = ()
 
     def shell_wrapper(self, script: Path) -> dict:
         return {}
@@ -365,14 +371,12 @@ class Provider(ABC):
 
     def skill_windows(self, windows: SkillWindows, row: dict) -> SkillWindows:
         if self.starts_window(row):
-            windows.prior_used, windows.prior_loads = windows.used, windows.loads
-            windows.used, windows.loads = 0, {}
+            windows.begin()
         used = self.tokens_of(row)
         if used is not None:
             windows.used = used
-        for use in self.tool_uses(row):
-            if use.skill_loaded:
-                windows.loads[use.skill_loaded] = windows.used
+        for skill in (use.skill_loaded for use in self.tool_uses(row) if use.skill_loaded):
+            windows.loaded(skill)
         return windows
 
     def skill_loads(self, loads: dict, row: dict) -> dict:

@@ -355,6 +355,9 @@ class Stored:
         return [r.fork() for r in memo[self.type, deleted]]
 
     def _standing(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
+        return [r for r in self._kept(closed_since, closed_last) if self.resource.hidden_listed or not r.hidden]
+
+    def _kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
         rows = [row for row in self.summaries() if not row["deleted"]]
         closed = [row for row in rows if row["completed"] and closed_since and row["completed"] >= closed_since]
         kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed

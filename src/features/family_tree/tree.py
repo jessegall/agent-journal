@@ -44,6 +44,21 @@ def peer_id(name: str) -> str:
     return f"peer:{name}"
 
 
+def dispatched(row, key: str, env: str, members: dict, links: list) -> dict[str, str]:
+    subs = row.data.get("subagent_rows")
+    if not subs:
+        return {}
+    named = {}
+    for sub in subs:
+        child = f"sub:{row.title}:{sub.get('id', '')}"
+        members[child] = Member(child, sub.get("task", "subagent"), "subagent", env, "running" if sub.get("running") else "done",
+                                sub.get("type", ""), row.n, sub.get("session", ""))
+        links.append(Link(key, child, "dispatched"))
+        if sub.get("task_id"):
+            named[sub["task_id"]] = child
+    return named
+
+
 def family(record) -> dict:
     rows = {env.title: env for env in Environments(record, actor=SYSTEM)._every() if not env.deleted}
     envs = [Place(title, rows[title].owner if title in rows else "", rows[title].launched_from if title in rows else "")
@@ -56,14 +71,7 @@ def family(record) -> dict:
             key = agent_id(env.title, row.title)
             members[key] = Member(key, f"{env.title} · {row.provider or 'agent'}", env.owner.split(":", 1)[0] if env.owner else "main",
                                   env.title, row.status, env.owner, row.n, loops=len(row.data.get("loops") or {}))
-            named = {}
-            for sub in row.data.get("subagent_rows") or []:
-                child = f"sub:{row.title}:{sub.get('id', '')}"
-                members[child] = Member(child, sub.get("task", "subagent"), "subagent", env.title, "running" if sub.get("running") else "done",
-                                        sub.get("type", ""), row.n, sub.get("session", ""))
-                links.append(Link(key, child, "dispatched"))
-                if sub.get("task_id"):
-                    named[sub["task_id"]] = child
+            named = dispatched(row, key, env.title, members, links)
             links.extend(messaged(row, key, members, named))
         found = agents.primary()
         if found:

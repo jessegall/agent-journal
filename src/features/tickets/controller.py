@@ -15,6 +15,7 @@ from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, internal
+from controllers.prioritised import Prioritised
 from features.boards.controller import Boards
 from features.boards.resource import DONE, REVIEW, START
 from features.kanban.board import BoardLanes, Card
@@ -24,7 +25,7 @@ from features.tickets.resource import Ticket, card_back
 from controllers.types import Agents, Messages, Questions, Todos, Works
 from features.plans.controller import ACTIVE, DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
-from resources.shapes import LEVELS, priority_level, rank_before
+from resources.shapes import LEVELS, rank_before
 
 
 PROPOSED, CONFIRMED = "proposed", "confirmed"
@@ -83,7 +84,13 @@ RUN_TEXT = 60
 REVIEW_MOMENTS = ("ticket.plan_waits", "ticket.checkpoint", "ticket.finished")
 
 
-class Tickets(Controller):
+def repository_state(place, branch: str, base: str, into: str) -> str:
+    if merged(place, branch, base, into):
+        return "merged"
+    return "changed" if changed(place, branch, base) else "untouched"
+
+
+class Tickets(Prioritised, Controller):
     resource = Ticket
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
@@ -174,8 +181,8 @@ class Tickets(Controller):
             if len(REPOSITORY_STATES) > STATES_KEPT:
                 REPOSITORY_STATES.clear()
             branch, into = self._branch(ticket), self._into(ticket)
-            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": "merged" if merged(place, branch, base, into) else
-                                       "changed" if changed(place, branch, base) else "untouched"} for name, place, base in self._repositories(ticket)]
+            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": repository_state(place, branch, base, into)}
+                                      for name, place, base in self._repositories(ticket)]
         return REPOSITORY_STATES[key]
 
     def _actions(self, ticket, session: str) -> list:
@@ -403,9 +410,6 @@ class Tickets(Controller):
             return CardState("running", f"waiting on its run: {waiting}", age=ago(quiet))
         step = f"{row.tool} {Path(row.file).name}".strip() if row.tool else row.status
         return CardState("running", step, age=ago(quiet))
-
-    def priority(self, n: int, value: str):
-        return self.update(int(n), priority=priority_level(value))
 
     def bind(self, n: int):
         ticket = self.load(int(n))

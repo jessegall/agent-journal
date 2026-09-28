@@ -1,5 +1,6 @@
 import re
 import time
+from functools import singledispatch
 from pathlib import Path
 
 from engine.shell import without_scripts
@@ -134,13 +135,27 @@ def test_result(hook: Hook) -> Outcome | None:
     return Outcome(passed=passed, failed=failed)
 
 
+@singledispatch
+def effect_by(call, cwd: str) -> str:
+    return ""
+
+
+@effect_by.register
+def _(call: WriteCall, cwd: str) -> str:
+    return "writes" if in_project(call.file_path, cwd) else ""
+
+
+@effect_by.register
+def _(call: BashCall, cwd: str) -> str:
+    return effect_of(call.command)
+
+
+for kind, name in KINDS:
+    effect_by.register(kind, lambda call, cwd, name=name: name)
+
+
 def effect(hook: Hook) -> str:
-    call = hook.tool
-    if isinstance(call, WriteCall):
-        return "writes" if in_project(call.file_path, hook.cwd) else ""
-    if isinstance(call, BashCall):
-        return effect_of(call.command)
-    return next((name for kind, name in KINDS if isinstance(call, kind)), "")
+    return effect_by(hook.tool, hook.cwd)
 
 
 def effect_of(command: str) -> str:

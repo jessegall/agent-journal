@@ -343,8 +343,10 @@ class LoopCall(ToolUse):
     @property
     def loop(self) -> str:
         given = self.response.get("id") or self.response.get("job_id") if isinstance(self.response, dict) else ""
+        if given:
+            return str(given)
         found = LOOP_ID.search(response_text(self.response))
-        return str(given) if given else found[1] if found else ""
+        return found[1] if found else ""
 
 
 @dataclass(frozen=True)
