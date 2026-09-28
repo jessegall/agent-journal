@@ -1,3 +1,4 @@
+import time
 from typing import ClassVar
 
 from resources.base import PROJECT, Resource, ResourceDetails
@@ -28,3 +29,7 @@ class Share(Shape, Resource):
     scope = PROJECT
     indexed = ("target", "token", "expires", "approved")
     command_names = {"complete": "stop"}
+
+    @property
+    def ended(self) -> bool:
+        return bool(self.completed) or bool(self.expires and self.expires < time.time())

@@ -31,6 +31,10 @@ class Sequences(Controller):
         self._check_start(starts_on)
         return super().update(n, title, abstract, brief, outcome, starts_on=starts_on, **data)
 
+    @internal
+    def update_run(self, r, key: str, run: dict):
+        return self.update(r.n, runs={**r.runs, key: run})
+
     def steps(self, n: int, steps: str):
         try:
             parsed = json.loads(steps) if isinstance(steps, str) else steps
@@ -104,7 +108,7 @@ class Sequences(Controller):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
         self._mark(r, "Sequence restarted" if self._running(r, about) else "Sequence started", 1, about=about)
         run = {"step": 1, "at": time.time(), "titles": self._titles(r), **given(agent=self.agent)}
-        return self.update(r.n, runs={**r.runs, self._key(about): run})
+        return self.update_run(r, self._key(about), run)
 
     def _running(self, r, about: str) -> bool:
         return self._key(about) in r.runs
@@ -134,7 +138,7 @@ class Sequences(Controller):
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
         taken = {"followed": r.runs[key]["step"], **given(agent=self.agent)}
-        r = self.update(r.n, runs={**r.runs, key: {**r.runs[key], **taken}})
+        r = self.update_run(r, key, {**r.runs[key], **taken})
         steps, step = self._steps(r), r.runs[key]["step"]
         return f"Step {step} of {len(steps)} of sequence {r.n}, {steps[step - 1][SECTION.title]}: {steps[step - 1][SECTION.body]}"
 
@@ -145,7 +149,7 @@ class Sequences(Controller):
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")
         self._mark(r, "Sequence moved on", step)
         run = {k: v for k, v in r.runs[key].items() if k != "followed"}
-        return self.update(r.n, runs={**r.runs, key: {**run, "step": step, "stepped": time.time(), "titles": self._titles(r)}})
+        return self.update_run(r, key, {**run, "step": step, "stepped": time.time(), "titles": self._titles(r)})
 
     def _finish(self, n: int, about: str):
         r = self.load(int(n))
@@ -163,7 +167,7 @@ class Sequences(Controller):
             return
         sequence, key, run = found
         handed = {k: v for k, v in run.items() if k != "followed"}
-        self.update(sequence.n, runs={**sequence.runs, key: {**handed, "stepped": time.time()}})
+        self.update_run(sequence, key, {**handed, "stepped": time.time()})
 
     def _running_here(self) -> list:
         return [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]

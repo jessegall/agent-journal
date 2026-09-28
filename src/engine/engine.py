@@ -45,6 +45,10 @@ def after(written: list, line: int) -> list[str]:
 
 
 
+def asking(row) -> bool:
+    return bool(row and row.asking)
+
+
 @dataclass(frozen=True)
 class PeerLog(Loaded):
     at: float = 0.0
@@ -213,8 +217,7 @@ class Engine(Seat):
         return f"permission: {queued.value}"
 
     def shelled(self) -> str:
-        last = self.agent.driver.last_report()
-        if last and last.data.get("asking"):
+        if asking(self.agent.driver.last_report()):
             return ""
         queued = take(self.record.root, self.names(), SHELL)
         if not queued:
@@ -322,7 +325,7 @@ class Engine(Seat):
         last = self.agent.driver.last_report()
         at_once = PROVIDERS[self.agent.driver.name].applies_at_once if self.agent.driver.name in PROVIDERS else ()
         idle = stopped or self.agent.state() == IDLE
-        if not idle and (not at_once or (last and last.data.get("asking"))):
+        if not idle and (not at_once or asking(last)):
             return ""
         queued = take(self.record.root, self.names()) if idle else take(self.record.root, self.names(), among=at_once)
         if not queued:

@@ -157,7 +157,7 @@ class Dumps(Controller):
         found = self._collection(self.load(int(n)))
         if not found:
             raise Refused(f"dump {n} has no collection")
-        self.update(int(n), title=title.strip())
+        self._retitle(n, title)
         return self._collections().update(found, title=title.strip())
 
     def _names(self, r) -> list[str]:
