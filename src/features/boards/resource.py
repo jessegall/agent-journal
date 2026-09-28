@@ -27,6 +27,7 @@ class Board(Shape, Resource):
         Field(NUMBER, 0.0, name="started"),
         Field(NUMBER, 0.0, name="paused"),
         Field(NUMBER, 0.0, name="finished"),
+        Field(TEXT, name="orchestrator"),
         Field(FLAG, False, name="orchestrator_approves_plans"),
         Field(FLAG, False, name="orchestrator_accepts_waits"),
         Field(FLAG, False, name="orchestrator_confirms_drafts"),

@@ -245,7 +245,7 @@ class Tickets(Controller):
             return ticket
         if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self._orchestrating():
             self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board while its "
-                         f"auto mode is on and the board has {PLANS} set; never the agent that wrote it")
+                         f"auto mode is on and the board has {PLANS} set; never the agent that wrote it. Here: {self._why_not(ticket)}")
         act(Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM), int(ticket.plan))
         if told and self.agent_session(ticket.n):
             try:
@@ -298,12 +298,24 @@ class Tickets(Controller):
         self.update(ticket.n, restarts=ticket.restarts + 1)
         return not self.start(ticket.n).queued
 
+    def _why_not(self, ticket) -> str:
+        from features.work_tracking.auto import automatic
+        board = Boards(self.record, actor=SYSTEM).load(int(ticket.board))
+        return "; ".join([
+            f"auto mode is {'on' if automatic(self.record) else 'off'} in {self.record.env} (Settings, Work tracking, auto)",
+            f"board {board.n} has {PLANS} {'set' if board.data.get(PLANS) else 'unset'}",
+            f"{self.record.env} {'orchestrates' if board.n in self._orchestrating() else 'does not orchestrate'} board {board.n}"
+            + ("" if board.n in self._orchestrating() else f" (Play marks the environment that runs it; journal board update {board.n} --set orchestrator={self.record.env} takes it)"),
+        ])
+
     def _orchestrating(self) -> list[int]:
         from features.sequences.controller import Sequences
         from features.sequences.orchestration import ORCHESTRATION
         sequence = Sequences(self.record, actor=SYSTEM)._titled(ORCHESTRATION["title"])
-        keys = sequence.runs if sequence else {}
-        return [int(key.rsplit(":", 1)[1]) for key in keys if key.startswith(f"{self.record.env}|board:")]
+        running = {int(key.rsplit(":", 1)[1]) for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|board:")}
+        held = {board.n for board in Boards(self.record, actor=SYSTEM)._standing()
+                if not board.finished and board.orchestrator == self.record.env}
+        return sorted(running | held)
 
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()

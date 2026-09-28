@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.195.6 — The orchestrator keeps its board after a close
+
+An orchestrator could no longer approve a ticket's plan once its "Orchestrating a board" run had ended, as it does when a board is closed, even with auto mode on and the board letting it approve: tickets added afterwards, such as a gap fill, waited for the user for hours. Now pressing Play records the environment that runs the board, and that environment keeps it until the board is finished; journal board update <n> --set orchestrator=<environment> hands a board to one. When such an approval is refused, the reason says which part is missing: whether auto mode is on or off in that environment and where it is set, whether the board lets its orchestrator decide, and whether that environment runs the board (reported from code-commandments). Nothing to do.
+
 ## 2.195.5 — A ticket starts from its board's branch
 
 Starting a ticket reused a branch of the same name left from earlier work, 318 commits behind the board's branch in one case, so its agent would have worked on an old tree, and the recorded start could differ from where the branch really was, which let the minute sweep close the ticket as merged before it did anything. Now a ticket's first launch prepares its branch from the board's branch: it is cut there if missing, moved up if it is only behind, and set aside under another name when it holds older work, with the launch refused if that old branch is checked out somewhere. The start is recorded from the branch it prepared, and a branch counts as merged only when it grew out of that start and landed on the board's branch (reported from code-commandments). Nothing to do.
