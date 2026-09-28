@@ -50,6 +50,6 @@ The start block names the skills to load before the first write — every `journ
 
 ## Features
 
-Every capability is a feature the engine loads, switchable per environment in the viewer's Settings and tuned by its trigger. Each has its own skill, `journal-<feature>`, generated from the feature itself.
+Every capability is a feature the engine loads, switchable per environment in the viewer's Settings and tuned by its trigger. A feature that asks something of you is taught in a skill, generated from the feature itself; one that runs by itself has none, and its nudges say what to do.
 
 A listing (`journal <type> all`) returns the last 25 open rows; `--completed` adds closed ones and `--last 0` returns every row. Every request, hook and command has a 50ms budget, and the faults feature reports anything slower while developing.

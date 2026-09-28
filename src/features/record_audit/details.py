@@ -4,6 +4,7 @@ from features.trigger import MINUTES, Trigger
 
 class CleanupDetails(FeatureDetails):
     name = "record_audit"
+    has_skill = False
 
     title = "Record audit"
 

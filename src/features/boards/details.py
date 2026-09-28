@@ -5,6 +5,7 @@ from features.boards.resource import MEANINGS
 
 class BoardsDetails(FeatureDetails):
     name = "boards"
+    skill_of = "tickets"
     when = "a board is made, its stages change, or a ticket moves between them"
 
     title = "Boards"

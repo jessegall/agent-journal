@@ -6,6 +6,7 @@ from features.trigger import MINUTES, Trigger
 
 class HostingDetails(FeatureDetails):
     name = "hosting"
+    skill_of = "organization"
     when = "a ticket's app is started, opened or stopped"
 
     title = "Ticket apps"

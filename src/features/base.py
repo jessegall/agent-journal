@@ -106,6 +106,7 @@ class FeatureDetails:
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
     has_skill: ClassVar[bool] = True   # False for housekeeping that asks nothing of the agent
+    skill_of: ClassVar[str] = ""   # the skill this feature is taught in, when it is folded into another
     default: ClassVar[bool] = True
 
     @classmethod

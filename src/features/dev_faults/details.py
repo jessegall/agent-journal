@@ -3,6 +3,7 @@ from features.base import Behaviour, FeatureDetails, Line
 
 class FaultsDetails(FeatureDetails):
     name = "dev_faults"
+    has_skill = False
 
     title = "Developer fault reports"
 

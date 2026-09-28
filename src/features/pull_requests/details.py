@@ -5,6 +5,7 @@ OPEN = "open"
 
 class PullRequestsDetails(FeatureDetails):
     name = "pull_requests"
+    has_skill = False
 
     title = "Pull requests"
 

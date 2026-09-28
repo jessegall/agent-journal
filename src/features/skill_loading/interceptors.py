@@ -4,9 +4,8 @@ import time
 from features import trigger
 from features.parts import AgentContext, ToolInterceptor
 from features.recital import mentioned
-from features.skill_loading.catalogue import keywords, loaded_at, loaded_before_compaction
+from features.skill_loading.catalogue import keywords, loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require
-from providers.base import LIBRARY
 
 NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
@@ -16,8 +15,7 @@ class RequireCommandSkill(ToolInterceptor):
 
     def intercept(self, context: AgentContext, call) -> str:
         found = next((match for match in map(NOUN.search, call.commands) if match), None)
-        library = context.record.root.parent / LIBRARY
-        skill = next((f"journal-{name}" for name in (found.group(1), f"{found.group(1)}s") if (library / f"journal-{name}" / "SKILL.md").is_file()), "") if found else ""
+        skill = teaching_command(context.record.root.parent, found.group(1)) if found else ""
         if not skill:
             return ""
         row = context.agent.row

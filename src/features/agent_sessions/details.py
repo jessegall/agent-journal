@@ -5,6 +5,7 @@ from features.trigger import MINUTES, Trigger
 
 class AgentsDetails(FeatureDetails):
     name = "agent_sessions"
+    has_skill = False
 
     title = "Agent sessions"
 

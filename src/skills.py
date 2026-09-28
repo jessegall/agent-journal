@@ -50,7 +50,8 @@ def reference() -> str:
         r = controller.resource
         owner = owners.get(controller.__module__.rsplit(".", 1)[0])
         out.append(f"### {type_} — {r.details.abstract}")
-        told = f"The {skill_name(owner)} skill says how it works." if owner else r.details.help
+        taught = teaching(features.FEATURES[owner]) if owner else ""
+        told = f"The {skill_name(taught)} skill says how it works." if taught else r.details.help
         out.append(f"{told}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
         renamed = [f"{name} is {word}" for name, word in sorted(r.command_names.items()) if name in shared and word != name]
         if renamed:
@@ -80,13 +81,55 @@ def plain_description(text: str) -> str:
     return re.sub(r"\s*[<>]\s*", " ", text).strip()
 
 
+def teaching(f) -> str:
+    return f.details.skill_of or (f.name if f.details.has_skill else "")
+
+
+def folded_into(name: str) -> list:
+    return [f for f in features.FEATURES.values() if f.details.skill_of == name]
+
+
+def listed(words) -> str:
+    return ", ".join(dict.fromkeys(words))
+
+
+def nouns(names) -> list[str]:
+    return [name for name in names if "_" not in name]
+
+
+def folded_parts(folded: list) -> str:
+    return "".join(f"\n## {f.title}\n\n{f.abstract}.\n\n{f.help}\n" for f in folded)
+
+
+def moments(whens: list[str]) -> str:
+    return "; or when ".join(when for when in whens if when)
+
+
+def head(name: str, description: str, keywords: list[str], commands: list[str], extra: str = "") -> str:
+    return (f"---\nname: {skill_name(name)}\n{extra}description: {plain_description(description)}\n"
+            f"{'keywords: ' + listed(keywords) + chr(10) if keywords else ''}commands: {listed(commands)}\n---\n")
+
+
 def feature_skill(f) -> str:
-    d = f.describe()
-    subject_text = subject(d["name"])
-    loaded = f"Load it when {d['when']}. {d['abstract']}." if d["when"] else f"{d['abstract']}. It runs by itself; load it to read how it works."
-    return (f"---\nname: {skill_name(d['name'])}\ndescription: {plain_description(loaded)}\n"
-            f"{'keywords: ' + ', '.join(d['keywords']) + chr(10) if d['keywords'] else ''}---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n"
-            f"{chr(10) + subject_text + chr(10) if subject_text else ''}")
+    folded = folded_into(f.name)
+    subject_text = subject(f.name)
+    when = moments([f.when, *(g.when for g in folded)])
+    loaded = f"Load it when {when}. {f.abstract}." if when else f"{f.abstract}. It runs by itself; load it to read how it works."
+    return (head(f.name, loaded, [*f.keywords, *(w for g in folded for w in g.keywords)], nouns([f.name, *(g.name for g in folded)]))
+            + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
+
+
+def subject_skill(source: Path) -> str:
+    folded = folded_into(source.stem)
+    text = source.read_text()
+    front = re.match(r"\A---\n(.*?)\n---\n", text, re.S)
+    fields = dict(re.findall(r"^(\w+):\s*(.*)$", front.group(1), re.M))
+    when = moments([g.when for g in folded])
+    description = f"{fields.get('description', '')} Load it when {when}." if when else fields.get("description", "")
+    keywords = [*(w.strip() for w in fields.get("keywords", "").split(",") if w.strip()), *(w for g in folded for w in g.keywords)]
+    commands = nouns([source.stem, *(w.strip() for w in fields.get("commands", "").split(",") if w.strip()), *(g.name for g in folded)])
+    extra = "".join(f"{key}: {value}\n" for key, value in fields.items() if key not in ("name", "description", "keywords", "commands"))
+    return head(source.stem, description, keywords, commands, extra) + text[front.end():].rstrip("\n") + "\n" + folded_parts(folded)
 
 
 def render() -> dict[str, str]:
@@ -94,9 +137,9 @@ def render() -> dict[str, str]:
     out = {"journal/SKILL.md": core(), f"journal/{NOUNS}": reference()}
     for source in sorted((HERE / "skills").glob("*.md")):
         if source.name != "journal.md" and source.stem not in features.FEATURES:
-            out[f"{skill_name(source.stem)}/SKILL.md"] = source.read_text()
+            out[f"{skill_name(source.stem)}/SKILL.md"] = subject_skill(source)
     for name, f in features.FEATURES.items():
-        if f.details.has_skill:
+        if f.details.has_skill and not f.details.skill_of:
             out[f"{skill_name(name)}/SKILL.md"] = feature_skill(f)
     return out
 

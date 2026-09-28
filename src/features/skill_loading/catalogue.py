@@ -10,7 +10,7 @@ from engine.record import Record
 from providers import PROVIDERS
 from resources.base import SYSTEM, names
 
-SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords")
+SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
 from providers.base import LIBRARY
 from skills import skill_name
 from engine.package import data
@@ -44,6 +44,15 @@ def frontmatter(text: str) -> dict:
     return dict(re.findall(r"^(\w+):\s*(.*)$", m.group(1), re.M)) if m else {}
 
 
+def listed_in(field: str) -> list[str]:
+    return [w.strip() for w in field.strip('"[]').split(",") if w.strip()]
+
+
+def teaching_command(root: Path, noun: str) -> str:
+    named = {noun, f"{noun}s"}
+    return next((s[SKILL.name] for s in catalogue(root) if named & {*s[SKILL.commands], s[SKILL.name].removeprefix("journal-")}), "")
+
+
 def described(f: Path, root: Path) -> dict:
     found = f.stat()
     stamp = (found.st_mtime_ns, found.st_size)
@@ -52,7 +61,7 @@ def described(f: Path, root: Path) -> dict:
         head = frontmatter(f.read_text(errors="replace"))
         held = READ[str(f)] = (stamp, {SKILL.name: f.parent.name, SKILL.description: head.get("description", "").strip('"'), SKILL.path: str(f.relative_to(root)),
                                        SKILL.changed: found.st_mtime, SKILL.size: found.st_size,
-                                       SKILL.keywords: [w.strip() for w in head.get("keywords", "").strip('"[]').split(",") if w.strip()]})
+                                       SKILL.keywords: listed_in(head.get("keywords", "")), SKILL.commands: listed_in(head.get("commands", ""))})
     return held[1]
 
 

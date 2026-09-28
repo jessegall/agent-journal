@@ -6,6 +6,7 @@ from features.trigger import MINUTES, Trigger
 
 class TagsDetails(FeatureDetails):
     name = "command_tags"
+    skill_of = "messages"
     when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
 
     title = "Command tags"

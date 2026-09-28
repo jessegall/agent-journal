@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class PermissionsDetails(FeatureDetails):
     name = "permission_prompts"
+    has_skill = False
 
     title = "Permission prompts"
 
