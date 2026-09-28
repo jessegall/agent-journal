@@ -108,7 +108,7 @@ def name_unblocked(context: Context, ref: str) -> None:
     todos, agent = context.journal.todos, context.journal.agents.primary()
     if not agent:
         return
-    for row in [r for r in todos._standing() if ref in (r.after or []) and not r.blocked and not todos.waits(r)]:
+    for row in [r for r in todos._standing() if ref in r.after and not r.blocked and not todos.waits(r)]:
         context.speaking_to(agent).agent.say("unblocked", n=row.n, title=row.title, closed=ref.replace(":", " "))
 
 

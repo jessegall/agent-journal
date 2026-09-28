@@ -190,6 +190,10 @@ class Resource:
     def agent_line(self) -> str:
         return f"{self.title} — {self.brief}" if self.brief else self.title
 
+    def rewrite(self, words) -> None:
+        self.title, self.abstract, self.brief, self.outcome = words(self.title), words(self.abstract), words(self.brief), words(self.outcome)
+        self.sections = [{**s, SECTION.body: words(s[SECTION.body])} for s in self.sections]
+
     def fork(self) -> "Resource":
         return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=copied(self.data))
 

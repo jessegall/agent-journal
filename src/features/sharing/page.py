@@ -1,6 +1,7 @@
 import html
 import re
 import time
+from itertools import takewhile
 from urllib.parse import quote
 
 from features.row_links.formatters import named
@@ -88,13 +89,9 @@ class Page:
                 out.append(f"<blockquote>{self.inline(' '.join(quoted))}</blockquote>")
                 continue
             if line.lstrip().startswith("|"):
-                rows = []
-                while i < len(lines) and lines[i].lstrip().startswith("|"):
-                    cells = [c.strip() for c in lines[i].strip().strip("|").split("|")]
-                    if not all(set(c) <= set("-: ") for c in cells):
-                        rows.append("".join(f"<td>{self.inline(c)}</td>" for c in cells))
-                    i += 1
-                out.append("<table>" + "".join(f"<tr>{r}</tr>" for r in rows) + "</table>")
+                block = list(takewhile(lambda row: row.lstrip().startswith("|"), lines[i:]))
+                i += len(block)
+                out.append(self.table(block))
                 continue
             paragraph = []
             while i < len(lines) and lines[i].strip() and not (lines[i].startswith((*FENCES, ">")) or HEADING.match(lines[i]) or LIST_ITEM.match(lines[i])):
@@ -102,6 +99,11 @@ class Page:
                 i += 1
             out.append(f"<p>{self.inline(' '.join(paragraph))}</p>")
         return "\n".join(out)
+
+    def table(self, block: list[str]) -> str:
+        rows = [[c.strip() for c in line.strip().strip("|").split("|")] for line in block]
+        shown = [cells for cells in rows if not all(set(c) <= set("-: ") for c in cells)]
+        return "<table>" + "".join("<tr>" + "".join(f"<td>{self.inline(c)}</td>" for c in cells) + "</tr>" for cells in shown) + "</table>"
 
     def row(self, r) -> str:
         ref = f"{r.type}:{r.n}"

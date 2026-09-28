@@ -29,7 +29,7 @@ def subagents(agent) -> list[dict]:
     live = (agent.status or "stopped") != "stopped"
     now = time.time()
     shown = []
-    for sub in agent.subagent_rows or []:
+    for sub in agent.subagent_rows:
         if not sub.get("session"):
             continue
         active = max(float(sub.get("at") or 0), last_written(agent, sub["session"]))

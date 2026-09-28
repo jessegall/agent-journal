@@ -187,6 +187,11 @@ def spawn(spec: ServiceSpec, lifeline: int) -> int:
     return kept.pid
 
 
+def excerpt(output: str) -> str:
+    words = output.strip()[:160]
+    return f": {words}" if words else ""
+
+
 class Manager:
     def __init__(self, root: Path, lifeline: int = -1, start=spawn, clock=time.time, living=alive):
         self.root = Path(root)
@@ -276,7 +281,7 @@ class Manager:
             return why
         try:
             ran = subprocess.run(spec.when, shell=True, cwd=spec.cwd or None, env={**os.environ, **spec.env}, capture_output=True, text=True, timeout=ASKED_WITHIN)
-            why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{': ' + ran.stdout.strip()[:160] if ran.stdout.strip() else ''}"
+            why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}"
         except (OSError, subprocess.SubprocessError) as e:
             why = f"not needed here: {spec.when} could not be asked ({e})"
         self.needed[spec.id] = (now, why)

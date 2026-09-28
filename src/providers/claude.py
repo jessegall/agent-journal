@@ -113,6 +113,9 @@ def monitor_status(finished: bool, notified: bool, status: str) -> str:
 
 class Claude(Provider):
     name = "claude"
+    session_variable = "CLAUDE_CODE_SESSION_ID"
+    session_markers = ("CLAUDECODE", "CLAUDE_PID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_EXECPATH", "CLAUDE_CODE_CHILD_SESSION",
+                       "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
     sleeping_tools = ("ScheduleWakeup",)
     echoes_typed = True
     tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall, "CronCreate": LoopCall, "CronDelete": LoopEndCall}
@@ -266,10 +269,6 @@ class Claude(Provider):
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
 
-    session_variable = "CLAUDE_CODE_SESSION_ID"
-    session_markers = ("CLAUDECODE", "CLAUDE_PID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_EXECPATH", "CLAUDE_CODE_CHILD_SESSION",
-                       "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
-
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
 
@@ -292,15 +291,17 @@ class Claude(Provider):
         return self.folded(path, self.task_rows, BackgroundTasks)
 
     def task_rows(self, tasks: BackgroundTasks, row: Row) -> BackgroundTasks:
-        for block in row.of_type("tool_result") if row.type == "user" else ():
-            for task in BACKGROUNDED.findall(block.result):
-                tasks.started.setdefault(task, row.at)
+        if row.type == "user":
+            for block in row.of_type("tool_result"):
+                for task in BACKGROUNDED.findall(block.result):
+                    tasks.started.setdefault(task, row.at)
         for text in [row.text or "", row.content or "", *(block.text for block in row.of_type("text"))]:
-            if "<task-notification>" in text:
-                for task, status in TASK_ENDED.findall(text):
-                    tasks.ended.setdefault(task, row.at)
-                    if status != TASK_OK:
-                        tasks.failed.add(task)
+            if "<task-notification>" not in text:
+                continue
+            for task, status in TASK_ENDED.findall(text):
+                tasks.ended.setdefault(task, row.at)
+                if status != TASK_OK:
+                    tasks.failed.add(task)
         return tasks
 
     def typed_runs(self, path: Path) -> list[TypedRun]:

@@ -1,8 +1,9 @@
 import time
 from controllers.base import Controller, internal, CONTROLLERS
+from controllers.prioritised import Prioritised
 from resources import types
 from resources.base import SYSTEM, Refused
-from resources.shapes import LEVELS, priority_level, rank_before
+from resources.shapes import LEVELS, rank_before
 from controllers.questions import Questions
 
 
@@ -14,7 +15,7 @@ def task_state(row, works: dict) -> str:
     return "waiting"
 
 
-class Todos(Controller):
+class Todos(Prioritised, Controller):
     resource = types.Todo
 
     def assign(self, n: int, to: str = "", off: bool = False):
@@ -62,7 +63,7 @@ class Todos(Controller):
         ref = self.waitable(kind)(self.record, actor=SYSTEM).load(int(num)).ref
         if ref == row.ref or row.ref in self.chain(ref):
             raise Refused(f"todo {n} waiting on {ref} would wait on itself")
-        held = list(row.after or [])
+        held = list(row.after)
         return self.update(n, after=[r for r in held if r != ref] if off else held + [ref] * (ref not in held))
 
     @internal
@@ -77,13 +78,13 @@ class Todos(Controller):
             if kind != "todo" or f"todo:{num}" in seen:
                 continue
             seen.add(f"todo:{num}")
-            todo.extend(self.load(int(num)).after or [])
+            todo.extend(self.load(int(num)).after)
         return seen
 
     @internal
     def waits(self, row) -> list[str]:
         open_ = []
-        for ref in row.after or []:
+        for ref in row.after:
             kind, _, num = ref.partition(":")
             try:
                 rows = self.waitable(kind)(self.record, actor=SYSTEM)
@@ -121,17 +122,11 @@ class Todos(Controller):
             self.delete(r.n, f"pruned after {days} days")
         return gone
 
-    def priority(self, n: int, value: str):
-        return self.update(int(n), priority=priority_level(value))
-
     def place(self, n: int, before: int):
         todo, target = self.load(int(n)), self.load(int(before))
         level = int(target.priority or LEVELS["default"])
         column = [t for t in self._ordered(self._standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
         return self.update(todo.n, priority=level, rank=rank_before(column, target.n))
-
-    def _standing(self, closed_since: float = 0, closed_last: int = 0) -> list:
-        return [r for r in super()._standing(closed_since, closed_last) if not r.hidden]
 
     def _ordered(self, rows: list) -> list:
         return sorted(rows, key=lambda t: (-int(t.priority or LEVELS["default"]), t.position, t.n))

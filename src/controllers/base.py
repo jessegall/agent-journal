@@ -86,7 +86,7 @@ class Controller(Stored, Files, Links):
     def save(self, r: Resource, action: str, **event) -> Resource:
         self._shipped(r, action)
         self._guarded(r, action)
-        self._unmarked(r)
+        r.rewrite(plain)
         self._note_force(r)
         if self.actor not in r.seen:
             r.seen.append(self.actor)
@@ -97,10 +97,6 @@ class Controller(Stored, Files, Links):
         self._reindexed(r.n, before, r)
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
-
-    def _unmarked(self, r: Resource) -> None:
-        r.title, r.abstract, r.brief, r.outcome = plain(r.title), plain(r.abstract), plain(r.brief), plain(r.outcome)
-        r.sections = [{**s, SECTION.body: plain(s[SECTION.body])} for s in r.sections]
 
     def _finished(self, r: Resource) -> bool:
         return bool(r.completed)

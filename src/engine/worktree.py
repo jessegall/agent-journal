@@ -173,7 +173,10 @@ def branched(project: Path, branch: str, start: str, fresh: bool = False) -> str
         return ""
     holder = checked_out(project, branch)
     if git(project, "merge-base", "--is-ancestor", ref, start).returncode == 0:
-        git(holder, "merge", "--ff-only", "-q", start) if holder else git(project, "branch", "-f", branch, start)
+        if holder:
+            git(holder, "merge", "--ff-only", "-q", start)
+            return ""
+        git(project, "branch", "-f", branch, start)
         return ""
     if holder:
         return f"its branch {branch} holds work from before and is checked out in {holder}; move that work away first"
