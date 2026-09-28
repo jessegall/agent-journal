@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.199.1 — A report being written shows its parts as skeleton lines
+
+A report is now written the way a document is: the agent lays out every part first, each
+drawn as skeleton lines, then fills them in one at a time, so an open report shows that it is
+still being written and which part comes next. Nothing to do.
+
 ## 2.199.0 — A question that no longer makes sense can be dismissed
 
 Every open question has a Dismiss button beside Elaborate, on its card and on the Questions

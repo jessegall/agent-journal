@@ -147,7 +147,7 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     titled = lambda title: sequences.load(next(r["n"] for r in sequences.summaries() if r["title"] == title))
     closing = [s["title"] for s in sequences._steps(titled("Finishing what you wrote"))]
-    assert [s["title"] for s in sequences._steps(titled("Writing a report"))] == ["Write the findings", *closing], \
+    assert [s["title"] for s in sequences._steps(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
         "a shipped sequence reuses the closing steps it shares"
     base = sequences.create("Base")
     for step in ("one", "two", "three"):
