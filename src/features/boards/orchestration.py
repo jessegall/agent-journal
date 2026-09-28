@@ -1,0 +1,8 @@
+from features.boards.details import BoardsDetails
+
+
+def orchestration(record) -> str:
+    if not BoardsDetails.values(record).orchestrating:
+        return ""
+    return ("ORCHESTRATING: this environment's agent runs its boards and only delegates; every ticket's work is done by that "
+            "ticket's own agent. journal board orchestrate off returns you to your own work.")

@@ -51,6 +51,12 @@ class BoardsDetails(FeatureDetails):
             default="sonnet",
             title="Model of the agents that review plans, tickets and the board's goal",
         ),
+        Setting(
+            name="orchestrating",
+            default=False,
+            title="This environment's agent orchestrates its boards",
+            abstract="On, it only delegates: board moments, ticket nudges and the orchestrating sequences reach it. Off, none do and it works as usual. Play turns it on",
+        ),
     ]
 
     lines = [

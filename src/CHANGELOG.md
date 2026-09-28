@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.196.0 — Orchestrating is a switch you can see
+
+Whether an environment's agent orchestrates its boards is now one real state per environment, not something implied by a board, a running sequence and the nudges. On, the agent only delegates: board moments, ticket nudges, idle checks and the orchestrating sequences reach it. Off, none of them do for that environment, and the agent works as usual. Pressing Play turns it on; journal board orchestrate off (or the switch under Settings, Boards) turns it off and ends the environment's orchestrating sequences, leaving the boards as they are. The start block says when the agent is orchestrating, so it survives a compaction, and the state is the same whatever page is open (asked for from code-commandments).
+
+Setting a row's title, abstract or brief with --set now works like the --title, --abstract and --brief options. After this update an environment orchestrates only once Play is pressed again or journal board orchestrate on is run.
+
 ## 2.195.6 — The orchestrator keeps its board after a close
 
 An orchestrator could no longer approve a ticket's plan once its "Orchestrating a board" run had ended, as it does when a board is closed, even with auto mode on and the board letting it approve: tickets added afterwards, such as a gap fill, waited for the user for hours. Now pressing Play records the environment that runs the board, and that environment keeps it until the board is finished; journal board update <n> --set orchestrator=<environment> hands a board to one. When such an approval is refused, the reason says which part is missing: whether auto mode is on or off in that environment and where it is set, whether the board lets its orchestrator decide, and whether that environment runs the board (reported from code-commandments). Nothing to do.
