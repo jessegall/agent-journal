@@ -63,3 +63,11 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     commit(f"several at once\n\nJournal: todos done {several[0]} {several[1]} and {several[2]}")
     assert [bool(todos.load(n).completed) for n in several] == [True, True, True], \
         "every number after todos done closes, separated by spaces, commas or and"
+    counted = lambda: len(Agents(record, actor=SYSTEM).by_session("claude-1").data["cards"])
+    before = counted()
+    for cursor in (record.home / "runtime").glob("cursor-close_from_commits-*"):
+        cursor.write_text("0" * 40)
+    commit("after an update")
+    assert counted() == before, "a last seen commit this checkout's history does not hold replays nothing: it is a first look"
+    commit("the next one")
+    assert counted() == before + 1, "and the commit after it is marked, once"

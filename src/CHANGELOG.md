@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.200.1 — Commit marks never replay old history
+
+The chat's commit marks remember the last commit they saw per checkout, not per environment.
+When that commit is not in the checkout's history, after an update or when another checkout
+moved it, the journal now takes it as a first look and marks nothing, instead of announcing
+the last fifty commits again, older ones from the base branch included (seen in workflows).
+Nothing to do.
+
 ## 2.200.0 — 21 skills instead of 52
 
 A skill now exists only when it tells the agent what to do. Eighteen skills that only
