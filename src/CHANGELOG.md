@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.200.3 — The refused-line notice is filed
+
+2.200.2's notice for a refused plugin queue line failed before it was filed, and the plugin
+host reported an error instead; it is filed now. Nothing to do.
+
 ## 2.200.2 — A plugin hears when its queued line is refused
 
 A line a plugin queues that the journal refuses, such as one naming --env, now files a notice
