@@ -1,4 +1,5 @@
 <script setup>
+import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -586,54 +587,56 @@ function startAnew() {
                         </template>
                         <template #row>
                             <Transition name="layer">
-                                <template v-if="row === 'chips'">
-                                    <div key="chips" class="row-layer chips">
-                                        <template v-for="text in EXAMPLES" :key="text">
-                                            <Btn small @click="example(text)">{{ text }}</Btn>
-                                        </template>
-                                    </div>
-                                </template>
-                                <template v-else-if="row === 'upload'">
-                                    <div key="upload" class="row-layer">
-                                        <FileSlip class="slip" :file="handed" removable @remove="handed = null" />
-                                        <Btn kind="primary" small @click="hand">Read it and draft tickets</Btn>
-                                    </div>
-                                </template>
-                                <template v-else-if="row === 'failed'">
-                                    <div key="failed" class="row-layer">
-                                        <span class="row-text bad">Couldn't upload {{ failed }}.</span>
-                                        <Btn small @click="hand">Try again</Btn>
-                                    </div>
-                                </template>
-                                <template v-else-if="row === 'stalled'">
-                                    <div key="stalled" class="row-layer">
-                                        <span class="row-text">
-                                            {{
-                                                halted
-                                                    ? drafting.stalled || "The drafting stopped."
-                                                    : "No answer yet. The agent may be busy with other work."
-                                            }}
-                                        </span>
-                                        <template v-if="halted">
-                                            <Btn small :busy="retrying" @click="retry">Retry</Btn>
-                                        </template>
-                                        <template v-else>
-                                            <Btn small @click="askAgain">Ask again</Btn>
-                                        </template>
-                                    </div>
-                                </template>
-                                <template v-else-if="row === 'status'">
-                                    <div key="status" class="row-layer">
-                                        <ChatLine bare shuffled :notes="thinking" />
-                                    </div>
-                                </template>
-                                <template v-else-if="row === 'discard'">
-                                    <div key="discard" class="row-layer">
-                                        <span class="row-text">Discard this conversation?</span>
-                                        <Btn small @click="discarding = false">Keep</Btn>
-                                        <Btn kind="danger" small @click="finish">Discard</Btn>
-                                    </div>
-                                </template>
+                                <SwitchCase :key="row" :value="row">
+                                    <template #chips>
+                                        <div key="chips" class="row-layer chips">
+                                            <template v-for="text in EXAMPLES" :key="text">
+                                                <Btn small @click="example(text)">{{ text }}</Btn>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template #upload>
+                                        <div key="upload" class="row-layer">
+                                            <FileSlip class="slip" :file="handed" removable @remove="handed = null" />
+                                            <Btn kind="primary" small @click="hand">Read it and draft tickets</Btn>
+                                        </div>
+                                    </template>
+                                    <template #failed>
+                                        <div key="failed" class="row-layer">
+                                            <span class="row-text bad">Couldn't upload {{ failed }}.</span>
+                                            <Btn small @click="hand">Try again</Btn>
+                                        </div>
+                                    </template>
+                                    <template #stalled>
+                                        <div key="stalled" class="row-layer">
+                                            <span class="row-text">
+                                                {{
+                                                    halted
+                                                        ? drafting.stalled || "The drafting stopped."
+                                                        : "No answer yet. The agent may be busy with other work."
+                                                }}
+                                            </span>
+                                            <template v-if="halted">
+                                                <Btn small :busy="retrying" @click="retry">Retry</Btn>
+                                            </template>
+                                            <template v-else>
+                                                <Btn small @click="askAgain">Ask again</Btn>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template #status>
+                                        <div key="status" class="row-layer">
+                                            <ChatLine bare shuffled :notes="thinking" />
+                                        </div>
+                                    </template>
+                                    <template #discard>
+                                        <div key="discard" class="row-layer">
+                                            <span class="row-text">Discard this conversation?</span>
+                                            <Btn small @click="discarding = false">Keep</Btn>
+                                            <Btn kind="danger" small @click="finish">Discard</Btn>
+                                        </div>
+                                    </template>
+                                </SwitchCase>
                             </Transition>
                         </template>
                         <template #tool>

@@ -1,4 +1,5 @@
 <script setup>
+import {useToggledSet} from "../composables/toggledSet.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
@@ -15,7 +16,7 @@ const raised = (e) => e.action === "raised";
 const written = (e) => logged(e).data.kind === "activity";
 const tone = (e) => (raised(e) ? e.data.tone : written(e) && logged(e).data.tone);
 const BUSY = new Set(["agent", "nudge"]);
-const opened = ref(new Set());
+const {members: opened, toggle: unfold} = useToggledSet();
 const minute = (e) => Math.floor(e.at / 60);
 const rows = computed(() => {
     const list = [];
@@ -41,20 +42,11 @@ const items = computed(() =>
             : [row]
     )
 );
-const toggled = ref(new Set());
+const {members: toggled, toggle: flip} = useToggledSet();
 const newsworthy = (e) => raised(e) || e.type === "notification";
 const opensAtFirst = (e) => newsworthy(e) && !(raised(e) && e.data.collapsed);
 const expanded = (e) => opensAtFirst(e) !== toggled.value.has(e.id);
-function toggle(e) {
-    const next = new Set(toggled.value);
-    next.has(e.id) ? next.delete(e.id) : next.add(e.id);
-    toggled.value = next;
-}
-function unfold(key) {
-    const next = new Set(opened.value);
-    next.has(key) ? next.delete(key) : next.add(key);
-    opened.value = next;
-}
+const toggle = (e) => flip(e.id);
 const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
 function heading(e) {
     if (raised(e)) return e.data.title;

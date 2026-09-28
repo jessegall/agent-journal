@@ -1,4 +1,5 @@
 <script setup>
+import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, nextTick, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
@@ -528,7 +529,7 @@ const pillOf = (d) => {
                     <ProgressBar thin :value="settled" :max="Math.max(1, items.length)" />
                     <span class="dump-eyebrow">What I'm doing</span>
                     <div ref="narr" class="dump-narr">
-                        <template v-for="(line, i) in timeline" :key="i">
+                        <template v-for="line in timeline" :key="`${line.at}:${line.mine}:${line.text}`">
                             <div :class="['dump-line', {mine: line.mine, now: line === current}]">
                                 <template v-if="line.mine">{{ line.text }}</template>
                                 <template v-else>
@@ -624,34 +625,36 @@ const pillOf = (d) => {
                         </div>
                     </template>
                     <footer class="dump-foot">
-                        <template v-if="confirming === 'remove'">
-                            <span class="dump-confirm">
-                                Remove the collection and the {{ plural(filedRows.length, "thing", "things") }} in it? What you dropped is
-                                not touched.
-                            </span>
-                            <Btn small @click="confirming = ''">Keep it</Btn>
-                            <Btn kind="danger" small @click="confirmed">Remove</Btn>
-                        </template>
-                        <template v-else-if="confirming === 'stop'">
-                            <span class="dump-confirm">Stop filing? What is filed stays; the rest of the pile is not read.</span>
-                            <Btn small @click="confirming = ''">Keep filing</Btn>
-                            <Btn kind="danger" small @click="confirmed">Stop</Btn>
-                        </template>
-                        <template v-else>
-                            <Icon name="inbox" :size="13" />
-                            <span class="dump-foot-label">Collection</span>
-                            <span class="dump-foot-name">{{ collection || (removed ? "Removed" : "Not named yet") }}</span>
-                            <span class="dump-foot-label">· {{ plural(filedRows.length, "thing", "things") }}</span>
-                            <span class="grow" />
-                            <template v-if="working">
-                                <Btn small @click="confirming = 'stop'">Stop filing</Btn>
+                        <SwitchCase :value="confirming">
+                            <template #remove>
+                                <span class="dump-confirm">
+                                    Remove the collection and the {{ plural(filedRows.length, "thing", "things") }} in it? What you dropped
+                                    is not touched.
+                                </span>
+                                <Btn small @click="confirming = ''">Keep it</Btn>
+                                <Btn kind="danger" small @click="confirmed">Remove</Btn>
                             </template>
-                            <template v-if="hasCollection && !removed">
-                                <Btn small :disabled="!filedRows.length && working" @click="confirming = 'remove'">
-                                    Remove the collection
-                                </Btn>
+                            <template #stop>
+                                <span class="dump-confirm">Stop filing? What is filed stays; the rest of the pile is not read.</span>
+                                <Btn small @click="confirming = ''">Keep filing</Btn>
+                                <Btn kind="danger" small @click="confirmed">Stop</Btn>
                             </template>
-                        </template>
+                            <template #default>
+                                <Icon name="inbox" :size="13" />
+                                <span class="dump-foot-label">Collection</span>
+                                <span class="dump-foot-name">{{ collection || (removed ? "Removed" : "Not named yet") }}</span>
+                                <span class="dump-foot-label">· {{ plural(filedRows.length, "thing", "things") }}</span>
+                                <span class="grow" />
+                                <template v-if="working">
+                                    <Btn small @click="confirming = 'stop'">Stop filing</Btn>
+                                </template>
+                                <template v-if="hasCollection && !removed">
+                                    <Btn small :disabled="!filedRows.length && working" @click="confirming = 'remove'">
+                                        Remove the collection
+                                    </Btn>
+                                </template>
+                            </template>
+                        </SwitchCase>
                     </footer>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 <script setup>
+import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, nextTick, provide, ref, watch} from "vue";
 import {route} from "../route.js";
 import {useScope} from "../composables/scope.js";
@@ -126,15 +127,17 @@ watch(
         </div>
         <Transition name="aside" @after-leave="panelLeft">
             <aside v-if="panel && !readOnly" class="document-aside">
-                <template v-if="aside === 'running'">
-                    <SequenceRuns class="running-panel" :resource="resource" panel />
-                </template>
-                <template v-else-if="aside === 'timeline'">
-                    <PlanTimelinePanel :plan="resource" />
-                </template>
-                <template v-else>
-                    <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
-                </template>
+                <SwitchCase :value="aside">
+                    <template #running>
+                        <SequenceRuns class="running-panel" :resource="resource" panel />
+                    </template>
+                    <template #timeline>
+                        <PlanTimelinePanel :plan="resource" />
+                    </template>
+                    <template #default>
+                        <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
+                    </template>
+                </SwitchCase>
             </aside>
         </Transition>
     </div>

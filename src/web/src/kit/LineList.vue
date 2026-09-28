@@ -6,10 +6,12 @@ import TextInput from "./TextInput.vue";
 const props = defineProps({value: {type: String, default: ""}, placeholder: {type: String, default: ""}});
 const emit = defineEmits(["change"]);
 const lines = ref([]);
+let made = 0;
+const entry = (text) => ({id: made++, text});
 
 watch(
     () => props.value,
-    (value) => (lines.value = value.split("\n").filter((line) => line.trim())),
+    (value) => (lines.value = value.split("\n").filter((line) => line.trim()).map(entry)),
     {immediate: true}
 );
 
@@ -17,7 +19,7 @@ const save = () =>
     emit(
         "change",
         lines.value
-            .map((line) => line.trim())
+            .map((line) => line.text.trim())
             .filter(Boolean)
             .join("\n")
     );
@@ -29,19 +31,19 @@ const remove = (i) => {
 
 <template>
     <div class="line-list">
-        <template v-for="(line, i) in lines" :key="i">
+        <template v-for="(line, i) in lines" :key="line.id">
             <div class="line-row">
                 <TextInput
-                    :value="line"
+                    :value="line.text"
                     class="line-input"
                     :placeholder="placeholder"
-                    @input="lines[i] = $event.target.value"
+                    @input="line.text = $event.target.value"
                     @change="save"
                 />
                 <button type="button" class="line-remove" title="Remove" @click="remove(i)"><Icon name="x" :size="12" /></button>
             </div>
         </template>
-        <button type="button" class="line-add" @click="lines.push('')">
+        <button type="button" class="line-add" @click="lines.push(entry(''))">
             <Icon name="plus" :size="12" />
             Add
         </button>

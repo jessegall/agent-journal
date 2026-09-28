@@ -327,7 +327,7 @@ function markClick(data) {
                             <template v-if="turn.type === 'question'">
                                 <p class="thread-ask-label">Question</p>
                             </template>
-                            <template v-for="(b, i) in results" :key="i">
+                            <template v-for="b in results" :key="`${b.part}:${b.ref.type}:${b.ref.n}`">
                                 <button type="button" class="thread-pill" :title="b.part" @click.stop="open(b.type, b.n)">
                                     {{ b.word }}
                                 </button>
