@@ -1,4 +1,5 @@
 <script setup>
+import ReadingLine from "./ReadingLine.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -138,7 +139,6 @@ const summary = computed(() => {
     if (asking.value) return {text, step: "Asking you"};
     return {text, step: STEP_WORDS[step.value] || (writing.value ? "Reading the request" : "")};
 });
-const summaryKey = computed(() => `${summary.value.text}|${summary.value.step}`);
 
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
@@ -546,17 +546,7 @@ function startAnew() {
                                     </template>
                                     <template v-else>
                                         <div key="reading" class="sub-layer">
-                                            <Transition name="layer">
-                                                <div :key="summaryKey" class="reading" :title="summary.text">
-                                                    <template v-if="summary.text">
-                                                        <span class="reading-text">{{ summary.text }}</span>
-                                                    </template>
-                                                    <template v-else>
-                                                        <span class="reading-text quiet">I'll say here what I think you mean.</span>
-                                                    </template>
-                                                    <span class="reading-step">{{ summary.step }}</span>
-                                                </div>
-                                            </Transition>
+                                            <ReadingLine :summary="summary" />
                                         </div>
                                     </template>
                                 </Transition>
@@ -844,34 +834,6 @@ function startAnew() {
 
 .tabs .sub-layer:has(.segmented) {
     padding: 0 6px;
-}
-
-.reading {
-    position: absolute;
-    inset: 0 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 0;
-}
-
-.reading-text {
-    overflow: hidden;
-    color: var(--text);
-    font-size: 13px;
-    line-height: 18px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.reading-text.quiet {
-    color: var(--text-4);
-}
-
-.reading-step {
-    color: var(--text-3);
-    font-size: 11.5px;
-    line-height: 16px;
 }
 
 .announce {

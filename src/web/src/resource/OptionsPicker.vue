@@ -12,6 +12,7 @@ import {route} from "../route.js";
 const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean, steady: Boolean});
 const emit = defineEmits(["elaborated"]);
 const question = computed(() => answered(props.resource));
+const given = computed(() => question.value.data);
 const own = ref("");
 const changing = ref(false);
 const elaborated = ref(false);
@@ -64,8 +65,8 @@ async function elaborate() {
         <OptionList
             :options="options"
             :chosen="question.completed && chosen >= 0 ? options[chosen].title : ''"
-            :chosen-by="question.data.answered_by || ''"
-            :reason="question.data.reason || ''"
+            :chosen-by="given.answered_by || ''"
+            :reason="given.reason || ''"
             :suggested="pick - 1"
             :disabled="settled"
             :immediate="immediate"
@@ -86,8 +87,8 @@ async function elaborate() {
             <template v-if="dismissed">
                 <div class="own-words">
                     <span>Dismissed</span>
-                    <template v-if="question.data.reason">
-                        <TextDisplay inline class="own-words-text" :text="question.data.reason" />
+                    <template v-if="given.reason">
+                        <TextDisplay inline class="own-words-text" :text="given.reason" />
                     </template>
                 </div>
             </template>

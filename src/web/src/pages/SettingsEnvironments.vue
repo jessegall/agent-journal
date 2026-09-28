@@ -34,13 +34,15 @@ const envRows = computed(() =>
             const got = summaryOf(e.title);
             return {
                 env: e,
+                n: e.n,
+                title: e.title,
                 live: live(e.title),
                 state: !live(e.title) ? "stopped" : got ? envState(got) : "busy",
                 work: got && focusOf(got).known ? focusOf(got) : null,
                 counts: got ? countsOf(got.counts) : [],
             };
         })
-        .filter((row) => matches(`${row.env.title} environment`, props.query))
+        .filter((row) => matches(`${row.title} environment`, props.query))
         .sort((a, b) => here(b.env) - here(a.env) || a.env.title.localeCompare(b.env.title))
 );
 const groups = computed(() =>
@@ -61,8 +63,8 @@ const workNote = (row) => (row.work ? `· ${row.work.current ? "" : "last finish
 const removeWords = (row) =>
     [
         row.live ? "An agent is running here." : "",
-        `Removing moves all of ${row.env.title} into the attic.`,
-        `Bring it back with journal environment unarchive ${row.env.title}.`,
+        `Removing moves all of ${row.title} into the attic.`,
+        `Bring it back with journal environment unarchive ${row.title}.`,
     ]
         .filter(Boolean)
         .join(" ");
@@ -103,9 +105,9 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
 <template>
     <template v-for="group in groups" :key="group.key">
         <ListBox sticky :title="group.title" :count="group.rows.length">
-            <template v-for="row in group.rows" :key="row.env.n">
+            <template v-for="row in group.rows" :key="row.n">
                 <SettingRow
-                    :title="row.env.title"
+                    :title="row.title"
                     :tag="here(row.env) ? 'You are here' : ''"
                     :text="askOf(row.env) ? askOf(row.env).text : ''"
                     :alert="Boolean(askOf(row.env)) && kindOf(row.env) !== 'done'"

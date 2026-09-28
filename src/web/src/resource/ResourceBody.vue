@@ -47,6 +47,8 @@ const props = defineProps({
 });
 const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
 const talk = inject("talk", null);
+const talking = computed(() => Boolean(talk?.running.value));
+const data = computed(() => props.resource.data || {});
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
@@ -156,7 +158,7 @@ const chaptered = computed(
                         </template>
                     </SwitchCase>
                 </template>
-                <template v-if="resource.data.system">
+                <template v-if="data.system">
                     <span class="standing system" title="Ships with the journal; it can be read but not changed">
                         <Icon name="lock" :size="10" />
                         System
@@ -180,7 +182,7 @@ const chaptered = computed(
                     <CloseButton @click="emit('close')" />
                 </template>
             </div>
-            <template v-if="resource.data?.template && !readOnly">
+            <template v-if="data.template && !readOnly">
                 <button type="button" class="from" @click="peek('template', Number(template))">
                     <Icon name="docs" :size="11" />
                     Made from template {{ template }}
@@ -232,10 +234,10 @@ const chaptered = computed(
             <div class="controls">
                 <ResourceActions :resource="resource" @edit="edit" @close="emit('close')" />
                 <span class="controls-end">
-                    <template v-if="state && !resource.data.system">
+                    <template v-if="state && !data.system">
                         <AttachFiles :resource="resource" />
                     </template>
-                    <template v-if="['doc', 'collection', 'report'].includes(resource.type) && !resource.data.system">
+                    <template v-if="['doc', 'collection', 'report'].includes(resource.type) && !data.system">
                         <ShareButton :resource="resource" />
                     </template>
                     <CommentToggle :resource="resource" />
@@ -373,7 +375,7 @@ const chaptered = computed(
         </template>
         <template v-if="!readOnly">
             <Asked :resource="resource" />
-            <template v-if="!talk?.running.value">
+            <template v-if="!talking">
                 <SequenceRuns :resource="resource" />
             </template>
         </template>

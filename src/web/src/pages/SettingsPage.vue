@@ -13,7 +13,7 @@ import TextInput from "../kit/TextInput.vue";
 import FeaturePanel from "./FeaturePanel.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
-import Section from "./Section.vue";
+import JournalSettingControl from "./JournalSettingControl.vue";
 import {changed, features, flip, haystack, isOn, matches, whenWords} from "./featureSettings.js";
 import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
 import {remember, remembered} from "../composables/remembered.js";
@@ -229,24 +229,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                                 @open="services = true"
                             >
                                 <template #control>
-                                    <SwitchCase :value="row.kind">
-                                        <template #switch>
-                                            <Switch :on="row.on" @change="row.set" />
-                                        </template>
-                                        <template #color>
-                                            <Section @save-color="saveColor" />
-                                        </template>
-                                        <template #extension>
-                                            <template v-if="extension && extension.available">
-                                                <template v-if="extension.store">
-                                                    <a class="settings-link" :href="extension.store" target="_blank" rel="noopener">
-                                                        Add to Chrome
-                                                    </a>
-                                                </template>
-                                                <a class="settings-link" :href="api.extensionZip()">Download</a>
-                                            </template>
-                                        </template>
-                                    </SwitchCase>
+                                    <JournalSettingControl :row="row" :extension="extension" @save-color="saveColor" />
                                 </template>
                             </SettingRow>
                         </template>
@@ -340,16 +323,6 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 .settings-find {
     flex: 1 1 260px;
     max-width: 440px;
-}
-
-.settings-link {
-    color: var(--accent-text);
-    font-size: 12.5px;
-    white-space: nowrap;
-}
-
-.settings-link:hover {
-    color: var(--text);
 }
 
 .settings-empty {

@@ -1,4 +1,5 @@
 <script setup>
+import CommentByline from "./CommentByline.vue";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import {useScope} from "../composables/scope.js";
 import Btn from "../kit/Btn.vue";
@@ -165,15 +166,7 @@ async function send(text) {
                         @mouseenter="hover(c)"
                         @mouseleave="hover(null)"
                     >
-                        <header class="byline">
-                            <span :class="['mark', c.seen[0]]">
-                                <template v-if="c.seen[0] === 'agent'">
-                                    <Icon name="agents" :size="11" />
-                                </template>
-                                <template v-else>{{ who(c).slice(0, 1) }}</template>
-                            </span>
-                            <span class="name">{{ who(c) }}</span>
-                            <span class="when">{{ age(c.created) }}</span>
+                        <CommentByline :side="c.seen[0]" :name="who(c)" :when="age(c.created)">
                             <template v-if="!c.pending">
                                 <span class="tools">
                                     <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
@@ -184,7 +177,7 @@ async function send(text) {
                                     </button>
                                 </span>
                             </template>
-                        </header>
+                        </CommentByline>
                         <template v-if="c.quote">
                             <button type="button" class="comment-quote" title="Show this passage in the document" @click="show(c)">
                                 {{ plain(c.quote) }}
@@ -222,16 +215,7 @@ async function send(text) {
                             <div class="answers">
                                 <template v-for="a in answersTo(c)" :key="keyOf(a)">
                                     <div :class="['answer', {failed: a.failed}]" :data-comment="a.pending ? a.ref : a.n">
-                                        <header class="byline">
-                                            <span :class="['mark', 'small', a.seen[0]]">
-                                                <template v-if="a.seen[0] === 'agent'">
-                                                    <Icon name="agents" :size="9" />
-                                                </template>
-                                                <template v-else>{{ who(a).slice(0, 1) }}</template>
-                                            </span>
-                                            <span class="name">{{ who(a) }}</span>
-                                            <span class="when">{{ age(a.created) }}</span>
-                                        </header>
+                                        <CommentByline :side="a.seen[0]" :name="who(a)" :when="age(a.created)" small />
                                         <TextDisplay class="said" :text="a.brief" />
                                         <template v-if="a.failed">
                                             <p class="unsaved">
@@ -359,48 +343,6 @@ async function send(text) {
 
 .comment.focused {
     border-color: var(--accent);
-}
-
-.byline {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    min-width: 0;
-    font-size: 12px;
-}
-
-.mark {
-    flex: none;
-    display: inline-grid;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-    color: var(--accent-text);
-    font-size: 10.5px;
-    font-weight: 600;
-}
-
-.mark.agent {
-    background: var(--hover);
-    color: var(--text-2);
-}
-
-.mark.small {
-    width: 16px;
-    height: 16px;
-    font-size: 9px;
-}
-
-.name {
-    color: var(--text);
-    font-weight: 500;
-}
-
-.when {
-    color: var(--text-4);
-    font-size: 11.5px;
 }
 
 .tools {

@@ -109,6 +109,8 @@ const state = computed(() => {
 });
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const split = computed(() => standaloneUpdates(words.value.text, {types: types.value}));
+const data = computed(() => props.turn.data);
+const updates = computed(() => split.value.cards);
 const html = computed(() => render(split.value.text, {types: types.value, env: env.value}));
 const bubbled = computed(
     () =>
@@ -245,16 +247,16 @@ function markClick(data) {
             </div>
         </template>
         <template #card>
-            <div :class="['thread-turn', 'card', {mine: turn.data.side === 'user'}]" :data-ref="turn.ref">
-                <ChatMark v-bind="turn.data" :at="turn.created" v-on="markClick(turn.data)" />
+            <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.ref">
+                <ChatMark v-bind="data" :at="turn.created" v-on="markClick(turn.data)" />
             </div>
         </template>
         <template #group>
             <div class="thread-turn group" :data-ref="turn.ref">
                 <ChatMark
                     :icon="turn.icon"
-                    :tone="turn.data.tone"
-                    :color="turn.data.color"
+                    :tone="data.tone"
+                    :color="data.color"
                     :label="turn.title"
                     :at="turn.created"
                     :title="unfolded ? 'Fold them back into one line' : 'Show each of them'"
@@ -271,12 +273,12 @@ function markClick(data) {
         </template>
         <template #whisper>
             <div class="thread-turn whisper" :data-ref="turn.ref">
-                <WhisperMark v-bind="turn.data" :title="turn.title" :at="turn.created" />
+                <WhisperMark v-bind="data" :title="turn.title" :at="turn.created" />
             </div>
         </template>
         <template #subagent>
             <div class="thread-turn subagent" :data-ref="turn.ref">
-                <SubagentMark v-bind="turn.data" :task="turn.title" :at="turn.created" />
+                <SubagentMark v-bind="data" :task="turn.title" :at="turn.created" />
             </div>
         </template>
         <template #made>
@@ -300,7 +302,7 @@ function markClick(data) {
                         long,
                         lit: store.focus === turn.ref,
                         'comment-origin': resourceComment,
-                        'has-update': split.cards.length > 0,
+                        'has-update': updates.length > 0,
                     },
                 ]"
                 :data-ref="turn.ref"
@@ -327,7 +329,7 @@ function markClick(data) {
                             <template v-if="turn.type === 'question'">
                                 <p class="thread-ask-label">Question</p>
                             </template>
-                            <template v-for="b in results" :key="`${b.part}:${b.ref.type}:${b.ref.n}`">
+                            <template v-for="b in results" :key="`${b.part}:${b.type}:${b.n}`">
                                 <button type="button" class="thread-pill" :title="b.part" @click.stop="open(b.type, b.n)">
                                     {{ b.word }}
                                 </button>

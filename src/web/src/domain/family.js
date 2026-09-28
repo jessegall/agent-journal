@@ -159,6 +159,10 @@ export function nodeLook(node) {
             note: "",
             icon: node.fold.open ? "up" : "plus",
             state: null,
+            badge: "",
+            live: false,
+            faded: false,
+            outside: false,
         };
     const m = node.member;
     const [name, task] = m.kind === "subagent" && m.label.includes(": ") ? m.label.split(/: (.*)/s) : [m.label, ""];
@@ -167,6 +171,10 @@ export function nodeLook(node) {
         note: task || (m.kind === "peer" ? "another session" : m.detail),
         icon: ICONS[m.kind] || "agents",
         state: m.kind === "peer" ? null : dotState(m),
+        badge: m.loops ? String(m.loops) : "",
+        live: live(m),
+        faded: ["stopped", "done"].includes(m.status),
+        outside: m.kind === "peer",
     };
 }
 
