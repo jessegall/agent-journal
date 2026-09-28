@@ -50,7 +50,7 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     branch = git("branch", "--show-current").stdout.strip()
     sha = git("rev-parse", "HEAD").stdout.strip()
     marks = [card["label"] for card in Agents(record, actor=SYSTEM).by_session("claude-1").data["cards"]]
-    assert (len(marks), marks[-1]) == (6, f"Agent committed {sha[:8]} on {branch}"), "every commit after the first look is marked in the chat with its hash and branch"
+    assert (len(marks), marks[-1]) == (6, f"Agent committed {sha[:8]} on `{branch}`"), "every commit after the first look is marked in the chat with its hash and branch"
     fourth = todos.create("fourth").n
     elsewhere = tmp_path.parent / f"{tmp_path.name}-other"
     git("worktree", "add", "-q", "-b", "other", str(elsewhere))

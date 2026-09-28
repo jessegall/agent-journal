@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.198.1 — Branch names in the chat are chips
+
+A branch switch mark and a commit mark show each branch name as a small tinted chip, so the
+branches stand out from the words around them. Nothing to do.
+
 ## 2.198.0 — A plugin service starts only where it is needed
 
 A service in a plugin's plugin.json may now declare "when": "<command>". The journal runs that command before starting the service: an exit of 0 starts it, and anything else leaves it unstarted, shown as not needed here with the command's own words as the reason, never as failing and never restarted; it is asked again every ten minutes, so a project that gains what the service needs gets it. Code-commandments uses it to keep its C# bridge only in projects with C# (asked for from code-commandments). Nothing to do.
