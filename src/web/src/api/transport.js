@@ -11,6 +11,11 @@ class Transport {
         this.asked = new Map();
         this.written = () => {};
         this.watcher = () => {};
+        this.health = () => {};
+    }
+
+    onHealth(fn) {
+        this.health = fn;
     }
 
     watch(fn) {
@@ -31,7 +36,11 @@ class Transport {
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : method === "GET" ? READ_WAIT_MS : WAIT_MS)),
             });
         } catch (error) {
-            if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) throw error;
+            const unreached = error instanceof TypeError || error.name === "TimeoutError";
+            if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) {
+                if (unreached && new URL(url, location.origin).origin === location.origin) this.health(false);
+                throw error;
+            }
             await new Promise((resolve) => setTimeout(resolve, RELOAD_PAUSE_MS));
             return this.reach(method, url, body, wait, tries - 1);
         }
@@ -40,6 +49,7 @@ class Transport {
     async send(method, url, body, wait = 0) {
         this.watcher("sent", method, url, body);
         const res = await this.reach(method, url, body, wait, RELOAD_TRIES).finally(() => this.watcher("answered", method, url, body));
+        if (new URL(url, location.origin).origin === location.origin) this.health(true);
         if (!res.ok) {
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error || `${res.status} ${res.statusText}`);

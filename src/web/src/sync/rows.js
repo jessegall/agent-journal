@@ -1,5 +1,5 @@
 import {reactive, ref, watch} from "vue";
-import {api, onWrite} from "../api/client.js";
+import {api, onHealth, onWrite} from "../api/client.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {route} from "../route.js";
@@ -162,6 +162,10 @@ async function pull(types, whole) {
     }
 }
 
+const RETRY_FIRST = 1000;
+const RETRY_LONGEST = 15000;
+let retryIn = RETRY_FIRST;
+
 async function drain() {
     if (draining) return draining;
     draining = (async () => {
@@ -173,7 +177,15 @@ async function drain() {
                 .filter((type) => whole || changed.has(type) || !loaded.has(type));
             owed.clear();
             owedWhole = false;
-            await fetched(types, whole);
+            try {
+                await fetched(types, whole);
+                retryIn = RETRY_FIRST;
+            } catch (e) {
+                types.forEach((type) => (owed.add(type), changed.add(type)));
+                owedWhole = owedWhole || whole;
+                await new Promise((settle) => setTimeout(settle, retryIn));
+                retryIn = Math.min(retryIn * 2, RETRY_LONGEST);
+            }
         }
     })().finally(() => (draining = null));
     return draining;
@@ -235,4 +247,9 @@ export async function heardEvents(events) {
 }
 
 onWrite((type) => refresh([type]));
+onHealth((ok) => {
+    const lost = !ok;
+    if (store.offline && ok) reload();
+    store.offline = lost;
+});
 onOutboxChange(() => refresh(["message"]));

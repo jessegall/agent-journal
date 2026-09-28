@@ -15,4 +15,9 @@ export function listen() {
     startOutbox(route.value.env);
     store.stream = api.stream();
     store.stream.onmessage = receive;
+    store.stream.onerror = () => {
+        if (store.stream && store.stream.readyState === EventSource.CLOSED) setTimeout(listen, REOPEN_AFTER);
+    };
 }
+
+const REOPEN_AFTER = 3000;
