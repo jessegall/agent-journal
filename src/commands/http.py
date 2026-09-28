@@ -51,7 +51,8 @@ from features.plugins.lifecycle import called
 from features.plugins.source import data
 from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching
-from commands.dispatch import JSON, KEEP_SHAPED, Missing, PLAIN, Reply, Request, represented, route, settled, shaped
+from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
+from features.shaping import KEEP_SHAPED, settled, shaped
 from features.format import VIEWER, formatted
 from commands.dispatch import dispatch  # noqa: F401
 

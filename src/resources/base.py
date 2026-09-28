@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, asdict, replace
 from types import SimpleNamespace
 from typing import ClassVar
 
-from engine.text import paragraphs
+from resources.text import paragraphs
 
 TITLE_MAX = 80
 ABSTRACT_MAX = 200

@@ -5,7 +5,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV, Sessions, hold_build
-from install import code
+from engine.package import code
 from engine import runtime
 from engine.stored import read_json, write_json
 from engine.package import CODE, entry

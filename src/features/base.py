@@ -9,7 +9,7 @@ from features.trigger import NEVER, Trigger
 from engine.hooks import gate_file
 from features.journal import Journal
 from features.settings import Setting, Settings
-from engine.text import paragraphs
+from resources.text import paragraphs
 from resources.base import Refused, SYSTEM
 from engine.stored import read_json, write_json
 from engine.wording import plural

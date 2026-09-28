@@ -67,7 +67,7 @@ def in_cursors(home: Path, was: str, now: str) -> int:
 
 
 def in_skills(home: Path, was: str, now: str) -> bool:
-    from skills import skill_name
+    from engine.skill_homes import skill_name
     f = home / "settings.json"
     kept = read_json(f, {})
     chosen = kept.get("skills")

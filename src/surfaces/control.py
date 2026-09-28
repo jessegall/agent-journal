@@ -2,7 +2,7 @@ import re
 from dataclasses import asdict
 from pathlib import Path
 
-from controllers.types import Agents, Notices, Notifications
+from controllers.types import Agents, Notices
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUME, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
 from engine.seats import live
@@ -52,10 +52,6 @@ def choice(provider: str, action: str, value: str, current_model: str) -> dict:
     return cls.control_choice(action, value, current_model)
 
 
-CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
-RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
-
-
 def online(root: Path, env: str, session: str) -> dict:
     found = next((agent for _, agent in live(Path(root), within=RELOAD_GRACE) if agent.session == session), None)
     if not found:
@@ -63,14 +59,6 @@ def online(root: Path, env: str, session: str) -> dict:
     if found.environment != env:
         raise Refused(f"session {session!r} belongs to environment {found.environment!r}")
     return found
-
-
-def delivered(record, sessions: set[str], action: str, label: str) -> None:
-    notices = Notices(record, actor=SYSTEM)
-    for notice in notices._every():
-        if not notice.completed and notice.data.get("action") == action and notice.data.get("session") in sessions:
-            notices.complete(notice.n, how="delivered")
-    Notifications(record, actor=SYSTEM)._logged(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
 
 
 def pressed(root: Path, env: str, session: str, label: str, action: str) -> dict:

@@ -1,4 +1,4 @@
-from engine.text import paragraphs
+from resources.text import paragraphs
 
 
 class Setting:

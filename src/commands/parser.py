@@ -3,7 +3,7 @@ import contextvars
 from functools import cache
 import inspect
 import os
-from controllers.base import COMMANDS
+from controllers.base import COMMANDS, actions
 from controllers.types import CONTROLLERS
 import features
 from features.base import generation
@@ -17,10 +17,6 @@ from commands.queries import attached, decided, ended, halt, healed, help_text, 
 
 argparse._ = str
 
-
-def actions(controller: type) -> list[str]:
-    return sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)
-                  if not name.startswith("_") and not getattr(f, "internal", False))
 
 @cache
 def words(type_: str) -> set[str]:

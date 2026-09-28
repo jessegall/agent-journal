@@ -183,7 +183,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
     assert (card["label"], card["tone"], card["icon"], card["detail"]) == ("Sin found", "warn", "warn", "deep-nesting at src/A.php:12"), \
         f"an event whose declaration carries a card puts it in the chat, looking as the manifest says: {card}"
-    from commands.dispatch import shaped
+    from features.shaping import shaped
     from features.format import VIEWER
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"

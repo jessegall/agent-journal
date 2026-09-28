@@ -8,6 +8,13 @@ ZIPPED = CODE.suffix == ".pyz"
 DATA = CODE.with_name("src") if ZIPPED else CODE
 
 
+SRC = "src"
+
+
+def code(root: Path) -> Path:
+    return root / SRC
+
+
 def data(*parts: str) -> Path:
     return DATA.joinpath(*parts)
 

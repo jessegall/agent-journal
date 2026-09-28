@@ -1,4 +1,4 @@
-from commands.dispatch import shaped
+from features.shaping import shaped
 from controllers.types import Environments, Messages, Todos
 from engine.record import Record
 from features import load

@@ -1,4 +1,4 @@
-from commands.dispatch import shaped
+from features.shaping import shaped
 from controllers.types import Todos
 from features.format import VIEWER
 from engine.record import Record
