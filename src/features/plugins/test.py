@@ -146,6 +146,14 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     Path(queued).write_text('todo create "From the event"\ntodo create "Somewhere else" --env ' + record.env + "\n")
     done, refusals = drain(record.root, "linter", record.env)
     assert (done, [(r.env, "names no --env" in r.why) for r in refusals]) == (2, [("other", True)]), "the drain hands back what it refused, and why"
+    from features import FEATURES
+    from features.plugins.host import Host
+    from controllers.types import Notices
+    host = Host(record.root, FEATURES["plugins"].journal)
+    for _ in range(2):
+        host.refusal("linter", refusals[0])
+    told = [n.title for n in Notices(Record(record.root, "other"), actor=SYSTEM).all()]
+    assert told == ["Plugin linter queued a line the journal refused"], "a refusal is told once, as a notice, in the environment of the line"
     titles = lambda env: [t.title for t in Todos(Record(record.root, env), actor=SYSTEM).all()]
     assert (titles("other"), "Somewhere else" in titles(record.env)) == (["From the event"], False), \
         "what a plugin queues answering an event runs in that event's environment, and a queued --env is refused"

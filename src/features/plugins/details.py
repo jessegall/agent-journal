@@ -74,7 +74,7 @@ class PluginsDetails(FeatureDetails):
         Line(
             name="refused",
             title="Plugin {{name}} queued a line the journal refused",
-            brief="{{line}}\nIt was refused: {{why}}. Every refused line is in {{log}}.",
+            brief="{{queued}}\nIt was refused: {{why}}. Every refused line is in {{log}}.",
         ),
         Line(
             name="failing",
