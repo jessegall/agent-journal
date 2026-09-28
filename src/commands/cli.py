@@ -51,6 +51,9 @@ def served() -> frozenset:
 
 def invoke(fn, args: dict, extra: dict):
     params = list(inspect.signature(fn).parameters.values())
+    named = {p.name for p in params if p.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)}
+    for key in [key for key in extra if key in named and args.get(key) is None]:
+        args[key] = extra.pop(key)
     at = next((i for i, p in enumerate(params) if p.kind is inspect.Parameter.VAR_POSITIONAL), None)
     positional = []
     if at is not None:
