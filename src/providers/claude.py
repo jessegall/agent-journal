@@ -675,7 +675,7 @@ class ClaudeDriver(Driver):
         wanted = " ".join(joined(line).split())[:LINE_START]
         if not wanted or not last or not last.transcript:
             return False
-        return any(float(row.at or 0) >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent(Path(last.transcript)))
+        return any(row.at >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent(Path(last.transcript)))
 
     def _delivering(self) -> bool:
         handed = runtime.session_file(self.record.root, self.session, HANDED)

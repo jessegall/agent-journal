@@ -127,7 +127,7 @@ class Page:
     def collection(self, c, members: list) -> str:
         cards = "".join(
             f'<li><a href="{self.href(f"{m.type}:{m.n}")}"><strong>{html.escape(m.title)}</strong>'
-            f'<span>{html.escape(m.abstract or "")}</span></a></li>' for m in members
+            f'<span>{html.escape(m.abstract)}</span></a></li>' for m in members
         )
         about = f'<p class="abstract">{self.inline(c.abstract)}</p>' if c.abstract else ""
         return f'<h1>{html.escape(c.title)}</h1>{about}<ul class="cards">{cards}</ul>'
@@ -165,8 +165,8 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
 """
 
 
-def document(title: str, body: str, expires: float, back: str = "") -> str:
-    home = f'<a href="{back}">Back to the start</a>' if back else "<span></span>"
+def document(title: str, body: str, expires: float, back: str | None = None) -> str:
+    home = "<span></span>" if back is None else f'<a href="{back}">Back to the start</a>'
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'

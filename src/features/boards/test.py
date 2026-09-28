@@ -209,7 +209,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
         "the four agent types are written for Claude, the filler with the model Settings chose"
     call = lambda command: {"session_id": "claude-1", "agent_id": "sub-1", "agent_type": "board-filler", "tool_name": "Bash",
                             "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
-    said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason") or "")
+    said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason", ""))
     assert said("git status") == "", "a subagent gets no journal guard, the board-filler included"
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
     assert [run["step"] for run in exploring.runs.values()] == [4] and exploring.sections[3]["title"] == "Say what done means (score 3)", \

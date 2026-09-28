@@ -1,5 +1,6 @@
 import controllers.types as types_module
 import resources.types as resources_module
+from engine.given import given
 from controllers.base import CONTROLLERS, Controller
 from features.message_buttons.shaping import Button, LABEL, one
 import json
@@ -14,6 +15,11 @@ ANSWER = 600
 OFFERED = 4
 OWN_WORDS = -2
 
+
+
+def text_in(raw: dict, key: str) -> str:
+    value = raw.get(key)
+    return value.strip() if isinstance(value, str) else ""
 
 class Dumps(Controller):
     resource = Dump
@@ -78,19 +84,18 @@ class Dumps(Controller):
     def offer(self, n: int, options: str, summary: str = ""):
         r = self.load(int(n))
         try:
-            given = json.loads(options or "[]")
+            offered = json.loads(options or "[]")
         except ValueError:
             self._refuse("options is a JSON list of {ask, label} or {ask, label, type, n, action}")
         steps = []
-        for raw in (o for o in (given[:OFFERED] if isinstance(given, list) else []) if isinstance(o, dict)):
-            option, label = Button.from_payload(raw), str(raw.get("label") or "").strip()
+        for raw in (o for o in (offered[:OFFERED] if isinstance(offered, list) else []) if isinstance(o, dict)):
+            option, label = Button.from_payload(raw), text_in(raw, "label")
             if not label:
                 continue
             action = one(self.record, option.to_json()) if option.action else {}
             if option.action and not action:
                 self._refuse(f"{label}: {option.type} {option.action} is not a command")
-            ask = str(raw.get("ask") or "").strip()
-            steps.append({**action, "label": label, **({"ask": ask} if ask else {})})
+            steps.append({**action, "label": label, **given(ask=text_in(raw, "ask"))})
         if not steps and not summary.strip():
             self._refuse("sum up what you filed with --summary, and offer a next step only where one is worth taking")
         summed = {"summary": summary.strip()} if summary.strip() else {}

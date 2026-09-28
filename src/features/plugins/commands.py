@@ -76,7 +76,7 @@ class Upgrade(Command):
     name = "upgrade"
     network = True
 
-    def run(self, context: Context, plugins, n: int, ref: str = "", yes: bool = False, again: bool = False):
+    def run(self, context: Context, plugins, n: int, ref: str | None = None, yes: bool = False, again: bool = False):
         row = plugins.load(n)
         root = plugins.record.root
         settings = settings_of(row)
@@ -87,10 +87,10 @@ class Upgrade(Command):
                 ports = {**ports_for(root, manifest), **settings.ports}
                 prepared(manifest, where, environment(root, manifest.name, manifest, row.token, ports, settings.chosen), log(root, manifest.name))
             return reread(plugins, row)
-        where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
+        where, manifest, commit, linked = staged(root, row.source, row.revision if ref is None else ref, VERSION)
         kept = False
         try:
-            if commit == row.commit and not ref and not again:
+            if commit == row.commit and ref is None and not again:
                 return f"{called(row)} is already at {commit[:12]}; to run its setup again anyway, run it with --again --yes"
             if not yes:
                 return f"{preview(manifest, row.source, commit)}\n\n{difference(declared(row), manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
@@ -98,7 +98,7 @@ class Upgrade(Command):
             env = environment(root, manifest.name, manifest, row.token, ports, settings.chosen)
             checked(manifest, where, env)
             prepared(manifest, where, env, log(root, manifest.name))
-            place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row, ports=ports)
+            place(plugins, where, linked, manifest, row.source, "" if ref is None else ref, commit, row.token, row=row, ports=ports)
             welcomed(context.journal, plugins, manifest, env)
             restarted(root, manifest)
             kept = True

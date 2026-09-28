@@ -95,7 +95,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         if self.headers.get(COMMENT_HEADER) != "1" or not self.headers.get("Content-Type", "").startswith("application/json"):
             return self.answer(403, "refused")
-        size = int(self.headers.get("Content-Length") or 0)
+        size = int(self.headers.get("Content-Length", "0"))
         if not 0 < size <= BODY_LIMIT:
             return self.answer(413, "too large")
         try:
@@ -128,7 +128,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         row = self.shares._shared_row(share, ref)
         members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
         body = page.collection(row, members) if members else page.row(row)
-        back = "" if ref == share.target else f"/s/{share.token}"
+        back = None if ref == share.target else f"/s/{share.token}"
         self.page(200, document(row.title, body, share.expires, back))
 
     def preview(self, share) -> str:

@@ -68,13 +68,13 @@ def address(source: str) -> str:
     raise Refused(f"{given!r} is neither a repository URL, an owner/repo, nor a folder on this machine")
 
 
-def queue_path(root: Path, name: str, env: str = "") -> Path:
-    return Path(root) / "runtime" / "plugins" / (f"{name}.{env}.queue" if env else f"{name}.queue")
+def queue_path(root: Path, name: str, env: str | None = None) -> Path:
+    return Path(root) / "runtime" / "plugins" / (f"{name}.queue" if env is None else f"{name}.{env}.queue")
 
 
-def values(root: Path, name: str, token: str, ports: dict | None = None, env: str = "") -> dict:
+def values(root: Path, name: str, token: str, ports: dict | None = None, env: str | None = None) -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)), "project": str(Path(root).parent),
-            "journal.url": running(Path(root)) or "", "journal.env": env or default_env(Path(root)), "token": token,
+            "journal.url": running(Path(root)) or "", "journal.env": default_env(Path(root)) if env is None else env, "token": token,
             "queue": str(queue_path(root, name, env)),
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
@@ -112,7 +112,7 @@ def chosen_env(manifest: Manifest, chosen: dict | None) -> dict:
     return {**named, "JOURNAL_SETTINGS": json.dumps(values)}
 
 
-def environment(root: Path, name: str, manifest: Manifest, token: str, ports: dict | None = None, chosen: dict | None = None, env: str = "") -> dict:
+def environment(root: Path, name: str, manifest: Manifest, token: str, ports: dict | None = None, chosen: dict | None = None, env: str | None = None) -> dict:
     where = values(root, name, token, ports, env)
     given = fill(manifest.env, where)
     path = f"{own_journal(root)}{os.pathsep}{os.environ.get('PATH', '')}"

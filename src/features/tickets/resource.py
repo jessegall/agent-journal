@@ -11,11 +11,11 @@ CARD_PARTS = re.compile(r"(?:\*\*)?\b(What|Why|Touches|Done when|Risk):(?:\*\*)?
 
 
 def card_back(brief: str) -> str:
-    pieces = CARD_PARTS.split(brief or "")
+    pieces = CARD_PARTS.split(brief)
     if len(pieces) < 5:
         return brief
     head, parts = pieces[0].strip(), zip(pieces[1::2], pieces[2::2])
-    return "\n\n".join([*([head] if head else []), *(f"**{label}:** {text.strip()}" for label, text in parts)])
+    return "\n\n".join(part for part in [head, *(f"**{label}:** {text.strip()}" for label, text in parts)] if part)
 
 
 class Ticket(Placed, Resource):
