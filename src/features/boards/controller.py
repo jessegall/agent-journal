@@ -107,7 +107,7 @@ class Boards(Controller):
         board = self.load(int(n))
         if not board.branch and current_branch(self.record.root.parent):
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
-        board = self.update(board.n, started=board.started or time.time())
+        board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env)
         self.record.emit("board", board.n, STARTED, self.actor)
         return board
 

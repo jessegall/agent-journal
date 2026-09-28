@@ -401,9 +401,11 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     features.load()
     report(record, "working", "PreToolUse")
     ship(record)
-    assert "never the agent that wrote it" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), \
-        "before the board is started, no agent orchestrates it, so none may approve"
+    before = refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n))
+    assert "never the agent that wrote it" in before and f"does not orchestrate board {board.n}" in before, \
+        "before the board is started, no agent orchestrates it, so none may approve, and the refusal says which condition is missing"
     Boards(record, actor=USER).start(board.n)
+    assert Boards(record, actor=USER).load(board.n).orchestrator == record.env, "Play records the environment that runs the board"
     for elsewhere in ("ticket-1", "ticket-2"):
         assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, elsewhere), actor=AGENT).approve_plan(ticket.n)), \
             "neither the ticket's own agent nor a sibling ticket's may approve the plan"
