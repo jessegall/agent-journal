@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.199.0 — A question that no longer makes sense can be dismissed
+
+Every open question has a Dismiss button beside Elaborate, on its card and on the Questions
+page; words typed in the answer box go with it as the reason. It closes the question as
+dismissed, distinct from an answer, and the agent hears that it is not to act on it or ask it
+again (journal question dismiss <n> --why does the same). A row now waits on one open question
+at a time: asking a second one about it is refused and names the one it waits on, so todo ask
+after question ask no longer files a duplicate (asked for from code-commandments). Nothing to do.
+
 ## 2.198.1 — Branch names in the chat are chips
 
 A branch switch mark and a commit mark show each branch name as a small tinted chip, so the

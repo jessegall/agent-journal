@@ -26,7 +26,9 @@ class QuestionsDetails(FeatureDetails):
         that reason beneath it. Elaborate on an open question sends you a message about it:
         delete that question with journal question delete <n> --why "<asked again>" and ask it
         again, with more context in each option's text and which you would pick in its brief,
-        and leave the choice to the user.
+        and leave the choice to the user. A question the user dismisses is closed as no longer
+        needed: do not act on it and do not ask it again. A row waits on one open question at a
+        time; asking a second one about it is refused and names the one it waits on.
 
         A message with two or more listed options and a question, or the language of putting a
         decision to the user, tells you to use journal question ask --set options=…; your

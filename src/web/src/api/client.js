@@ -246,6 +246,10 @@ export class ApiClient {
         return this.act("ticket", n, "board");
     }
 
+    dismissQuestion(n, why) {
+        return this.act("question", n, "dismiss", {why});
+    }
+
     moveTicket(n, stage) {
         return this.act("ticket", n, "move", {stage});
     }

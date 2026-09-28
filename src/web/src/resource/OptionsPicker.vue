@@ -6,7 +6,7 @@ import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
 import {word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
-import {answer, answered} from "../chat/answers.js";
+import {answer, answered, dismiss} from "../chat/answers.js";
 import {route} from "../route.js";
 
 const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean, steady: Boolean});
@@ -37,7 +37,8 @@ const settled = computed(() => !!question.value.completed && !changing.value);
 const chosen = computed(() =>
     question.value.data.chosen ? question.value.data.chosen - 1 : options.value.findIndex((o) => o.title === question.value.outcome)
 );
-const ownWords = computed(() => settled.value && chosen.value < 0 && !chosenMany.value.length);
+const dismissed = computed(() => settled.value && Boolean(question.value.data.dismissed));
+const ownWords = computed(() => settled.value && !dismissed.value && chosen.value < 0 && !chosenMany.value.length);
 
 function submit(text) {
     const choice = String(text || "").trim();
@@ -82,6 +83,14 @@ async function elaborate() {
             </p>
         </template>
         <template v-if="settled && !steady">
+            <template v-if="dismissed">
+                <div class="own-words">
+                    <span>Dismissed</span>
+                    <template v-if="question.data.reason">
+                        <TextDisplay inline class="own-words-text" :text="question.data.reason" />
+                    </template>
+                </div>
+            </template>
             <template v-if="ownWords">
                 <div class="own-words">
                     <span>Your own words</span>
@@ -99,6 +108,15 @@ async function elaborate() {
                         <Btn small :disabled="elaborated" title="Ask the agent for more context on this question" @click="elaborate">
                             {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
                         </Btn>
+                        <template v-if="resource.type === 'question' && !resource.data.hidden">
+                            <Btn
+                                small
+                                title="Close this question without answering it; anything typed here goes with it as the reason"
+                                @click="dismiss(resource, own)"
+                            >
+                                Dismiss
+                            </Btn>
+                        </template>
                         <Btn kind="primary" small @click="submit(own)">{{ capitalised(word(resource.type, "complete")) }}</Btn>
                     </template>
                 </TextInput>
