@@ -85,10 +85,23 @@ RUN_TEXT = 60
 REVIEW_MOMENTS = ("ticket.plan_waits", "ticket.checkpoint", "ticket.finished")
 
 
-def repository_state(place, branch: str, base: str, into: str) -> str:
-    if merged(place, branch, base, into):
-        return "merged"
-    return "changed" if changed(place, branch, base) else "untouched"
+@dataclass(frozen=True)
+class Landing:
+    place: Path
+    branch: str
+    base: str
+    into: str
+
+    def merged(self) -> bool:
+        return merged(self.place, self.branch, self.base, self.into)
+
+    def changed(self) -> bool:
+        return changed(self.place, self.branch, self.base)
+
+    def state(self) -> str:
+        if self.merged():
+            return "merged"
+        return "changed" if self.changed() else "untouched"
 
 
 class Tickets(Prioritised, Controller):
@@ -182,7 +195,7 @@ class Tickets(Prioritised, Controller):
             if len(REPOSITORY_STATES) > STATES_KEPT:
                 REPOSITORY_STATES.clear()
             branch, into = self._branch(ticket), self._into(ticket)
-            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": repository_state(place, branch, base, into)}
+            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": Landing(place, branch, base, into).state()}
                                       for name, place, base in self._repositories(ticket)]
         return REPOSITORY_STATES[key]
 
@@ -569,7 +582,7 @@ class Tickets(Prioritised, Controller):
 
     def _merged(self, ticket) -> bool:
         branch, into = self._branch(ticket), self._into(ticket)
-        states = [(merged(place, branch, base, into), changed(place, branch, base)) for _, place, base in self._repositories(ticket)]
+        states = [(landing.merged(), landing.changed()) for landing in (Landing(place, branch, base, into) for _, place, base in self._repositories(ticket))]
         return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 
     def merge(self, n: int):
