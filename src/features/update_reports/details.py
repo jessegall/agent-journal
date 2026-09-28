@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class UpdateReportsDetails(FeatureDetails):
     name = "update_reports"
+    skill_of = "reports"
     when = "the user asks for an update, a TLDR or what happened while they were away"
     keywords = ("update", "tldr", "recap")
 

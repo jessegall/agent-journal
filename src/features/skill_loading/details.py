@@ -5,6 +5,7 @@ from features.trigger import Trigger, USES
 
 class SkillsDetails(FeatureDetails):
     name = "skill_loading"
+    has_skill = False
 
     title = "Skill loading"
 

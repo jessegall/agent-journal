@@ -6,6 +6,7 @@ from features.settings import Setting
 
 class LawDetails(FeatureDetails):
     name = "journal_laws"
+    has_skill = False
 
     title = "Journal laws"
 

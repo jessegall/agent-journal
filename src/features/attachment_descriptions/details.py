@@ -3,6 +3,7 @@ from features.base import Behaviour, FeatureDetails, Line
 
 class AttachmentsDetails(FeatureDetails):
     name = "attachment_descriptions"
+    has_skill = False
 
     title = "Describing attachments"
 

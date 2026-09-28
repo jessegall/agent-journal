@@ -4,6 +4,7 @@ from features.settings import Setting
 
 class AddressDetails(FeatureDetails):
     name = "form_of_address"
+    has_skill = False
 
     title = "How the agent addresses you"
 

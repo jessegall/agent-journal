@@ -6,6 +6,7 @@ MOVED, KEPT = "moved", "kept"
 
 class LongCommandsDetails(FeatureDetails):
     name = "long_commands"
+    has_skill = False
 
     title = "Long commands"
 

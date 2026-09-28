@@ -211,7 +211,9 @@ def test_housekeeping_that_asks_nothing_of_the_agent_ships_no_skill():
     import skills
     rendered = skills.render()
     assert "journal-runtime-cleanup/SKILL.md" not in rendered and "journal-open-viewer/SKILL.md" not in rendered, "housekeeping gets no skill"
-    assert "journal-work-tracking/SKILL.md" in rendered, "a feature that asks something of the agent keeps its skill"
+    assert "journal-plans/SKILL.md" in rendered, "a feature that asks something of the agent keeps its skill"
+    assert ("journal-work-tracking/SKILL.md" not in rendered, "## Work tracking" in rendered["journal-todos/SKILL.md"]) == (True, True), \
+        "a feature folded into another skill is taught there"
 
 
 def test_a_plugin_names_the_skills_its_events_require_and_its_skills_carry_keywords(tmp_path):
@@ -240,3 +242,18 @@ def test_a_plugin_names_the_skills_its_events_require_and_its_skills_carry_keywo
         "the agent owes the installed ones; a skill that is not installed is never owed"
     with pytest.raises(Refused):
         manifest(load={"no-such-event": ["lint-rules"]})
+
+
+def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_teaches_it():
+    from skills import publish, skill_name, teaching
+    from features.skill_loading.catalogue import keywords, teaching_command
+    record = fresh()
+    publish(record.root.parent, ("claude",))
+    words = keywords(record)
+    for f in features.FEATURES.values():
+        if not teaching(f):
+            continue
+        skill = skill_name(teaching(f))
+        assert set(f.keywords) <= set(words.get(skill, [])), f"every word that loaded {f.name}'s skill loads {skill}"
+        if "_" not in f.name:
+            assert teaching_command(record.root.parent, f.name.removesuffix("s")) == skill, f"journal {f.name.removesuffix('s')} loads {skill}"

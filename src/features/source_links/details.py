@@ -4,6 +4,7 @@ from features.settings import Setting
 
 class TrackingDetails(FeatureDetails):
     name = "source_links"
+    has_skill = False
 
     title = "Source links"
 

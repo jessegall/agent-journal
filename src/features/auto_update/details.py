@@ -4,6 +4,7 @@ from features.base import Behaviour, FeatureDetails, Line
 
 class UpdatesDetails(FeatureDetails):
     name = "auto_update"
+    has_skill = False
 
     title = "Auto-update"
 

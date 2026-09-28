@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class StartDetails(FeatureDetails):
     name = "session_briefing"
+    has_skill = False
 
     title = "Session briefing"
 

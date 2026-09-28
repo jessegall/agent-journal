@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.200.0 — 21 skills instead of 52
+
+A skill now exists only when it tells the agent what to do. Eighteen skills that only
+described a feature running by itself are gone (branch switches, closing to-dos from commits,
+row links, auto-update, the laws and others); their nudges still say what to do when there is
+something to do. Skills that split one subject are folded into one: facts, rules, reminders
+and context marks into journal-memory; docs, revisions and update reports into journal-reports;
+work tracking and the kanban board into journal-todos; message buttons and command tags into
+journal-messages; boards into journal-tickets; hosting into journal-organization. A merged skill
+keeps every keyword and every journal command of the skills folded into it, so it loads at the
+same moments as before. An upgrade removes the old skill folders and links the new ones.
+Nothing to do.
+
 ## 2.199.1 — A report being written shows its parts as skeleton lines
 
 A report is now written the way a document is: the agent lays out every part first, each

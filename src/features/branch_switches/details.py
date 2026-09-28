@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class BranchSwitchesDetails(FeatureDetails):
     name = "branch_switches"
+    has_skill = False
 
     title = "Branch switches in the chat"
 

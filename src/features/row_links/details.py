@@ -5,6 +5,7 @@ AMBIGUOUS = "ambiguous"
 
 class RowLinksDetails(FeatureDetails):
     name = "row_links"
+    has_skill = False
 
     title = "Row links"
 

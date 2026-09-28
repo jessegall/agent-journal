@@ -4,6 +4,7 @@ from features.base import FeatureDetails, Line
 
 class DeferralDetails(FeatureDetails):
     name = "put_off_work"
+    has_skill = False
 
     title = "Catch put-off work"
 

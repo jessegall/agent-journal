@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class WorktreesDetails(FeatureDetails):
     name = "worktrees"
+    has_skill = False
 
     title = "Worktrees"
 
