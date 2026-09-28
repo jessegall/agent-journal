@@ -1,3 +1,4 @@
+import hashlib
 import re
 from pathlib import Path
 
@@ -21,17 +22,18 @@ class CloseRowsFromCommits(Handler):
         commits = self.log(project)
         if not commits:
             return
-        seen = context.record.cursor_text(context.feature.name)
-        if seen:
-            branch = git(["branch", "--show-current"], project).strip() or "a detached head"
-            for sha, action, subject, body in commits:
-                if sha == seen:
-                    break
-                if not action.startswith(MADE_HERE):
-                    continue
-                context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{branch}`", icon="branch", tone="commit", title=subject)
-                self.close(context, sha, subject, body)
-        context.record.set_cursor_text(context.feature.name, commits[0][0])
+        cursor = f"{context.feature.name}-{hashlib.sha1(str(head_log(project)).encode()).hexdigest()[:12]}"
+        seen = context.record.cursor_text(cursor)
+        context.record.set_cursor_text(cursor, commits[0][0])
+        shas = [sha for sha, *_ in commits]
+        if seen not in shas:
+            return
+        branch = git(["branch", "--show-current"], project).strip() or "a detached head"
+        for sha, action, subject, body in commits[:shas.index(seen)]:
+            if not action.startswith(MADE_HERE):
+                continue
+            context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{branch}`", icon="branch", tone="commit", title=subject)
+            self.close(context, sha, subject, body)
 
     def worktree(self, context: AgentContext) -> Path:
         cwd = Path(context.agent.row.cwd) if context.agent.row.cwd else None
