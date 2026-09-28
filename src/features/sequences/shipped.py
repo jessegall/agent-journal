@@ -222,15 +222,20 @@ WRITING_A_DOCUMENT = {
 }
 WRITING_A_REPORT = {
     "title": "Writing a report",
-    "brief": "You started a report. Write its findings part by part, then file it, link it and answer with it.",
+    "brief": "You started a report. Lay out its parts first, write them one at a time so the user can follow along, then "
+             "file it, link it and answer with it.",
     "starts_on": "report.created",
     "started_by": AGENT,
     "only_when_idle": True,
     "unless": {"kind": "update"},
     "steps": [
-        ("Write the findings", "Lead with the answer in the report's brief, then write each part with journal report section "
-                               "<report n> \"<part>\" \"<body>\": the evidence, what was already sound, what remains "
-                               "uncertain. Then journal sequence next <this sequence> --about <ref>."),
+        ("Lay out the parts", "Lead with the answer in the report's brief, then put every part you plan on the report "
+                              "before writing any of them: journal report section <report n> \"<part>\" \"Being written.\" "
+                              "for each, in order: the evidence, what was already sound, what remains uncertain. Then journal "
+                              "sequence next <this sequence> --about <ref>."),
+        ("Write each part", "Write the parts one at a time and in order with journal report section <report n> \"<part>\" "
+                            "\"<body>\"; the user sees each one appear where you are. Then journal sequence next <this sequence> "
+                            "--about <ref>."),
         included(FINISHING_WHAT_YOU_WROTE),
     ],
 }
