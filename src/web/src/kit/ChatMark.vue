@@ -185,6 +185,15 @@ button.mark:hover {
     line-height: inherit;
 }
 
+.mark .head :deep(code) {
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--mark, var(--border-3)) 45%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--mark, var(--border-3)) 14%, transparent);
+    color: var(--text-2);
+    font-size: 10.5px;
+}
+
 .head strong {
     color: var(--text-2);
     font-weight: 500;

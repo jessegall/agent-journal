@@ -39,5 +39,5 @@ class MarkBranchSwitches(Handler):
         context.state.set(name, branch)
         if before is None and name == MAIN:
             return
-        label = f"{name} started on {branch}" if before is None else f"{name} switched from {before} to {branch}"
+        label = f"{name} started on `{branch}`" if before is None else f"{name} switched from `{before}` to `{branch}`"
         context.journal.agents.card(row.n, label=label[:1].upper() + label[1:], icon="branch", tone="commit")

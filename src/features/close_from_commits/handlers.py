@@ -29,7 +29,7 @@ class CloseRowsFromCommits(Handler):
                     break
                 if not action.startswith(MADE_HERE):
                     continue
-                context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on {branch}", icon="branch", tone="commit", title=subject)
+                context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{branch}`", icon="branch", tone="commit", title=subject)
                 self.close(context, sha, subject, body)
         context.record.set_cursor_text(context.feature.name, commits[0][0])
 
