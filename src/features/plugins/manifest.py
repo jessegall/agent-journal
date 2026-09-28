@@ -17,7 +17,7 @@ WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
 PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
 STEP = ("name", "run", "cwd")
-SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
+SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show", "when")
 PAGE = ("name", "title", "icon", "service", "path", "status")
 DASHBOARD = ("name", "title", "icon")
 TONES = ("", "warn", "good")
@@ -169,7 +169,10 @@ def services(name: str, given) -> dict:
         restart = str(value.get("restart") or "on-failure")
         if restart not in RESTARTS:
             raise Refused(f"plugin.json: service {service!r} restarts {', '.join(RESTARTS)}, not {restart!r}")
-        out[service] = {**value, "run": command(name, f"service {service!r}", value.get("run")), "restart": restart}
+        when = value.get("when") or ""
+        if not isinstance(when, str):
+            raise Refused(f"plugin.json: service {service!r} takes \"when\" as one shell command whose exit 0 means it is needed here")
+        out[service] = {**value, "run": command(name, f"service {service!r}", value.get("run")), "restart": restart, "when": when}
     return out
 
 

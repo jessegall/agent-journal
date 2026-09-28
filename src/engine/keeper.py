@@ -46,6 +46,7 @@ class ServiceSpec:
     show: dict = field(default_factory=dict)
     url: str = ""
     owner: int = 0
+    when: str = ""
 
     @classmethod
     def from_json(cls, raw: dict) -> "ServiceSpec":
