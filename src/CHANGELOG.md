@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.197.0 — A branch switch shows in the chat
+
+Whenever the agent's checkout changes branch, the chat now shows a mark beside the commit marks, naming the checkout and both branches: "The main checkout switched from main to custom-rule-checks", or "Worktree ticket-16 started on worktree-ticket-16" when a session starts in a worktree. The journal reads the branch straight from the checkout after every tool call, so a switch by git switch, git checkout, an alias or a script shows alike (asked for from code-commandments). Nothing to do.
+
 ## 2.196.2 — A work log entry restarts the edit count
 
 Logging the work in hand is meant to restart the count of edits before the next hold, but the count kept climbing, 23, 24, 25, so each entry let one edit through: the log runs in the server and reset the count on disk, while the edits were counted in the environment's own engine, which kept its count in memory and never read the reset. That memory now reads the file again whenever it changed, so a log entry restarts the count and twenty edits pass again (reported from code-commandments). Nothing to do.
