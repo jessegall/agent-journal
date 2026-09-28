@@ -125,7 +125,7 @@ class Host:
             return
         self.told.add((plugin, refusal.why))
         record = Record(self.root, refusal.env)
-        self.journal.notice(record, "refused", name=plugin, line=refusal.line[:200], why=refusal.why, log=log(self.root, plugin), tone="warn")
+        self.journal.notice(record, "refused", name=plugin, queued=refusal.line[:200], why=refusal.why, log=log(self.root, plugin), tone="warn")
 
     def deliver(self, record, row, now: float = 0.0) -> int:
         plugin = self.name(row)
