@@ -43,7 +43,7 @@ function open(ref) {
             <template v-else>
                 <h3>Running now</h3>
             </template>
-            <template v-for="r in runs" :key="`${r.sequence.n}-${r.about}`">
+            <template v-for="r in runs" :key="`${r.opens}-${r.about}`">
                 <div class="run">
                     <div class="run-head">
                         <template v-if="resource.type === 'sequence'">
@@ -53,11 +53,11 @@ function open(ref) {
                             </template>
                         </template>
                         <template v-else>
-                            <button type="button" class="run-link" @click="open(r.sequence.ref)">{{ r.sequence.title }}</button>
+                            <button type="button" class="run-link" @click="open(r.opens)">{{ r.named }}</button>
                         </template>
                         <span class="grow" />
                         <span class="run-count">
-                            {{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.titles.length}` }}
+                            {{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.steps}` }}
                         </span>
                     </div>
                     <ol class="steps">

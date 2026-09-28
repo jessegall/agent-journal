@@ -54,6 +54,7 @@ const elsewhere = Boolean(props.env) && props.env !== route.value.env;
 const scope = elsewhere ? scopeIn(props.env) : null;
 if (scope) provide("scope", scope);
 const there = scope ? scope.api : api;
+const state = computed(() => props.band.state);
 const keyed = (what) => `agent-home:${props.env}:${props.session}:${props.band.label}:${what}`;
 
 const found = ref(null);
@@ -126,7 +127,7 @@ function pickPreset(key) {
 
 <template>
     <div class="agent-home">
-        <header :class="['band', band.state.key]">
+        <header :class="['band', state.key]">
             <div class="band-main">
                 <span class="band-kicker">
                     <Icon name="agents" :size="12" />
@@ -137,8 +138,8 @@ function pickPreset(key) {
                     {{ band.title }}
                 </h2>
                 <span class="band-facts">
-                    <StateDot :state="band.state.dot" />
-                    <span class="band-state">{{ band.state.word }}</span>
+                    <StateDot :state="state.dot" />
+                    <span class="band-state">{{ state.word }}</span>
                     <template v-if="band.reason">
                         <span class="band-reason">{{ band.reason }}</span>
                     </template>

@@ -41,3 +41,5 @@ export async function checkTunnel() {
     tunnelStatus.value = await api.command("share", "tunnel").catch(() => null);
     return tunnelStatus.value;
 }
+
+export const linkMessage = (title, link) => `Here's the link to ${title}: ${link}`;

@@ -1,4 +1,5 @@
 <script setup>
+import WorkingDots from "../kit/WorkingDots.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, nextTick, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -536,11 +537,7 @@ const pillOf = (d) => {
                                     <span class="dump-line-head">
                                         <span class="dump-line-title">{{ line.text }}</span>
                                         <template v-if="line === current">
-                                            <span class="dump-dots">
-                                                <i />
-                                                <i />
-                                                <i />
-                                            </span>
+                                            <WorkingDots />
                                         </template>
                                         <span class="dump-line-age">{{ age(line.at) }}</span>
                                     </span>
@@ -552,11 +549,7 @@ const pillOf = (d) => {
                         </template>
                         <template v-if="thinking">
                             <p class="dump-thinking">
-                                <span class="dump-dots">
-                                    <i />
-                                    <i />
-                                    <i />
-                                </span>
+                                <WorkingDots />
                                 {{ thinking }}
                             </p>
                         </template>
@@ -1075,28 +1068,6 @@ const pillOf = (d) => {
     color: var(--text-3);
 }
 
-.dump-dots {
-    display: inline-flex;
-    gap: 3px;
-}
-
-.dump-dots i {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent-text);
-    opacity: 0.5;
-    animation: dump-dot 1.2s ease-in-out infinite;
-}
-
-.dump-dots i:nth-child(2) {
-    animation-delay: 0.15s;
-}
-
-.dump-dots i:nth-child(3) {
-    animation-delay: 0.3s;
-}
-
 .dump-ask {
     display: flex;
     flex-direction: column;
@@ -1198,13 +1169,6 @@ const pillOf = (d) => {
     color: var(--text-2);
 }
 
-@keyframes dump-dot {
-    50% {
-        opacity: 1;
-        translate: 0 -2px;
-    }
-}
-
 @container (max-width: 640px) {
     .dump-work {
         grid-template-columns: minmax(0, 1fr);
@@ -1225,12 +1189,6 @@ const pillOf = (d) => {
 
     .dump-pile > * {
         flex: 0 0 200px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .dump-dots i {
-        animation: none;
     }
 }
 </style>

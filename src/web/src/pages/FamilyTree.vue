@@ -61,7 +61,8 @@ function hint(node) {
 
 const TREE_EDGES = ["started", "dispatched"];
 const counted = (edge) => edge.said > 1 || (edge.said > 0 && TREE_EDGES.includes(edge.kind));
-const labels = computed(() => (tree.value ? tree.value.edges.filter(counted).map((edge) => ({edge, at: edgeLabel(edge)})) : []));
+const labeled = (edge) => ({edge, id: edge.id, said: edge.said, ...edgeLabel(edge)});
+const labels = computed(() => (tree.value ? tree.value.edges.filter(counted).map(labeled) : []));
 
 const openable = (node) => !!node.fold || (!!node.member.n && (node.member.kind !== "subagent" || !!node.member.session));
 
@@ -126,9 +127,9 @@ watch(tree, async (drawn) => {
                                 :d="edgePath(edge)"
                             />
                         </template>
-                        <template v-for="label in labels" :key="`n${label.edge.id}`">
-                            <text :class="['edge-count', {lit: touches(label.edge), end: label.at.end}]" :x="label.at.x" :y="label.at.y">
-                                {{ label.edge.said }}
+                        <template v-for="label in labels" :key="`n${label.id}`">
+                            <text :class="['edge-count', {lit: touches(label.edge), end: label.end}]" :x="label.x" :y="label.y">
+                                {{ label.said }}
                             </text>
                         </template>
                     </svg>
@@ -136,16 +137,9 @@ watch(tree, async (drawn) => {
                         <GraphNode
                             class="family-node"
                             :style="{left: `${node.x}px`, top: `${node.y}px`, width: `${node.w}px`, height: `${node.h}px`}"
-                            :label="looks.get(node.id).label"
-                            :note="looks.get(node.id).note"
-                            :icon="looks.get(node.id).icon"
-                            :state="looks.get(node.id).state"
-                            :badge="node.member && node.member.loops ? String(node.member.loops) : ''"
+                            v-bind="looks.get(node.id)"
                             badge-icon="loop"
                             :hint="hint(node)"
-                            :live="!!node.member && live(node.member)"
-                            :faded="!!node.member && ['stopped', 'done'].includes(node.member.status)"
-                            :outside="!!node.member && node.member.kind === 'peer'"
                             :fold="!!node.fold"
                             :still="!openable(node)"
                             :lit="hovered === node.id"

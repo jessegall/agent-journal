@@ -44,6 +44,10 @@ watchEffect(() => {
     if (missing.length) scope.holding("todo", missing).catch((e) => (error.value = e.message));
 });
 const done = (p) => p.rows.length > 0 && p.rows.every((t) => t.completed);
+const data = computed(() => props.resource.data);
+const closedRows = (p) => p.rows.filter((t) => t.completed).length;
+const rowCount = (p) => p.rows.length;
+const bones = (p) => Math.max(0, 3 - p.rows.length);
 const planned = computed(() => phases.value.flatMap((p) => p.rows));
 const finished = computed(() => planned.value.filter((t) => t.completed).length);
 const building = computed(() => status.value === "building");
@@ -97,8 +101,8 @@ async function run(action, body = {}) {
             </template>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
-        <template v-if="resource.data.goal">
-            <TextDisplay class="goal" :text="resource.data.goal" />
+        <template v-if="data.goal">
+            <TextDisplay class="goal" :text="data.goal" />
         </template>
         <template v-if="planned.length">
             <div :class="['overall', {pinned: pinProgress}]">
@@ -129,10 +133,10 @@ async function run(action, body = {}) {
                         @change="run('update', {worktree: shared ? 'each' : 'shared'})"
                     />
                 </template>
-                <template v-if="shared && resource.data.branch">
+                <template v-if="shared && data.branch">
                     <span class="note">
-                        One worktree on the branch {{ resource.data.branch }},
-                        {{ resource.data.merged ? "merged" : "not merged yet" }}
+                        One worktree on the branch {{ data.branch }},
+                        {{ data.merged ? "merged" : "not merged yet" }}
                     </span>
                 </template>
                 <template v-if="critiquing">
@@ -158,7 +162,7 @@ async function run(action, body = {}) {
                         <template v-if="p.checkpoint">
                             <span class="cp">checkpoint</span>
                         </template>
-                        <span class="progress">{{ p.rows.filter((t) => t.completed).length }}/{{ p.rows.length }}</span>
+                        <span class="progress">{{ closedRows(p) }}/{{ rowCount(p) }}</span>
                         <template v-if="talk">
                             <button type="button" class="say" title="Comment on this phase" @click="talk.say(`Phase ${p.i}: ${p.title}`)">
                                 <Icon name="bubble" :size="12" />
@@ -188,7 +192,7 @@ async function run(action, body = {}) {
                         </div>
                     </template>
                     <template v-if="building && stage === 'todos'">
-                        <template v-for="j in Math.max(0, 3 - p.rows.length)" :key="`row-bone-${j}`">
+                        <template v-for="j in bones(p)" :key="`row-bone-${j}`">
                             <div class="line bones" aria-hidden="true"><span class="bone row-bone" /></div>
                         </template>
                     </template>

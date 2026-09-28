@@ -6,12 +6,15 @@ const runsOf = (s) =>
     Object.entries(s.data.runs || {})
         .map(([key, run]) => ({
             sequence: s,
+            named: s.title,
+            opens: s.ref,
             env: key.split("|")[0],
             about: key.split("|").slice(1).join("|"),
             step: run.step,
             at: run.at,
             titles: run.titles || s.sections.map((part) => part.title),
         }))
+        .map((r) => ({...r, steps: r.titles.length}))
         .filter((r) => r.env === route.value.env);
 
 const inHand = computed(() =>
