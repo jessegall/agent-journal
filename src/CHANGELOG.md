@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.196.2 — A work log entry restarts the edit count
+
+Logging the work in hand is meant to restart the count of edits before the next hold, but the count kept climbing, 23, 24, 25, so each entry let one edit through: the log runs in the server and reset the count on disk, while the edits were counted in the environment's own engine, which kept its count in memory and never read the reset. That memory now reads the file again whenever it changed, so a log entry restarts the count and twenty edits pass again (reported from code-commandments). Nothing to do.
+
 ## 2.196.1 — The viewer keeps up, and says when it cannot
 
 The viewer could stop showing new messages, board changes or plan changes until a reload: when an update arrived while the server was restarting for a release, the refresh of that part of the page failed once and was then forgotten until that part changed again. A failed refresh is now tried again, with a pause that grows from one second to fifteen; the live stream reopens itself when the browser gives up on it; and a band says plainly when the journal's server is not answering, so a stale page is never mistaken for a quiet one. When the server answers again the viewer catches up on everything (asked for from code-commandments). Nothing to do.
