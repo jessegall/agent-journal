@@ -49,7 +49,7 @@ class CloseRowsFromCommits(Handler):
         for numbers, how in TRAILER.findall(body):
             for n in re.findall(r"\d+", numbers):
                 try:
-                    if todos.load(int(n)).completed:
+                    if todos.load(n).completed:
                         continue
                     open_work = [w.n for w in works._standing() if int(w.todo) == int(n)]
                     todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)

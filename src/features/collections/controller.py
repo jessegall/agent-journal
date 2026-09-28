@@ -14,7 +14,7 @@ class Collections(Controller):
         return super().create(title, abstract, brief, **data)
 
     def add(self, n: int, refs: list[str]):
-        collection = self.load(int(n))
+        collection = self.load(n)
         for ref in refs:
             self._member(ref)
             collection = self.link(collection.n, ref)
@@ -25,7 +25,7 @@ class Collections(Controller):
 
     def members(self, n: int) -> list[str]:
         found = []
-        for ref in self.load(int(n)).refs:
+        for ref in self.load(n).refs:
             try:
                 row = self._member(ref)
             except Refused:
@@ -38,7 +38,7 @@ class Collections(Controller):
         kind, _, number = ref.partition(":")
         if kind not in CONTROLLERS or not number.isdigit():
             raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
-        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(int(number))
+        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(number)
         if row.data.get("system"):
             raise Refused(f"{ref} ships with the journal and cannot be put in a collection")
         return row

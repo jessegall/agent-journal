@@ -35,7 +35,7 @@ def uncovered(context: Context, board) -> str:
         return ""
     tickets = context.journal.of("ticket")
     present = {row["n"] for row in tickets.summaries() if not row["deleted"]}
-    kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(int(t)).covers
+    kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers
             if str(number).isdigit()}
     missing = [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]
     return (" Name in the same line what the goal will miss without a card for it: " + "; ".join(missing) + ".") if missing else ""

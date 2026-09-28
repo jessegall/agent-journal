@@ -124,7 +124,7 @@ class Shares(Controller):
         index_comment(record, made, comments.path(made.n))
         kind, _, n = ref.partition(":")
         about = CONTROLLERS[kind](record, actor=SYSTEM)
-        about.save(about.load(int(n)), "commented", comment=made.n)
+        about.save(about.load(n), "commented", comment=made.n)
         return made
 
     def _visitor_comments(self, share, scope: set[str]) -> list[dict]:
@@ -163,7 +163,7 @@ class Shares(Controller):
         return self.tunnel()
 
     def reachable(self, n: int) -> dict:
-        share = self.load(int(n))
+        share = self.load(n)
         try:
             with urllib.request.urlopen(urllib.request.Request(share.abstract, method="HEAD"), timeout=REACH_SECONDS) as answer:
                 return {"reachable": answer.status < 500}
@@ -180,7 +180,7 @@ class Shares(Controller):
         kind, _, number = str(ref).strip().replace(" ", ":", 1).partition(":")
         if kind not in SHARED_TYPES or not number.isdigit():
             raise Refused(f"only a document, a report, a collection or a plan can be shared: write it as doc:12, report:4, collection:3 or plan:2, not {ref!r}")
-        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(int(number))
+        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(number)
         if row.deleted:
             raise Refused(f"{kind} {number} is deleted")
         return row
@@ -196,7 +196,7 @@ class Shares(Controller):
 
     def _shared_row(self, share, ref: str):
         kind, _, n = ref.partition(":")
-        return CONTROLLERS[kind](self._home(share), actor=SYSTEM).load(int(n))
+        return CONTROLLERS[kind](self._home(share), actor=SYSTEM).load(n)
 
     def _loaded_members(self, record: Record, row) -> list:
         members = []
@@ -205,7 +205,7 @@ class Shares(Controller):
             if kind not in CONTROLLERS or not n.isdigit():
                 continue
             try:
-                row = CONTROLLERS[kind](record, actor=SYSTEM).load(int(n))
+                row = CONTROLLERS[kind](record, actor=SYSTEM).load(n)
             except Refused:
                 continue
             if not row.deleted and not row.data.get("system"):

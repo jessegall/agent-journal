@@ -254,7 +254,7 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     assert any("Pausing a board, step 1 of 1" in line for line in nudges(record)), "pausing hands the orchestrator the pause"
     Boards(record, actor=USER).resume(board.n)
     assert any("Resuming a board, step 1 of 1" in line for line in nudges(record)), "resuming hands it the restart of the halted tickets"
-    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: self.load(int(n)))
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: self.load(n))
     tickets = Tickets(record, actor=AGENT)
     first, second = tickets.create("Port the core", board=board.n), tickets.create("Port the CLI", board=board.n)
     tickets.send_back(first.n, "the tests fail")

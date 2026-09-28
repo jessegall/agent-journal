@@ -25,4 +25,4 @@ class ShowApp(Command):
     name = "app"
 
     def run(self, context: Context, tickets, n: int):
-        return address(context.record.root, tickets.load(int(n)))
+        return address(context.record.root, tickets.load(n))

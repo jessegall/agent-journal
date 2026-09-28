@@ -16,5 +16,5 @@ class ShiftCard(Command):
     name = "shift"
 
     def run(self, context: Context, todos, n: int, lane: str, why: str = "", how: str = ""):
-        shift(sources_of(context.journal), todos, todos.load(int(n)), lane, why, how)
-        return asdict(card_of(sources_of(context.journal), todos.load(int(n)), main_agent(context.journal)))
+        shift(sources_of(context.journal), todos, todos.load(n), lane, why, how)
+        return asdict(card_of(sources_of(context.journal), todos.load(n), main_agent(context.journal)))

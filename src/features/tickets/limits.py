@@ -21,7 +21,7 @@ class DraftsCarryOneLine(ActionInterceptor):
     @staticmethod
     def _draft(controller, args) -> bool:
         if "n" in args:
-            return controller.load(int(args["n"])).draft
+            return controller.load(args["n"]).draft
         return controller.resource(data=controller._shaped(args)).draft
 
 
@@ -30,7 +30,7 @@ class PanelRepliesStayShort(ActionInterceptor):
         about = str(args.get("about", ""))
         if controller.type != "comment" or controller.actor != AGENT or not about.startswith("message:"):
             return None
-        message = context.journal.messages.load(int(about.split(":")[1]))
+        message = context.journal.messages.load(about.split(":")[1])
         if not any(ref.startswith("board:") for ref in message.refs):
             return None
         text = "\n".join(line for line in (args.get("brief") or "").split("\n") if not line.startswith(">")).strip()

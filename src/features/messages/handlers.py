@@ -105,7 +105,7 @@ class CloseSeenByUser(Handler):
     def handle(self, context: Context, event: MessagesUpdated) -> None:
         messages = context.journal.messages
         for n in event.numbers:
-            message = messages.load(int(n))
+            message = messages.load(n)
             if not message.completed and not theirs(message) and USER in message.seen:
                 messages.complete(message.n, how="read by the user")
 
@@ -121,7 +121,7 @@ class CloseAnswered(Handler):
             kind, _, n = ref.partition(":")
             if kind != "message" or not n.isdigit():
                 continue
-            message = messages.load(int(n))
+            message = messages.load(n)
             if not message.completed and theirs(message):
                 filed(context, message)
                 messages.complete(message.n, how=f"{ANSWERS[event.type]} by the agent")

@@ -46,16 +46,16 @@ class Boards(Controller):
         return super().save(r, action, **event)
 
     def stage(self, n: int, name: str, meaning: str = ""):
-        board = self.load(int(n))
+        board = self.load(n)
         return self.update(board.n, stages=[*board.stages, name.strip()], meanings=with_meaning(board.meanings, name.strip(), meaning))
 
     def ask(self, n: int, question: str, abstract: str = "", **data):
-        board = self.load(int(n))
+        board = self.load(n)
         asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
         return asking.create(question, abstract, about=board.ref, hidden=True, **data)
 
     def cancel(self, n: int):
-        board = self.load(int(n))
+        board = self.load(n)
         asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for open_question in asking.about(board.ref):
             if not open_question.completed:
@@ -65,7 +65,7 @@ class Boards(Controller):
 
     @internal
     def cancelled_lately(self, n: int) -> bool:
-        return time.time() - self.load(int(n)).drafting.get("cancelled", 0) < CANCEL_HOLDS
+        return time.time() - self.load(n).drafting.get("cancelled", 0) < CANCEL_HOLDS
 
     def _stop_drafting(self, board) -> None:
         from features.sequences.controller import Sequences
@@ -78,10 +78,10 @@ class Boards(Controller):
             tickets.delete(left.n, why="The request on the board was cancelled")
 
     def request(self, n: int, text: str, idempotency: str = ""):
-        return self._opened(self.load(int(n)), REQUESTED, text, idempotency)
+        return self._opened(self.load(n), REQUESTED, text, idempotency)
 
     def hand(self, n: int, document: str, text: str = "", idempotency: str = ""):
-        board = self.load(int(n))
+        board = self.load(n)
         if document not in board.files:
             raise Refused(f"board {board.n} holds no file {document!r}; attach it first")
         return self._opened(board, COMMISSIONED, text.strip() or f"Draft tickets from {document}", idempotency, document=document)
@@ -104,7 +104,7 @@ class Boards(Controller):
         return self._update_drafting(board, outline=marked)
 
     def start(self, n: int):
-        board = self.load(int(n))
+        board = self.load(n)
         if not board.branch and current_branch(self.record.root.parent):
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
         board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env)
@@ -144,7 +144,7 @@ class Boards(Controller):
         rebuild(self.record)
 
     def pause(self, n: int):
-        board = self.load(int(n))
+        board = self.load(n)
         if not board.started or board.paused:
             raise Refused(f"board {board.n} is not running, so there is nothing to pause")
         board = self.update(board.n, paused=time.time())
@@ -152,7 +152,7 @@ class Boards(Controller):
         return board
 
     def resume(self, n: int):
-        board = self.load(int(n))
+        board = self.load(n)
         if not board.paused:
             raise Refused(f"board {board.n} is not paused")
         board = self.update(board.n, paused=0.0)
@@ -160,7 +160,7 @@ class Boards(Controller):
         return board
 
     def group(self, n: int, name: str, tickets: str):
-        board = self.load(int(n))
+        board = self.load(n)
         if not board.drafting.get("since"):
             return board
         groups = {**(board.drafting.get("groups") or {}), name.strip(): self._drafted(board, tickets)}
@@ -190,7 +190,7 @@ class Boards(Controller):
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).comment(int(asked[-1].split(":")[1]), line.strip())
 
     def added(self, n: int, tickets: str):
-        board = self.load(int(n))
+        board = self.load(n)
         numbers = [int(t) for t in str(tickets).replace(",", " ").split() if t.isdigit()]
         if not numbers:
             raise Refused("name the tickets that were added, like \"12, 13\"")
@@ -202,7 +202,7 @@ class Boards(Controller):
         return [t for t in Tickets(self.record, actor=SYSTEM)._standing() if t.draft and int(t.board) == board.n and t.created >= since]
 
     def _drafting(self, n: int):
-        board = self.load(int(n))
+        board = self.load(n)
         if not board.drafting.get("since"):
             raise Refused(f"nothing is being drafted on board {board.n}")
         return board
@@ -283,20 +283,20 @@ class Boards(Controller):
             raise Refused(f"the count is how many tickets you will draft, a whole number like 3; not {count!r}")
         if int(count) < FEWEST and not fewer.strip():
             raise Refused(f"a board is filled with at least {FEWEST} cards, preferably 8; for fewer, say why with --fewer \"<why>\"")
-        board = self.load(int(n))
+        board = self.load(n)
         shown = board.expected
         if int(count) < shown and board.drafting.get("phase") == DRAFTING_PHASE:
             raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")
         return self.update(int(n), expected=int(count))
 
     def revise(self, n: int, text: str, idempotency: str = ""):
-        board = self.load(int(n))
+        board = self.load(n)
         made = self.follow_up(board.n, text, idempotency)
         self.record.emit("message", made.n, REVISED, self.actor)
         return made
 
     def follow_up(self, n: int, text: str, idempotency: str = ""):
-        board = self.load(int(n))
+        board = self.load(n)
         made = self._filed(board, text, idempotency)
         if board.drafting.get("since"):
             self._update_drafting(board, asked=[*board.asked, made.ref])
@@ -307,7 +307,7 @@ class Boards(Controller):
             titled(text), brief=text.strip(), about=board.ref, window=board.ref, new_work=True, idempotency=idempotency, **data)
 
     def build(self, n: int, name: str = "", steer: str = ""):
-        board = self.load(int(n))
+        board = self.load(n)
         if not board.files:
             raise Refused(f"board {board.n} holds no document to build from; attach one first")
         if name.strip():
@@ -318,7 +318,7 @@ class Boards(Controller):
         return self.load(board.n)
 
     def log(self, n: int, line: str):
-        board = self.load(int(n))
+        board = self.load(n)
         entry = {"at": time.time(), "text": line.strip()}
         if self._building(board) or not board.drafting.get("since"):
             board = self._being_built(n)
@@ -330,12 +330,12 @@ class Boards(Controller):
         return self._update_building(board, done=time.time(), summary=summary.strip())
 
     def keep(self, n: int):
-        return self._replace_building(self.load(int(n)), {})
+        return self._replace_building(self.load(n), {})
 
     def discard(self, n: int, why: str = "The user removed the board built from a document"):
         from features.sequences.controller import Sequences
         from features.tickets.controller import Tickets
-        board = self.load(int(n))
+        board = self.load(n)
         Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent).give_up(board.ref, why=why)
         tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for ticket in [t for t in tickets._standing() if int(t.board) == board.n]:
@@ -346,13 +346,13 @@ class Boards(Controller):
         return bool(board.building.get("since")) and not board.building.get("done")
 
     def _being_built(self, n: int):
-        board = self.load(int(n))
+        board = self.load(n)
         if not self._building(board):
             raise Refused(f"board {board.n} is not being built from a document")
         return board
 
     def meaning(self, n: int, stage: str, meaning: str = ""):
-        board = self.load(int(n))
+        board = self.load(n)
         return self.update(board.n, meanings=with_meaning(board.meanings, stage, meaning))
 
 

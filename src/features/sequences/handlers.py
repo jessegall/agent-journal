@@ -62,7 +62,7 @@ def board_of(context: Context, about: str) -> int:
         return int(n)
     if kind != "message" or not n.isdigit():
         return 0
-    refs = context.journal.messages.load(int(n)).refs
+    refs = context.journal.messages.load(n).refs
     return next((int(ref.split(":")[1]) for ref in refs if ref.startswith("board:")), 0)
 
 
@@ -147,7 +147,7 @@ def request_of(context: Context, about: str) -> str:
     kind, _, n = about.partition(":")
     if kind != "message" or not n.isdigit():
         return ""
-    message = context.journal.messages.load(int(n))
+    message = context.journal.messages.load(n)
     text = " ".join((message.brief or message.title).split())
     return text if len(text) <= REQUEST_TEXT else text[:REQUEST_TEXT - 1].rstrip() + "…"
 

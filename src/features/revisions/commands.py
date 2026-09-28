@@ -9,7 +9,7 @@ class Keep(Command):
     name = "keep"
 
     def run(self, context: Context, docs, n: int):
-        doc = docs.load(int(n))
+        doc = docs.load(n)
         if not is_open(doc):
             raise Refused(f"revision {count(doc)} of doc {doc.n} is already kept")
         return docs.stamp(doc.n, **{OPEN_UNTIL: 0})
@@ -19,14 +19,14 @@ class Revisions(Command):
     name = "revisions"
 
     def run(self, context: Context, docs, n: int) -> list[str]:
-        return [listed(read(docs, n, k)) for k in range(1, count(docs.load(int(n))) + 1)]
+        return [listed(read(docs, n, k)) for k in range(1, count(docs.load(n)) + 1)]
 
 
 class Revision(Command):
     name = "revision"
 
     def run(self, context: Context, docs, n: int, number: int):
-        found = count(docs.load(int(n)))
+        found = count(docs.load(n))
         if not 1 <= int(number) <= found:
             raise Refused(f"doc {n} has revisions 1 to {found}" if found else f"doc {n} has no revisions yet")
         return read(docs, n, number)
@@ -36,7 +36,7 @@ class Cut(Command):
     name = "cut"
 
     def run(self, context: Context, docs, n: int, title: str):
-        doc = docs.load(int(n))
+        doc = docs.load(n)
         if not any(s[SECTION.title] == title for s in doc.sections):
             raise Refused(f"doc {doc.n} has no part named {title!r}")
         doc.sections = [s for s in doc.sections if s[SECTION.title] != title]

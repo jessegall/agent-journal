@@ -9,7 +9,7 @@ FIRST = "What happened in the last day"
 
 
 def update_of(reports, n: int):
-    r = reports.load(int(n))
+    r = reports.load(n)
     if r.data.get("kind") != UPDATE:
         raise Refused(f"report {r.n} is not an update; journal report recap writes one")
     return r

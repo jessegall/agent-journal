@@ -241,6 +241,7 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
         git("tag", f"v{version}")
     (origin / "VERSION").write_text("2.11.0-unreleased")
     git("commit", "-qam", "work after the release")
-    assert released(str(origin)) == "2.10.0", "the newest release is chosen by version, not by name"
-    _, failed = fetch(tmp_path / "copy", str(origin), f"refs/tags/v{released(str(origin))}")
+    source = str(origin)
+    assert released(source) == "2.10.0", "the newest release is chosen by version, not by name"
+    _, failed = fetch(tmp_path / "copy", source, f"refs/tags/v{released(source)}")
     assert (failed, (tmp_path / "copy" / "VERSION").read_text()) == ("", "2.10.0"), "the release tag is installed, not the commits after it"
