@@ -66,6 +66,11 @@ async function upgrade(always = false) {
 </script>
 
 <template>
+    <template v-if="store.offline">
+        <div class="band offline" role="status">
+            <span class="text">The journal's server is not answering, so this page may be out of date. It catches up by itself once the server is back.</span>
+        </div>
+    </template>
     <template v-if="stale">
         <div class="band reloading">
             <span class="text">
@@ -108,6 +113,11 @@ async function upgrade(always = false) {
 
 .reloading {
     position: relative;
+}
+
+.offline {
+    border-bottom-color: color-mix(in srgb, var(--danger, #d9534f) 45%, var(--border));
+    background: color-mix(in srgb, var(--danger, #d9534f) 12%, var(--bg));
 }
 
 .drain {
