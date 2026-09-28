@@ -1,3 +1,4 @@
+import os
 import time
 from dataclasses import asdict, dataclass, replace
 
@@ -8,7 +9,7 @@ from engine import runtime
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES = "percent", "uses", "minutes", "idle", "worked", "start", "notices"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES)
-HELD: dict[str, "Mark"] = {}
+HELD: dict[str, tuple[int, "Mark"]] = {}
 TRIGGER = names("unit", "on", "every", "at")
 
 
@@ -57,9 +58,18 @@ def _file(record, session: str, name: str):
 
 def last(record, session: str, name: str) -> Mark:
     f = str(_file(record, session, name))
-    if f not in HELD:
-        HELD[f] = Mark.from_json(read_json(f, {}))
-    return HELD[f]
+    stamp = stamped(f)
+    held = HELD.get(f)
+    if not held or held[0] != stamp:
+        held = HELD[f] = (stamp, Mark.from_json(read_json(f, {})))
+    return held[1]
+
+
+def stamped(f: str) -> int:
+    try:
+        return os.stat(f).st_mtime_ns
+    except OSError:
+        return 0
 
 
 def due(record, agent, name: str, default: Trigger) -> bool:
@@ -93,13 +103,15 @@ def write(record, agent, name: str, **fields) -> None:
     was = last(record, agent.title, name)
     now = replace(was, **fields)
     if now != was:
-        HELD[str(_file(record, agent.title, name))] = now
-        write_json(_file(record, agent.title, name), asdict(now))
+        f = _file(record, agent.title, name)
+        write_json(f, asdict(now))
+        HELD[str(f)] = (stamped(str(f)), now)
 
 
 def observe(record, agent, name: str, was: Mark) -> None:
     if (was.status, was.event) != (agent.status, agent.event):
-        HELD[str(_file(record, agent.title, name))] = replace(was, status=agent.status, event=agent.event)
+        f = str(_file(record, agent.title, name))
+        HELD[f] = (stamped(f), replace(was, status=agent.status, event=agent.event))
 
 
 def fired(record, agent, name: str) -> None:
