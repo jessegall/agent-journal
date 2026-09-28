@@ -3,13 +3,12 @@ from dataclasses import asdict, dataclass, field, replace
 
 from pathlib import Path
 
-from controllers.types import CONTROLLERS, Agents, Messages
+from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
 from engine import bus, chat, ran, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
 from engine.drivers import AGENT_COMMAND
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
-from surfaces.control import CARRY_ON, RESUMED, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
@@ -43,6 +42,18 @@ def after(written: list, line: int) -> list[str]:
     known = next((i for i, t in enumerate(written) if t.line == line), None)
     return [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
 
+
+
+CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
+RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
+
+
+def delivered(record, sessions: set[str], action: str, label: str) -> None:
+    notices = Notices(record, actor=SYSTEM)
+    for notice in notices._every():
+        if not notice.completed and notice.data.get("action") == action and notice.data.get("session") in sessions:
+            notices.complete(notice.n, how="delivered")
+    Notifications(record, actor=SYSTEM)._logged(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
 
 
 def asking(row) -> bool:

@@ -12,7 +12,7 @@ from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
 from providers.base import LIBRARY
-from skills import skill_name
+from engine.skill_homes import skill_name
 from engine.package import data
 
 READ: dict[str, tuple] = {}

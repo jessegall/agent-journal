@@ -1,3 +1,4 @@
+import inspect
 import shutil
 import time
 from dataclasses import asdict
@@ -30,6 +31,11 @@ def checked_field(fields: dict, key: str, value):
     if key not in fields:
         return value
     return check(key, fields[key], normalize_options(value) if key == Options.options else value)
+
+def actions(controller: type) -> list[str]:
+    return sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)
+                  if not name.startswith("_") and not getattr(f, "internal", False))
+
 
 class Controller(Stored, Files, Links):
     resource = Resource

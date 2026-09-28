@@ -14,7 +14,7 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from engine.record import Record
 from features import FEATURES
-from commands.dispatch import shaping
+from features.shaping import shaping
 from engine.manifest import manifest
 from engine.markers import MARKER
 from features.format import VIEWER, formatted
