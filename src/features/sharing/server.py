@@ -2,7 +2,6 @@ import json
 import mimetypes
 import sys
 from base64 import b64decode
-import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote, unquote
@@ -51,7 +50,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         share = self.shares._by_token(parts[1])
         if share is None or not share.approved:
             return self.page(404, unshared())
-        if share.completed or (share.expires and share.expires < time.time()):
+        if share.ended:
             return self.page(410, unshared())
         if not self.shares._unlocked(share, self.password()):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
@@ -89,7 +88,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         if len(parts) != 3 or parts[0] != "s" or parts[2] != "comment":
             return self.refused()
         share = self.shares._by_token(parts[1])
-        if share is None or not share.approved or share.completed or (share.expires and share.expires < time.time()):
+        if share is None or not share.approved or share.ended:
             return self.page(404, unshared())
         if not self.shares._unlocked(share, self.password()):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})

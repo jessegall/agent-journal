@@ -98,6 +98,9 @@ class Controller(Stored, Files, Links):
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
+    def _retitle(self, n: int, title: str) -> Resource:
+        return self.update(int(n), title=title.strip())
+
     def _finished(self, r: Resource) -> bool:
         return bool(r.completed)
 

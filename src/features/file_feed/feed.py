@@ -122,16 +122,20 @@ def agent_notes(record, agent: int) -> list[FileEdited]:
     return [note for note in notes(record) if note.agent == agent]
 
 
+def more_before(kept: list[FileEdited], shown: list[FileEdited]) -> bool:
+    return bool(shown) and kept[0].at < shown[0].at
+
+
 def edits_since(record, agent: int, since: float, last: int) -> Feed:
     kept = agent_notes(record, agent)
     shown = [note for note in kept if note.at > since][-last:]
-    return Feed(shown[-1].at if shown else since, cards(record, shown), bool(shown) and kept[0].at < shown[0].at)
+    return Feed(shown[-1].at if shown else since, cards(record, shown), more_before(kept, shown))
 
 
 def edits_before(record, agent: int, before: float, last: int) -> Page:
     kept = agent_notes(record, agent)
     shown = [note for note in kept if note.at < before][-last:]
-    return Page(cards(record, shown), bool(shown) and kept[0].at < shown[0].at)
+    return Page(cards(record, shown), more_before(kept, shown))
 
 
 def edited_file(record, agent: int, card: str, side: Side) -> FileText:

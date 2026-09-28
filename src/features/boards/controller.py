@@ -91,7 +91,7 @@ class Boards(Controller):
         titles = [title.strip() for title in sections.split("|") if title.strip()]
         if not titles:
             raise Refused("name the document's sections in order, split by |, like Background|Who can invite|Roles")
-        return self.update(board.n, drafting={**board.drafting, "outline": [{"title": title, "state": "", "drafts": 0} for title in titles]})
+        return self._update_drafting(board, outline=[{"title": title, "state": "", "drafts": 0} for title in titles])
 
     def progress(self, n: int, section: str, state: str, drafts: str = ""):
         board = self._drafting(n)
@@ -101,7 +101,7 @@ class Boards(Controller):
         if section not in [part["title"] for part in outline]:
             raise Refused(f"the outline has no section {section!r}; it has {', '.join(part['title'] for part in outline)}")
         marked = [{**part, "state": state, "drafts": int(drafts or part["drafts"])} if part["title"] == section else part for part in outline]
-        return self.update(board.n, drafting={**board.drafting, "outline": marked})
+        return self._update_drafting(board, outline=marked)
 
     def start(self, n: int):
         board = self.load(int(n))
@@ -125,6 +125,18 @@ class Boards(Controller):
                 for key in [key for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|")]:
                     sequences._finish(sequence.n, key.split("|", 1)[1])
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
+
+    def _update_drafting(self, board, **changes):
+        return self._replace_drafting(board, {**board.drafting, **changes})
+
+    def _replace_drafting(self, board, drafting: dict):
+        return self.update(board.n, drafting=drafting)
+
+    def _update_building(self, board, **changes):
+        return self._replace_building(board, {**board.building, **changes})
+
+    def _replace_building(self, board, building: dict):
+        return self.update(board.n, building=building)
 
     def _set_orchestrating(self, on: bool) -> None:
         from features.session_briefing.block import rebuild
@@ -152,11 +164,11 @@ class Boards(Controller):
         if not board.drafting.get("since"):
             return board
         groups = {**(board.drafting.get("groups") or {}), name.strip(): self._drafted(board, tickets)}
-        return self.update(board.n, drafting={**board.drafting, "groups": groups})
+        return self._update_drafting(board, groups=groups)
 
     def pick(self, n: int, tickets: str):
         board = self._drafting(n)
-        return self.update(board.n, drafting={**board.drafting, "picks": {"tickets": self._drafted(board, tickets), "at": time.time()}})
+        return self._update_drafting(board, picks={"tickets": self._drafted(board, tickets), "at": time.time()})
 
     def _drafted(self, board, tickets: str) -> list[int]:
         from features.tickets.controller import Tickets
@@ -228,15 +240,15 @@ class Boards(Controller):
             handed, phase = exploring.n, EXPLORING
         read = reading.strip()[:READING] or board.drafting.get("reading", "")
         board = self._goal_set(board, goal, done)
-        board = self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns, "reading": read})
+        board = self._update_drafting(board, phase=phase, score=rated, turns=turns, reading=read)
         return sequences.follow(handed, about=about) if handed else board
 
     def stall(self, n: int, why: str):
         board = self._drafting(n)
         if not why.strip():
             raise Refused("say why filling the board cannot go on: journal board stall <n> \"<why>\"")
-        return self.update(board.n, drafting={**board.drafting, "phase": STALLED, "stalled": why.strip(),
-                                              "stalled_from": board.drafting.get("stalled_from") or board.drafting.get("phase", EXPLORING)})
+        return self._update_drafting(board, phase=STALLED, stalled=why.strip(),
+                                              stalled_from=board.drafting.get("stalled_from") or board.drafting.get("phase", EXPLORING))
 
     def retry(self, n: int):
         board = self._drafting(n)
@@ -255,9 +267,9 @@ class Boards(Controller):
                 if key.split("|", 1)[1] not in asked:
                     continue
                 handed = {k: v for k, v in run.items() if k != "agent"}
-                sequences.update(sequence.n, runs={**sequence.runs, key: {**handed, "retried": time.time()}})
+                sequences.update_run(sequence, key, {**handed, "retried": time.time()})
         restored = {k: v for k, v in board.drafting.items() if k not in ("stalled", "stalled_from")}
-        return self.update(board.n, drafting={**restored, "phase": board.drafting.get("stalled_from") or EXPLORING})
+        return self._replace_drafting(board, {**restored, "phase": board.drafting.get("stalled_from") or EXPLORING})
 
     def _goal_set(self, board, goal: str, done: str):
         clauses = [clause.strip() for clause in done.split("|") if clause.strip()]
@@ -287,7 +299,7 @@ class Boards(Controller):
         board = self.load(int(n))
         made = self._filed(board, text, idempotency)
         if board.drafting.get("since"):
-            self.update(board.n, drafting={**board.drafting, "asked": [*board.asked, made.ref]})
+            self._update_drafting(board, asked=[*board.asked, made.ref])
         return made
 
     def _filed(self, board, text: str, idempotency: str, **data):
@@ -299,8 +311,8 @@ class Boards(Controller):
         if not board.files:
             raise Refused(f"board {board.n} holds no document to build from; attach one first")
         if name.strip():
-            self.update(board.n, title=name.strip())
-        self.update(board.n, building={"since": time.time(), "document": next(iter(board.files)), "steer": steer.strip(),
+            self._retitle(board.n, name)
+        self._replace_building(board, {"since": time.time(), "document": next(iter(board.files)), "steer": steer.strip(),
                                        "name_it": not name.strip(), "log": []})
         self.record.emit("board", board.n, COMMISSIONED, self.actor)
         return self.load(board.n)
@@ -310,15 +322,15 @@ class Boards(Controller):
         entry = {"at": time.time(), "text": line.strip()}
         if self._building(board) or not board.drafting.get("since"):
             board = self._being_built(n)
-            return self.update(board.n, building={**board.building, "log": [*board.building["log"], entry][-BUILD_LOG:]})
-        return self.update(board.n, drafting={**board.drafting, "log": [*(board.drafting.get("log") or []), entry][-BUILD_LOG:]})
+            return self._update_building(board, log=[*board.building["log"], entry][-BUILD_LOG:])
+        return self._update_drafting(board, log=[*(board.drafting.get("log") or []), entry][-BUILD_LOG:])
 
     def built(self, n: int, summary: str):
         board = self._being_built(n)
-        return self.update(board.n, building={**board.building, "done": time.time(), "summary": summary.strip()})
+        return self._update_building(board, done=time.time(), summary=summary.strip())
 
     def keep(self, n: int):
-        return self.update(self.load(int(n)).n, building={})
+        return self._replace_building(self.load(int(n)), {})
 
     def discard(self, n: int, why: str = "The user removed the board built from a document"):
         from features.sequences.controller import Sequences
