@@ -158,7 +158,7 @@ class Environments(Controller):
             self._refuse("only the user starts an agent in an environment: they do it from the viewer")
         if agent not in DRIVERS:
             self._refuse(f"no agent called {agent!r}; the agents are {', '.join(DRIVERS)}")
-        env = self.load(int(n))
+        env = self.load(n)
         self.vacant(env.title)
         detached(self.record.root, self.record.root.parent, env.title, agent, [*DRIVERS[agent].AUTO_ARGS])
         return self.update(env.n, launched=time.time(), launched_agent=agent)

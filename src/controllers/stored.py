@@ -242,8 +242,8 @@ class Stored:
         return self.load(found) if found else None
 
     @internal
-    def load(self, n: int) -> Resource:
-        r = self._peek(n)
+    def load(self, n: int | str) -> Resource:
+        r = self._peek(int(n))
         return r.fork() if self.resource.loading == MEMORY else r
 
     def _peek(self, n: int) -> Resource:

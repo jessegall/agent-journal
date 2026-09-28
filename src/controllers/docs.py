@@ -25,7 +25,7 @@ class Docs(Controller):
         return super().complete(n, how or "final", **data)
 
     def supersede(self, n: int, by: int):
-        newer = self.load(int(by))
+        newer = self.load(by)
         self.complete(n, how=f"superseded by doc {newer.n}")
         self.link(n, newer.ref)
         return self.link(newer.n, self.load(n).ref)

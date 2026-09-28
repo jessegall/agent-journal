@@ -48,7 +48,7 @@ class ReportCoversOutputs(ActionInterceptor):
         reported = args.get("reported")
         if controller.type != "todo" or not isinstance(reported, dict):
             return None
-        row = controller.load(int(args["n"]))
+        row = controller.load(args["n"])
         if not row.data.get("role"):
             return None
         role = organization(feature_context.record.root.parent).domain(row.data["domain"]).role(row.data["role"])

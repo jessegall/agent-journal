@@ -37,7 +37,7 @@ class Agents(Controller):
 
     @internal
     def card(self, n: int, **card):
-        row = self.load(int(n))
+        row = self.load(n)
         cards = row.data.get("cards") or []
         key = card.get("key")
         if key and any(kept.get("key") == key for kept in cards):

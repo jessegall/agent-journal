@@ -11,7 +11,7 @@ def template_of(journal, row):
         plan = next((p for p in journal.plans._every() if row.ref in p.refs and p.data.get("template")), None)
         given = plan.data.get("template") if plan else ""
     try:
-        return journal.templates.load(int(given)) if given else None
+        return journal.templates.load(given) if given else None
     except (ValueError, Refused):
         return None
 
@@ -52,6 +52,6 @@ class TellAgainOnSessionStart(Handler):
 def tell(context: Context, work) -> None:
     if not work.todo:
         return
-    template = template_of(context.journal, context.journal.todos.load(int(work.todo)))
+    template = template_of(context.journal, context.journal.todos.load(work.todo))
     if template and template.brief.strip():
         context.agent.whisper(INSTRUCTIONS, n=template.n, title=template.title, brief=template.brief.strip())

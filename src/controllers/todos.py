@@ -60,7 +60,7 @@ class Todos(Prioritised, Controller):
         kind, _, num = (str(waits) if ":" in str(waits) else f"todo:{waits}").partition(":")
         if not self.waitable(kind) or not num.isdigit():
             raise Refused("a to-do waits on another to-do or a plan: a number, todo:<n> or plan:<n>")
-        ref = self.waitable(kind)(self.record, actor=SYSTEM).load(int(num)).ref
+        ref = self.waitable(kind)(self.record, actor=SYSTEM).load(num).ref
         if ref == row.ref or row.ref in self.chain(ref):
             raise Refused(f"todo {n} waiting on {ref} would wait on itself")
         held = list(row.after)
@@ -78,7 +78,7 @@ class Todos(Prioritised, Controller):
             if kind != "todo" or f"todo:{num}" in seen:
                 continue
             seen.add(f"todo:{num}")
-            todo.extend(self.load(int(num)).after)
+            todo.extend(self.load(num).after)
         return seen
 
     @internal
@@ -88,7 +88,7 @@ class Todos(Prioritised, Controller):
             kind, _, num = ref.partition(":")
             try:
                 rows = self.waitable(kind)(self.record, actor=SYSTEM)
-                other = rows.load(int(num))
+                other = rows.load(num)
             except (TypeError, ValueError, Refused):
                 continue
             if not rows._finished(other) and not other.deleted:
@@ -123,7 +123,7 @@ class Todos(Prioritised, Controller):
         return gone
 
     def place(self, n: int, before: int):
-        todo, target = self.load(int(n)), self.load(int(before))
+        todo, target = self.load(n), self.load(before)
         level = int(target.priority or LEVELS["default"])
         column = [t for t in self._ordered(self._standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
         return self.update(todo.n, priority=level, rank=rank_before(column, target.n))

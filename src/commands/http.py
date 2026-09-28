@@ -633,7 +633,7 @@ def get_files(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/plugin/{n}/dashboard/{name}")
 def get_plugin_dashboard(req: Request) -> Reply:
-    row = Plugins(req.record(), actor=USER).load(int(req.params["n"]))
+    row = Plugins(req.record(), actor=USER).load(req.params["n"])
     board = next((b for b in declared(row).dashboards if b.name == req.params["name"]), None)
     if board is None:
         raise Missing(f"{called(row)} declares no dashboard {req.params['name']}")
@@ -690,7 +690,7 @@ class NoTranscript:
 
 
 def transcript_at(req: Request, session: str | None) -> Transcript | NoTranscript:
-    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
+    row = Agents(req.record(), actor=USER).load(req.params["n"])
     kept = row.provider in PROVIDERS and row.transcript
     if session is None:
         return Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if kept else NoTranscript()
@@ -765,7 +765,7 @@ def get_terminal(req: Request) -> Reply:
     if level not in TERMINAL_LEVELS:
         raise Refused(f"level is one of {', '.join(TERMINAL_LEVELS)}")
     record = req.record()
-    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(int(req.params["n"])).title, level)})
+    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(req.params["n"]).title, level)})
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
@@ -830,7 +830,7 @@ def post_plugin_upgrade_preview(req: Request) -> Reply:
     from features.plugins.declared import Manifest
     from features.plugins.lifecycle import changed, drop
     from features.plugins.source import previewed, staged
-    row = Plugins(req.record(), actor=USER).load(int(req.params["n"]))
+    row = Plugins(req.record(), actor=USER).load(req.params["n"])
     where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
     try:
         return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(Manifest.of(row.manifest), manifest)}, timed=False)
@@ -1093,13 +1093,13 @@ def get_one(req: Request) -> Reply:
 @route("GET", "/api/{env}/{type}/{n}/choices")
 def get_choices(req: Request) -> Reply:
     controller = req.controller()
-    return Reply(200, controller._field_choices(controller.load(int(req.params["n"]))))
+    return Reply(200, controller._field_choices(controller.load(req.params["n"])))
 
 
 @route("GET", "/api/{env}/{type}/{n}/markdown")
 def get_markdown(req: Request) -> Reply:
     from features.format import markdown
-    return Reply(200, markdown(req.controller().load(int(req.params["n"])), req.record()).encode(), "text/markdown; charset=utf-8")
+    return Reply(200, markdown(req.controller().load(req.params["n"]), req.record()).encode(), "text/markdown; charset=utf-8")
 
 
 @route("GET", "/api/{env}/{type}/{n}/files/{name}")

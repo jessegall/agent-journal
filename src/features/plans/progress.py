@@ -36,7 +36,7 @@ def status_after(last: bool, waits: bool) -> str:
 
 
 def closed(rows, n: int) -> bool:
-    return not rows._exists(int(n)) or bool(rows.load(int(n)).completed)
+    return not rows._exists(int(n)) or bool(rows.load(n).completed)
 
 
 def phase_complete(record, phase: dict) -> bool:

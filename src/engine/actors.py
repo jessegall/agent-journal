@@ -21,7 +21,7 @@ def settled(record: Record, event: Event) -> bool:
 def finished(record: Record, ref: str) -> bool:
     kind, _, n = ref.partition(":")
     try:
-        return bool(CONTROLLERS[kind](record, actor=SYSTEM).load(int(n)).completed)
+        return bool(CONTROLLERS[kind](record, actor=SYSTEM).load(n).completed)
     except (KeyError, ValueError, Refused):
         return False
 

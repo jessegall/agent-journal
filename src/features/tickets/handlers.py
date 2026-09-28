@@ -43,7 +43,7 @@ class LookAfterTicketBranches(Handler):
         tickets._stop_orphaned()
         paused = {board.n for board in Boards(context.record, actor=SYSTEM)._standing() if board.paused}
         for ticket in [t for t in tickets._awaiting_orchestrator() if not (t.board and int(t.board) in paused)]:
-            plan = tickets._plans(ticket).load(int(ticket.plan))
+            plan = tickets._plans(ticket).load(ticket.plan)
             if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
                 context.record.emit("ticket", ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS, SYSTEM)
         for ticket, permission in tickets._awaiting_decisions():
@@ -112,7 +112,7 @@ class FinishTheBoardWithItsLastTicket(Handler):
         tickets = Tickets(context.record, actor=SYSTEM)
         ticket = tickets.load(event.n)
         boards = Boards(context.record, actor=SYSTEM)
-        board = boards.load(int(ticket.board)) if ticket.board else None
+        board = boards.load(ticket.board) if ticket.board else None
         if not board or not board.started or board.finished:
             return
         if any(int(other.board) == board.n for other in tickets._standing()):

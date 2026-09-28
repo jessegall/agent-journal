@@ -56,7 +56,7 @@ class Plans(Controller):
 
     def from_doc(self, doc: int):
         from features.templates.shipped import MUST_HAVE
-        source = Docs(self.record, actor=self.actor).load(int(doc))
+        source = Docs(self.record, actor=self.actor).load(doc)
         must = next((s[SECTION.body] for s in source.sections if s[SECTION.title].lower() == MUST_HAVE.lower()), "")
         brief = (f"Built from the functional design, doc {source.n}. Every row names the must-have points it covers, and the plan is "
                  f"done when every point is covered.") if must else source.brief
@@ -164,7 +164,7 @@ class Plans(Controller):
     def progress(self, n: int) -> str:
         from controllers.types import Todos
         from features.tickets.controller import Tickets
-        r = self.load(int(n))
+        r = self.load(n)
         todos, tickets = Todos(self.record, actor=self.actor), Tickets(self.record, actor=self.actor)
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
         for i, phase in enumerate(r.phases, 1):
@@ -179,7 +179,7 @@ class Plans(Controller):
 
     def timeline(self, n: int) -> list[dict]:
         from controllers.types import Todos, Works
-        r = self.load(int(n))
+        r = self.load(n)
         numbers = {t for phase in r.phases for t in phase[PHASE.todos]}
         todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).load, numbers)}
         works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).summaries()

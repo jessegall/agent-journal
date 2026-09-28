@@ -45,12 +45,12 @@ class Sequences(Controller):
         titles = [step["title"].strip() for step in parsed]
         if len(set(titles)) != len(titles):
             self._refuse("two steps share a title: give each step its own")
-        r = self.load(int(n))
+        r = self.load(n)
         r.sections = [{SECTION.title: title, SECTION.body: str(step.get("body", ""))} for title, step in zip(titles, parsed)]
         return self.save(r, "updated")
 
     def include(self, n: int, other: int, steps: str = ""):
-        r, included = self.load(int(n)), self.load(int(other))
+        r, included = self.load(n), self.load(other)
         span = steps.strip()
         if span and not re.fullmatch(r"\d+(?:-\d+)?", span):
             self._refuse('steps is one step or a range, like 2 or 2-4')
@@ -68,7 +68,7 @@ class Sequences(Controller):
                 continue
             found.add(int(match[1]))
             if int(match[1]) not in seen:
-                found |= self._reached(self.load(int(match[1])), (*seen, int(match[1])))
+                found |= self._reached(self.load(match[1]), (*seen, int(match[1])))
         return found
 
     def _steps(self, r, seen: tuple = ()) -> list[dict]:
@@ -78,7 +78,7 @@ class Sequences(Controller):
             if not match or int(match[1]) in (*seen, r.n):
                 steps.append(part)
                 continue
-            inner = self._steps(self.load(int(match[1])), (*seen, r.n))
+            inner = self._steps(self.load(match[1]), (*seen, r.n))
             first, last = int(match[2] or 1), int(match[3] or match[2] or len(inner))
             steps += inner[first - 1:last]
         return steps
@@ -91,7 +91,7 @@ class Sequences(Controller):
         if not start or start in self._moments():
             return
         kind, _, n = start.partition(":")
-        trigger = types_module.CONTROLLERS[TRIGGER](self.record, actor=SYSTEM).load(int(n)) if kind == TRIGGER and n.isdigit() else None
+        trigger = types_module.CONTROLLERS[TRIGGER](self.record, actor=SYSTEM).load(n) if kind == TRIGGER and n.isdigit() else None
         if trigger and trigger.does != START:
             self._refuse(f"trigger {trigger.n} does {trigger.does}, so it starts nothing: journal trigger update {trigger.n} --set does=start first")
         if trigger and not trigger.completed:
@@ -103,7 +103,7 @@ class Sequences(Controller):
         return {f"{kind}.{moment}" for kind, resource in resources_module.TYPES.items() if kind != "sequence" for moment in resource.moments}
 
     def run(self, n: int, about: str = ""):
-        r = self.load(int(n))
+        r = self.load(n)
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
         self._mark(r, "Sequence restarted" if self._running(r, about) else "Sequence started", 1, about=about)
@@ -114,7 +114,7 @@ class Sequences(Controller):
         return self._key(about) in r.runs
 
     def next(self, n: int, about: str = ""):
-        r = self.load(int(n))
+        r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
@@ -133,7 +133,7 @@ class Sequences(Controller):
         return self.follow(r.n, about=about) if going and handing else moved
 
     def follow(self, n: int, about: str = ""):
-        r = self.load(int(n))
+        r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
@@ -143,7 +143,7 @@ class Sequences(Controller):
         return f"Step {step} of {len(steps)} of sequence {r.n}, {steps[step - 1][SECTION.title]}: {steps[step - 1][SECTION.body]}"
 
     def _jump(self, n: int, about: str, step: int):
-        r = self.load(int(n))
+        r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")
@@ -152,7 +152,7 @@ class Sequences(Controller):
         return self.update_run(r, key, {**run, "step": step, "stepped": time.time(), "titles": self._titles(r)})
 
     def _finish(self, n: int, about: str):
-        r = self.load(int(n))
+        r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
             return r
@@ -184,7 +184,7 @@ class Sequences(Controller):
         return (run.titles or self._titles(r))[run.step - 1:]
 
     def abandon(self, n: int, about: str = "", why: str = "", sure: bool = False):
-        r = self.load(int(n))
+        r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")

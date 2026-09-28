@@ -21,7 +21,7 @@ def freed(record, dump, ref: str) -> bool:
         return False
     controller = CONTROLLERS[type_](record, actor=SYSTEM)
     try:
-        if controller.load(int(n)).data.get(DRAFT_OF) != dump.ref:
+        if controller.load(n).data.get(DRAFT_OF) != dump.ref:
             return False
         controller.update(int(n), **{DRAFT_OF: ""})
     except (KeyError, ValueError, Refused):

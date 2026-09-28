@@ -66,7 +66,7 @@ class OpenWork(Handler):
         n = works.load(event.n).todo
         if not n:
             return
-        todo = context.journal.todos.load(int(n))
+        todo = context.journal.todos.load(n)
         works.link(event.n, todo.ref)
         context.journal.todos.update(todo.n, status="started", work=event.n)
 
@@ -79,7 +79,7 @@ class CloseWork(Handler):
         if not n:
             return
         todos = context.journal.todos
-        if todos.load(int(n)).completed:
+        if todos.load(n).completed:
             return
         if event.todo:
             todos.complete(int(n), how=f"work {event.n} ended")

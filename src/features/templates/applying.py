@@ -12,7 +12,7 @@ def chosen(context: Context, given):
     if not given:
         return None
     try:
-        return context.journal.templates.load(int(given))
+        return context.journal.templates.load(given)
     except (ValueError, Refused):
         raise Refused(f"template {given} does not exist: journal template all lists them") from None
 

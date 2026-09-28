@@ -30,7 +30,7 @@ class Templates(Controller):
         name = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
         if not name:
             self._refuse("a field needs a label with a letter or a number in it")
-        r = self.load(int(n))
+        r = self.load(n)
         made = TemplateField(name, label.strip(), kind, tuple(choices), default)
         return self.update(r.n, fields=[f.to_json() for f in r.declared_fields if f.name != name] + [made.to_json()])
 
