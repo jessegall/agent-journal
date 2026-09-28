@@ -1,3 +1,4 @@
+from features.sequences.shipping import ShippedSequence
 from resources.base import USER
 
 PANEL = "the New work panel"
@@ -20,14 +21,14 @@ RULES = ("A request typed into a board's New work panel is explored until you kn
 ASK = ("journal board ask <board n> \"<question>\" --abstract \"<one plain line>\" --set options='[{\"title\": \"<option>\", "
        "\"text\": \"<what it gives them>\"}, ...]'")
 
-EXPLORATION = {
-    "title": "Exploring a request",
-    "brief": RULES,
-    "starts_on": "message.requested",
-    "started_by": USER,
-    "talks_in": PANEL,
-    "dispatch": FILLER,
-    "steps": [
+EXPLORATION = ShippedSequence(
+    title="Exploring a request",
+    brief=RULES,
+    starts_on="message.requested",
+    started_by=USER,
+    talks_in=PANEL,
+    dispatch=FILLER,
+    steps=[
         ("Read the request", "Read the context before anything else: the board's name and brief (journal board show <board n>) "
                              "and the cards already on it (journal ticket board <board n>). Then rate at once how well the "
                              "request alone tells you what they want, with your one-line reading of it: journal board score <board n> "
@@ -49,4 +50,4 @@ EXPLORATION = {
                                             f"slice first: {ASK}. When it is answered, or nothing is open, start the drafting: "
                                             "journal board score <board n> 5 with the goal and clauses."),
     ],
-}
+)

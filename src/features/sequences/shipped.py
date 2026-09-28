@@ -1,3 +1,4 @@
+from features.sequences.shipping import ShippedSequence
 import re
 
 from features.sequences.controller import Sequences
@@ -11,19 +12,19 @@ from resources.base import AGENT, SECTION, SYSTEM, USER
 TITLED = re.compile(r"^sequence:\{(.+)\}$")
 
 
-def included(shipped: dict) -> tuple[str, str]:
-    return shipped["title"], f"sequence:{{{shipped['title']}}}"
+def included(shipped: ShippedSequence) -> tuple[str, str]:
+    return shipped.title, f"sequence:{{{shipped.title}}}"
 
 
-FILING_A_DUMP = {
-    "title": "Filing a dump",
-    "brief": "When the user writes in the dump, answer there with journal dump say <dump n> \"<text>\", never in the chat. "
+FILING_A_DUMP = ShippedSequence(
+    title="Filing a dump",
+    brief="When the user writes in the dump, answer there with journal dump say <dump n> \"<text>\", never in the chat. "
              "What the agent does with a pile a user drops in a dump: sort it by subject, file each subject straight into the "
              "dump's collection, then sum up and suggest.",
-    "starts_on": "dump.created",
-    "talks_in": "the dump window",
-    "started_by": "",
-    "steps": [
+    starts_on="dump.created",
+    talks_in="the dump window",
+    started_by="",
+    steps=[
         ("Read everything", "journal dump items <dump n> lists what was dropped. Go through the items one at a time: read an item in "
                             "full and at once record what it is with journal dump note <dump n> <item> \"<what it is>\", so the pile "
                             "shows it as read, before you open the next. When the pasted text holds "
@@ -46,13 +47,13 @@ FILING_A_DUMP = {
                                "where one is worth taking, each a question with a button: {\"ask\": \"<question>\", \"label\": "
                                "\"<button>\"}; use '[]' when there is nothing to suggest. The user takes or leaves each one."),
     ],
-}
-BUILDING_A_PLAN = {
-    "title": "Building a plan",
-    "brief": "How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
-    "starts_on": "plan.created",
-    "started_by": "",
-    "steps": [
+)
+BUILDING_A_PLAN = ShippedSequence(
+    title="Building a plan",
+    brief="How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
+    starts_on="plan.created",
+    started_by="",
+    steps=[
         ("Name the goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
         ("Add the phases", "Add every phase in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and "
                            "--checkpoint where the user should look before it goes on."),
@@ -61,16 +62,16 @@ BUILDING_A_PLAN = {
         ("Hand it over", "When every phase has rows, journal plan ready <plan n>. Only the user approves it; you start it when "
                          "they have."),
     ],
-}
-REVISING_THE_DRAFTS = {
-    "title": "Revising the board's drafts",
-    "brief": "The user typed a change in a board's New work panel while its drafts show. Change only what they asked for, "
+)
+REVISING_THE_DRAFTS = ShippedSequence(
+    title="Revising the board's drafts",
+    brief="The user typed a change in a board's New work panel while its drafts show. Change only what they asked for, "
              "keep every other draft as it is, and say one line. Never start over and never ask round one again.",
-    "starts_on": "message.revised",
-    "started_by": USER,
-    "talks_in": PANEL,
-    "dispatch": FILLER,
-    "steps": [
+    starts_on="message.revised",
+    started_by=USER,
+    talks_in=PANEL,
+    dispatch=FILLER,
+    steps=[
         ("Read the change", "Read their words and the drafts made for this request on the board. Work out which cards the "
                             "change is about. When it is unclear, ask one short question on the board with the cards it might "
                             "mean as options: journal board ask <board n> \"<question>\" --set options='[...]'. When it is "
@@ -87,17 +88,17 @@ REVISING_THE_DRAFTS = {
                          "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Finish with "
                          "journal sequence next <this sequence> --about <ref>."),
     ],
-}
-BUILDING_A_BOARD = {
-    "title": "Building a board from a document",
-    "brief": "The user handed a document to a new board, and you set the board up from it: its stages, its name when they left "
+)
+BUILDING_A_BOARD = ShippedSequence(
+    title="Building a board from a document",
+    brief="The user handed a document to a new board, and you set the board up from it: its stages, its name when they left "
              "it to you, and a ticket for every piece of work in the stage the document puts it in. The board fills while "
              "they watch, so log each move in plain words. They may write to you meanwhile: answer, and when they ask you to "
              "stop, finish at once with journal board built. When they remove the board the run is given up for you; write "
              "nothing more to it.",
-    "starts_on": "board.commissioned",
-    "started_by": USER,
-    "steps": [
+    starts_on="board.commissioned",
+    started_by=USER,
+    steps=[
         ("Read the document", "journal board show <board n> names the document under building, with the user's note under "
                               "steer; journal board paths <board n> gives its path. Read all of it before you write anything. "
                               "Then journal sequence next <this sequence> --about <ref>."),
@@ -114,19 +115,19 @@ BUILDING_A_BOARD = {
         ("Finish", "journal board built <board n> \"<one line: how many stages and tickets, and what you left out and why>\". "
                    "The user keeps the board or removes it. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
-}
-DRAFTING_FROM_A_DOCUMENT = {
-    "title": "Drafting tickets from a document",
-    "brief": "The user handed a document to a board's New work panel. Read it whole and draft one ticket per piece of work "
+)
+DRAFTING_FROM_A_DOCUMENT = ShippedSequence(
+    title="Drafting tickets from a document",
+    brief="The user handed a document to a board's New work panel. Read it whole and draft one ticket per piece of work "
              "it describes, each saying where in the document it came from, for the user to pick. Only tickets on this "
              "board: never a plan, a doc or a to-do made from it. There are no rounds of "
              "questions first: the document is the answer to them. Ask only what the document leaves open, on the board. "
              "You talk only about the work and its tickets, never about rows, commands or the journal. An answer of Start "
              "over means they closed the panel: the run is given up for you, so write nothing more to the board.",
-    "starts_on": "message.commissioned",
-    "started_by": USER,
-    "dispatch": FILLER,
-    "steps": [
+    starts_on="message.commissioned",
+    started_by=USER,
+    dispatch=FILLER,
+    steps=[
         ("Read the document", "journal message show <ref> names the file under document and gives the user's note as its "
                               "text; journal board paths <board n> gives the file's path. Read all of it, and the board's "
                               "cards (journal ticket board <board n>), before you write anything. Then show its sections "
@@ -152,16 +153,16 @@ DRAFTING_FROM_A_DOCUMENT = {
                          "sections; I left out the background.\" No lists and no ticket numbers. Finish with journal "
                          "sequence next <this sequence> --about <ref>."),
     ],
-}
-WRITING_AN_UPDATE = {
-    "title": "Writing an update",
-    "brief": "The user asked for an update or a TLDR. Write an update report on what happened since they last opened "
+)
+WRITING_AN_UPDATE = ShippedSequence(
+    title="Writing an update",
+    brief="The user asked for an update or a TLDR. Write an update report on what happened since they last opened "
              "one, and answer with it. You talk about the work, never about rows, commands or the journal.",
-    "starts_on": "",
-    "started_by": "",
-    "words": ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up",
+    starts_on="",
+    started_by="",
+    words=("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up",
               "what happened since"),
-    "steps": [
+    steps=[
         ("See what changed", "journal report changes lists what happened since the user last opened an update, under need, "
                              "done, doing, plans, commits and also. Read any row you do not remember before you sum it "
                              "up. Then journal sequence next <this sequence> --about <ref>."),
@@ -175,14 +176,14 @@ WRITING_AN_UPDATE = {
                            "the update; I pinned it at the bottom of the chat.\" Leave the report's reference out: the pinned "
                            "card is how the user opens it. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
-}
-FINISHING_WHAT_YOU_WROTE = {
-    "title": "Finishing what you wrote",
-    "brief": "The closing steps of a document or report: file it where it belongs, link what it relates to, offer the user a "
+)
+FINISHING_WHAT_YOU_WROTE = ShippedSequence(
+    title="Finishing what you wrote",
+    brief="The closing steps of a document or report: file it where it belongs, link what it relates to, offer the user a "
              "next step where one fits, then answer with it.",
-    "starts_on": "",
-    "started_by": "",
-    "steps": [
+    starts_on="",
+    started_by="",
+    steps=[
         ("Put it in a collection", "If a collection the user keeps fits what you wrote, add it: journal collection add "
                                    "<collection n> <ref>. Look with journal collection all first; skip this when none fits, and "
                                    "never make a collection just for it. Then journal sequence next <this sequence> --about <ref>."),
@@ -200,15 +201,15 @@ FINISHING_WHAT_YOU_WROTE = {
         ("Answer with it", "Say in one or two plain lines what it concludes, then its reference on a line of its own, like "
                            "`doc 41` or `report 98`. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
-}
-WRITING_A_DOCUMENT = {
-    "title": "Writing a document",
-    "brief": "You started a document. Lay out its chapters first, write them one at a time so the user can follow along in "
+)
+WRITING_A_DOCUMENT = ShippedSequence(
+    title="Writing a document",
+    brief="You started a document. Lay out its chapters first, write them one at a time so the user can follow along in "
              "its inspector, then file it, link it and answer with it.",
-    "starts_on": "doc.created",
-    "started_by": AGENT,
-    "only_when_idle": True,
-    "steps": [
+    starts_on="doc.created",
+    started_by=AGENT,
+    only_when_idle=True,
+    steps=[
         ("Lay out the chapters", "Put every chapter you plan on the document before writing any of them: journal doc section "
                                  "<doc n> \"<chapter>\" \"Being written.\" for each, in order. Put the document's reference "
                                  "on a line of its own in the chat, like `doc 41`, so the user can open it and watch. Then "
@@ -219,16 +220,16 @@ WRITING_A_DOCUMENT = {
                                "--about <ref>."),
         included(FINISHING_WHAT_YOU_WROTE),
     ],
-}
-WRITING_A_REPORT = {
-    "title": "Writing a report",
-    "brief": "You started a report. Lay out its parts first, write them one at a time so the user can follow along, then "
+)
+WRITING_A_REPORT = ShippedSequence(
+    title="Writing a report",
+    brief="You started a report. Lay out its parts first, write them one at a time so the user can follow along, then "
              "file it, link it and answer with it.",
-    "starts_on": "report.created",
-    "started_by": AGENT,
-    "only_when_idle": True,
-    "unless": {"kind": "update"},
-    "steps": [
+    starts_on="report.created",
+    started_by=AGENT,
+    only_when_idle=True,
+    unless={"kind": "update"},
+    steps=[
         ("Lay out the parts", "Lead with the answer in the report's brief, then put every part you plan on the report "
                               "before writing any of them: journal report section <report n> \"<part>\" \"Being written.\" "
                               "for each, in order: the evidence, what was already sound, what remains uncertain. Then journal "
@@ -238,7 +239,7 @@ WRITING_A_REPORT = {
                             "--about <ref>."),
         included(FINISHING_WHAT_YOU_WROTE),
     ],
-}
+)
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
            WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
 
@@ -246,8 +247,8 @@ SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_D
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
     standing = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
-    retire(sequences, {shipped["title"] for shipped in SHIPPED})
-    return [shipped["title"] for shipped in SHIPPED if in_step(sequences, shipped, standing.get(shipped["title"]))]
+    retire(sequences, {shipped.title for shipped in SHIPPED})
+    return [shipped.title for shipped in SHIPPED if in_step(sequences, shipped, standing.get(shipped.title))]
 
 
 def retire(sequences: Sequences, titles: set[str]) -> None:
@@ -256,33 +257,33 @@ def retire(sequences: Sequences, titles: set[str]) -> None:
             sequences.delete(row.n, why="the journal no longer ships it")
 
 
-def watched(record, shipped: dict) -> str:
+def watched(record, shipped: ShippedSequence) -> str:
     triggers = Triggers(record, actor=SYSTEM)
-    row = next((t for t in triggers._every() if t.title == shipped["title"] and not t.deleted), None) or triggers.create(
-        shipped["title"], brief=f"Starts the sequence {shipped['title']}", words=list(shipped["words"]), words_in=FROM_USER, does=START,
+    row = next((t for t in triggers._every() if t.title == shipped.title and not t.deleted), None) or triggers.create(
+        shipped.title, brief=f"Starts the sequence {shipped.title}", words=list(shipped.words), words_in=FROM_USER, does=START,
         system=True)
     if not row.system:
         triggers.update(row.n, system=True)
     return f"trigger:{row.n}"
 
 
-def unwatched(record, shipped: dict) -> None:
+def unwatched(record, shipped: ShippedSequence) -> None:
     triggers = Triggers(record, actor=SYSTEM)
     for row in triggers._every():
-        if row.title == shipped["title"] and row.system and not row.deleted:
-            triggers.delete(row.n, why=f"{shipped['title']} now starts on {shipped['starts_on']}")
+        if row.title == shipped.title and row.system and not row.deleted:
+            triggers.delete(row.n, why=f"{shipped.title} now starts on {shipped.starts_on}")
 
 
-def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
-    if not shipped.get("words"):
+def in_step(sequences: Sequences, shipped: ShippedSequence, n: int | None) -> bool:
+    if shipped.words:
+        shipped = shipped.started_on(watched(sequences.record, shipped))
+    else:
         unwatched(sequences.record, shipped)
-    shipped = {**shipped, "starts_on": watched(sequences.record, shipped)} if shipped.get("words") else shipped
     numbers = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
-    steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped["steps"]]
-    idle = shipped.get("only_when_idle", False)
-    row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
-    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, shipped.get("talks_in", ""), shipped.get("lasting", False),
-             shipped.get("unless", {}), shipped.get("dispatch", ""), steps)
+    steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped.steps]
+    row = sequences.load(n) if n else sequences.create(shipped.title, starts_on=shipped.starts_on, system=True)
+    shape = (shipped.brief, shipped.starts_on, shipped.started_by, shipped.only_when_idle, shipped.talks_in, shipped.lasting,
+             shipped.unless, shipped.dispatch, steps)
     if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless,
                                  row.dispatch, row.sections) == shape):
         return False
