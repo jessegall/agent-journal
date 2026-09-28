@@ -25,7 +25,7 @@ def all_parked(works: list) -> bool:
 
 
 def called_again(context: AgentContext, name: str, every: int) -> bool:
-    last = float(context.state.get(name) or 0)
+    last = float(context.state.get(name, 0.0))
     if time.time() - last < max(1, every) * 60:
         return False
     context.state.set(name, time.time())
@@ -115,7 +115,7 @@ class FinishTheBoardWithItsLastTicket(Handler):
         board = boards.load(int(ticket.board)) if ticket.board else None
         if not board or not board.started or board.finished:
             return
-        if any(int(other.board or 0) == board.n for other in tickets._standing()):
+        if any(int(other.board) == board.n for other in tickets._standing()):
             return
         boards.update(board.n, finished=time.time())
         context.record.emit("board", board.n, FINISHED, SYSTEM)

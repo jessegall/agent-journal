@@ -4,6 +4,7 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
+from engine.given import given
 from controllers.base import Controller, internal
 from controllers.types import Agents
 from features.sequences.resource import Sequence
@@ -32,16 +33,16 @@ class Sequences(Controller):
 
     def steps(self, n: int, steps: str):
         try:
-            given = json.loads(steps) if isinstance(steps, str) else steps
+            parsed = json.loads(steps) if isinstance(steps, str) else steps
         except ValueError:
-            given = None
-        if not isinstance(given, list) or not all(isinstance(step, dict) and str(step.get("title", "")).strip() for step in given):
+            parsed = None
+        if not isinstance(parsed, list) or not all(isinstance(step, dict) and str(step.get("title", "")).strip() for step in parsed):
             self._refuse('steps is a JSON list of {"title": "<step>", "body": "<what to do>"}, every step with a title')
-        titles = [step["title"].strip() for step in given]
+        titles = [step["title"].strip() for step in parsed]
         if len(set(titles)) != len(titles):
             self._refuse("two steps share a title: give each step its own")
         r = self.load(int(n))
-        r.sections = [{SECTION.title: title, SECTION.body: str(step.get("body", ""))} for title, step in zip(titles, given)]
+        r.sections = [{SECTION.title: title, SECTION.body: str(step.get("body", ""))} for title, step in zip(titles, parsed)]
         return self.save(r, "updated")
 
     def include(self, n: int, other: int, steps: str = ""):
@@ -102,7 +103,7 @@ class Sequences(Controller):
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
         self._mark(r, "Sequence restarted" if self._running(r, about) else "Sequence started", 1, about=about)
-        run = {"step": 1, "at": time.time(), "titles": self._titles(r), **({"agent": self.agent} if self.agent else {})}
+        run = {"step": 1, "at": time.time(), "titles": self._titles(r), **given(agent=self.agent)}
         return self.update(r.n, runs={**r.runs, self._key(about): run})
 
     def _running(self, r, about: str) -> bool:
@@ -132,7 +133,7 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
-        taken = {"followed": r.runs[key]["step"], **({"agent": self.agent} if self.agent else {})}
+        taken = {"followed": r.runs[key]["step"], **given(agent=self.agent)}
         r = self.update(r.n, runs={**r.runs, key: {**r.runs[key], **taken}})
         steps, step = self._steps(r), r.runs[key]["step"]
         return f"Step {step} of {len(steps)} of sequence {r.n}, {steps[step - 1][SECTION.title]}: {steps[step - 1][SECTION.body]}"

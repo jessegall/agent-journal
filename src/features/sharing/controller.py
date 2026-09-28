@@ -53,7 +53,7 @@ def matches(password: str, kept: str) -> bool:
 
 
 def scoped(text: str, scope: set[str]) -> str:
-    return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text or "")
+    return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
 
 
 def until(expires: str) -> float:
@@ -276,7 +276,7 @@ class Shares(Controller):
             UNSAVED_VIEWS[n] = (count + 1, saved_at)
             return
         UNSAVED_VIEWS[n] = (0, time.time())
-        self.update(n, views=int(self.load(n).views or 0) + count + 1)
+        self.update(n, views=int(self.load(n).views) + count + 1)
 
 
 resources_module.register(Share)

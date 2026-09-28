@@ -12,7 +12,7 @@ def rows_of(phase: dict) -> list:
 
 class Plan(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
-        Field(name="status"),
+        Field(default="", name="status"),
         Field(name="stage"),
         Field(default=list, name="phases"),
         Field(default=1, name="current"),

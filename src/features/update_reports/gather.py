@@ -23,7 +23,7 @@ def updates(reports: Reports) -> list[dict]:
 
 def opened_until(reports: Reports) -> float:
     opened = [s for s in updates(reports) if USER in s["seen"]]
-    return float(opened[-1].get("until") or 0) if opened else 0.0
+    return float(opened[-1].get("until", 0.0)) if opened else 0.0
 
 
 def since(reports: Reports, now: float) -> float:
@@ -53,7 +53,7 @@ def working(record) -> list[dict]:
 
 
 def moved(record, start: float, waiting_on: set) -> list[dict]:
-    return [item(PLANS, f"plan:{p.n}", p.title, str(p.status or "").capitalize()) for p in Plans(record, actor=SYSTEM)._every()
+    return [item(PLANS, f"plan:{p.n}", p.title, str(p.status).capitalize()) for p in Plans(record, actor=SYSTEM)._every()
             if p.updated >= start and not p.deleted and f"plan:{p.n}" not in waiting_on]
 
 

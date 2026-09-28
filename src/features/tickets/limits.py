@@ -27,7 +27,7 @@ class DraftsCarryOneLine(ActionInterceptor):
 
 class PanelRepliesStayShort(ActionInterceptor):
     def intercept(self, context: Context, controller, **args):
-        about = str(args.get("about") or "")
+        about = str(args.get("about", ""))
         if controller.type != "comment" or controller.actor != AGENT or not about.startswith("message:"):
             return None
         message = context.journal.messages.load(int(about.split(":")[1]))

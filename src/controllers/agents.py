@@ -6,6 +6,11 @@ from resources import types
 KEPT_CARDS = 50
 
 
+
+def reported_at(row: dict) -> float:
+    at = row.get("at")
+    return 0.0 if at is None else float(at)
+
 class Agents(Controller):
     resource = types.AgentRow
 
@@ -46,5 +51,5 @@ class Agents(Controller):
 
     def primary(self):
         rows = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
-        found = max(rows, key=lambda row: float(row.get("at") or 0), default=None)
+        found = max(rows, key=reported_at, default=None)
         return self.load(found["n"]) if found else None

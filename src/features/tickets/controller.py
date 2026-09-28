@@ -16,6 +16,7 @@ from features.permission_prompts.feature import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, internal
 from controllers.prioritised import Prioritised
+from engine.given import given
 from features.boards.controller import Boards
 from features.boards.resource import DONE, REVIEW, START
 from features.kanban.board import BoardLanes, Card
@@ -100,7 +101,7 @@ class Tickets(Prioritised, Controller):
             return self.update(known.n, title=title, abstract=abstract or None, brief=brief or None)
         if data.get("draft") and self.actor == AGENT and Boards(self.record, actor=self.actor).cancelled_lately(data["board"]):
             self._refuse(f"the request on board {data['board']} was cancelled, so stop drafting")
-        after = [word.strip() for word in str(data.pop("after", "") or "").split(",") if word.strip()]
+        after = [word.strip() for word in str(data.pop("after", "")).split(",") if word.strip()]
         unknown = [word for word in after if not word.isdigit() or not self._exists(int(word))]
         if unknown:
             self._refuse(f"a card waits only on cards already made; not {', '.join(unknown)}")
@@ -225,8 +226,9 @@ class Tickets(Prioritised, Controller):
 
     def send_back(self, n: int, note: str):
         ticket = self.tell(n, note)
-        started = [stage for stage, meaning in Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if meaning == START]
-        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **({"stage": started[0]} if started else {}))
+        meanings = Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings
+        started = next((stage for stage, meaning in meanings.items() if meaning == START), None)
+        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **given(stage=started))
         if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
             self.record.emit(self.type, ticket.n, ESCALATED, self.actor)
         return ticket
@@ -381,7 +383,7 @@ class Tickets(Prioritised, Controller):
     def _reporting(self, place: str, sessions: dict):
         agents = Agents(Record(self.record.root, place), actor=SYSTEM)
         rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents._titled(name))]
-        return max(rows, key=lambda row: float(row.at or 0), default=None)
+        return max(rows, key=lambda row: float(row.at), default=None)
 
     def _agent_state(self, ticket, row, running: int) -> CardState:
         if row:
@@ -398,7 +400,7 @@ class Tickets(Prioritised, Controller):
     def _live_state(self, row, place: str) -> CardState:
         if row.asking:
             return CardState("you", "waiting for you")
-        if not float(row.at or 0):
+        if not float(row.at):
             return CardState("running", "starting")
         quiet = time.time() - float(row.at)
         if row.status != IDLE and quiet > SILENT_AFTER:

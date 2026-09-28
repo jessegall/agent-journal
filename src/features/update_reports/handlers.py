@@ -16,8 +16,11 @@ class OfferAnUpdate(Handler):
         seen, _, at = context.record.cursor_text(OFFERED).partition(" ")
         if not commit or commit == seen:
             return
-        if not seen or time.time() - float(at or 0) < OFFER_EVERY or self._unread(context):
-            context.record.set_cursor_text(OFFERED, f"{commit} {at or time.time()}")
+        if not seen:
+            context.record.set_cursor_text(OFFERED, f"{commit} {time.time()}")
+            return
+        if time.time() - float(at) < OFFER_EVERY or self._unread(context):
+            context.record.set_cursor_text(OFFERED, f"{commit} {at}")
             return
         context.record.set_cursor_text(OFFERED, f"{commit} {time.time()}")
         context.agent.say(OFFER)
