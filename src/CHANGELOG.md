@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.196.1 — The viewer keeps up, and says when it cannot
+
+The viewer could stop showing new messages, board changes or plan changes until a reload: when an update arrived while the server was restarting for a release, the refresh of that part of the page failed once and was then forgotten until that part changed again. A failed refresh is now tried again, with a pause that grows from one second to fifteen; the live stream reopens itself when the browser gives up on it; and a band says plainly when the journal's server is not answering, so a stale page is never mistaken for a quiet one. When the server answers again the viewer catches up on everything (asked for from code-commandments). Nothing to do.
+
 ## 2.196.0 — Orchestrating is a switch you can see
 
 Whether an environment's agent orchestrates its boards is now one real state per environment, not something implied by a board, a running sequence and the nudges. On, the agent only delegates: board moments, ticket nudges, idle checks and the orchestrating sequences reach it. Off, none of them do for that environment, and the agent works as usual. Pressing Play turns it on; journal board orchestrate off (or the switch under Settings, Boards) turns it off and ends the environment's orchestrating sequences, leaving the boards as they are. The start block says when the agent is orchestrating, so it survives a compaction, and the state is the same whatever page is open (asked for from code-commandments).
