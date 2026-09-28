@@ -1,7 +1,19 @@
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 from resources.base import DOCUMENT, PROJECT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape
+
+
+@dataclass(frozen=True)
+class Run:
+    step: int
+    at: float
+    titles: list[str] = field(default_factory=list)
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "Run":
+        return cls(step=int(raw["step"]), at=float(raw["at"]), titles=list(raw.get("titles", [])))
 
 
 class Sequence(Shape, Resource):
@@ -36,3 +48,9 @@ class Sequence(Shape, Resource):
     scope = PROJECT
     view = DOCUMENT
     listed_as_cards = True
+
+    def run(self, key: str) -> "Run":
+        return Run.from_json(self.runs[key])
+
+    def started(self, key: str) -> float:
+        return self.run(key).at

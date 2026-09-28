@@ -117,10 +117,11 @@ class RemindUnfinished(Handler):
         found = context.journal.sequences._in_hand() if context.agent.row.status == IDLE else None
         if not found or found[0].lasting:
             return
-        sequence, key, run = found
-        left = context.journal.sequences._left(sequence, run)
-        context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{int(time.time() // (pace(context) * MINUTE))}", lambda: context.agent.say(
-            UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(context.journal.sequences._steps(sequence)),
+        sequence, key, _ = found
+        run = sequence.run(key)
+        left = context.journal.sequences._left(sequence, key)
+        context.once(UNFINISHED, f"{sequence.n}|{key}|{run.step}|{int(time.time() // (pace(context) * MINUTE))}", lambda: context.agent.say(
+            UNFINISHED, n=sequence.n, title=sequence.title, step=run.step, count=len(context.journal.sequences._steps(sequence)),
             about=about_flag(key), left="; ".join(left)))
 
 
@@ -129,7 +130,7 @@ def working_agent(context: Context):
     return (context.journal.agents._titled(holder) if holder else None) or context.journal.agents.primary()
 
 
-def dispatched_by_line(context: Context, agent, sequence, key: str, run: dict, why: str) -> None:
+def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) -> None:
     from features.boards.details import BoardsDetails
     about = key.split("|", 1)[1]
     board = board_of(context, about)
@@ -137,7 +138,7 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, run: dict, w
         return
     Sessions(context.record.root).grant(agent.title, context.record.env)
     speaking = context.speaking_to(agent)
-    speaking.once(DISPATCH, f"{sequence.n}|{key}|{run['at']}|{why}", lambda: speaking.agent.say(
+    speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
         model=BoardsDetails.values(context.record).filler_model, why=why, request=request_of(context, about)))
 
@@ -158,7 +159,7 @@ class HandStepToAgent(Handler):
         if sequence and sequence.dispatch:
             for key, run in sequence.runs.items():
                 if key.split("|", 1)[0] == context.record.env and not run.get("agent"):
-                    dispatched_by_line(context, agent, sequence, key, run, f"retry {int(run['retried'])}" if run.get("retried") else "a new request")
+                    dispatched_by_line(context, agent, sequence, key, f"retry {int(run['retried'])}" if run.get("retried") else "a new request")
         found = context.journal.sequences._in_hand() if agent else None
         if not found:
             if agent:
@@ -258,4 +259,4 @@ class DispatchAgainOnAnswer(Handler):
                 continue
             for key, run in sequence.runs.items():
                 if key.split("|", 1)[0] == context.record.env and f"board:{board_of(context, key.split('|', 1)[1])}" in boards:
-                    dispatched_by_line(context, agent, sequence, key, run, f"question {question.n} answered: {question.outcome}")
+                    dispatched_by_line(context, agent, sequence, key, f"question {question.n} answered: {question.outcome}")

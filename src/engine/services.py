@@ -7,13 +7,13 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from engine.fields import Loaded
-from engine.keeper import ServiceSpec, ServiceState, gone, teardown
+from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.record import Record
 from engine.stored import read_json, write_json
 from engine.package import entry
+from typing import TypedDict
 
 PORTS = range(8440, 8500)
-BUILD = "JOURNAL_BUILD"
 UP, DOWN = "up", "down"
 BLOCKED, FAILED, NOT_NEEDED = "blocked", "failed", "not needed"
 RESTING = (BLOCKED, FAILED, NOT_NEEDED, "stopped", "exited")
@@ -34,10 +34,6 @@ def status_file(root: Path, sid: str) -> Path:
 
 def lock_file(root: Path, sid: str) -> Path:
     return runtime(root, f"service-{sid}.lock")
-
-
-def built_from(spec: dict) -> str:
-    return (spec.get("env") or {}).get(BUILD, "")
 
 
 def current_build(root: Path) -> str:
@@ -127,7 +123,14 @@ def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, 
 SOURCES: list = []
 
 
-def files_for(root: Path, sid: str) -> dict:
+class ServiceFiles(TypedDict):
+    lock: str
+    log: str
+    status: str
+    spec: str
+
+
+def files_for(root: Path, sid: str) -> ServiceFiles:
     return {"lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid)), "spec": str(spec_file(root, sid))}
 
 
@@ -232,10 +235,14 @@ class Manager:
         for place in (status_file, spec_file, lock_file, log_file):
             place(self.root, sid).unlink(missing_ok=True)
 
+    def stored_build(self, sid: str) -> str:
+        stored = read_json(spec_file(self.root, sid))
+        return ServiceSpec.from_json(stored).build if stored else ""
+
     def one(self, spec: ServiceSpec) -> bool:
         sid = spec.id
         current = status(self.root, sid)
-        if self.living(current.keeper) and built_from(read_json(spec_file(self.root, sid), {})) != built_from(asdict(spec)):
+        if self.living(current.keeper) and self.stored_build(sid) != spec.build:
             self.remove(sid)
             current = status(self.root, sid)
         asked = Wanted.read(self.root, sid)

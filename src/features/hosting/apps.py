@@ -10,6 +10,7 @@ from features.hosting.files import hosting_of
 from features.plugins.manifest import fill
 from features.tickets.controller import Tickets
 from resources.base import SYSTEM
+from typing import TypedDict
 
 APP = "app"
 
@@ -43,7 +44,13 @@ def ticket_apps(root: Path, taken: set) -> list:
     return apps
 
 
-def address(root: Path, ticket) -> dict:
+class AppAddress(TypedDict):
+    url: str
+    state: str
+    why: str
+
+
+def address(root: Path, ticket) -> AppAddress:
     state = status(root, service_of(ticket))
     return {"url": state.url, "state": state.state or "not started", "why": state.why}
 

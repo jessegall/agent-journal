@@ -291,7 +291,7 @@ class Tickets(Prioritised, Controller):
                 f"onto {into} (git rebase --onto {into} {base[:9]}) before it is merged")
 
     def _repositories(self, ticket) -> list[tuple[str, Path, str]]:
-        return [(name, place, ticket.base if name == "." else ticket.bases.get(name, "")) for name, place in roots(self.record.root.parent).items()]
+        return [(name, place, ticket.base_of(name)) for name, place in roots(self.record.root.parent).items()]
 
     def _started_at(self, ticket, into: str) -> dict:
         branch = self._branch(ticket)

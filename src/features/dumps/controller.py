@@ -2,8 +2,9 @@ import controllers.types as types_module
 import resources.types as resources_module
 from engine.given import given
 from controllers.base import CONTROLLERS, Controller
-from features.message_buttons.shaping import Button, LABEL, one
+from features.message_buttons.shaping import Button, LABEL, one, whole
 import json
+from dataclasses import dataclass, replace
 import time
 
 from features.dumps.resource import ENTRY, ITEM, Dump
@@ -17,9 +18,14 @@ OWN_WORDS = -2
 
 
 
-def text_in(raw: dict, key: str) -> str:
-    value = raw.get(key)
-    return value.strip() if isinstance(value, str) else ""
+@dataclass(frozen=True)
+class Offer(Button):
+    ask: str = ""
+
+    @classmethod
+    def from_payload(cls, raw: dict) -> "Offer":
+        offer = cls.from_json(raw)
+        return replace(offer, label=offer.label.strip(), ask=offer.ask.strip(), n=whole(offer.n))
 
 class Dumps(Controller):
     resource = Dump
@@ -89,17 +95,16 @@ class Dumps(Controller):
             self._refuse("options is a JSON list of {ask, label} or {ask, label, type, n, action}")
         steps = []
         for raw in (o for o in (offered[:OFFERED] if isinstance(offered, list) else []) if isinstance(o, dict)):
-            option, label = Button.from_payload(raw), text_in(raw, "label")
-            if not label:
+            option = Offer.from_payload(raw)
+            if not option.label:
                 continue
             action = one(self.record, option.to_json()) if option.action else {}
             if option.action and not action:
-                self._refuse(f"{label}: {option.type} {option.action} is not a command")
-            steps.append({**action, "label": label, **given(ask=text_in(raw, "ask"))})
+                self._refuse(f"{option.label}: {option.type} {option.action} is not a command")
+            steps.append({**action, "label": option.label, **given(ask=option.ask)})
         if not steps and not summary.strip():
             self._refuse("sum up what you filed with --summary, and offer a next step only where one is worth taking")
-        summed = {"summary": summary.strip()} if summary.strip() else {}
-        return self.update(r.n, options=steps, chosen={}, taken={}, declined=[], **summed)
+        return self.update(r.n, options=steps, chosen={}, taken={}, declined=[], **given(summary=summary.strip()))
 
     def choose(self, n: int, pick: int):
         r = self._choosing(n)

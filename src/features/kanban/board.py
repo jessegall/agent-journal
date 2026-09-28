@@ -7,6 +7,7 @@ from features.kanban.lanes import DONE, LANES, Lane, Sources, lane_of, reason_of
 DONE_SHOWN = 50
 from features.kanban.shifts import targets
 from features.plans.controller import ACTIVE
+from typing import TypedDict
 
 
 @dataclass
@@ -66,7 +67,14 @@ class BoardLanes:
 QUIET_SUBAGENT = 20 * 60
 
 
-def worker_of(work, main: str) -> dict:
+class Worker(TypedDict):
+    n: int
+    agent: str
+    subagent: bool
+    parked: bool
+
+
+def worker_of(work, main: str) -> Worker:
     agent = work.agent
     return {"n": work.n, "agent": agent if agent else main, "subagent": bool(agent), "parked": bool(work.parked)}
 

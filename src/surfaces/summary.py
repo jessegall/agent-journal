@@ -11,6 +11,7 @@ from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
 from providers import PROVIDERS
 from surfaces.color import identity
+from typing import TypedDict
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
 RECENT = 600.0
@@ -47,7 +48,18 @@ def rows_of(p) -> list[int]:
     return [n for phase in p.phases for n in phase["todos"]]
 
 
-def plan(p, todos: dict) -> dict:
+class PlanSummary(TypedDict):
+    n: int
+    title: str
+    status: str
+    current: int
+    phase: str
+    phases: int
+    rows: int
+    done: int
+
+
+def plan(p, todos: dict) -> PlanSummary:
     current = p.phases[p.current - 1] if p.phases and 0 < p.current <= len(p.phases) else None
     rows = rows_of(p)
     return {"n": p.n, "title": p.title, "status": p.status, "current": p.current, "phase": current["title"] if current else "",
@@ -94,7 +106,16 @@ def lately_summarized(root: Path) -> dict:
         return made
 
 
-def summarize(root: Path) -> dict:
+class JournalSummary(TypedDict):
+    project: str
+    root: str
+    version: str
+    start: str
+    color: str
+    environments: list[dict]
+
+
+def summarize(root: Path) -> JournalSummary:
     m = manifest(root)
     standing = Environments(Record(root, m["environment"]), actor=SYSTEM)._standing()
     owners = {e.title: e.owner for e in standing}

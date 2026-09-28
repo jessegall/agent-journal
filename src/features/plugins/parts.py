@@ -2,7 +2,8 @@ import json
 import re
 import time
 from dataclasses import asdict, dataclass
-from typing import ClassVar
+from pathlib import Path
+from typing import ClassVar, NamedTuple
 
 from controllers.types import CONTROLLERS, Plugins
 from engine.events import ClockTicked, ResourceEvent
@@ -58,9 +59,15 @@ class PluginChatRules(TextFormatter):
         return found
 
 
-def placed(record, row) -> tuple:
+class Placement(NamedTuple):
+    name: str
+    folder: Path
+    environ: dict
+
+
+def placed(record, row) -> Placement:
     name = called(row)
-    return name, folder(record.root, name), environment(record.root, name, declared(row), row.token, chosen=settings_of(row).chosen, env=record.env)
+    return Placement(name, folder(record.root, name), environment(record.root, name, declared(row), row.token, chosen=settings_of(row).chosen, env=record.env))
 
 
 class AskPluginsToRefuse(ToolInterceptor):

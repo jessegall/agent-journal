@@ -64,3 +64,6 @@ class Ticket(Placed, Resource):
               "source_id": "Id at the source", "owner": "Owner", "work_environment": "Works in", "plan": "Plan"}
     shown_fields = ("board", "stage", "source", "owner", "work_environment", "plan")
     fixed_fields = ("source", "work_environment", "plan")
+
+    def base_of(self, repository: str) -> str:
+        return self.base if repository == "." else self.bases.get(repository, "")

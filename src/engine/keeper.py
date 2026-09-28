@@ -26,6 +26,9 @@ def known(cls, raw: dict) -> dict:
     return {f.name: raw[f.name] for f in fields(cls) if f.name in raw}
 
 
+BUILD = "JOURNAL_BUILD"
+
+
 @dataclass(frozen=True)
 class ServiceSpec:
     id: str
@@ -51,6 +54,10 @@ class ServiceSpec:
     @classmethod
     def from_json(cls, raw: dict) -> "ServiceSpec":
         return cls(**known(cls, raw))
+
+    @property
+    def build(self) -> str:
+        return self.env.get(BUILD, "")
 
 
 @dataclass(frozen=True)

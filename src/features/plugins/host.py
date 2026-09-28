@@ -30,7 +30,7 @@ BACKOFF = 60.0
 LONGEST_WAIT = 300.0
 
 
-def patterns(event) -> tuple:
+def patterns(event) -> tuple[str, ...]:
     return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
 
 

@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import TypedDict
 
 HUMAN, AGENT, TOOL = "human", "agent", "tool"
 INJECTED, TASK, PEER, SENT = "injected", "task", "peer", "sent"
@@ -34,7 +35,13 @@ def timestamp(value: str) -> float:
         return 0.0
 
 
-def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300, cap: int = 20_000) -> dict:
+class TranscriptPage(TypedDict):
+    total: int
+    first: int
+    turns: list[dict]
+
+
+def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300, cap: int = 20_000) -> TranscriptPage:
     kept = [turn for turn in turns if turn.line > since and (not before or turn.line < before)]
     rows = kept[-max(1, min(size, 1000)):]
     return {

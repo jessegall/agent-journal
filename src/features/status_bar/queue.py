@@ -3,6 +3,7 @@ from itertools import accumulate
 from features.status_bar.dissect import MADE, TOUCHED, Dissected, Name
 from features.status_bar.runs import Outcome
 from features.status_bar.shell import words
+from typing import TypedDict
 
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 VERBS = {"writes": "editing", "creates": "creating", "reads": "reading", "deletes": "deleting", "tests": "testing",
@@ -44,7 +45,15 @@ def shared(rows: list[list[str]]) -> int:
     return min(len(w) for w in rows)
 
 
-def columns(found: list[Name]) -> list[dict]:
+class Part(TypedDict, total=False):
+    value: str | int | list
+    color: str
+    duration: float
+    prefix: str
+    increments: bool
+
+
+def columns(found: list[Name]) -> list[Part]:
     rows = [[name.value] if name.whole else words(name.value) for name in found]
     if not all(name.columnar for name in found) or len({len(w) for w in rows}) > 1:
         same = shared(rows)
@@ -58,11 +67,11 @@ def columns(found: list[Name]) -> list[dict]:
     return parts
 
 
-def verb_for(group: list[Dissected], kind: str) -> dict:
+def verb_for(group: list[Dissected], kind: str) -> Part:
     return {"value": USING if not kind and group[-1].hand else VERBS.get(kind, VERBS[""]), "color": GRAY}
 
 
-def counted(group: list[Dissected], found: list[Name]) -> list[dict]:
+def counted(group: list[Dissected], found: list[Name]) -> list[Part]:
     if group[0].kind not in (*TOUCHED, MADE) or not found:
         return []
     parts = []
@@ -71,29 +80,29 @@ def counted(group: list[Dissected], found: list[Name]) -> list[dict]:
         if not counts[-1]:
             continue
         value = counts if len(counts) > 1 else counts[0]
-        part = {"value": value, "prefix": sign, "increments": True, "color": color}
+        part: Part = {"value": value, "prefix": sign, "increments": True, "color": color}
         if isinstance(value, list):
             part["duration"] = FLIP_EVERY
         parts.append(part)
     return parts
 
 
-def outcome(result: Outcome) -> list[dict]:
+def outcome(result: Outcome) -> list[Part]:
     if result.ok is not None:
         return [{"value": "built", "color": GREEN} if result.ok else {"value": "failed", "color": RED}]
     return [{"value": f"{result.failed} failed", "color": RED} if result.failed else {"value": "passed", "color": GREEN}]
 
 
-def key_of(parts: list[dict]) -> str:
+def key_of(parts: list[Part]) -> str:
     return " ".join(part_text(p) for p in parts)
 
 
-def walked(parts: list[dict]) -> float:
+def walked(parts: list[Part]) -> float:
     steps = max((len(p["value"]) for p in parts if isinstance(p["value"], list)), default=1)
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
-def part_text(part: dict) -> str:
+def part_text(part: Part) -> str:
     value = part["value"]
     if isinstance(value, str):
         return value

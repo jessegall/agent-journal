@@ -18,6 +18,7 @@ from features.plugins.declared import Manifest, command_text
 from features.plugins.manifest import fill, read
 from install import fetch
 from resources.base import Refused
+from typing import NamedTuple, TypedDict
 
 HOME = "plugins"
 CHOSEN = "chosen"
@@ -178,7 +179,16 @@ def preview_rows(manifest: Manifest) -> list[PreviewRow]:
     return rows
 
 
-def previewed(manifest: Manifest, source: str, commit: str) -> dict:
+class Previewed(TypedDict):
+    name: str
+    title: str
+    source: str
+    commit: str
+    description: str
+    rows: list[dict]
+
+
+def previewed(manifest: Manifest, source: str, commit: str) -> Previewed:
     return {"name": manifest.name, "title": f"{manifest.heading} {manifest.version}".strip(),
             "source": source, "commit": commit, "description": manifest.description, "rows": [asdict(row) for row in preview_rows(manifest)]}
 
@@ -200,18 +210,25 @@ def said_version(where: Path, manifest: Manifest) -> str:
         return ""
 
 
-def staged(root: Path, source: str, revision: str, version: str) -> tuple[Path, Manifest, str, bool]:
+class Staged(NamedTuple):
+    where: Path
+    manifest: Manifest
+    commit: str
+    linked: bool
+
+
+def staged(root: Path, source: str, revision: str, version: str) -> Staged:
     where = address(source)
     linked = not where.startswith(("http://", "https://", "git@", "file://", "ssh://"))
     if linked:
-        return Path(where), read(Path(where), version), "", True
+        return Staged(Path(where), read(Path(where), version), "", True)
     staging = home(root) / f".staging-{secrets.token_hex(4)}"
     commit, failed = fetch(staging, where, revision)
     if failed:
         shutil.rmtree(staging, ignore_errors=True)
         raise Refused(f"{where} could not be fetched: {failed}")
     try:
-        return staging, read(staging, version), commit, False
+        return Staged(staging, read(staging, version), commit, False)
     except Refused:
         shutil.rmtree(staging, ignore_errors=True)
         raise
