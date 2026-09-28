@@ -1,0 +1,17 @@
+{
+    "$schema": "./config.schema.json",
+    "paths": [
+        "src"
+    ],
+    "exclude": [
+        ".venv",
+        "__pycache__"
+    ],
+    "disable": {
+        "languages": [
+            "php",
+            "typescript",
+            "csharp"
+        ]
+    }
+}

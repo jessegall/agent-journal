@@ -16,7 +16,7 @@ from features.plugins.lifecycle import called
 from features.plugins.manifest import fill
 from features.plugins.payload import of, session_of
 from features.skill_loading.required import require_primary
-from features.plugins.queue import drain
+from features.plugins.queue import Refusal, drain
 from features.plugins.run import SECONDS, call
 from features.plugins.skills import published
 from features.plugins.source import environment, folder, log, logged
@@ -84,6 +84,7 @@ class Host:
         self.journal = journal
         self.replay = replay
         self.trouble: dict = {}
+        self.told: set[tuple[str, str]] = set()
         self.turn = 0
 
     def environments(self) -> list[Record]:
@@ -113,7 +114,18 @@ class Host:
         if not names:
             return 0
         self.turn = (self.turn + 1) % len(names)
-        return drain(self.root, names[self.turn], default_env(self.root))
+        plugin = names[self.turn]
+        done, refused = drain(self.root, plugin, default_env(self.root))
+        for refusal in refused:
+            self.refusal(plugin, refusal)
+        return done
+
+    def refusal(self, plugin: str, refusal: Refusal) -> None:
+        if (plugin, refusal.why) in self.told:
+            return
+        self.told.add((plugin, refusal.why))
+        record = Record(self.root, refusal.env)
+        self.journal.notice(record, "refused", name=plugin, line=refusal.line[:200], why=refusal.why, log=log(self.root, plugin), tone="warn")
 
     def deliver(self, record, row, now: float = 0.0) -> int:
         plugin = self.name(row)

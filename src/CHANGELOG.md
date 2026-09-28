@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.200.2 — A plugin hears when its queued line is refused
+
+A line a plugin queues that the journal refuses, such as one naming --env, now files a notice
+once per plugin and reason, with the line, the reason and the plugin's log, instead of only
+being written to that log (code-commandments' queued sin marks were all refused unseen). A
+queued command that fails without saying why is logged with its exit code. Nothing to do.
+
 ## 2.200.1 — Commit marks never replay old history
 
 The chat's commit marks remember the last commit they saw per checkout, not per environment.
