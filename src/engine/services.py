@@ -15,8 +15,10 @@ from engine.package import entry
 PORTS = range(8440, 8500)
 BUILD = "JOURNAL_BUILD"
 UP, DOWN = "up", "down"
-BLOCKED, FAILED = "blocked", "failed"
-RESTING = (BLOCKED, FAILED, "stopped", "exited")
+BLOCKED, FAILED, NOT_NEEDED = "blocked", "failed", "not needed"
+RESTING = (BLOCKED, FAILED, NOT_NEEDED, "stopped", "exited")
+NEEDED_FOR = 600.0
+ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 KEEPER_EXIT = 3.0
 CRASHES, WITHIN = 5, 60.0
@@ -119,7 +121,7 @@ def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, 
     sid = f"{name}.{service.name}"
     return ServiceSpec(id=sid, plugin=name, service=service.name, port=port, blocked=blocked, run=service.run, cwd=str(where / service.cwd),
                        env={**env, **service.env}, path=service.ready.path, restart=service.restart, grace=service.grace, show=service.show,
-                       **files_for(root, sid))
+                       when=service.when, **files_for(root, sid))
 
 
 SOURCES: list = []
@@ -153,7 +155,7 @@ def specs(root: Path) -> list[ServiceSpec]:
             made.append(planned(root, name, service, port, blocked, env, where))
         for spec in made:
             places = {**ports, "port": spec.port, "dir": str(where)}
-            out.append(replace(spec, run=fill(spec.run, places), env={key: str(fill(value, places)) for key, value in spec.env.items()},
+            out.append(replace(spec, run=fill(spec.run, places), when=str(fill(spec.when, places)), env={key: str(fill(value, places)) for key, value in spec.env.items()},
                                url=f"http://127.0.0.1:{spec.port}" if spec.port else ""))
     return [*out, *(spec for source in SOURCES for spec in source(root, taken))]
 
@@ -195,6 +197,7 @@ class Manager:
         self.crashes: dict = {}
         self.seen: dict = {}
         self.waiting: dict = {}
+        self.needed: dict = {}
 
     def tick(self) -> list[str]:
         started = []
@@ -246,6 +249,10 @@ class Manager:
         if spec.blocked:
             replace(current, state=BLOCKED, why=spec.blocked, at=now).write(spec.status)
             return False
+        unneeded = self.unneeded(spec, now)
+        if unneeded:
+            replace(current, state=NOT_NEEDED, why=unneeded, at=now).write(spec.status)
+            return False
         if current.state == "exited" and self.seen.get(sid) != current.at:
             self.seen[sid] = current.at
             self.crashed(sid, now)
@@ -260,6 +267,20 @@ class Manager:
         keeper = self.start(spec, self.lifeline)
         replace(current, state="starting", keeper=keeper, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
         return True
+
+    def unneeded(self, spec: ServiceSpec, now: float) -> str:
+        if not spec.when:
+            return ""
+        asked, why = self.needed.get(spec.id, (0.0, ""))
+        if now - asked < NEEDED_FOR:
+            return why
+        try:
+            ran = subprocess.run(spec.when, shell=True, cwd=spec.cwd or None, env={**os.environ, **spec.env}, capture_output=True, text=True, timeout=ASKED_WITHIN)
+            why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{': ' + ran.stdout.strip()[:160] if ran.stdout.strip() else ''}"
+        except (OSError, subprocess.SubprocessError) as e:
+            why = f"not needed here: {spec.when} could not be asked ({e})"
+        self.needed[spec.id] = (now, why)
+        return why
 
     def crashed(self, sid: str, now: float) -> None:
         seen = [at for at in self.crashes.get(sid, []) if now - at < WITHIN] + [now]

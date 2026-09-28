@@ -43,6 +43,7 @@ class Service(Loaded):
     restart: str = "on-failure"
     grace: float = 5.0
     show: dict = field(default_factory=dict)
+    when: str = ""
 
 
 @dataclass(frozen=True)

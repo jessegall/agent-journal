@@ -232,6 +232,13 @@ def test_stopping_a_service_stops_every_process_it_forked():
     Manager(record.root).one(ServiceSpec(id="kept.web", plugin="kept", service="web", run=["true"], **files_for(record.root, "kept.web")))
     assert kept.poll() is None, "a restart already carried out is never carried out again by the next agent's manager"
     kept.kill()
+    started = []
+    manager = Manager(record.root, start=lambda spec, lifeline: started.append(spec.id) or 0)
+    for sid, when in (("idle.web", "echo no C# here; exit 1"), ("busy.web", "exit 0")):
+        manager.one(ServiceSpec(id=sid, plugin=sid.split(".")[0], service="web", run=["true"], when=when, **files_for(record.root, sid)))
+    idle = json.loads(status_file(record.root, "idle.web").read_text())
+    assert (started, idle["state"], "no C# here" in idle["why"]) == (["busy.web"], "not needed", True), \
+        "a service whose when-command fails is left unstarted as not needed, with the command's own words; one that answers 0 starts"
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
