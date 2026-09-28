@@ -27,3 +27,5 @@ export async function answer(question, choice) {
         change(made, {failed: true});
     }
 }
+
+export const dismiss = (question, why) => api.dismissQuestion(question.n, why);

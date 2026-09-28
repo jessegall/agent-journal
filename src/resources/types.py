@@ -207,6 +207,7 @@ class Question(Options, Resource):
         Field(TEXT, "", name="reason"),
         Field(FLAG, False, name="hidden"),
         Field(FLAG, False, name="final"),
+        Field(FLAG, False, name="dismissed"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Question",

@@ -126,3 +126,18 @@ def test_a_question_that_lists_its_options_again_in_its_text_is_refused():
         asked.create("Release now or later", brief="The fault is open.\n- Release now: push and tag\n- Fix first: work the fault", options=options)
     assert asked.create("Release now or later", brief="The dashboard fault is still open; Release now ships it anyway.", options=options).n, \
         "a question whose text gives the context and leaves the options to their buttons is asked"
+
+
+def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
+    from controllers.types import Todos
+    from tests.conftest import refused
+    record = fresh()
+    row = Todos(record, actor=AGENT).create("Release it")
+    first = Todos(record, actor=AGENT).ask(row.n, "Release now or hold?")
+    assert f"question {first.n}" in refused(lambda: Questions(record, actor=AGENT).create("Release now?", about=row.ref)), \
+        "a second question on the same row is refused and names the one it waits on"
+    dismissed = Questions(record, actor=USER).dismiss(first.n, why="already released")
+    assert (bool(dismissed.completed), dismissed.data["dismissed"], dismissed.data["reason"]) == (True, True, "already released"), \
+        "a dismissal closes the question with the user's reason"
+    assert "not asked again" in dismissed.outcome, "the agent hears it is not to act on it or ask again"
+    assert Todos(record, actor=AGENT).ask(row.n, "Tag it as 5.2?").n, "once it is closed the row may ask again"
