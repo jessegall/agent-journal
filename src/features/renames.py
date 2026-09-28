@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from engine.stored import read_json, write_json
+from typing import TypedDict
 
 KEYED = ("features", "triggers")
 
@@ -76,7 +77,15 @@ def in_skills(home: Path, was: str, now: str) -> bool:
     return True
 
 
-def rename(root: Path, was: str, now: str) -> dict:
+class Renamed(TypedDict):
+    settings: int
+    gates: int
+    triggers: int
+    cursors: int
+    skills: int
+
+
+def rename(root: Path, was: str, now: str) -> Renamed:
     root = Path(root)
     homes = sorted(p for p in (root / "environments").glob("*") if p.is_dir())
     return {"settings": sum(in_settings(home, was, now) for home in homes),

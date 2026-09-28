@@ -175,12 +175,13 @@ class Sequences(Controller):
 
     def _in_hand(self):
         live = self._running_here()
-        mine = [(sequence.lasting, run["at"], sequence, key, run) for sequence in live if not sequence.dispatch
+        mine = [(sequence.lasting, sequence.started(key), sequence, key, run) for sequence in live if not sequence.dispatch
                 for key, run in sequence.runs.items() if key.split("|", 1)[0] == self.record.env]
         return min(mine, key=lambda found: (found[0], -found[1]))[2:] if mine else None
 
-    def _left(self, r, run: dict) -> list[str]:
-        return (run.get("titles") or self._titles(r))[run["step"] - 1:]
+    def _left(self, r, key: str) -> list[str]:
+        run = r.run(key)
+        return (run.titles or self._titles(r))[run.step - 1:]
 
     def abandon(self, n: int, about: str = "", why: str = "", sure: bool = False):
         r = self.load(int(n))
@@ -194,7 +195,7 @@ class Sequences(Controller):
             self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up, so you cannot know it no longer applies: "
                          f"journal sequence follow {r.n}{flag} and read it first")
         if self.actor == AGENT and not sure:
-            self._refuse(f"abandoning skips {'; '.join(self._left(r, r.runs[key]))}. If none of these still applies, "
+            self._refuse(f"abandoning skips {'; '.join(self._left(r, key))}. If none of these still applies, "
                          f"journal sequence abandon {r.n}{flag} --why \"<why>\" --sure")
         runs = {k: v for k, v in r.runs.items() if k != key}
         left = {"about": key, "step": r.runs[key]["step"], "why": why.strip(), "at": time.time()}

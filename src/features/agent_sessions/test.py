@@ -2,6 +2,7 @@ import pytest
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 from controllers.types import Agents, Environments, Works
 from engine.sessions import Sessions, allowed
@@ -9,16 +10,22 @@ from features.base import held
 from resources.base import AGENT
 from tests.kit import report
 from tests.conftest import fresh
-from pathlib import Path
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from engine.sessions import Sessions
 from features.work_tracking.next import ready
 from resources.base import AGENT, SYSTEM
 from tests.conftest import refused
+from typing import NamedTuple
 
 
 HERE = Path(__file__).resolve().parents[2]
+
+
+class Lent(NamedTuple):
+    root: Path
+    record: Record
+    sessions: Sessions
 
 
 @pytest.fixture(scope="module")
@@ -27,7 +34,7 @@ def env(tmp_path_factory):
     record = Record(root, "main")
     sessions = Sessions(root)
     sessions.bind("claude-1", "main")
-    return root, record, sessions
+    return Lent(root, record, sessions)
 
 
 def cli(root, *argv, agent=""):

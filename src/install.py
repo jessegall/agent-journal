@@ -13,6 +13,7 @@ import time
 import zipfile
 from importlib.util import MAGIC_NUMBER
 from pathlib import Path
+from typing import Callable, TypedDict
 
 
 PACKAGE = Path(__file__).resolve().parent
@@ -426,7 +427,23 @@ def heal() -> None:
         shutil.rmtree(temporary, ignore_errors=True)
 
 
-def package() -> dict:
+class Package(TypedDict):
+    agent_types: Callable
+    Record: type
+    default_env: Callable
+    served: Callable
+    point: Callable
+    held_builds: Callable
+    brief: Callable
+    migrate: Callable
+    ship_sequences: Callable
+    PROVIDERS: dict
+    LIBRARY: str
+    LINKED: dict
+    publish: Callable
+
+
+def package() -> Package:
     sys.path.insert(0, str(PACKAGE))
     from commands.cli import served
     from engine.package import point

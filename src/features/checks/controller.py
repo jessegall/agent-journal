@@ -12,6 +12,7 @@ from engine import runtime
 from engine.stored import read_json
 from features.checks.resource import Check, CheckReport, CheckRun
 from resources.base import Refused
+from typing import TypedDict
 
 TIMEOUT = 600
 SAID_LINES = 40
@@ -33,7 +34,13 @@ def steps(output: str) -> int:
     return sum(len(found) for found in STEPS.findall(output))
 
 
-def progress(output: str, last_steps: int = 0) -> dict:
+class Progress(TypedDict, total=False):
+    done: int
+    total: int
+    percent: float | None
+
+
+def progress(output: str, last_steps: int = 0) -> Progress:
     counted = COUNTED.findall(output[-2000:])
     if counted and 0 < int(counted[-1][1]) and int(counted[-1][0]) <= int(counted[-1][1]):
         done, total = int(counted[-1][0]), int(counted[-1][1])

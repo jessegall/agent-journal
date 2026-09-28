@@ -13,7 +13,7 @@ from pathlib import Path
 
 from engine.fields import Loaded
 from queue import Empty, Queue
-from typing import Iterator
+from typing import Iterator, TypedDict
 from urllib.parse import quote
 
 import features
@@ -597,7 +597,19 @@ def listed_types() -> list[str]:
     return [t for t, c in CONTROLLERS.items() if tuple(c.resource.notified) != (AGENT,)]
 
 
-def attached_file(record, type_: str, r, name: str, f: Path) -> dict:
+class AttachedFile(TypedDict):
+    type: str
+    n: int
+    title: str
+    name: str
+    description: str
+    size: int
+    at: float
+    image: bool
+    url: str
+
+
+def attached_file(record, type_: str, r, name: str, f: Path) -> AttachedFile:
     return {"type": type_, "n": r.n, "title": r.title, "name": name, "description": r.files.get(name, ""), "size": f.stat().st_size,
             "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
             "url": f"/api/{record.env}/{type_}/{r.n}/files/{name}"}
@@ -968,7 +980,12 @@ ATTACHED: dict[str, tuple] = {}
 TALLIED: dict[tuple, tuple] = {}
 
 
-def listing(controller, record, wanted: Listing) -> dict:
+class ListedRows(TypedDict):
+    rows: list[dict]
+    more: bool
+
+
+def listing(controller, record, wanted: Listing) -> ListedRows:
     summaries, stamp = controller.summaries(), settled(record)
     key = (str(record.home), controller.type, wanted)
     held = LISTED.get(key)
@@ -982,7 +999,7 @@ def listing(controller, record, wanted: Listing) -> dict:
     return listed
 
 
-def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> dict:
+def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> ListedRows:
     since, only, last = wanted.since, wanted.only, wanted.last
     rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"])
             and (only or controller.resource.hidden_listed or not row.get("hidden"))

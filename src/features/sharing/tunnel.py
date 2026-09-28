@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from engine.stored import read_json, write_json
+from typing import TypedDict
 
 TUNNEL_FILE = "sharing.json"
 NAME_BYTES = 12
@@ -42,7 +43,14 @@ def tunler_status() -> dict:
     return KEPT_STATUS["status"]
 
 
-def asked_status() -> dict:
+class TunnelStatus(TypedDict):
+    installed: bool
+    logged_in: bool
+    account: str
+    host: str
+
+
+def asked_status() -> TunnelStatus:
     command = tunler()
     if not command:
         return {"installed": False, "logged_in": False, "account": "", "host": ""}

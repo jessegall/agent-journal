@@ -13,6 +13,7 @@ from engine.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import tail, write_text
 from engine.drivers import ANSI, MARK, Driver
+from typing import TypedDict
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
@@ -106,6 +107,11 @@ def message_kind(payload) -> str:
     return INJECTED if payload.text.lstrip().startswith("<") else HUMAN
 
 
+class ModelControls(TypedDict):
+    groups: list[dict]
+    note: str
+
+
 class Codex(Provider):
     name = "codex"
     question_tools = frozenset({"request_user_input"})
@@ -146,7 +152,7 @@ class Codex(Provider):
         return exact or near or configured or models[0]
 
     @classmethod
-    def controls_for(cls, models: list[CodexModel], current_model: str) -> dict:
+    def controls_for(cls, models: list[CodexModel], current_model: str) -> ModelControls:
         model = cls.matched(models, current_model)
         groups = [{"key": "model", "label": "Model", "choices": [item.choice for item in models]}]
         if model:

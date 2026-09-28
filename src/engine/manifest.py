@@ -11,6 +11,7 @@ from resources.types import TYPES, priority
 from engine import runtime
 from engine.version import version
 from engine.package import data
+from typing import TypedDict
 
 
 SHOWN = {OPEN: "Open", EVERY: "All", UPDATES: "Updates"}
@@ -27,7 +28,23 @@ def built() -> str:
     return found.group(1) if found else ""
 
 
-def manifest(root: Path | None = None) -> dict:
+class Manifest(TypedDict):
+    project: str
+    environment: str
+    version: str
+    build: str
+    actions: list[str]
+    actors: list[str]
+    views: list[str]
+    scopes: list[str]
+    priority: dict
+    fields: list[str]
+    methods: list[str]
+    types: dict[str, dict]
+    features: dict
+
+
+def manifest(root: Path | None = None) -> Manifest:
     return {
         "project": root.resolve().parent.name if root else "",
         "environment": runtime.env(root) if root else runtime.DEFAULT_ENV,

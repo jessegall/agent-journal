@@ -11,6 +11,7 @@ from engine.stored import read_json, write_json
 from engine.package import CODE, entry
 from engine.fields import Loaded
 from engine.worktree import checkout, environment, share_journal
+from typing import TypedDict
 
 RELOAD = 75
 STOP = 76
@@ -58,7 +59,15 @@ def output_cap(root: Path, env: str, provider) -> dict:
     return {**wrapper, "JOURNAL_OUTPUT_LINES": str(lines), "JOURNAL_PROVIDER": provider.name, "JOURNAL_OUTPUT_DIR": str(runtime.folder(root) / "outputs")} if wrapper else {}
 
 
-def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> dict:
+class Launching(TypedDict):
+    command: list[str]
+    args: list[str]
+    launch: int
+    exit: str
+    environ: dict[str, str]
+
+
+def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> Launching:
     from providers import DRIVERS, PROVIDERS
     from engine.record import Record
     from features.work_tracking.auto import launch_args

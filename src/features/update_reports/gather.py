@@ -4,6 +4,7 @@ import time
 from controllers.types import Docs, Questions, Reports, Todos, Works
 from features.plans.controller import READY, WAITING, Plans
 from resources.base import SYSTEM, USER
+from typing import TypedDict
 
 UPDATE = "update"
 NEED, DONE, DOING, PLANS, COMMITS, ALSO = "need", "done", "doing", "plans", "commits", "also"
@@ -13,7 +14,14 @@ GIT_WAIT = 3
 MOST_COMMITS = 30
 
 
-def item(section: str, ref: str, title: str, note: str = "") -> dict:
+class Item(TypedDict):
+    section: str
+    ref: str
+    title: str
+    note: str
+
+
+def item(section: str, ref: str, title: str, note: str = "") -> Item:
     return {"section": section, "ref": ref, "title": title, "note": note}
 
 

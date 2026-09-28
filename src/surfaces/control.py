@@ -10,6 +10,7 @@ from engine.drivers import AGENT_COMMAND
 from engine.terminal import relaunch as restart
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
+from typing import TypedDict
 
 RELOAD_GRACE = 60.0
 
@@ -25,7 +26,13 @@ def current(group: str, value: str, model: str, effort: str) -> bool:
     return group == "effort" and value == effort
 
 
-def options(provider: str, current_model: str, current_effort: str) -> dict:
+class ControlOptions(TypedDict):
+    provider: str
+    groups: list[dict]
+    note: str
+
+
+def options(provider: str, current_model: str, current_effort: str) -> ControlOptions:
     _, controls = configured(provider, current_model)
     return {
         "provider": provider,

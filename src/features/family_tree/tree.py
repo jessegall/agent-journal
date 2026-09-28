@@ -6,6 +6,7 @@ from engine.record import Record
 from engine.transcript import PEER, SENT
 from providers import PROVIDERS
 from resources.base import SYSTEM
+from typing import TypedDict
 
 
 @dataclass(frozen=True)
@@ -59,7 +60,12 @@ def dispatched(row, key: str, env: str, members: dict, links: list) -> dict[str,
     return named
 
 
-def family(record) -> dict:
+class Family(TypedDict):
+    members: list[dict]
+    links: list[dict]
+
+
+def family(record) -> Family:
     rows = {env.title: env for env in Environments(record, actor=SYSTEM)._every() if not env.deleted}
     envs = [Place(title, rows[title].owner if title in rows else "", rows[title].launched_from if title in rows else "")
             for title in dict.fromkeys([record.env, *rows])]

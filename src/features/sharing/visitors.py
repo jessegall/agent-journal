@@ -1,6 +1,7 @@
 import json
 import re
 import time
+from typing import TypedDict
 
 from resources.base import Refused
 
@@ -47,7 +48,13 @@ def index_comment(record, comment, path) -> None:
     state.set(INDEX, [*kept, {"n": comment.n, "snippet": first[:SNIPPET], "path": f"{path.parent.name}/{path.name}"}])
 
 
-def shown(entry: dict, command: str, output: str) -> bool:
+class Visit(TypedDict):
+    n: int
+    snippet: str
+    path: str
+
+
+def shown(entry: Visit, command: str, output: str) -> bool:
     snippet = entry["snippet"]
     if len(snippet) >= SHORTEST_SNIPPET and (snippet in output or json.dumps(snippet)[1:-1] in output):
         return True

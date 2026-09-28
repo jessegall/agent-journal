@@ -2,12 +2,18 @@ import io
 import json
 import zipfile
 from engine.package import data
+from typing import TypedDict
 
 
 HERE = data("extension")
 
 
-def info() -> dict:
+class ExtensionInfo(TypedDict):
+    available: bool
+    store: str
+
+
+def info() -> ExtensionInfo:
     try:
         store = json.loads((HERE / "store.json").read_text()).get("url", "")
     except (OSError, ValueError):

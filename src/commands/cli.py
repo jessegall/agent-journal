@@ -18,12 +18,23 @@ from engine import runtime
 from commands.parser import PRINTED, Misused, parser
 from engine.stored import undoable
 from engine.worktree import checkout
+from typing import TypedDict
 
 
 MIGRATED: set[Path] = set()
 
 
-def context(args: dict) -> dict:
+class CommandContext(TypedDict):
+    record: Record
+    session: str
+    actor: str
+    agent: str
+    plugin: str
+    force: str
+    sessions: Sessions
+
+
+def context(args: dict) -> CommandContext:
     root = Path(args.pop("root")).resolve()
     if root not in MIGRATED:
         migrations.run(root)
