@@ -10,7 +10,7 @@ const newestFirst = computed(() => [...props.runs].reverse());
 
 <template>
     <div :class="['runs', {tall}]">
-        <template v-for="(run, i) in newestFirst" :key="i">
+        <template v-for="run in newestFirst" :key="run.at">
             <span
                 :class="['run', run.ok ? 'ok' : 'bad']"
                 :style="{height: `${Math.max(18, (Number(run.took || 0) / longest) * 100)}%`}"

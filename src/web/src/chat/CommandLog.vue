@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {useToggledSet} from "../composables/toggledSet.js";
 import Console from "../kit/Console.vue";
 import {MOD} from "../platform/keys.js";
 
@@ -9,13 +9,7 @@ defineProps({
 });
 const emit = defineEmits(["now"]);
 
-const opened = ref(new Set());
-
-function toggle(at) {
-    const next = new Set(opened.value);
-    next.has(at) ? next.delete(at) : next.add(at);
-    opened.value = next;
-}
+const {members: opened, toggle} = useToggledSet();
 
 const MARKS = {Bash: "$", Journal: "#"};
 </script>

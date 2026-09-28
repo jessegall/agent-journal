@@ -1,4 +1,5 @@
 <script setup>
+import {useToggledSet} from "../composables/toggledSet.js";
 import EmptyState from "../kit/EmptyState.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -17,16 +18,12 @@ const opened = ref("");
 const text = ref("");
 const busy = ref("");
 const notice = ref("");
-const folded = ref(new Set());
+const {members: folded, toggle: fold} = useToggledSet();
 
 async function reload() {
     const got = await api.skills(agent.value ? agent.value.n : 0);
     if (!loaded.value) {
-        folded.value = new Set(
-            groups(got).flatMap((group) =>
-                group.skill ? [] : [group.key]
-            )
-        );
+        folded.value = new Set(groups(got).flatMap((group) => (group.skill ? [] : [group.key])));
     }
     rows.value = got;
     loaded.value = true;
@@ -55,13 +52,6 @@ function groups(list) {
         named.push({key: top, name: top, count: members.length, items});
     }
     return [...named, ...individual];
-}
-
-function fold(key) {
-    const next = new Set(folded.value);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    folded.value = next;
 }
 
 async function open(s) {
@@ -231,5 +221,4 @@ async function keywords(s, words) {
     font-weight: 400;
     color: var(--text-4);
 }
-
 </style>

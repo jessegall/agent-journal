@@ -1,4 +1,5 @@
 <script setup>
+import {useToggledSet} from "../composables/toggledSet.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -19,7 +20,7 @@ usePoll(
     (got) => (family.value = got || {members: [], links: []})
 );
 
-const unfolded = ref(new Set());
+const {members: unfolded, toggle} = useToggledSet();
 const COMPACT = 520;
 const room = ref(0);
 const tree = computed(() =>
@@ -37,13 +38,6 @@ onUnmounted(() => sizing.disconnect());
 
 const looks = computed(() => new Map((tree.value ? tree.value.nodes : []).map((n) => [n.id, nodeLook(n)])));
 const touches = (edge) => hovered.value && (edge.from.id === hovered.value || edge.to.id === hovered.value);
-
-function toggle(key) {
-    const next = new Set(unfolded.value);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    unfolded.value = next;
-}
 
 function toggleAll() {
     unfolded.value = allOpen.value ? new Set() : new Set(folds.value.map((n) => n.fold.fold));

@@ -1,4 +1,5 @@
 <script setup>
+import SwitchCase from "../kit/SwitchCase.vue";
 import {sharedData} from "../api/shared.js";
 import {computed, provide, ref, watch} from "vue";
 import {usePoll} from "../poll.js";
@@ -166,15 +167,17 @@ watch(shownRef, () => (read.value = 0));
             <div :class="['view', {aside: sideline}]">
                 <div class="reading" @scroll.capture="follow">
                     <DocumentPage :key="shownRef" :resource="shown" read-only>
-                        <template v-if="shown.type === 'collection'">
-                            <CollectionPage :resource="shown" read-only />
-                        </template>
-                        <template v-else-if="shown.type === 'plan'">
-                            <PlanPage :resource="shown" read-only pin-progress />
-                        </template>
-                        <template v-else>
-                            <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
-                        </template>
+                        <SwitchCase :value="shown.type">
+                            <template #collection>
+                                <CollectionPage :resource="shown" read-only />
+                            </template>
+                            <template #plan>
+                                <PlanPage :resource="shown" read-only pin-progress />
+                            </template>
+                            <template #default>
+                                <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
+                            </template>
+                        </SwitchCase>
                         <template v-if="timeline.length && narrow">
                             <div class="body">
                                 <section class="inline-timeline">

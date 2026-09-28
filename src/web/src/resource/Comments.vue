@@ -174,14 +174,16 @@ async function send(text) {
                             </span>
                             <span class="name">{{ who(c) }}</span>
                             <span class="when">{{ age(c.created) }}</span>
-                            <span v-if="!c.pending" class="tools">
-                                <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
-                                    <Icon name="pencil" :size="12" />
-                                </button>
-                                <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
-                                    <Icon name="close" :size="12" />
-                                </button>
-                            </span>
+                            <template v-if="!c.pending">
+                                <span class="tools">
+                                    <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
+                                        <Icon name="pencil" :size="12" />
+                                    </button>
+                                    <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
+                                        <Icon name="close" :size="12" />
+                                    </button>
+                                </span>
+                            </template>
                         </header>
                         <template v-if="c.quote">
                             <button type="button" class="comment-quote" title="Show this passage in the document" @click="show(c)">
