@@ -243,6 +243,13 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     Boards(record, actor=USER).start(board.n)
     assert any("Orchestrating a board, step 1 of 5 - Tell the user" in line for line in nudges(record)), nudges(record)
     assert Boards(record, actor=USER).load(board.n).started, "the board remembers when Play was pressed"
+    from engine.queries import start_block
+    assert (Tickets(record, actor=SYSTEM)._orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([board.n], True), \
+        "Play turns orchestrating on for this environment, and the start block says so"
+    Boards(record, actor=AGENT).orchestrate("off")
+    assert (Tickets(record, actor=SYSTEM)._orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([], False), \
+        "off, this environment orchestrates nothing and no nudge of its boards reaches it"
+    Boards(record, actor=AGENT).orchestrate("on")
     Boards(record, actor=USER).pause(board.n)
     assert any("Pausing a board, step 1 of 1" in line for line in nudges(record)), "pausing hands the orchestrator the pause"
     Boards(record, actor=USER).resume(board.n)

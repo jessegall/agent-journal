@@ -108,8 +108,28 @@ class Boards(Controller):
         if not board.branch and current_branch(self.record.root.parent):
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
         board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env)
+        self._set_orchestrating(True)
         self.record.emit("board", board.n, STARTED, self.actor)
         return board
+
+    def orchestrate(self, mode: str):
+        if mode not in ("on", "off"):
+            raise Refused(f"orchestrating is on or off; not {mode!r}")
+        self._set_orchestrating(mode == "on")
+        if mode == "off":
+            from features.sequences.controller import Sequences
+            from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
+            sequences = Sequences(self.record, actor=SYSTEM)
+            for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
+                sequence = sequences._titled(shipped["title"])
+                for key in [key for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|")]:
+                    sequences._finish(sequence.n, key.split("|", 1)[1])
+        return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
+
+    def _set_orchestrating(self, on: bool) -> None:
+        from features.session_briefing.block import rebuild
+        self.record.set_setting("boards", {**self.record.setting("boards", {}), "orchestrating": on})
+        rebuild(self.record)
 
     def pause(self, n: int):
         board = self.load(int(n))

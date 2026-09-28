@@ -309,7 +309,10 @@ class Tickets(Controller):
         ])
 
     def _orchestrating(self) -> list[int]:
+        from features.boards.details import BoardsDetails
         from features.sequences.controller import Sequences
+        if not BoardsDetails.values(self.record).orchestrating:
+            return []
         from features.sequences.orchestration import ORCHESTRATION
         sequence = Sequences(self.record, actor=SYSTEM)._titled(ORCHESTRATION["title"])
         running = {int(key.rsplit(":", 1)[1]) for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|board:")}
