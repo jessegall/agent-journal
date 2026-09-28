@@ -2,6 +2,7 @@ import fcntl
 import io
 import shlex
 from contextlib import redirect_stderr, redirect_stdout
+from dataclasses import dataclass
 from pathlib import Path
 
 from features.plugins.source import log, queue_path
@@ -49,11 +50,18 @@ def ran(root: Path, env: str, line: str) -> tuple[bool, str]:
         return False, f"the words were not a journal command ({why.code})"
     except Exception as why:
         return False, str(why)
-    return code == 0, err.getvalue().strip()
+    return code == 0, err.getvalue().strip() or ("" if code == 0 else f"the command ended with code {code}")
 
 
-def drain(root: Path, plugin: str, default: str, many: int = EACH) -> int:
-    done = 0
+@dataclass(frozen=True)
+class Refusal:
+    env: str
+    line: str
+    why: str
+
+
+def drain(root: Path, plugin: str, default: str, many: int = EACH) -> tuple[int, list[Refusal]]:
+    done, refused = 0, []
     for line, env in ((line, env) for place, env in queues(root, plugin, default) for line in taken(place, many)):
         ok, why = ran(root, env, line)
         done += 1
@@ -62,4 +70,5 @@ def drain(root: Path, plugin: str, default: str, many: int = EACH) -> int:
             where.parent.mkdir(parents=True, exist_ok=True)
             with where.open("a") as f:
                 f.write(f"{line} was refused: {why}\n")
-    return done
+            refused.append(Refusal(env, line, why))
+    return done, refused
