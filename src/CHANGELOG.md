@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.201.0 — An environment's agent can be stopped
+
+journal environment stop <n> ends the agent that holds an environment, through its own
+terminal, the way a ticket's agent is closed; in the viewer the environment's button in the
+sidebar becomes Stop while an agent runs there. Removing a held environment now says which
+command ends its agent instead of only refusing. An agent the journal did not start in one of
+its terminals is left alone, and the refusal says so. Nothing to do.
+
 ## 2.200.3 — The refused-line notice is filed
 
 2.200.2's notice for a refused plugin queue line failed before it was filed, and the plugin
