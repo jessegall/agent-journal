@@ -94,7 +94,8 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         if self.headers.get(COMMENT_HEADER) != "1" or not self.headers.get("Content-Type", "").startswith("application/json"):
             return self.answer(403, "refused")
-        size = int(self.headers.get("Content-Length", "0"))
+        length = self.headers.get("Content-Length", "")
+        size = int(length) if length.isdigit() else 0
         if not 0 < size <= BODY_LIMIT:
             return self.answer(413, "too large")
         try:

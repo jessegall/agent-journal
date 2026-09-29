@@ -11,7 +11,11 @@ const entry = (text) => ({id: made++, text});
 
 watch(
     () => props.value,
-    (value) => (lines.value = value.split("\n").filter((line) => line.trim()).map(entry)),
+    (value) =>
+        (lines.value = value
+            .split("\n")
+            .filter((line) => line.trim())
+            .map((text, i) => ({id: lines.value[i]?.id ?? made++, text}))),
     {immediate: true}
 );
 

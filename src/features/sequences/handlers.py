@@ -10,6 +10,7 @@ from features.journal import waiting
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.work_tracking.details import WorkDetails
 from features.sequences.controller import BY_HAND
+from features.sequences.exploration import FILLER
 from features.triggers.controller import Triggers
 from features.triggers.resource import FIRED, START
 from controllers.types import CONTROLLERS
@@ -146,7 +147,7 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=DISPATCH_MODELS.get(sequence.dispatch, unchosen)(context.record), why=why, request=request_of(context, about)))
+        model=DISPATCH_MODELS.get(sequence.dispatch, DISPATCH_MODELS.get(FILLER, unchosen))(context.record), why=why, request=request_of(context, about)))
 
 
 def request_of(context: Context, about: str) -> str:

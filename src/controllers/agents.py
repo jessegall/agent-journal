@@ -47,7 +47,7 @@ class Agents(Controller):
     def stop_task(self, n: int, task: str, description: str = ""):
         if not task.strip():
             self._refuse("name the task to stop")
-        return self.update(int(n), stopping={"task": task.strip(), "description": description.strip() or task.strip(), "at": time.time()})
+        return self._stopping(int(n), task=task.strip(), description=description.strip() or task.strip())
 
     def primary(self):
         rows = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
