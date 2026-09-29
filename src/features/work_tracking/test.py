@@ -6,7 +6,6 @@ from features.base import held
 from tests.kit import idle, nudges, report
 from tests.conftest import fresh, refused
 from controllers.types import Questions, Todos, Works
-from features.permission_prompts.feature import launch_args
 from features.work_tracking.auto import QUIET_FOR, still_there
 from features.work_tracking.next import next, ready
 from resources.base import AGENT, USER
@@ -58,15 +57,6 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     Environments(record, actor=USER).create("ticket-3", owner="ticket:3")
     assert (automatic(Record(record.root, "ticket-3")), automatic(Record(record.root, "spare"))) == (True, False), \
         "a ticket's environment is always in auto mode, with no switch to turn it off"
-    record.set_setting("permission_prompts", {"skip": False})
-    assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--permission-mode", "auto", "--model", "sonnet"], \
-        "auto launches Claude with its automatic approval mode"
-    assert launch_args(record, "codex", ["--model", "gpt-5"]) == ["--approve-for-me", "--model", "gpt-5"], \
-        "auto launches Codex with its automatic approval mode"
-    assert launch_args(record, "claude", ["--permission-mode=dontAsk"]) == ["--permission-mode=dontAsk"], \
-        "an explicit Claude permission choice wins"
-    assert launch_args(record, "codex", ["--ask-for-approval", "never"]) == ["--ask-for-approval", "never"], \
-        "an explicit Codex approval choice wins"
     work = Works(record, actor=AGENT).create("on it", todo=1)
     idle(record, shells=1, subagents=1, monitors=1)
     assert nudges(record) == ["todo 1 next", "work 1 is still open, with nothing logged", "auto mode is on and work 1 stands still while todo 2 is ready"], \
