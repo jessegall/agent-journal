@@ -1,5 +1,5 @@
 from engine.record import Record
-from features.organization.files import GLOBAL, WORKTREE, Domain, Role
+from engine.organization import GLOBAL, WORKTREE, Domain, Role
 from resources.base import SYSTEM
 
 WAITS_FOR = "waits_for"

@@ -145,7 +145,7 @@ class Tickets(Prioritised, Controller):
                 "drafting": board.drafting, "expected": board.expected}
 
     def _roles(self) -> list:
-        from features.organization.files import organization
+        from engine.organization import organization
         try:
             found = organization(self.record.root.parent)
         except Refused:
@@ -787,7 +787,7 @@ class Tickets(Prioritised, Controller):
             self._refuse(f"{self.type} {ticket.n} is a draft: the user confirms it before it starts")
 
     def _field_choices(self, r: Resource) -> dict:
-        from features.organization.files import organization
+        from engine.organization import organization
         boards = [{"key": str(board.n), "label": board.title, "first_stage": (board.stages or [""])[0]}
                   for board in Boards(self.record, actor=SYSTEM)._standing()]
         try:

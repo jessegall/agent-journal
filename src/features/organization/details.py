@@ -1,5 +1,5 @@
 from features.base import FeatureDetails
-from features.organization.files import CARDINALITIES, FOLDER
+from engine.organization import CARDINALITIES, FOLDER
 
 
 class OrganizationDetails(FeatureDetails):
