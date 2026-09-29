@@ -7,6 +7,7 @@ from pathlib import Path
 
 from features.plugins.source import log, queue_path
 from resources.base import PLUGIN
+from features.command_line import command_line
 
 EACH = 5
 LONGEST = 4000
@@ -33,7 +34,6 @@ def taken(where: Path, many: int) -> list[str]:
 
 
 def ran(root: Path, env: str, line: str) -> tuple[bool, str]:
-    from commands import cli
     out, err = io.StringIO(), io.StringIO()
     try:
         words = shlex.split(line[:LONGEST])
@@ -45,7 +45,7 @@ def ran(root: Path, env: str, line: str) -> tuple[bool, str]:
         return False, "a queued command runs in the environment of the event it answers; it names no --env"
     try:
         with redirect_stdout(out), redirect_stderr(err):
-            code = cli.run(["--root", str(root), "--env", env, "--as", PLUGIN, *words])
+            code = command_line().run(["--root", str(root), "--env", env, "--as", PLUGIN, *words])
     except SystemExit as why:
         return False, f"the words were not a journal command ({why.code})"
     except Exception as why:

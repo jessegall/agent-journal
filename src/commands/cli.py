@@ -15,7 +15,8 @@ from engine.sessions import Sessions, allowed
 from resources.base import OWNER, Refused
 from resources.shapes import typed
 from engine import runtime
-from commands.parser import PRINTED, Misused, parser
+from commands.parser import PRINTED, QUERIES, Misused, parser, words
+from features.command_line import CommandLine, wire
 from engine.stored import undoable
 from engine.worktree import checkout
 from typing import TypedDict
@@ -180,3 +181,6 @@ def run(argv: list[str], out=None, err=None) -> int:
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     sys.exit(run(sys.argv[1:]))
+
+
+wire(CommandLine(run=run, parser=parser, words=words, queries=QUERIES))

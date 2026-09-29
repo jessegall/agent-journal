@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features
 from surfaces import updates  # noqa: E402
 import migrations  # noqa: E402
+import commands.cli  # noqa: E402,F401
 from commands.http import dispatch  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402

@@ -145,7 +145,7 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
         env = Sessions(root).free(worked) if worked else env
     journal = [*entry("journal"), "--root", str(root)]
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
-            "worker": entry("runner.worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
+            "worker": entry("worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
             **({"adopt": {"pid": taken["pid"], "fd": taken["fd"], "session": taken["session"], "saved": taken["saved"]}, "args": args}
                if taken else launching(root, cwd, env, agent, args))}
 
