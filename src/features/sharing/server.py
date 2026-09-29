@@ -11,7 +11,7 @@ from engine.package import data  # noqa: E402
 from features.sharing.controller import LAYOUT_FILE  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from features.sharing.preview import card, tags  # noqa: E402
-from surfaces.color import identity  # noqa: E402
+from engine.color import identity  # noqa: E402
 from resources.base import Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")

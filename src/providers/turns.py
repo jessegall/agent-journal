@@ -2,7 +2,9 @@ import time
 from pathlib import Path
 
 from engine.transcript import IDLE
+from controllers.types import Agents, environment_records
 from providers import PROVIDERS
+from resources.base import SYSTEM
 
 SETTLE, SETTLE_STEP = 1.5, 0.05
 TURNS: dict[str, tuple] = {}
@@ -41,3 +43,10 @@ def last_turn(record, agent):
 def last_text(record, agent) -> str:
     written = last_turn(record, agent)
     return written.text if written else ""
+
+
+def read_transcripts(root: Path) -> None:
+    for record in environment_records(root):
+        for agent in Agents(record, actor=SYSTEM)._standing():
+            if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
+                PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))

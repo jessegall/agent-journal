@@ -1,6 +1,6 @@
 import time
 
-import surfaces.control
+import agents.control
 from controllers.types import Agents
 from tests.conftest import fresh
 from tests.kit import nudges, report, tick
@@ -9,7 +9,7 @@ from tests.kit import nudges, report, tick
 def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monkeypatch):
     record = fresh()
     moved = []
-    monkeypatch.setattr(surfaces.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
     started = time.time() - 45
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
     tick(record)
@@ -25,7 +25,7 @@ def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     from providers import DRIVERS
     record = fresh()
     moved = []
-    monkeypatch.setattr(surfaces.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
     report(record, "working", "PreToolUse", session="conversation-1", provider="claude", commands=[{"command": "sleep 40", "tool": "Bash", "at": time.time() - 31}])
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1")
@@ -66,7 +66,7 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     monkeypatch.setattr(engine_module.time, "sleep", lambda seconds: None)
     monkeypatch.setattr(engine.agent, "state", lambda: "busy")
     from controllers.types import Agents
-    from surfaces import control
+    from agents import control
     import os, time
     from engine import runtime
     from engine.stored import write_json
@@ -110,7 +110,7 @@ def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the
     from resources.base import SYSTEM
     record = fresh()
     moved = []
-    monkeypatch.setattr(surfaces.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm run build", "tool": "Bash", "at": time.time() - 45}])
     CANCELERS.setdefault(LONG_COMMAND, []).append(lambda provider, record, hook, session, data: "the build must stay in view")
     try:

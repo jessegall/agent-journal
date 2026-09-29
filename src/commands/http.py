@@ -20,9 +20,9 @@ import features
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
 from surfaces.summary import lately_summarized
-from surfaces.color import identity, set_color
+from engine.color import identity, set_color
 from surfaces.updates import newer, upstream
-from surfaces.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
+from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.family_tree.tree import family
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
