@@ -99,9 +99,7 @@ function point(e) {
                             <span :class="['env-dot', {live: live(e.title)}]" />
                             <span class="label">{{ e.title }}</span>
                         </a>
-                        <template v-if="!live(e.title)">
-                            <EnvStart :env="e" />
-                        </template>
+                        <EnvStart :env="e" :live="live(e.title)" />
                     </div>
                 </template>
                 <button type="button" class="item item-new" @click="creating = true">

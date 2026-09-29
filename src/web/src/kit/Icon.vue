@@ -74,6 +74,7 @@ const shapes = {
     palette:
         '<path d="M8 2.5a5.5 5.5 0 1 0 0 11c.8 0 1.2-.5 1.2-1.1 0-.9-.8-1.2-.8-2 0-.6.5-1 1.1-1h1.6a2.4 2.4 0 0 0 2.4-2.4C13.5 4.6 11.1 2.5 8 2.5z"/><circle cx="5.3" cy="7.2" r=".6"/><circle cx="7.4" cy="5.1" r=".6"/><circle cx="10.2" cy="5.4" r=".6"/>',
     pause: '<path d="M5.8 4v8M10.2 4v8"/>',
+    stop: '<path d="M4.5 4.5h7v7h-7z"/>',
     resume: '<path d="M5.5 3.8v8.4L12.2 8z"/>',
     tick: '<path d="M3.8 8.3l2.6 2.6 5.8-6.1"/>',
     ring: '<circle cx="8" cy="8" r="5.25" stroke-width="2"/>',

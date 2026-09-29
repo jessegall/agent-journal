@@ -4,7 +4,9 @@ from collections import Counter
 from controllers.base import CONTROLLERS, Controller, internal
 from engine import attic
 from engine.record import Record
+from engine.seats import terminal_of
 from engine.sessions import Sessions
+from engine.stop import ask_session
 from resources import types
 from resources.base import AGENT, ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
 from engine import runtime
@@ -38,7 +40,21 @@ class Environments(Controller):
     def vacant(self, title: str, mine: str = "") -> None:
         holder = Sessions(self.record.root).holder(title)
         if holder and holder != mine:
-            self._refuse(f"environment {title!r} is held by session {holder}; it leaves first")
+            found = self._titled(title)
+            ending = f"journal environment stop {found.n} ends its agent" if found else "its agent ends"
+            self._refuse(f"environment {title!r} is held by session {holder}; {ending} first")
+
+    def stop(self, n: int):
+        env = self.load(n)
+        sessions = Sessions(self.record.root)
+        holder = sessions.holder(env.title)
+        if not holder:
+            self._refuse(f"no agent holds environment {env.title!r}")
+        terminal = terminal_of(self.record.root, holder)
+        if not terminal:
+            self._refuse(f"session {holder} runs outside the journal's terminals; end it where it runs")
+        ask_session(self.record.root, terminal)
+        return self.update(env.n, stopping={"session": holder, "at": time.time()})
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if title.strip() in ("", UNTITLED):
