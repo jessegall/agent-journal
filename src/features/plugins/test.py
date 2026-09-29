@@ -9,6 +9,7 @@ import time
 from controllers.types import CONTROLLERS, Agents, Plugins
 from engine.hooks import handle
 from engine.services import Manager, status_file
+from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
 from features.plugins.manifest import MANIFEST
@@ -208,7 +209,7 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)
     status_file(record.root, "gone.web").parent.mkdir(parents=True, exist_ok=True)
     status_file(record.root, "gone.web").write_text(json.dumps({"state": "running", "keeper": left.pid, "pgid": left.pid}))
-    Manager(record.root).tick()
+    Manager(record.root, sources=(plugin_services,)).tick()
     assert left.wait(timeout=5) is not None, "its process is stopped"
     assert not status_file(record.root, "gone.web").exists(), "and it is no longer listed"
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from engine import runtime, typist
 from engine.record import Record
 from engine.sessions import Sessions
-from engine.watch import threw
+from controllers.faults import threw
 from engine.engine import TICK, Engine
 from engine.package import CODE, ZIPPED
 

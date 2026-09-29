@@ -6,7 +6,7 @@ from controllers.types import Agents, Notices
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUME, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
 from engine.seats import live
-from engine.drivers import AGENT_COMMAND
+from providers.drivers import AGENT_COMMAND
 from engine.terminal import relaunch as restart
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused

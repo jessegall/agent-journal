@@ -106,7 +106,7 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
 
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
     from controllers.types import Agents
-    from engine.hooks import CANCELERS, LONG_COMMAND
+    from engine.gates import CANCELERS, LONG_COMMAND
     from resources.base import SYSTEM
     record = fresh()
     moved = []

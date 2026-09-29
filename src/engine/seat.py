@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from engine.actors import COMPACTING, WORKING
+from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS
 from engine.stored import write_json
 from engine.proc import git

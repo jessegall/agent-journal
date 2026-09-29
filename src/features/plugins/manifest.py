@@ -7,7 +7,7 @@ from features.base import REGISTRY
 from surfaces.updates import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
-from engine.hooks import CANCELABLE
+from engine.gates import CANCELABLE
 from features.plugins.declared import Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"

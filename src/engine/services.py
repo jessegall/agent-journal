@@ -8,7 +8,6 @@ from pathlib import Path
 
 from engine.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
-from engine.record import Record
 from engine.stored import read_json, write_json
 from engine.package import entry
 from typing import TypedDict
@@ -104,22 +103,6 @@ def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     return 0, f"no port free from {PORTS.start} through {PORTS.stop - 1}"
 
 
-def plugins(root: Path) -> list:
-    from controllers.types import Plugins
-    from resources.base import SYSTEM
-    home = Path(root) / "environments"
-    first = sorted(p.name for p in home.iterdir() if p.is_dir()) if home.is_dir() else []
-    record = Record(Path(root), first[0] if first else "main")
-    return Plugins(record, actor=SYSTEM)._installed()
-
-
-def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, where: Path) -> ServiceSpec:
-    sid = f"{name}.{service.name}"
-    return ServiceSpec(id=sid, plugin=name, service=service.name, port=port, blocked=blocked, run=service.run, cwd=str(where / service.cwd),
-                       env={**env, **service.env}, path=service.ready.path, restart=service.restart, grace=service.grace, show=service.show,
-                       when=service.when, **files_for(root, sid))
-
-
 SOURCES: list = []
 
 
@@ -134,33 +117,9 @@ def files_for(root: Path, sid: str) -> ServiceFiles:
     return {"lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid)), "spec": str(spec_file(root, sid))}
 
 
-def specs(root: Path) -> list[ServiceSpec]:
-    from features.plugins.declared import declared, settings_of
-    from features.plugins.manifest import fill
-    from features.plugins.source import environment, folder
-    out: list[ServiceSpec] = []
+def specs(root: Path, sources) -> list[ServiceSpec]:
     taken: set[int] = set()
-    for row in plugins(root):
-        manifest = declared(row)
-        name = manifest.name
-        where = folder(root, name)
-        settings = settings_of(row)
-        kept = settings.ports
-        env = environment(root, name, manifest, row.token, kept, settings.chosen)
-        ports = {f"ports.{service}": port for service, port in kept.items()}
-        made = []
-        for service in manifest.services:
-            asked = kept[service.name] if kept.get(service.name) else service.port
-            port, blocked = allocate(root, f"{name}.{service.name}", asked, taken) if service.port is not None else (0, "")
-            if port:
-                taken.add(port)
-                ports[f"ports.{service.name}"] = port
-            made.append(planned(root, name, service, port, blocked, env, where))
-        for spec in made:
-            places = {**ports, "port": spec.port, "dir": str(where)}
-            out.append(replace(spec, run=fill(spec.run, places), when=str(fill(spec.when, places)), env={key: str(fill(value, places)) for key, value in spec.env.items()},
-                               url=f"http://127.0.0.1:{spec.port}" if spec.port else ""))
-    return [*out, *(spec for source in SOURCES for spec in source(root, taken))]
+    return [spec for source in (*sources, *SOURCES) for spec in source(root, taken)]
 
 
 def alive(pid: int) -> bool:
@@ -196,8 +155,9 @@ def excerpt(output: str) -> str:
 
 
 class Manager:
-    def __init__(self, root: Path, lifeline: int = -1, start=spawn, clock=time.time, living=alive):
+    def __init__(self, root: Path, lifeline: int = -1, start=spawn, clock=time.time, living=alive, sources=()):
         self.root = Path(root)
+        self.sources = sources
         self.lifeline = lifeline
         self.start = start
         self.clock = clock
@@ -209,7 +169,7 @@ class Manager:
 
     def tick(self) -> list[str]:
         started = []
-        declared = specs(self.root)
+        declared = specs(self.root, self.sources)
         for spec in declared:
             if self.one(spec):
                 started.append(spec.id)
@@ -318,8 +278,8 @@ class Manager:
         return killed
 
 
-def listed(root: Path) -> list[dict]:
-    known = {spec.id: spec for spec in specs(root)}
+def listed(root: Path, sources) -> list[dict]:
+    known = {spec.id: spec for spec in specs(root, sources)}
     current = states(root)
     out = []
     for sid in sorted({*known, *current}):

@@ -6,7 +6,7 @@ from typing import ClassVar
 from controllers.types import Agents, Environments, Features
 from features import trigger
 from features.trigger import NEVER, Trigger
-from engine.hooks import gate_file
+from engine.gates import gate_file
 from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs

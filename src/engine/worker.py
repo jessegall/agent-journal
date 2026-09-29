@@ -7,12 +7,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from providers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
+from features.plugins.services import plugin_services  # noqa: E402
 from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
-from engine.watch import threw  # noqa: E402
+from controllers.faults import threw  # noqa: E402
 from engine.stop import asked, session_flag  # noqa: E402
 from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, Seat, seated, watched  # noqa: E402
-from engine.actors import Agent  # noqa: E402
+from engine.actors import Agent
 from engine.record import Record  # noqa: E402
 from engine.package import CODE  # noqa: E402
 from engine.sessions import hold_build  # noqa: E402
@@ -104,7 +105,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     watching = None
     exits: list = []
     driver, kept = checks(seat)
-    services = Manager(root, lifeline)
+    services = Manager(root, lifeline, sources=(plugin_services,))
     while True:
         time.sleep(TICK)
         confirm.tick()

@@ -8,7 +8,7 @@ from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents, Environments
 from engine import bus
 from engine.events import AgentChanged, AgentEvent
-from engine.hooks import AFTERWARDS, CANCELERS, POLICIES
+from engine.gates import AFTERWARDS, CANCELERS, POLICIES
 from engine.state import State
 from engine.wording import APPENDS
 from features.format import FORMATTERS

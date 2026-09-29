@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.actors import IDLE
+from resources.types import IDLE
 from engine.events import ClockTicked, ResourceCreated, ResourceEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works

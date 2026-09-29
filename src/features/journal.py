@@ -3,7 +3,7 @@ from functools import cached_property
 
 from controllers.base import NAMED, Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
-from engine.drivers import CHANNEL, TERMINAL
+from providers.drivers import CHANNEL, TERMINAL
 from engine.wording import appended
 from features.parts import AgentHooks, Client, Commands, Events
 from resources.base import SYSTEM, titled

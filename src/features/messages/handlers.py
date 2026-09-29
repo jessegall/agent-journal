@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentMessageSent, AgentReported, ResourceCreated, ResourceEvent
-from engine.transcript import IDLE, last_text
+from engine.transcript import IDLE
+from providers.turns import last_text
 from controllers.messages import only_emoji
 from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered

@@ -4,28 +4,21 @@ import threading
 from pathlib import Path
 
 from controllers.types import Agents, Environments
-from engine.actors import IDLE
+from resources.types import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid, alive
 from engine.worktree import checkout, environment
 from resources.base import AGENT, SYSTEM
 from engine import bus, chat, files, ran, runtime
 from engine.stored import read_json, write_json
+from providers import skill_folders
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
 from engine.fields import Loaded
+from engine.gates import AFTERWARDS, CANCELABLE, CANCELERS, DISPATCHING, LONG_COMMAND, POLICIES, cancelled, gate_file, start_file
+from engine.runtime import default_env
 
-POLICIES: list = []
-AFTERWARDS: list = []
-CANCELERS: dict[str, list] = {}
-DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
 PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."
-CANCELABLE = (DISPATCHING, LONG_COMMAND)
-
-
-def cancelled(name: str, provider, record, hook, session: str, data: dict) -> str:
-    reasons = [reason for cancel in CANCELERS.get(name, []) if (reason := cancel(provider, record, hook, session, data))]
-    return "; ".join(reasons)
 
 
 def gated(provider, record, hook, session: str) -> str | None:
@@ -35,19 +28,11 @@ def gated(provider, record, hook, session: str) -> str | None:
     return reason or next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, session))), None)
 
 
-def start_file(root: Path, env: str, compacted: bool = False) -> Path:
-    return root / "runtime" / f"{'compact' if compacted else 'start'}-{env}.md"
-
-
 def relaunched(sessions: Sessions, session: str, provider: str, pid: int) -> None:
     terminal = sessions.terminal(provider, sessions.read(session).pid)
     sessions.write(session, pid=pid)
     if terminal:
         sessions.write(terminal, pid=pid)
-
-
-def gate_file(root: Path, env: str, session: str) -> Path:
-    return runtime.session_file(root, session, f"gate-{env}.json")
 
 
 JOURNAL = re.compile(r"(?:\A|[|;&\n]|\$\()[ \t]*(journal[ \t]+[^|;&\n]+)")
@@ -138,8 +123,8 @@ def send_to_chat(root: Path, session: str, text: str) -> None:
         chat.send(record, row, text)
 
 
-def default_env(root: Path, prefer: str = "") -> str:
-    return prefer or runtime.env(root)
+def owned_environments(root: Path) -> set[str]:
+    return {r.title for r in Environments(Record(root, runtime.env(root)), actor=SYSTEM).all() if r.owner}
 
 
 def worked_environment(hook) -> str:
@@ -159,7 +144,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     worked = "" if provider.is_subagent(hook) else worked_environment(hook)
     moving = bool(worked and worked != env) and not held_elsewhere(sessions, worked, {session, sessions.terminal(provider.name, agent_pid(pid))})
     if not env or not sessions.read(session).provider or moving:
-        env = worked or prefer or sessions.choose(session, provider.name, default_env(root))
+        env = worked or prefer or sessions.choose(session, provider.name, default_env(root), owned_environments(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         environments = Environments(Record(root, env), actor=SYSTEM)
         environments._seat(env, session)
@@ -194,7 +179,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     if hook.event == "PostToolUse":
         bus.defer(lambda: ran.tool_ran(record, row.n, provider, hook.tool))
     if wrote:
-        bus.defer(lambda: files.announce(record, row.n))
+        bus.defer(lambda: files.announce(record, row.n, skill_folders()))
     if hook.event == "PreToolUse" and row.paused:
         return provider.blocking(PAUSED)
     if hook.event == "PreToolUse":

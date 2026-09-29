@@ -7,7 +7,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from engine.proc import streamed
-from engine.watch import threw
+from controllers.faults import threw
 from engine import runtime
 from engine.stored import read_json
 from features.checks.resource import Check, CheckReport, CheckRun

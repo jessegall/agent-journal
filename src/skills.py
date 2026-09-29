@@ -11,7 +11,7 @@ from controllers.types import CONTROLLERS
 from providers import PROVIDERS
 from providers.base import LIBRARY
 from engine.package import data
-from engine.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name
+from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name
 
 HERE = data()
 

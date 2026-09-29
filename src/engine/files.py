@@ -7,8 +7,6 @@ from pathlib import Path
 
 from engine import bus
 from engine.proc import git, git_objects
-from providers import PROVIDERS
-from providers.base import LIBRARY
 from resources.base import SYSTEM, Event, names
 
 KIND = names("edited", "created", "deleted")
@@ -22,7 +20,7 @@ def change_kind(path: str, last: dict, now: dict) -> str:
     return KIND.deleted if path not in now else KIND.edited
 
 
-def internal(record, project: Path) -> tuple[str, ...]:
+def internal(record, project: Path, homes: tuple[str, ...]) -> tuple[str, ...]:
     roots = []
     for root in (record.root, record.root.resolve()):
         try:
@@ -32,7 +30,6 @@ def internal(record, project: Path) -> tuple[str, ...]:
                 roots.append(str(root.relative_to(project.resolve())))
             except ValueError:
                 continue
-    homes = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
     return (*(f"{r}/" for r in dict.fromkeys(roots)), *(f"{h}/journal" for h in homes))
 
 
@@ -145,8 +142,8 @@ def hashed(project: Path, paths: list[str]) -> dict:
     return {path: HASHED[project / path].sha for path in paths if project / path in HASHED}
 
 
-def blobs(record, project: Path) -> dict:
-    marks = internal(record, project)
+def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
+    marks = internal(record, project, homes)
     found = repositories(project)
     with ThreadPoolExecutor(max_workers=len(found) or 1) as pool:
         trees = list(pool.map(blobs_in, found))
@@ -204,9 +201,9 @@ def line_counts(project: Path, pairs: list[tuple[str, str]]) -> dict[tuple[str, 
     return {(before, after): LineCount.between(texts[before], texts[after]) for before, after in pairs}
 
 
-def announce(record, agent: int) -> None:
+def announce(record, agent: int, homes: tuple[str, ...]) -> None:
     project = record.root.parent
-    now = blobs(record, project)
+    now = blobs(record, project, homes)
     with record.state(SNAPSHOT).changing() as held:
         last = held.get("tree")
         held["tree"] = now

@@ -225,7 +225,7 @@ class Stored:
             except (Refused, OSError) as error:
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
                 if self.resource.type != "notice":
-                    from engine.watch import damaged
+                    from controllers.faults import damaged
                     damaged(self.record, str(self.path(n)), str(error))
                 continue
             rows[n] = self._row(r, stamp)

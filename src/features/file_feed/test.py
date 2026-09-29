@@ -4,6 +4,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Works
 from engine.files import announce
+from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
 from tests.conftest import fresh
@@ -16,7 +17,7 @@ class Project:
     agent: int
 
     def changed(self) -> None:
-        announce(self.record, self.agent)
+        announce(self.record, self.agent, skill_folders())
 
 
 def project_with(files: dict[str, str]) -> Project:
@@ -27,7 +28,7 @@ def project_with(files: dict[str, str]) -> Project:
     for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
         subprocess.run(["git", *command], cwd=project, capture_output=True, timeout=10)
     row = Agents(record, actor="system").by_session("claude-1")
-    announce(record, row.n)
+    announce(record, row.n, skill_folders())
     return Project(record, project, row.n)
 
 
@@ -90,9 +91,9 @@ def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
         for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
             subprocess.run(["git", *command], cwd=project / name, capture_output=True, timeout=10)
     agent = Agents(record, actor="system").by_session("claude-1").n
-    announce(record, agent)
+    announce(record, agent, skill_folders())
     (project / "site" / "main.py").write_text("one\nTWO\nthree\n")
     (project / "api" / "new.py").write_text("fresh\n")
-    announce(record, agent)
+    announce(record, agent, skill_folders())
     cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(record, agent, 0, PAGE).edits}
     assert cards == {"site/main.py": ("edit", 2, 1), "api/new.py": ("new", 1, 0)}, cards

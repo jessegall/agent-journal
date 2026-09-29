@@ -101,23 +101,17 @@ class Sessions:
         given = {"pid": pid, "provider": provider}
         return self.write(session, environment=env, since=time.time(), **{key: value for key, value in given.items() if value})
 
-    def choose(self, session: str, provider: str, prefer: str) -> str:
+    def choose(self, session: str, provider: str, prefer: str, owned: set[str]) -> str:
         own = self.environment(session)
         if own and self.holder(own) in ("", session):
             return own
         others = self.all()
-        owned = self.owned()
         ended = sorted((s for name, s in others.items() if name != session and s.provider == provider and s.environment and not live(s)
                         and s.environment not in owned), key=lambda s: s.last_heard)
         for s in reversed(ended):
             if not self.holder(s.environment):
                 return s.environment
         return prefer
-
-    def owned(self) -> set[str]:
-        from controllers.types import Environments
-        from engine.record import Record
-        return {r.title for r in Environments(Record(self.root, runtime.env(self.root))).all() if r.owner}
 
     def last(self, env: str, provider: str) -> str:
         ended = [(s.last_heard, name) for name, s in self.all().items()

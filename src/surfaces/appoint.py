@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from controllers.types import Agents, Environments
-from engine.actors import STOPPED
+from resources.types import STOPPED
 from engine.record import Record
 from engine.seats import live
 from engine.sessions import Sessions

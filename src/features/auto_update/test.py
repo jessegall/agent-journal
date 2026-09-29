@@ -36,7 +36,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert 5 * 60 - updates.REFETCH_WAIT - 2 < time.time() - check.checked_at, "a stale published version is looked at again once it is fetched, not five minutes later"
     from controllers.types import Agents
     from engine import runtime
-    from engine.actors import IDLE
+    from resources.types import IDLE
     from engine.sessions import Sessions
     from engine.terminal import LAUNCH
     row = Agents(record).by_session("conversation-1")
@@ -112,7 +112,7 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     record = fresh()
     announce(record.root, "1.0.0")
     assert announce(record.root, "1.0.1") == "1.0.1"
-    from engine.hooks import default_env
+    from engine.runtime import default_env
     from engine.record import Record
     notified = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"

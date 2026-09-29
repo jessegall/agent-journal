@@ -4,12 +4,10 @@ from abc import ABC, abstractmethod
 from controllers.types import Agents, CONTROLLERS, Notifications, Works
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event, Refused
-from resources.types import AgentRow, TYPES
+from resources.types import AgentRow, BUSY, COMPACTING, IDLE, STATES, STOPPED, TYPES, WORKING
 from engine.wording import counted
-from engine.drivers import TERMINAL
+from providers.drivers import TERMINAL
 
-STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
-STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 TYPED_TRIES = 2
 
 

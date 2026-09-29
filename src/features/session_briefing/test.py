@@ -7,7 +7,8 @@ from resources.base import AGENT, USER
 from tests.conftest import fresh
 from controllers.types import Works
 from features.session_briefing.block import COMPACTED
-from engine.hooks import handle, start_file
+from engine.hooks import handle
+from engine.gates import start_file
 from resources.base import AGENT
 
 
@@ -156,7 +157,7 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
 def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     import time
     from types import SimpleNamespace
-    import engine.drivers as drivers
+    import providers.drivers as drivers
     from providers import DRIVERS
     monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
     monkeypatch.setattr(drivers, "RECHECK", 0)
@@ -218,7 +219,7 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     screen.write_bytes(b"Enter to confirm, from an older prompt\r\n")
     monkeypatch.setattr(claude, "CONFIRM_POLL", 0.01)
     monkeypatch.setattr(claude, "CONFIRM_WAIT", 0.2)
-    monkeypatch.setattr("engine.drivers.ENTER_AFTER", 0)
+    monkeypatch.setattr("providers.drivers.ENTER_AFTER", 0)
     sent = []
 
     def wrote(raw):
@@ -235,11 +236,11 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
 
 
 def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
-    import engine.drivers
+    import providers.drivers
     from engine import runtime
     from providers import DRIVERS
-    monkeypatch.setattr(engine.drivers, "ENTER_AFTER", 0)
-    monkeypatch.setattr(engine.drivers, "RECHECK", 0)
+    monkeypatch.setattr(providers.drivers, "ENTER_AFTER", 0)
+    monkeypatch.setattr(providers.drivers, "RECHECK", 0)
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-7")
     screen = runtime.session_file(record.root, "claude-7", "screen")
@@ -259,7 +260,7 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     pressed.clear()
     screen.write_bytes("❯ [journal] stuck for good\n".encode())
     monkeypatch.setattr(driver, "_wrote", lambda raw: pressed.append(raw) or True)
-    assert not driver.type_in("stuck for good") and pressed.count(b"\r") == 1 + engine.drivers.RESUBMITS, \
+    assert not driver.type_in("stuck for good") and pressed.count(b"\r") == 1 + providers.drivers.RESUBMITS, \
         "a line that never leaves the input box is pressed a few times at most and reported as not sent"
     import json
     from datetime import datetime, timezone
@@ -274,8 +275,8 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
         "a note already in the agent's transcript has landed, though a freshly started agent's screen still shows it last"
     pressed.clear()
     screen.write_bytes("❯ [Pasted text #1 +2 lines]\n".encode())
-    monkeypatch.setattr(engine.drivers, "TYPED_PER_SECOND", 10 ** 9)
-    assert driver.enter("a long review note " * 30) and pressed[0].startswith(engine.drivers.PASTE_START) and pressed.count(b"\r") == 1, \
+    monkeypatch.setattr(providers.drivers, "TYPED_PER_SECOND", 10 ** 9)
+    assert driver.enter("a long review note " * 30) and pressed[0].startswith(providers.drivers.PASTE_START) and pressed.count(b"\r") == 1, \
         "a long line goes in as one paste and is sent once: a busy agent keeps a queued paste's placeholder in view, which is no sign it is stuck"
     claude = DRIVERS["claude"](record, "claude-8")
     monkeypatch.setattr(claude, "last_printed", lambda: "done\n❯ ")

@@ -106,7 +106,7 @@ def push(root: Path, pid: int) -> None:
             if texts:
                 say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(texts), "meta": {"from": "journal"}}})
         except Exception:
-            from engine.watch import threw
+            from controllers.faults import threw
             threw(root, os.environ.get("JOURNAL_ENV") or runtime.env(root), "the channel that carries lines to the agent")
 
 
