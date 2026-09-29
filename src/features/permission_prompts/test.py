@@ -102,3 +102,19 @@ def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_pa
     deny = claude.settings(tmp_path)["permissions"]["deny"]
     assert deny == ["Read(./.env)", *RECORD_FILES], "rows are denied once, beside what the project already denied"
     assert all("*/*.md" in rule for rule in RECORD_FILES), "only the row files: an attached picture a folder deeper stays readable"
+
+
+def test_auto_mode_launches_each_agent_in_its_own_approval_mode():
+    from features.permission_prompts.feature import launch_args
+    record = fresh()
+    record.features = {**record.features, "work_tracking.auto": True}
+    record.set_setting("permission_prompts", {"skip": False})
+    assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--permission-mode", "auto", "--model", "sonnet"], \
+        "auto launches Claude with its automatic approval mode"
+    assert launch_args(record, "codex", ["--model", "gpt-5"]) == ["--approve-for-me", "--model", "gpt-5"], \
+        "auto launches Codex with its automatic approval mode"
+    assert launch_args(record, "claude", ["--permission-mode=dontAsk"]) == ["--permission-mode=dontAsk"], \
+        "an explicit Claude permission choice wins"
+    assert launch_args(record, "codex", ["--ask-for-approval", "never"]) == ["--ask-for-approval", "never"], \
+        "an explicit Codex approval choice wins"
+
