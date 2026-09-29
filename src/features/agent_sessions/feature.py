@@ -1,3 +1,4 @@
+from features.agent_sessions.commands import Launch
 from features.agent_sessions.details import AgentsDetails
 from features.agent_sessions.handlers import AskToStop, ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, MarkSilentStopped, RecordCompactions
 from features.base import Feature
@@ -8,6 +9,7 @@ class AgentsFeature(Feature):
     details = AgentsDetails
 
     def register(self, journal: Journal) -> None:
+        journal.commands.add("environment", Launch())
         journal.events.handler(HoldEvicted())
         journal.events.handler(MarkSilentStopped())
         journal.events.handler(AskToStop())
