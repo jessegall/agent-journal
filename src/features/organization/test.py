@@ -2,7 +2,7 @@ import pytest
 
 from controllers.base import COMMANDS
 
-from features.organization.files import organization
+from engine.organization import organization
 from resources.base import Refused
 
 
@@ -63,7 +63,7 @@ def test_a_task_is_delegated_to_a_role_queues_behind_its_own_and_is_reported_aga
 
 def test_a_role_with_a_browser_is_pointed_at_its_tickets_app():
     from features.organization.delegation import brief
-    from features.organization.files import Domain, Role
+    from engine.organization import Domain, Role
     domain, role = Domain(name="engineering", title="Engineering"), Role(name="checker", title="Checker", tools=["browser"])
     assert "Open the ticket's app at http://127.0.0.1:8441" in brief(domain, role, 3, "Check the toggle", "", "http://127.0.0.1:8441"), \
         "a role granted a browser is told where the ticket's app runs"

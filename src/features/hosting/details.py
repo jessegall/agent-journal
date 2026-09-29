@@ -1,6 +1,6 @@
 from features.base import FeatureDetails
 from features.hosting.files import HOSTING
-from features.organization.files import FOLDER
+from engine.organization import FOLDER
 from features.trigger import MINUTES, Trigger
 
 

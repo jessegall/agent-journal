@@ -2,7 +2,7 @@ from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions
 from engine.stop import ask_session
-from features.organization.files import AGENT, PLAN, Role
+from engine.organization import AGENT, PLAN, Role
 from features.tickets.launch import PROVIDER, start_agent_in
 
 

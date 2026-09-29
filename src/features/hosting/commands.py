@@ -1,6 +1,6 @@
 from features.hosting.apps import address
 from features.hosting.files import HOSTING, hosting_of
-from features.organization.files import FOLDER
+from engine.organization import FOLDER
 from features.parts import Command, Context
 
 

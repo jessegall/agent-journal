@@ -6,7 +6,7 @@ from engine.events import ResourceEvent
 from engine.record import Record
 from features.organization.agents import start_role_agent, stop_role_agent
 from features.organization.delegation import next_in_line
-from features.organization.files import PLAN, organization
+from engine.organization import PLAN, organization
 from features.parts import Context, Handler
 from resources.base import SYSTEM
 
