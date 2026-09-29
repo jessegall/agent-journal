@@ -340,6 +340,10 @@ export class ApiClient {
         return this.act("environment", n, "launch", {agent});
     }
 
+    stopAgentIn(n) {
+        return this.act("environment", n, "stop");
+    }
+
     appoint(session) {
         return this.post(this.here("/appoint"), {session});
     }
