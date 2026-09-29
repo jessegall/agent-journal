@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
 from engine import bus, chat, ran, runtime
-from engine.actors import Actor, Agent, System, User, spoken_data
+from agents.actors import Actor, Agent, System, User, spoken_data
 from resources.types import BUSY, IDLE, STOPPED, WORKING
 from providers.drivers import AGENT_COMMAND
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
@@ -15,7 +15,7 @@ from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, Event, titled
 from resources.types import TYPES, priority
-from engine.seat import Seat
+from agents.seat import Seat
 from engine.wording import plural
 from engine.transcript import PEER, SENT
 from providers.turns import turns

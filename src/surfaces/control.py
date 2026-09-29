@@ -7,7 +7,7 @@ from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUM
 from engine.record import Record
 from engine.seats import live
 from providers.drivers import AGENT_COMMAND
-from engine.terminal import relaunch as restart
+from agents.terminal import relaunch as restart
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
 from typing import TypedDict

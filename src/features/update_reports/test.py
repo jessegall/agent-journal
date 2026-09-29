@@ -56,7 +56,7 @@ def test_notes_items_and_drops_change_only_an_update():
 
 
 def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_not():
-    from engine.hooks import displayed
+    from runner.hooks import displayed
     from engine.sessions import Sessions
     from features.sequences.controller import Sequences
     from features.sequences.shipped import ship

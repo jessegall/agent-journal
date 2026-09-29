@@ -17,7 +17,7 @@ from typing import Callable, TypedDict
 
 
 PACKAGE = Path(__file__).resolve().parent
-PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
+PACKAGE_DIRS = ("agents", "commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "runner", "skills", "surfaces")
 VERSION = "VERSION"
 PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
@@ -29,10 +29,10 @@ ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
 KEPT_COPIES = 2
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
-STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "engine.worker", "engine/keeper.py": "engine.keeper"}
+STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "runner.worker", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
-PACKED_DIRS = ("commands", "controllers", "engine", "features", "migrations", "providers", "resources", "surfaces")
+PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "providers", "resources", "runner", "surfaces")
 
 
 def code(root: Path) -> Path:
@@ -323,13 +323,22 @@ def upgrading(project: Path, root: Path) -> list[str]:
     return done
 
 
+def complete(folder: Path) -> bool:
+    return all((folder / name).is_file() for name in PACKAGE_FILES) and all((folder / name).is_dir() for name in PACKED_DIRS)
+
+
+def release_of(folder: Path) -> str:
+    installed = (folder / VERSION).read_text().strip() if (folder / VERSION).is_file() else ""
+    return f"refs/tags/v{installed}" if installed and "unreleased" not in installed else ""
+
+
 def finish(project: Path, root: Path) -> list[str]:
     if PACKAGE.resolve() == root.resolve():
         refresh(PACKAGE, code(root))
     done = []
-    if not all((code(root) / name).is_file() for name in PACKAGE_FILES) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED"):
+    if not complete(code(root)) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED"):
         temporary = Path(tempfile.mkdtemp())
-        _, failed = fetch(temporary / "package")
+        _, failed = fetch(temporary / "package", ref=release_of(code(root)))
         try:
             if not failed:
                 refresh(temporary / "package", code(root))

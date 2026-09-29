@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Comments, Messages, Nudges
-from engine.hooks import displayed
+from runner.hooks import displayed
 from engine.sessions import Sessions
 from features.command_tags.reading import visible
 from tests.kit import nudges, report
@@ -12,7 +12,7 @@ from tests.conftest import fresh
 
 def watching(record, transcript):
     from controllers.types import Agents
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     agents = Agents(record, actor="system")
     agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript), status="working")
@@ -111,7 +111,7 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
 
 
 def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transcript_has_it(tmp_path):
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     from resources.base import SYSTEM
     record = fresh()
@@ -137,7 +137,7 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
 
 
 def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     from controllers.types import Facts, Rules
     record = fresh()

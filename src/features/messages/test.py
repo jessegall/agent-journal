@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from engine.hooks import displayed, handle
+from runner.hooks import displayed, handle
 from features.base import held
 from engine.sessions import Sessions
 from features.format import VIEWER, formatted
@@ -29,7 +29,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
         "the tenth tool use names the message and says to answer it"
     assert not holds(record).get("status"), "nothing is refused over it: it tells, it does not hold"
     from controllers.types import Nudges
-    from engine.actors import settled
+    from agents.actors import settled
     from resources.base import Event
     line = [n for n in Nudges(record).all() if "before you write" in n.title][-1]
     queued = Event(id=0, type="nudge", n=line.n, action="created", actor="system", at=0.0, data={})
@@ -117,7 +117,7 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
 
 def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     from types import SimpleNamespace
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     record = fresh()
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
@@ -130,7 +130,7 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
 
 
 def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display_hook_only(tmp_path):
-    from engine.engine import Engine
+    from runner.engine import Engine
     record, transcript, now = fresh(), tmp_path / "s.jsonl", datetime.now(timezone.utc).isoformat()
     transcript.write_text(json.dumps({"type": "user", "timestamp": now, "message": {"content": "go"}}) + "\n")
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
@@ -177,7 +177,7 @@ def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
 
 
 def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
-    from engine.actors import render
+    from agents.actors import render
     from resources.base import Event
     asked = Messages(record := fresh(), actor="agent").create("ship it?")
     face = Messages(record, actor="user").react(asked.n, "👍")
@@ -187,7 +187,7 @@ def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
 
 def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_message_is_answered(monkeypatch):
     import time
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     record = fresh()
     report(record, "working", "PreToolUse")
@@ -208,7 +208,7 @@ def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_mes
 
 
 def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_session(tmp_path):
-    from engine.engine import Engine
+    from runner.engine import Engine
     record, transcript = fresh(), tmp_path / "s.jsonl"
     peer = {"type": "attachment", "timestamp": "2026-09-23T10:00:00Z", "attachment": {"type": "queued_command", "prompt": "<agent-message>the loop is fixed</agent-message>",
             "origin": {"kind": "peer", "from": "uds:/tmp/a.sock", "name": "other-project", "body": "the loop is fixed"}}}

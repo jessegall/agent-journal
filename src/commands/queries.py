@@ -118,7 +118,7 @@ def help_text(word: str) -> str:
     return f"no command {word!r}"
 
 def speed(ctx) -> str:
-    from engine.speed import measure
+    from runner.speed import measure
     return measure(ctx["record"].root, ctx["record"].env, ctx["runs"], ctx["url"], ctx["out"])
 
 def upgrade_here(ctx) -> str:
@@ -291,12 +291,12 @@ def asked_resume(record: Record, agent: str, args: list[str], ask=input, answeri
 
 
 def attached(ctx) -> str:
-    from engine.terminal import attach
+    from agents.terminal import attach
     return attach(ctx["record"].root, ctx["target"])
 
 
 def supervise(ctx, agent: str) -> str:
-    from engine.terminal import carried
+    from agents.terminal import carried
     from engine.viewer import start
     from features.clean_slate.slate import put_back, remember, set_aside, slate_of
     from engine.worktree import linked
@@ -344,7 +344,7 @@ def supervise(ctx, agent: str) -> str:
 
 
 def started(record: Record, project: Path, agent: str, env: str, args: list[str], taken: dict | None = None) -> str:
-    from engine.terminal import supervise as hand_over
+    from agents.terminal import supervise as hand_over
     hand_over(record.root, project, env, agent, args, taken)
     return ""
 
@@ -397,7 +397,7 @@ def services(ctx) -> str:
 def services_up(root: Path) -> str:
     from engine.services import Manager
     from features.plugins.services import plugin_services
-    from engine.terminal import lifeline
+    from agents.terminal import lifeline
     alive, keeping = lifeline()
     manager = Manager(root, alive, sources=(plugin_services,))
     print("journal: keeping the plugins' services up; Ctrl-C stops them")

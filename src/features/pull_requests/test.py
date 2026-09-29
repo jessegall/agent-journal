@@ -1,5 +1,5 @@
 from controllers.types import Notices
-from engine.hooks import handle
+from runner.hooks import handle
 from providers import PROVIDERS
 from tests.conftest import fresh
 

@@ -38,7 +38,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     from engine import runtime
     from resources.types import IDLE
     from engine.sessions import Sessions
-    from engine.terminal import LAUNCH
+    from agents.terminal import LAUNCH
     row = Agents(record).by_session("conversation-1")
     driver = SimpleNamespace(session="claude-1", last_report=lambda: Agents(record).load(row.n))
     state = {"now": "working"}

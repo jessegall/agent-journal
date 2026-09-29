@@ -108,7 +108,7 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
 def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     import json
     from datetime import datetime, timezone
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     record = fresh()
     record.set_setting("features", {"work_tracking": False})
@@ -141,7 +141,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
 
 
 def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     features.load()
     record = fresh()

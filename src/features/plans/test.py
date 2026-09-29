@@ -213,7 +213,7 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     record = fresh()
     text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "EnterPlanMode", "tool_input": {}})
@@ -292,7 +292,7 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
 
     monkeypatch.setattr("features.plans.worker.start_agent_in", start_agent_in)
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: handed.append(n))
-    monkeypatch.setattr("engine.terminal.detached", lambda *args, **kwargs: launched.append("a ticket agent"))
+    monkeypatch.setattr("agents.terminal.detached", lambda *args, **kwargs: launched.append("a ticket agent"))
     board = Boards(record, actor=USER).create("Product")
     tickets = Tickets(record, actor=USER)
     first, second = (tickets.create(title, board=board.n) for title in ("Search", "Share"))

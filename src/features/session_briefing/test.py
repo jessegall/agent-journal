@@ -1,13 +1,13 @@
 
 from controllers.types import Docs, Facts, Rules, Todos, Works
 from features.session_briefing.start import QUIET, carry, start_block, status
-from engine.hooks import handle
+from runner.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh
 from controllers.types import Works
 from features.session_briefing.block import COMPACTED
-from engine.hooks import handle
+from runner.hooks import handle
 from engine.gates import start_file
 from resources.base import AGENT
 
@@ -69,7 +69,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     import time
     from types import SimpleNamespace
     from controllers.types import Agents
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     record = fresh()
     agents = Agents(record, actor="system")
@@ -84,7 +84,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     engine.deliver()
     assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat in plain words, never [!internal], so the journal's messages reach you", True)], \
         "the greeting is typed into the terminal at once, never marked read as history"
-    from engine.actors import TYPED_TRIES
+    from agents.actors import TYPED_TRIES
     tried = []
     engine.agent.pending = [event for event in record.events(0) if event.type == "nudge"][-1:]
     engine.agent.driver.type_in = lambda text: tried.append(text) and False

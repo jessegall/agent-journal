@@ -69,7 +69,7 @@ def test_a_picked_answer_is_held_for_a_configurable_duration():
 
 
 def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal():
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     record = fresh()
     asked = {"questions": [{"question": "Which store: files or SQLite?", "options": [{"label": "Files", "description": "as today"}, {"label": "SQLite"}]}]}

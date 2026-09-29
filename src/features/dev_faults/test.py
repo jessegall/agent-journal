@@ -128,7 +128,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
     import os
     from commands.http import dispatch
     from controllers.types import Messages
-    from engine.hooks import answer
+    from runner.hooks import answer
     from features.dev_faults.counting import counted
     from providers import PROVIDERS
     from resources.base import USER

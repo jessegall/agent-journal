@@ -1,4 +1,4 @@
-from engine.hooks import handle
+from runner.hooks import handle
 from features.terminal.log import COMMANDS, JOURNAL, MOST_LINES, lines
 from providers import PROVIDERS
 from tests.conftest import fresh

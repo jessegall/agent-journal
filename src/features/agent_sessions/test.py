@@ -141,7 +141,8 @@ def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the
 
 
 def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agents(monkeypatch):
-    from engine import engines, typist
+    from engine import typist
+    from runner import engines
     from engine.sessions import Sessions
     record = fresh()
     sessions = Sessions(record.root)
@@ -190,7 +191,7 @@ def test_a_compaction_is_recorded_once_on_the_agent():
 
 def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():
     from types import SimpleNamespace
-    from engine.seat import Seat
+    from agents.seat import Seat
     record = fresh()
     row = Agents(record, actor=AGENT).create("s-1", subagent_rows=[{"id": "old", "task": "earlier", "type": "Explore", "model": "haiku", "ended": 5.0}])
     seat = SimpleNamespace(record=record, subagents_ended=None)

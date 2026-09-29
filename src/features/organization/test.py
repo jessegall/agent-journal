@@ -132,7 +132,7 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
     write(home / "domain.toml", 'title = "Engineering"\nlead = "developer"\n')
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plural"\nruns = "agent"\n')
     launched = []
-    monkeypatch.setattr("engine.terminal.detached", lambda root, cwd, place, agent, args: launched.append((place, args)))
+    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, place, agent, args: launched.append((place, args)))
     ticket = Record(record.root, "ticket-5")
     given = COMMANDS["todo"]["delegate"](Todos(ticket, actor=AGENT), "Build search", "engineering")
     place, args = launched[0]
