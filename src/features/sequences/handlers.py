@@ -56,6 +56,13 @@ def filled(context: Context, n: int, key: str, body: str) -> str:
     return text.replace("<board n>", str(board)) if board else text
 
 
+DISPATCH_MODELS: dict = {}
+
+
+def unchosen(record) -> str:
+    return ""
+
+
 def board_of(context: Context, about: str) -> int:
     kind, _, n = about.partition(":")
     if kind == "board":
@@ -131,7 +138,6 @@ def working_agent(context: Context):
 
 
 def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) -> None:
-    from features.boards.details import BoardsDetails
     about = key.split("|", 1)[1]
     board = board_of(context, about)
     if not board:
@@ -140,7 +146,7 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=BoardsDetails.values(context.record).filler_model, why=why, request=request_of(context, about)))
+        model=DISPATCH_MODELS.get(sequence.dispatch, unchosen)(context.record), why=why, request=request_of(context, about)))
 
 
 def request_of(context: Context, about: str) -> str:

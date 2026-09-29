@@ -53,13 +53,3 @@ class CheckIn:
         self.asked_at = time.time()
         self.agent.driver.send(line)
         return "asked whether it is still working"
-
-
-def launch_args(record, provider: str, args: list[str]) -> list[str]:
-    from features.permission_prompts.feature import skipped
-    driver = DRIVERS.get(provider)
-    if not driver:
-        return args
-    if driver.SKIP_ARGS and set(driver.SKIP_ARGS) <= set(args) and not skipped(record):
-        record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": True})
-    return driver.launch_args(driver.skipping(args, skipped(record)), automatic(record))

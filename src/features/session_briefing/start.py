@@ -43,13 +43,13 @@ QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's wo
          "A line that starts with [journal] is the journal speaking, not the user: act on it, and never answer it in the chat.")
 
 
+START_PARTS: dict = {}
+ADDRESS, ORCHESTRATION, LAW, SKILLS = 1, 2, 3, 4
+
+
 def start_block(record) -> str:
-    from features.journal_laws.policy import carry as law
-    from features.skill_loading.catalogue import handed as skills_handed
-    from features.form_of_address.address import address
-    from features.boards.orchestration import orchestration
-    parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", QUIET, address(record), orchestration(record),
-             law(record), skills_handed(record)]
+    parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", QUIET,
+             *(START_PARTS[place](record) for place in sorted(START_PARTS))]
     for type_ in reversed(priority()):
         kind = TYPES[type_]
         rows = handed(record, type_) if kind.start_heading else []

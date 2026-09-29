@@ -1,7 +1,13 @@
 from controllers.types import Questions, Todos, Works
-from features.plans.progress import held
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
+
+
+ROW_HOLDS: list = []
+
+
+def held(record, todo) -> bool:
+    return any(hold(record, todo) for hold in ROW_HOLDS)
 
 
 def open_rows(record) -> list:

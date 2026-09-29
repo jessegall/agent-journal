@@ -1,7 +1,6 @@
 import subprocess
 
 from features.form_of_address.details import AddressDetails
-from features.form_of_address.feature import FormOfAddress
 
 GIT_NAMES: dict[str, str] = {}
 HAT = "🎩"
@@ -19,8 +18,6 @@ def git_first_name(project) -> str:
 
 
 def address(record) -> str:
-    if not FormOfAddress.on_for(record):
-        return ""
     values = AddressDetails.values(record)
     called = " ".join(part for part in (str(values.title).strip(), str(values.first_name).strip() or git_first_name(record.root.parent)) if part)
     if not called:
