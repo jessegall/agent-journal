@@ -54,7 +54,7 @@ class Environments(Controller):
         if not terminal:
             self._refuse(f"session {holder} runs outside the journal's terminals; end it where it runs")
         ask_session(self.record.root, terminal)
-        return self.update(env.n, stopping={"session": holder, "at": time.time()})
+        return self._stopping(env.n, session=holder)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if title.strip() in ("", UNTITLED):

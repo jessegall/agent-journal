@@ -178,9 +178,9 @@ def run(argv: list[str], out=None, err=None) -> int:
     return 0
 
 
+wire(CommandLine(run=run, parser=parser, words=words, queries=QUERIES))
+
+
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     sys.exit(run(sys.argv[1:]))
-
-
-wire(CommandLine(run=run, parser=parser, words=words, queries=QUERIES))

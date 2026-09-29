@@ -30,8 +30,8 @@ def updates(reports: Reports) -> list[dict]:
 
 
 def opened_until(reports: Reports) -> float:
-    opened = [s for s in updates(reports) if USER in s["seen"]]
-    return float(opened[-1].get("until", 0.0)) if opened else 0.0
+    opened = [s for s in updates(reports) if USER in s["seen"] and s["until"] is not None]
+    return float(opened[-1]["until"]) if opened else 0.0
 
 
 def since(reports: Reports, now: float) -> float:

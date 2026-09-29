@@ -212,10 +212,10 @@ const summing = computed(
 const timeline = computed(() => {
     const d = dump.value;
     if (!d) return [];
-    const directions = (d.data?.said || []).map((s) => ({at: s.at, mine: true, text: s.label}));
-    const answers = (d.data?.answers || []).map((a) => ({at: a.at, mine: true, text: a.answer}));
-    const taken = Object.values(d.data?.taken || {}).map((c) => ({at: c.at, mine: true, text: c.label}));
-    const agent = log.value.map((e) => ({at: e.at, mine: false, text: e.text, detail: e.detail}));
+    const directions = (d.data?.said || []).map((s, i) => ({key: `said:${i}`, at: s.at, mine: true, text: s.label}));
+    const answers = (d.data?.answers || []).map((a, i) => ({key: `answer:${i}`, at: a.at, mine: true, text: a.answer}));
+    const taken = Object.entries(d.data?.taken || {}).map(([k, c]) => ({key: `taken:${k}`, at: c.at, mine: true, text: c.label}));
+    const agent = log.value.map((e, i) => ({key: `log:${i}`, at: e.at, mine: false, text: e.text, detail: e.detail}));
     return [...agent, ...directions, ...answers, ...taken].sort((a, b) => a.at - b.at);
 });
 const current = computed(() => (phase.value === "filing" ? [...timeline.value].reverse().find((line) => !line.mine) || null : null));
@@ -530,7 +530,7 @@ const pillOf = (d) => {
                     <ProgressBar thin :value="settled" :max="Math.max(1, items.length)" />
                     <span class="dump-eyebrow">What I'm doing</span>
                     <div ref="narr" class="dump-narr">
-                        <template v-for="line in timeline" :key="`${line.at}:${line.mine}:${line.text}`">
+                        <template v-for="line in timeline" :key="line.key">
                             <div :class="['dump-line', {mine: line.mine, now: line === current}]">
                                 <template v-if="line.mine">{{ line.text }}</template>
                                 <template v-else>

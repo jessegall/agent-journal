@@ -161,6 +161,9 @@ class Controller(Stored, Files, Links):
                 r = self.link(n, f"{self.type}:{int(supersedes)}")
             return r
 
+    def _stopping(self, n: int, **asked) -> Resource:
+        return self.update(n, stopping={**asked, "at": time.time()})
+
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
         taken = self._handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
         if taken is not None:
