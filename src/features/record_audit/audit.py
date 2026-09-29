@@ -2,7 +2,7 @@ import re
 import time
 from argparse import _SubParsersAction
 
-from commands.parser import parser
+from features.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.project_files import matching
 from resources.base import SYSTEM
@@ -14,7 +14,7 @@ WAITING_DAYS = 7
 
 
 def command_words() -> dict[str, set[str]]:
-    top = next(a for a in parser()._actions if isinstance(a, _SubParsersAction))
+    top = next(a for a in command_line().parser()._actions if isinstance(a, _SubParsersAction))
     out = {}
     for name, command in top.choices.items():
         nested = next((a for a in command._actions if isinstance(a, _SubParsersAction)), None)

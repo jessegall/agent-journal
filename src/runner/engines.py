@@ -14,7 +14,7 @@ from runner.engine import TICK, Engine
 from engine.package import CODE, ZIPPED
 
 ENDING = 5.0
-CHILD = "from runner.engines import child"
+CHILD = "import commands.cli; from runner.engines import child"
 
 
 class Engines:

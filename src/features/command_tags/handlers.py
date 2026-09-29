@@ -4,6 +4,7 @@ from engine.events import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
 from features.command_tags.reading import CARRIED, internal, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
 from resources.base import AGENT
+from features.command_line import command_line
 
 
 class RunTagCommands(Handler):
@@ -17,13 +18,12 @@ class RunTagCommands(Handler):
             event.change(stripped(message, context.settings).strip())
 
     def run(self, context: Context, message: str) -> None:
-        from commands.cli import run
         commands, text = runs(context.settings), CARRIED.sub("", reader(context.settings).sub("", message)).strip()
         for name, n, argument, extras in CARRIED.findall(message):
             if name not in commands:
                 continue
             out, err = io.StringIO(), io.StringIO()
-            code = run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
+            code = command_line().run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
                         *self.argv(commands[name], n, argument, text), *self.settings(extras)], out=out, err=err)
             if code:
                 context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
