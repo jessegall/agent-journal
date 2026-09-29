@@ -31,7 +31,7 @@ class Manifest(TypedDict):
     scopes: list[str]
     priority: dict
     fields: list[str]
-    methods: list[str]
+    methods: tuple[str, ...]
     types: dict[str, dict]
     features: dict
 
