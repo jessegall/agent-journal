@@ -3,7 +3,7 @@ from engine.seats import terminal_of
 from engine.sessions import Sessions
 from engine.stop import ask_session
 from engine.organization import AGENT, PLAN, Role
-from features.tickets.launch import PROVIDER, start_agent_in
+from features.agent_sessions.launch import PROVIDER, start_agent_in
 
 
 def role_environment(env: str, role: Role, n: int) -> str:

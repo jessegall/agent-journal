@@ -162,13 +162,11 @@ class Plans(Controller):
         return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
 
     def progress(self, n: int) -> str:
-        from controllers.types import Todos
-        from features.tickets.controller import Tickets
+        from features.plans.progress import phase_rows
         r = self.load(n)
-        todos, tickets = Todos(self.record, actor=self.actor), Tickets(self.record, actor=self.actor)
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
         for i, phase in enumerate(r.phases, 1):
-            rows = [todos.load(t) for t in phase[PHASE.todos]] + [tickets.load(t) for t in phase.get(PHASE.tickets, [])]
+            rows = phase_rows(self.record, phase, self.actor)
             closed = sum(1 for row in rows if row.completed)
             lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {closed} of {len(rows)} done")
             if i == r.current:

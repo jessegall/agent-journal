@@ -1,9 +1,10 @@
 from features.plans.resource import PHASE
-from features.tickets.launch import PROVIDER, start_agent_in
+from features.agent_sessions.launch import PROVIDER, start_agent_in
 from resources.base import Refused, SYSTEM
 
 
 SHARED = "shared"
+PHASE_STARTS: list = []
 
 
 def worker_environment(plan) -> str:
@@ -35,22 +36,6 @@ def start_worker(record, plan) -> str:
     return start_agent_in(record, name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan))
 
 
-def start_phase_tickets(record, plan) -> list[int]:
-    from features.tickets.controller import Tickets
-    if not 1 <= plan.current <= len(plan.phases):
-        return []
-    tickets = Tickets(record, actor=SYSTEM)
-    waiting = [ticket for ticket in map(tickets.load, plan.phases[plan.current - 1].get(PHASE.tickets, []))
-               if not ticket.completed and not ticket.work_environment]
-    if plan.worktree == SHARED:
-        for ticket in waiting:
-            tickets._bind_to(ticket.n, worker_environment(plan))
-    return [ticket.n for ticket in waiting if started_ticket(tickets, ticket.n)]
-
-
-def started_ticket(tickets, n: int) -> bool:
-    try:
-        tickets.start(n)
-    except Refused:
-        return False
-    return True
+def start_phase_tickets(record, plan) -> None:
+    for start in PHASE_STARTS:
+        start(record, plan)
