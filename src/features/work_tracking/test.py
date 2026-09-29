@@ -112,7 +112,7 @@ def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_
 
 
 def test_a_mistyped_command_through_the_server_says_what_is_wrong():
-    from commands.cli import captured
+    from tests.kit import captured
     record = fresh()
     text, code = captured(["work", "list"], record.root)
     assert (code, "invalid choice: 'list'" in text) == (2, True), text
@@ -259,7 +259,7 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
 
 
 def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkeypatch):
-    from runner.engine import Engine
+    from tests.kit import Engine
     from providers import DRIVERS
     record = fresh()
     report(record, "working", "PreToolUse")

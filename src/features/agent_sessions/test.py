@@ -82,7 +82,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     assert (sessions.environment("conversation-9"), sessions.environment("claude-7272")) == ("u", "u"), \
         "a switch moves the agent's terminal session with it, so the new environment's engine drives it"
     import os
-    from commands.queries import asked_for
+    from tests.kit import asked_for
     from engine.record import Record
     sessions.bind("busy", "t", pid=os.getpid(), provider="claude")
     for moved_away in ("conversation-9", "claude-7272"):
@@ -142,7 +142,7 @@ def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the
 
 def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agents(monkeypatch):
     from engine import typist
-    from runner import engines
+    from tests.kit import engines
     from engine.sessions import Sessions
     record = fresh()
     sessions = Sessions(record.root)
@@ -155,7 +155,7 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
 
 def test_the_start_question_never_offers_a_busy_environment_on_enter():
     import os
-    from commands.queries import asked_for
+    from tests.kit import asked_for
     from controllers.types import Environments
     from engine.sessions import Sessions
     from resources.base import SYSTEM
@@ -222,7 +222,7 @@ def test_a_report_filed_after_a_subagent_ended_is_linked_to_it():
 
 def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcript(tmp_path, monkeypatch):
     import json
-    from commands.queries import asked_history
+    from tests.kit import asked_history
     from controllers.types import Messages
     from engine.sessions import Sessions
     from providers import PROVIDERS

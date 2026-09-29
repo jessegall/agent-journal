@@ -1,10 +1,10 @@
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
 from features.boards.controller import START_OVER, Boards
-from features.plans.controller import Plans
+from tests.kit import Plans
 from features.sequences.controller import Sequences
 from features.sequences.shipped import ship
-from features.tickets.controller import Tickets
+from tests.kit import Tickets
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, nudges, report
@@ -199,7 +199,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     agent.score(board.n, "3", done="Sessions expire after a day")
     assert boards.load(board.n).done_when[-1] == "Sessions expire after a day" and len(boards.load(board.n).done_when) == 3, \
         "a request on a started board adds clauses instead of replacing the goal"
-    from runner.hooks import handle
+    from tests.kit import handle
     from features.boards.agent_types import written
     from providers import PROVIDERS
     (record.root.parent / ".claude").mkdir(exist_ok=True)

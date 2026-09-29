@@ -108,7 +108,7 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
 def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     import json
     from datetime import datetime, timezone
-    from runner.hooks import handle
+    from tests.kit import handle
     from providers import PROVIDERS
     record = fresh()
     record.set_setting("features", {"work_tracking": False})
@@ -141,7 +141,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
 
 
 def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():
-    from runner.hooks import handle
+    from tests.kit import handle
     from providers import PROVIDERS
     features.load()
     record = fresh()
@@ -219,7 +219,7 @@ def test_housekeeping_that_asks_nothing_of_the_agent_ships_no_skill():
 def test_a_plugin_names_the_skills_its_events_require_and_its_skills_carry_keywords(tmp_path):
     import json
     import pytest
-    from features.plugins.manifest import MANIFEST, read
+    from tests.kit import MANIFEST, read
     from features.skill_loading.catalogue import keywords
     from features.skill_loading.required import outstanding, require_primary
     from resources.base import Refused
