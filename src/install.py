@@ -437,6 +437,9 @@ def heal() -> None:
 
 
 class Package(TypedDict):
+    PROVIDERS: dict
+    LIBRARY: str
+    LINKED: dict
     agent_types: Callable
     Record: type
     default_env: Callable
@@ -446,9 +449,6 @@ class Package(TypedDict):
     brief: Callable
     migrate: Callable
     ship_sequences: Callable
-    PROVIDERS: dict
-    LIBRARY: str
-    LINKED: dict
     publish: Callable
 
 
