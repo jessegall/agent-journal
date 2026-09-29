@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, Environments, Messages, Notices, Questions, Todos, Works
 from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
-from engine.manifest import manifest
+from surfaces.manifest import manifest
 from engine.record import Record
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER

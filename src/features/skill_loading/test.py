@@ -2,7 +2,7 @@ import subprocess
 import features
 
 from controllers.types import Agents, Messages
-from engine.queries import start_block
+from features.session_briefing.start import start_block
 from features.skill_loading.catalogue import SKILL, always, catalogue, handed, skills
 from features.skill_loading.required import load_now
 from resources.base import USER

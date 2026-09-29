@@ -4,7 +4,7 @@ from pathlib import Path
 
 import features
 from engine.hooks import handle
-from engine.queries import start_block
+from features.session_briefing.start import start_block
 from features.journal_laws.policy import BEGIN, brief
 from providers import PROVIDERS
 from tests.conftest import fresh
