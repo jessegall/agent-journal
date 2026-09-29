@@ -270,7 +270,6 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert not (project / LIBRARY / "teacher-two").exists(), "an upgrade that drops a skill takes it back"
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
-    import commands.http  # noqa: F401
     from tests.kit import dispatch
     from features.plugins.source import data
     from controllers.types import Plugins
