@@ -198,7 +198,7 @@ FINISHING_WHAT_YOU_WROTE = {
                                 "journal sequence next "
                                 "<this sequence> --about <ref>."),
         ("Answer with it", "Say in one or two plain lines what it concludes, then its reference on a line of its own, like "
-                           "`doc 41` or `report 98`. Finish with journal sequence next <this sequence> --about <ref>."),
+                           "doc 41 or report 98, never in backticks. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 }
 WRITING_A_DOCUMENT = {
@@ -211,7 +211,7 @@ WRITING_A_DOCUMENT = {
     "steps": [
         ("Lay out the chapters", "Put every chapter you plan on the document before writing any of them: journal doc section "
                                  "<doc n> \"<chapter>\" \"Being written.\" for each, in order. Put the document's reference "
-                                 "on a line of its own in the chat, like `doc 41`, so the user can open it and watch. Then "
+                                 "on a line of its own in the chat, like doc 41, so the user can open it and watch. Then "
                                  "journal sequence next <this sequence> --about <ref>."),
         ("Write each chapter", "Write the chapters one at a time and in order with journal doc section <doc n> \"<chapter>\" "
                                "\"<body>\"; the user sees each one appear where you are. Cut a chapter that turned out "
