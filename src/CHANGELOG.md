@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.202.0 — The code follows its own commandments
+
+Every finding the code-commandments judge raised against the journal is fixed, except twelve
+reported upstream as false positives. The old engine package is split into layers that only
+import downward: resources, engine, controllers, providers, agents, features, runner, then the
+command line and the viewer's server; registries replace the upward imports. Nothing changes for
+the user or the agent, and an installed journal upgrades as before: the installer fetches the new
+folders from the release tag, and a supervisor started before the upgrade finds its worker again.
+
+Three reviewers read the whole change before it merged, and what they found is fixed with it.
+Starting an agent in an environment is now its own feature and always on, so switching off
+Agent sessions no longer disables the Start button. A board dispatch of any kind names the
+board's filler model. The viewer's editable lists keep their inputs, and your cursor, when a line
+is saved. A switch between two views remounts what it shows. An update report with no end time
+no longer breaks the recap, and the share page answers a comment with an empty length cleanly.
+
 ## 2.201.2 — The release carries its own number
 
 2.201.1 reported itself as 2.201.0, so a journal on it was offered the same update again.
