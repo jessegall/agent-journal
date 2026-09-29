@@ -7,7 +7,7 @@ import threading
 import time
 
 from controllers.types import CONTROLLERS, Agents, Plugins
-from runner.hooks import handle
+from tests.kit import handle
 from engine.services import Manager, status_file
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
@@ -271,7 +271,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
     import commands.http  # noqa: F401
-    from commands.dispatch import dispatch
+    from tests.kit import dispatch
     from features.plugins.source import data
     from controllers.types import Plugins
     row = Plugins(record, actor=SYSTEM).create("teacher", enabled=True, token="t0ken", settings={},
@@ -302,7 +302,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
 
 
 def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():
-    from commands.cli import run
+    from tests.kit import run
     record = alone()
     plugin = installed(record, "checker", "exit 0")
     assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check.sh"]) == 0

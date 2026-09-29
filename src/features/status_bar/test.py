@@ -125,9 +125,9 @@ def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
 def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     import os
     from engine import runtime
-    from runner import engine as engine_module
+    from tests.kit import engine_module
     from providers.drivers import MARK
-    from runner.engine import Engine
+    from tests.kit import Engine
     from engine.stored import write_json
     from providers import DRIVERS
     from agents import control
@@ -158,7 +158,7 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
 
 def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     from controllers.types import Agents
-    from runner.hooks import PAUSED, handle
+    from tests.kit import PAUSED, handle
     from providers import PROVIDERS
     record, claude = fresh(), PROVIDERS["claude"]()
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "ls"}, "hook_event_name": "PreToolUse"}

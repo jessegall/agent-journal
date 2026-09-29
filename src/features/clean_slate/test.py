@@ -51,7 +51,7 @@ def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everyt
 
 def test_an_agent_ending_stops_the_journal_only_when_no_other_agent_still_runs():
     import os
-    from commands.queries import ended
+    from tests.kit import ended
     from engine import stop
     from engine.sessions import Sessions
     from tests.conftest import fresh

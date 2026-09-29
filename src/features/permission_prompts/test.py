@@ -1,7 +1,7 @@
 import os
 
 from controllers.types import Agents, Notices
-from runner.hooks import handle
+from tests.kit import handle
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
 from tests.conftest import fresh
@@ -61,7 +61,7 @@ def test_every_flag_typed_at_launch_reaches_the_agent_whatever_the_switch_says()
 
 
 def test_the_start_asks_about_permission_prompts_only_when_the_flag_is_not_typed():
-    from commands.queries import asked_prompts
+    from tests.kit import asked_prompts
     record = fresh()
     asked = []
     asked_prompts(record, "claude", ["--dangerously-skip-permissions"], ask=lambda _: asked.append(1) or "", answering=True)
@@ -71,7 +71,7 @@ def test_the_start_asks_about_permission_prompts_only_when_the_flag_is_not_typed
 
 
 def test_the_start_offers_to_carry_on_the_environments_last_session():
-    from commands.queries import asked_resume
+    from tests.kit import asked_resume
     from engine.sessions import Sessions
     record = fresh()
     assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == [], "nothing to carry on, nothing asked"
@@ -80,11 +80,11 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
     assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == ["resume", "old-thread"], "yes resumes that environment's own session"
     assert asked_resume(record, "claude", ["--model", "opus"], ask=lambda _: "2", answering=True) == ["--model", "opus"], "no starts a new one"
     assert asked_resume(record, "claude", ["-c"], ask=lambda _: "1", answering=True) == ["-c"], "a typed continue is the answer already"
-    from commands.queries import defaults
+    from tests.kit import defaults
     assert asked_resume(record, "codex", [], ask=defaults, answering=True) == ["resume", "old-thread"], "--no-interaction takes the default without asking"
     Sessions(record.root).bind("claude-4242", record.env, pid=999999, provider="claude")
     assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == ["--resume", "5e3c0a1f-conversation"], "a supervisor's name is no conversation"
-    from runner.hooks import answer
+    from tests.kit import answer
     answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": "5e3c0a1f-conversation", "cwd": str(record.root.parent)}, os.getpid())
     assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == [], "a conversation restarted under a new process is still running"
     Sessions(record.root).bind("7a1d-in-the-worktree", "0922-disposal-date", pid=999999, provider="claude")

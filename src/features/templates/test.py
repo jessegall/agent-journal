@@ -1,6 +1,6 @@
 import features
 from controllers.types import Docs
-from features.plans.controller import Plans
+from tests.kit import Plans
 from features.templates.controller import Templates
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused

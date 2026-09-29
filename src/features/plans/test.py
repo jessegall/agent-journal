@@ -7,7 +7,7 @@ import features
 from features.plans.controller import Plans  # noqa: E402
 from features.boards.controller import Boards
 from features.plans.progress import catch_up
-from features.tickets.controller import Tickets
+from tests.kit import Tickets
 from controllers.types import Agents, Todos, Works
 from engine.record import Record
 from features.work_tracking.next import next, ready
@@ -213,7 +213,7 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():
-    from runner.hooks import handle
+    from tests.kit import handle
     from providers import PROVIDERS
     record = fresh()
     text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "EnterPlanMode", "tool_input": {}})
