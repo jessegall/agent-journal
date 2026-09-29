@@ -23,7 +23,6 @@ FILING_A_DUMP = ShippedSequence(
              "dump's collection, then sum up and suggest.",
     starts_on="dump.created",
     talks_in="the dump window",
-    started_by="",
     steps=[
         ("Read everything", "journal dump items <dump n> lists what was dropped. Go through the items one at a time: read an item in "
                             "full and at once record what it is with journal dump note <dump n> <item> \"<what it is>\", so the pile "
@@ -52,7 +51,6 @@ BUILDING_A_PLAN = ShippedSequence(
     title="Building a plan",
     brief="How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
     starts_on="plan.created",
-    started_by="",
     steps=[
         ("Name the goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
         ("Add the phases", "Add every phase in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and "
@@ -158,8 +156,6 @@ WRITING_AN_UPDATE = ShippedSequence(
     title="Writing an update",
     brief="The user asked for an update or a TLDR. Write an update report on what happened since they last opened "
              "one, and answer with it. You talk about the work, never about rows, commands or the journal.",
-    starts_on="",
-    started_by="",
     words=("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up",
               "what happened since"),
     steps=[
@@ -181,8 +177,6 @@ FINISHING_WHAT_YOU_WROTE = ShippedSequence(
     title="Finishing what you wrote",
     brief="The closing steps of a document or report: file it where it belongs, link what it relates to, offer the user a "
              "next step where one fits, then answer with it.",
-    starts_on="",
-    started_by="",
     steps=[
         ("Put it in a collection", "If a collection the user keeps fits what you wrote, add it: journal collection add "
                                    "<collection n> <ref>. Look with journal collection all first; skip this when none fits, and "
@@ -271,7 +265,7 @@ def unwatched(record, shipped: ShippedSequence) -> None:
     triggers = Triggers(record, actor=SYSTEM)
     for row in triggers._every():
         if row.title == shipped.title and row.system and not row.deleted:
-            triggers.delete(row.n, why=f"{shipped.title} now starts on {shipped.starts_on}")
+            triggers.delete(row.n, why=f"{shipped.title} now starts on {shipped.start_moment}")
 
 
 def in_step(sequences: Sequences, shipped: ShippedSequence, n: int | None) -> bool:
@@ -281,8 +275,8 @@ def in_step(sequences: Sequences, shipped: ShippedSequence, n: int | None) -> bo
         unwatched(sequences.record, shipped)
     numbers = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
     steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped.steps]
-    row = sequences.load(n) if n else sequences.create(shipped.title, starts_on=shipped.starts_on, system=True)
-    shape = (shipped.brief, shipped.starts_on, shipped.started_by, shipped.only_when_idle, shipped.talks_in, shipped.lasting,
+    row = sequences.load(n) if n else sequences.create(shipped.title, starts_on=shipped.start_moment, system=True)
+    shape = (shipped.brief, shipped.start_moment, shipped.starter, shipped.only_when_idle, shipped.talks_in, shipped.lasting,
              shipped.unless, shipped.dispatch, steps)
     if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless,
                                  row.dispatch, row.sections) == shape):

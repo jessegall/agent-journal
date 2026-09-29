@@ -7,8 +7,6 @@ DRAFTING = ShippedSequence(
              "so each appears on the board while you write, then say one short line. Together the cards must meet every clause of "
              "the goal, including the work the user did not think of. Talk only about the feature and its tickets, never about rows, chips, ticket numbers, "
              "commands or the journal. " + LOG,
-    starts_on="",
-    started_by="",
     talks_in=PANEL,
     dispatch=FILLER,
     steps=[

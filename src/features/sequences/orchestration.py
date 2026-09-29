@@ -6,7 +6,6 @@ ORCHESTRATION = ShippedSequence(
              "worktree, and you see every ticket through to its merge. You do not do the tickets' work yourself, and you stay free "
              "for anything else the user asks. Each moment of a ticket comes to you as a short sequence of its own, ahead of this one.",
     starts_on="board.started",
-    started_by="",
     lasting=True,
     steps=[
         ("Tell the user", "Say once, in one short message, what Play does: journal message create \"I'm running <board> now: <k> "
@@ -38,7 +37,6 @@ REVIEWING_A_PLAN = ShippedSequence(
     title="Reviewing a ticket's plan",
     brief="A ticket's plan waits for your approval. Review it against the ticket before you approve anything.",
     starts_on="ticket.plan_waits",
-    started_by="",
     steps=[
         ("Read the ticket and its plan", f"{FIND_IT} Read the ticket's card and the plan with journal --env <its environment> plan read "
                                          "<its plan>. If the board's plan_reviewer is a subagent, dispatch the plan-reviewer agent "
@@ -55,7 +53,6 @@ PASSING_A_CHECKPOINT = ShippedSequence(
     title="Passing a checkpoint",
     brief="A ticket's plan stopped at a checkpoint. Check the phase before it, then let it go on, so the board never waits overnight.",
     starts_on="ticket.checkpoint",
-    started_by="",
     steps=[
         ("Check the phase before it", f"{FIND_IT} Read where it stands with journal --env <its environment> plan progress <its plan>, and "
                                       "check the phase before the checkpoint did what it says."),
@@ -68,7 +65,6 @@ MERGING_A_TICKET = ShippedSequence(
     title="Merging a ticket",
     brief="A ticket finished its plan with a clean worktree. Check its work before it lands on the board's branch.",
     starts_on="ticket.finished",
-    started_by="",
     steps=[
         ("Review its work", f"{FIND_IT} Dispatch the ticket-reviewer agent type: it runs the ticket's tests in its worktree and checks "
                             "the diff against every done-when clause of its card, and answers pass or fail with evidence. On a fail, "
@@ -83,8 +79,6 @@ MERGING_A_TICKET = ShippedSequence(
 RESOLVING_A_CONFLICT = ShippedSequence(
     title="Resolving a merge conflict",
     brief="A ticket's merge was refused because its branch conflicts with the board's branch. Hand it back with exactly what to do.",
-    starts_on="",
-    started_by="",
     steps=[
         ("Name the conflict", f"{FIND_IT} In its worktree, try the merge without committing (git merge --no-commit --no-ff <board branch>, "
                               "then git merge --abort) to name the conflicting files, and read which merged ticket changed them."),
@@ -97,7 +91,6 @@ ESCALATING_A_TICKET = ShippedSequence(
     title="Escalating a ticket",
     brief="A ticket was sent back twice. Stop it and let the user decide; the rest of the board runs on.",
     starts_on="ticket.escalated",
-    started_by="",
     steps=[
         ("Stop it", f"{FIND_IT} Stop its agent: journal ticket stop <ticket n>. Tickets that wait on it stay queued."),
         ("Ask the user", "Ask on the board with both reasons it was sent back: journal board ask <board n> \"<ticket> was sent back "
@@ -112,7 +105,6 @@ UNSTICKING_A_TICKET_AGENT = ShippedSequence(
     title="Unsticking a ticket agent",
     brief="A ticket's agent is waiting on a prompt, silent, idle with nothing running, or gone. Get it working again.",
     starts_on="ticket.stuck",
-    started_by="",
     steps=[
         ("Look at its screen", "journal ticket screen <ticket n> shows what its terminal says."),
         ("Get it going", "Answer what it waits on with journal ticket tell <ticket n> \"<what to do>\", or restart it with journal ticket "
@@ -127,7 +119,6 @@ PAUSING_A_BOARD = ShippedSequence(
     title="Pausing a board",
     brief="The user paused the board. Stop its running tickets and keep their worktrees until they resume it.",
     starts_on="board.paused",
-    started_by="",
     steps=[
         ("Halt the tickets", "Stop every running ticket of the board: journal ticket stop <n> for each (journal ticket board <board n> "
                              "shows which run). Their worktrees stay. Say it in the panel: journal board say <board n> \"Paused; "
@@ -139,7 +130,6 @@ RESUMING_A_BOARD = ShippedSequence(
     title="Resuming a board",
     brief="The user resumed the board. Start the tickets that were halted, in their order.",
     starts_on="board.resumed",
-    started_by="",
     steps=[
         ("Start the halted tickets", "Start every ticket of the board that was stopped by the pause, in the order they must run: journal "
                                      "ticket start <n>."),
@@ -150,7 +140,6 @@ CLOSING_A_BOARD = ShippedSequence(
     title="Closing a board",
     brief="The last ticket of a running board closed. Check the goal clause by clause and tell the user.",
     starts_on="board.finished",
-    started_by="",
     steps=[
         ("Check the goal", "Dispatch the goal-verifier agent type for the board: it runs the full tests on the board's branch and checks "
                            "every done-when clause of the board's goal for real, answering met or not met with evidence. A clause that "
