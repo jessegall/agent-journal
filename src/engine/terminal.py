@@ -19,6 +19,8 @@ RELAUNCH = 77
 HEAL = 78
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
+LAUNCH_ARGS: list = []
+OUTPUT_LINES: list = []
 LAUNCHED = "launched.json"
 
 
@@ -51,10 +53,19 @@ def session_named(provider) -> dict:
     return {"JOURNAL_SESSION_VARIABLE": provider.session_variable} if provider.session_variable else {}
 
 
+def output_lines(record) -> int:
+    return max((int(lines(record)) for lines in OUTPUT_LINES), default=0)
+
+
+def shaped_args(record, agent: str, args: list[str]) -> list[str]:
+    for shape in LAUNCH_ARGS:
+        args = shape(record, agent, args)
+    return args
+
+
 def output_cap(root: Path, env: str, provider) -> dict:
     from engine.record import Record
-    from features.journal_laws.details import LawDetails
-    lines = int(LawDetails.values(Record(root, env)).output_lines)
+    lines = output_lines(Record(root, env))
     wrapper = provider.shell_wrapper(code(root) / "output_cap.sh") if lines > 0 else {}
     return {**wrapper, "JOURNAL_OUTPUT_LINES": str(lines), "JOURNAL_PROVIDER": provider.name, "JOURNAL_OUTPUT_DIR": str(runtime.folder(root) / "outputs")} if wrapper else {}
 
@@ -70,9 +81,8 @@ class Launching(TypedDict):
 def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> Launching:
     from providers import DRIVERS, PROVIDERS
     from engine.record import Record
-    from features.work_tracking.auto import launch_args
     driver = DRIVERS[agent]
-    command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
+    command = driver.command(driver, driver.resumed(shaped_args(Record(root, env), agent, args), conversation), cwd)
     provider = PROVIDERS[agent]()
     inherited = {name: value for name, value in os.environ.items() if name not in provider.session_markers}
     return {"command": command, "args": args, "launch": LAUNCH, "exit": "" if driver.worktree(args) else driver.EXIT,

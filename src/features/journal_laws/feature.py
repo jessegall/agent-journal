@@ -1,3 +1,4 @@
+from engine.terminal import OUTPUT_LINES
 from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs
@@ -12,8 +13,14 @@ class Law(Feature):
     details = LawDetails
 
     def register(self, journal: Journal) -> None:
+        if output_lines not in OUTPUT_LINES:
+            OUTPUT_LINES.append(output_lines)
         journal.agent.canceler(EnforceDispatchLaw())
         journal.agent.interceptor(WhisperLawOnKeyword())
         journal.agent.interceptor(RefuseWholeLongReads())
         journal.events.handler(WhisperLawInChat())
         journal.events.handler(NoticeLargestResult())
+
+
+def output_lines(record) -> int:
+    return int(LawDetails.values(record).output_lines)
