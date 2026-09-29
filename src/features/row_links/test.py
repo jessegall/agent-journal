@@ -31,6 +31,10 @@ def test_a_row_named_in_text_is_a_chip_in_the_viewer_and_plain_words_everywhere_
     assert shaped(todos.load(pointed.n), record, VIEWER)["brief"] == \
         f"[[chip todo:{theirs}@ticket-11|ticket-11 to-do {theirs}]] and [[chip todo:{theirs}@ticket-11|to-do {theirs} in ticket-11]]", \
         "a row named with its environment is a chip that opens it there"
+    spanned = todos.create("coded", brief=f"`message {first}` and `journal message read {first}`")
+    assert shaped(todos.load(spanned.n), record, VIEWER)["brief"] == \
+        f"[[chip message:{first}|message {first}]] and `journal message read {first}`", \
+        "a reference alone in code is a chip, and a command in code stays code"
 
 
 def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone():

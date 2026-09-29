@@ -53,19 +53,26 @@ def chipped(text: str, record=None) -> str:
     return found.sub(chip, text)
 
 
-def outside(pattern: re.Pattern, text: str, change) -> str:
+def outside(pattern: re.Pattern, text: str, change, keep=lambda kept: kept) -> str:
     parts, at = [], 0
     for kept in pattern.finditer(text):
-        parts += [change(text[at:kept.start()]), kept.group(0)]
+        parts += [change(text[at:kept.start()]), keep(kept.group(0))]
         at = kept.end()
     return "".join([*parts, change(text[at:])])
+
+
+def spanned(kept: str, record) -> str:
+    if not CODE.fullmatch(kept):
+        return kept
+    linked = chipped(kept.strip("`").strip(), record)
+    return linked if MARKER.fullmatch(linked) else kept
 
 
 class MarkRows(TextFormatter):
     surfaces = (VIEWER,)
 
     def format(self, context: Context, text: str) -> str:
-        return outside(KEPT, text, lambda part: chipped(part, context.record))
+        return outside(KEPT, text, lambda part: chipped(part, context.record), lambda kept: spanned(kept, context.record))
 
 
 EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml|ini|sh|zsh|bash|svg|png|jpg|jpeg|gif|webp|csv|lock|php|cs|"
