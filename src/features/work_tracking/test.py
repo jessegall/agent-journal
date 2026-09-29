@@ -6,7 +6,8 @@ from features.base import held
 from tests.kit import idle, nudges, report
 from tests.conftest import fresh, refused
 from controllers.types import Questions, Todos, Works
-from features.work_tracking.auto import QUIET_FOR, launch_args, still_there
+from features.permission_prompts.feature import launch_args
+from features.work_tracking.auto import QUIET_FOR, still_there
 from features.work_tracking.next import next, ready
 from resources.base import AGENT, USER
 from tests.kit import idle, nudges

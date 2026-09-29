@@ -12,12 +12,16 @@ from features.plans.handlers import (
     TellParkedAndPickedUp,
 )
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
+from features.plans.progress import held
+from features.work_tracking.next import ROW_HOLDS
 
 
 class PlansFeature(Feature):
     details = PlansDetails
 
     def register(self, journal: Journal) -> None:
+        if held not in ROW_HOLDS:
+            ROW_HOLDS.append(held)
         journal.events.handler(StartBuilding())
         journal.events.handler(StartApproved())
         journal.events.handler(TellParkedAndPickedUp())
