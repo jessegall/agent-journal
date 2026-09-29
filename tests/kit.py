@@ -4,6 +4,7 @@ from controllers.types import Agents, Nudges
 from resources.base import AGENT, SYSTEM
 from commands.cli import captured  # noqa: F401
 from commands.cli import run  # noqa: F401
+import commands.http  # noqa: F401
 from commands.dispatch import dispatch  # noqa: F401
 from commands.queries import asked_for  # noqa: F401
 from commands.queries import asked_history  # noqa: F401
