@@ -39,10 +39,19 @@ def closed(rows, n: int) -> bool:
     return not rows._exists(int(n)) or bool(rows.load(n).completed)
 
 
+PHASE_ROWS: dict = {}
+
+
+def phase_rows(record, phase: dict, actor: str = SYSTEM) -> list:
+    todos = Todos(record, actor=actor)
+    held = [todos.load(n) for n in phase[PHASE.todos]]
+    return held + [row for key, rows in PHASE_ROWS.items() for row in map(rows(record, actor=actor).load, phase.get(key, []))]
+
+
 def phase_complete(record, phase: dict) -> bool:
-    from features.tickets.controller import Tickets
-    todos, tickets = Todos(record, actor=SYSTEM), Tickets(record, actor=SYSTEM)
-    return all(closed(todos, n) for n in phase[PHASE.todos]) and all(closed(tickets, n) for n in phase.get(PHASE.tickets, []))
+    todos = Todos(record, actor=SYSTEM)
+    members = {key: rows(record, actor=SYSTEM) for key, rows in PHASE_ROWS.items()}
+    return all(closed(todos, n) for n in phase[PHASE.todos]) and all(closed(rows, n) for key, rows in members.items() for n in phase.get(key, []))
 
 
 def first_open_phase(record, plan) -> int:

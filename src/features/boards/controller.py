@@ -28,6 +28,10 @@ def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
         kept[stage] = meaning
     return kept
 
+
+CARD_ROWS: list = []
+
+
 class Boards(Controller):
     resource = Board
 
@@ -69,11 +73,10 @@ class Boards(Controller):
 
     def _stop_drafting(self, board) -> None:
         from features.sequences.controller import Sequences
-        from features.tickets.controller import Tickets
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for about in board.asked:
             sequences.give_up(about, why="The request on the board was cancelled")
-        tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        tickets = self._cards(self.actor)
         for left in self._drafts(board) if board.drafting.get("since") else []:
             tickets.delete(left.n, why="The request on the board was cancelled")
 
@@ -126,6 +129,9 @@ class Boards(Controller):
                     sequences._finish(sequence.n, key.split("|", 1)[1])
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
 
+    def _cards(self, actor: str):
+        return CARD_ROWS[0](self.record, actor=actor, session=self.session, agent=self.agent)
+
     def _update_drafting(self, board, **changes):
         return self._replace_drafting(board, {**board.drafting, **changes})
 
@@ -171,9 +177,8 @@ class Boards(Controller):
         return self._update_drafting(board, picks={"tickets": self._drafted(board, tickets), "at": time.time()})
 
     def _drafted(self, board, tickets: str) -> list[int]:
-        from features.tickets.controller import Tickets
         numbers = [int(t.lstrip("#")) for t in tickets.replace(",", " ").split() if t.lstrip("#").isdigit()]
-        drafts = {t.n for t in Tickets(self.record, actor=self.actor)._standing() if t.draft and int(t.board) == board.n}
+        drafts = {t.n for t in self._cards(self.actor)._standing() if t.draft and int(t.board) == board.n}
         stray = [n for n in numbers if n not in drafts]
         if not numbers or stray:
             raise Refused(f"name drafts on board {board.n}, like \"12, 13\"; not {stray or tickets!r}")
@@ -197,9 +202,8 @@ class Boards(Controller):
         return self.update(board.n, added={"tickets": numbers, "at": time.time()})
 
     def _drafts(self, board) -> list:
-        from features.tickets.controller import Tickets
         since = board.drafting.get("since", 0)
-        return [t for t in Tickets(self.record, actor=SYSTEM)._standing() if t.draft and int(t.board) == board.n and t.created >= since]
+        return [t for t in self._cards(SYSTEM)._standing() if t.draft and int(t.board) == board.n and t.created >= since]
 
     def _drafting(self, n: int):
         board = self.load(n)
@@ -334,10 +338,9 @@ class Boards(Controller):
 
     def discard(self, n: int, why: str = "The user removed the board built from a document"):
         from features.sequences.controller import Sequences
-        from features.tickets.controller import Tickets
         board = self.load(n)
         Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent).give_up(board.ref, why=why)
-        tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        tickets = self._cards(self.actor)
         for ticket in [t for t in tickets._standing() if int(t.board) == board.n]:
             tickets.delete(ticket.n, why=why)
         return self.delete(board.n, why=why)
