@@ -7,9 +7,9 @@ from pathlib import Path
 from controllers.types import Agents, Environments, Works
 from engine.sessions import Sessions, allowed
 from features.base import held
-from resources.base import AGENT
+from resources.base import AGENT, USER
 from tests.kit import report
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from engine.sessions import Sessions
@@ -88,6 +88,12 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     for moved_away in ("conversation-9", "claude-7272"):
         sessions.unbind(moved_away)
     assert asked_for(Record(record.root, "t"), answering=False) == "u", "a quiet start never lands in an environment another live agent holds"
+    users = Environments(record, actor=USER)
+    held_env = users._titled("t")
+    assert "journal environment stop" in refused(lambda: users.vacant("t")), "a held environment says how to end its agent"
+    assert "outside the journal's terminals" in refused(lambda: users.stop(held_env.n)), "a live agent with no terminal the journal knows is left alone"
+    sessions.bind("gone-9", "u", pid=999999, provider="claude")
+    assert "no agent holds" in refused(lambda: users.stop(users._titled("u").n)), "an agent that is gone holds nothing to stop"
 
 
 def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the_same_law(env):
