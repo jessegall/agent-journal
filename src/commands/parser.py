@@ -7,7 +7,7 @@ from controllers.base import COMMANDS, actions
 from controllers.types import CONTROLLERS
 import features
 from features.base import generation
-from engine import queries
+from features.session_briefing import start as briefing
 from providers import DRIVERS
 from engine.transcript import conversation, user
 from resources.base import AGENT
@@ -101,10 +101,10 @@ def built(only: str) -> argparse.ArgumentParser:
         acts = t.add_subparsers(dest="action", required=True)
         for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}) if not only or only == type_ else ():
             add_method(acts, controller, name)
-    add_query(cmds, "status", "where things stand", lambda ctx: queries.status(ctx["record"]))
-    add_query(cmds, "carry", "everything standing, in full", lambda ctx: queries.carry(ctx["record"]))
-    add_query(cmds, "start", "what a session is handed at its start", lambda ctx: queries.start_block(ctx["record"]))
-    add_query(cmds, "open", "open work", lambda ctx: queries.lines(queries.open_work(ctx["record"])))
+    add_query(cmds, "status", "where things stand", lambda ctx: briefing.status(ctx["record"]))
+    add_query(cmds, "carry", "everything standing, in full", lambda ctx: briefing.carry(ctx["record"]))
+    add_query(cmds, "start", "what a session is handed at its start", lambda ctx: briefing.start_block(ctx["record"]))
+    add_query(cmds, "open", "open work", lambda ctx: briefing.lines(briefing.open_work(ctx["record"])))
     add_query(cmds, "search", "every agent transcript in this environment and attached files", lambda ctx: search_text(ctx["record"], ctx["term"], ctx["page"]),
               ("term", {}), ("--page", {"type": int, "default": 0}))
     add_query(cmds, "conversation", "the stretch the last summary replaced", lambda ctx: say(conversation(transcript(ctx["record"], ctx["session"]), ctx["back"])),

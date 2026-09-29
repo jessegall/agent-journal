@@ -33,7 +33,7 @@ from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
 from features.browser_control.controller import Asks
 from engine import bus, runtime, viewer
-from engine.manifest import manifest
+from surfaces.manifest import manifest
 from engine.version import version
 from controllers.faults import broke, log_file
 from engine.hooks import answer, displayed

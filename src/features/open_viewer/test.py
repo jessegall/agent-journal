@@ -1,6 +1,6 @@
 
 from types import SimpleNamespace
-from features.open_viewer.focus import SCRIPT, existing_tab
+from engine.focus import SCRIPT, existing_tab
 from controllers.types import Agents
 from engine import viewer
 from resources.base import SYSTEM

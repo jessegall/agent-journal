@@ -15,7 +15,7 @@ from controllers.base import CONTROLLERS, Controller
 from engine.record import Record
 from features import FEATURES
 from features.shaping import shaping
-from engine.manifest import manifest
+from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import VIEWER, formatted
 from features.sharing.resource import SHARED_TYPES, Share
@@ -255,7 +255,7 @@ class Shares(Controller):
                 "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope],
                 "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},
             }
-        described = manifest()["types"]
+        described = described_types()
         kinds = {ref.partition(":")[0] for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
                 "comments": self._visitor_comments(share, scope) if share.comments else [],

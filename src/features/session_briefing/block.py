@@ -1,5 +1,5 @@
 from engine.gates import start_file
-from engine.queries import start_block
+from features.session_briefing.start import start_block
 from engine.stored import write_text
 
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:
