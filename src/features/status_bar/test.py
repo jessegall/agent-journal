@@ -130,7 +130,7 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     from runner.engine import Engine
     from engine.stored import write_json
     from providers import DRIVERS
-    from surfaces import control
+    from agents import control
     from tests.kit import report
     record = fresh()
     report(record, "idle", "Stop")

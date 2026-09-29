@@ -46,14 +46,6 @@ def environment_records(root: Path) -> list[Record]:
     return [Record(Path(root), home.name) for home in sorted((Path(root) / "environments").glob("*/"))]
 
 
-def read_transcripts(root: Path) -> None:
-    from providers import PROVIDERS
-    for record in environment_records(root):
-        for agent in Agents(record, actor=SYSTEM)._standing():
-            if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
-                PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))
-
-
 def warm(root: Path) -> None:
     from engine.sessions import Sessions
     sessions = Sessions(root)

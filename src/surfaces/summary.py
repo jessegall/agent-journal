@@ -10,7 +10,7 @@ from engine.record import Record
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
 from providers import PROVIDERS
-from surfaces.color import identity
+from engine.color import identity
 from typing import TypedDict
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
