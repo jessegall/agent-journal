@@ -1,7 +1,7 @@
 import os
 
 from controllers.types import Agents, Notices
-from engine.hooks import handle
+from runner.hooks import handle
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
 from tests.conftest import fresh
@@ -84,7 +84,7 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
     assert asked_resume(record, "codex", [], ask=defaults, answering=True) == ["resume", "old-thread"], "--no-interaction takes the default without asking"
     Sessions(record.root).bind("claude-4242", record.env, pid=999999, provider="claude")
     assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == ["--resume", "5e3c0a1f-conversation"], "a supervisor's name is no conversation"
-    from engine.hooks import answer
+    from runner.hooks import answer
     answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": "5e3c0a1f-conversation", "cwd": str(record.root.parent)}, os.getpid())
     assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == [], "a conversation restarted under a new process is still running"
     Sessions(record.root).bind("7a1d-in-the-worktree", "0922-disposal-date", pid=999999, provider="claude")

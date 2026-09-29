@@ -199,7 +199,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     agent.score(board.n, "3", done="Sessions expire after a day")
     assert boards.load(board.n).done_when[-1] == "Sessions expire after a day" and len(boards.load(board.n).done_when) == 3, \
         "a request on a started board adds clauses instead of replacing the goal"
-    from engine.hooks import handle
+    from runner.hooks import handle
     from features.boards.agent_types import written
     from providers import PROVIDERS
     (record.root.parent / ".claude").mkdir(exist_ok=True)

@@ -45,7 +45,7 @@ def test_a_trigger_fires_on_what_the_user_writes():
 
 
 def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
-    from engine.hooks import displayed
+    from runner.hooks import displayed
     from engine.sessions import Sessions
     features.load()
     record = fresh()

@@ -56,7 +56,7 @@ def worktree_of(tmp_path, name: str):
 
 
 def hooked(record, session: str, cwd, pid: int, **given) -> None:
-    from engine.hooks import answer
+    from runner.hooks import answer
     from providers import PROVIDERS
     answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": session, "cwd": str(cwd), **given}, pid)
 
@@ -75,9 +75,9 @@ def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tm
     hooked(record, "wanderer", worktree_of(tmp_path, "feature-y"), 5252)
     assert (Sessions(record.root).environment("wanderer"), Sessions(record.root).environment("holder")) == (record.env, "feature-y"), \
         "a session that only looks into a worktree another agent holds stays where it was, and the holder keeps it"
-    from engine.terminal import launch_spec
+    from agents.terminal import launch_spec
     from unittest import mock
-    with mock.patch("providers.claude.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("engine.terminal.share_journal"):
+    with mock.patch("providers.claude.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("agents.terminal.share_journal"):
         spec = launch_spec(record.root, tmp_path / "feature-y", record.env, "claude", [])
     assert spec["env"] == "feature-y-2", "a second agent started in a worktree another agent works gets an environment of its own"
 
@@ -109,7 +109,7 @@ def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_pa
 
 def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
     from engine.sessions import Sessions
-    from engine.terminal import Seat, seated
+    from agents.terminal import Seat, seated
     record = fresh()
     first = seated(Seat(record.root, record.env, "claude", "claude-7171"))
     Sessions(record.root).bind("claude-7171", "elsewhere")

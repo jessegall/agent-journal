@@ -685,7 +685,7 @@ class Tickets(Prioritised, Controller):
         self.comment(ticket.n, f"{done} as the board's orchestrator, under auto mode: {why.strip()}")
 
     def start(self, n: int, agent: str | None = None):
-        from engine.terminal import detached
+        from agents.terminal import detached
         from providers import DRIVERS, PROVIDERS
         self._confirmed(self.load(n))
         ticket = self.bind(int(n))

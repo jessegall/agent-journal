@@ -1,7 +1,7 @@
 
 from controllers.types import Agents, Nudges, Facts, Reminders
 from engine import chat
-from engine.hooks import handle
+from runner.hooks import handle
 from features import load
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
@@ -50,7 +50,7 @@ def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
 
 
 def test_dismissing_a_fact_from_the_rail_is_not_told_to_the_agent_but_editing_it_is():
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     load()
     record = fresh()

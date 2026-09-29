@@ -21,7 +21,7 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
 
 def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     from types import SimpleNamespace
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     record = fresh()
     moved = []
@@ -55,8 +55,8 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
 
 
 def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch):
-    from engine import engine as engine_module
-    from engine.engine import Engine
+    from runner import engine as engine_module
+    from runner.engine import Engine
     from providers import DRIVERS
     record = fresh()
     report(record, "idle", "Stop")

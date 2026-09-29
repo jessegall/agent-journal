@@ -7,7 +7,7 @@ import threading
 import time
 
 from controllers.types import CONTROLLERS, Agents, Plugins
-from engine.hooks import handle
+from runner.hooks import handle
 from engine.services import Manager, status_file
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog

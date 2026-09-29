@@ -11,7 +11,7 @@ from resources.types import IDLE
 from engine.heal import refused
 from engine.sessions import Sessions
 from engine.state import State
-from engine.terminal import LAUNCH, relaunch
+from agents.terminal import LAUNCH, relaunch
 from engine.package import entry
 from engine.version import version
 from features import FEATURES

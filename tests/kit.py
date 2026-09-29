@@ -12,7 +12,7 @@ def report(record, status, event, session="claude-1", **more):
 
 
 def tick(record, session="claude-1"):
-    from engine.engine import emit_clock
+    from runner.engine import emit_clock
     emit_clock(record, session)
 
 

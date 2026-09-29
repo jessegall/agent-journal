@@ -8,7 +8,7 @@ PROVIDER = "claude"
 
 
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str) -> str:
-    from engine.terminal import detached
+    from agents.terminal import detached
     from providers import DRIVERS
     environments = Environments(record, actor=SYSTEM)
     if not environments._titled(name):

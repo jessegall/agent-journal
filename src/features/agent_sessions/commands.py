@@ -1,6 +1,6 @@
 import time
 
-from engine.terminal import detached
+from agents.terminal import detached
 from features.parts import Command, Context
 from providers import DRIVERS
 from resources.base import AGENT, Refused

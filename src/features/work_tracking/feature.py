@@ -1,4 +1,4 @@
-from engine.terminal import LAUNCH_ARGS
+from agents.terminal import LAUNCH_ARGS
 from features.base import Feature
 from features.journal import Journal
 from features.work_tracking.auto import launch_args, steered

@@ -10,11 +10,11 @@ from engine import runtime, typist
 from engine.record import Record
 from engine.sessions import Sessions
 from controllers.faults import threw
-from engine.engine import TICK, Engine
+from runner.engine import TICK, Engine
 from engine.package import CODE, ZIPPED
 
 ENDING = 5.0
-CHILD = "from engine.engines import child"
+CHILD = "from runner.engines import child"
 
 
 class Engines:

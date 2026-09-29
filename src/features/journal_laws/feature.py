@@ -1,4 +1,4 @@
-from engine.terminal import OUTPUT_LINES
+from agents.terminal import OUTPUT_LINES
 from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs

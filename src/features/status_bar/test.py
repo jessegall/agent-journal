@@ -88,7 +88,7 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
 
 
 def test_the_band_tracks_the_cursor_through_keyboard_codes_and_scroll_regions():
-    from engine.band import ROWS, Cursor, Translator
+    from agents.band import ROWS, Cursor, Translator
     cursor = Cursor(40, 120)
     cursor.feed(Translator(40).feed(b"\x1b[5;3H\x1b[<u\x1b[>5u\x1b[>4;2m\x1b(B\x0f"))
     assert (cursor.row, cursor.col) == (5 + ROWS, 3), "a private-parameter code prints nothing, so the column stays put"
@@ -98,7 +98,7 @@ def test_the_band_tracks_the_cursor_through_keyboard_codes_and_scroll_regions():
 
 def test_the_header_names_the_installed_version(tmp_path):
     import re
-    from engine.band import Band
+    from agents.band import Band
     from engine.version import version
     current = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", 0.0))
     assert f"JOURNAL {version()}" in current, current
@@ -111,7 +111,7 @@ def test_a_terminal_answering_a_query_is_not_the_user_typing():
 
 
 def test_with_the_header_off_nothing_is_drawn_or_wiped():
-    from engine import band
+    from agents import band
     assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
 
 
@@ -124,9 +124,10 @@ def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
 
 def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     import os
-    from engine import engine as engine_module, runtime
+    from engine import runtime
+    from runner import engine as engine_module
     from providers.drivers import MARK
-    from engine.engine import Engine
+    from runner.engine import Engine
     from engine.stored import write_json
     from providers import DRIVERS
     from surfaces import control
@@ -157,7 +158,7 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
 
 def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     from controllers.types import Agents
-    from engine.hooks import PAUSED, handle
+    from runner.hooks import PAUSED, handle
     from providers import PROVIDERS
     record, claude = fresh(), PROVIDERS["claude"]()
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "ls"}, "hook_event_name": "PreToolUse"}

@@ -36,7 +36,7 @@ from engine import bus, runtime, viewer
 from surfaces.manifest import manifest
 from engine.version import version
 from controllers.faults import broke, log_file
-from engine.hooks import answer, displayed
+from runner.hooks import answer, displayed
 from providers.payload import DISPLAYED
 from engine.record import Record
 from engine.transcript import page
@@ -345,7 +345,7 @@ def post_agent_shell(req: Request) -> Reply:
 @route("GET", "/api/{env}/agent/{session}/screen")
 def get_agent_screen(req: Request) -> Reply:
     from engine.seats import terminal_of
-    from engine.terminal import screen_since
+    from agents.terminal import screen_since
     terminal = terminal_of(req.root, req.params["session"])
     if not terminal:
         return Reply(404, {"error": f"no session {req.params['session']}"})
@@ -355,7 +355,7 @@ def get_agent_screen(req: Request) -> Reply:
 @route("POST", "/api/{env}/agent/{session}/keys")
 def post_agent_keys(req: Request) -> Reply:
     from engine.seats import terminal_of
-    from engine.terminal import type_keys
+    from agents.terminal import type_keys
     terminal = terminal_of(req.root, req.params["session"])
     if not terminal:
         return Reply(404, {"error": f"no session {req.params['session']}"})

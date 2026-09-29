@@ -104,10 +104,10 @@ def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
 
 
 def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_worktree(monkeypatch):
-    import engine.terminal
+    import agents.terminal
     from engine.sessions import Sessions
     launched = []
-    monkeypatch.setattr(engine.terminal, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent, args)) or 1)
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent, args)) or 1)
     record = fresh()
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     tickets = Tickets(record, actor=USER)
@@ -121,7 +121,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
         "the start stage launches the ticket's agent in its own worktree, in a named permission mode, never skipping prompts"
     assert "Draft a plan" in args[-1] and ticket.ref in args[-1], "a fresh start opens with the ticket and how to plan it"
     from controllers.types import Environments
-    from engine.terminal import launching
+    from agents.terminal import launching
     from features.parts import in_background
     assert in_background(Record(record.root, f"ticket-{ticket.n}")), "the ticket's environment belongs to its ticket, so its agent works in the background"
     monkeypatch.setenv("CLAUDE_CODE_CHILD_SESSION", "1")
@@ -239,8 +239,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     shipped = [card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n]
     assert [(card["n"], card["state"]) for card in shipped] == [(ticket.n, "done")], "and stays in that column, so the board shows what is done"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
-    import engine.terminal
-    monkeypatch.setattr(engine.terminal, "detached", lambda *args: 1)
+    import agents.terminal
+    monkeypatch.setattr(agents.terminal, "detached", lambda *args: 1)
     git("branch", "rewrite")
     git("switch", "-q", "rewrite")
     git("commit", "-q", "--allow-empty", "-m", "the contract")
@@ -325,11 +325,11 @@ def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start()
 
 
 def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monkeypatch):
-    import engine.terminal
+    import agents.terminal
     from resources.base import AGENT
     from tests.conftest import refused
     launched = []
-    monkeypatch.setattr(engine.terminal, "detached", lambda root, cwd, env, agent, args: launched.append(env) or 1)
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args: launched.append(env) or 1)
     record = fresh()
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     user, agent = Tickets(record, actor=USER), Tickets(record, actor=AGENT)

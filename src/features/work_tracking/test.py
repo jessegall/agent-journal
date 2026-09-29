@@ -268,7 +268,7 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
 
 
 def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkeypatch):
-    from engine.engine import Engine
+    from runner.engine import Engine
     from providers import DRIVERS
     record = fresh()
     report(record, "working", "PreToolUse")

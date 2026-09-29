@@ -36,7 +36,7 @@ def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
 
 def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
     from engine import runtime
-    from engine.terminal import relaunch
+    from agents.terminal import relaunch
     root = tmp_path / "project" / ".journal"
     moved = []
 
@@ -144,9 +144,9 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(t
     bad = root / "journal-99.0.0-broken0000.pyz"
     with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
         for item in source.infolist():
-            if not item.filename.startswith("engine/worker."):
+            if not item.filename.startswith("runner/worker."):
                 target.writestr(item, source.read(item))
-        target.writestr("engine/worker.py", "raise SystemExit(1)\n")
+        target.writestr("runner/worker.py", "raise SystemExit(1)\n")
     point(root, bad)
     launches(place, root / "journal.py", "codex", during=heals(root, good))
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"

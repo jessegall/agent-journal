@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 import features
-from engine.hooks import handle
+from runner.hooks import handle
 from features.session_briefing.start import start_block
 from features.journal_laws.policy import BEGIN, brief
 from providers import PROVIDERS
@@ -119,7 +119,7 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     import subprocess
     import sys
     from pathlib import Path
-    from engine.terminal import output_cap, session_named
+    from agents.terminal import output_cap, session_named
     from features import load
     from features.journal_laws.controller import Outputs
     from providers import PROVIDERS

@@ -64,7 +64,7 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
 
 
 def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refused():
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     features.load()
     record = fresh()
@@ -206,7 +206,7 @@ def test_a_step_reaches_an_agent_whose_work_waits_on_something():
 
 
 def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer_it():
-    from engine.hooks import handle
+    from runner.hooks import handle
     from providers import PROVIDERS
     features.load()
     record, claude = fresh(), PROVIDERS["claude"]()
