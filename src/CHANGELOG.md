@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.201.1 — A reference alone in code is a chip
+
+A row's reference written alone in backticks, such as `doc 7`, now shows in the viewer as a
+chip that opens the row, as it does when written bare; a command or any other text in code
+stays code. The sequences that end by handing the user a document or report show the
+reference bare, so agents stop writing it in backticks.
+
 ## 2.201.0 — An environment's agent can be stopped
 
 journal environment stop <n> ends the agent that holds an environment, through its own
