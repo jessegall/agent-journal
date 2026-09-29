@@ -266,6 +266,10 @@ class Comment(Shape, Resource):
     in_sidebar = False
 
 
+STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
+STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
+
+
 class AgentRow(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(default="", name="status"),

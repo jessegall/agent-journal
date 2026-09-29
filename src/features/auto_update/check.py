@@ -7,7 +7,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Notices
 from engine import runtime
-from engine.actors import IDLE
+from resources.types import IDLE
 from engine.heal import refused
 from engine.sessions import Sessions
 from engine.state import State

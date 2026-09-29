@@ -22,7 +22,7 @@ def fresh(env: str = "t") -> Record:
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
-    from engine.hooks import gate_file
+    from engine.gates import gate_file
     f = gate_file(record.root, record.env, session)
     return json.loads(f.read_text()) if f.is_file() else {}
 

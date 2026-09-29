@@ -3,7 +3,7 @@ from pathlib import Path
 
 from features.plugins.source import folder
 from providers.base import LIBRARY
-from engine.skill_homes import LINKED, link, unlink
+from providers.skill_homes import LINKED, link, unlink
 
 MARK = "plugin"
 SKILL = "SKILL.md"

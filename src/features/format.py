@@ -1,4 +1,4 @@
-from engine.watch import threw
+from controllers.faults import threw
 from resources.base import SECTION
 
 FORMATTERS: list = []

@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 import controllers.types as types_module
 from controllers.types import Environments, Features
 from engine.record import Record
-from engine.actors import IDLE
+from resources.types import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session

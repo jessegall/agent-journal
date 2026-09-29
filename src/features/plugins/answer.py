@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
-from engine.hooks import gate_file
+from engine.gates import gate_file
 from engine.fields import Loaded
 from engine.stored import read_json, write_json
 from features.plugins.declared import declared, settings_of

@@ -125,7 +125,7 @@ def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
 def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     import os
     from engine import engine as engine_module, runtime
-    from engine.drivers import MARK
+    from providers.drivers import MARK
     from engine.engine import Engine
     from engine.stored import write_json
     from providers import DRIVERS

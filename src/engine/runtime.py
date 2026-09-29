@@ -96,3 +96,7 @@ def tests_running(root: Path) -> bool:
         return alive(int((folder(root) / TESTS_RUNNING).read_text()))
     except (OSError, ValueError):
         return False
+
+
+def default_env(root: Path, prefer: str = "") -> str:
+    return prefer or env(root)

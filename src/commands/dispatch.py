@@ -11,7 +11,7 @@ from controllers.types import CONTROLLERS
 from engine import bus, runtime
 from engine.collecting import collecting
 from engine.record import Record
-from engine.watch import threw
+from controllers.faults import threw
 from features.shaping import shaped
 from resources.base import USER, Refused
 from engine.package import data

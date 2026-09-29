@@ -35,7 +35,7 @@ from features.browser_control.controller import Asks
 from engine import bus, runtime, viewer
 from engine.manifest import manifest
 from engine.version import version
-from engine.watch import broke, log_file
+from controllers.faults import broke, log_file
 from engine.hooks import answer, displayed
 from providers.payload import DISPLAYED
 from engine.record import Record
@@ -777,10 +777,10 @@ def get_subagent_transcript(req: Request) -> Reply:
 @route("GET", "/api/pages")
 def get_pages(req: Request) -> Reply:
     from engine.services import specs, status
-    from engine.services import plugins as installed
     from features.plugins.declared import declared
     from features.plugins.lifecycle import called
-    where = {spec.id: spec for spec in specs(req.root)}
+    from features.plugins.services import plugin_services, plugins as installed
+    where = {spec.id: spec for spec in specs(req.root, (plugin_services,))}
     out = []
     for row in installed(req.root):
         plugin = called(row)
@@ -797,7 +797,8 @@ def get_pages(req: Request) -> Reply:
 @route("GET", "/api/services")
 def get_services(req: Request) -> Reply:
     from engine.services import listed
-    return Reply(200, listed(req.root))
+    from features.plugins.services import plugin_services
+    return Reply(200, listed(req.root, (plugin_services,)))
 
 
 def asked_lines(req: Request) -> int:

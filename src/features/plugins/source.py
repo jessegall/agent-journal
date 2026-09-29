@@ -12,7 +12,7 @@ from pathlib import Path
 
 from engine.proc import streamed
 
-from engine.hooks import default_env
+from engine.runtime import default_env
 from engine.viewer import running
 from features.plugins.declared import Manifest, command_text
 from features.plugins.manifest import fill, read

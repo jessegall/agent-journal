@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from engine.events import ClockTicked
-from engine.hooks import LONG_COMMAND, cancelled
+from engine.gates import LONG_COMMAND, cancelled
 from features.long_commands.details import KEPT, MOVED
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS

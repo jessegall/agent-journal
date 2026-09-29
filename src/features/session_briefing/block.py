@@ -1,4 +1,4 @@
-from engine.hooks import start_file
+from engine.gates import start_file
 from engine.queries import start_block
 from engine.stored import write_text
 

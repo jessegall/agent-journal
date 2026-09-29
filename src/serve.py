@@ -19,7 +19,8 @@ from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from engine.engines import Children  # noqa: E402
 from controllers.types import read_transcripts, warm, warm_record  # noqa: E402
-from engine.hooks import default_env, replay  # noqa: E402
+from engine.hooks import replay  # noqa: E402
+from engine.runtime import default_env
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
 

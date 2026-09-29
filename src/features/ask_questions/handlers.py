@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, ResourceEvent
-from engine.transcript import last_text
+from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
 from resources.base import USER
