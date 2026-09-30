@@ -1,5 +1,5 @@
 <script setup>
-import {inject, nextTick, provide, ref, watch} from "vue";
+import {inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import PhoneAgent from "./PhoneAgent.vue";
@@ -68,19 +68,28 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
 });
 provide("phoneRefresh", refresh);
 
+let kept = -1;
 const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight));
-watch(reading, (target) => !target && toBottom());
-watch(list, (el) => el && toBottom());
+const restored = () => nextTick(() => list.value && (list.value.scrollTop = kept));
+watch(list, (el) => el && (kept < 0 ? toBottom() : restored()));
+
+function shown(stack) {
+    trail.value = stack.slice(0, -1);
+    reading.value = stack.at(-1) || "";
+}
 
 function open(target) {
-    if (reading.value) trail.value = [...trail.value, reading.value];
-    reading.value = target;
+    if (!reading.value) kept = list.value ? list.value.scrollTop : -1;
+    const stack = [...trail.value, ...(reading.value ? [reading.value] : []), target];
+    history.pushState({reading: stack}, "");
+    shown(stack);
 }
 
-function back() {
-    reading.value = trail.value.at(-1) || "";
-    trail.value = trail.value.slice(0, -1);
-}
+const back = () => history.back();
+const popped = (event) => shown(event.state?.reading || []);
+
+onMounted(() => window.addEventListener("popstate", popped));
+onUnmounted(() => window.removeEventListener("popstate", popped));
 
 function chipped(event) {
     const target = peeked(event);
@@ -89,8 +98,8 @@ function chipped(event) {
 
 function reply(target) {
     about.value = target;
-    trail.value = [];
-    reading.value = "";
+    kept = -1;
+    history.go(-(trail.value.length + 1));
 }
 
 const mine = (reaction, face) => reaction.face === face && reaction.who === "user";
