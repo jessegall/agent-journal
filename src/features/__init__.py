@@ -67,7 +67,7 @@ def seat(root: Path) -> None:
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
     from features.base import rebooted
-    from engine.gates import CANCELERS, POLICIES
+    from engine.gates import AFTERWARDS, CANCELERS, POLICIES
     from features.format import FORMATTERS
     from engine.wording import APPENDS
     COMMANDS.clear()
@@ -75,6 +75,7 @@ def unload() -> None:
     FORMATTERS.clear()
     bus.clear()
     POLICIES.clear()
+    AFTERWARDS.clear()
     CANCELERS.clear()
     APPENDS.clear()
     FEATURES.clear()

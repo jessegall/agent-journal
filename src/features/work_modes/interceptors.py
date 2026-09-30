@@ -34,7 +34,7 @@ class RemindOrchestrator(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         if not isinstance(call, WriteCall) or mode_of(context.record) != ORCHESTRATOR:
             return ""
-        if Path(call.file_path).resolve().is_relative_to(context.record.root.resolve()) or not context.once("edit", str(context.agent.row.uses)):
+        if Path(call.file_path).resolve().is_relative_to(context.record.root.resolve()):
             return ""
         edits = int(context.state.get("edits", 0)) + 1
         if edits < int(context.settings.drift_after):
