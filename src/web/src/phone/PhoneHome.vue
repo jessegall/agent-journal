@@ -10,6 +10,7 @@ import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import PhoneViewer from "./PhoneViewer.vue";
+import PhoneBoard from "./PhoneBoard.vue";
 import Icon from "../kit/Icon.vue";
 import {peeked} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
@@ -30,6 +31,11 @@ const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const reading = ref("");
 const trail = ref([]);
+const SCREENS = [
+    {key: "chat", label: "Chat"},
+    {key: "home", label: "Home"},
+];
+const screen = ref("chat");
 const VIEWED = ["source", "attachment"];
 const about = ref("");
 const quote = ref("");
@@ -174,7 +180,18 @@ function sent() {
         <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
     </template>
     <PhoneNotify />
-    <PhoneWaiting :waiting="feed.waiting" @open="open" />
+    <template v-if="!reading">
+        <div class="home-screens" role="tablist">
+            <template v-for="one in SCREENS" :key="one.key">
+                <button type="button" role="tab" :aria-selected="screen === one.key" :class="['home-screen', {on: screen === one.key}]" @click="screen = one.key">
+                    {{ one.label }}
+                </button>
+            </template>
+        </div>
+    </template>
+    <template v-if="screen === 'chat'">
+        <PhoneWaiting :waiting="feed.waiting" @open="open" />
+    </template>
     <template v-if="reading">
         <template v-if="VIEWED.includes(reading.split(':')[0])">
             <PhoneViewer :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" />
@@ -182,6 +199,9 @@ function sent() {
         <template v-else>
             <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @reply="reply" />
         </template>
+    </template>
+    <template v-else-if="screen === 'home'">
+        <PhoneBoard :home="connection.home || []" :waiting="feed.waiting" @open="open" />
     </template>
     <template v-else>
         <div ref="list" class="home-feed" @click.capture="chipped" @scroll.passive="moved" @load.capture="nearBottom() && still() && toBottom()">
@@ -281,6 +301,32 @@ function sent() {
     background: var(--raised);
     color: var(--text);
     font: inherit;
+}
+
+.home-screens {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 8px;
+    padding: 3px;
+    border-radius: 10px;
+    background: var(--raised);
+}
+
+.home-screen {
+    flex: 1;
+    min-height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 14px;
+}
+
+.home-screen.on {
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 600;
 }
 
 .home-updating {

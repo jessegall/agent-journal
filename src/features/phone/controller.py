@@ -31,11 +31,14 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed", "home")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
 SOURCE_LIMIT = 400000
+CARDS = ("todo", "question", "suggestion", "plan", "report", "doc", "work", "agent")
+WAITING_CARD = "waiting"
+LISTED = 20
 SAID = ("message", "question")
 HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
@@ -98,6 +101,14 @@ class Session:
             *(self.mark(done["at"], "The agent compacted its context", icon="activity", tone="warn") for done in self.compactions),
             *(self.mark(w["at"], w["title"], icon="reminders") for w in self.whispers),
         ]
+
+
+class Listed(TypedDict):
+    ref: str
+    type: str
+    n: int
+    title: str
+    updated: float
 
 
 class Source(TypedDict):
@@ -228,6 +239,20 @@ class Phones(Controller):
             raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
         return super().update(phone.n, journal=journal, environment=moving.environment)
+
+    def _list(self, phone: Phone, kind: str) -> list[Listed]:
+        if kind not in CARDS:
+            raise Refused(f"a phone's home screen shows {', '.join(CARDS)}, not {kind!r}")
+        rows = CONTROLLERS[kind](self._home(phone), actor=SYSTEM).summaries()
+        kept = [row for row in rows if not row["deleted"] and not row["completed"] and row.get("environment") in (phone.environment, None, "")]
+        return [Listed(ref=f"{kind}:{row['n']}", type=kind, n=row["n"], title=row["title"], updated=row["updated"])
+                for row in sorted(kept, key=lambda row: row["updated"], reverse=True)[:LISTED]]
+
+    def _arrange(self, phone: Phone, cards: list[str]) -> Phone:
+        unknown = [card for card in cards if card not in (*CARDS, WAITING_CARD)]
+        if unknown:
+            raise Refused(f"no home screen card called {', '.join(unknown)}")
+        return super().update(phone.n, home=list(dict.fromkeys(cards)))
 
     def _source(self, phone: Phone, asked: str) -> Source:
         project = self._home(phone).root.parent.resolve()

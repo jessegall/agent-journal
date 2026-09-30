@@ -16,6 +16,7 @@ class Phone(Shape, Resource):
         Field(name="journal"),
         Field(name="push"),
         Field(default=list, name="pushed"),
+        Field(default=list, name="home"),
         Field(TEXT, name="key"),
         Field(TEXT, name="code"),
         Field(TEXT, name="short"),

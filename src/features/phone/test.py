@@ -9,7 +9,7 @@ from typing import NamedTuple
 import pytest
 
 from controllers.base import Controller
-from controllers.types import CONTROLLERS, Docs, Messages, Notices, Questions
+from controllers.types import CONTROLLERS, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
@@ -181,6 +181,11 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     monkeypatch.setattr(commands, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent)))
     assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
     assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
+    Todos(Record(record.root, "elsewhere"), actor=AGENT).create("Tidy the attic")
+    assert [row["title"] for row in call(base, "/p/list?type=todo", key=key).body["rows"]] == ["Tidy the attic"]
+    assert call(base, "/p/list?type=phone", key=key).status == 404, "the home screen lists only its card kinds"
+    assert call(base, "/p/arrange", {"cards": ["todo", "waiting", "todo"]}, key).status == 201
+    assert call(base, "/p/state", key=key).body["home"] == ["todo", "waiting"], "the chosen cards keep their order, once each"
     assert call(base, "/p/bar", key=key).body == {"queue": []}, "the agent's status line reaches the phone"
     waiting = [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
     assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"

@@ -88,6 +88,16 @@ class Subscribing:
 
 
 @dataclass(frozen=True)
+class Arranging:
+    cards: list
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Arranging":
+        listed = given.get("cards")
+        return cls(cards=[str(card) for card in listed] if isinstance(listed, list) else [])
+
+
+@dataclass(frozen=True)
 class Starting:
     journal: str
     environment: str
@@ -139,7 +149,7 @@ class PhoneRoutes:
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/"})
-        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["row"]):
+        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -170,6 +180,12 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
+        if rest == ["list"]:
+            kind = parse_qs(urlsplit(handler.path).query).get("type", [""])[0]
+            try:
+                return self.json(handler, 200, {"rows": self.phones(handler)._list(phone, kind)})
+            except Refused as refused:
+                return handler.answer(404, str(refused))
         if rest == ["source"]:
             asked = parse_qs(urlsplit(handler.path).query).get("q", [""])[0]
             try:
@@ -183,7 +199,7 @@ class PhoneRoutes:
                                             "at": str(self.phones(handler)._home(phone).root.resolve())})
         if rest == ["state"]:
             known = identity(self.phones(handler)._home(phone).root)
-            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires,
+            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires, "home": phone.home,
                                             "project": known["project"], "color": known["color"]})
         if rest == ["feed"]:
             return self.json(handler, 200, {**self.phones(handler)._feed(phone), "build": built()})
@@ -223,6 +239,7 @@ class PhoneRoutes:
                 "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
                 "switch": lambda phones: phones._switch(phone, Moving.from_payload(body)),
                 "start": lambda phones: phones._start(phone, Starting.from_payload(body)),
+                "arrange": lambda phones: phones._arrange(phone, Arranging.from_payload(body).cards),
                 "press": lambda phones: phones._press(phone, Pressing.from_payload(body)),
                 "push": lambda phones: phones._subscribe(phone, Subscribing.from_payload(body).endpoint)}
         if rest[:1] != rest or rest[0] not in acts:
