@@ -1,12 +1,12 @@
 <script setup>
 import {computed, inject, onUnmounted, ref} from "vue";
-import {phone} from "../api/phone.js";
-import {ended} from "./outbox.js";
+import {ended, perform} from "./outbox.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
 
 const UNDO_SECONDS = 5;
+const HELD = "No connection right now: this goes as soon as the phone reaches your computer again.";
 const props = defineProps({question: {type: Object, required: true}});
 const emit = defineEmits(["done"]);
 const failed = inject("phoneFailed");
@@ -32,7 +32,7 @@ async function send(answer) {
     trouble.value = "";
     said.value = answer;
     try {
-        await phone.answer(props.question.n, answer);
+        if ((await perform({kind: "answer", n: props.question.n, answer})) === "held") trouble.value = HELD;
         refresh();
         emit("done");
     } catch (error) {
@@ -51,7 +51,7 @@ async function dismiss() {
     stop();
     said.value = "Dismissed";
     try {
-        await phone.dismiss(props.question.n);
+        if ((await perform({kind: "dismiss", n: props.question.n})) === "held") trouble.value = HELD;
         refresh();
         emit("done");
     } catch (error) {

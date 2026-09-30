@@ -7,7 +7,7 @@ import Spinner from "../kit/Spinner.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
-import {ended} from "./outbox.js";
+import {ended, perform} from "./outbox.js";
 import {peeked} from "./peeked.js";
 import {liveButtons} from "../domain/buttons.js";
 
@@ -64,8 +64,11 @@ async function load() {
 async function approve() {
     approving.value = true;
     try {
-        await phone.approve(row.value.n, row.value.updated);
-        told.value = "Approved. The agent starts it.";
+        const went = await perform({kind: "approve", n: row.value.n, updated: row.value.updated});
+        told.value =
+            went === "held"
+                ? "No connection right now: the approval goes as soon as the phone reaches your computer, if the plan is unchanged."
+                : "Approved. The agent starts it.";
         refresh();
         emit("next");
     } catch (error) {
