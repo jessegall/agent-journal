@@ -2,6 +2,7 @@
 import {inject, nextTick, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
+import PhoneAgent from "./PhoneAgent.vue";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneReader from "./PhoneReader.vue";
 import PhoneTurn from "./PhoneTurn.vue";
@@ -12,7 +13,7 @@ const FEED_EVERY = 5000;
 const READABLE = ["question", "report", "doc", "plan"];
 defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
-const feed = ref({items: [], waiting: []});
+const feed = ref({items: [], waiting: [], agent: false});
 const reading = ref("");
 const about = ref("");
 const list = ref(null);
@@ -61,8 +62,11 @@ function sent() {
 
 <template>
     <header class="home-bar">
-        <span class="home-title">Your journal</span>
-        <span class="home-note">{{ connection.phone }}</span>
+        <div class="home-names">
+            <span class="home-title">Your journal</span>
+            <span class="home-note">{{ connection.phone }}</span>
+        </div>
+        <PhoneAgent :running="feed.agent" />
     </header>
     <template v-if="offline">
         <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
@@ -87,10 +91,17 @@ function sent() {
 <style scoped>
 .home-bar {
     display: flex;
-    align-items: baseline;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
     gap: 10px;
     padding: 12px 0;
+}
+
+.home-names {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .home-title {
