@@ -20,7 +20,7 @@ const WORDS = {offline: "Offline", idle: "Idle", working: "Working"};
     border: 1px solid var(--border-2);
     border-radius: 13px;
     color: var(--text-3);
-    font-size: 13px;
+    font-size: 0.765rem;
 }
 
 .agent-dot {

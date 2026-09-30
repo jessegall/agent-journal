@@ -75,7 +75,7 @@ const recent = computed(() => queue.value.slice(-RECENT).map((one) => line(one, 
     background: var(--raised);
     color: var(--text-2);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
+    font-size: 0.676rem;
     list-style: none;
 }
 
@@ -101,7 +101,7 @@ const recent = computed(() => queue.value.slice(-RECENT).map((one) => line(one, 
     contain: strict;
     color: var(--text-3);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11px;
+    font-size: 0.647rem;
 }
 
 .status-text {

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,7 +8,7 @@ import ChatMark from "../kit/ChatMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
 
-const props = defineProps({item: {type: Object, required: true}});
+const props = defineProps({item: {type: Object, required: true}, fresh: {type: Boolean, default: false}});
 const files = computed(() => Object.keys(props.item.files || {}));
 const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
@@ -23,26 +23,9 @@ const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []
 const about = computed(() => (props.item.who === "user" ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
+const holdable = computed(() => props.item.type === "message");
 const emit = defineEmits(["hold"]);
-const HOLD_FOR = 450;
-let timer = 0;
-const pressing = ref(false);
-
-function held() {
-    pressing.value = false;
-    navigator.vibrate?.(10);
-    emit("hold", props.item);
-}
-
-function press() {
-    pressing.value = true;
-    timer = setTimeout(held, HOLD_FOR);
-}
-
-function release() {
-    pressing.value = false;
-    clearTimeout(timer);
-}
+const pressed = (event) => emit("hold", props.item, event.currentTarget.getBoundingClientRect());
 </script>
 
 <template>
@@ -51,10 +34,10 @@ function release() {
             <PhoneQuestion :question="item" />
         </template>
         <template #thought>
-            <TextDisplay class="turn-thought" :text="item.label" />
+            <TextDisplay :class="['turn-thought', {fresh}]" :text="item.label" />
         </template>
         <template #card>
-            <div class="turn-card">
+            <div :class="['turn-card', {fresh}]">
                 <ChatMark
                     :icon="item.icon"
                     :tone="item.tone"
@@ -69,13 +52,10 @@ function release() {
             </div>
         </template>
         <template #default>
-            <div
-                :class="['turn', item.who, {pressing}]"
-                @touchstart.passive="press"
-                @touchend="release"
-                @touchmove.passive="release"
-                @contextmenu.prevent="emit('hold', item)"
-            >
+            <div :class="['turn', item.who, {fresh}]" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
+                <template v-if="holdable">
+                    <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
+                </template>
                 <template v-if="item.who !== 'user'">
                     <span class="turn-who">Agent, {{ clock(item.created) }}</span>
                 </template>
@@ -123,15 +103,16 @@ function release() {
 
 <style scoped>
 .turn {
-    max-width: 88%;
-    transition: transform 0.45s ease, opacity 0.45s ease;
+    position: relative;
+    max-width: 78%;
+    padding: 8px 12px;
+    border-radius: 18px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    transition: transform 300ms var(--spring);
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    padding: 10px 12px;
-    border-radius: 12px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
 }
 
 .turn :deep(*) {
@@ -142,52 +123,96 @@ function release() {
 
 .turn.user {
     align-self: flex-end;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
     background: var(--accent-dim);
 }
 
 .turn.agent {
     align-self: flex-start;
-    border: 1px solid var(--border);
     background: var(--raised);
+}
+
+.turn.user + .turn.user,
+.turn.agent + .turn.agent {
+    margin-top: -8px;
+}
+
+.turn[data-pressing] {
+    transform: scale(0.97);
+    transition-duration: 150ms;
+}
+
+.turn[data-dragging] {
+    transition: none;
+    will-change: transform;
+}
+
+.turn-reply {
+    position: absolute;
+    top: 50%;
+    left: -40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    border-radius: 50%;
+    background: var(--hover);
+    color: var(--text-2);
+    opacity: var(--pull, 0);
+    transform: scale(calc(0.6 + 0.4 * var(--pull, 0)));
 }
 
 .turn-who {
     display: block;
     margin-bottom: 2px;
     color: var(--text-3);
-    font-size: 12px;
-}
-
-.turn.pressing {
-    transform: scale(0.97);
-    opacity: 0.85;
+    font-size: 0.706rem;
 }
 
 .turn-thought {
     align-self: flex-start;
-    max-width: 88%;
-    padding: 7px 11px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--raised) 50%, transparent);
-    color: var(--text-4);
-    font-size: 12.5px;
+    max-width: 78%;
+    padding: 2px 12px;
+    color: var(--text-3);
+    font-size: 0.882rem;
     font-style: italic;
-    line-height: 1.5;
+    line-height: 1.35;
 }
 
 .turn-card {
-    align-self: flex-start;
+    align-self: center;
     max-width: 100%;
     min-width: 0;
+    margin: -4px 0;
+}
+
+.turn-card :deep(.mark) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 6px;
+    font-size: 0.706rem;
+    text-align: center;
+}
+
+.fresh {
+    animation: turn-in 200ms ease-out;
+}
+
+@keyframes turn-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
 }
 
 .turn-about {
     display: inline-block;
     margin-bottom: 4px;
     color: var(--accent-text);
-    font-size: 12px;
+    font-size: 0.706rem;
     text-decoration: none;
 }
 
@@ -198,7 +223,7 @@ function release() {
     gap: 6px;
     margin-top: 6px;
     color: var(--text-3);
-    font-size: 12px;
+    font-size: 0.706rem;
 }
 
 .turn-chip {
@@ -215,7 +240,7 @@ function release() {
     padding: 1px 7px;
     border-radius: 10px;
     background: var(--bg);
-    font-size: 14px;
+    font-size: 0.824rem;
 }
 
 .turn-files {
@@ -225,7 +250,7 @@ function release() {
     gap: 6px;
     margin-top: 6px;
     color: var(--text-2);
-    font-size: 13px;
+    font-size: 0.765rem;
 }
 
 .turn-file {
@@ -251,6 +276,6 @@ function release() {
     gap: 4px;
     margin-top: 4px;
     color: var(--text-3);
-    font-size: 11.5px;
+    font-size: 0.676rem;
 }
 </style>

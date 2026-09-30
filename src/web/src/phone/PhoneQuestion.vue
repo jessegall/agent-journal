@@ -4,6 +4,8 @@ import {ended, perform} from "./outbox.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
+import {announce} from "./announce.js";
+import {tick} from "./haptic.js";
 
 const UNDO_SECONDS = 5;
 const undo = ref(null);
@@ -33,7 +35,9 @@ async function send(answer) {
     trouble.value = "";
     said.value = answer;
     try {
-        if ((await perform({kind: "answer", n: props.question.n, answer})) === "held") trouble.value = HELD;
+        const went = await perform({kind: "answer", n: props.question.n, answer});
+        if (went === "held") trouble.value = HELD;
+        announce(went === "held" ? "Answer waits to send" : "Answer sent");
         refresh();
         emit("done");
     } catch (error) {
@@ -53,6 +57,7 @@ async function dismiss() {
     said.value = "Dismissed";
     try {
         if ((await perform({kind: "dismiss", n: props.question.n})) === "held") trouble.value = HELD;
+        announce("Question dismissed");
         refresh();
         emit("done");
     } catch (error) {
@@ -62,6 +67,7 @@ async function dismiss() {
 
 function pick(answer) {
     if (said.value) return;
+    tick();
     if (choice.value === answer) return send(answer);
     clearInterval(timer);
     choice.value = answer;
@@ -121,7 +127,7 @@ onUnmounted(() => clearInterval(timer));
 
 .question-kind {
     color: var(--accent-text);
-    font-size: 12.5px;
+    font-size: 0.735rem;
     font-weight: 600;
 }
 
@@ -162,6 +168,7 @@ onUnmounted(() => clearInterval(timer));
     background: var(--bg);
     color: var(--text);
     font: inherit;
+    font-size: max(16px, 1rem);
 }
 
 .question-held {
@@ -185,13 +192,13 @@ onUnmounted(() => clearInterval(timer));
     background: none;
     color: var(--text-3);
     font: inherit;
-    font-size: 14px;
+    font-size: 0.824rem;
 }
 
 .question-trouble {
     margin: 0;
     color: var(--danger);
-    font-size: 14px;
+    font-size: 0.824rem;
 }
 
 .question-answer {

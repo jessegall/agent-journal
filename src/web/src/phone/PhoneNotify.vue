@@ -92,7 +92,7 @@ onMounted(() => {
 .notify-told {
     margin: 0;
     color: var(--text-2);
-    font-size: 14px;
+    font-size: 0.824rem;
     line-height: 1.4;
 }
 
@@ -107,7 +107,7 @@ onMounted(() => {
     padding: 0 14px;
     border-radius: 10px;
     font: inherit;
-    font-size: 14px;
+    font-size: 0.824rem;
 }
 
 .notify-on {

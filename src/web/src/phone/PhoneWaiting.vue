@@ -31,11 +31,11 @@ function pick(target) {
             <div class="waiting-head">
                 <button type="button" class="waiting-line" :aria-expanded="open" @click="open = !open">
                     <span class="waiting-dot" />
-                    {{ summary }}
+                    <span class="waiting-summary">{{ summary }}</span>
                     <Icon class="waiting-chevron" name="chevron" :size="14" />
                 </button>
                 <template v-if="waiting.length > 1">
-                    <button type="button" class="waiting-go" @click="pick(sorted[0].ref)">Go through them</button>
+                    <button type="button" class="waiting-go" @click="pick(sorted[0].ref)">Review</button>
                 </template>
             </div>
             <template v-if="open">
@@ -62,7 +62,7 @@ function pick(target) {
 .waiting {
     max-width: none;
     margin: 0 calc(-1 * var(--side));
-    border-bottom: 2px solid var(--line);
+    border-bottom: 1px solid var(--line);
 }
 
 .waiting-head {
@@ -76,6 +76,7 @@ function pick(target) {
     flex: 1;
     align-items: center;
     gap: 8px;
+    min-width: 0;
     min-height: 44px;
     padding: 0 var(--side);
     border: 0;
@@ -87,16 +88,26 @@ function pick(target) {
 }
 
 .waiting-go {
+    flex: none;
     min-height: 44px;
     padding: 0 var(--side);
     border: 0;
     background: none;
     color: var(--accent-text);
     font: inherit;
-    font-size: 14px;
+    font-size: 0.882rem;
+    font-weight: 600;
+}
+
+.waiting-summary {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .waiting-dot {
+    flex: none;
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -104,6 +115,7 @@ function pick(target) {
 }
 
 .waiting-chevron {
+    flex: none;
     margin-left: auto;
     transform: rotate(90deg);
     transition: transform var(--move);
@@ -120,10 +132,11 @@ function pick(target) {
     overflow-y: auto;
     overscroll-behavior: contain;
     list-style: none;
+    background: var(--bg);
 }
 
 .waiting-list li + li {
-    border-top: 1px solid var(--line);
+    box-shadow: inset calc(var(--side) + 14px) 1px 0 var(--bg), inset 0 1px 0 var(--line);
 }
 
 .waiting-item {
@@ -172,7 +185,7 @@ function pick(target) {
 
 .waiting-kind {
     color: var(--text-3);
-    font-size: 12.5px;
+    font-size: 0.735rem;
 }
 
 .waiting-arrow {

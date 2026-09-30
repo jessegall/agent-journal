@@ -4,6 +4,7 @@ import {phone} from "../api/phone.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import {ended} from "./outbox.js";
+import {useUnder} from "./under.js";
 
 const TEXT = /\.(txt|md|json|log|csv|ya?ml|toml|py|js|ts|vue|css|html|sh|sql|xml)$/i;
 const PICTURE = /\.(png|jpe?g|gif|webp|heic)$/i;
@@ -18,6 +19,8 @@ const text = ref(null);
 const path = ref(name);
 const told = ref("");
 const body = ref(null);
+const edge = ref(null);
+const under = useUnder(edge);
 const picture = computed(() => kind === "attachment" && PICTURE.test(name));
 const lines = computed(() => (text.value === null ? [] : text.value.split("\n")));
 const line = Number(wanted) || 0;
@@ -43,11 +46,12 @@ onMounted(load);
 
 <template>
     <section class="viewer">
-        <header class="viewer-bar">
-            <button type="button" class="viewer-back" @click="emit('close')"><Icon name="back" :size="16" /> {{ back }}</button>
+        <header :class="['viewer-bar', {under}]">
+            <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
             <span class="viewer-name">{{ path }}</span>
         </header>
-        <div ref="body" class="viewer-body">
+        <div ref="body" class="viewer-body" data-scroller>
+            <span ref="edge" class="viewer-edge" />
             <template v-if="told">
                 <p class="viewer-told" role="status">{{ told }}</p>
             </template>
@@ -81,33 +85,46 @@ onMounted(load);
 
 .viewer-bar {
     display: flex;
+    flex: none;
     align-items: center;
-    gap: 12px;
-    min-height: 48px;
+    gap: 8px;
+    min-height: 44px;
     max-width: none;
     margin: 0 calc(-1 * var(--side));
-    padding: 0 var(--side);
-    border-bottom: 1px solid var(--line);
+    padding: 0 var(--side) 0 8px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms linear;
+}
+
+.viewer-bar.under {
+    border-bottom-color: var(--line);
+}
+
+.viewer-edge {
+    display: block;
+    height: 1px;
+    margin-bottom: -1px;
 }
 
 .viewer-back {
     display: flex;
     flex: none;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
     min-height: 44px;
-    padding: 0;
+    padding: 0 6px;
     border: 0;
     background: none;
-    color: var(--text-2);
+    color: var(--accent-text);
     font: inherit;
+    font-size: 1rem;
 }
 
 .viewer-name {
     overflow: hidden;
     color: var(--text-3);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
+    font-size: 0.706rem;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -116,7 +133,8 @@ onMounted(load);
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding: 10px 0 24px;
+    overscroll-behavior: contain;
+    padding: 10px 0 calc(24px + env(safe-area-inset-bottom));
 }
 
 .viewer-picture {
@@ -130,7 +148,7 @@ onMounted(load);
     padding: 0 0 0 3.2em;
     color: var(--text);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12.5px;
+    font-size: 0.735rem;
     line-height: 1.55;
 }
 
@@ -150,7 +168,7 @@ onMounted(load);
 .viewer-told,
 .viewer-download {
     color: var(--text-2);
-    font-size: 14px;
+    font-size: 0.824rem;
 }
 
 .viewer-download {

@@ -1,9 +1,10 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
 import {ago} from "./ago.js";
+import {useUnder} from "./under.js";
 
 const LIST_EVERY = 15000;
 const SHOWN = 5;
@@ -21,7 +22,10 @@ const NAMES = {
     agent: "Agents",
 };
 const props = defineProps({home: {type: Array, required: true}, waiting: {type: Array, required: true}});
-const emit = defineEmits(["open"]);
+const emit = defineEmits(["open", "under"]);
+const heading = ref(null);
+const under = useUnder(heading);
+watch(under, (now) => emit("under", now), {immediate: true});
 const cards = ref(props.home.length ? [...props.home] : [...DEFAULT]);
 const lists = ref({});
 const editing = ref(false);
@@ -63,17 +67,18 @@ function moved(i, by) {
 </script>
 
 <template>
-    <div class="board">
+    <div class="board" data-scroller>
         <div class="board-bar">
+            <h1 ref="heading" class="board-large">Home</h1>
             <button type="button" class="board-edit" @click="editing = !editing">{{ editing ? "Done" : "Edit" }}</button>
         </div>
         <template v-if="told">
             <p class="board-told" role="status">{{ told }}</p>
         </template>
         <template v-for="(kind, i) in cards" :key="kind">
-            <section class="board-card">
+            <section class="board-card" :aria-label="NAMES[kind]">
                 <header class="board-head">
-                    <span class="board-name">{{ NAMES[kind] }}</span>
+                    <h2 class="board-name">{{ NAMES[kind] }}</h2>
                     <span class="board-count">{{ rows(kind).length }}</span>
                     <template v-if="editing">
                         <span class="board-tools">
@@ -83,35 +88,40 @@ function moved(i, by) {
                         </span>
                     </template>
                 </header>
-                <template v-if="rows(kind).length">
-                    <ul class="board-rows">
-                        <template v-for="row in shown(kind)" :key="row.ref">
-                            <li>
-                                <button type="button" class="board-row" @click="emit('open', row.ref)">
-                                    <span class="board-title">{{ row.title }}</span>
-                                    <span class="board-age">{{ ago(row.updated) }}</span>
-                                </button>
-                            </li>
+                <div class="board-group">
+                    <template v-if="rows(kind).length">
+                        <ul class="board-rows">
+                            <template v-for="row in shown(kind)" :key="row.ref">
+                                <li>
+                                    <button type="button" class="board-row" @click="emit('open', row.ref)">
+                                        <span class="board-title">{{ row.title }}</span>
+                                        <span class="board-age">{{ ago(row.updated) }}</span>
+                                        <Icon name="arrow" :size="13" class="board-chevron" />
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                        <template v-if="rows(kind).length > shown(kind).length">
+                            <button type="button" class="board-more" @click="more(kind)">Show all {{ rows(kind).length }}</button>
                         </template>
-                    </ul>
-                    <template v-if="rows(kind).length > shown(kind).length">
-                        <button type="button" class="board-more" @click="more(kind)">Show all {{ rows(kind).length }}</button>
                     </template>
-                </template>
-                <template v-else>
-                    <p class="board-empty">Nothing here</p>
-                </template>
+                    <template v-else>
+                        <p class="board-empty">Nothing here</p>
+                    </template>
+                </div>
             </section>
         </template>
         <template v-if="editing && missing.length">
-            <div class="board-add">
-                <span class="board-name">Add a card</span>
+            <section class="board-card" aria-label="Add a card">
+                <header class="board-head">
+                    <h2 class="board-name">Add a card</h2>
+                </header>
                 <div class="board-kinds">
                     <template v-for="kind in missing" :key="kind">
                         <button type="button" class="board-kind" @click="arranged([...cards, kind])"><Icon name="plus" :size="12" /> {{ NAMES[kind] }}</button>
                     </template>
                 </div>
-            </div>
+            </section>
         </template>
     </div>
 </template>
@@ -121,60 +131,70 @@ function moved(i, by) {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 12px;
+    gap: 28px;
     min-height: 0;
-    padding: 4px 0 24px;
+    padding: 0 0 24px;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 .board-bar {
     display: flex;
-    justify-content: flex-end;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 4px;
+    margin-bottom: -16px;
+}
+
+.board-large {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .board-edit {
-    min-height: 36px;
-    padding: 0 12px;
+    min-height: 44px;
+    padding: 0 4px;
     border: 0;
     background: none;
     color: var(--accent-text);
     font: inherit;
-    font-size: 14px;
+    font-size: 1rem;
 }
 
-.board-told,
-.board-empty {
+.board-told {
     margin: 0;
     color: var(--text-3);
-    font-size: 13.5px;
+    font-size: 0.794rem;
 }
 
-.board-card,
-.board-add {
+.board-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--raised);
+    gap: 6px;
 }
 
 .board-head {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-height: 20px;
+    padding: 0 16px;
 }
 
 .board-name {
-    color: var(--text);
-    font-weight: 600;
-    font-size: 15px;
+    margin: 0;
+    color: var(--text-3);
+    font-size: 0.765rem;
+    font-weight: 400;
 }
 
 .board-count {
     color: var(--text-3);
-    font-size: 13px;
+    font-size: 0.765rem;
 }
 
 .board-tools {
@@ -186,11 +206,17 @@ function moved(i, by) {
 .board-tools button {
     width: 36px;
     height: 36px;
-    border: 1px solid var(--border-2);
+    border: 0;
     border-radius: 8px;
-    background: transparent;
+    background: var(--hover);
     color: var(--text-2);
     font: inherit;
+}
+
+.board-group {
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--raised);
 }
 
 .board-rows {
@@ -201,44 +227,68 @@ function moved(i, by) {
     list-style: none;
 }
 
+.board-rows li + li .board-row {
+    box-shadow: inset 16px 1px 0 var(--raised), inset 0 1px 0 var(--line);
+}
+
 .board-row {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
     width: 100%;
     min-height: 44px;
-    padding: 6px 0;
+    padding: 11px 16px;
     border: 0;
-    border-top: 1px solid var(--line);
     background: none;
     color: var(--text);
     font: inherit;
     text-align: left;
 }
 
+.board-row:active:not(:disabled),
+.board-more:active:not(:disabled) {
+    background: var(--hover);
+    opacity: 1;
+}
+
 .board-title {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
-    font-size: 14.5px;
+    font-size: 1rem;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .board-age {
     flex: none;
+    color: var(--text-3);
+    font-size: 0.882rem;
+}
+
+.board-chevron {
+    flex: none;
     color: var(--text-4);
-    font-size: 12px;
+}
+
+.board-empty {
+    margin: 0;
+    padding: 12px 16px;
+    color: var(--text-3);
+    font-size: 0.882rem;
 }
 
 .board-more {
-    align-self: flex-start;
-    min-height: 36px;
-    padding: 0;
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 16px;
     border: 0;
+    border-top: 1px solid var(--line);
     background: none;
     color: var(--accent-text);
     font: inherit;
-    font-size: 13.5px;
+    font-size: 1rem;
+    text-align: left;
 }
 
 .board-kinds {
@@ -252,12 +302,12 @@ function moved(i, by) {
     align-items: center;
     gap: 4px;
     min-height: 40px;
-    padding: 0 12px;
-    border: 1px dashed var(--border-2);
-    border-radius: 10px;
-    background: transparent;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 20px;
+    background: var(--raised);
     color: var(--text-2);
     font: inherit;
-    font-size: 14px;
+    font-size: 0.882rem;
 }
 </style>

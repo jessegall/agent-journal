@@ -135,7 +135,7 @@ async function send() {
     flex-direction: column;
     gap: 6px;
     margin: 0 calc(-1 * var(--side));
-    padding: 6px var(--side) max(6px, calc(env(safe-area-inset-bottom) - 18px));
+    padding: 6px var(--side);
     max-width: none;
     border-top: 1px solid var(--line);
     background: var(--bg);
@@ -146,7 +146,7 @@ async function send() {
     align-items: center;
     justify-content: space-between;
     color: var(--accent-text);
-    font-size: 13.5px;
+    font-size: 0.794rem;
 }
 
 .compose-bar {
@@ -190,7 +190,7 @@ async function send() {
     padding: 6px 10px;
     border-left: 3px solid var(--accent);
     color: var(--text-2);
-    font-size: 13.5px;
+    font-size: 0.794rem;
 }
 
 .compose-quote span {
@@ -223,7 +223,7 @@ async function send() {
     border: 1px solid var(--border-2);
     border-radius: 12px;
     color: var(--text-2);
-    font-size: 13px;
+    font-size: 0.765rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -238,6 +238,7 @@ async function send() {
     background: transparent;
     color: var(--text);
     font: inherit;
+    font-size: max(16px, 1rem);
     line-height: 1.35;
     resize: none;
 }

@@ -10,8 +10,11 @@ import {ago} from "./ago.js";
 import {ended, flush, hold, perform} from "./outbox.js";
 import {peeked} from "./peeked.js";
 import {liveButtons} from "../domain/buttons.js";
+import {useUnder} from "./under.js";
+import {announce} from "./announce.js";
+import {tick} from "./haptic.js";
 
-const SIZES = [16, 18, 20];
+const SIZES = [1, 1.12, 1.24];
 const AGENTS = [1, 2, 3, 5];
 const DEPTHS = ["a quick look", "a normal read", "a thorough review"];
 const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add more detail to ", "Something is missing: "];
@@ -27,6 +30,10 @@ const progress = ref(0);
 const confirming = ref(false);
 const approving = ref(false);
 const told = ref("");
+const edge = ref(null);
+const heading = ref(null);
+const under = useUnder(edge);
+const titled = useUnder(heading);
 const phases = computed(() => (row.value && row.value.data.phases) || []);
 const goal = computed(() => (row.value && row.value.data.goal) || "");
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
@@ -58,6 +65,7 @@ async function review() {
     hold(`Please have ${who} give plan ${row.value.n} ${depth.value}, and compile what they find into a report linked to the plan.`, `plan:${row.value.n}`);
     reviewing.value = false;
     told.value = "Asked for a review. The findings come back as a report linked to this plan.";
+    announce("Review asked for");
     try {
         await flush();
         refresh();
@@ -82,12 +90,14 @@ async function load() {
 
 async function approve() {
     approving.value = true;
+    tick();
     try {
         const went = await perform({kind: "approve", n: row.value.n, updated: row.value.updated});
         told.value =
             went === "held"
                 ? "No connection right now: the approval goes as soon as the phone reaches your computer, if the plan is unchanged."
                 : "Approved. The agent starts it.";
+        announce(went === "held" ? "Approval waits to send" : "Plan approved");
         refresh();
         emit("next");
     } catch (error) {
@@ -110,9 +120,10 @@ onMounted(load);
 
 <template>
     <section class="reader" @click.capture="chipped">
-        <header class="reader-bar">
-            <button type="button" class="reader-back" @click="emit('close')"><Icon name="back" :size="16" /> {{ back }}</button>
-            <button type="button" class="reader-size" title="Text size" @click="size = (size + 1) % SIZES.length">
+        <header :class="['reader-bar', {under}]">
+            <button type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
+            <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ row ? row.title : "" }}</span>
+            <button type="button" class="reader-size" aria-label="Text size" @click="size = (size + 1) % SIZES.length">
                 Aa
                 <span class="reader-steps">
                     <template v-for="(step, i) in SIZES" :key="step">
@@ -123,13 +134,14 @@ onMounted(load);
             <span class="reader-progress" :style="{width: `${progress * 100}%`}" />
         </header>
         <template v-if="row">
-            <div class="reader-body" :style="{fontSize: `${SIZES[size]}px`}" @scroll="scrolled">
+            <div class="reader-body" data-scroller :style="{fontSize: `${SIZES[size]}rem`}" @scroll.passive="scrolled">
+                <span ref="edge" class="reader-edge" />
                 <template v-if="row.type === 'question'">
                     <PhoneQuestion :question="row" @done="emit('next')" />
                 </template>
                 <template v-else>
                     <span class="reader-kind">{{ KINDS[row.type] || row.type }} · {{ ago(row.created) }}</span>
-                    <h1 class="reader-title">{{ row.title }}</h1>
+                    <h1 ref="heading" class="reader-title">{{ row.title }}</h1>
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>
                     </template>
@@ -223,26 +235,64 @@ onMounted(load);
 .reader-bar {
     position: relative;
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: space-between;
-    min-height: 48px;
+    gap: 8px;
+    min-height: 44px;
     max-width: none;
     margin: 0 calc(-1 * var(--side));
-    padding: 0 var(--side);
-    border-bottom: 1px solid var(--line);
+    padding: 0 8px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms linear;
+}
+
+.reader-bar.under {
+    border-bottom-color: var(--line);
 }
 
 .reader-back,
 .reader-size {
     display: flex;
+    flex: none;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
     min-height: 44px;
     min-width: 44px;
+    padding: 0 6px;
     border: 0;
     background: none;
-    color: var(--text-2);
+    color: var(--accent-text);
     font: inherit;
+    font-size: 1rem;
+}
+
+.reader-size {
+    justify-content: flex-end;
+}
+
+.reader-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 200ms linear;
+}
+
+.reader-name.shown {
+    opacity: 1;
+}
+
+.reader-edge {
+    display: block;
+    height: 1px;
+    margin-bottom: -1px;
 }
 
 .reader-progress {
@@ -255,30 +305,42 @@ onMounted(load);
 
 .reader-changes {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-wrap: nowrap;
+    gap: 8px;
+    max-width: none;
+    margin: 0 calc(-1 * var(--side));
+    padding: 0 var(--side);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.reader-changes::-webkit-scrollbar {
+    display: none;
 }
 
 .reader-choose {
     color: var(--text-3);
-    font-size: 13px;
+    font-size: 0.765rem;
 }
 
 .reader-change.on {
-    border-color: var(--accent);
     background: var(--accent-dim);
     color: var(--text);
 }
 
 .reader-change {
-    min-height: 36px;
-    padding: 0 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 18px;
-    background: transparent;
+    flex: none;
+    min-height: 32px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--hover);
     color: var(--text-2);
     font: inherit;
-    font-size: 13.5px;
+    white-space: nowrap;
+    font-size: 0.794rem;
 }
 
 .reader-steps {
@@ -303,19 +365,23 @@ onMounted(load);
     flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
-    padding: 16px 0 24px;
-    line-height: 1.6;
+    overscroll-behavior-y: contain;
+    padding: 8px 0 24px;
+    line-height: 1.5;
 }
 
 .reader-kind {
+    display: block;
+    margin-bottom: 4px;
     color: var(--text-3);
-    font-size: 13px;
+    font-size: 0.765rem;
 }
 
 .reader-title {
-    margin: 0 0 10px;
-    font-size: 1.35em;
-    line-height: 1.3;
+    margin: 0 0 12px;
+    font-size: 1.65em;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .reader-abstract,
@@ -334,9 +400,9 @@ onMounted(load);
 
 .reader-phase {
     margin: 10px 0;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
+    padding: 12px 16px;
     border-radius: 10px;
+    background: var(--raised);
 }
 
 .reader-phase summary {
@@ -346,12 +412,29 @@ onMounted(load);
 
 .reader-foot {
     display: flex;
+    flex: none;
     flex-direction: column;
     gap: 8px;
     max-width: none;
     margin: 0 calc(-1 * var(--side));
-    padding: 10px var(--side) calc(14px + env(safe-area-inset-bottom));
+    padding: 12px var(--side) calc(12px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
+    background: var(--bg);
+}
+
+.reader-foot :deep(.btn) {
+    min-height: 50px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--hover);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.reader-foot :deep(.btn.primary) {
+    background: var(--accent);
+    color: #fff;
 }
 
 .reader-told {

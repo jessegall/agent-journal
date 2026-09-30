@@ -67,8 +67,15 @@ async function pairTyped() {
     }
 }
 
-onMounted(load);
-onUnmounted(() => clearInterval(retry));
+const pressable = () => {};
+onMounted(() => {
+    document.addEventListener("touchstart", pressable, {passive: true});
+    load();
+});
+onUnmounted(() => {
+    clearInterval(retry);
+    document.removeEventListener("touchstart", pressable);
+});
 </script>
 
 <template>

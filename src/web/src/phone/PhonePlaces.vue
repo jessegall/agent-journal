@@ -2,6 +2,7 @@
 import {onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Spinner from "../kit/Spinner.vue";
+import PhoneSheet from "./PhoneSheet.vue";
 
 const props = defineProps({environment: {type: String, required: true}});
 const emit = defineEmits(["close", "moved"]);
@@ -55,101 +56,94 @@ async function move(place, name) {
 </script>
 
 <template>
-    <div class="places-backdrop" @click.self="emit('close')">
-        <div class="places-sheet" role="dialog" aria-label="Switch journal or environment">
-            <span class="places-title">Switch journal or environment</span>
-            <template v-if="told">
-                <p class="places-told" role="status">{{ told }}</p>
-            </template>
-            <template v-if="!places && !told">
-                <Spinner />
-            </template>
-            <template v-for="place in places || []" :key="place.root">
-                <div class="places-journal">
-                    <span class="places-name">
-                        <span class="places-dot" :style="{background: place.color}" />
-                        {{ place.project }}
-                        <template v-if="!place.running">
-                            <span class="places-off">not running</span>
-                        </template>
-                    </span>
-                    <div class="places-environments">
-                        <template v-for="name in place.environments" :key="name">
-                            <div class="places-row">
-                                <button
-                                    type="button"
-                                    :class="['places-environment', {here: here(place, name)}]"
-                                    :disabled="Boolean(moving)"
-                                    @click="move(place, name)"
-                                >
-                                    <span :class="['places-state', {working: place.working.includes(name)}]" />
-                                    {{ name }}
-                                </button>
-                                <template v-if="!place.working.includes(name)">
+    <PhoneSheet v-slot="{close}" label="Switch journal or environment" @close="emit('close')">
+        <h2 class="places-title">Switch journal or environment</h2>
+        <template v-if="told">
+            <p class="places-told" role="status">{{ told }}</p>
+        </template>
+        <template v-if="!places && !told">
+            <div class="places-wait"><Spinner /></div>
+        </template>
+        <template v-for="place in places || []" :key="place.root">
+            <section class="places-journal">
+                <h3 class="places-name">
+                    <span class="places-dot" :style="{background: place.color}" />
+                    {{ place.project }}
+                    <template v-if="!place.running">
+                        <span class="places-off">not running</span>
+                    </template>
+                </h3>
+                <ul class="places-environments">
+                    <template v-for="name in place.environments" :key="name">
+                        <li class="places-row">
+                            <button
+                                type="button"
+                                :class="['places-environment', {here: here(place, name)}]"
+                                :aria-current="here(place, name) ? 'true' : undefined"
+                                :disabled="Boolean(moving)"
+                                @click="here(place, name) ? close() : move(place, name)"
+                            >
+                                <span :class="['places-state', {working: place.working.includes(name)}]" />
+                                <span class="places-env-name">{{ name }}</span>
+                                <template v-if="here(place, name)">
+                                    <span class="places-here">Open</span>
+                                </template>
+                            </button>
+                            <template v-if="!place.working.includes(name)">
+                                <span class="places-starts">
                                     <template v-for="agent in AGENTS" :key="agent.key">
                                         <button type="button" class="places-start" :disabled="Boolean(moving)" @click="start(place, name, agent.key)">
                                             Start {{ agent.label }}
                                         </button>
                                     </template>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </template>
-            <button type="button" class="places-close" @click="emit('close')">Close</button>
-        </div>
-    </div>
+                                </span>
+                            </template>
+                        </li>
+                    </template>
+                </ul>
+            </section>
+        </template>
+        <button type="button" class="places-close" @click="close">Close</button>
+    </PhoneSheet>
 </template>
 
 <style scoped>
-.places-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    display: flex;
-    align-items: flex-end;
-    max-width: none;
-    background: rgb(0 0 0 / 45%);
-}
-
-.places-sheet {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: 100%;
-    max-width: none;
-    max-height: 80vh;
-    padding: 16px var(--side) calc(14px + env(safe-area-inset-bottom));
-    overflow-y: auto;
-    border-radius: 16px 16px 0 0;
-    background: var(--raised);
-}
-
 .places-title {
-    color: var(--text-3);
-    font-size: 13px;
+    margin: 4px 0 12px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
 }
 
 .places-told {
-    margin: 0;
+    margin: 0 0 12px;
     color: var(--text-2);
-    font-size: 14px;
+    font-size: 0.882rem;
+}
+
+.places-wait {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
 }
 
 .places-journal {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    margin-bottom: 20px;
 }
 
 .places-name {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--text);
-    font-size: 16px;
-    font-weight: 600;
+    margin: 0;
+    padding: 0 16px;
+    color: var(--text-3);
+    font-size: 0.765rem;
+    font-weight: 400;
 }
 
 .places-dot {
@@ -158,30 +152,51 @@ async function move(place, name) {
     border-radius: 50%;
 }
 
-.places-environments {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.places-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-
 .places-off {
-    color: var(--text-4);
-    font-weight: 400;
-    font-size: 12.5px;
+    color: var(--text-3);
+}
+
+.places-environments {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--hover);
+    list-style: none;
+}
+
+.places-row + .places-row {
+    border-top: 1px solid var(--line);
+}
+
+.places-environment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    text-align: left;
+}
+
+.places-env-name {
+    flex: 1;
+}
+
+.places-here {
+    color: var(--accent-text);
+    font-size: 0.882rem;
 }
 
 .places-state {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 6px;
+    flex: none;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--text-4);
 }
@@ -190,39 +205,34 @@ async function move(place, name) {
     background: var(--tone-good);
 }
 
+.places-starts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 10px 34px;
+}
+
 .places-start {
-    min-height: 40px;
-    padding: 0 12px;
-    border: 1px dashed var(--border-2);
-    border-radius: 10px;
-    background: transparent;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 18px;
+    background: var(--accent-dim);
     color: var(--accent-text);
     font: inherit;
-    font-size: 13.5px;
-}
-
-.places-environment {
-    min-height: 40px;
-    padding: 0 14px;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 15px;
-}
-
-.places-environment.here {
-    border-color: var(--accent);
-    background: var(--accent-dim);
-    color: var(--text);
+    font-size: 0.882rem;
+    font-weight: 600;
 }
 
 .places-close {
-    min-height: 44px;
+    min-height: 50px;
+    margin-top: 4px;
     border: 0;
-    background: transparent;
-    color: var(--text-3);
+    border-radius: 12px;
+    background: var(--hover);
+    color: var(--text);
     font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
 }
 </style>
