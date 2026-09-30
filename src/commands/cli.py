@@ -43,7 +43,7 @@ def context(args: dict) -> CommandContext:
     features.load(root)
     sessions = Sessions(root)
     session = args.pop("as_session")
-    fallback = args.pop("fallback")
+    fallback = runtime.renamed(root, args.pop("fallback"))
     top = checkout(Path(args.pop("cwd") or os.getcwd()))
     worked = top.name if top and (root / "environments" / top.name).is_dir() else ""
     env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)

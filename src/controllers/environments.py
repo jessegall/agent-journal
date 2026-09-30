@@ -21,6 +21,11 @@ from controllers.works import Works
 
 SWEPT = ("message", "comment", "reaction", "notification", "notice", "nudge")
 KEPT = ("agent", "feature", "environment")
+SEED = "feature"
+
+
+def seeded(folder) -> bool:
+    return not any(row.parent.name != SEED for row in folder.glob("*/[0-9]*.md"))
 
 
 class Environments(Controller):
@@ -62,6 +67,7 @@ class Environments(Controller):
         name = self.unused(check_title(title), ": switch to it")
         made = super().create(name, abstract, brief, **data)
         Record(self.record.root, name)
+        runtime.forget_rename(self.record.root, name)
         return made
 
     @internal
@@ -147,8 +153,13 @@ class Environments(Controller):
         new = self.unused(check_title(name))
         self.vacant(env.title, self.session)
         old = Record(self.record.root, env.title).home
+        taken = old.with_name(new)
+        if taken.is_dir() and not seeded(taken):
+            self._refuse(f"a folder for {new!r} already holds rows at {taken}; remove that environment first or choose another name")
+        if taken.is_dir():
+            attic.pack(taken, f"{new}-seed-{int(time.time())}")
         if old.is_dir():
-            old.rename(old.with_name(new))
+            old.rename(taken)
         Sessions(self.record.root).rebind(env.title, new)
         return self.update(n, title=new)
 

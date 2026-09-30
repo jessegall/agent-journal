@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from engine.stored import write_text
+from engine.stored import read_json, write_json, write_text
 
 DEFAULT_ENV = "main"
 WARM_UP = 20.0
@@ -65,6 +65,30 @@ def env(root: Path) -> str:
 
 def set_env(root: Path, name: str) -> None:
     write_text(env_file(root), name)
+
+
+def renames_file(root: Path) -> Path:
+    return Path(root) / "runtime" / "renamed.json"
+
+
+def renamed(root: Path, name: str) -> str:
+    table = read_json(renames_file(root), {})
+    seen = {name}
+    while table.get(name) and table[name] not in seen:
+        name = table[name]
+        seen.add(name)
+    return name
+
+
+def note_rename(root: Path, old: str, new: str) -> None:
+    table = {k: v for k, v in read_json(renames_file(root), {}).items() if k != new}
+    write_json(renames_file(root), {**table, old: new})
+
+
+def forget_rename(root: Path, name: str) -> None:
+    table = read_json(renames_file(root), {})
+    if name in table:
+        write_json(renames_file(root), {k: v for k, v in table.items() if k != name})
 
 
 def off(root: Path) -> bool:

@@ -131,6 +131,7 @@ class Sessions:
                 self.write(session, environment=new)
         if runtime.env_file(self.root).is_file() and runtime.env(self.root) == old:
             runtime.set_env(self.root, new)
+        runtime.note_rename(self.root, old, new)
 
     def terminal(self, provider: str, pid: int) -> str:
         return next((name for name, s in self.all().items() if name.startswith(f"{provider}-") and s.pid == pid), "")
