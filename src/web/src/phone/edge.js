@@ -38,7 +38,7 @@ export function useEdgeBack(stack, {covered, back}) {
                 return null;
             }
             if (!covered() || first.clientX > EDGE || event.target.closest(CONTROLS)) return null;
-            if (sidewaysScroller(event.target, stack.value)?.scrollLeft > 0) return null;
+            if (sidewaysScroller(event.target, stack.value)) return null;
             return {width: stack.value.clientWidth};
         },
         accepts: (d) => d > 0,

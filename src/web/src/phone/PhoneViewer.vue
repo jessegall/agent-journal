@@ -23,7 +23,7 @@ const edge = ref(null);
 const title = ref(null);
 const under = useUnder(edge);
 const picture = computed(() => kind === "attachment" && PICTURE.test(name));
-const lines = computed(() => (text.value === null ? [] : text.value.split("\n")));
+const lines = computed(() => (text.value === null ? [] : text.value.split("\n").map((words, i) => ({n: i + 1, words}))));
 const line = Number(wanted) || 0;
 
 async function load() {
@@ -64,8 +64,8 @@ onMounted(() => {
             </template>
             <template v-else-if="text !== null">
                 <ol class="viewer-lines">
-                    <template v-for="(words, i) in lines" :key="i">
-                        <li :data-line="i + 1" :class="{here: i + 1 === line}">{{ words || " " }}</li>
+                    <template v-for="one in lines" :key="one.n">
+                        <li :data-line="one.n" :class="{here: one.n === line}">{{ one.words || " " }}</li>
                     </template>
                 </ol>
             </template>

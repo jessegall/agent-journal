@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {useDrag} from "./drag.js";
+import {CONTROLS, useDrag} from "./drag.js";
 import {useTrap} from "./trap.js";
 
 const CLOSE_AT = 0.33;
@@ -33,7 +33,7 @@ useDrag(sheet, {
     axis: "y",
     begin: (event) => {
         const grabbed = Boolean(event.target.closest(".sheet-grab"));
-        if (!grabbed && event.target.closest("a, input, textarea, select, label")) return null;
+        if (!grabbed && event.target.closest(CONTROLS)) return null;
         return {grabbed};
     },
     accepts: (d, context) => {
@@ -93,7 +93,7 @@ defineExpose({close});
     max-width: none;
     padding: 0;
     border: 0;
-    background: rgb(0 0 0 / 40%);
+    background: var(--scrim);
     animation: sheet-fade 250ms linear;
     transition: opacity var(--sheet-out) linear;
 }
@@ -104,7 +104,7 @@ defineExpose({close});
     flex-direction: column;
     width: 100%;
     max-width: none;
-    max-height: 50dvh;
+    max-height: calc(var(--app-height, 100dvh) * 0.5);
     padding-bottom: env(safe-area-inset-bottom);
     border-radius: 12px 12px 0 0;
     outline: none;
@@ -115,7 +115,7 @@ defineExpose({close});
 }
 
 .sheet.large {
-    max-height: 92dvh;
+    max-height: calc(var(--app-height, 100dvh) * 0.92);
 }
 
 .sheet.dragging {

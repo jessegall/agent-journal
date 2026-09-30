@@ -25,9 +25,9 @@ export function useBubbles(list, {hold, reply}) {
         axis: "x",
         begin: (event, first) => {
             const el = event.target.closest("[data-hold]");
-            if (!el) return null;
+            if (!el || event.target.closest(CONTROLS)) return null;
             const context = {el, held: false, crossed: false};
-            context.swipes = first.clientX > EDGE && !event.target.closest(CONTROLS) && !sidewaysScroller(event.target, el);
+            context.swipes = first.clientX > EDGE && !sidewaysScroller(event.target, el);
             context.pressing = setTimeout(() => (el.dataset.pressing = ""), PRESS_AFTER);
             context.timer = setTimeout(() => {
                 calm(context);

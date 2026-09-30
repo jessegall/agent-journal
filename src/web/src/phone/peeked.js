@@ -8,3 +8,8 @@ export function peeked(event) {
     const asked = new URLSearchParams(pill.getAttribute("href").split("?")[1] || "");
     return `source:${encodeURIComponent(asked.get("q") || "")}${asked.get("line") ? `#L${asked.get("line")}` : ""}`;
 }
+
+export const chipOpener = (open) => (event) => {
+    const target = peeked(event);
+    if (target) open(target);
+};

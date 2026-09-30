@@ -160,7 +160,7 @@ async function move(place, name) {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--hover);
     list-style: none;
 }

@@ -72,7 +72,6 @@ function pick(answer) {
     clearInterval(timer);
     choice.value = answer;
     left.value = UNDO_SECONDS;
-    announce(`Sending "${answer}" in ${UNDO_SECONDS} seconds. Press Undo to stop it.`);
     nextTick(() => undo.value?.$el?.focus());
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
@@ -95,7 +94,7 @@ onUnmounted(() => clearInterval(timer));
                 <div class="question-held">
                     <span>Sending "{{ choice }}" in {{ left }}s</span>
                     <Btn kind="primary" large @click="send(choice)">Send now</Btn>
-                    <Btn ref="undo" large @click="stop">Undo</Btn>
+                    <Btn ref="undo" large :aria-label="`Undo. Sending &quot;${choice}&quot; in ${UNDO_SECONDS} seconds`" @click="stop">Undo</Btn>
                 </div>
             </template>
             <div class="question-options">
@@ -165,7 +164,7 @@ onUnmounted(() => clearInterval(timer));
     min-height: 44px;
     padding: 0 12px;
     border: 1px solid var(--border-2);
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--bg);
     color: var(--text);
     font: inherit;

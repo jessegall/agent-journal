@@ -78,6 +78,7 @@ export async function flush() {
 }
 
 export function forget() {
+    carried.clear();
     waitingToSend.value = [];
     keep([]);
 }

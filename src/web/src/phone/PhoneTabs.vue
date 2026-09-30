@@ -72,15 +72,18 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
     position: absolute;
     top: -4px;
     left: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 17px;
-    height: 17px;
+    min-height: 17px;
     padding: 0 5px;
-    border-radius: 9px;
+    border-radius: 999px;
     background: var(--danger);
     color: var(--bg);
     font-size: 0.647rem;
     font-weight: 600;
-    line-height: 17px;
+    line-height: 1;
     text-align: center;
 }
 

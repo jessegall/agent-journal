@@ -96,7 +96,7 @@ function moved(i, by) {
                                     <button type="button" class="board-row" @click="emit('open', row.ref)">
                                         <span class="board-title">{{ row.title }}</span>
                                         <span class="board-age">{{ ago(row.updated) }}</span>
-                                        <Icon name="arrow" :size="13" class="board-chevron" />
+                                        <Icon name="arrow" :size="14" class="board-chevron" />
                                     </button>
                                 </li>
                             </template>
@@ -215,7 +215,7 @@ function moved(i, by) {
 
 .board-group {
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--raised);
 }
 

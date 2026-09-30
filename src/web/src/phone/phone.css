@@ -1,5 +1,15 @@
 :root {
     --font: -apple-system, "SF Pro Text", system-ui, sans-serif;
+    --scrim: rgb(0 0 0 / 45%);
+    --shade: rgb(0 0 0 / 45%);
+    --shadow-1: 0 8px 24px var(--shade);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --scrim: rgb(0 0 0 / 22%);
+        --shade: rgb(0 0 0 / 22%);
+    }
 }
 
 html {
@@ -110,6 +120,7 @@ body {
     width: max-content;
     max-width: 100%;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     table-layout: auto;
     -webkit-overflow-scrolling: touch;
 }

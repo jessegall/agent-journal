@@ -37,12 +37,12 @@ onMounted(() => {
     <div class="hold-root">
         <button type="button" class="hold-backdrop" aria-label="Close" tabindex="-1" @click="emit('close')" />
         <div ref="box" :class="['hold-box', {mine}]" role="dialog" aria-modal="true" aria-label="Message actions" tabindex="-1" :style="{top: `${top}px`, ...side}">
+            <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
             <div class="hold-faces" role="group" aria-label="React">
                 <template v-for="face in FACES" :key="face">
                     <button type="button" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</button>
                 </template>
             </div>
-            <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
             <ul class="hold-menu" aria-label="Actions">
                 <li>
                     <button type="button" class="hold-action" @click="emit('reply')">
@@ -79,7 +79,7 @@ onMounted(() => {
     max-width: none;
     padding: 0;
     border: 0;
-    background: rgb(0 0 0 / 40%);
+    background: var(--scrim);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     animation: hold-fade 200ms linear;
@@ -103,6 +103,7 @@ onMounted(() => {
 }
 
 .hold-faces {
+    order: -1;
     display: flex;
     gap: 2px;
     max-width: min(340px, calc(100vw - 24px));
@@ -111,7 +112,7 @@ onMounted(() => {
     overscroll-behavior-x: contain;
     border-radius: 26px;
     background: var(--raised);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+    box-shadow: var(--shadow-1);
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 }
@@ -159,7 +160,7 @@ onMounted(() => {
     overflow: hidden;
     border-radius: 12px;
     background: var(--raised);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+    box-shadow: var(--shadow-1);
     list-style: none;
 }
 

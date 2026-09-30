@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, nextTick, ref, watch} from "vue";
+import {computed, inject, nextTick, onUnmounted, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {fitLines} from "../composables/fitLines.js";
@@ -46,6 +46,11 @@ watch(files, (now) => {
         previews.delete(file);
     });
 }, {flush: "sync"});
+
+onUnmounted(() => {
+    previews.forEach((url) => URL.revokeObjectURL(url));
+    previews.clear();
+});
 
 function picked(event) {
     files.value = [...files.value, ...event.target.files];

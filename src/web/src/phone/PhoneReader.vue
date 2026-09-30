@@ -8,13 +8,14 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 import {ended, flush, hold, perform} from "./outbox.js";
-import {peeked} from "./peeked.js";
+import {chipOpener} from "./peeked.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
 import {announce} from "./announce.js";
 import {tick} from "./haptic.js";
 
 const SIZES = [1, 1.12, 1.24];
+const SIZE_NAMES = ["small", "medium", "large"];
 const AGENTS = [1, 2, 3, 5];
 const DEPTHS = ["a quick look", "a normal read", "a thorough review"];
 const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add more detail to ", "Something is missing: "];
@@ -75,10 +76,7 @@ async function review() {
     }
 }
 
-function chipped(event) {
-    const target = peeked(event);
-    if (target) emit("open", target);
-}
+const chipped = chipOpener((target) => emit("open", target));
 
 async function load() {
     try {
@@ -128,7 +126,7 @@ onMounted(async () => {
         <header :class="['reader-bar', {under}]">
             <button ref="backButton" type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
             <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ row ? row.title : "" }}</span>
-            <button type="button" class="reader-size" aria-label="Text size" @click="size = (size + 1) % SIZES.length">
+            <button type="button" class="reader-size" :aria-label="`Text size, ${SIZE_NAMES[size]}`" @click="size = (size + 1) % SIZES.length">
                 Aa
                 <span class="reader-steps">
                     <template v-for="(step, i) in SIZES" :key="step">
@@ -410,7 +408,7 @@ onMounted(async () => {
 .reader-phase {
     margin: 10px 0;
     padding: 12px 16px;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--raised);
 }
 

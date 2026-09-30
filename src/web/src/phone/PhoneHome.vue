@@ -13,7 +13,7 @@ import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
 import PhoneTabs from "./PhoneTabs.vue";
 import Icon from "../kit/Icon.vue";
-import {peeked} from "./peeked.js";
+import {chipOpener} from "./peeked.js";
 import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
@@ -148,7 +148,17 @@ const back = () => history.back();
 
 const edge = useEdgeBack(stack, {covered: () => pages.value.length > 0, back});
 
+const SETTLE = 800;
+const SPOKEN_AFTER = 300;
+let moving = 0;
+
 function next() {
+    const from = pages.value.at(-1)?.id;
+    clearTimeout(moving);
+    moving = setTimeout(() => pages.value.at(-1)?.id === from && moveOn(), SETTLE);
+}
+
+function moveOn() {
     const left = ordered(feed.value.waiting).filter((item) => item.ref !== reading.value);
     if (!left.length) return back();
     const stay = [...pages.value.slice(0, -1), entry(left[0].ref)];
@@ -172,6 +182,7 @@ onUnmounted(() => {
     window.removeEventListener("popstate", popped);
     document.removeEventListener("visibilitychange", returned);
     cancelAnimationFrame(loadFrame);
+    clearTimeout(moving);
 });
 
 const place = (i) => {
@@ -182,10 +193,7 @@ const place = (i) => {
 const backLabel = (i) => (i > 0 ? "Back" : LABELS[screen.value]);
 const stackStyle = computed(() => ({"--settle": `${edge.settle.value}ms`}));
 
-function chipped(event) {
-    const target = peeked(event);
-    if (target) open(target);
-}
+const chipped = chipOpener(open);
 
 function reply(target, start = "") {
     about.value = target;
@@ -223,7 +231,7 @@ function quoteIt(item) {
 function copy() {
     navigator.clipboard?.writeText(plain(held.value.item.brief || held.value.item.title)).catch(() => {});
     held.value = null;
-    announce("Copied");
+    setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }
 
 function holding(key, rect) {
@@ -387,7 +395,7 @@ function pick(key) {
 
 .page {
     z-index: 1;
-    box-shadow: -8px 0 24px rgb(0 0 0 / 35%);
+    box-shadow: -8px 0 24px var(--shade);
     transform: translateX(var(--dx));
 }
 

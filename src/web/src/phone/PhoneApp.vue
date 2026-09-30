@@ -46,6 +46,7 @@ async function load() {
 }
 
 async function reconnect() {
+    history.replaceState(null, "", location.pathname);
     try {
         connection.value = await phone.state();
     } catch (error) {

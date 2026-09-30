@@ -255,7 +255,7 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
 .turn-chip {
     padding: 1px 7px;
     border: 1px solid var(--border-2);
-    border-radius: 7px;
+    border-radius: 9px;
     color: var(--accent-text);
     text-decoration: none;
 }
@@ -264,7 +264,7 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
     display: inline-block;
     margin-top: 6px;
     padding: 1px 7px;
-    border-radius: 10px;
+    border-radius: 9px;
     background: var(--bg);
     font-size: 0.824rem;
 }

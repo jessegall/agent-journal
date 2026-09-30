@@ -105,7 +105,7 @@ onMounted(() => {
 .notify-skip {
     min-height: 40px;
     padding: 0 14px;
-    border-radius: 10px;
+    border-radius: 12px;
     font: inherit;
     font-size: 0.824rem;
 }
@@ -113,7 +113,7 @@ onMounted(() => {
 .notify-on {
     border: 0;
     background: var(--accent);
-    color: var(--on-accent, #fff);
+    color: #fff;
 }
 
 .notify-skip {

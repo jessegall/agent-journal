@@ -103,11 +103,10 @@ const recent = computed(() => queue.value.slice(-RECENT).map((one) => line(one, 
     flex: none;
     align-items: center;
     gap: 8px;
-    height: 22px;
+    min-height: 22px;
     margin: 0;
     padding: 0 2px;
-    overflow: hidden;
-    contain: strict;
+    contain: layout;
     color: var(--text-3);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.647rem;
