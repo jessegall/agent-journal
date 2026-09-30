@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, AnyEvent, ResourceEvent
+from engine.events.agents import AgentReported
+from engine.events.resources import AnyEvent, ResourceEvent
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE, rows_of
@@ -9,7 +10,6 @@ from features.work_tracking.auto import passes_checkpoints
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 
-WRITTEN = ("created", "updated", "linked")
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
 
@@ -51,7 +51,7 @@ class TellParkedAndPickedUp(Handler):
 
 class GuideBuilding(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
-        if event.action not in WRITTEN or event.actor != AGENT:
+        if not (event.written or event.action == "linked") or event.actor != AGENT:
             return
         plan = context.journal.plans.load(event.n)
         agent = context.journal.agents.primary()

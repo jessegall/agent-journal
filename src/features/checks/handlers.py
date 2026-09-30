@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine import runtime
-from engine.events import AgentReported, ResourceEvent
+from engine.events.agents import AgentReported
+from engine.events.resources import ResourceEvent
 from features.parts import AgentContext, Context, Handler
 
 

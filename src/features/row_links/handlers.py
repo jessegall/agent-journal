@@ -1,6 +1,6 @@
 import re
 
-from engine.events import AgentMessageSent
+from engine.events.engine import AgentMessageSent
 from engine.project_files import matching
 from features.parts import AgentContext, Handler
 from features.row_links.details import AMBIGUOUS

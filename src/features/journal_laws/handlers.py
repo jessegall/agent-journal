@@ -1,4 +1,4 @@
-from engine.events import ToolFinished
+from engine.events.agents import ToolFinished
 from features.parts import AgentContext, Handler
 
 LARGEST_RESULT = "largest result"

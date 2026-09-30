@@ -1,4 +1,4 @@
-from engine.events import CommandRan
+from engine.events.engine import CommandRan
 from features.base import Feature
 from features.journal import Journal
 from features.parts import AgentContext, Handler

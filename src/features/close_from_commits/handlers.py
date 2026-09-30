@@ -2,7 +2,7 @@ import hashlib
 import re
 from pathlib import Path
 
-from engine.events import AgentReported
+from engine.events.agents import AgentReported
 from engine.proc import git
 from features.parts import AgentContext, Context, Handler
 from resources.base import Refused

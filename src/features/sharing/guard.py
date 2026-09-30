@@ -1,5 +1,6 @@
 from controllers.types import Agents
-from engine.events import CommandRan, ResourceCreated
+from engine.events.engine import CommandRan
+from engine.events.resources import ResourceCreated
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.sharing.visitors import AGREEMENT, UNAGREED, read_now
 from resources.base import SYSTEM

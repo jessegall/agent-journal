@@ -1,6 +1,6 @@
 import time
 
-from engine.events import ResourceCreated
+from engine.events.resources import ResourceCreated
 from features.parts import Context, Handler
 from resources.base import AGENT
 

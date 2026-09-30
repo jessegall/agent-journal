@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import ClassVar, NamedTuple
 
 from controllers.types import CONTROLLERS, Plugins
-from engine.events import ClockTicked, ResourceEvent
+from engine.events.engine import ClockTicked
+from engine.events.resources import ResourceEvent
 from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
 from features.plugins.lifecycle import called, changed_on_disk, clear, reread

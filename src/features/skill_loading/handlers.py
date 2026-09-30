@@ -1,9 +1,7 @@
 import time
 
-from dataclasses import dataclass
-from typing import ClassVar
-
-from engine.events import AgentReported, ResourceEvent, SessionStarted, ToolFinished
+from engine.events.agents import AgentReported, SessionStarted, ToolFinished
+from engine.events.resources import MessageCreated
 from features import trigger
 from features.parts import AgentContext, Context, Handler, refusals
 from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, recent_before_compaction, skills
@@ -75,15 +73,10 @@ class RequireAlwaysSkills(Handler):
         context.state.set(refusals(RefuseUntilLoaded), 0)
 
 
-@dataclass(frozen=True)
-class MessageArrived(ResourceEvent):
-    on: ClassVar[str] = "message.created"
-
-
 class RequireSkillsTheUserNames(Handler):
     behaviour = "keywords"
 
-    def handle(self, context: Context, event: MessageArrived) -> None:
+    def handle(self, context: Context, event: MessageCreated) -> None:
         if event.actor != USER:
             return
         row = context.journal.acting(SYSTEM).agents.primary()

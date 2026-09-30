@@ -1,4 +1,4 @@
-from engine.events import ClockTicked
+from engine.events.engine import ClockTicked
 from features.hosting.apps import idle
 from features.hosting.files import hosting_of
 from features.parts import WHOLE_FEATURE, AgentContext, Handler

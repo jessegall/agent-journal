@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import ClockTicked, ResourceEvent
+from engine.events.engine import ClockTicked
+from engine.events.resources import ResourceEvent
 from features.runtime_cleanup.tidy import tidy, tidy_files
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from surfaces.updates import KIND

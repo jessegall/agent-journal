@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path
 
-from engine.events import FileEdited
+from engine.events.engine import FileEdited
 from engine.files import KIND, blob_texts
 
 KEEP = 3

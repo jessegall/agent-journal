@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from controllers.types import CONTROLLERS
-from engine.events import ResourceEvent, SessionStarted
+from engine.events.agents import SessionStarted
+from engine.events.resources import MessageUpdated, ResourceEvent
 from features.attachment_descriptions.video import MAX_FRAMES, probe, spacing
 from features.parts import AgentContext, Context, Handler
 
@@ -17,11 +18,6 @@ MEDIA = ("image/", "video/")
 class FileAttached(ResourceEvent):
     on: ClassVar[str] = "updated"
     file: str = ""
-
-
-@dataclass(frozen=True)
-class MessageFileAttached(FileAttached):
-    on: ClassVar[str] = "message.updated"
 
 
 def media(name: str) -> bool:
@@ -59,7 +55,7 @@ class TagMissingAtStart(Handler):
 class SampleVideoFrames(Handler):
     behaviour = "frames"
 
-    def handle(self, context: Context, event: MessageFileAttached) -> None:
+    def handle(self, context: Context, event: MessageUpdated) -> None:
         name = event.file
         if not name or not (mimetypes.guess_type(name)[0] or "").startswith("video/"):
             return

@@ -1,6 +1,6 @@
 import time
 
-from engine.events import AgentReported
+from engine.events.agents import AgentReported
 from features.parts import AgentContext, Handler
 from features.status_bar.bar import EMPTY, bar
 from features.status_bar.runs import CommandRun

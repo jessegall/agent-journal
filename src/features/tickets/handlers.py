@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from resources.types import IDLE
-from engine.events import ClockTicked, ResourceCreated, ResourceEvent
+from engine.events.engine import ClockTicked
+from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING
@@ -82,11 +83,6 @@ class HoldTicketKnowledge(Handler):
     def handle(self, context: Context, event: ResourceCreated) -> None:
         if event.type in HELD:
             Tickets(context.record, actor=SYSTEM).hold(event.type, event.n)
-
-
-@dataclass(frozen=True)
-class QuestionAnswered(ResourceEvent):
-    on: ClassVar[str] = "question.completed"
 
 
 class WakeTheTicketAgent(Handler):

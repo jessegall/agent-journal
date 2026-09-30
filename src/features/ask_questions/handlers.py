@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, ResourceEvent
+from engine.events.agents import AgentReported
+from engine.events.resources import MessageCreated, QuestionAnswered, ResourceEvent
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
@@ -15,11 +16,6 @@ class QuestionAsked(ResourceEvent):
     on: ClassVar[str] = "question.created"
 
 
-@dataclass(frozen=True)
-class QuestionAnswered(ResourceEvent):
-    on: ClassVar[str] = "question.completed"
-
-
 class AskInsteadOfProse(Handler):
     behaviour = ASKING
 
@@ -29,13 +25,8 @@ class AskInsteadOfProse(Handler):
             context.hold("prose held", ASKING)
 
 
-@dataclass(frozen=True)
-class MessageArrived(ResourceEvent):
-    on: ClassVar[str] = "message.created"
-
-
 class ReleaseOnceAnswered(Handler):
-    def handle(self, context: Context, event: MessageArrived) -> None:
+    def handle(self, context: Context, event: MessageCreated) -> None:
         if event.actor == USER:
             context.release(ASKING)
 

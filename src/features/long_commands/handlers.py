@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from engine.events import ClockTicked
+from engine.events.engine import ClockTicked
 from engine.gates import LONG_COMMAND, cancelled
 from features.long_commands.details import KEPT, MOVED
 from features.parts import AgentContext, Handler

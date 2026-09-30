@@ -1,7 +1,7 @@
 import re
 from dataclasses import asdict
 
-from engine.events import CommandRan
+from engine.events.engine import CommandRan
 from engine.ran import DELIVERED, NOTED, SHELL, TYPED
 from features.status_bar.commands import JOURNAL_CALL
 

@@ -1,8 +1,8 @@
 import re
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events import AgentMessageSent, AgentReported, ResourceCreated, ResourceEvent
+from engine.events.agents import AgentReported
+from engine.events.engine import AgentMessageSent
+from engine.events.resources import MessageCreated, MessageUpdated, ResourceCreated
 from engine.transcript import IDLE
 from providers.turns import last_text
 from controllers.messages import only_emoji
@@ -17,21 +17,6 @@ LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 RUN_ON, SENTENCES = 400, 3
 INBOX_AFTER = 5
-
-
-@dataclass(frozen=True)
-class MessageCreated(ResourceEvent):
-    on: ClassVar[str] = "message.created"
-
-
-@dataclass(frozen=True)
-class MessagesUpdated(ResourceEvent):
-    on: ClassVar[str] = "message.updated"
-    numbers: tuple = ()
-
-    @classmethod
-    def read(cls, event) -> "MessagesUpdated":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, numbers=tuple(event.data.get("numbers") or [event.n]))
 
 
 def counted(context: Context, behaviour: str) -> int:
@@ -103,7 +88,7 @@ class CloseHandled(Handler):
 class CloseSeenByUser(Handler):
     behaviour = "closing"
 
-    def handle(self, context: Context, event: MessagesUpdated) -> None:
+    def handle(self, context: Context, event: MessageUpdated) -> None:
         messages = context.journal.messages
         for n in event.numbers:
             message = messages.load(n)

@@ -1,7 +1,7 @@
 import time
 
 from engine import runtime
-from engine.events import ClockTicked
+from engine.events.engine import ClockTicked
 from engine.services import UP, log_file, want
 from engine.state import State
 from features.parts import Context, Handler

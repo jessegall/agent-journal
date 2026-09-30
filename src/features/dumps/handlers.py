@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import ClockTicked, ResourceEvent
+from engine.events.engine import ClockTicked
+from engine.events.resources import MessageUpdated, ResourceEvent
 from engine.transcript import IDLE
 from features.dumps.controller import OWN_WORDS
 from features.dumps.resource import ITEM
 from features.parts import AgentContext, Context, Handler
 from resources.base import USER
 
-WRITTEN = ("created", "updated")
 FILED = "completed"
 
 
@@ -17,7 +17,7 @@ class DumpWritten(ResourceEvent):
     on: ClassVar[str] = "dump"
 
     def wanted(self) -> bool:
-        return self.action == FILED or (self.action in WRITTEN and self.actor == USER)
+        return self.action == FILED or (self.written and self.actor == USER)
 
 
 class PromptFiling(Handler):
@@ -50,11 +50,6 @@ class PromptFiling(Handler):
         waiting = [name for name in dumps._names(dump) if not (items.get(name) or {}).get(ITEM.insight)]
         if agent and waiting and not dump.completed:
             context.speaking_to(agent).agent.say("arrived", n=dump.n, count=context.feature.plural(len(waiting), "item"))
-
-
-@dataclass(frozen=True)
-class MessageUpdated(ResourceEvent):
-    on: ClassVar[str] = "message.updated"
 
 
 class TranscriptToDump(Handler):

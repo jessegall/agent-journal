@@ -1,4 +1,5 @@
-from engine.events import AnyEvent, SessionStarted
+from engine.events.agents import SessionStarted
+from engine.events.resources import AnyEvent
 from features.parts import AgentContext, Context, Handler, in_background
 from features.session_briefing.block import rebuild
 from resources.types import TYPES

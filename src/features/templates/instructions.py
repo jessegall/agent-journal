@@ -1,4 +1,5 @@
-from engine.events import ResourceCreated, SessionStarted
+from engine.events.agents import SessionStarted
+from engine.events.resources import ResourceCreated
 from features.parts import ActionInterceptor, AgentContext, Context, Handler
 from resources.base import Refused
 

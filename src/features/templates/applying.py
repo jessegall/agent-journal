@@ -1,7 +1,7 @@
 import re
 
 from features.parts import ActionInterceptor, Context, Handler
-from engine.events import ResourceCreated
+from engine.events.resources import ResourceCreated
 from features.templates.instructions import filled
 from resources.base import SECTION, Refused
 

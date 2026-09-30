@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import ResourceEvent
+from engine.events.resources import ResourceEvent
 from features.parts import Context, Handler
 from features.suggestions.controller import ACCEPT, ADJUST
 

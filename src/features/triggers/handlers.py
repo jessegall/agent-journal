@@ -1,7 +1,5 @@
-from dataclasses import dataclass
-from typing import ClassVar
-
-from engine.events import AgentMessageSent, ResourceEvent
+from engine.events.engine import AgentMessageSent
+from engine.events.resources import MessageCreated
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
 from features.triggers.resource import DENY, FIRED, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
@@ -49,15 +47,10 @@ class WatchWhatTheAgentWrites(Handler):
                 context.agent.whisper("denied", title=row.title, text=row.text or row.brief)
 
 
-@dataclass(frozen=True)
-class MessageArrived(ResourceEvent):
-    on: ClassVar[str] = "message.created"
-
-
 class WatchWhatTheUserWrites(Handler):
     behaviour = WATCHING
 
-    def handle(self, context: Context, event: MessageArrived) -> None:
+    def handle(self, context: Context, event: MessageCreated) -> None:
         if event.actor != USER:
             return
         agent = context.journal.acting(SYSTEM).agents.primary()

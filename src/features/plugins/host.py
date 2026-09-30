@@ -6,7 +6,7 @@ import urllib.request
 from pathlib import Path
 
 from controllers.types import Plugins
-from engine.bus import ANY
+from engine.bus import patterns
 from engine.runtime import default_env
 from engine.record import Record
 from controllers.faults import threw
@@ -28,10 +28,6 @@ WAIT = 0.5
 PATIENCE = 5
 BACKOFF = 60.0
 LONGEST_WAIT = 300.0
-
-
-def patterns(event) -> tuple[str, ...]:
-    return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
 
 
 def listening(manifest: Manifest, event) -> list[Handler]:

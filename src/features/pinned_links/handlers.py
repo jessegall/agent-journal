@@ -1,6 +1,6 @@
 import re
 
-from engine.events import AgentMessageSent
+from engine.events.engine import AgentMessageSent
 from features.parts import AgentContext, Handler
 from features.pinned_links.details import UNPINNED
 

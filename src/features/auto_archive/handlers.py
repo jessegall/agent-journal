@@ -1,6 +1,6 @@
 import time
 
-from engine.events import ClockTicked
+from engine.events.engine import ClockTicked
 from features.parts import WHOLE_FEATURE, AgentContext, Handler
 from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER

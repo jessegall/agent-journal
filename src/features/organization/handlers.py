@@ -1,19 +1,11 @@
-from dataclasses import dataclass
-from typing import ClassVar
-
 from controllers.types import Todos
-from engine.events import ResourceEvent
+from engine.events.resources import TodoCompleted
 from engine.record import Record
 from features.organization.agents import start_role_agent, stop_role_agent
 from features.organization.delegation import next_in_line
 from engine.organization import PLAN, organization
 from features.parts import Context, Handler
 from resources.base import SYSTEM
-
-
-@dataclass(frozen=True)
-class TodoCompleted(ResourceEvent):
-    on: ClassVar[str] = "todo.completed"
 
 
 class StartNextForGlobalRole(Handler):

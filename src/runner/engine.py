@@ -5,7 +5,7 @@ from pathlib import Path
 
 from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
-from engine import bus, chat, ran, runtime
+from engine import bus, chat, clock, ran, runtime
 from agents.actors import Actor, Agent, System, User, spoken_data
 from resources.types import BUSY, IDLE, STOPPED, WORKING
 from providers.drivers import AGENT_COMMAND
@@ -13,7 +13,7 @@ from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take,
 from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, Event, titled
+from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import Seat
 from engine.wording import plural
@@ -27,7 +27,7 @@ CLOCK_EVERY = 5.0
 
 def emit_clock(record: Record, session: str) -> None:
     row = Agents(record, actor=SYSTEM).by_session(session)
-    bus.emit(Event(0, time.time(), "agent", row.n, "ticked", SYSTEM), record)
+    clock.tick(record, row.n)
 
 TICK = 1.0
 STAMPED = "stamped"

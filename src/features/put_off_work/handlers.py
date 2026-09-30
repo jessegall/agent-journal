@@ -1,6 +1,6 @@
 import re
 
-from engine.events import AgentReported
+from engine.events.agents import AgentReported
 from providers.turns import last_text
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from resources.base import AGENT

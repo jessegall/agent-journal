@@ -10,6 +10,7 @@ from engine.proc import git, git_objects
 from resources.base import SYSTEM, Event, names
 
 KIND = names("edited", "created", "deleted")
+EDITED = "edited"
 EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 SNAPSHOT = "files"
 
@@ -214,5 +215,5 @@ def announce(record, agent: int, homes: tuple[str, ...]) -> None:
     counts = line_counts(project, list(changed.values()))
     for path, (before, after) in changed.items():
         count = counts[(before, after)]
-        bus.emit(Event(0, at, "file", agent, "edit", SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
+        bus.emit(Event(0, at, "file", agent, EDITED, SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
                                                              "after": after, "added": count.added, "removed": count.removed}), record)

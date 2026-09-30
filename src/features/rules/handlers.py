@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from engine.events import ResourceCreated, ResourceEvent
+from engine.events.resources import ResourceCreated, ResourceEvent
 from engine.stored import write_text
 from features.parts import Context, Handler
 from resources.base import AGENT

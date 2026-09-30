@@ -1,7 +1,8 @@
 import re
 import time
 
-from engine.events import AgentMessageSent, AgentReported
+from engine.events.agents import AgentReported
+from engine.events.engine import AgentMessageSent
 from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line

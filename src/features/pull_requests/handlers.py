@@ -1,4 +1,4 @@
-from engine.events import ToolFinished
+from engine.events.agents import ToolFinished
 from features.parts import AgentContext, Handler
 from features.pull_requests.details import OPEN
 from features.status_bar.runs import command_runs

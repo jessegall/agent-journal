@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, ClassVar, get_type_hints
 from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents, Environments
 from engine import bus
-from engine.events import AgentChanged, AgentEvent
+from engine.events.base import AgentEvent
+from engine.events.resources import AgentChanged
 from engine.gates import AFTERWARDS, CANCELERS, POLICIES
 from engine.state import State
 from engine.wording import APPENDS
@@ -198,7 +199,7 @@ class Events:
             row = agent_row(record, typed.agent) if isinstance(typed, AgentEvent) else None
             if wanted(handler, feature, record, row):
                 handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
-        self.names.append(kind.event_name or kind.on)
+        self.names.append(kind.name())
         bus.on(kind.on, run, enabled=feature.enabled)
 
 

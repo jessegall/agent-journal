@@ -2,7 +2,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.events import FileEdited
+from engine.events.engine import FileEdited
 from engine.files import KIND, line_counts
 from engine.proc import git
 from features.status_bar.runs import Delta, command_runs, current_run

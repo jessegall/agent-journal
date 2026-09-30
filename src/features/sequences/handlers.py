@@ -3,7 +3,9 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentMessageSending, AgentReported, AnyEvent, ClockTicked, ResourceEvent
+from engine.events.agents import AgentReported
+from engine.events.engine import AgentMessageSending, ClockTicked
+from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.journal import waiting
@@ -248,13 +250,8 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
                 f"{sequence.n}{about_flag(key)} first") if held else ""
 
 
-@dataclass(frozen=True)
-class BoardQuestionAnswered(ResourceEvent):
-    on: ClassVar[str] = "question.completed"
-
-
 class DispatchAgainOnAnswer(Handler):
-    def handle(self, context: Context, event: BoardQuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionAnswered) -> None:
         agent = working_agent(context)
         question = context.journal.of("question").load(event.n)
         boards = [ref for ref in question.refs if ref.startswith("board:")]

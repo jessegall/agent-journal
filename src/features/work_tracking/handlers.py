@@ -2,7 +2,9 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, AnyEvent, ClockTicked, FileEdited, ResourceEvent, ToolFinished
+from engine.events.agents import AgentReported, ToolFinished
+from engine.events.engine import ClockTicked, FileEdited
+from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features import trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
@@ -27,11 +29,6 @@ class WorkCompleted(ResourceEvent):
     @classmethod
     def read(cls, event) -> "WorkCompleted":
         return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, todo=bool(event.data.get(Work.todo)))
-
-
-@dataclass(frozen=True)
-class TodoCompleted(ResourceEvent):
-    on: ClassVar[str] = "todo.completed"
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 import re
 
-from engine.events import AgentMessageSent, CommandRan
+from engine.events.engine import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from features import trigger
 from features.chat_etiquette.details import REMIND, SHOP

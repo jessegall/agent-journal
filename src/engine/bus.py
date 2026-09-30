@@ -69,12 +69,16 @@ def cause() -> str:
     return getattr(_cause, "actor", "")
 
 
+def patterns(event) -> tuple[str, ...]:
+    return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
+
+
 def run(event: Event, record=None) -> None:
     tell_watchers(event, record)
     before = cause()
     _cause.actor = event.data.get("cause") or event.actor
     try:
-        for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or ""):
+        for pattern in patterns(event):
             for enabled, listener in list(_listeners.get(pattern, ())):
                 if record is None or enabled(record):
                     listener(event, record)

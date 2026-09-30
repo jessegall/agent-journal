@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import ResourceEvent
+from engine.events.resources import ResourceEvent
 from features.parts import Context, Handler
 from features.revisions.history import revise
 from resources.base import PART_OF
-
-WRITTEN = ("created", "updated")
 
 
 @dataclass(frozen=True)
@@ -14,7 +12,7 @@ class DocWritten(ResourceEvent):
     on: ClassVar[str] = "doc"
 
     def wanted(self) -> bool:
-        return self.action in WRITTEN
+        return self.written
 
 
 class KeepRevisions(Handler):

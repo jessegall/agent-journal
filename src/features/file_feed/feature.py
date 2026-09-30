@@ -1,4 +1,4 @@
-from engine.events import FileEdited
+from engine.events.engine import FileEdited
 from features.base import Feature
 from features.file_feed.details import FileFeedDetails
 from features.file_feed.feed import noted

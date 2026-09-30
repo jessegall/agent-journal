@@ -2,7 +2,8 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentChanged, AgentReported, ResourceCreated, ResourceEvent
+from engine.events.agents import AgentReported
+from engine.events.resources import AgentChanged, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions, live
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS

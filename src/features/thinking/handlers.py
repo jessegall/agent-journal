@@ -2,7 +2,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.events import AgentMessageSent, AgentReported
+from engine.events.agents import AgentReported
+from engine.events.engine import AgentMessageSent
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
 from engine.fields import Loaded

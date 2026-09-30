@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.events import AgentReported
+from engine.events.agents import AgentReported
 from features.parts import AgentContext, Handler
 
 MAIN = "the main checkout"
