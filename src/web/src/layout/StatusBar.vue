@@ -12,6 +12,10 @@ import Toast from "../kit/Toast.vue";
 import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
 import Segmented from "../kit/Segmented.vue";
+import MenuPanel from "../kit/MenuPanel.vue";
+import HelperList from "../chat/HelperList.vue";
+import {useHelpers} from "../chat/helpers.js";
+import {helperState} from "../domain/helpers.js";
 import {DEFAULT_MODE, MODES, modeOf} from "../domain/modes.js";
 import {agent, autoOn, steered, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
@@ -36,6 +40,18 @@ watch(
 );
 
 const mode = ref(DEFAULT_MODE);
+const {rows: helpers, refresh: refreshHelpers} = useHelpers();
+const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
+const helpersOpen = ref(false);
+const helpersAnchor = ref(null);
+const modeTitle = computed(() =>
+    mode.value === "solo" && helpersOut.value ? `${modeOf(mode.value).note} Helpers already out keep going until they finish.` : modeOf(mode.value).note,
+);
+
+function toggleHelpers(e) {
+    helpersAnchor.value = e.currentTarget;
+    helpersOpen.value = !helpersOpen.value;
+}
 const loadMode = () =>
     api
         .mode()
@@ -131,16 +147,33 @@ async function runBar(p) {
         </template>
         <span class="statusbar-tools">
             <template v-if="!steered">
-                <Switch
-                    :on="autoOn"
-                    word="auto"
-                    labelled
-                    :title="
-                        autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
-                    "
-                    @change="setAuto"
-                />
-                <Segmented class="statusbar-mode" :options="MODES" :value="mode" :title="modeOf(mode).note" @pick="pickMode" />
+                <span class="statusbar-agentset">
+                    <Switch
+                        :on="autoOn"
+                        word="auto"
+                        labelled
+                        :title="
+                            autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
+                        "
+                        @change="setAuto"
+                    />
+                    <Segmented class="statusbar-mode" :options="MODES" :value="mode" :title="modeTitle" @pick="pickMode" />
+                    <button
+                        type="button"
+                        :class="['statusbar-helpers', {none: !helpers.length}]"
+                        :title="helpersOut ? `${helpersOut} helper(s) out: see what they do` : 'Helpers: agents on other providers this environment dispatched'"
+                        :aria-expanded="helpersOpen"
+                        @click.stop="toggleHelpers"
+                    >
+                        <Icon name="family" />
+                        {{ helpersOut }}
+                    </button>
+                </span>
+                <template v-if="helpersOpen">
+                    <MenuPanel :anchor="helpersAnchor" :min-width="320" :max-width="380" :max-height="480" @click.stop @close="helpersOpen = false">
+                        <HelperList :rows="helpers" @changed="refreshHelpers" />
+                    </MenuPanel>
+                </template>
             </template>
             <Btn
                 kind="icon"
@@ -327,6 +360,39 @@ async function runBar(p) {
     display: flex;
     align-items: center;
     gap: 14px;
+}
+
+.statusbar-agentset {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 4px 3px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+}
+
+.statusbar-helpers {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.statusbar-helpers:hover,
+.statusbar-helpers[aria-expanded="true"] {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.statusbar-helpers.none {
+    color: var(--text-4);
 }
 
 .statusbar-tools::before {

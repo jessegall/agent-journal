@@ -32,6 +32,7 @@ import {lastLooked, looked} from "./looked.js";
 import {clock} from "../format/time.js";
 import PhoneTicks from "./PhoneTicks.vue";
 import {useBubbles} from "./bubbles.js";
+import {helperState} from "../domain/helpers.js";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
@@ -58,6 +59,7 @@ const feed = ref({items: [], waiting: [], agent: "offline"});
 const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const listing = ref(false);
+const reportedHelpers = computed(() => (feed.value.running?.helpers || []).filter((row) => helperState(row) === "reported").length);
 const agentOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
 const pages = ref([]);
@@ -565,7 +567,7 @@ function pick(key) {
                     </button>
                     <button type="button" class="home-agent" aria-haspopup="dialog" @click="agentOpen = true">
                         <span class="phone-hidden">Agent:</span>
-                        <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" />
+                        <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" :reported="reportedHelpers" />
                     </button>
                 </header>
                 <template v-if="newer">

@@ -80,6 +80,15 @@ class Switching:
 
 
 @dataclass(frozen=True)
+class Numbered:
+    n: int
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Numbered":
+        return cls(n=int(given.get("n", 0)))
+
+
+@dataclass(frozen=True)
 class Choosing:
     mode: str
 
@@ -291,6 +300,12 @@ class PhoneRoutes:
             return self.json(handler, 201, {"done": rest[0]})
         if rest == ["auto"]:
             return self.json(handler, 201, {"auto": phones._auto(phone, Switching.from_payload(body).on)})
+        if rest == ["helper", "stop"]:
+            try:
+                phones._stop_helper(phone, Numbered.from_payload(body).n)
+            except Refused as refused:
+                return handler.answer(422, str(refused))
+            return self.json(handler, 201, {"done": "stop"})
         if rest == ["mode"]:
             try:
                 return self.json(handler, 201, {"mode": phones._mode(phone, Choosing.from_payload(body).mode)})

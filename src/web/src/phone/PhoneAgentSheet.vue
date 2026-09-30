@@ -11,7 +11,6 @@ import {ended} from "./outbox.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 import PhoneAgentControls from "./PhoneAgentControls.vue";
-import PhoneHelpers from "./PhoneHelpers.vue";
 
 const props = defineProps({
     state: {type: String, required: true},
@@ -55,7 +54,7 @@ async function start(agent) {
 </script>
 
 <template>
-    <PhoneSheet v-slot="{close}" label="The agent" @close="emit('close')">
+    <PhoneSheet v-slot="{close}" label="The agent" tall @close="emit('close')">
         <h2 class="agent-title">The agent in {{ environment }}</h2>
         <dl class="agent-facts">
             <div class="agent-fact">
@@ -82,10 +81,7 @@ async function start(agent) {
                 </div>
             </template>
         </dl>
-        <PhoneHelpers :helpers="live.helpers || []" />
-        <template v-if="running">
-            <PhoneAgentControls :running="live" :environment="environment" @changed="emit('changed')" />
-        </template>
+        <PhoneAgentControls :running="live" :alive="running" :environment="environment" @changed="emit('changed')" />
         <template v-if="told">
             <p class="agent-told" role="status">{{ told }}</p>
         </template>

@@ -1,5 +1,5 @@
 <script setup>
-defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}});
+defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}, reported: {type: Number, default: 0}});
 const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
 </script>
 
@@ -9,6 +9,10 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
         {{ WORDS[state] }}
         <template v-if="auto">
             <span class="agent-auto">auto</span>
+        </template>
+        <template v-if="reported">
+            <span class="agent-reported" aria-hidden="true">{{ reported }}</span>
+            <span class="phone-hidden">, {{ reported === 1 ? "1 helper reported" : `${reported} helpers reported` }}</span>
         </template>
     </span>
 </template>
@@ -36,6 +40,18 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     line-height: 1.3;
 }
 
+.agent-reported {
+    min-width: 18px;
+    padding: 1px 5px;
+    border-radius: 9px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+}
+
 .agent-dot {
     width: 9px;
     height: 9px;
@@ -51,6 +67,18 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     font-size: 0.647rem;
     font-weight: 700;
     line-height: 1.3;
+}
+
+.agent-reported {
+    min-width: 18px;
+    padding: 1px 5px;
+    border-radius: 9px;
+    background: var(--tone-good);
+    color: #fff;
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
 }
 
 .agent-dot {
@@ -69,6 +97,18 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     font-size: 0.647rem;
     font-weight: 700;
     line-height: 1.3;
+}
+
+.agent-reported {
+    min-width: 18px;
+    padding: 1px 5px;
+    border-radius: 9px;
+    background: var(--tone-good);
+    color: #fff;
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
 }
 
 .agent-dot {
@@ -91,6 +131,18 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     font-size: 0.647rem;
     font-weight: 700;
     line-height: 1.3;
+}
+
+.agent-reported {
+    min-width: 18px;
+    padding: 1px 5px;
+    border-radius: 9px;
+    background: var(--tone-good);
+    color: #fff;
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
 }
 
 .agent-dot {

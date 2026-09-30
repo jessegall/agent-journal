@@ -1,201 +1,21 @@
 <script setup>
-import TextDisplay from "../kit/TextDisplay.vue";
-import ReplyTool from "./ReplyTool.vue";
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import SubagentMark from "./SubagentMark.vue";
 import ChatMark from "../kit/ChatMark.vue";
+import SubagentMark from "./SubagentMark.vue";
 import WhisperMark from "./WhisperMark.vue";
-import Buttons from "../resource/Buttons.vue";
-import OptionsPicker from "../resource/OptionsPicker.vue";
-import Attachments from "./Attachments.vue";
 import MadeCard from "./MadeCard.vue";
-import TurnHeader from "./TurnHeader.vue";
-import TurnQuote from "./TurnQuote.vue";
-import TurnParent from "./TurnParent.vue";
-import TurnPeer from "./TurnPeer.vue";
-import TurnText from "./TurnText.vue";
-import TurnActions from "./TurnActions.vue";
-import TurnReactions from "./TurnReactions.vue";
-import {openUpdate} from "./updateView.js";
-import {peek, peekChip, peekRef, peekThere, route} from "../route.js";
-import {useScope} from "../composables/scope.js";
-import {quoted} from "../format/quote.js";
-import {focusTurn, laidOut} from "../platform/view.js";
-import {meta, store, types} from "../state/store.js";
-import {optimistic} from "../sync/rows.js";
-import {render} from "../text/index.js";
-import {standaloneUpdates} from "../text/cards.js";
-import "../text/all.js";
+import TurnGroup from "./TurnGroup.vue";
+import TurnMessage from "./TurnMessage.vue";
+import TurnReceipt from "./TurnReceipt.vue";
+import TurnThought from "./TurnThought.vue";
+import {useTurnLinks} from "./turnLinks.js";
+import {store} from "../state/store.js";
 
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "edit", "grew", "pin"]);
-const picking = ref(false);
-const unfolded = ref(false);
-const bubble = ref(null);
-const LONG = 6;
-const FOLD_AT = 420;
-const PEER_FOLD_AT = 140;
-const PEER_KEEP = 96;
-
-const scope = useScope();
-const rowsOf = (type) => scope.rows(type);
-const env = computed(() => scope.env || route.value.env);
-const open = (type, n, comment = 0) => (scope.env ? peekThere(scope.env, type, n, comment) : peek(type, n, comment));
-const openRef = (ref) => (ref.includes("@") ? peekRef(ref) : open(ref.split(":")[0], Number(ref.split(":")[1])));
-
-function openChip(e) {
-    if (!scope.env) return peekChip(e);
-    const chip = e.target.closest("[data-peek]");
-    if (!chip) return;
-    e.preventDefault();
-    e.stopPropagation();
-    openRef(chip.dataset.peek);
-}
-
-function chipOrUpdate(e) {
-    const update = e.target.closest("[data-update]");
-    if (!update) return openChip(e);
-    e.preventDefault();
-    e.stopPropagation();
-    openUpdate(Number(update.dataset.update), update);
-}
-
-function shaped() {
-    const el = bubble.value;
-    const text = el && el.querySelector(".thread-text");
-    if (!el || !text || files.value.length) return;
-    Object.assign(el.style, {width: "9999px", maxWidth: ""});
-    const cap = el.getBoundingClientRect().width;
-    const rows = () => Math.round(text.getBoundingClientRect().height / parseFloat(getComputedStyle(text).lineHeight));
-    const lines = rows();
-    el.style.width = "";
-    if (lines < 2 || lines > LONG) return;
-    let low = Math.ceil(cap / lines);
-    let high = Math.ceil(cap);
-    while (high - low > 4) {
-        const mid = Math.floor((low + high) / 2);
-        el.style.width = `${mid}px`;
-        if (rows() > lines) low = mid;
-        else high = mid;
-    }
-    el.style.width = `${high}px`;
-}
-
-onMounted(() =>
-    nextTick(() => {
-        shaped();
-    })
-);
-const mine = computed(() => props.turn.who === "user");
-const subagentTask = (id) =>
-    rowsOf("agent")
-        .flatMap((agent) => agent.data.subagent_rows || [])
-        .find((sub) => sub.task_id === id)?.task;
-const called = (id) => subagentTask(id) ?? `agent ${id}`;
-const between = computed(() =>
-    props.turn.data?.peer
-        ? `From ${called(props.turn.data.peer)}`
-        : props.turn.data?.sent_to
-          ? `Sent to ${called(props.turn.data.sent_to)}`
-          : ""
-);
-const words = computed(() => quoted(props.turn.brief || props.turn.title));
-const split = computed(() => standaloneUpdates(words.value.text, {types: types.value}));
+const {openRef} = useTurnLinks();
 const data = computed(() => props.turn.data);
-const updates = computed(() => split.value.cards);
-const html = computed(() => render(split.value.text, {types: types.value, env: env.value}));
-const bubbled = computed(
-    () =>
-        Boolean(split.value.text) ||
-        !split.value.cards.length ||
-        Boolean(words.value.quote || files.value.length || results.value.length || resourceComment.value || props.turn.type !== "message")
-);
-const LONG_TEXT = 600;
-const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
-const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: env.value}));
-const commentParent = computed(() => {
-    if (props.turn.type !== "comment") return null;
-    const parent = props.turn.refs.find((ref) => {
-        const [type] = ref.split(":");
-        return type !== "comment" && meta(type);
-    });
-    if (!parent) return null;
-    const [type, n] = parent.split(":");
-    return {type, n: Number(n), label: `${meta(type).title.toLowerCase()} ${n}`};
-});
-const messageReply = computed(() => commentParent.value?.type === "message");
-const resourceComment = computed(() => !!commentParent.value && !messageReply.value);
-
-function openComment() {
-    if (commentParent.value) open(commentParent.value.type, commentParent.value.n, props.turn.n);
-}
-
-function toQuoted() {
-    const ref = props.turn.refs.find((r) => rowsOf(r.split(":")[0]).length && r !== props.turn.ref);
-    if (ref && focusTurn(ref)) return;
-    const head = words.value.quote.slice(0, 40);
-    const hit = rowsOf("message").find((m) => m.n !== props.turn.n && quoted(m.brief || m.title).text.startsWith(head));
-    if (hit) focusTurn(hit.ref);
-}
-
-function worded(ref, word) {
-    return ref.type && meta(ref.type) ? `${meta(ref.type).title.toLowerCase()} ${ref.n}` : word;
-}
-
-const results = computed(() => {
-    const declared = props.turn.sections
-        .flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)})))
-        .filter((b) => b.ref.type);
-    const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
-    const linked = props.turn.refs
-        .filter((ref) => !named.has(ref) && refOf(ref).type)
-        .map((ref) => ({part: "filed while this message was in hand", word: worded(refOf(ref), ref), ref: refOf(ref)}));
-    const seen = new Set();
-    const quotedMessage = (b) => words.value.quote && b.ref.type === "message" && props.turn.refs.includes(`message:${b.ref.n}`);
-    return [...declared, ...linked]
-        .filter((b) => b.ref.type !== "comment")
-        .filter((b) => !quotedMessage(b))
-        .filter((b) => !b.ref.type || (!seen.has(`${b.ref.type}:${b.ref.n}`) && seen.add(`${b.ref.type}:${b.ref.n}`)))
-        .map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
-});
-const faces = computed(() => {
-    const seen = {};
-    for (const r of rowsOf("reaction").filter((r) => r.refs.includes(props.turn.ref) && !r.deleted))
-        (seen[r.data.face] ||= []).push(r.seen[0]);
-    return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
-});
-const files = computed(() => Object.keys(props.turn.data.files || {}));
-watch([html, laidOut], () =>
-    nextTick(() => {
-        shaped();
-    })
-);
-
-function refOf(word) {
-    const m = word.trim().match(/^([\w-]+)[ :](\d+)$/);
-    const type = m && (meta(m[1]) ? m[1] : types.value.find((t) => t.title.toLowerCase() === m[1].toLowerCase())?.name);
-    return type ? {type, n: Number(m[2])} : {type: "", n: 0};
-}
-
-async function react(face) {
-    picking.value = false;
-    const pending = {
-        ref: `reaction:pending-${Date.now()}`,
-        type: "reaction",
-        n: 0,
-        refs: [props.turn.ref],
-        seen: ["user"],
-        data: {face},
-        deleted: 0,
-    };
-    const reacting = () => scope.api.act(props.turn.type, props.turn.n, "react", {face});
-    await (scope.env ? reacting() : optimistic("reaction", pending, reacting));
-}
-
-async function drop() {
-    await scope.api.act(props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
-}
 
 function markClick(data) {
     if (data.page) return {click: () => (store.pluginPage = {plugin: data.name, open: data.page})};
@@ -219,12 +39,7 @@ function markClick(data) {
             </div>
         </template>
         <template #thought>
-            <div class="thread-turn thought" :data-ref="turn.ref">
-                <TextDisplay class="thought-text" :text="turn.title" />
-                <div class="thread-tools">
-                    <ReplyTool title="Reply to this thought, quoting it" @reply="emit('reply', {text: words.text, ref: turn.ref})" />
-                </div>
-            </div>
+            <TurnThought :turn="turn" @reply="emit('reply', $event)" />
         </template>
         <template #compacted>
             <div class="thread-turn compacted" :data-ref="turn.ref">
@@ -237,24 +52,7 @@ function markClick(data) {
             </div>
         </template>
         <template #group>
-            <div class="thread-turn group" :data-ref="turn.ref">
-                <ChatMark
-                    :icon="turn.icon"
-                    :tone="data.tone"
-                    :color="data.color"
-                    :label="turn.title"
-                    :at="turn.created"
-                    :title="unfolded ? 'Fold them back into one line' : 'Show each of them'"
-                    @click="unfolded = !unfolded"
-                />
-                <template v-if="unfolded">
-                    <div class="thread-group">
-                        <template v-for="t in turn.turns" :key="t.ref">
-                            <Turn :turn="t" @reply="emit('reply', $event)" @pin="emit('pin', $event)" />
-                        </template>
-                    </div>
-                </template>
-            </div>
+            <TurnGroup :turn="turn" @reply="emit('reply', $event)" @pin="emit('pin', $event)" />
         </template>
         <template #whisper>
             <div class="thread-turn whisper" :data-ref="turn.ref">
@@ -272,122 +70,15 @@ function markClick(data) {
             </div>
         </template>
         <template #receipt>
-            <div class="thread-turn receipt" :data-ref="turn.ref">
-                <div class="thread-receipt" @click="openChip" v-html="html" />
-            </div>
+            <TurnReceipt :turn="turn" />
         </template>
         <template #default>
-            <div
-                :class="[
-                    'thread-turn',
-                    {
-                        mine,
-                        peer: !!between,
-                        ask: turn.type === 'question',
-                        long,
-                        quoting: words.quote,
-                        lit: store.focus === turn.ref,
-                        'comment-origin': resourceComment,
-                        'has-update': updates.length > 0,
-                    },
-                ]"
-                :data-ref="turn.ref"
-                @mouseleave="picking = false"
-            >
-                <template v-if="turn.who === 'system'">
-                    <span class="thread-from">journal</span>
-                </template>
-                <div v-show="bubbled" ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
-                    <template v-if="resourceComment">
-                        <TurnParent :label="commentParent.label" @open="openComment" />
-                    </template>
-                    <template v-if="between">
-                        <TurnPeer :label="between" />
-                    </template>
-                    <template v-if="results.length || turn.type === 'question'">
-                        <div :class="['thread-results', {live: !turn.completed}]">
-                            <template v-if="turn.type === 'question'">
-                                <p class="thread-ask-label">Question</p>
-                            </template>
-                            <template v-for="b in results" :key="`${b.part}:${b.type}:${b.n}`">
-                                <button type="button" class="thread-pill" :title="b.part" @click.stop="open(b.type, b.n)">
-                                    {{ b.word }}
-                                </button>
-                            </template>
-                        </div>
-                    </template>
-                    <template v-if="words.quote">
-                        <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
-                    </template>
-                    <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
-                        <p class="thread-ask">{{ turn.title }}</p>
-                    </template>
-                    <TurnText
-                        :html="html"
-                        :fold-at="between ? PEER_FOLD_AT : FOLD_AT"
-                        :keep="between ? PEER_KEEP : 320"
-                        @activate="chipOrUpdate"
-                    />
-                    <template v-if="turn.type === 'question'">
-                        <template v-if="turn.abstract">
-                            <TextDisplay class="thread-context" :text="turn.abstract" />
-                        </template>
-                        <OptionsPicker :resource="turn" />
-                    </template>
-                    <template v-if="turn.type === 'message'">
-                        <Buttons :resource="turn" />
-                    </template>
-                    <template v-if="files.length">
-                        <Attachments :resource="turn" @grew="emit('grew')" />
-                    </template>
-                </div>
-                <template v-for="(card, i) in split.cards" :key="`update-${i}`">
-                    <div class="thread-update" @click="chipOrUpdate" v-html="card" />
-                </template>
-                <TurnActions
-                    :turn="turn"
-                    :mine="mine"
-                    :text="words.text"
-                    :picking="picking"
-                    @update:picking="picking = $event"
-                    @reply="emit('reply', $event)"
-                    @pin="emit('pin', $event)"
-                    @delete="drop"
-                    @react="react"
-                />
-                <template v-if="faces.length">
-                    <TurnReactions :faces="faces" @react="react" />
-                </template>
-                <TurnHeader :turn="turn" />
-            </div>
+            <TurnMessage :turn="turn" @reply="emit('reply', $event)" @pin="emit('pin', $event)" @grew="emit('grew')" />
         </template>
     </SwitchCase>
 </template>
 
 <style scoped>
-.thread-turn.thought {
-    max-width: 88%;
-}
-
-.thought-text {
-    padding: 7px 11px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--raised) 50%, transparent);
-    color: var(--text-4);
-    font-size: 11.5px;
-    font-style: italic;
-    line-height: 1.5;
-}
-
-.thought-text :deep(> :first-child) {
-    margin-top: 0;
-}
-
-.thought-text :deep(> :last-child) {
-    margin-bottom: 0;
-}
-
 .thread-turn {
     position: relative;
     display: flex;
@@ -400,104 +91,8 @@ function markClick(data) {
     max-width: min(78%, calc(100% - var(--turn-gutter)));
 }
 
-.thread-turn.has-update {
-    width: min(78%, calc(100% - var(--turn-gutter)));
-}
-
-.thread-update {
-    align-self: stretch;
-    width: 100%;
-    margin: 2px 0;
-}
-
-.thread-turn.peer .thread-bubble {
-    --pill-text: var(--text-4);
-    --pill-border: var(--border);
-    --pill-size: 0.92em;
-
-    padding: 7px 10px;
-    border-color: #1d1e22;
-    background: none;
-    color: var(--text-3);
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.thread-turn.group,
-.thread-group > .thread-turn {
-    max-width: 100%;
-}
-
-.thread-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin: 6px 0 2px 14px;
-    padding-left: 12px;
-    border-left: 1px solid var(--border);
-}
-
-.thread-turn.receipt {
-    max-width: 100%;
-}
-
 .thread-turn.compacted {
     align-items: center;
-}
-
-.thread-receipt {
-    padding: 0 2px;
-    font-size: 12px;
-    color: var(--text-3);
-}
-
-.thread-receipt :deep(p) {
-    margin: 0;
-}
-
-.thread-turn > .thread-from {
-    margin: 0 0 3px 2px;
-    color: var(--accent-text);
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.thread-bubble {
-    width: fit-content;
-    max-width: 100%;
-}
-
-.thread-turn.mine {
-    align-self: flex-end;
-    align-items: flex-end;
-}
-
-.thread-turn.ask {
-    width: calc(100% - var(--turn-gutter));
-    max-width: calc(100% - var(--turn-gutter));
-}
-
-.thread-bubble {
-    padding: 9px 12px;
-    border: 1px solid #232529;
-    border-radius: 9px;
-    background: #161719;
-    overflow-wrap: anywhere;
-    transition: opacity 0.12s ease;
-}
-
-.thread-turn.long {
-    width: calc(100% - var(--turn-gutter));
-    max-width: calc(100% - var(--turn-gutter));
-}
-
-.thread-turn.long .thread-bubble {
-    width: 100%;
-    padding: 14px 18px;
-    border-color: var(--border);
-    border-radius: 12px;
-    background: var(--raised);
-    line-height: 1.65;
 }
 
 .thread-turn.card.mine {
@@ -505,146 +100,8 @@ function markClick(data) {
     justify-content: flex-end;
 }
 
-.thread-turn.mine .thread-bubble {
-    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-}
-
-.thread-turn.comment-origin .thread-bubble {
-    border-color: color-mix(in srgb, var(--blocking) 45%, var(--border-2));
-    background: color-mix(in srgb, var(--blocking) 9%, #161719);
-    cursor: pointer;
-}
-
-.thread-turn.mine :deep(.thread-text) {
-    padding-bottom: 4px;
-}
-
-.thread-turn.ask .thread-bubble {
-    width: 100%;
-    box-sizing: border-box;
-    border-color: color-mix(in srgb, var(--blocking) 40%, transparent);
-}
-
-.thread-results {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin: -2px -12px 5px;
-    padding: 0 12px 1px;
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-3);
-}
-
-.thread-results.live {
-    color: var(--accent-text);
-}
-
-.thread-pill {
-    padding: 0 6px;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border-2));
-    border-radius: 99px;
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    color: var(--text-2);
-    font-size: 10px;
-    line-height: 1.6;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
-    text-transform: none;
-}
-
-button.thread-pill {
-    cursor: pointer;
-}
-
-button.thread-pill:hover {
-    border-color: var(--accent);
-    color: var(--accent-text);
-}
-
-.thread-ask-label {
-    margin: 0 auto 0 0;
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--blocking);
-}
-
-.thread-turn.quoting {
-    min-width: min(280px, calc(100% - var(--turn-gutter)));
-}
-
-.thread-turn.quoting .thread-bubble {
-    min-width: 100%;
-    box-sizing: border-box;
-}
-
-.thread-ask {
-    margin: 0 0 6px;
-    font-size: 14.5px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.thread-context {
-    margin: 4px 0 0;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.thread-tools {
-    position: absolute;
-    top: -11px;
-    right: -6px;
-    display: flex;
-    gap: 1px;
-    padding: 1px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    background: var(--raised);
-    opacity: 0;
-    transform: translateY(3px);
-    pointer-events: none;
-    transition:
-        opacity 0.16s ease-out,
-        transform 0.16s ease-out;
-}
-
-.thread-turn:hover :deep(.thread-tools) {
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-}
-
-.thread-tool {
-    padding: 1px 7px;
-    border: 0;
-    border-radius: 99px;
-    background: none;
-    color: var(--text-3);
-    font-size: 10.5px;
-    line-height: 1.5;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.thread-tool:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.thread-turn.mine :deep(.thread-faces) {
-    justify-content: flex-end;
-}
-
-.thread-turn.lit .thread-bubble {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+.thread-turn.mine {
+    align-self: flex-end;
+    align-items: flex-end;
 }
 </style>

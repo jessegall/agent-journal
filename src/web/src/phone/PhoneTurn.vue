@@ -14,6 +14,7 @@ import PhoneBody from "./PhoneBody.vue";
 import PhoneFiles from "./PhoneFiles.vue";
 import PhoneReactions from "./PhoneReactions.vue";
 import PhoneMeta from "./PhoneMeta.vue";
+import PhoneOwed from "./PhoneOwed.vue";
 import {clock} from "../format/time.js";
 import {kindWord} from "./kinds.js";
 
@@ -109,6 +110,7 @@ function pressed(event) {
                 <template v-if="item.who === 'user' && !continues && !between">
                     <PhoneMeta :item="item" :elsewhere="elsewhere" />
                 </template>
+                <PhoneOwed :item="item" />
                 <template v-if="holdable">
                     <PhoneActions :class="['turn-actions', item.who === 'user' && !between ? 'at-foot' : 'at-head', {quiet: item.who === 'user' ? continues : joined}]" @press="pressed" />
                 </template>

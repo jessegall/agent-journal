@@ -5,10 +5,32 @@ import {resetLabel as resets, usedPercent as used} from "../format/usage.js";
 import Spinner from "../kit/Spinner.vue";
 import Segmented from "../kit/Segmented.vue";
 import {MODES, modeOf} from "../domain/modes.js";
+import {helperState} from "../domain/helpers.js";
+import PhoneHelpers from "./PhoneHelpers.vue";
 import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
 
-const props = defineProps({running: {type: Object, default: () => ({})}, environment: {type: String, required: true}});
+const props = defineProps({running: {type: Object, default: () => ({})}, alive: {type: Boolean, default: false}, environment: {type: String, required: true}});
+const helpers = computed(() => props.running.helpers || []);
+const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
+const stopping = ref(0);
+const helpersTold = ref("");
+
+async function stopHelper(row) {
+    stopping.value = row.n;
+    helpersTold.value = "";
+    try {
+        await phone.helperStop(row.n);
+        announce(`Stopping ${row.data?.name || "the helper"}`);
+        emit("changed");
+    } catch (error) {
+        if (ended(error)) return failed(error);
+        const words = !(error instanceof PhoneError) ? "You need a connection to stop a helper." : error.status === 404 ? "This phone can't stop helpers yet." : `Couldn't stop ${row.data?.name || "the helper"}. Try again.`;
+        tell(helpersTold, words);
+    } finally {
+        stopping.value = 0;
+    }
+}
 const emit = defineEmits(["changed"]);
 const failed = inject("phoneFailed");
 const busy = ref("");
@@ -90,7 +112,10 @@ async function act(what) {
         <div class="controls-mode">
             <span id="work-mode" class="controls-name">Work mode</span>
             <Segmented class="controls-segments" :options="MODES" :value="mode.key" fill aria-labelledby="work-mode" @pick="pickMode" />
-            <span class="controls-note">{{ mode.note }}</span>
+            <span class="controls-note fixed">{{ mode.note }}</span>
+            <template v-if="mode.key === 'solo' && helpersOut">
+                <span class="controls-hint">Solo sends no new helpers; the {{ helpersOut }} already out keep going until they finish.</span>
+            </template>
             <template v-if="modeTold">
                 <span class="controls-failed">{{ modeTold }}</span>
             </template>
@@ -107,13 +132,17 @@ async function act(what) {
                 <span class="controls-failed">{{ autoTold }}</span>
             </template>
         </div>
-        <template v-if="contextUsed !== null">
+        <PhoneHelpers :helpers="helpers" :stopping="stopping" @stop="stopHelper" />
+        <template v-if="helpersTold">
+            <p class="controls-told">{{ helpersTold }}</p>
+        </template>
+        <template v-if="alive && contextUsed !== null">
             <div class="controls-meter">
                 <span class="controls-name">Context · {{ contextUsed }}% used</span>
                 <span class="controls-track" aria-hidden="true"><span :style="{width: `${contextUsed}%`}" /></span>
             </div>
         </template>
-        <template v-for="window in windows" :key="window.key || window.label">
+        <template v-for="window in alive ? windows : []" :key="window.key || window.label">
             <div class="controls-meter">
                 <span class="controls-name">{{ window.label }} · {{ used(window) }}% used</span>
                 <span class="controls-note">{{ resets(window) }}</span>
@@ -123,7 +152,7 @@ async function act(what) {
         <template v-if="told">
             <p class="controls-told">{{ told }}</p>
         </template>
-        <template v-if="confirming">
+        <template v-if="alive && confirming">
             <p class="controls-ask">Stop the agent in {{ environment }}? It ends its session.</p>
             <div class="controls-row">
                 <button type="button" class="controls-button" @click="confirming = false">Cancel</button>
@@ -135,7 +164,7 @@ async function act(what) {
                 </button>
             </div>
         </template>
-        <template v-else>
+        <template v-else-if="alive">
             <div class="controls-row">
                 <button type="button" class="controls-button" :disabled="Boolean(busy)" @click="act(running.paused ? 'resume' : 'pause')">
                     <template v-if="busy === 'pause' || busy === 'resume'">
@@ -223,6 +252,16 @@ async function act(what) {
 .controls-segments :deep(.segmented-option.on) {
     background: var(--accent);
     color: #fff;
+}
+
+.controls-note.fixed {
+    min-height: calc(3 * 1.35em);
+    line-height: 1.35;
+}
+
+.controls-hint {
+    color: var(--text);
+    font-size: 0.765rem;
 }
 
 .controls-box {

@@ -293,6 +293,9 @@ class Phones(Controller):
     def _mode(self, phone: Phone, mode: str) -> str:
         return pick(self._home(phone), mode, USER)
 
+    def _stop_helper(self, phone: Phone, n: int) -> None:
+        Helpers(self._home(phone), actor=USER).stop(n)
+
     def _list(self, phone: Phone, kind: str) -> Listing:
         if kind not in CARDS:
             raise Refused(f"a phone's home screen shows {', '.join(CARDS)}, not {kind!r}")
