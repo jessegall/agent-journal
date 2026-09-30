@@ -1,15 +1,28 @@
+import re
+
 from resources.base import AGENT
+
+ASKING = re.compile(r"\?|\b(?:relay|reply|answer me|tell me|let me know|what do you think|do you (?:think|agree|understand)|your (?:opinion|view|take))\b", re.I)
 
 
 def theirs(message) -> bool:
     return message.seen[:1] != [AGENT]
 
 
+def asks(message) -> bool:
+    return bool(ASKING.search(f"{message.title}\n{message.brief}"))
+
+
+def replied(journal, message) -> bool:
+    return any(r.seen[:1] == [AGENT] for r in journal.comments.linked_to(message.ref))
+
+
 def answered(journal, message) -> bool:
+    if asks(message):
+        return replied(journal, message)
     if message.refs or message.sections:
         return True
-    answers = journal.comments.linked_to(message.ref) + journal.reactions.linked_to(message.ref)
-    return any(r.seen[:1] == [AGENT] for r in answers)
+    return replied(journal, message) or any(r.seen[:1] == [AGENT] for r in journal.reactions.linked_to(message.ref))
 
 
 def read_and_open(journal) -> list:

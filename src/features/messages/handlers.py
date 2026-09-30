@@ -7,7 +7,7 @@ from engine.transcript import IDLE
 from providers.turns import last_text
 from controllers.messages import only_emoji
 from features import trigger
-from features.messages.answering import in_hand, read_and_open, theirs, unanswered
+from features.messages.answering import answered, in_hand, read_and_open, theirs, unanswered
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, ENVIRONMENT, SECTION, USER, titled
 from resources.types import TYPES
@@ -96,7 +96,7 @@ class CloseHandled(Handler):
             return
         for message in read_and_open(context.journal):
             results = [*message.refs, *(s[SECTION.body] for s in message.sections)]
-            if results:
+            if results and answered(context.journal, message):
                 context.journal.messages.complete(message.n, how=f"handled: {', '.join(dict.fromkeys(results))}")
 
 
@@ -123,7 +123,7 @@ class CloseAnswered(Handler):
             if kind != "message" or not n.isdigit():
                 continue
             message = messages.load(n)
-            if not message.completed and theirs(message):
+            if not message.completed and theirs(message) and answered(context.journal, message):
                 filed(context, message)
                 messages.complete(message.n, how=f"{ANSWERS[event.type]} by the agent")
 

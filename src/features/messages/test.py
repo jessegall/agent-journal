@@ -43,6 +43,9 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     record.set_setting("features", {"messages.linking": False})
     filed = Todos(record, actor=AGENT).create("wire the last route")
     record.set_setting("features", {})
+    Messages(record, actor=AGENT).process(m.n, "how is it going?", f"todo {filed.n}")
+    report(record, "idle", "Stop")
+    assert not Messages(record).load(m.n).completed, "a question filed as a to-do is not answered: it stays open until a written reply"
     Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
     report(record, "working", "PreToolUse")
     assert not holds(record).get("status"), "a reply settles it and lifts the hold"
