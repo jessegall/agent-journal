@@ -117,7 +117,7 @@ function sent() {
         <PhoneReader :key="reading" :target="reading" @close="reading = ''" @reply="reply" />
     </template>
     <template v-else>
-        <div ref="list" class="home-feed" @click.capture="chipped">
+        <div ref="list" class="home-feed" @click.capture="chipped" @load.capture="nearBottom() && toBottom()">
             <template v-for="item in feed.items" :key="item.type + item.n">
                 <PhoneTurn :item="item" @hold="(it) => it.type === 'message' && (held = it)" />
             </template>
@@ -145,7 +145,7 @@ function sent() {
 .home-bar {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
     padding: 12px 0;

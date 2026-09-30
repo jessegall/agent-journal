@@ -1,11 +1,13 @@
 import json
+import mimetypes
+from urllib.parse import quote
 from dataclasses import dataclass
 from http.cookies import SimpleCookie
 
 from engine.record import Record
 from features.phone.controller import Phones, Stale
 from engine.color import identity
-from features.sharing.page import unshared
+from features.sharing.page import PICTURES, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused
@@ -80,6 +82,8 @@ class PhoneRoutes:
     def get(self, handler, rest: list[str]) -> None:
         if rest[:1] == ["assets"] and len(rest) == 2:
             return handler.asset(rest[1])
+        if rest[:1] == ["file"] and len(rest) == 4:
+            return self.file(handler, rest)
         if rest[:1] in (["state"], ["feed"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
@@ -93,6 +97,19 @@ class PhoneRoutes:
         if not handler.path.split("?", 1)[0].endswith("/"):
             return handler.send(301, b"", {"Location": "/p/"})
         return handler.send(200, page.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **PAGE_HEADERS})
+
+    def file(self, handler, rest: list[str]) -> None:
+        phone = self.phone(handler)
+        if phone is None:
+            return None
+        try:
+            found = self.phones(handler)._file(phone, f"{rest[1]}:{rest[2]}", rest[3])
+        except Refused as refused:
+            return handler.answer(404, str(refused))
+        kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
+        shown = found.suffix.lower() in PICTURES
+        return handler.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "private, max-age=3600",
+                                                      "Content-Disposition": f"{'inline' if shown else 'attachment'}; filename*=UTF-8''{quote(found.name)}"})
 
     def read(self, handler, rest: list[str]) -> None:
         phone = self.phone(handler)

@@ -12,6 +12,7 @@ defineProps({running: Boolean});
 <style scoped>
 .agent-state {
     display: flex;
+    min-height: 24px;
     align-items: center;
     gap: 6px;
     color: var(--text-3);

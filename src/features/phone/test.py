@@ -90,6 +90,9 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         f"{base}/p/attach/{n}/photo.jpg", b"\xff\xd8picture", {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"},
         method="POST"), timeout=5).status
     assert upload(made["n"]) == 201 and "photo.jpg" in Messages(record, actor=SYSTEM).load(made["n"]).files, "a photo goes onto the phone's message"
+    fetched = urllib.request.urlopen(urllib.request.Request(f"{base}/p/file/message/{made['n']}/photo.jpg", headers={"Cookie": f"__Host-phone={key}"}), timeout=5)
+    assert fetched.read() == b"\xff\xd8picture", "and opens again from the phone"
+    assert call(base, f"/p/file/message/{made['n']}/..%2F..%2Fsecret", key=key).status == 404, "and nothing outside the message's own files"
     other = Messages(record, actor=USER).create("from the computer", brief="from the computer")
     with pytest.raises(urllib.error.HTTPError):
         upload(other.n)

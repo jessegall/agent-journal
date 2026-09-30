@@ -9,6 +9,9 @@ import {clock} from "../format/time.js";
 
 const props = defineProps({item: {type: Object, required: true}});
 const files = computed(() => Object.keys(props.item.files || {}));
+const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
+const picture = (name) => PICTURES.test(name);
+const fileUrl = (name) => `./file/${props.item.type}/${props.item.n}/${encodeURIComponent(name)}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const emit = defineEmits(["hold"]);
 const HOLD_FOR = 450;
@@ -33,8 +36,17 @@ const release = () => clearTimeout(timer);
                 <TextDisplay :text="item.brief || item.title" />
                 <template v-if="files.length">
                     <span class="turn-files">
-                        <Icon name="paperclip" :size="12" />
-                        {{ files.join(", ") }}
+                        <template v-for="name in files" :key="name">
+                            <a class="turn-file" :href="fileUrl(name)" target="_blank" rel="noopener">
+                                <template v-if="picture(name)">
+                                    <img class="turn-picture" :src="fileUrl(name)" :alt="name" loading="lazy" />
+                                </template>
+                                <template v-else>
+                                    <Icon name="paperclip" :size="12" />
+                                    {{ name }}
+                                </template>
+                            </a>
+                        </template>
                     </span>
                 </template>
                 <template v-if="faces.length">
@@ -62,6 +74,16 @@ const release = () => clearTimeout(timer);
     overflow-wrap: anywhere;
 }
 
+.turn.user {
+    align-self: flex-end;
+    background: var(--accent-dim);
+}
+
+.turn.agent {
+    align-self: flex-start;
+    background: var(--raised);
+}
+
 .turn-faces {
     display: inline-block;
     margin-top: 6px;
@@ -73,15 +95,32 @@ const release = () => clearTimeout(timer);
 
 .turn-files {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     margin-top: 6px;
     color: var(--text-2);
     font-size: 13px;
 }
 
+.turn-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent-text);
+}
+
+.turn-picture {
+    display: block;
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
 .turn-meta {
     display: flex;
+    width: 100%;
     align-items: center;
     justify-content: flex-end;
     gap: 4px;
@@ -90,35 +129,7 @@ const release = () => clearTimeout(timer);
     font-size: 11.5px;
 }
 
-.turn.agent .turn-faces {
-    display: inline-block;
-    margin-top: 6px;
-    padding: 1px 7px;
-    border-radius: 10px;
-    background: var(--bg);
-    font-size: 14px;
-}
-
-.turn-files {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 6px;
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.turn-meta {
+.turn.agent .turn-meta {
     justify-content: flex-start;
-}
-
-.turn.user {
-    align-self: flex-end;
-    background: var(--accent-dim);
-}
-
-.turn.agent {
-    align-self: flex-start;
-    background: var(--raised);
 }
 </style>

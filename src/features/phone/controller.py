@@ -195,6 +195,18 @@ class Phones(Controller):
     def _reaches(self, phone: Phone, row) -> bool:
         return row.data.get("environment") in (phone.environment, None, "")
 
+    def _file(self, phone: Phone, ref: str, name: str) -> Path:
+        kind, _, n = ref.partition(":")
+        if kind not in (*SAID, *READABLE) or not n.isdigit():
+            raise Refused(f"a phone opens files of messages, questions, reports, documents and plans, not {ref!r}")
+        controller = CONTROLLERS[kind](self._home(phone), actor=SYSTEM)
+        row = controller.load(int(n))
+        folder = controller.folder(row.n).resolve()
+        found = (folder / Path(name).name).resolve()
+        if row.deleted or not self._reaches(phone, row) or name not in row.files or found.parent != folder or not found.is_file():
+            raise Refused(f"no file {name!r} on {ref}")
+        return found
+
     def _read(self, phone: Phone, ref: str) -> dict:
         kind, _, n = ref.partition(":")
         if kind not in READABLE or not n.isdigit():
