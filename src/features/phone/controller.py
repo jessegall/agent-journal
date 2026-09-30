@@ -153,8 +153,22 @@ class Phones(Controller):
         items = sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:]
         faces = self._faces(home, {item["ref"] for item in items})
         items = [{**item, "reactions": faces.get(item["ref"], [])} for item in items]
+        since = items[0]["created"] if items else 0.0
+        items = sorted([*items, *self._marks(home, since)], key=lambda item: item["created"])
         return Feed(items=items, waiting=self._waiting(phone),
                     agent=bool(Sessions(self.record.root).holder(phone.environment)))
+
+    def _marks(self, home: Record, since: float) -> list[dict]:
+        agents = CONTROLLERS["agent"](home, actor=SYSTEM)
+        rows = [shaped(agents.load(row["n"]), home, VIEWER) for row in agents.summaries() if not row["deleted"] and row["updated"] >= since]
+        sessions = [row for row in rows if not row["data"].get("parent")]
+        thoughts = [{"type": "thought", "n": f"{row['n']}-{t['at']}", "ref": f"thought:{row['n']}-{t['at']}", "who": "agent", "created": t["at"],
+                     "title": t["text"]}
+                    for row in sessions for t in row["data"].get("thoughts") or [] if t["at"] >= since]
+        cards = [{"type": "card", "n": f"{row['n']}-{c['at']}", "ref": f"card:{row['n']}-{c['at']}", "who": "agent", "created": c["at"],
+                  "title": c.get("label", ""), "brief": c.get("detail", "")}
+                 for row in sessions for c in row["data"].get("cards") or [] if c["at"] >= since]
+        return [*thoughts, *cards]
 
     def _bar(self, phone: Phone) -> dict:
         return current(self._home(phone))

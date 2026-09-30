@@ -13,6 +13,12 @@ const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
 const fileUrl = (name) => `./file/${props.item.type}/${props.item.n}/${encodeURIComponent(name)}`;
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
+const NOT_FILED = ["message", "comment", "reaction"];
+const NAMES = {todo: "to-do", doc: "document"};
+const filed = computed(() =>
+    props.item.who === "user" ? (props.item.refs || []).filter((ref) => !NOT_FILED.includes(ref.split(":")[0])) : [],
+);
+const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const emit = defineEmits(["hold"]);
 const HOLD_FOR = 450;
@@ -25,6 +31,17 @@ const release = () => clearTimeout(timer);
     <SwitchCase :value="item.type">
         <template #question>
             <PhoneQuestion :question="item" />
+        </template>
+        <template #thought>
+            <TextDisplay class="turn-thought" :text="item.title" />
+        </template>
+        <template #card>
+            <div class="turn-card">
+                <TextDisplay :text="item.title" />
+                <template v-if="item.brief">
+                    <TextDisplay class="turn-card-detail" :text="item.brief" />
+                </template>
+            </div>
         </template>
         <template #default>
             <div
@@ -47,6 +64,14 @@ const release = () => clearTimeout(timer);
                                     {{ name }}
                                 </template>
                             </a>
+                        </template>
+                    </span>
+                </template>
+                <template v-if="filed.length">
+                    <span class="turn-filed">
+                        Filed
+                        <template v-for="ref in filed" :key="ref">
+                            <a class="turn-chip" href="#" :data-peek="ref">{{ named(ref) }}</a>
                         </template>
                     </span>
                 </template>
@@ -91,6 +116,50 @@ const release = () => clearTimeout(timer);
 .turn.agent {
     align-self: flex-start;
     background: var(--raised);
+}
+
+.turn-thought {
+    align-self: flex-start;
+    max-width: 88%;
+    padding: 7px 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--raised) 50%, transparent);
+    color: var(--text-4);
+    font-size: 12.5px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+.turn-card {
+    align-self: center;
+    max-width: 92%;
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12px;
+    text-align: center;
+}
+
+.turn-card-detail {
+    color: var(--text-4);
+}
+
+.turn-filed {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.turn-chip {
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    color: var(--accent-text);
+    text-decoration: none;
 }
 
 .turn-faces {

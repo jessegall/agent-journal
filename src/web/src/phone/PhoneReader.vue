@@ -7,6 +7,7 @@ import Spinner from "../kit/Spinner.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
+import {ended} from "./outbox.js";
 
 const SIZES = [16, 18, 20];
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
@@ -29,7 +30,8 @@ async function load() {
     try {
         row.value = await phone.row(props.target);
     } catch (error) {
-        failed(error);
+        if (ended(error)) failed(error);
+        else told.value = error.message;
     }
 }
 
@@ -117,6 +119,9 @@ onMounted(load);
                     <Btn large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ NAMES[row.type] || row.type }}</Btn>
                 </template>
             </footer>
+        </template>
+        <template v-else-if="told">
+            <p class="reader-told">{{ told }}</p>
         </template>
         <template v-else>
             <div class="reader-wait"><Spinner /></div>
