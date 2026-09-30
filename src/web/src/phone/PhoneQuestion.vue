@@ -174,7 +174,7 @@ onUnmounted(() => {
 
 .question-kind {
     color: var(--accent-text);
-    font-size: 0.735rem;
+    font-size: 0.735em;
     font-weight: 600;
 }
 
@@ -191,7 +191,12 @@ onUnmounted(() => {
 .question-options {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
+}
+
+.question :deep(.btn),
+.question :deep(button) {
+    font-size: 1em;
 }
 
 .question-options .btn {
@@ -215,7 +220,7 @@ onUnmounted(() => {
     background: var(--bg);
     color: var(--text);
     font: inherit;
-    font-size: max(16px, 1rem);
+    font-size: max(16px, 1em);
 }
 
 .question-dismiss {
@@ -226,13 +231,13 @@ onUnmounted(() => {
     background: none;
     color: var(--text-3);
     font: inherit;
-    font-size: 0.824rem;
+    font-size: 0.824em;
 }
 
 .question-trouble {
     margin: 0;
     color: var(--danger);
-    font-size: 0.824rem;
+    font-size: 0.824em;
 }
 
 .question-answer {

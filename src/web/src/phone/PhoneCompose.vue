@@ -89,10 +89,10 @@ async function send() {
 </script>
 
 <template>
-    <form class="compose" @submit.prevent="send">
+    <form class="compose" @submit.prevent="send" @click="tapped">
         <template v-if="about && !quote">
             <div class="compose-about">
-                About {{ about.replace(":", " ") }}
+                <span>About {{ about.replace(":", " ") }}</span>
                 <CloseButton @click="emit('unabout')" />
             </div>
         </template>
@@ -110,30 +110,30 @@ async function send() {
                             <img class="compose-thumb" :src="previews.get(file)" :alt="file.name" />
                         </template>
                         <template v-else>
-                            {{ file.name }}
+                            <span class="compose-file-name">{{ file.name }}</span>
                         </template>
                         <CloseButton @click="files = files.filter((_, at) => at !== i)" />
                     </span>
                 </template>
             </div>
         </template>
-        <div class="compose-bar" @click="tapped">
+        <textarea
+            ref="box"
+            v-model="words"
+            class="compose-words"
+            rows="1"
+            placeholder="Message the agent"
+            aria-label="Message the agent"
+            @input="grow"
+        />
+        <div class="compose-controls">
             <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.click()">
-                <Icon name="paperclip" :size="18" />
+                <Icon name="paperclip" :size="20" />
             </button>
             <input ref="picker" type="file" multiple hidden @change="picked" />
-            <textarea
-                ref="box"
-                v-model="words"
-                class="compose-words"
-                rows="1"
-                placeholder="Message the agent"
-                aria-label="Message the agent"
-                @input="grow"
-            />
             <template v-if="ready">
                 <button type="submit" class="compose-send" :disabled="sending" aria-label="Send to the agent" @mousedown.prevent>
-                    <Icon name="up" :size="18" />
+                    <Icon name="up" :size="20" />
                 </button>
             </template>
         </div>
@@ -142,74 +142,37 @@ async function send() {
 
 <style scoped>
 .compose {
-    position: sticky;
-    bottom: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin: 0 calc(-1 * var(--side));
-    padding: 6px var(--side);
-    max-width: none;
-    border-top: 1px solid var(--line);
-    background: var(--bg);
+    gap: 8px;
+    padding: 12px 10px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 26px;
+    background: var(--raised);
+    box-shadow: var(--card-shadow);
+    pointer-events: auto;
 }
 
-.compose-about {
+.compose-about,
+.compose-quote {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+    min-height: 40px;
+    padding: 4px 4px 4px 14px;
+    border-radius: 16px;
+    background: var(--hover);
+    color: var(--text-2);
+    font-size: 0.824rem;
+}
+
+.compose-about {
     color: var(--accent-text);
-    font-size: 0.794rem;
-}
-
-.compose-bar {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    padding: 5px 5px 5px 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 22px;
-    background: var(--raised);
-}
-
-.compose-clip,
-.compose-send {
-    position: relative;
-}
-
-.compose-send::before {
-    position: absolute;
-    inset: 5px;
-    border-radius: 50%;
-    background: var(--accent);
-    content: "";
-}
-
-.compose-send :deep(svg) {
-    position: relative;
-}
-
-.compose-clip {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    margin: -5px 0;
-    border: 0;
-    background: none;
-    color: var(--text-3);
 }
 
 .compose-quote {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 6px 10px;
-    border-left: 3px solid var(--accent);
-    color: var(--text-2);
-    font-size: 0.794rem;
+    box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .compose-quote span {
@@ -223,14 +186,8 @@ async function send() {
 .compose-files {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-}
-
-.compose-thumb {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    object-fit: cover;
+    gap: 8px;
+    padding: 0 4px;
 }
 
 .compose-file {
@@ -238,20 +195,32 @@ async function send() {
     align-items: center;
     gap: 4px;
     max-width: 100%;
-    padding: 2px 4px 2px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 12px;
+    padding: 4px 4px 4px 4px;
+    border-radius: 14px;
+    background: var(--hover);
     color: var(--text-2);
     font-size: 0.765rem;
+}
+
+.compose-file-name {
+    max-width: 180px;
+    padding-left: 8px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+.compose-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
 .compose-words {
-    flex: 1;
+    width: 100%;
     min-height: 34px;
-    padding: 7px 0;
+    padding: 6px 8px;
     border: 0;
     outline: none;
     background: transparent;
@@ -262,6 +231,18 @@ async function send() {
     resize: none;
 }
 
+.compose-words::placeholder {
+    color: var(--text-3);
+}
+
+.compose-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+}
+
+.compose-clip,
 .compose-send {
     display: flex;
     flex: none;
@@ -269,9 +250,20 @@ async function send() {
     justify-content: center;
     width: 44px;
     height: 44px;
-    margin: -5px 0;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.compose-clip {
+    border: 1px solid var(--border-2);
+    background: var(--bg);
+    color: var(--text-2);
+}
+
+.compose-send {
+    margin-left: auto;
     border: 0;
-    background: none;
+    background: var(--accent);
     color: #fff;
 }
 

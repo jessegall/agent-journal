@@ -80,7 +80,7 @@ defineExpose({close});
 
 <style scoped>
 .sheet-root {
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 20;
     display: flex;
@@ -127,6 +127,10 @@ defineExpose({close});
 .sheet.leaving {
     transform: translateY(100%);
     transition: transform var(--sheet-out) var(--out);
+}
+
+.sheet-body > :slotted(*) {
+    flex-shrink: 0;
 }
 
 .sheet-grab {

@@ -20,6 +20,10 @@ const connection = ref(null);
 const typed = ref("");
 const pairing = ref(false);
 const waiting = computed(() => waitingToSend.value.length + waitingActions.value.length);
+const waitsLine = computed(() => {
+    if (!waiting.value) return "";
+    return waiting.value === 1 ? "1 thing waits to send and goes once you are back." : `${waiting.value} things wait to send and go once you are back.`;
+});
 const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 
 function failed(error) {
@@ -105,7 +109,7 @@ onUnmounted(() => {
                     <h1 class="phone-title">This phone is no longer connected</h1>
                     <p class="phone-words">
                         {{ told }}. Scan a new code from your computer to connect again.
-                        <template v-if="waiting">{{ waiting === 1 ? "1 thing waits" : `${waiting} things wait` }} to send and goes once you are back.</template>
+                        {{ waitsLine }}
                     </p>
                 </div>
             </template>
@@ -115,7 +119,7 @@ onUnmounted(() => {
                         <h1 class="phone-title">This phone was disconnected</h1>
                         <p class="phone-words">
                             Pair it again to keep going: on your computer, press the phone button in the top bar, then scan the code or type it here.
-                            <template v-if="waiting">{{ waiting === 1 ? "1 thing waits" : `${waiting} things wait` }} to send and goes once you are back.</template>
+                            {{ waitsLine }}
                         </p>
                     </template>
                     <template v-else>

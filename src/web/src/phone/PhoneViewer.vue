@@ -9,6 +9,7 @@ import {highlight, languageOf} from "../text/highlight.js";
 import {announce} from "./announce.js";
 import PhoneMissing from "./PhoneMissing.vue";
 import {useDrag} from "./drag.js";
+import {reveal} from "./reveal.js";
 
 const TEXT = /\.(txt|md|json|log|csv|ya?ml|toml|py|js|ts|vue|css|html|sh|sql|xml)$/i;
 const PICTURE = /\.(png|jpe?g|gif|webp|heic)$/i;
@@ -112,7 +113,7 @@ async function load() {
             told.value = error.message || "Not found";
         }
     }
-    if (line) nextTick(() => body.value?.querySelector(`[data-line="${line}"]`)?.scrollIntoView({block: "center"}));
+    if (line) nextTick(() => reveal(body.value, body.value?.querySelector(`[data-line="${line}"]`), true));
 }
 
 onMounted(() => {
@@ -136,7 +137,7 @@ onMounted(() => {
         <div ref="body" :class="['viewer-body', {dark: picture}]" data-scroller>
             <span ref="edge" class="viewer-edge" />
             <template v-if="told">
-                <PhoneMissing :title="missing ? 'This file isn’t available' : 'This file couldn’t be loaded'" :words="missing ? `${name} could not be found on your computer.` : told" :back="back" @back="emit('close')">
+                <PhoneMissing :title="missing ? &quot;This file isn't available&quot; : &quot;This file couldn't be loaded&quot;" :words="missing ? `${name} could not be found on your computer.` : told" :back="back" @back="emit('close')">
                     <template v-if="!missing">
                         <button type="button" @click="retry">Try again</button>
                     </template>

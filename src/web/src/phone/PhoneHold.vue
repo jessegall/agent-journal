@@ -7,6 +7,7 @@ import {useTrap} from "./trap.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const MARGIN = 12;
+const LOW = 0.3;
 const TOP = 56;
 const props = defineProps({item: {type: Object, required: true}, rect: {type: Object, default: null}, source: {type: Object, default: null}});
 const preview = ref(null);
@@ -26,14 +27,11 @@ function cloned() {
 }
 const emit = defineEmits(["react", "reply", "copy", "close"]);
 const box = ref(null);
-const faces = ref(null);
-const edges = ref({left: false, right: false});
-
-function scrolled() {
-    const el = faces.value;
-    if (!el) return;
-    edges.value = {left: el.scrollLeft > 1, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1};
-}
+const FACE = 46;
+const ROW_PAD = 8;
+const moreFaces = ref(false);
+const fits = computed(() => Math.max(1, Math.floor((Math.min(340, window.innerWidth - 24) - ROW_PAD - FACE) / FACE)));
+const shownFaces = computed(() => (moreFaces.value || fits.value >= FACES.length ? FACES : FACES.slice(0, fits.value)));
 const top = ref(0);
 const mine = computed(() => props.item.who === "user");
 const hint = firstTime("phone-reply-hint");
@@ -49,7 +47,7 @@ useTrap(box, () => emit("close"));
 let watcher = null;
 
 function placed() {
-    const wanted = props.rect ? props.rect.top - 60 : window.innerHeight / 3;
+    const wanted = Math.max(props.rect ? props.rect.top - 60 : 0, window.innerHeight * LOW);
     const tall = box.value?.offsetHeight || 0;
     top.value = Math.max(TOP, Math.min(wanted, window.innerHeight - tall - MARGIN * 3));
 }
@@ -63,7 +61,6 @@ onMounted(() => {
     window.addEventListener("orientationchange", closed);
     placed();
     nextTick(() => {
-        scrolled();
         placed();
         watcher = new ResizeObserver(placed);
         if (box.value) watcher.observe(box.value);
@@ -89,9 +86,12 @@ onUnmounted(() => {
             <template v-else>
                 <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
             </template>
-            <div ref="faces" :class="['hold-faces', {'fade-left': edges.left, 'fade-right': edges.right}]" role="group" aria-label="React" @scroll.passive="scrolled">
-                <template v-for="face in FACES" :key="face">
+            <div :class="['hold-faces', {more: moreFaces}]" role="group" aria-label="React">
+                <template v-for="face in shownFaces" :key="face">
                     <button type="button" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</button>
+                </template>
+                <template v-if="shownFaces.length < FACES.length">
+                    <button type="button" class="hold-face hold-more" aria-label="More reactions" @click="moreFaces = true"><Icon name="plus" :size="18" /></button>
                 </template>
             </div>
             <ul class="hold-menu" aria-label="Actions">
@@ -118,7 +118,7 @@ onUnmounted(() => {
 
 <style scoped>
 .hold-root {
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 20;
     max-width: none;
@@ -157,20 +157,24 @@ onUnmounted(() => {
     order: -1;
     margin-bottom: -2px;
     display: flex;
+    flex-wrap: wrap;
     gap: 2px;
     max-width: min(340px, calc(100vw - 24px));
     padding: 4px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
     border-radius: 26px;
     background: var(--raised);
     box-shadow: var(--shadow-1);
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
 }
 
-.hold-faces::-webkit-scrollbar {
-    display: none;
+.hold-faces.more {
+    border-radius: 24px;
+}
+
+.hold-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-2);
 }
 
 .hold-face {

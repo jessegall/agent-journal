@@ -4,10 +4,11 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import PhoneActions from "./PhoneActions.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
-import ReadTicks from "../kit/ReadTicks.vue";
+import PhoneTicks from "./PhoneTicks.vue";
 import ChatMark from "../kit/ChatMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
+import {kindWord} from "./kinds.js";
 
 const props = defineProps({
     item: {type: Object, required: true},
@@ -21,14 +22,13 @@ const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
 const fileUrl = (name) => `./file/${props.item.type}/${props.item.n}/${encodeURIComponent(name)}`;
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
-const NAMES = {todo: "to-do", doc: "document"};
 const FILED_REF = /\b([a-z_]+)[ :](\d+)\b/g;
 const filedAs = computed(
     () => new Set((props.item.sections || []).flatMap((part) => [...part.body.matchAll(FILED_REF)].map((found) => `${found[1]}:${found[2]}`))),
 );
 const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []).filter((ref) => filedAs.value.has(ref)) : []));
 const about = computed(() => (props.item.who === "user" ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
-const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.split(":")[1]}`;
+const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const holdable = computed(() => props.item.type === "message");
 const onlyFiles = computed(() => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`);
@@ -110,13 +110,13 @@ function pressed(event) {
                     </span>
                 </template>
                 <template v-if="faces.length">
-                    <span class="turn-faces">{{ faces.join(" ") }}</span>
+                    <span :key="faces.join('')" class="turn-faces">{{ faces.join(" ") }}</span>
                 </template>
                 <template v-if="item.who === 'user' && !continues">
                     <span class="turn-meta">
                         <template v-if="elsewhere">from desktop ·</template>
                         {{ clock(item.created) }}
-                        <ReadTicks :message="item" />
+                        <PhoneTicks :message="item" />
                     </span>
                 </template>
                 <template v-if="holdable">
@@ -294,6 +294,13 @@ function pressed(event) {
     text-align: center;
 }
 
+@keyframes face-in {
+    from {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+}
+
 .fresh {
     animation: turn-in 200ms ease-out;
 }
@@ -332,6 +339,7 @@ function pressed(event) {
 }
 
 .turn-faces {
+    animation: face-in 150ms ease-out;
     display: inline-block;
     margin-top: 6px;
     padding: 1px 7px;

@@ -9,7 +9,7 @@ const emit = defineEmits(["now", "undo"]);
             <span class="sending-words">Sending “{{ answer }}”</span>
             <span class="sending-left" aria-hidden="true">{{ left }}s</span>
         </button>
-        <button type="button" class="sending-undo" :aria-label="`Undo. Sending “${answer}” in ${seconds} seconds`" @click="emit('undo')">Undo</button>
+        <button type="button" class="sending-undo" :aria-label="`Cancel sending “${answer}”, it sends in ${seconds} seconds`" @click="emit('undo')">Cancel</button>
     </div>
 </template>
 

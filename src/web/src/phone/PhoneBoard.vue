@@ -1,38 +1,31 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
-import PhoneChevron from "./PhoneChevron.vue";
-import {ago} from "./ago.js";
+import {CARDS, kindCard} from "./kinds.js";
+import {cached, remember} from "./cache.js";
+import {reveal} from "./reveal.js";
+import PhoneBoardList from "./PhoneBoardList.vue";
 import {useUnder} from "./under.js";
 
 const LIST_EVERY = 15000;
 const SHOWN = 5;
 const WAITING = "waiting";
 const DEFAULT = [WAITING, "todo", "question", "plan", "report", "doc", "agent"];
-const NAMES = {
-    waiting: "Needs you",
-    todo: "To-dos",
-    question: "Questions",
-    suggestion: "Suggestions",
-    plan: "Plans",
-    report: "Reports",
-    doc: "Documents",
-    work: "Work",
-    agent: "Agents",
-};
-const props = defineProps({home: {type: Array, required: true}, waiting: {type: Array, required: true}});
+const props = defineProps({home: {type: Array, required: true}, waiting: {type: Array, required: true}, place: {type: String, default: ""}});
+const CACHE = `board:${props.place}`;
 const emit = defineEmits(["open", "under"]);
 const heading = ref(null);
 const under = useUnder(heading);
 watch(under, (now) => emit("under", now), {immediate: true});
 const cards = ref(props.home.length ? [...props.home] : [...DEFAULT]);
-const lists = ref({});
+const lists = ref(cached(CACHE) || {});
+const loaded = (kind) => kind === WAITING || kind in lists.value;
 const editing = ref(false);
 const opened = ref(new Set());
 const told = ref("");
-const missing = computed(() => Object.keys(NAMES).filter((kind) => !cards.value.includes(kind)));
+const missing = computed(() => CARDS.filter((kind) => !cards.value.includes(kind)));
 
 async function fetched() {
     const kinds = cards.value.filter((kind) => kind !== WAITING);
@@ -40,9 +33,16 @@ async function fetched() {
     return Object.fromEntries(kinds.map((kind, i) => [kind, got[i]]));
 }
 
-const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = got));
+const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = remember(CACHE, got)));
 
-const waitingRefs = computed(() => new Set(cards.value.includes(WAITING) ? props.waiting.map((item) => item.ref) : []));
+const waitingRefs = computed(() => new Set(cards.value.includes(WAITING) ? props.waiting.filter((item) => item.type === "question").map((item) => item.ref) : []));
+const newRefs = computed(() => new Set(props.waiting.map((item) => item.ref)));
+const board = ref(null);
+
+onMounted(() => {
+    if (!props.waiting.length) return;
+    nextTick(() => reveal(board.value, board.value?.querySelector('[data-card="waiting"]')));
+});
 const listed = (kind) => lists.value[kind]?.rows || [];
 const rows = (kind) =>
     kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind).filter((row) => !waitingRefs.value.has(row.ref));
@@ -89,7 +89,7 @@ function moved(i, by) {
 </script>
 
 <template>
-    <div class="board" data-scroller>
+    <div ref="board" class="board" data-scroller>
         <div class="board-bar">
             <h1 ref="heading" class="board-large">Home</h1>
             <button type="button" class="board-edit" @click="editing = !editing">{{ editing ? "Done" : "Edit" }}</button>
@@ -99,54 +99,43 @@ function moved(i, by) {
         </template>
         <template v-if="removed">
             <p class="board-removed" role="status">
-                Removed {{ NAMES[removed.kind] }}
+                Removed {{ kindCard(removed.kind) }}
                 <button type="button" class="board-undo" @click="undoRemove">Undo</button>
             </p>
         </template>
-        <template v-for="(kind, i) in cards" :key="kind">
-            <template v-if="!editing && !total(kind)">
-                <p class="board-none">{{ NAMES[kind] }} · none yet</p>
-            </template>
-            <template v-else>
-                <section class="board-card" :aria-label="NAMES[kind]">
-                    <header class="board-head">
-                        <h2 class="board-name">{{ NAMES[kind] }}</h2>
-                        <span class="board-count">{{ total(kind) }}</span>
-                        <template v-if="editing">
-                            <span class="board-tools">
-                                <button type="button" :aria-label="`Move ${NAMES[kind]} up`" :disabled="i === 0" @click="moved(i, -1)"><Icon name="up" :size="16" /></button>
-                                <button type="button" :aria-label="`Move ${NAMES[kind]} down`" :disabled="i === cards.length - 1" @click="moved(i, 1)"><Icon name="down" :size="16" /></button>
-                                <button type="button" :aria-label="`Remove ${NAMES[kind]}`" @click="remove(kind)"><Icon name="close" :size="16" /></button>
-                            </span>
-                        </template>
-                    </header>
-                    <div class="board-group">
-                        <template v-if="rows(kind).length">
-                            <ul class="board-rows">
-                                <template v-for="row in shown(kind)" :key="row.ref">
-                                    <li>
-                                        <button type="button" class="board-row" @click="emit('open', row.ref)">
-                                            <span class="board-title">{{ row.title }}</span>
-                                            <span class="board-age">{{ ago(row.updated) }}</span>
-                                            <PhoneChevron class="board-chevron" />
-                                        </button>
-                                    </li>
-                                </template>
-                            </ul>
-                            <template v-if="rows(kind).length > shown(kind).length">
-                                <button type="button" class="board-more" @click="more(kind)">{{ total(kind) > rows(kind).length ? `Show ${rows(kind).length} of ${total(kind)}` : `Show all ${rows(kind).length}` }}</button>
+        <TransitionGroup name="card" tag="div" class="board-cards">
+            <template v-for="(kind, i) in cards" :key="kind">
+                <template v-if="!editing && loaded(kind) && !total(kind)">
+                    <p class="board-none">{{ kindCard(kind) }} · none yet</p>
+                </template>
+                <template v-else>
+                    <section class="board-card" :aria-label="kindCard(kind)" :data-card="kind">
+                        <header class="board-head">
+                            <h2 class="board-name">{{ kindCard(kind) }}</h2>
+                            <template v-if="loaded(kind)">
+                                <span class="board-count">{{ total(kind) }}</span>
                             </template>
-                            <template v-else-if="total(kind) > rows(kind).length">
-                                <p class="board-part">Showing {{ rows(kind).length }} of {{ total(kind) }}</p>
+                            <template v-if="editing">
+                                <span class="board-tools">
+                                    <button type="button" :aria-label="`Move ${kindCard(kind)} up`" :disabled="i === 0" @click="moved(i, -1)"><Icon name="up" :size="16" /></button>
+                                    <button type="button" :aria-label="`Move ${kindCard(kind)} down`" :disabled="i === cards.length - 1" @click="moved(i, 1)"><Icon name="down" :size="16" /></button>
+                                    <button type="button" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)"><Icon name="close" :size="16" /></button>
+                                </span>
                             </template>
-                        </template>
-                        <template v-else>
-                            <p class="board-empty">Nothing here</p>
-                        </template>
-                    </div>
-                </section>
+                        </header>
+                        <PhoneBoardList
+                            :loaded="loaded(kind)"
+                            :rows="rows(kind)"
+                            :shown="shown(kind)"
+                            :total="total(kind)"
+                            :fresh="kind === 'waiting' ? [] : [...newRefs]"
+                            @open="(ref) => emit('open', ref)"
+                            @more="more(kind)"
+                        />
+                    </section>
+                </template>
             </template>
-        </template>
+        </TransitionGroup>
         <template v-if="editing && missing.length">
             <section class="board-card" aria-label="Add a card">
                 <header class="board-head">
@@ -154,7 +143,7 @@ function moved(i, by) {
                 </header>
                 <div class="board-kinds">
                     <template v-for="kind in missing" :key="kind">
-                        <button type="button" class="board-kind" @click="arranged([...cards, kind])"><Icon name="plus" :size="12" /> {{ NAMES[kind] }}</button>
+                        <button type="button" class="board-kind" @click="arranged([...cards, kind])"><Icon name="plus" :size="12" /> {{ kindCard(kind) }}</button>
                     </template>
                 </div>
             </section>
@@ -205,6 +194,45 @@ function moved(i, by) {
     margin: 0;
     color: var(--text-3);
     font-size: 0.794rem;
+}
+
+.board-cards {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.card-move {
+    transition: transform 250ms var(--push);
+}
+
+.card-enter-active,
+.card-leave-active {
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+.card-enter-from,
+.card-leave-to {
+    opacity: 0;
+    transform: scale(0.97);
+}
+
+.card-leave-active {
+    position: absolute;
+    right: 0;
+    left: 0;
+}
+
+.board-tools {
+    animation: tools-in 200ms ease-out;
+}
+
+@keyframes tools-in {
+    from {
+        opacity: 0;
+        transform: translateX(8px);
+    }
 }
 
 .board-none {
@@ -279,92 +307,6 @@ function moved(i, by) {
     color: var(--text-2);
     font: inherit;
     font-size: 16px;
-}
-
-.board-group {
-    overflow: hidden;
-    border-radius: 12px;
-    background: var(--raised);
-}
-
-.board-rows {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.board-rows li + li .board-row {
-    box-shadow: inset 16px 1px 0 var(--raised), inset 0 1px 0 var(--line);
-}
-
-.board-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    min-height: 44px;
-    padding: 11px 16px;
-    border: 0;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    text-align: left;
-}
-
-.board-row:active:not(:disabled),
-.board-more:active:not(:disabled) {
-    background: var(--hover);
-    opacity: 1;
-}
-
-.board-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    font-size: 1rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.board-age {
-    flex: none;
-    color: var(--text-3);
-    font-size: 0.882rem;
-}
-
-.board-chevron {
-    flex: none;
-    color: var(--text-4);
-}
-
-.board-empty {
-    margin: 0;
-    padding: 12px 16px;
-    color: var(--text-3);
-    font-size: 0.882rem;
-}
-
-.board-part {
-    margin: 0;
-    padding: 11px 16px;
-    border-top: 1px solid var(--line);
-    color: var(--text-3);
-    font-size: 0.882rem;
-}
-
-.board-more {
-    width: 100%;
-    min-height: 44px;
-    padding: 11px 16px;
-    border: 0;
-    border-top: 1px solid var(--line);
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 1rem;
-    text-align: left;
 }
 
 .board-kinds {

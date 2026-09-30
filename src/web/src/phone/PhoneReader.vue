@@ -4,14 +4,16 @@ import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import PhoneChevron from "./PhoneChevron.vue";
-import Spinner from "../kit/Spinner.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 import {ended, flush, hold, perform} from "./outbox.js";
 import {chipOpener} from "./peeked.js";
 import {todoFacts} from "./todo.js";
+import {kindTitle, kindWord} from "./kinds.js";
 import PhoneMissing from "./PhoneMissing.vue";
+import PhoneSkeletonPage from "./PhoneSkeletonPage.vue";
+import {cached, remember} from "./cache.js";
 import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
@@ -23,12 +25,10 @@ const SIZE_NAMES = ["small", "medium", "large"];
 const AGENTS = [1, 2, 3, 5];
 const DEPTHS = ["a quick look", "a normal read", "a thorough review"];
 const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add more detail to ", "Something is missing: "];
-const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
-const NAMES = {doc: "document", todo: "to-do"};
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: "Chat"}, upNext: {type: Object, default: null}});
 const missing = ref(false);
 const finished = ref(false);
-const kindName = computed(() => NAMES[props.target.split(":")[0]] || KINDS[props.target.split(":")[0]]?.toLowerCase() || "item");
+const kindName = computed(() => kindWord(props.target.split(":")[0]));
 const phaseState = (i) => {
     if (!row.value || row.value.type !== "plan") return "";
     if (row.value.completed || row.value.data.status === "done") return "done";
@@ -41,7 +41,8 @@ const PHASE_WORDS = {done: "Done", now: "Now", next: "Next"};
 const emit = defineEmits(["close", "open", "next", "reply"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
-const row = ref(null);
+const ROW = `row:${props.target}`;
+const row = ref(cached(ROW) || null);
 const size = ref(0);
 const progress = ref(0);
 const confirming = ref(false);
@@ -105,7 +106,7 @@ const chipped = chipOpener((target) => emit("open", target));
 async function load() {
     try {
         told.value = "";
-        row.value = await phone.row(props.target);
+        row.value = remember(ROW, await phone.row(props.target));
     } catch (error) {
         if (ended(error)) failed(error);
         else if (error.status === 404) missing.value = true;
@@ -171,7 +172,7 @@ onMounted(async () => {
                     <PhoneQuestion :question="row" @done="finished = true" />
                 </template>
                 <template v-else>
-                    <span class="reader-kind">{{ KINDS[row.type] || row.type }} · {{ ago(row.created) }}</span>
+                    <span class="reader-kind">{{ kindTitle(row.type) }} · {{ ago(row.created) }}</span>
                     <h1 ref="heading" class="reader-title" tabindex="-1">{{ row.title }}</h1>
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>
@@ -181,7 +182,12 @@ onMounted(async () => {
                             <template v-for="fact in todo.facts" :key="fact.label">
                                 <div class="reader-fact">
                                     <dt>{{ fact.label }}</dt>
-                                    <dd>{{ fact.value }}</dd>
+                                    <template v-if="fact.text">
+                                        <dd><TextDisplay :text="fact.value" inline /></dd>
+                                    </template>
+                                    <template v-else>
+                                        <dd>{{ fact.value }}</dd>
+                                    </template>
                                 </div>
                             </template>
                             <template v-if="todo.after.length">
@@ -260,10 +266,10 @@ onMounted(async () => {
                     </div>
                 </template>
                 <template v-else-if="row.type !== 'question'">
-                    <Btn large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ NAMES[row.type] || row.type }}</Btn>
+                    <Btn :kind="buttons.length ? 'ghost' : 'primary'" large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ kindWord(row.type) }}</Btn>
                 </template>
                 <template v-if="row.type === 'plan' && !reviewing">
-                    <Btn large @click="reviewing = true">Ask for a review</Btn>
+                    <Btn kind="plain" large @click="reviewing = true">Ask for a review</Btn>
                 </template>
                 <template v-if="row.type === 'plan' && reviewing">
                     <span class="reader-choose">How many agents</span>
@@ -291,7 +297,7 @@ onMounted(async () => {
             </PhoneMissing>
         </template>
         <template v-else>
-            <div class="reader-wait"><Spinner /></div>
+            <PhoneSkeletonPage :kind="target.split(':')[0]" />
         </template>
     </section>
 </template>
@@ -536,7 +542,7 @@ onMounted(async () => {
     overflow-y: auto;
     overscroll-behavior-y: contain;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     max-width: none;
     margin: 0 calc(-1 * var(--side));
     padding: 12px var(--side) calc(12px + env(safe-area-inset-bottom));

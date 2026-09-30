@@ -13,7 +13,7 @@ const BUBBLES = [
     <div class="skeleton" role="status">
         <span class="phone-hidden">Loading</span>
         <template v-for="bubble in BUBBLES" :key="bubble.id">
-            <div :class="['skeleton-bubble', bubble.side]" :style="{width: bubble.width, height: `${bubble.lines * 20 + 16}px`}" aria-hidden="true" />
+            <div :class="['skeleton-bubble', 'shimmer', bubble.side]" :style="{width: bubble.width, height: `${bubble.lines * 20 + 16}px`}" aria-hidden="true" />
         </template>
     </div>
 </template>
@@ -26,14 +26,12 @@ const BUBBLES = [
     gap: 10px;
     flex: 1;
     min-height: 0;
-    padding: 12px 0;
+    padding: 12px 0 calc(var(--dock, 0px) + 12px);
     overflow: hidden;
 }
 
 .skeleton-bubble {
     border-radius: 18px;
-    background: linear-gradient(90deg, var(--raised) 30%, var(--hover) 50%, var(--raised) 70%) 0 0 / 300% 100%;
-    animation: shimmer 1.4s linear infinite;
 }
 
 .skeleton-bubble.agent {
@@ -46,19 +44,4 @@ const BUBBLES = [
     opacity: 0.6;
 }
 
-@keyframes shimmer {
-    from {
-        background-position: 100% 0;
-    }
-
-    to {
-        background-position: 0 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .skeleton-bubble {
-        animation: none;
-    }
-}
 </style>

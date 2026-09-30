@@ -26,8 +26,9 @@ import PhoneSkeleton from "./PhoneSkeleton.vue";
 import Spinner from "../kit/Spinner.vue";
 import {useFades} from "./fades.js";
 import {wanted} from "./wanted.js";
+import {lastLooked, looked} from "./looked.js";
 import {clock} from "../format/time.js";
-import ReadTicks from "../kit/ReadTicks.vue";
+import PhoneTicks from "./PhoneTicks.vue";
 import {useBubbles} from "./bubbles.js";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
@@ -42,6 +43,8 @@ const LABELS = {chat: "Chat", home: "Home"};
 const props = defineProps({connection: {type: Object, required: true}});
 const here = () => `${props.connection.project}/${props.connection.environment}`;
 setPlace(here());
+const placeKey = here();
+const lookedAt = ref(lastLooked(placeKey));
 const switching = ref(false);
 const notice = ref("");
 let noticeTimer = 0;
@@ -64,13 +67,32 @@ const quote = ref("");
 const held = ref(null);
 const stack = ref(null);
 const list = ref(null);
+const dock = ref(null);
+const dockHeight = ref(140);
+let dockWatcher = null;
+
+function docked() {
+    const following = nearBottom();
+    dockHeight.value = dock.value?.offsetHeight || 0;
+    if (following) toBottom();
+}
 const top = ref(null);
 const compose = ref(null);
 const draft = ref("");
 const offline = ref(false);
 const homeUnder = ref(false);
 const current = ref(true);
-const returned = () => !document.hidden && (current.value = false);
+let landNext = true;
+
+function returned() {
+    if (document.hidden) return;
+    current.value = false;
+    lookedAt.value = lastLooked(placeKey);
+    landNext = true;
+}
+
+const wentOffline = () => (offline.value = true);
+const cameOnline = () => refresh();
 const freshKeys = ref(new Set());
 let waitingFeed = null;
 let loadFrame = 0;
@@ -108,7 +130,12 @@ const olderBusy = ref(false);
 const beginning = ref(false);
 const olderFailed = ref(false);
 let olderSpent = false;
-const freshGesture = () => (olderSpent = false);
+let pinned = false;
+
+function freshGesture() {
+    olderSpent = false;
+    pinned = false;
+}
 const items = computed(() => {
     const newest = feed.value.items;
     if (!earlier.value.length) return newest;
@@ -122,7 +149,10 @@ function measure() {
     const el = list.value;
     if (!el) return;
     far.value = el.scrollHeight - el.clientHeight - el.scrollTop > el.clientHeight;
-    if (nearBottom()) unseen.value = 0;
+    if (nearBottom()) {
+        unseen.value = 0;
+        looked(placeKey, items.value.at(-1)?.created || 0);
+    }
     if (el.scrollTop < OLDER_AT) loadOlder();
 }
 
@@ -189,6 +219,11 @@ const RUN_GAP = 300;
 const fromDesktop = (item) => item.who === "user" && !String(item.data?.via || "").startsWith("phone:");
 const joins = (before, item) =>
     Boolean(before) && before.type === "message" && item.type === "message" && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
+const newFrom = computed(() => {
+    if (lookedAt.value === null) return "";
+    const first = items.value.find((item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type));
+    return first ? keyOf(first) : "";
+});
 const joined = computed(() => items.value.map((item, i) => !dividers.value[i] && joins(items.value[i - 1], item)));
 const fresh = (item) => freshKeys.value.has(keyOf(item));
 const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
@@ -216,7 +251,31 @@ function took(got) {
     navigator.setAppBadge?.(got.waiting.length).catch(() => {});
     newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
     settle(got.items);
-    if (following) toBottom();
+    if (landNext) {
+        landNext = false;
+        if (lookedAt.value === null) {
+            lookedAt.value = items.value.at(-1)?.created || 0;
+            looked(placeKey, lookedAt.value);
+        }
+        land();
+    } else if (following) toBottom();
+}
+
+function toMark() {
+    const el = list.value;
+    const mark = el?.querySelector(".home-new");
+    if (!mark) return false;
+    el.scrollTop = Math.max(0, mark.offsetTop - 8);
+    return true;
+}
+
+function land() {
+    nextTick(() => {
+        pinned = toMark();
+        if (!pinned) return toBottom();
+        unseen.value = items.value.filter((item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type)).length;
+        measure();
+    });
 }
 
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
@@ -241,7 +300,8 @@ function loaded() {
     if (loadFrame) return;
     loadFrame = requestAnimationFrame(() => {
         loadFrame = 0;
-        if (nearBottom() && still()) toBottom();
+        if (pinned) toMark();
+        else if (nearBottom() && still()) toBottom();
     });
 }
 
@@ -283,12 +343,19 @@ function popped(event) {
 }
 
 onMounted(() => {
+    dockWatcher = new ResizeObserver(docked);
+    if (dock.value) dockWatcher.observe(dock.value);
     window.addEventListener("popstate", popped);
     document.addEventListener("visibilitychange", returned);
+    window.addEventListener("offline", wentOffline);
+    window.addEventListener("online", cameOnline);
 });
 onUnmounted(() => {
+    dockWatcher?.disconnect();
     window.removeEventListener("popstate", popped);
     document.removeEventListener("visibilitychange", returned);
+    window.removeEventListener("offline", wentOffline);
+    window.removeEventListener("online", cameOnline);
     cancelAnimationFrame(loadFrame);
     cancelAnimationFrame(scrollFrame);
     clearTimeout(noticeTimer);
@@ -443,13 +510,13 @@ function pick(key) {
                 <PhoneWaiting :waiting="feed.waiting" @open="open" @list="listing = true" />
             </div>
             <div class="panes">
-                <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'">
+                <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'" :style="{'--dock': `${dockHeight}px`}">
                     <template v-if="switching || !ready">
                         <PhoneSkeleton />
                     </template>
                     <template v-else>
                         <div class="home-feed-box">
-                            <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @touchstart.passive="freshGesture" @wheel.passive="freshGesture" @load.capture="loaded">
+                            <div ref="list" :class="['home-feed', {spaced: far}]" data-scroller @click.capture="chipped" @scroll.passive="moved" @touchstart.passive="freshGesture" @wheel.passive="freshGesture" @load.capture="loaded">
                                 <span ref="top" class="home-edge" />
                                 <div class="home-older">
                                     <template v-if="olderBusy">
@@ -464,6 +531,9 @@ function pick(key) {
                                     </template>
                                 </div>
                                 <template v-for="(item, i) in items" :key="keyOf(item)">
+                                    <template v-if="keyOf(item) === newFrom">
+                                        <p class="home-new" role="separator">New since you last looked</p>
+                                    </template>
                                     <template v-if="dividers[i]">
                                         <p class="home-day">{{ dividers[i] }}</p>
                                     </template>
@@ -474,7 +544,7 @@ function pick(key) {
                                         {{ line.brief }}
                                         <span>
                                             {{ clock(line.at / 1000) }}
-                                            <ReadTicks :message="SENDING" />
+                                            <PhoneTicks :message="SENDING" />
                                         </span>
                                     </p>
                                 </template>
@@ -492,35 +562,35 @@ function pick(key) {
                                 </template>
                             </div>
                             <template v-if="far">
-                                <div class="home-newest-band">
-                                    <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
-                                        <Icon name="down" :size="16" />
-                                        <span aria-hidden="true">{{ unseen ? `${unseen} new` : "Newest" }}</span>
-                                    </button>
-                                </div>
+                                <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
+                                    <Icon name="down" :size="16" />
+                                    <span aria-hidden="true">{{ unseen ? `${unseen} new` : "Newest" }}</span>
+                                </button>
                             </template>
                         </div>
                     </template>
-                    <template v-if="screen === 'chat'">
-                        <PhoneStatus :working="feed.agent === 'working'" />
-                    </template>
-                    <template v-else>
-                        <div class="home-status-space" />
-                    </template>
-                    <PhoneCompose
-                        ref="compose"
-                        :about="about"
-                        :quote="quote"
-                        :draft="draft"
-                        @sending="toBottom"
-                        @sent="sent"
-                        @unabout="about = ''"
-                        @unquote="(quote = ''), (about = '')"
-                    />
+                    <div ref="dock" class="home-dock">
+                        <template v-if="screen === 'chat'">
+                            <PhoneStatus :working="feed.agent === 'working'" />
+                        </template>
+                        <template v-else>
+                            <div class="home-status-space" />
+                        </template>
+                        <PhoneCompose
+                            ref="compose"
+                            :about="about"
+                            :quote="quote"
+                            :draft="draft"
+                            @sending="toBottom"
+                            @sent="sent"
+                            @unabout="about = ''"
+                            @unquote="(quote = ''), (about = '')"
+                        />
+                    </div>
                 </section>
                 <template v-if="screen === 'home'">
                     <section id="pane-home" role="tabpanel" aria-label="Home" class="pane">
-                        <PhoneBoard :home="connection.home || []" :waiting="feed.waiting" @open="open" @under="homeUnder = $event" />
+                        <PhoneBoard :home="connection.home || []" :waiting="feed.waiting" :place="placeKey" @open="open" @under="homeUnder = $event" />
                     </section>
                 </template>
             </div>
@@ -840,6 +910,24 @@ function pick(key) {
     margin-bottom: -1px;
 }
 
+.home-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 2px;
+    color: var(--accent-text);
+    font-size: 0.765rem;
+    font-weight: 600;
+}
+
+.home-new::before,
+.home-new::after {
+    flex: 1;
+    height: 1px;
+    background: color-mix(in oklab, var(--accent) 50%, transparent);
+    content: "";
+}
+
 .home-day {
     align-self: center;
     margin: 14px 0 4px;
@@ -907,16 +995,12 @@ function pick(key) {
     min-height: 0;
 }
 
-.home-newest-band {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    height: 52px;
-    max-width: none;
-}
-
 .home-newest {
+    position: absolute;
+    bottom: calc(var(--dock, 140px) + 10px);
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -924,7 +1008,9 @@ function pick(key) {
     padding: 0 16px;
     border: 1px solid var(--line);
     border-radius: 22px;
-    background: var(--raised);
+    background: color-mix(in oklab, var(--raised) 80%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
     color: var(--accent-text);
     box-shadow: var(--shadow-1);
     font: inherit;
@@ -948,8 +1034,37 @@ function pick(key) {
 @keyframes newest-in {
     from {
         opacity: 0;
-        transform: scale(0.8);
+        transform: translateX(-50%) scale(0.8);
     }
+}
+
+.home-feed.spaced {
+    padding-bottom: calc(var(--dock, 140px) + 64px);
+}
+
+.home-dock {
+    position: absolute;
+    right: calc(12px - var(--side));
+    bottom: 8px;
+    left: calc(12px - var(--side));
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: none;
+    pointer-events: none;
+}
+
+.home-dock > * {
+    pointer-events: auto;
+}
+
+.home-dock :deep(.status:has(.status-text)) {
+    align-self: flex-start;
+    margin-left: 14px;
+    padding: 0 10px;
+    border-radius: 11px;
+    background: color-mix(in oklab, var(--bg) 88%, transparent);
 }
 
 .home-feed {
@@ -959,7 +1074,7 @@ function pick(key) {
     flex-direction: column;
     gap: 10px;
     min-height: 0;
-    padding: 2px 0 12px;
+    padding: 2px 0 calc(var(--dock, 140px) + 12px);
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;

@@ -1,11 +1,11 @@
 <script setup>
 import {computed} from "vue";
 import {ago} from "./ago.js";
+import {kindWaiting} from "./kinds.js";
 import {ordered} from "./waiting.js";
 import PhoneChevron from "./PhoneChevron.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 
-const KINDS = {question: "Question", plan: "Plan to approve", report: "New report", doc: "New document"};
 const props = defineProps({waiting: {type: Array, required: true}});
 const emit = defineEmits(["open", "close"]);
 const sorted = computed(() => ordered(props.waiting));
@@ -21,7 +21,7 @@ const sorted = computed(() => ordered(props.waiting));
                         <span class="needs-mark" />
                         <span class="needs-words">
                             <span class="needs-name">{{ item.title }}</span>
-                            <span class="needs-kind">{{ KINDS[item.type] || item.type }} {{ item.ref.split(":")[1] }} · {{ ago(item.created) }}</span>
+                            <span class="needs-kind">{{ kindWaiting(item.type) }} · {{ ago(item.created) }}</span>
                         </span>
                         <PhoneChevron class="needs-chevron" />
                     </button>
