@@ -44,7 +44,7 @@ QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's wo
 
 
 START_PARTS: dict = {}
-ADDRESS, ORCHESTRATION, LAW, SKILLS = 1, 2, 3, 4
+ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
 
 
 def start_block(record) -> str:

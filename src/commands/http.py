@@ -325,6 +325,18 @@ def post_appoint(req: Request) -> Reply:
     return Reply(200, appoint(req.root, req.params["env"], req.body_as(Appointed).session))
 
 
+@route("GET", "/api/{env}/mode")
+def get_mode(req: Request) -> Reply:
+    from features.work_modes.modes import mode_of
+    return Reply(200, {"mode": mode_of(Record(req.root, req.params["env"]))})
+
+
+@route("POST", "/api/{env}/mode")
+def post_mode(req: Request) -> Reply:
+    from features.work_modes.modes import pick
+    return Reply(200, {"mode": pick(Record(req.root, req.params["env"]), str(req.body.get("mode", "")), USER)})
+
+
 @route("GET", "/api/agent-controls/{provider}")
 def get_agent_controls(req: Request) -> Reply:
     asked = req.query_as(ControlsQuery)

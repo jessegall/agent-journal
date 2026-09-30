@@ -15,9 +15,10 @@ def aged(path, days: float):
         os.utime(f, (then, then))
 
 
-def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole():
+def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(monkeypatch):
     house = FEATURES["runtime_cleanup"]
     record = fresh()
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
     big = runtime.session_file(record.root, "codex-1", "printed")
     big.parent.mkdir(parents=True)
     big.write_bytes(b"old" * 100_000 + b"THE END")

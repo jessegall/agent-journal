@@ -80,6 +80,15 @@ class Switching:
 
 
 @dataclass(frozen=True)
+class Choosing:
+    mode: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Choosing":
+        return cls(mode=str(given.get("mode", "")))
+
+
+@dataclass(frozen=True)
 class Sharing:
     ref: str
 
@@ -282,6 +291,11 @@ class PhoneRoutes:
             return self.json(handler, 201, {"done": rest[0]})
         if rest == ["auto"]:
             return self.json(handler, 201, {"auto": phones._auto(phone, Switching.from_payload(body).on)})
+        if rest == ["mode"]:
+            try:
+                return self.json(handler, 201, {"mode": phones._mode(phone, Choosing.from_payload(body).mode)})
+            except Refused as refused:
+                return handler.answer(422, str(refused))
         if rest == ["share"]:
             try:
                 return self.json(handler, 201, {"link": self.phones(handler)._share(phone, Sharing.from_payload(body).ref)})

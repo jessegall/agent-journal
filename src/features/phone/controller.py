@@ -16,7 +16,7 @@ from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
 from agents.control import pause, resume
-from controllers.types import Agents, Environments
+from controllers.types import Agents, Environments, Nudges
 from engine.sessions import Sessions
 from controllers.notices import Notices
 from engine.record import Record
@@ -32,6 +32,7 @@ from features.sharing.controller import Shares
 from features.status_bar.bar import current
 from resources.shapes import level_named
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused, titled
+from features.work_modes.modes import mode_of, pick
 
 CODE_SECONDS = 600
 DAYS = (1, 7, 30)
@@ -147,6 +148,7 @@ class Running(TypedDict):
     context: int
     usage: list[dict]
     auto: bool
+    mode: str
 
 
 class Feed(TypedDict):
@@ -280,8 +282,13 @@ class Phones(Controller):
 
     def _auto(self, phone: Phone, on: bool) -> bool:
         home = self._home(phone)
-        home.set_setting("features", {**home.setting("features", {}), AUTO: on})
+        if bool(home.setting("features", {}).get(AUTO)) != on:
+            home.set_setting("features", {**home.setting("features", {}), AUTO: on})
+            Nudges(home, actor=USER)._to_primary(f"the user turned auto {'on' if on else 'off'}", "journal settings shows every switch")
         return on
+
+    def _mode(self, phone: Phone, mode: str) -> str:
+        return pick(self._home(phone), mode, USER)
 
     def _list(self, phone: Phone, kind: str) -> Listing:
         if kind not in CARDS:
@@ -448,8 +455,9 @@ class Phones(Controller):
         row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
         auto = bool(home.setting("features", {}).get(AUTO))
         if row is None:
-            return Running(state=agent_state(home, environment), paused=False, context=0, usage=[], auto=auto)
-        return Running(state=agent_state(home, environment), paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), auto=auto)
+            return Running(state=agent_state(home, environment), paused=False, context=0, usage=[], auto=auto, mode=mode_of(home))
+        return Running(state=agent_state(home, environment), paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])),
+                       auto=auto, mode=mode_of(home))
 
     def _holder(self, phone: Phone) -> str:
         holder = Sessions(self._home(phone).root).holder(phone.environment)
