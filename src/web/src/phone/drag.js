@@ -35,6 +35,7 @@ export function useDrag(area, {axis = "x", begin, accepts = () => true, move, en
     }
 
     function moved(event) {
+        if (event.touches.length > 1) return released();
         const now = ours(event.changedTouches);
         if (!now) return;
         const dx = now.clientX - touch.x;

@@ -9,7 +9,13 @@ import ChatMark from "../kit/ChatMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
 
-const props = defineProps({item: {type: Object, required: true}, fresh: {type: Boolean, default: false}, briefs: {type: Map, default: () => new Map()}});
+const props = defineProps({
+    item: {type: Object, required: true},
+    fresh: {type: Boolean, default: false},
+    briefs: {type: Map, default: () => new Map()},
+    joined: {type: Boolean, default: false},
+    continues: {type: Boolean, default: false},
+});
 const files = computed(() => Object.keys(props.item.files || {}));
 const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
@@ -58,16 +64,13 @@ function pressed(event) {
             </div>
         </template>
         <template #default>
-            <div :class="['turn', item.who, {fresh}]" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
+            <div :class="['turn', item.who, {fresh, joined}]" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
                 <template v-if="holdable">
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
                 </template>
-                <template v-if="item.who !== 'user'">
+                <template v-if="item.who !== 'user' && !joined">
                     <span class="turn-who">
                         Agent, {{ clock(item.created) }}
-                        <template v-if="holdable">
-                            <PhoneActions @press="pressed" />
-                        </template>
                     </span>
                 </template>
                 <template v-if="quoted">
@@ -109,15 +112,15 @@ function pressed(event) {
                 <template v-if="faces.length">
                     <span class="turn-faces">{{ faces.join(" ") }}</span>
                 </template>
-                <template v-if="item.who === 'user'">
+                <template v-if="item.who === 'user' && !continues">
                     <span class="turn-meta">
                         <template v-if="elsewhere">from desktop ·</template>
                         {{ clock(item.created) }}
                         <ReadTicks :message="item" />
-                        <template v-if="holdable">
-                            <PhoneActions @press="pressed" />
-                        </template>
                     </span>
+                </template>
+                <template v-if="holdable">
+                    <PhoneActions :class="['turn-actions', item.who === 'user' ? 'at-foot' : 'at-head', {quiet: item.who === 'user' ? continues : joined}]" @press="pressed" />
                 </template>
             </div>
         </template>
@@ -145,8 +148,29 @@ function pressed(event) {
 }
 
 .turn.user {
+    --text: #fff;
+    --text-2: #fff;
+    --text-3: #fff;
+    --text-4: rgb(255 255 255 / 80%);
+    --accent-text: #fff;
+    --border: rgb(255 255 255 / 30%);
+    --border-2: rgb(255 255 255 / 40%);
+    --line: rgb(255 255 255 / 25%);
+    --hover: rgb(255 255 255 / 16%);
+    --code-bg: rgb(0 0 0 / 18%);
     align-self: flex-end;
-    background: var(--accent-dim);
+    background: var(--accent);
+    color: #fff;
+}
+
+.turn.user :deep(a) {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.turn.user .turn-reply {
+    background: var(--raised);
+    color: var(--accent);
 }
 
 .turn.agent {
@@ -154,9 +178,33 @@ function pressed(event) {
     background: var(--raised);
 }
 
-.turn.user + .turn.user,
-.turn.agent + .turn.agent {
+.turn :deep(.md > :last-child) {
+    margin-bottom: 0;
+}
+
+.turn.joined {
     margin-top: -8px;
+}
+
+.turn-actions {
+    position: absolute;
+    right: -6px;
+    margin: 0;
+}
+
+.turn-actions.at-head {
+    top: -4px;
+}
+
+.turn-actions.at-foot {
+    bottom: -5px;
+}
+
+.turn-actions.quiet {
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
 }
 
 .turn[data-pressing] {
@@ -194,6 +242,7 @@ function pressed(event) {
     margin-bottom: 2px;
     color: var(--text-2);
     font-size: 0.706rem;
+    padding-right: 26px;
 }
 
 .turn-part {
@@ -325,5 +374,6 @@ function pressed(event) {
     margin-top: 4px;
     color: var(--text-2);
     font-size: 0.706rem;
+    padding-right: 26px;
 }
 </style>

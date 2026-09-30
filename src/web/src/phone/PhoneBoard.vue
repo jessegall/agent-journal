@@ -42,8 +42,28 @@ async function fetched() {
 
 const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = got));
 
-const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : lists.value[kind]?.rows || []);
-const total = (kind) => (kind === WAITING ? props.waiting.length : Math.max(lists.value[kind]?.total || 0, rows(kind).length));
+const waitingRefs = computed(() => new Set(cards.value.includes(WAITING) ? props.waiting.map((item) => item.ref) : []));
+const listed = (kind) => lists.value[kind]?.rows || [];
+const rows = (kind) =>
+    kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind).filter((row) => !waitingRefs.value.has(row.ref));
+const total = (kind) =>
+    kind === WAITING ? props.waiting.length : Math.max((lists.value[kind]?.total || 0) - (listed(kind).length - rows(kind).length), rows(kind).length);
+const removed = ref(null);
+let removedTimer = 0;
+
+function remove(kind) {
+    clearTimeout(removedTimer);
+    removed.value = {kind, before: [...cards.value]};
+    arranged(cards.value.filter((card) => card !== kind));
+    removedTimer = setTimeout(() => (removed.value = null), 5000);
+}
+
+function undoRemove() {
+    clearTimeout(removedTimer);
+    const before = removed.value.before;
+    removed.value = null;
+    arranged(before);
+}
 const shown = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, SHOWN));
 
 function more(kind) {
@@ -77,44 +97,55 @@ function moved(i, by) {
         <template v-if="told">
             <p class="board-told" role="status">{{ told }}</p>
         </template>
+        <template v-if="removed">
+            <p class="board-removed" role="status">
+                Removed {{ NAMES[removed.kind] }}
+                <button type="button" class="board-undo" @click="undoRemove">Undo</button>
+            </p>
+        </template>
         <template v-for="(kind, i) in cards" :key="kind">
-            <section class="board-card" :aria-label="NAMES[kind]">
-                <header class="board-head">
-                    <h2 class="board-name">{{ NAMES[kind] }}</h2>
-                    <span class="board-count">{{ total(kind) }}</span>
-                    <template v-if="editing">
-                        <span class="board-tools">
-                            <button type="button" aria-label="Move up" :disabled="i === 0" @click="moved(i, -1)">↑</button>
-                            <button type="button" aria-label="Move down" :disabled="i === cards.length - 1" @click="moved(i, 1)">↓</button>
-                            <button type="button" aria-label="Remove" @click="arranged(cards.filter((card) => card !== kind))">✕</button>
-                        </span>
-                    </template>
-                </header>
-                <div class="board-group">
-                    <template v-if="rows(kind).length">
-                        <ul class="board-rows">
-                            <template v-for="row in shown(kind)" :key="row.ref">
-                                <li>
-                                    <button type="button" class="board-row" @click="emit('open', row.ref)">
-                                        <span class="board-title">{{ row.title }}</span>
-                                        <span class="board-age">{{ ago(row.updated) }}</span>
-                                        <PhoneChevron class="board-chevron" />
-                                    </button>
-                                </li>
+            <template v-if="!editing && !total(kind)">
+                <p class="board-none">{{ NAMES[kind] }} · none yet</p>
+            </template>
+            <template v-else>
+                <section class="board-card" :aria-label="NAMES[kind]">
+                    <header class="board-head">
+                        <h2 class="board-name">{{ NAMES[kind] }}</h2>
+                        <span class="board-count">{{ total(kind) }}</span>
+                        <template v-if="editing">
+                            <span class="board-tools">
+                                <button type="button" :aria-label="`Move ${NAMES[kind]} up`" :disabled="i === 0" @click="moved(i, -1)"><Icon name="up" :size="16" /></button>
+                                <button type="button" :aria-label="`Move ${NAMES[kind]} down`" :disabled="i === cards.length - 1" @click="moved(i, 1)"><Icon name="down" :size="16" /></button>
+                                <button type="button" :aria-label="`Remove ${NAMES[kind]}`" @click="remove(kind)"><Icon name="close" :size="16" /></button>
+                            </span>
+                        </template>
+                    </header>
+                    <div class="board-group">
+                        <template v-if="rows(kind).length">
+                            <ul class="board-rows">
+                                <template v-for="row in shown(kind)" :key="row.ref">
+                                    <li>
+                                        <button type="button" class="board-row" @click="emit('open', row.ref)">
+                                            <span class="board-title">{{ row.title }}</span>
+                                            <span class="board-age">{{ ago(row.updated) }}</span>
+                                            <PhoneChevron class="board-chevron" />
+                                        </button>
+                                    </li>
+                                </template>
+                            </ul>
+                            <template v-if="rows(kind).length > shown(kind).length">
+                                <button type="button" class="board-more" @click="more(kind)">{{ total(kind) > rows(kind).length ? `Show ${rows(kind).length} of ${total(kind)}` : `Show all ${rows(kind).length}` }}</button>
                             </template>
-                        </ul>
-                        <template v-if="rows(kind).length > shown(kind).length">
-                            <button type="button" class="board-more" @click="more(kind)">{{ total(kind) > rows(kind).length ? `Show ${rows(kind).length} of ${total(kind)}` : `Show all ${rows(kind).length}` }}</button>
+                            <template v-else-if="total(kind) > rows(kind).length">
+                                <p class="board-part">Showing {{ rows(kind).length }} of {{ total(kind) }}</p>
+                            </template>
                         </template>
-                        <template v-else-if="total(kind) > rows(kind).length">
-                            <p class="board-part">Showing {{ rows(kind).length }} of {{ total(kind) }}</p>
+                        <template v-else>
+                            <p class="board-empty">Nothing here</p>
                         </template>
-                    </template>
-                    <template v-else>
-                        <p class="board-empty">Nothing here</p>
-                    </template>
-                </div>
-            </section>
+                    </div>
+                </section>
+            </template>
         </template>
         <template v-if="editing && missing.length">
             <section class="board-card" aria-label="Add a card">
@@ -174,6 +205,36 @@ function moved(i, by) {
     margin: 0;
     color: var(--text-3);
     font-size: 0.794rem;
+}
+
+.board-none {
+    margin: -16px 0 0;
+    padding: 0 16px;
+    color: var(--text-3);
+    font-size: 0.824rem;
+}
+
+.board-removed {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 6px 6px 16px;
+    border-radius: 12px;
+    background: var(--raised);
+    color: var(--text-2);
+}
+
+.board-undo {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--accent-text);
+    font: inherit;
+    font-weight: 600;
 }
 
 .board-card {

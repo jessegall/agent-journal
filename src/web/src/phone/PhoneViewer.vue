@@ -7,6 +7,8 @@ import {ended} from "./outbox.js";
 import {useUnder} from "./under.js";
 import {highlight, languageOf} from "../text/highlight.js";
 import {announce} from "./announce.js";
+import PhoneMissing from "./PhoneMissing.vue";
+import {useDrag} from "./drag.js";
 
 const TEXT = /\.(txt|md|json|log|csv|ya?ml|toml|py|js|ts|vue|css|html|sh|sql|xml)$/i;
 const PICTURE = /\.(png|jpe?g|gif|webp|heic)$/i;
@@ -21,6 +23,12 @@ const text = ref(null);
 const path = ref(name);
 const told = ref("");
 const body = ref(null);
+const missing = ref(false);
+
+function retry() {
+    told.value = "";
+    load();
+}
 const edge = ref(null);
 const title = ref(null);
 const under = useUnder(edge);
@@ -31,6 +39,10 @@ const line = Number(wanted) || 0;
 const ZOOM = 2.5;
 const DOUBLE = 300;
 const zoomed = ref(false);
+const DISMISS = 120;
+const FLICK = 0.5;
+const pulled = ref(0);
+const pulling = ref(false);
 const stage = ref(null);
 const shared = ref(null);
 let lastTap = 0;
@@ -54,6 +66,21 @@ function tapped(event) {
         box.scrollTop = y * box.scrollHeight - box.clientHeight / 2;
     });
 }
+
+useDrag(body, {
+    axis: "y",
+    begin: () => (picture.value && !zoomed.value ? {} : null),
+    accepts: (d) => d > 0,
+    move: (d) => {
+        pulling.value = true;
+        pulled.value = Math.max(0, d);
+    },
+    end: (d, v) => {
+        pulling.value = false;
+        if (d > DISMISS || v > FLICK) return emit("close");
+        pulled.value = 0;
+    },
+});
 
 async function share() {
     try {
@@ -80,7 +107,10 @@ async function load() {
         }
     } catch (error) {
         if (ended(error)) failed(error);
-        else told.value = error.message;
+        else {
+            missing.value = error.status === 404;
+            told.value = error.message || "Not found";
+        }
     }
     if (line) nextTick(() => body.value?.querySelector(`[data-line="${line}"]`)?.scrollIntoView({block: "center"}));
 }
@@ -106,12 +136,16 @@ onMounted(() => {
         <div ref="body" :class="['viewer-body', {dark: picture}]" data-scroller>
             <span ref="edge" class="viewer-edge" />
             <template v-if="told">
-                <p class="viewer-told" role="status">{{ told }}</p>
+                <PhoneMissing :title="missing ? 'This file isn’t available' : 'This file couldn’t be loaded'" :words="missing ? `${name} could not be found on your computer.` : told" :back="back" @back="emit('close')">
+                    <template v-if="!missing">
+                        <button type="button" @click="retry">Try again</button>
+                    </template>
+                </PhoneMissing>
             </template>
             <template v-else-if="picture">
-                <div ref="stage" :class="['viewer-stage', {zoomed}]">
+                <div ref="stage" :class="['viewer-stage', {zoomed, pulling}]" :style="{transform: pulled ? `translateY(${pulled}px)` : '', opacity: pulled ? Math.max(0.3, 1 - pulled / 400) : ''}">
                     <button type="button" class="viewer-zoom" :aria-pressed="zoomed" :aria-label="zoomed ? 'Zoom out' : 'Zoom in'" :style="{width: zoomed ? `${ZOOM * 100}%` : '100%'}" @click="tapped">
-                        <img class="viewer-picture" :src="url" :alt="name" />
+                        <img class="viewer-picture" :src="url" :alt="name" @error="(missing = true), (told = 'Not found')" />
                     </button>
                 </div>
             </template>
@@ -219,6 +253,14 @@ onMounted(() => {
     max-width: none;
     overflow: hidden;
     padding-bottom: env(safe-area-inset-bottom);
+}
+
+.viewer-stage {
+    transition: transform 300ms var(--spring), opacity 200ms ease-out;
+}
+
+.viewer-stage.pulling {
+    transition: none;
 }
 
 .viewer-stage.zoomed {

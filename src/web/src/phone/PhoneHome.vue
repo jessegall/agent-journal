@@ -13,6 +13,7 @@ import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
 import PhoneTabs from "./PhoneTabs.vue";
 import PhoneNeeds from "./PhoneNeeds.vue";
+import PhoneAgentSheet from "./PhoneAgentSheet.vue";
 import Icon from "../kit/Icon.vue";
 import PhoneChevron from "./PhoneChevron.vue";
 import {chipOpener} from "./peeked.js";
@@ -52,6 +53,8 @@ const feed = ref({items: [], waiting: [], agent: "offline"});
 const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const listing = ref(false);
+const agentOpen = ref(false);
+const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
 const pages = ref([]);
 const direction = ref("push");
 const screen = ref("chat");
@@ -182,6 +185,11 @@ const dividers = computed(() =>
     items.value.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(items.value[i - 1].created) ? named(item.created) : "")),
 );
 const keyOf = (item) => item.type + item.n;
+const RUN_GAP = 300;
+const fromDesktop = (item) => item.who === "user" && !String(item.data?.via || "").startsWith("phone:");
+const joins = (before, item) =>
+    Boolean(before) && before.type === "message" && item.type === "message" && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
+const joined = computed(() => items.value.map((item, i) => !dividers.value[i] && joins(items.value[i - 1], item)));
 const fresh = (item) => freshKeys.value.has(keyOf(item));
 const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
 
@@ -218,6 +226,10 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
 });
 provide("phoneRefresh", refresh);
 
+watch(offline, (now, before) => {
+    if (now !== before) announce(now ? "Offline, waiting to reconnect" : "Back online");
+});
+
 watch(held, (now) => {
     if (now || !waitingFeed) return;
     const got = waitingFeed;
@@ -250,26 +262,11 @@ const back = () => history.back();
 
 const edge = useEdgeBack(stack, {depth: () => pages.value.length, back});
 
-const SETTLE = 800;
 const SPOKEN_AFTER = 300;
-let moving = 0;
+
+const nextAfter = (target) => ordered(feed.value.waiting).find((item) => item.ref !== target) || null;
 
 function next() {
-    const from = pages.value.at(-1)?.id;
-    clearTimeout(moving);
-    moving = setTimeout(() => moveWhenStill(from), SETTLE);
-}
-
-function moveWhenStill(from) {
-    if (pages.value.at(-1)?.id !== from) return;
-    if (edge.dragging.value || edge.busy()) {
-        moving = setTimeout(() => moveWhenStill(from), SETTLE);
-        return;
-    }
-    moveOn();
-}
-
-function moveOn() {
     const left = ordered(feed.value.waiting).filter((item) => item.ref !== reading.value);
     if (!left.length) return back();
     const stay = [...pages.value.slice(0, -1), entry(left[0].ref)];
@@ -294,7 +291,6 @@ onUnmounted(() => {
     document.removeEventListener("visibilitychange", returned);
     cancelAnimationFrame(loadFrame);
     cancelAnimationFrame(scrollFrame);
-    clearTimeout(moving);
     clearTimeout(noticeTimer);
 });
 
@@ -409,7 +405,7 @@ function pick(key) {
 </script>
 
 <template>
-    <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held || listing)">
+    <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held || listing || agentOpen)">
         <div :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']" :inert="pages.length > (edge.leaving.value ? 1 : 0)">
             <div :class="['home-top', {under}]">
                 <header class="home-bar">
@@ -419,9 +415,14 @@ function pick(key) {
                             <span class="home-project">{{ connection.project }}</span>
                             <PhoneChevron facing="down" :size="12" class="home-chevron" />
                         </span>
-                        <span class="home-note">{{ connection.environment }}{{ current || offline ? "" : " · Updating…" }}</span>
+                        <span :class="['home-note', {offline}]">
+                            <template v-if="offline">
+                                <span class="home-offline-dot" aria-hidden="true" />
+                            </template>
+                            {{ connection.environment }}{{ offline ? " · Offline, waiting to reconnect" : current ? "" : " · Updating…" }}
+                        </span>
                     </button>
-                    <button type="button" class="home-agent" @click="picking = true">
+                    <button type="button" class="home-agent" aria-haspopup="dialog" @click="agentOpen = true">
                         <span class="phone-hidden">Agent:</span>
                         <PhoneAgent :state="feed.agent" />
                     </button>
@@ -437,9 +438,6 @@ function pick(key) {
                 </template>
                 <template v-if="actionsHere">
                     <p class="home-pending" role="status">{{ actionsHere === 1 ? "1 of your actions waits" : `${actionsHere} of your actions wait` }} to send</p>
-                </template>
-                <template v-if="offline">
-                    <p class="home-offline" role="status">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
                 </template>
                 <PhoneNotify />
                 <PhoneWaiting :waiting="feed.waiting" @open="open" @list="listing = true" />
@@ -469,7 +467,7 @@ function pick(key) {
                                     <template v-if="dividers[i]">
                                         <p class="home-day">{{ dividers[i] }}</p>
                                     </template>
-                                    <PhoneTurn :item="item" :fresh="fresh(item)" :briefs="briefs" @hold="(it, rect, el) => it.type === 'message' && (held = {item: it, rect, el})" />
+                                    <PhoneTurn :item="item" :fresh="fresh(item)" :briefs="briefs" :joined="joined[i]" :continues="joined[i + 1] === true" @hold="(it, rect, el) => it.type === 'message' && (held = {item: it, rect, el})" />
                                 </template>
                                 <template v-for="line in sentHere" :key="line.idempotency">
                                     <p class="home-sent">
@@ -535,7 +533,7 @@ function pick(key) {
                         <PhoneViewer :target="page.ref" :back="backLabel(i)" @close="back" />
                     </template>
                     <template v-else>
-                        <PhoneReader :target="page.ref" :back="backLabel(i)" @close="back" @open="open" @next="next" @reply="reply" />
+                        <PhoneReader :target="page.ref" :back="backLabel(i)" :up-next="nextAfter(page.ref)" @close="back" @open="open" @next="next" @reply="reply" />
                     </template>
                 </div>
             </template>
@@ -543,6 +541,9 @@ function pick(key) {
     </div>
     <template v-if="picking">
         <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="arrived" />
+    </template>
+    <template v-if="agentOpen">
+        <PhoneAgentSheet :state="feed.agent" :environment="connection.environment" :last-active="lastActive" @close="agentOpen = false" @started="(agentOpen = false), refresh()" />
     </template>
     <template v-if="listing">
         <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />
@@ -764,6 +765,20 @@ function pick(key) {
     font-weight: 600;
 }
 
+.home-note.offline {
+    color: var(--text-2);
+}
+
+.home-offline-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: var(--tone-warn);
+    vertical-align: middle;
+}
+
 .home-pending {
     margin: 0 0 6px;
     padding: 6px 12px;
@@ -839,7 +854,8 @@ function pick(key) {
     margin: 0;
     padding: 8px 12px;
     border-radius: 18px;
-    background: var(--accent-dim);
+    background: var(--accent);
+    color: #fff;
     line-height: 1.35;
     white-space: pre-wrap;
 }
@@ -850,7 +866,7 @@ function pick(key) {
     justify-content: flex-end;
     gap: 4px;
     margin-top: 4px;
-    color: var(--text-3);
+    color: #fff;
     font-size: 0.676rem;
     text-align: right;
 }

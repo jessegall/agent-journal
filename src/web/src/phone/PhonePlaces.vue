@@ -3,6 +3,7 @@ import {onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Spinner from "../kit/Spinner.vue";
 import PhoneSheet from "./PhoneSheet.vue";
+import {AGENTS} from "./agents.js";
 
 const props = defineProps({environment: {type: String, required: true}});
 const emit = defineEmits(["close", "moved", "switching", "stayed"]);
@@ -23,10 +24,6 @@ onMounted(async () => {
 
 const here = (place, name) => place.root === at.value && name === props.environment;
 
-const AGENTS = [
-    {key: "claude", label: "Claude"},
-    {key: "codex", label: "Codex"},
-];
 
 async function start(place, name, agent) {
     moving.value = `${place.root}:${name}`;

@@ -30,7 +30,11 @@ export const phone = {
     bar: () => got("./bar"),
     places: () => got("./places"),
     source: (q) => got(`./source?q=${encodeURIComponent(q)}`),
-    attached: async (path) => (await fetch(`./file/${path}`, {cache: "no-cache"})).text(),
+    attached: async (path) => {
+        const answer = await fetch(`./file/${path}`, {cache: "no-cache"});
+        if (!answer.ok) throw new PhoneError(answer.status, (await answer.text().catch(() => "")) || "The file could not be loaded");
+        return answer.text();
+    },
     picture: async (path, name) => {
         const answer = await fetch(`./file/${path}`, {cache: "no-cache"});
         if (!answer.ok) throw new PhoneError(answer.status, "The picture could not be loaded");

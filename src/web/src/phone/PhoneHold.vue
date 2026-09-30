@@ -54,8 +54,13 @@ function placed() {
     top.value = Math.max(TOP, Math.min(wanted, window.innerHeight - tall - MARGIN * 3));
 }
 
+const closed = () => emit("close");
+
 onMounted(() => {
     cloned();
+    if (props.source) props.source.style.visibility = "hidden";
+    window.addEventListener("resize", closed);
+    window.addEventListener("orientationchange", closed);
     placed();
     nextTick(() => {
         scrolled();
@@ -65,7 +70,12 @@ onMounted(() => {
     });
 });
 
-onUnmounted(() => watcher?.disconnect());
+onUnmounted(() => {
+    watcher?.disconnect();
+    if (props.source) props.source.style.visibility = "";
+    window.removeEventListener("resize", closed);
+    window.removeEventListener("orientationchange", closed);
+});
 </script>
 
 <template>
@@ -145,6 +155,7 @@ onUnmounted(() => watcher?.disconnect());
 
 .hold-faces {
     order: -1;
+    margin-bottom: -2px;
     display: flex;
     gap: 2px;
     max-width: min(340px, calc(100vw - 24px));
@@ -191,7 +202,8 @@ onUnmounted(() => watcher?.disconnect());
 }
 
 .hold-preview.mine {
-    background: var(--accent-dim);
+    background: var(--accent);
+    color: #fff;
 }
 
 .hold-menu {

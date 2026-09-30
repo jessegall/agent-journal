@@ -1,7 +1,8 @@
 <script setup>
-import {computed, inject, nextTick, onUnmounted, ref} from "vue";
+import {computed, inject, nextTick, onMounted, onUnmounted, ref} from "vue";
 import {ended, perform} from "./outbox.js";
 import {phone} from "../api/phone.js";
+import PhoneSending from "./PhoneSending.vue";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
@@ -9,13 +10,19 @@ import {announce} from "./announce.js";
 import {tick} from "./haptic.js";
 
 const UNDO_SECONDS = 5;
-const undo = ref(null);
+const card = ref(null);
 const HELD = "No connection right now: this goes as soon as the phone reaches your computer again.";
 const props = defineProps({question: {type: Object, required: true}});
 const emit = defineEmits(["done"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
 const choice = ref("");
+const typed = ref(false);
+const OWN = "own-words";
+const rows = computed(() => [
+    ...options.value.map((option) => ({key: `option-${option.title}`, title: option.title, sending: choice.value === option.title && !typed.value})),
+    {key: OWN, own: true, sending: Boolean(choice.value) && typed.value},
+]);
 const left = ref(0);
 const own = ref("");
 const said = ref("");
@@ -29,7 +36,21 @@ let timer = 0;
 function stop() {
     clearInterval(timer);
     choice.value = "";
+    typed.value = false;
 }
+
+function pickOwn() {
+    const words = own.value.trim();
+    if (!words) return;
+    typed.value = true;
+    pick(words);
+}
+
+function leaving() {
+    if (choice.value && !said.value) send(choice.value);
+}
+
+const hidden = () => document.hidden && leaving();
 
 async function send(answer) {
     stop();
@@ -87,15 +108,25 @@ function pick(answer) {
     clearInterval(timer);
     choice.value = answer;
     left.value = UNDO_SECONDS;
-    nextTick(() => undo.value?.$el?.focus());
+    nextTick(() => card.value?.querySelector(".sending-undo")?.focus());
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
 
-onUnmounted(() => clearInterval(timer));
+onMounted(() => {
+    window.addEventListener("pagehide", leaving);
+    document.addEventListener("visibilitychange", hidden);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("pagehide", leaving);
+    document.removeEventListener("visibilitychange", hidden);
+    leaving();
+    clearInterval(timer);
+});
 </script>
 
 <template>
-    <article class="question">
+    <article ref="card" class="question">
         <span class="question-kind">Question · {{ ago(question.created) }}</span>
         <p class="question-title">{{ question.title }}</p>
         <template v-if="question.abstract">
@@ -105,22 +136,23 @@ onUnmounted(() => clearInterval(timer));
             <p class="question-answer">{{ outcome }}</p>
         </template>
         <template v-else>
-            <template v-if="choice">
-                <div class="question-held">
-                    <span>Sending "{{ choice }}" in {{ left }}s</span>
-                    <Btn kind="primary" large @click="send(choice)">Send now</Btn>
-                    <Btn ref="undo" large :aria-label="`Undo. Sending &quot;${choice}&quot; in ${UNDO_SECONDS} seconds`" @click="stop">Undo</Btn>
-                </div>
-            </template>
             <div class="question-options">
-                <template v-for="option in options" :key="option.title">
-                    <Btn :kind="choice === option.title ? 'primary' : ''" large @click="pick(option.title)">{{ option.title }}</Btn>
+                <template v-for="row in rows" :key="row.key">
+                    <template v-if="row.sending">
+                        <PhoneSending :answer="choice" :left="left" :seconds="UNDO_SECONDS" @now="send(choice)" @undo="stop" />
+                    </template>
+                    <template v-else-if="row.own">
+                        <form class="question-own" @submit.prevent="pickOwn">
+                            <label class="phone-hidden" :for="`own-${question.n}`">Your own answer</label>
+                            <input :id="`own-${question.n}`" v-model="own" class="question-words" placeholder="Or answer in your own words" />
+                            <Btn large @click="pickOwn">Answer</Btn>
+                        </form>
+                    </template>
+                    <template v-else>
+                        <Btn large @click="pick(row.title)">{{ row.title }}</Btn>
+                    </template>
                 </template>
             </div>
-            <form class="question-own" @submit.prevent="own.trim() && send(own.trim())">
-                <input v-model="own" class="question-words" placeholder="Or answer in your own words" />
-                <Btn large @click="own.trim() && send(own.trim())">Answer</Btn>
-            </form>
             <button type="button" class="question-dismiss" @click="dismiss">Dismiss</button>
             <template v-if="trouble">
                 <p class="question-trouble" role="status">{{ trouble }}</p>
@@ -184,19 +216,6 @@ onUnmounted(() => clearInterval(timer));
     color: var(--text);
     font: inherit;
     font-size: max(16px, 1rem);
-}
-
-.question-held {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    color: var(--text-2);
-}
-
-.question-held span {
-    flex: 1 1 100%;
 }
 
 .question-dismiss {

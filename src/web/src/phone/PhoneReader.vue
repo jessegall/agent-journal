@@ -11,6 +11,7 @@ import {ago} from "./ago.js";
 import {ended, flush, hold, perform} from "./outbox.js";
 import {chipOpener} from "./peeked.js";
 import {todoFacts} from "./todo.js";
+import PhoneMissing from "./PhoneMissing.vue";
 import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
@@ -24,7 +25,19 @@ const DEPTHS = ["a quick look", "a normal read", "a thorough review"];
 const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add more detail to ", "Something is missing: "];
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
 const NAMES = {doc: "document", todo: "to-do"};
-const props = defineProps({target: {type: String, required: true}, back: {type: String, default: "Chat"}});
+const props = defineProps({target: {type: String, required: true}, back: {type: String, default: "Chat"}, upNext: {type: Object, default: null}});
+const missing = ref(false);
+const finished = ref(false);
+const kindName = computed(() => NAMES[props.target.split(":")[0]] || KINDS[props.target.split(":")[0]]?.toLowerCase() || "item");
+const phaseState = (i) => {
+    if (!row.value || row.value.type !== "plan") return "";
+    if (row.value.completed || row.value.data.status === "done") return "done";
+    if (!["approved", "active", "waiting"].includes(row.value.data.status)) return "";
+    const current = row.value.data.current || 1;
+    if (i + 1 < current) return "done";
+    return i + 1 === current ? "now" : "next";
+};
+const PHASE_WORDS = {done: "Done", now: "Now", next: "Next"};
 const emit = defineEmits(["close", "open", "next", "reply"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
@@ -37,6 +50,7 @@ const told = ref("");
 const edge = ref(null);
 const heading = ref(null);
 const backButton = ref(null);
+const root = ref(null);
 const under = useUnder(edge);
 const titled = useUnder(heading);
 const phases = computed(() => (row.value && row.value.data.phases) || []);
@@ -90,9 +104,11 @@ const chipped = chipOpener((target) => emit("open", target));
 
 async function load() {
     try {
+        told.value = "";
         row.value = await phone.row(props.target);
     } catch (error) {
         if (ended(error)) failed(error);
+        else if (error.status === 404) missing.value = true;
         else told.value = error.message;
     }
 }
@@ -108,7 +124,7 @@ async function approve() {
                 : "Approved. The agent starts it.";
         announce(went === "held" ? "Approval waits to send" : "Plan approved");
         refresh();
-        if (went !== "held") emit("next");
+        if (went !== "held") finished.value = true;
     } catch (error) {
         if (error.status === 409) told.value = "This plan changed since you opened it. Look at it again.";
         else if (ended(error)) failed(error);
@@ -129,12 +145,12 @@ onMounted(async () => {
     await load();
     await nextTick();
     fade();
-    (heading.value || backButton.value)?.focus({preventScroll: true});
+    (heading.value || root.value?.querySelector(".missing-title") || backButton.value)?.focus({preventScroll: true});
 });
 </script>
 
 <template>
-    <section class="reader" @click.capture="chipped">
+    <section ref="root" class="reader" @click.capture="chipped">
         <header :class="['reader-bar', {under}]">
             <button ref="backButton" type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><PhoneChevron facing="left" :size="18" /> {{ back }}</button>
             <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ row ? row.title : "" }}</span>
@@ -152,7 +168,7 @@ onMounted(async () => {
             <div ref="body" class="reader-body" data-scroller :style="{fontSize: `${SIZES[size]}rem`}" @scroll.passive="scrolled">
                 <span ref="edge" class="reader-edge" />
                 <template v-if="row.type === 'question'">
-                    <PhoneQuestion :question="row" @done="emit('next')" />
+                    <PhoneQuestion :question="row" @done="finished = true" />
                 </template>
                 <template v-else>
                     <span class="reader-kind">{{ KINDS[row.type] || row.type }} · {{ ago(row.created) }}</span>
@@ -194,8 +210,13 @@ onMounted(async () => {
                         <TextDisplay :text="part.body" />
                     </template>
                     <template v-for="(phase, i) in phases" :key="phase.title">
-                        <details class="reader-phase">
-                            <summary>{{ i + 1 }}. {{ phase.title }}</summary>
+                        <details :class="['reader-phase', phaseState(i)]">
+                            <summary>
+                                {{ i + 1 }}. {{ phase.title }}
+                                <template v-if="phaseState(i)">
+                                    <span :class="['reader-phase-state', phaseState(i)]">{{ PHASE_WORDS[phaseState(i)] }}</span>
+                                </template>
+                            </summary>
                             <p>Done when: {{ phase.when }}</p>
                             <template v-if="phase.brief">
                                 <TextDisplay :text="phase.brief" />
@@ -205,6 +226,14 @@ onMounted(async () => {
                 </template>
             </div>
             <footer class="reader-foot">
+                <template v-if="finished">
+                    <template v-if="upNext">
+                        <Btn kind="primary" large @click="emit('next')">Next: {{ upNext.title }}</Btn>
+                    </template>
+                    <template v-else>
+                        <Btn large @click="emit('close')">Back to {{ back }}</Btn>
+                    </template>
+                </template>
                 <template v-if="chosen">
                     <p class="reader-chosen" role="status"><Icon name="tick" :size="18" /> You chose: {{ chosen }}</p>
                 </template>
@@ -253,8 +282,13 @@ onMounted(async () => {
                 </template>
             </footer>
         </template>
+        <template v-else-if="missing">
+            <PhoneMissing :title="`This ${kindName} no longer exists`" words="It may have been removed on your computer." :back="back" @back="emit('close')" />
+        </template>
         <template v-else-if="told">
-            <p class="reader-told" role="status">{{ told }}</p>
+            <PhoneMissing title="This couldn't be loaded" :words="told" :back="back" @back="emit('close')">
+                <button type="button" @click="load">Try again</button>
+            </PhoneMissing>
         </template>
         <template v-else>
             <div class="reader-wait"><Spinner /></div>
@@ -537,6 +571,31 @@ onMounted(async () => {
 
 .reader-chosen :deep(.ico) {
     color: var(--tone-good);
+}
+
+.reader-phase-state {
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 9px;
+    background: var(--hover);
+    color: var(--text-2);
+    font-size: 0.706rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.reader-phase-state.done {
+    background: color-mix(in oklab, var(--tone-good) 18%, transparent);
+    color: var(--text);
+}
+
+.reader-phase-state.now {
+    background: var(--accent);
+    color: #fff;
+}
+
+.reader-phase.now {
+    box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .reader-foot:empty {

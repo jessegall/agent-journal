@@ -20,8 +20,8 @@ const sorted = computed(() => ordered(props.waiting));
                     <button type="button" :class="['needs-row', item.type]" @click="emit('open', item.ref)">
                         <span class="needs-mark" />
                         <span class="needs-words">
-                            <span class="needs-kind">{{ KINDS[item.type] || item.type }} · {{ ago(item.created) }}</span>
                             <span class="needs-name">{{ item.title }}</span>
+                            <span class="needs-kind">{{ KINDS[item.type] || item.type }} {{ item.ref.split(":")[1] }} · {{ ago(item.created) }}</span>
                         </span>
                         <PhoneChevron class="needs-chevron" />
                     </button>
