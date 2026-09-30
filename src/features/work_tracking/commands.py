@@ -36,15 +36,16 @@ class ParkWork(Command):
 
     def run(self, context: Context, works: Works, *words: str, n: int = 0):
         n, why = numbered(words, n, "say why it waits: journal work park <n> \"<why>\"")
-        return works.update(in_hand(works, n).n, parked=why, awaiting="")
+        return works.update(in_hand(works, n).n, parked=why, awaiting="", awaiting_on="")
 
 
 class AwaitWork(Command):
     name = "await"
 
-    def run(self, context: Context, works: Works, *words: str, n: int = 0):
+    def run(self, context: Context, works: Works, *words: str, n: int = 0, on: str = ""):
         n, awaiting = numbered(words, n, "say what you are waiting for: journal work await <n> \"<what>\"")
-        return works.update(in_hand(works, n).n, awaiting=awaiting, awaiting_since=time.time())
+        named = ",".join(part.strip() for part in on.split(",") if part.strip())
+        return works.update(in_hand(works, n).n, awaiting=awaiting, awaiting_since=time.time(), awaiting_on=named)
 
 
 class ResumeWork(Command):

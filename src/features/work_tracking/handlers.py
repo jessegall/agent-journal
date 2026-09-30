@@ -168,7 +168,7 @@ class ClearWaitOnActivity(Handler):
         runs = command_runs(context.agent.row)
         started = runs[-1].at if runs else 0.0
         for w in working(context)[:1]:
-            if not w.awaiting or started <= float(w.awaiting_since):
+            if not w.is_self_clearing or started <= float(w.awaiting_since):
                 continue
             context.journal.works.update(w.n, awaiting="")
             context.agent.whisper("wait cleared", awaiting=w.awaiting)
@@ -178,7 +178,7 @@ class AskStillAwaiting(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         every = context.settings.ask_awaiting_every
         for w in working(context)[:1]:
-            if not w.awaiting or not every:
+            if not w.is_self_clearing or not every:
                 continue
             minutes = int((time.time() - (w.awaiting_since or time.time())) // 60)
             if minutes >= every and context.state.get("awaiting asked") != f"{w.n}:{minutes // every}":

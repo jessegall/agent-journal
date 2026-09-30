@@ -69,6 +69,7 @@ class Work(Traced, Resource):
         Field(name="parked"),
         Field(default="", name="awaiting"),
         Field(default=0, name="awaiting_since"),
+        Field(default="", name="awaiting_on"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Work",
@@ -84,6 +85,10 @@ class Work(Traced, Resource):
     notified = (USER,)
     command_names = {"complete": "end", "create": "start"}
     in_sidebar = False
+
+    @property
+    def is_self_clearing(self) -> bool:
+        return bool(self.awaiting) and not self.awaiting_on
 
 
 class Doc(Shape, Resource):
