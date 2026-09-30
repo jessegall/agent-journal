@@ -1,25 +1,28 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, provide, ref} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Spinner from "../kit/Spinner.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {deviceName} from "./device.js";
+import PhoneHome from "./PhoneHome.vue";
+import {ended, forget} from "./outbox.js";
 
 const STATES = {401: "unknown", 410: "ended"};
+const RETRY_EVERY = 10000;
 
 const state = ref("loading");
 const told = ref("");
 const connection = ref(null);
-const words = ref("");
-const sending = ref(false);
-const sent = ref([]);
 
 function failed(error) {
+    if (ended(error)) forget();
     state.value = error instanceof PhoneError ? STATES[error.status] || "unreachable" : "unreachable";
     told.value = error.message;
 }
+
+provide("phoneFailed", failed);
 
 async function connect() {
     const code = location.hash.slice(1);
@@ -29,6 +32,7 @@ async function connect() {
 }
 
 async function load() {
+    state.value = "loading";
     try {
         await connect();
         connection.value = await phone.state();
@@ -38,22 +42,10 @@ async function load() {
     }
 }
 
-async function send() {
-    const text = words.value.trim();
-    if (!text || sending.value) return;
-    sending.value = true;
-    try {
-        await phone.say(text, crypto.randomUUID());
-        sent.value = [{text, at: Date.now()}, ...sent.value];
-        words.value = "";
-    } catch (error) {
-        failed(error);
-    } finally {
-        sending.value = false;
-    }
-}
+const retry = setInterval(() => state.value === "unreachable" && !document.hidden && load(), RETRY_EVERY);
 
 onMounted(load);
+onUnmounted(() => clearInterval(retry));
 </script>
 
 <template>
@@ -63,19 +55,7 @@ onMounted(load);
                 <div class="phone-centre"><Spinner /></div>
             </template>
             <template #connected>
-                <header class="phone-bar">
-                    <span class="phone-title">Your journal</span>
-                    <span class="phone-note">{{ connection.phone }}, until {{ new Date(connection.expires * 1000).toLocaleDateString() }}</span>
-                </header>
-                <section class="phone-sent">
-                    <template v-for="line in sent" :key="line.at">
-                        <p class="phone-line">{{ line.text }}<span class="phone-note">Sent to the agent</span></p>
-                    </template>
-                </section>
-                <form class="phone-compose" @submit.prevent="send">
-                    <textarea v-model="words" class="phone-words" rows="3" placeholder="Tell the agent what to do next" />
-                    <Btn kind="primary" large :busy="sending" @click="send">Send to the agent</Btn>
-                </form>
+                <PhoneHome :connection="connection" />
             </template>
             <template #ended>
                 <div class="phone-centre">
@@ -89,7 +69,7 @@ onMounted(load);
             </template>
             <template #unreachable>
                 <div class="phone-centre">
-                    <EmptyState title="Can't reach your computer right now">{{ told }}. It may be asleep or offline.</EmptyState>
+                    <EmptyState title="Can't reach your computer right now">It may be asleep or offline. Trying again every few seconds.</EmptyState>
                     <Btn large @click="load">Try again</Btn>
                 </div>
             </template>

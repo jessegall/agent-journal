@@ -5,12 +5,14 @@ from typing import TypedDict
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller
+from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
 from controllers.notices import Notices
 from engine.record import Record
+from features.format import VIEWER
 from features.phone.resource import Phone
+from features.shaping import shaped
 from features.sharing.controller import Shares
 from resources.base import PROJECT, SYSTEM, USER, Refused, titled
 
@@ -19,6 +21,22 @@ DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
 KEPT = ("key", "code", "code_until", "expires", "environment", "days")
+FEED = 40
+SAID = ("message", "question")
+READABLE = ("question", "report", "doc", "plan")
+WAITING = ("question", "plan", "report", "doc")
+
+
+class Waiting(TypedDict):
+    ref: str
+    type: str
+    n: int
+    title: str
+
+
+class Feed(TypedDict):
+    items: list[dict]
+    waiting: list[Waiting]
 
 
 class Code(TypedDict):
@@ -26,6 +44,10 @@ class Code(TypedDict):
     link: str
     code_until: float
     address: str
+
+
+class Stale(Refused):
+    pass
 
 
 def hashed(secret: str) -> str:
@@ -96,6 +118,66 @@ class Phones(Controller):
             raise Refused("a message needs words")
         return Messages(self._home(phone), actor=USER).create(titled(text), brief=text, idempotency=said.idempotency, about=said.about,
                                                              via=f"phone:{phone.n}")
+
+    def _feed(self, phone: Phone) -> Feed:
+        home = self._home(phone)
+        said = [self._said(home, kind, row) for kind in SAID for row in self._latest(home, kind)]
+        return Feed(items=sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:], waiting=self._waiting(phone))
+
+    def _latest(self, home: Record, kind: str) -> list:
+        rows = [row for row in CONTROLLERS[kind](home, actor=SYSTEM).summaries() if not row["deleted"]]
+        return [CONTROLLERS[kind](home, actor=SYSTEM).load(row["n"]) for row in rows[-FEED:]]
+
+    def _said(self, home: Record, kind: str, row) -> dict | None:
+        if kind == "message" and row.data.get("window"):
+            return None
+        return {**shaped(row, home, VIEWER), "who": row.seen[0] if kind == "message" and row.seen else "agent"}
+
+    def _waiting(self, phone: Phone) -> list[Waiting]:
+        home = self._home(phone)
+        found = []
+        for kind in WAITING:
+            controller = CONTROLLERS[kind](home, actor=SYSTEM)
+            for n in [row["n"] for row in controller.summaries() if not row["deleted"] and not row["completed"]]:
+                row = controller.load(n)
+                if self._reaches(phone, row) and self._owed(row):
+                    found.append(Waiting(ref=row.ref, type=kind, n=row.n, title=row.title))
+        return found
+
+    def _owed(self, row) -> bool:
+        if row.type == "question":
+            return True
+        if row.type == "plan":
+            return row.status == "ready"
+        return USER not in row.seen
+
+    def _reaches(self, phone: Phone, row) -> bool:
+        return row.data.get("environment") in (phone.environment, None, "")
+
+    def _read(self, phone: Phone, ref: str) -> dict:
+        kind, _, n = ref.partition(":")
+        if kind not in READABLE or not n.isdigit():
+            raise Refused(f"a phone opens a question, a report, a document or a plan, not {ref!r}")
+        home = self._home(phone)
+        row = CONTROLLERS[kind](home, actor=SYSTEM).load(int(n))
+        if row.deleted or not self._reaches(phone, row):
+            raise Refused(f"{kind} {n} is not in this phone's environment")
+        return shaped(CONTROLLERS[kind](home, actor=USER).read(row.n), home, VIEWER)
+
+    def _answer(self, phone: Phone, chosen):
+        questions = CONTROLLERS["question"](self._home(phone), actor=USER)
+        if questions.load(chosen.n).completed:
+            raise Stale(f"question {chosen.n} was already answered")
+        if not chosen.answer.strip():
+            raise Refused("an answer needs words")
+        return questions.complete(chosen.n, how=chosen.answer.strip(), via=f"phone:{phone.n}")
+
+    def _approve(self, phone: Phone, approval):
+        plans = CONTROLLERS["plan"](self._home(phone), actor=USER)
+        plan = plans.load(approval.n)
+        if plan.updated != approval.updated or plan.status != "ready":
+            raise Stale(f"plan {approval.n} changed since you opened it: look at it again")
+        return plans.approve(plan.n)
 
     def _live(self) -> list[dict]:
         now = time.time()

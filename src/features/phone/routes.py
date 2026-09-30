@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from http.cookies import SimpleCookie
 
 from engine.record import Record
-from features.phone.controller import Phones
+from features.phone.controller import Phones, Stale
 from features.sharing.page import unshared
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused
@@ -35,6 +35,26 @@ class Said:
         return cls(brief=str(given.get("brief", "")), idempotency=str(given.get("idempotency", "")), about=str(given.get("about", "")))
 
 
+@dataclass(frozen=True)
+class Chosen:
+    n: int
+    answer: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Chosen":
+        return cls(n=int(given.get("n", 0)), answer=str(given.get("answer", "")))
+
+
+@dataclass(frozen=True)
+class Approval:
+    n: int
+    updated: float
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Approval":
+        return cls(n=int(given.get("n", 0)), updated=float(given.get("updated", 0)))
+
+
 def local(host: str) -> bool:
     return host.split(":", 1)[0] in LOCAL
 
@@ -43,17 +63,29 @@ class PhoneRoutes:
     def get(self, handler, rest: list[str]) -> None:
         if rest[:1] == ["assets"] and len(rest) == 2:
             return handler.asset(rest[1])
-        if rest == ["state"]:
-            phone = self.phone(handler)
-            if phone is None:
-                return None
-            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires})
+        if rest[:1] in (["state"], ["feed"], ["row"]):
+            return self.read(handler, rest)
         page = APP_DIR / APP_PAGE
         if rest or not page.is_file():
             return handler.page(404, unshared())
         if not handler.path.split("?", 1)[0].endswith("/"):
             return handler.send(301, b"", {"Location": "/p/"})
         return handler.send(200, page.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **APP_HEADERS})
+
+    def read(self, handler, rest: list[str]) -> None:
+        phone = self.phone(handler)
+        if phone is None:
+            return None
+        if rest == ["state"]:
+            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires})
+        if rest == ["feed"]:
+            return self.json(handler, 200, self.phones(handler)._feed(phone))
+        if len(rest) == 3:
+            try:
+                return self.json(handler, 200, self.phones(handler)._read(phone, f"{rest[1]}:{rest[2]}"))
+            except Refused as refused:
+                return handler.answer(404, str(refused))
+        return handler.answer(404, "no such page")
 
     def post(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler):
@@ -66,13 +98,18 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
-        if rest == ["message"]:
-            try:
-                made = self.phones(handler)._say(phone, Said.from_payload(body))
-            except Refused as refused:
-                return handler.answer(422, str(refused))
-            return self.json(handler, 201, {"n": made.n})
-        return handler.answer(404, "no such action")
+        acts = {"message": lambda phones: phones._say(phone, Said.from_payload(body)),
+                "answer": lambda phones: phones._answer(phone, Chosen.from_payload(body)),
+                "approve": lambda phones: phones._approve(phone, Approval.from_payload(body))}
+        if rest[:1] != rest or rest[0] not in acts:
+            return handler.answer(404, "no such action")
+        try:
+            made = acts[rest[0]](self.phones(handler))
+        except Stale as stale:
+            return handler.answer(409, str(stale))
+        except (Refused, ValueError) as refused:
+            return handler.answer(422, str(refused))
+        return self.json(handler, 201, {"n": made.n})
 
     def pair(self, handler, pairing: Pairing) -> None:
         paired = self.phones(handler)._pair(pairing.code, pairing.device)
