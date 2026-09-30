@@ -5,7 +5,7 @@ from features.work_modes.modes import HANDS_ON, NAME
 
 class WorkModesDetails(FeatureDetails):
     name = NAME
-    when = "the user picks how the agent works: hands-on, orchestrator or solo"
+    has_skill = False
 
     title = "Work modes"
 

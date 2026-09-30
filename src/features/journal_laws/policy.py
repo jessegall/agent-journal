@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from providers import PROVIDERS
-from engine.stored import write_text
+from engine.stored import placed, write_text
 
 
 
@@ -73,8 +73,7 @@ def brief(project: Path) -> list[Path]:
     for name in names:
         target = project / name
         had = target.read_text() if target.is_file() else ""
-        kept = BLOCK.sub("\n", had).strip()
-        want = f"{kept}\n\n{managed}\n" if kept else f"# {title}\n\n{managed}\n"
+        want = placed(had, BLOCK, managed) if had.strip() else f"# {title}\n\n{managed}\n"
         if want != had:
             write_text(target, want)
             written.append(target)

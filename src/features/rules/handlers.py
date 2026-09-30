@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from engine.events.resources import ResourceCreated, ResourceEvent
-from engine.stored import write_text
+from engine.stored import placed, write_text
 from features.parts import Context, Handler
 from resources.base import AGENT
 
@@ -25,14 +25,10 @@ class InjectRules(Handler):
 
     def write(self, target: Path, injected: list) -> None:
         had = target.read_text() if target.is_file() else ""
-        stripped = BLOCK.sub("\n", had).strip("\n")
-        if not injected:
-            if had != stripped:
-                write_text(target, stripped + "\n" if stripped else "")
-            return
         lines = "\n".join(f"- {r.title}" for r in injected)
-        block = f"<!-- journal rules -->\n# Rules\n\n{lines}\n<!-- /journal rules -->"
-        write_text(target, f"{stripped}\n\n{block}\n" if stripped else f"{block}\n")
+        want = placed(had, BLOCK, f"<!-- journal rules -->\n# Rules\n\n{lines}\n<!-- /journal rules -->" if injected else "")
+        if want != had:
+            write_text(target, want)
 
 
 class ReviewNewRule(Handler):

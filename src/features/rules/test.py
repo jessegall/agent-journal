@@ -1,4 +1,5 @@
 from controllers.types import Facts, Nudges, Rules
+from features.journal_laws.policy import brief
 from runner.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER
@@ -92,6 +93,17 @@ def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_noti
         ("name the model on every subagent dispatch", ["rule:1"], "#/t/rule/1", "Open rule"), \
         "pin puts the rule over chat and links it"
     assert rules.pin(1).n == notice.n, "pin keeps one standing notice per rule"
+
+    rules.inject(1)
+    for turn in range(6):
+        brief(record.root.parent)
+        rules.update(1, title=f"name the model on every dispatch, turn {turn % 2}")
+    settled = claude_md.read_text()
+    brief(record.root.parent)
+    rules.update(1, title="name the model on every dispatch, turn 0")
+    rules.update(1, title="name the model on every dispatch, turn 1")
+    assert claude_md.read_text() == settled and "\n\n\n" not in settled and settled.count("<!-- journal rules -->") == 1, \
+        "the rules block and the law block take turns without adding blank lines or a second block"
 
     empty = fresh()
     Rules(empty, actor=USER).inject(Rules(empty, actor=USER).create("only rule", keywords="word").n)
