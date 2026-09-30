@@ -18,6 +18,11 @@ const sending = ref(false);
 const said = computed(() => words.value.trim());
 const ready = computed(() => Boolean(said.value || files.value.length));
 
+const focus = () => box.value && box.value.focus();
+const tapped = (event) => !event.target.closest("button, textarea") && focus();
+
+defineExpose({focus});
+
 function picked(event) {
     files.value = [...files.value, ...event.target.files];
     event.target.value = "";
@@ -70,7 +75,7 @@ async function send() {
                 </template>
             </div>
         </template>
-        <div class="compose-bar">
+        <div class="compose-bar" @click="tapped">
             <button type="button" class="compose-clip" aria-label="Attach files or photos" @click="picker.click()">
                 <Icon name="paperclip" :size="18" />
             </button>

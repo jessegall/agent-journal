@@ -27,6 +27,7 @@ const about = ref("");
 const quote = ref("");
 const held = ref(null);
 const list = ref(null);
+const compose = ref(null);
 const offline = ref(false);
 
 async function asked() {
@@ -93,6 +94,7 @@ function quoteIt() {
     quote.value = plain(held.value.brief || held.value.title).split("\n").filter((line) => !line.startsWith(">")).join(" ").slice(0, 200);
     about.value = held.value.ref;
     held.value = null;
+    compose.value.focus();
 }
 
 function copy() {
@@ -143,7 +145,7 @@ function sent() {
             </template>
         </div>
         <PhoneStatus />
-        <PhoneCompose :about="about" :quote="quote" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
+        <PhoneCompose ref="compose" :about="about" :quote="quote" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
     </template>
     <template v-if="held">
         <PhoneHold :item="held" @react="react" @reply="quoteIt" @copy="copy" @close="held = null" />
