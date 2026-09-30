@@ -104,20 +104,17 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
         server.shutdown()
 
 
-def test_a_link_with_nothing_shared_lands_on_one_calm_page_for_a_week():
-    import time
+def test_stopping_the_last_share_stops_the_server_and_its_tunnel():
     from features.sharing.page import unshared
-    from features.sharing.services import KEEP_AFTER, share_services
+    from features.sharing.services import share_services
     record = fresh()
     share, doc = shared_with_comments(record)
     shares = Shares(record, actor=USER)
     shares.update(share.n, approved=True)
     assert share_services(record.root, set()), "an open share runs the server"
     shares.complete(share.n, "stopped")
-    assert share_services(record.root, set()), "after the last share stops, the server keeps answering its link"
-    shares.update(share.n, expires=time.time() - KEEP_AFTER - 60)
-    assert share_services(record.root, set()) == [], "a week later it stops"
-    assert "Nothing is shared on this link" in unshared(), "every stopped, ended or unknown link lands on one calm page"
+    assert share_services(record.root, set()) == [], "with the last share stopped, the server and its tunnel stop too"
+    assert "Nothing is shared on this link" in unshared(), "a stopped, ended or unknown link lands on one calm page"
 
 
 def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
@@ -195,3 +192,27 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
         raise AssertionError("only the user logs tunler in")
     except Refused:
         pass
+
+
+def test_an_address_owned_by_another_account_is_swapped_for_a_new_one(monkeypatch):
+    import features
+    from engine import runtime
+    from engine.services import log_file
+    from features.sharing import watchdog
+    from features.sharing.tunnel import OWNED, subdomain
+    from tests.kit import tick
+    features.load()
+    record = fresh()
+    monkeypatch.setattr(runtime, "env", lambda root: record.env)
+    report(record, "working", "PreToolUse")
+    share, _ = shared_with_comments(record)
+    Shares(record, actor=USER).update(share.n, approved=True)
+    before = subdomain(record.root)
+    asked = []
+    monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
+    monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
+    log = log_file(record.root, watchdog.TUNNEL)
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
+    tick(record)
+    assert subdomain(record.root) != before and asked == [watchdog.TUNNEL], "a refused address is replaced and the tunnel restarted on the new one"

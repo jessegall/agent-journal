@@ -13,6 +13,7 @@ from typing import TypedDict
 from engine.given import given
 
 TUNNEL_FILE = "sharing.json"
+OWNED = "domain is owned by another user"
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
 
@@ -25,6 +26,20 @@ def subdomain(root: Path) -> str:
     name = f"{prefix}-{secrets.token_hex(NAME_BYTES)}"
     write_json(Path(root) / TUNNEL_FILE, {**kept, "subdomain": name})
     return name
+
+
+def readdressed(root: Path) -> str:
+    kept = read_json(Path(root) / TUNNEL_FILE, {}) or {}
+    write_json(Path(root) / TUNNEL_FILE, {key: value for key, value in kept.items() if key != "subdomain"})
+    return subdomain(root)
+
+
+def refused_address(log: Path) -> bool:
+    try:
+        lines = log.read_text(errors="ignore").splitlines()[-4:]
+    except OSError:
+        return False
+    return any(OWNED in line for line in lines)
 
 
 def tunler() -> str:
