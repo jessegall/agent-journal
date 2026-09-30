@@ -48,6 +48,7 @@ MOST_TRIES = 10
 OFFLINE, IDLE_STATE, WORKING_STATE = "offline", "idle", "working"
 SAID = ("message", "question", "comment")
 REPLIED = "message:"
+REACTED = ("message", "comment")
 HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
 
@@ -376,9 +377,11 @@ class Phones(Controller):
         return found
 
     def _react(self, phone: Phone, reacting):
-        messages = Messages(self._home(phone), actor=USER)
-        messages.react(reacting.n, reacting.face)
-        return messages.load(reacting.n)
+        if reacting.type not in REACTED:
+            raise Refused(f"the phone reacts to {' and '.join(REACTED)}s, not to a {reacting.type}")
+        rows = CONTROLLERS[reacting.type](self._home(phone), actor=USER)
+        rows.react(reacting.n, reacting.face)
+        return rows.load(reacting.n)
 
     def _latest(self, home: Record, kind: str, before: float) -> list:
         rows = CONTROLLERS[kind](home, actor=SYSTEM)

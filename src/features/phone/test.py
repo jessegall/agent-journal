@@ -114,6 +114,9 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     Messages(record, actor=AGENT).reply(made["n"], "Yes, that is done")
     replied = [item for item in call(base, "/p/feed", key=key).body["items"] if item["type"] == "comment"]
     assert replied and "that is done" in replied[-1]["brief"] and replied[-1]["who"] == AGENT, "the agent's reply to a message reaches the phone"
+    assert call(base, "/p/react", {"n": replied[-1]["n"], "type": "comment", "face": "🎩"}, key).status == 201
+    tipped = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == replied[-1]["ref"]]
+    assert tipped[0]["reactions"] == [{"face": "🎩", "who": USER}], "a reply takes a reaction from the phone like a message"
     older = call(base, f"/p/feed?before={message.created}", key=key).body["items"]
     assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
 

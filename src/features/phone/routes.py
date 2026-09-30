@@ -63,10 +63,11 @@ class Chosen:
 class Reacting:
     n: int
     face: str
+    type: str
 
     @classmethod
     def from_payload(cls, given: dict) -> "Reacting":
-        return cls(n=int(given.get("n", 0)), face=str(given.get("face", "")))
+        return cls(n=int(given.get("n", 0)), face=str(given.get("face", "")), type=str(given.get("type", "message")))
 
 
 @dataclass(frozen=True)
