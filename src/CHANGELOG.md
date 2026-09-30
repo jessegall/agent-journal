@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.204.0 — tunler accounts, a home-screen phone, and a faster search
+
+tunler v0.2.1 logs in with a username and the account's password, and needs the server's
+master password only to create an account. The connect form asks for those, and Settings has
+a Tunler tab: who is connected on which server, log out or use another account, the account's
+domains with Release, and Update tunler when a newer version is out. A journal whose address
+belongs to another account now takes a new address by itself, and stopping the last share
+stops the tunnel.
+
+The phone view connects one phone at a time, shows how old each waiting item is, never scrolls
+sideways, opens at the newest message, has a WhatsApp-style message bar, and can dismiss a
+question. It can live on the home screen as an app, connected with a short typed code when
+it keeps its own storage.
+
+Search keeps every row's text in memory and answers in about 25 ms, zipped rows included; its
+cards are one size. Closed rows are zipped after 3 days, one zip per day. The chat marks when
+the agent searches the history, a reply that quotes is wide enough to read its quote, the
+viewer's summary never waits for its own rebuild, and a slow command's report names it.
+
 ## 2.203.0 — Your phone, connected by a QR code
 
 The phone button in the viewer's top bar shows a code to scan. It works once, for ten
