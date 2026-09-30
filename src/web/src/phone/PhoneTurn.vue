@@ -67,11 +67,18 @@ const release = () => clearTimeout(timer);
 .turn {
     max-width: 88%;
     -webkit-touch-callout: none;
+    -webkit-user-select: none;
     user-select: none;
     padding: 10px 12px;
     border-radius: 12px;
     line-height: 1.5;
     overflow-wrap: anywhere;
+}
+
+.turn :deep(*) {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .turn.user {
