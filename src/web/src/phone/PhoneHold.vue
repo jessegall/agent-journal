@@ -43,20 +43,21 @@ onMounted(() => {
                 </template>
             </div>
             <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
-            <ul class="hold-menu" role="menu">
+            <ul class="hold-menu" aria-label="Actions">
                 <li>
-                    <button type="button" class="hold-action" role="menuitem" @click="emit('reply')">
+                    <button type="button" class="hold-action" @click="emit('reply')">
                         Reply
                         <Icon name="reply" :size="18" />
                     </button>
                 </li>
                 <li>
-                    <button type="button" class="hold-action" role="menuitem" @click="emit('copy')">
+                    <button type="button" class="hold-action" @click="emit('copy')">
                         Copy
                         <Icon name="copy" :size="18" />
                     </button>
                 </li>
             </ul>
+            <button type="button" class="hold-close" @click="emit('close')">Close</button>
             <template v-if="hint">
                 <p class="hold-hint">Tip: swipe a message to the right to reply.</p>
             </template>
@@ -184,6 +185,28 @@ onMounted(() => {
 .hold-action:active {
     background: var(--hover);
     opacity: 1;
+}
+
+.hold-close {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    border: 0;
+}
+
+.hold-close:focus-visible {
+    position: static;
+    width: 240px;
+    height: auto;
+    min-height: 44px;
+    clip: auto;
+    border-radius: 12px;
+    background: var(--raised);
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
 }
 
 .hold-hint {

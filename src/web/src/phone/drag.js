@@ -40,8 +40,8 @@ export function useDrag(area, {axis = "x", begin, accepts = () => true, move, en
         const dx = now.clientX - touch.x;
         const dy = now.clientY - touch.y;
         const d = axis === "y" ? dy : dx;
+        if (touch.context.held) return event.preventDefault();
         if (!touch.claimed) {
-            if (touch.context.held) return;
             if (Math.max(Math.abs(dx), Math.abs(dy)) < DECIDE) return;
             const along = Math.abs(axis === "y" ? dy : dx);
             const across = Math.abs(axis === "y" ? dx : dy);
@@ -68,12 +68,18 @@ export function useDrag(area, {axis = "x", begin, accepts = () => true, move, en
     }
 
     function cancelled(event) {
-        if (!ours(event.changedTouches)) return;
+        if (ours(event.changedTouches)) released();
+    }
+
+    function released() {
+        if (!touch) return;
         const {claimed, context} = touch;
         stop();
         if (claimed) end(0, 0, context);
         else drop(context);
     }
+
+    const hidden = () => document.hidden && released();
 
     function began(event) {
         if (touch || event.touches.length > 1) return;
@@ -95,8 +101,13 @@ export function useDrag(area, {axis = "x", begin, accepts = () => true, move, en
         {immediate: true, flush: "post"},
     );
 
+    window.addEventListener("pagehide", released);
+    document.addEventListener("visibilitychange", hidden);
+
     onUnmounted(() => {
         area.value?.removeEventListener("touchstart", began);
+        window.removeEventListener("pagehide", released);
+        document.removeEventListener("visibilitychange", hidden);
         if (touch) {
             drop(touch.context);
             stop();

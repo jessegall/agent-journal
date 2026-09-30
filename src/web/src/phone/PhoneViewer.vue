@@ -20,6 +20,7 @@ const path = ref(name);
 const told = ref("");
 const body = ref(null);
 const edge = ref(null);
+const title = ref(null);
 const under = useUnder(edge);
 const picture = computed(() => kind === "attachment" && PICTURE.test(name));
 const lines = computed(() => (text.value === null ? [] : text.value.split("\n")));
@@ -41,14 +42,17 @@ async function load() {
     if (line) nextTick(() => body.value?.querySelector(`[data-line="${line}"]`)?.scrollIntoView({block: "center"}));
 }
 
-onMounted(load);
+onMounted(() => {
+    title.value?.focus({preventScroll: true});
+    load();
+});
 </script>
 
 <template>
     <section class="viewer">
         <header :class="['viewer-bar', {under}]">
             <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
-            <span class="viewer-name">{{ path }}</span>
+            <span ref="title" class="viewer-name" tabindex="-1">{{ path }}</span>
         </header>
         <div ref="body" class="viewer-body" data-scroller>
             <span ref="edge" class="viewer-edge" />
@@ -118,6 +122,10 @@ onMounted(load);
     color: var(--accent-text);
     font: inherit;
     font-size: 1rem;
+}
+
+.viewer-name:focus {
+    outline: none;
 }
 
 .viewer-name {

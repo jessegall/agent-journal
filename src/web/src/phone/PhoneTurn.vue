@@ -25,7 +25,7 @@ const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.s
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const holdable = computed(() => props.item.type === "message");
 const emit = defineEmits(["hold"]);
-const pressed = (event) => emit("hold", props.item, event.currentTarget.getBoundingClientRect());
+const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(".turn").getBoundingClientRect());
 </script>
 
 <template>
@@ -55,6 +55,9 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.getBound
             <div :class="['turn', item.who, {fresh}]" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
                 <template v-if="holdable">
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
+                    <button type="button" class="turn-actions" aria-label="Message actions" @click="pressed">
+                        <Icon name="dots" :size="14" />
+                    </button>
                 </template>
                 <template v-if="item.who !== 'user'">
                     <span class="turn-who">Agent, {{ clock(item.created) }}</span>
@@ -161,6 +164,29 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.getBound
     color: var(--text-2);
     opacity: var(--pull, 0);
     transform: scale(calc(0.6 + 0.4 * var(--pull, 0)));
+}
+
+.turn-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--hover);
+    color: var(--text-2);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.turn-actions:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .turn-who {

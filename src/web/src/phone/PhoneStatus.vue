@@ -26,8 +26,17 @@ function step() {
     if (seconds !== elapsed.value) elapsed.value = seconds;
 }
 
-const ticking = setInterval(step, TICK);
-onUnmounted(() => clearInterval(ticking));
+let ticking = 0;
+const ticked = () => {
+    clearInterval(ticking);
+    ticking = document.hidden ? 0 : setInterval(step, TICK);
+};
+ticked();
+document.addEventListener("visibilitychange", ticked);
+onUnmounted(() => {
+    clearInterval(ticking);
+    document.removeEventListener("visibilitychange", ticked);
+});
 
 const shown = computed(() => line(message.value, elapsed.value));
 const RECENT = 5;

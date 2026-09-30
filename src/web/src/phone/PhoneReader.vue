@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, onMounted, ref} from "vue";
+import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -32,6 +32,7 @@ const approving = ref(false);
 const told = ref("");
 const edge = ref(null);
 const heading = ref(null);
+const backButton = ref(null);
 const under = useUnder(edge);
 const titled = useUnder(heading);
 const phases = computed(() => (row.value && row.value.data.phases) || []);
@@ -115,13 +116,17 @@ function scrolled(event) {
     progress.value = el.scrollHeight > el.clientHeight ? el.scrollTop / (el.scrollHeight - el.clientHeight) : 1;
 }
 
-onMounted(load);
+onMounted(async () => {
+    await load();
+    await nextTick();
+    (heading.value || backButton.value)?.focus({preventScroll: true});
+});
 </script>
 
 <template>
     <section class="reader" @click.capture="chipped">
         <header :class="['reader-bar', {under}]">
-            <button type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
+            <button ref="backButton" type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
             <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ row ? row.title : "" }}</span>
             <button type="button" class="reader-size" aria-label="Text size" @click="size = (size + 1) % SIZES.length">
                 Aa
@@ -141,7 +146,7 @@ onMounted(load);
                 </template>
                 <template v-else>
                     <span class="reader-kind">{{ KINDS[row.type] || row.type }} · {{ ago(row.created) }}</span>
-                    <h1 ref="heading" class="reader-title">{{ row.title }}</h1>
+                    <h1 ref="heading" class="reader-title" tabindex="-1">{{ row.title }}</h1>
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>
                     </template>
@@ -375,6 +380,10 @@ onMounted(load);
     margin-bottom: 4px;
     color: var(--text-3);
     font-size: 0.765rem;
+}
+
+.reader-title:focus {
+    outline: none;
 }
 
 .reader-title {

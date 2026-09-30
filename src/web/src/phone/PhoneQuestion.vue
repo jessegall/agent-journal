@@ -72,6 +72,7 @@ function pick(answer) {
     clearInterval(timer);
     choice.value = answer;
     left.value = UNDO_SECONDS;
+    announce(`Sending "${answer}" in ${UNDO_SECONDS} seconds. Press Undo to stop it.`);
     nextTick(() => undo.value?.$el?.focus());
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
@@ -91,7 +92,7 @@ onUnmounted(() => clearInterval(timer));
         </template>
         <template v-else>
             <template v-if="choice">
-                <div class="question-held" role="status" aria-live="polite">
+                <div class="question-held">
                     <span>Sending "{{ choice }}" in {{ left }}s</span>
                     <Btn kind="primary" large @click="send(choice)">Send now</Btn>
                     <Btn ref="undo" large @click="stop">Undo</Btn>

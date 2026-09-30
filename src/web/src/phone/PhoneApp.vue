@@ -8,6 +8,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {deviceName} from "./device.js";
 import PhoneHome from "./PhoneHome.vue";
 import {ended, forget} from "./outbox.js";
+import {useScreenFill} from "./fill.js";
 
 const STATES = {401: "unknown", 410: "ended"};
 const RETRY_EVERY = 10000;
@@ -68,6 +69,7 @@ async function pairTyped() {
 }
 
 const pressable = () => {};
+useScreenFill();
 onMounted(() => {
     document.addEventListener("touchstart", pressable, {passive: true});
     load();

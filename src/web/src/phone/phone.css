@@ -42,6 +42,7 @@ body {
     --sheet-out: 250ms;
     position: fixed;
     inset: 0;
+    height: var(--app-height, auto);
     display: flex;
     flex-direction: column;
     padding: env(safe-area-inset-top) 0 0;

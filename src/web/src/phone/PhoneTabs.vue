@@ -17,7 +17,6 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
                 type="button"
                 role="tab"
                 :aria-selected="screen === tab.key"
-                :aria-controls="`pane-${tab.key}`"
                 :aria-label="said(tab)"
                 :class="['tab', {on: screen === tab.key}]"
                 @click="emit('pick', tab.key)"
@@ -77,8 +76,8 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
     height: 17px;
     padding: 0 5px;
     border-radius: 9px;
-    background: #e5484d;
-    color: #fff;
+    background: var(--danger);
+    color: var(--bg);
     font-size: 0.647rem;
     font-weight: 600;
     line-height: 17px;

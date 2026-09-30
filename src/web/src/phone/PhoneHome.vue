@@ -51,13 +51,17 @@ const compose = ref(null);
 const draft = ref("");
 const offline = ref(false);
 const homeUnder = ref(false);
+const current = ref(true);
+const returned = () => !document.hidden && (current.value = false);
+const freshKeys = ref(new Set());
+let waitingFeed = null;
+let loadFrame = 0;
 const LOADED = (document.querySelector('script[src*="phone-"]')?.src || "").split("/").pop();
 const newer = ref(false);
 const reload = () => window.location.reload();
 const reading = computed(() => pages.value.at(-1)?.ref || "");
 const chatUnder = useUnder(top);
 const under = computed(() => (screen.value === "chat" ? chatUnder.value : homeUnder.value));
-let seen = null;
 
 async function asked() {
     try {
@@ -87,20 +91,45 @@ const dividers = computed(() =>
     feed.value.items.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(feed.value.items[i - 1].created) ? named(item.created) : "")),
 );
 const keyOf = (item) => item.type + item.n;
-const fresh = (item) => Boolean(seen) && !seen.has(keyOf(item));
+const fresh = (item) => freshKeys.value.has(keyOf(item));
 const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
 
-const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
-    if (!got) return;
+let seen = null;
+
+function took(got) {
     const following = nearBottom() && still();
-    seen = seen || new Set(got.items.map(keyOf));
+    const keys = got.items.map(keyOf);
+    freshKeys.value = new Set(seen ? keys.filter((key) => !seen.has(key)) : []);
+    seen = new Set(keys);
     feed.value = got;
+    current.value = true;
     navigator.setAppBadge?.(got.waiting.length).catch(() => {});
     newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
     settle(got.items);
     if (following) toBottom();
+}
+
+const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
+    if (!got) return;
+    if (held.value) waitingFeed = got;
+    else took(got);
 });
 provide("phoneRefresh", refresh);
+
+watch(held, (now) => {
+    if (now || !waitingFeed) return;
+    const got = waitingFeed;
+    waitingFeed = null;
+    took(got);
+});
+
+function loaded() {
+    if (loadFrame) return;
+    loadFrame = requestAnimationFrame(() => {
+        loadFrame = 0;
+        if (nearBottom() && still()) toBottom();
+    });
+}
 
 const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight));
 watch(list, (el) => el && toBottom());
@@ -135,8 +164,15 @@ function popped(event) {
     pages.value = now;
 }
 
-onMounted(() => window.addEventListener("popstate", popped));
-onUnmounted(() => window.removeEventListener("popstate", popped));
+onMounted(() => {
+    window.addEventListener("popstate", popped);
+    document.addEventListener("visibilitychange", returned);
+});
+onUnmounted(() => {
+    window.removeEventListener("popstate", popped);
+    document.removeEventListener("visibilitychange", returned);
+    cancelAnimationFrame(loadFrame);
+});
 
 const place = (i) => {
     const last = pages.value.length - 1;
@@ -144,11 +180,7 @@ const place = (i) => {
     return i === last - 1 ? "beneath" : "buried";
 };
 const backLabel = (i) => (i > 0 ? "Back" : LABELS[screen.value]);
-const stackStyle = computed(() => ({
-    "--dx": `${edge.dx.value}px`,
-    "--p": String(Math.min(1, edge.dx.value / edge.width.value)),
-    "--settle": `${edge.settle.value}ms`,
-}));
+const stackStyle = computed(() => ({"--settle": `${edge.settle.value}ms`}));
 
 function chipped(event) {
     const target = peeked(event);
@@ -230,7 +262,7 @@ function pick(key) {
                             <span class="home-project">{{ connection.project }}</span>
                             <Icon name="chevron" :size="14" class="home-chevron" />
                         </span>
-                        <span class="home-note">{{ connection.environment }}</span>
+                        <span class="home-note">{{ connection.environment }}{{ current || offline ? "" : " · Updating…" }}</span>
                     </button>
                     <button type="button" class="home-agent" @click="picking = true">
                         <span class="phone-hidden">Agent:</span>
@@ -251,7 +283,7 @@ function pick(key) {
             </div>
             <div class="panes">
                 <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'">
-                    <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @load.capture="nearBottom() && still() && toBottom()">
+                    <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @load.capture="loaded">
                         <span ref="top" class="home-edge" />
                         <template v-for="(item, i) in feed.items" :key="keyOf(item)">
                             <template v-if="dividers[i]">
@@ -321,6 +353,8 @@ function pick(key) {
 
 <style scoped>
 .stack {
+    --dx: 0px;
+    --p: 0;
     position: relative;
     flex: 1;
     min-height: 0;
