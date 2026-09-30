@@ -223,8 +223,9 @@ const keyOf = (item) => item.type + item.n;
 const RUN_GAP = 300;
 const fromDesktop = (item) => item.who === "user" && !String(item.data?.via || "").startsWith("phone:");
 const BUBBLES = ["message", "comment"];
+const peer = (item) => Boolean(item.data?.sent_to || item.data?.peer);
 const joins = (before, item) =>
-    Boolean(before) && BUBBLES.includes(before.type) && BUBBLES.includes(item.type) && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
+    Boolean(before) && !peer(before) && !peer(item) && BUBBLES.includes(before.type) && BUBBLES.includes(item.type) && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
 const newFrom = computed(() => {
     if (lookedAt.value === null) return "";
     const first = items.value.find((item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type));
@@ -1152,23 +1153,23 @@ function pick(key) {
 
 .home-dock::before {
     position: absolute;
-    top: -16px;
+    top: -28px;
     right: -12px;
     bottom: -8px;
     left: -12px;
     z-index: -1;
-    background: color-mix(in oklab, var(--bg) 72%, transparent);
-    -webkit-backdrop-filter: blur(12px) saturate(140%);
-    backdrop-filter: blur(12px) saturate(140%);
+    background: color-mix(in oklab, var(--bg) 22%, transparent);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
     content: "";
     pointer-events: none;
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px);
-    mask-image: linear-gradient(to bottom, transparent, #000 16px);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000);
+    mask-image: linear-gradient(to bottom, transparent, #000);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .home-dock::before {
-        background: color-mix(in oklab, var(--bg) 94%, transparent);
+        background: color-mix(in oklab, var(--bg) 40%, transparent);
     }
 }
 

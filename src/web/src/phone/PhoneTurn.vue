@@ -36,6 +36,12 @@ const parent = computed(() =>
 const about = computed(() => (props.item.who === "user" && !parent.value ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
+const between = computed(() => Boolean(props.item.data?.sent_to || props.item.data?.peer));
+const betweenLabel = computed(() => {
+    if (props.item.data?.peer) return `From ${props.item.data.peer}`;
+    const name = String(props.item.to || "").split(":")[0].trim();
+    return `To ${name || "a helper"}`;
+});
 const HOLDABLE = ["message", "comment"];
 const holdable = computed(() => HOLDABLE.includes(props.item.type));
 const arriving = computed(() => props.arrive >= 0);
@@ -75,11 +81,14 @@ function pressed(event) {
             </div>
         </template>
         <template #default>
-            <div :class="['turn', item.who, {arriving, joined}]" :style="arrival" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
+            <div :class="['turn', between ? 'peer' : item.who, {arriving, joined}]" :style="arrival" :data-hold="holdable ? item.type + item.n : undefined" :data-noswipe="between ? '' : undefined" @contextmenu.prevent="pressed">
                 <template v-if="holdable">
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
                 </template>
-                <template v-if="item.who !== 'user' && !joined">
+                <template v-if="between">
+                    <span class="turn-peer-head">{{ betweenLabel }}</span>
+                </template>
+                <template v-else-if="item.who !== 'user' && !joined">
                     <span class="turn-who">
                         Agent, {{ clock(item.created) }}
                     </span>
@@ -131,7 +140,7 @@ function pressed(event) {
                 <template v-if="faces.length">
                     <span :key="faces.join('')" class="turn-faces">{{ faces.join(" ") }}</span>
                 </template>
-                <template v-if="item.who === 'user' && !continues">
+                <template v-if="item.who === 'user' && !continues && !between">
                     <span class="turn-meta">
                         <template v-if="elsewhere">from desktop ·</template>
                         {{ clock(item.created) }}
@@ -139,7 +148,7 @@ function pressed(event) {
                     </span>
                 </template>
                 <template v-if="holdable">
-                    <PhoneActions :class="['turn-actions', item.who === 'user' ? 'at-foot' : 'at-head', {quiet: item.who === 'user' ? continues : joined}]" @press="pressed" />
+                    <PhoneActions :class="['turn-actions', item.who === 'user' && !between ? 'at-foot' : 'at-head', {quiet: item.who === 'user' ? continues : joined}]" @press="pressed" />
                 </template>
             </div>
         </template>
@@ -203,6 +212,27 @@ function pressed(event) {
 
 .turn.joined {
     margin-top: -8px;
+}
+
+.turn.peer {
+    align-self: stretch;
+    max-width: none;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: none;
+    color: var(--text-3);
+    font-size: 0.765rem;
+    line-height: 1.45;
+}
+
+.turn-peer-head {
+    display: block;
+    margin-bottom: 2px;
+    padding-right: 26px;
+    color: var(--text-2);
+    font-size: 0.706rem;
+    font-weight: 600;
 }
 
 .turn-actions {
