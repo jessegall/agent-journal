@@ -53,8 +53,18 @@ body {
 }
 
 .phone table {
-    width: 100%;
-    table-layout: fixed;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    table-layout: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.phone table th,
+.phone table td {
+    max-width: none;
+    white-space: nowrap;
 }
 
 .phone * {
