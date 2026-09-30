@@ -487,8 +487,13 @@ def post_run(req: Request) -> Reply:
     output, code = captured(args, req.root)
     timed = not any(networked(a, b) for a, b in zip(args, args[1:]))
     if code is None:
-        return Reply(409, output, kind=PLAIN, timed=timed)
-    return Reply(200 if not code else 400, output, kind=PLAIN, timed=timed)
+        return Reply(409, output, kind=PLAIN, timed=timed, named=command_of(args))
+    return Reply(200 if not code else 400, output, kind=PLAIN, timed=timed, named=command_of(args))
+
+
+def command_of(args: list[str]) -> str:
+    words = [a for before, a in zip(["", *args], args) if not a.startswith("-") and not (before.startswith("--") and "=" not in before)]
+    return " ".join(words[:2])
 
 
 @route("GET", "/api/{env}/changes")

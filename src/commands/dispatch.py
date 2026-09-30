@@ -69,6 +69,7 @@ class Reply:
     chunks: Iterator[bytes] | None = None
     after: Callable[[], None] | None = None
     timed: bool = True
+    named: str | None = None
 
     def bytes(self) -> bytes:
         if isinstance(self.body, bytes):
@@ -126,7 +127,8 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tup
     took = (time.perf_counter() - began[0]) * 1000
     working = (time.thread_time() - began[1]) * 1000
     garbage = (collecting() - began[2]) * 1000
-    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working, profile, garbage))
+    name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
+    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", name, took, working, profile, garbage))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
