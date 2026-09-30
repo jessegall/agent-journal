@@ -41,7 +41,7 @@ function pick(target) {
 <style scoped>
 .waiting {
     max-width: none;
-    margin: 0 -16px;
+    margin: 0 calc(-1 * var(--side));
     border-bottom: 1px solid var(--line);
     background: var(--accent-dim);
 }
@@ -52,7 +52,7 @@ function pick(target) {
     gap: 8px;
     width: 100%;
     min-height: 44px;
-    padding: 0 16px;
+    padding: 0 var(--side);
     border: 0;
     background: none;
     color: var(--accent-text);

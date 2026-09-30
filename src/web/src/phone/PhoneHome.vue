@@ -188,8 +188,8 @@ function sent() {
 
 .home-offline {
     max-width: none;
-    margin: 0 -16px;
-    padding: 10px 16px;
+    margin: 0 calc(-1 * var(--side));
+    padding: 10px var(--side);
     background: color-mix(in oklab, var(--tone-warn) 16%, transparent);
     color: var(--text);
     font-size: 14px;

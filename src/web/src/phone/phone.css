@@ -19,7 +19,8 @@ body {
     inset: 0;
     display: flex;
     flex-direction: column;
-    padding: env(safe-area-inset-top) 16px 0;
+    --side: 10px;
+    padding: env(safe-area-inset-top) var(--side) 0;
     box-sizing: border-box;
 }
 
