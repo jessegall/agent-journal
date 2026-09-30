@@ -19,7 +19,7 @@ from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import VIEWER, formatted
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import log_in, subdomain, tunler_status
+from features.sharing.tunnel import log_in, log_out, owned, subdomain, tunler_status, unclaim
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused
 
@@ -169,11 +169,31 @@ class Shares(Controller):
     def _address(self) -> str:
         return f"{subdomain(self.record.root)}.{FEATURES['sharing'].setting(self.record, 'host', 'tunler.jessegall.nl')}"
 
-    def login(self, email: str, password: str) -> dict:
-        failed = log_in(FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"), email.strip(), password)
+    def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
+        self._user_only("log tunler in")
+        host = endpoint.strip() if endpoint else FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
+        return {**log_in(host, username.strip(), password, master_password or None), **self.tunnel()}
+
+    def logout(self) -> dict:
+        self._user_only("log tunler out")
+        failed = log_out()
         if failed:
             raise Refused(failed)
         return self.tunnel()
+
+    def domains(self) -> list[str]:
+        return owned()
+
+    def release(self, domain: str) -> list[str]:
+        self._user_only("release a tunler domain")
+        failed = unclaim(domain, FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"))
+        if failed:
+            raise Refused(failed)
+        return owned()
+
+    def _user_only(self, what: str) -> None:
+        if self.actor != USER:
+            raise Refused(f"only the user may {what}, from the viewer's Tunnel settings")
 
     def reachable(self, n: int) -> dict:
         return {"reachable": answers(self.load(n).abstract)}

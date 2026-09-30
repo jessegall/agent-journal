@@ -102,6 +102,22 @@ export class ApiClient {
         return `${this.base}/extension.zip`;
     }
 
+    tunnelLogin(login) {
+        return this.command("share", "login", login);
+    }
+
+    tunnelLogout() {
+        return this.command("share", "logout");
+    }
+
+    tunnelDomains() {
+        return this.command("share", "domains");
+    }
+
+    tunnelRelease(domain) {
+        return this.command("share", "release", {domain});
+    }
+
     connectPhone(days) {
         return this.command("phone", "connect", {days});
     }

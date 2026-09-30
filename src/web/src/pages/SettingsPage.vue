@@ -13,6 +13,7 @@ import TextInput from "../kit/TextInput.vue";
 import FeaturePanel from "./FeaturePanel.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
+import SettingsTunnel from "./SettingsTunnel.vue";
 import JournalSettingControl from "./JournalSettingControl.vue";
 import {changed, features, flip, haystack, isOn, matches, whenWords} from "./featureSettings.js";
 import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
@@ -147,6 +148,7 @@ const sections = computed(() => ({
 const pageTabs = computed(() => [
     {key: "options", title: "Options"},
     {key: "environments", title: "Environments", count: rows("environment").filter((e) => !e.completed).length},
+    {key: "tunnel", title: "Tunnel"},
 ]);
 watch(tab, (key) => remember(TAB, key));
 const nothing = computed(() => Object.values(sections.value).every((list) => !list.length));
@@ -186,16 +188,18 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     <section class="settings">
         <PageBar>
             <TabBar v-model="tab" :tabs="pageTabs" />
-            <TextInput
-                ref="field"
-                class="settings-find"
-                icon="search"
-                :value="query"
-                :placeholder="tab === 'environments' ? 'Find an environment' : 'Find a setting'"
-                :aria-label="tab === 'environments' ? 'Find an environment' : 'Find a setting'"
-                @input="query = $event.target.value"
-                @keydown.esc="query = ''"
-            />
+            <template v-if="tab !== 'tunnel'">
+                <TextInput
+                    ref="field"
+                    class="settings-find"
+                    icon="search"
+                    :value="query"
+                    :placeholder="tab === 'environments' ? 'Find an environment' : 'Find a setting'"
+                    :aria-label="tab === 'environments' ? 'Find an environment' : 'Find a setting'"
+                    @input="query = $event.target.value"
+                    @keydown.esc="query = ''"
+                />
+            </template>
             <template v-if="tab === 'options'">
                 <TabBar v-model="filter" :tabs="filters" />
             </template>
@@ -204,6 +208,9 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
         <SwitchCase :value="tab">
             <template #environments>
                 <SettingsEnvironments :query="query" />
+            </template>
+            <template #tunnel>
+                <SettingsTunnel />
             </template>
             <template #options>
                 <template v-if="sections.viewer.length">

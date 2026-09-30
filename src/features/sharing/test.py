@@ -165,3 +165,28 @@ def test_a_layout_link_hands_the_layout_once_to_any_viewer():
             assert error.code == 410, "and lands on the page for a link that has ended"
     finally:
         server.shutdown()
+
+
+def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tmp_path, monkeypatch):
+    from features.sharing import controller, tunnel
+    tool = tmp_path / "tunler"
+    tool.write_text("#!/bin/sh\n"
+                    'if [ "$1" = login ] && [ -z "$TUNLER_MASTER_PASSWORD" ] && [ "$2" = newbie ]; then\n'
+                    '  echo "There is no account \\"newbie\\" on t.example yet; creating it needs the server\'s master password." >&2; exit 1; fi\n'
+                    'if [ "$1" = login ] && [ "$TUNLER_PASSWORD" != right-pass ]; then echo "login failed: wrong username or password" >&2; exit 1; fi\n'
+                    'if [ "$1" = status ]; then echo \'{"host":"t.example","user":"newbie","logged_in":true,"auth_ok":true}\'; fi\n')
+    tool.chmod(0o755)
+    monkeypatch.setattr(tunnel, "tunler", lambda: str(tool))
+    record = fresh()
+    shares = Shares(record, actor=USER)
+    asked = shares.login("newbie", "right-pass", endpoint="t.example")
+    assert (asked["connected"], asked["needs_master"]) == (False, True), "an unknown account asks for the master password"
+    made = shares.login("newbie", "right-pass", endpoint="t.example", master_password="master")
+    assert made["connected"] and made["account"] == "newbie", "with it, the account is made and the login kept"
+    wrong = shares.login("someone", "wrong-pass", endpoint="t.example")
+    assert (wrong["connected"], wrong["needs_master"], wrong["error"]) == (False, False, "login failed: wrong username or password")
+    try:
+        Shares(record, actor=AGENT).login("newbie", "right-pass")
+        raise AssertionError("only the user logs tunler in")
+    except Refused:
+        pass
