@@ -9,9 +9,9 @@ from typing import NamedTuple
 import pytest
 
 from controllers.base import Controller
-from controllers.types import CONTROLLERS, Docs, Messages, Notices, Questions, Todos
+from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
-from features.phone.controller import Phones
+from features.phone.controller import SAID, Phones
 from features.sharing.controller import Shares
 from features.sharing.server import ShareHandler
 from features.sharing.services import wanted
@@ -119,6 +119,14 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     assert tipped[0]["reactions"] == [{"face": "🎩", "who": USER}], "a reply takes a reaction from the phone like a message"
     older = call(base, f"/p/feed?before={message.created}", key=key).body["items"]
     assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
+    spoken = {"message": lambda: Messages(record, actor=AGENT).create("the build is green"),
+              "question": lambda: Questions(record, actor=AGENT).create("Which port should it use"),
+              "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"])}
+    assert set(spoken) == set(SAID), "every kind the phone's chat speaks is checked below"
+    for kind, make in spoken.items():
+        row = make()
+        fed = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
+        assert row.ref in fed, f"a {kind} the agent writes reaches the phone's chat"
 
 
 def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):

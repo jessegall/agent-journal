@@ -3,7 +3,7 @@ from features.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
 from features.messages.handlers import (CloseAnswered, CloseHandled, CloseSeenByUser, LinkToMessageInHand, NameBareNumbers, NameRunTogether,
-                                        NameUnanswered, NameUnread, ResetCountsOnArrival, SaveAgentMessage)
+                                        NameUnanswered, NameUnread, MarkAsking, ResetCountsOnArrival, SaveAgentMessage)
 
 
 class MessagesFeature(Feature):
@@ -12,6 +12,7 @@ class MessagesFeature(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.handler(SaveAgentMessage())
         journal.events.handler(ResetCountsOnArrival())
+        journal.events.handler(MarkAsking())
         journal.events.handler(NameUnread())
         journal.events.handler(NameUnanswered())
         journal.events.handler(CloseHandled())

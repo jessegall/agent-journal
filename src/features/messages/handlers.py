@@ -7,7 +7,7 @@ from engine.transcript import IDLE
 from providers.turns import last_text
 from controllers.messages import only_emoji
 from features import trigger
-from features.messages.answering import answered, in_hand, read_and_open, theirs, unanswered
+from features.messages.answering import answered, asks, in_hand, read_and_open, theirs, unanswered
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, ENVIRONMENT, SECTION, USER, titled
 from resources.types import TYPES
@@ -47,6 +47,13 @@ class ResetCountsOnArrival(Handler):
             trigger.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses) - every)
         for row in context.feature.reached(context.record, context.feature.lines["answer"].reach):
             trigger.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses), count=0)
+
+
+class MarkAsking(Handler):
+    def handle(self, context: Context, event: MessageCreated) -> None:
+        message = context.journal.messages.load(event.n)
+        if theirs(message) and asks(message):
+            context.journal.messages.stamp(message.n, asks=True)
 
 
 class NameUnread(Handler):
