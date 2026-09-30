@@ -12,6 +12,7 @@ from resources.base import SYSTEM
 
 SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 KEEP_AFTER = 7 * 24 * 3600
+KEEP_UP: list = []
 
 
 def open_shares(root: Path) -> list:
@@ -29,8 +30,12 @@ def lately_shared(root: Path) -> bool:
     return any(now - end < KEEP_AFTER for end in ends)
 
 
+def wanted(root: Path) -> bool:
+    return bool(open_shares(root)) or any(keep(root) for keep in KEEP_UP)
+
+
 def share_services(root: Path, taken: set) -> list:
-    if not open_shares(root) and not lately_shared(root):
+    if not wanted(root) and not lately_shared(root):
         return []
     port, blocked = allocate(root, SERVER, None, taken)
     taken.add(port)
