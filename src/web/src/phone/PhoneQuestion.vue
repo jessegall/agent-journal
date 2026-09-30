@@ -57,7 +57,9 @@ async function dismiss() {
 }
 
 function pick(answer) {
-    if (choice.value || said.value) return;
+    if (said.value) return;
+    if (choice.value === answer) return send(answer);
+    clearInterval(timer);
     choice.value = answer;
     left.value = UNDO_SECONDS;
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
@@ -76,16 +78,17 @@ onUnmounted(() => clearInterval(timer));
         <template v-if="question.completed || said">
             <p class="question-answer">{{ outcome }}</p>
         </template>
-        <template v-else-if="choice">
-            <div class="question-held">
-                <span>Sending "{{ choice }}" in {{ left }}s</span>
-                <Btn large @click="stop">Undo</Btn>
-            </div>
-        </template>
         <template v-else>
+            <template v-if="choice">
+                <div class="question-held">
+                    <span>Sending "{{ choice }}" in {{ left }}s</span>
+                    <Btn kind="primary" large @click="send(choice)">Send now</Btn>
+                    <Btn large @click="stop">Undo</Btn>
+                </div>
+            </template>
             <div class="question-options">
                 <template v-for="option in options" :key="option.title">
-                    <Btn large @click="pick(option.title)">{{ option.title }}</Btn>
+                    <Btn :kind="choice === option.title ? 'primary' : ''" large @click="pick(option.title)">{{ option.title }}</Btn>
                 </template>
             </div>
             <form class="question-own" @submit.prevent="own.trim() && send(own.trim())">

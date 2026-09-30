@@ -140,7 +140,7 @@ function sent() {
     </header>
     <template v-if="newer">
         <p class="home-newer">
-            A newer version of this app is ready. Close the app and open it again to get it.
+            A newer version of this app is ready.
             <button type="button" @click="reload">Reload now</button>
         </p>
     </template>
