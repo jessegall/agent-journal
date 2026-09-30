@@ -374,7 +374,9 @@ class Phones(Controller):
             return True
         if row.type == "plan":
             return row.status == "ready"
-        return USER not in row.seen
+        buttons = [Button.from_payload(given) for given in row.data.get("buttons") or []]
+        pressed = list(row.data.get("pressed") or [])
+        return USER not in row.seen or any(not spent(button, buttons, pressed) for button in buttons)
 
     def _reaches(self, phone: Phone, row) -> bool:
         return row.data.get("environment") in (phone.environment, None, "")

@@ -221,7 +221,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert plans(record, actor=SYSTEM).load(plan.n).status == "approved"
     proposal = Docs(record, actor=AGENT).create("Proposal", buttons=[{"label": "Accept", "say": "I accept this proposal", "choice": "answer"},
                                                                      {"label": "Change it", "say": "I want changes", "choice": "answer"}])
+    Docs(record, actor=USER).read(proposal.n)
+    waiting = lambda: [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
+    assert f"doc:{proposal.n}" in waiting(), "a read document still needs you while its buttons wait for an answer"
     assert call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Accept"}, key).status == 201
+    assert f"doc:{proposal.n}" not in waiting(), "and leaves Needs you once its choice is made"
     said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
