@@ -3,10 +3,12 @@ import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import RailWaiting from "../pages/RailWaiting.vue";
+import PhoneDialog from "./PhoneDialog.vue";
 import ShareTunnel from "./ShareTunnel.vue";
 import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
+import {connectedPhones} from "../composables/phones.js";
 import {meta, sharingOn, store, types} from "../state/store.js";
 import {useOutside} from "../composables/outside.js";
 import {activityShown, toggleActivity} from "../actions/panels.js";
@@ -17,6 +19,7 @@ import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js
 
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
+const phoneShown = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const full = computed(() => route.value.page === "kanban");
@@ -78,6 +81,20 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             </button>
             <template v-if="sharingOn">
                 <ShareTunnel />
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: phoneShown}]"
+                    :title="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
+                    @click="phoneShown = true"
+                >
+                    <Icon name="phone" />
+                    <template v-if="connectedPhones.length">
+                        <span class="phone-dot" />
+                    </template>
+                </button>
+                <template v-if="phoneShown">
+                    <PhoneDialog @close="phoneShown = false" />
+                </template>
             </template>
             <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
@@ -225,5 +242,16 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
     padding: 8px 12px;
     font-size: 12.5px;
     color: var(--text-2);
+}
+
+.phone-dot {
+    position: absolute;
+    right: 4px;
+    bottom: 5px;
+    width: 6px;
+    height: 6px;
+    border: 1.5px solid var(--bg);
+    border-radius: 50%;
+    background: var(--tone-good);
 }
 </style>
