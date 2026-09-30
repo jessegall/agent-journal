@@ -269,6 +269,7 @@ class Comment(Shape, Resource):
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 SUBAGENT = "subagent"
+HELPER = "helper"
 
 
 class AgentRow(Shape, Resource):
@@ -473,6 +474,10 @@ class Environment(Shape, Resource):
     scope = PROJECT
     in_sidebar = False
     notified = ()
+
+    @property
+    def helping(self) -> bool:
+        return self.owner.startswith(f"{HELPER}:")
 
 
 class Ask(Shape, Resource):

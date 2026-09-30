@@ -64,15 +64,17 @@ class Place:
     @classmethod
     def at(cls, root: Path, hub: Path) -> "Place":
         named = identity(root)
-        rows = Environments(Record(root, MAIN), actor=SYSTEM).summaries()
-        names = tuple(row["title"] for row in rows if not row["deleted"] and not row["completed"])
+        names = shown(root)
         sessions = Sessions(root)
         return cls(str(root), named["project"], named["color"], names, root == hub or running(root), tuple(name for name in names if sessions.holder(name)),
                    {name: detail(root, name) for name in names})
 
     def row(self, name: str) -> int:
-        rows = Environments(Record(Path(self.root), MAIN), actor=SYSTEM).summaries()
-        return next(row["n"] for row in rows if row["title"] == name and not row["deleted"] and not row["completed"])
+        return next(env.n for env in Environments(Record(Path(self.root), MAIN), actor=SYSTEM)._standing() if env.title == name and not env.helping)
+
+
+def shown(root: Path) -> tuple[str, ...]:
+    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM)._standing() if not env.helping)
 
 
 def running(root: Path) -> bool:

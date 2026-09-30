@@ -119,6 +119,12 @@ class Controller(Stored, Files, Links):
     def _finished(self, r: Resource) -> bool:
         return bool(r.completed)
 
+    def _unfinished(self, n: int, ended: str) -> Resource:
+        row = self.load(n)
+        if row.completed:
+            raise Refused(f"{self.type} {n} is {ended}")
+        return row
+
     def _handled(self, action: str, /, **args):
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             taken = fn(self, **args)

@@ -130,7 +130,7 @@ class JournalSummary(TypedDict):
 
 def summarize(root: Path) -> JournalSummary:
     m = manifest(root)
-    standing = Environments(Record(root, m["environment"]), actor=SYSTEM)._standing()
+    standing = [e for e in Environments(Record(root, m["environment"]), actor=SYSTEM)._standing() if not e.helping]
     owners = {e.title: e.owner for e in standing}
     names = dict.fromkeys([m["environment"], *(e.title for e in standing)])
     return {"project": m["project"], "root": str(root), "version": m["version"], "start": m["environment"], "color": identity(root)["color"],

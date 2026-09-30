@@ -60,13 +60,13 @@ class Worktrees(Controller):
                 f"Tell the helper to work and commit only there, and to rebase onto {working} before it reports.")
 
     def drift(self, n: int) -> str:
-        row = self._open(n)
+        row = self._unfinished(n, "dropped")
         found = self._drift(row)
         moved = f"{found.working} gained {found.told} since the cut" if found.gained else f"{found.working} has not moved since the cut"
         return f"{moved}; {row.branch} {'contains' if found.current else 'does not contain'} its tip {found.tip[:10]}"
 
     def take(self, n: int) -> str:
-        row = self._open(n)
+        row = self._unfinished(n, "dropped")
         project = self._project()
         if self._working(project) != row.working:
             raise Refused(f"the main checkout is not on {row.working}; switch it back before taking worktree {n}")
@@ -91,7 +91,7 @@ class Worktrees(Controller):
         return f"took {len(commits)} commit{'s' if len(commits) != 1 else ''} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
 
     def complete(self, n: int, how: str = "", **data):
-        row = self._open(n)
+        row = self._unfinished(n, "dropped")
         project = self._project()
         folder = Path(row.path) if row.path else None
         if folder and folder.is_dir():
@@ -116,12 +116,6 @@ class Worktrees(Controller):
 
     def _told(self, row, now: str) -> None:
         self.update(row.n, told=now)
-
-    def _open(self, n: int):
-        row = self.load(n)
-        if row.completed:
-            raise Refused(f"worktree {n} is dropped")
-        return row
 
     def _project(self) -> Path:
         return self.record.root.resolve().parent
