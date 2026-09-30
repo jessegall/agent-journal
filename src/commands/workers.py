@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 import queue
 from dataclasses import dataclass
 from multiprocessing.connection import Connection
@@ -6,13 +7,18 @@ from pathlib import Path
 
 WORKERS = "server.workers"
 LIMIT = 20.0
+ALIVE_EVERY = 1.0
 IN_SERVER = frozenset({"environment", "feature", "plugin", "share", "phone", "connection"})
 FORKED = multiprocessing.get_context("fork")
 
 
-def serve(pipe: Connection, root: Path) -> None:
+def serve(pipe: Connection, root: Path, parent: int, inherited: tuple[int, ...]) -> None:
     from commands.cli import captured
-    while True:
+    for fd in inherited:
+        os.close(fd)
+    while os.getppid() == parent:
+        if not pipe.poll(ALIVE_EVERY):
+            continue
         try:
             args = pipe.recv()
         except EOFError:
@@ -26,9 +32,9 @@ class Worker:
     pipe: Connection
 
     @classmethod
-    def forked(cls, root: Path) -> "Worker":
+    def forked(cls, root: Path, inherited: tuple[int, ...]) -> "Worker":
         ours, theirs = FORKED.Pipe()
-        process = FORKED.Process(target=serve, args=(theirs, root), daemon=True)
+        process = FORKED.Process(target=serve, args=(theirs, root, os.getpid(), (*inherited, ours.fileno())), daemon=True)
         process.start()
         theirs.close()
         return cls(process, ours)
@@ -45,19 +51,26 @@ class Worker:
 
 
 class Workers:
-    def __init__(self, root: Path, count: int) -> None:
-        self.root = root
+    def __init__(self, root: Path, count: int, listening: int) -> None:
+        self.root, self.listening = root, listening
+        self.pipes: set[int] = set()
         self.idle: queue.Queue = queue.Queue()
         for _ in range(count):
-            self.idle.put(Worker.forked(root))
+            self.idle.put(self.forked())
+
+    def forked(self) -> Worker:
+        worker = Worker.forked(self.root, (self.listening, *self.pipes))
+        self.pipes.add(worker.pipe.fileno())
+        return worker
 
     def run(self, args: list[str]) -> tuple[str, int | None]:
         worker = self.idle.get()
         try:
             answer = worker.run(args)
         except (TimeoutError, EOFError, OSError):
+            self.pipes.discard(worker.pipe.fileno())
             worker.stop()
-            worker = Worker.forked(self.root)
+            worker = self.forked()
             answer = f"! {' '.join(args)} ran past {int(LIMIT)} seconds in a worker and was stopped", 1
         self.idle.put(worker)
         return answer
@@ -70,9 +83,9 @@ class Workers:
 POOL: list[Workers] = []
 
 
-def start(root: Path, count: int) -> None:
+def start(root: Path, count: int, listening: int) -> None:
     if count > 0:
-        POOL.append(Workers(root, count))
+        POOL.append(Workers(root, count, listening))
 
 
 def stop() -> None:

@@ -1,4 +1,5 @@
 import inspect
+import socket
 import time
 
 import features
@@ -183,7 +184,8 @@ def test_every_listing_answers_the_same_through_a_worker_and_sees_its_writes():
     from commands.cli import captured, served
     record = fresh("wk")
     features.load(record.root)
-    workers.start(record.root, 1)
+    listening = socket.socket()
+    workers.start(record.root, 1, listening.fileno())
     try:
         nouns = sorted(served() - workers.IN_SERVER)
         apart = [noun for noun in nouns if workers.run(["--env", record.env, noun, "all"], record.root) != captured(["--env", record.env, noun, "all"], record.root)]
@@ -192,3 +194,4 @@ def test_every_listing_answers_the_same_through_a_worker_and_sees_its_writes():
         assert "made in a worker" in captured(["--env", record.env, "todo", "all"], record.root)[0], "the server sees a worker's write at once"
     finally:
         workers.stop()
+        listening.close()

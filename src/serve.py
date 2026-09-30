@@ -179,7 +179,7 @@ def run(root: Path, port: int = 8430) -> None:
     warm_viewer(root, default_env(root))
     read_transcripts(root)
     gc.freeze()
-    workers.start(root, int(home.setting(workers.WORKERS, 0)))
+    workers.start(root, int(home.setting(workers.WORKERS, 0)), server.fileno())
     threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
