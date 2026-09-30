@@ -82,7 +82,6 @@ defineExpose({close});
 .sheet-root {
     position: fixed;
     inset: 0;
-    height: var(--app-height, auto);
     z-index: 20;
     display: flex;
     align-items: flex-end;
@@ -106,7 +105,7 @@ defineExpose({close});
     flex-direction: column;
     width: 100%;
     max-width: none;
-    max-height: calc(var(--app-height, 100dvh) * 0.5);
+    max-height: calc(100dvh * 0.5);
     padding-bottom: env(safe-area-inset-bottom);
     border-radius: 12px 12px 0 0;
     outline: none;
@@ -117,7 +116,7 @@ defineExpose({close});
 }
 
 .sheet.large {
-    max-height: calc(var(--app-height, 100dvh) * 0.92);
+    max-height: calc(100dvh * 0.92);
 }
 
 .sheet.dragging {
