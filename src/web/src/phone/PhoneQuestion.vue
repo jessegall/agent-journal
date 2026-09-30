@@ -161,10 +161,15 @@ onUnmounted(() => clearInterval(timer));
 
 .question-held {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 10px;
     color: var(--text-2);
+}
+
+.question-held span {
+    flex: 1 1 100%;
 }
 
 .question-dismiss {
