@@ -34,6 +34,7 @@ const quote = ref("");
 const held = ref(null);
 const list = ref(null);
 const compose = ref(null);
+const draft = ref("");
 const offline = ref(false);
 const current = ref(false);
 const returned = () => !document.hidden && (current.value = false);
@@ -105,8 +106,9 @@ function chipped(event) {
     if (target) open(target);
 }
 
-function reply(target) {
+function reply(target, start = "") {
     about.value = target;
+    draft.value = start;
     kept = -1;
     history.go(-(trail.value.length + 1));
 }
@@ -140,6 +142,7 @@ function copy() {
 
 function sent() {
     about.value = "";
+    draft.value = "";
     refresh();
 }
 </script>
@@ -192,7 +195,7 @@ function sent() {
             </template>
         </div>
         <PhoneStatus />
-        <PhoneCompose ref="compose" :about="about" :quote="quote" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
+        <PhoneCompose ref="compose" :about="about" :quote="quote" :draft="draft" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
     </template>
     <template v-if="picking">
         <PhonePlaces :environment="connection.environment" @close="picking = false" @moved="emit('moved')" />

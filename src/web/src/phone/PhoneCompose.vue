@@ -7,7 +7,7 @@ import {withQuote} from "../format/quote.js";
 import {ended, flush, hold} from "./outbox.js";
 
 const MOST_LINES = 5;
-const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}});
+const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
 const emit = defineEmits(["sending", "sent", "unabout", "unquote"]);
 const failed = inject("phoneFailed");
 const words = ref("");
@@ -22,6 +22,19 @@ const focus = () => box.value && box.value.focus();
 const tapped = (event) => !event.target.closest("button, textarea") && focus();
 
 defineExpose({focus});
+
+watch(
+    () => props.draft,
+    (start) => {
+        if (!start) return;
+        words.value = start;
+        nextTick(() => {
+            grow();
+            focus();
+        });
+    },
+    {immediate: true},
+);
 
 const previews = new Map();
 const pictured = (file) => file.type.startsWith("image/");

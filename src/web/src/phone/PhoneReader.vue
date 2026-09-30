@@ -12,6 +12,7 @@ import {peeked} from "./peeked.js";
 import {liveButtons} from "../domain/buttons.js";
 
 const SIZES = [16, 18, 20];
+const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add more detail to ", "Something is missing: "];
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
 const NAMES = {doc: "document", todo: "to-do"};
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: "Chat"}});
@@ -151,6 +152,11 @@ onMounted(load);
                 <template v-else-if="ready">
                     <Btn kind="primary" large @click="confirming = true">Approve the plan</Btn>
                     <Btn large @click="emit('reply', row.type + ':' + row.n)">Ask for changes</Btn>
+                    <div class="reader-changes">
+                        <template v-for="start in CHANGES" :key="start">
+                            <button type="button" class="reader-change" @click="emit('reply', row.type + ':' + row.n, start)">{{ start.replace(/[: ]+$/, "") }}</button>
+                        </template>
+                    </div>
                 </template>
                 <template v-else-if="row.type !== 'question'">
                     <Btn large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ NAMES[row.type] || row.type }}</Btn>
@@ -204,6 +210,23 @@ onMounted(load);
     bottom: -1px;
     height: 2px;
     background: var(--accent);
+}
+
+.reader-changes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.reader-change {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 18px;
+    background: transparent;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 13.5px;
 }
 
 .reader-steps {
