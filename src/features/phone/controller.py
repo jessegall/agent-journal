@@ -28,7 +28,7 @@ from features.phone.resource import Phone
 from features.shaping import shaped
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
-from resources.base import PROJECT, SYSTEM, USER, Refused, titled
+from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused, titled
 from resources.types import BUSY, WORKING
 
 CODE_SECONDS = 600
@@ -427,15 +427,28 @@ class Phones(Controller):
             raise Refused(f"no file {name!r} on {ref}")
         return found
 
-    def _read(self, phone: Phone, ref: str) -> dict:
+    def _reached(self, phone: Phone, ref: str):
         kind, _, n = ref.partition(":")
         if not readable(kind) or not n.isdigit():
             raise Refused(f"a phone opens any row of its environment except phones, shared links and plugins, not {ref!r}")
-        home = self._home(phone)
-        row = CONTROLLERS[kind](home, actor=SYSTEM).load(int(n))
+        row = CONTROLLERS[kind](self._home(phone), actor=SYSTEM).load(int(n))
         if row.deleted or not self._reaches(phone, row):
             raise Refused(f"{kind} {n} is not in this phone's environment")
-        return shaped(CONTROLLERS[kind](home, actor=USER).read(row.n), home, VIEWER)
+        return row
+
+    def _read(self, phone: Phone, ref: str) -> dict:
+        row, home = self._reached(phone, ref), self._home(phone)
+        rows = CONTROLLERS[row.type](home, actor=USER)
+        comments = [{**shaped(made, home, VIEWER), "who": made.seen[0] if made.seen else AGENT} for made in rows.comments(row.n)]
+        return {**shaped(rows.read(row.n), home, VIEWER), "comments": comments}
+
+    def _comment(self, phone: Phone, commenting):
+        row = self._reached(phone, commenting.ref)
+        if not row.takes_comments:
+            raise Refused(f"a {row.type} takes no comments")
+        if not commenting.text.strip():
+            raise Refused("a comment needs words")
+        return CONTROLLERS[row.type](self._home(phone), actor=USER).comment(row.n, commenting.text)
 
     def _answer(self, phone: Phone, chosen):
         questions = CONTROLLERS["question"](self._home(phone), actor=USER)

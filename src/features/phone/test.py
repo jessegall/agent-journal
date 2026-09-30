@@ -243,6 +243,9 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert f"doc:{proposal.n}" in waiting(), "a read document still needs you while its buttons wait for an answer"
     assert call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Accept"}, key).status == 201
     assert f"doc:{proposal.n}" not in waiting(), "and leaves Needs you once its choice is made"
+    assert call(base, "/p/comment", {"ref": f"doc:{proposal.n}", "text": "Looks right to me"}, key).status == 201
+    shown = call(base, f"/p/row/doc/{proposal.n}", key=key).body["comments"]
+    assert [c["brief"] for c in shown] == ["Looks right to me"] and shown[0]["who"] == USER, "a comment from the phone lands on the row, as on the desktop"
     said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"

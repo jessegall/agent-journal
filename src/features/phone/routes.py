@@ -70,6 +70,16 @@ class Reacting:
 
 
 @dataclass(frozen=True)
+class Commenting:
+    ref: str
+    text: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Commenting":
+        return cls(ref=str(given.get("ref", "")), text=str(given.get("text", "")))
+
+
+@dataclass(frozen=True)
 class Pressing:
     ref: str
     label: str
@@ -246,6 +256,7 @@ class PhoneRoutes:
                 "start": lambda phones: phones._start(phone, Starting.from_payload(body)),
                 "arrange": lambda phones: phones._arrange(phone, Arranging.from_payload(body).cards),
                 "press": lambda phones: phones._press(phone, Pressing.from_payload(body)),
+                "comment": lambda phones: phones._comment(phone, Commenting.from_payload(body)),
                 "push": lambda phones: phones._subscribe(phone, Subscribing.from_payload(body).endpoint)}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")
