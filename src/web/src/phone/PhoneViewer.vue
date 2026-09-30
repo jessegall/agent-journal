@@ -49,7 +49,7 @@ onMounted(load);
         </header>
         <div ref="body" class="viewer-body">
             <template v-if="told">
-                <p class="viewer-told">{{ told }}</p>
+                <p class="viewer-told" role="status">{{ told }}</p>
             </template>
             <template v-else-if="picture">
                 <img class="viewer-picture" :src="url" :alt="name" />

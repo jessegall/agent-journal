@@ -70,7 +70,7 @@ onMounted(() => {
                 <button type="button" class="notify-skip" @click="skip">Not now</button>
             </div>
             <template v-if="told">
-                <p class="notify-told">{{ told }}</p>
+                <p class="notify-told" role="status">{{ told }}</p>
             </template>
         </div>
     </template>

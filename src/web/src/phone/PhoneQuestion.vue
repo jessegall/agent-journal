@@ -1,11 +1,12 @@
 <script setup>
-import {computed, inject, onUnmounted, ref} from "vue";
+import {computed, inject, nextTick, onUnmounted, ref} from "vue";
 import {ended, perform} from "./outbox.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
 
 const UNDO_SECONDS = 5;
+const undo = ref(null);
 const HELD = "No connection right now: this goes as soon as the phone reaches your computer again.";
 const props = defineProps({question: {type: Object, required: true}});
 const emit = defineEmits(["done"]);
@@ -65,6 +66,7 @@ function pick(answer) {
     clearInterval(timer);
     choice.value = answer;
     left.value = UNDO_SECONDS;
+    nextTick(() => undo.value?.$el?.focus());
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
 
@@ -83,10 +85,10 @@ onUnmounted(() => clearInterval(timer));
         </template>
         <template v-else>
             <template v-if="choice">
-                <div class="question-held">
+                <div class="question-held" role="status" aria-live="polite">
                     <span>Sending "{{ choice }}" in {{ left }}s</span>
                     <Btn kind="primary" large @click="send(choice)">Send now</Btn>
-                    <Btn large @click="stop">Undo</Btn>
+                    <Btn ref="undo" large @click="stop">Undo</Btn>
                 </div>
             </template>
             <div class="question-options">

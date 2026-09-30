@@ -7,11 +7,13 @@ import Spinner from "../kit/Spinner.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
-import {ended, perform} from "./outbox.js";
+import {ended, flush, hold, perform} from "./outbox.js";
 import {peeked} from "./peeked.js";
 import {liveButtons} from "../domain/buttons.js";
 
 const SIZES = [16, 18, 20];
+const AGENTS = [1, 2, 3, 5];
+const DEPTHS = ["a quick look", "a normal read", "a thorough review"];
 const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add more detail to ", "Something is missing: "];
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
 const NAMES = {doc: "document", todo: "to-do"};
@@ -44,6 +46,23 @@ async function press(button) {
         else told.value = error.message;
     } finally {
         pressing.value = "";
+    }
+}
+
+const reviewing = ref(false);
+const agents = ref(2);
+const depth = ref(DEPTHS[1]);
+
+async function review() {
+    const who = agents.value === 1 ? "one agent" : `${agents.value} agents`;
+    hold(`Please have ${who} give plan ${row.value.n} ${depth.value}, and compile what they find into a report linked to the plan.`, `plan:${row.value.n}`);
+    reviewing.value = false;
+    told.value = "Asked for a review. The findings come back as a report linked to this plan.";
+    try {
+        await flush();
+        refresh();
+    } catch (error) {
+        if (ended(error)) failed(error);
     }
 }
 
@@ -140,7 +159,7 @@ onMounted(load);
             </div>
             <footer class="reader-foot">
                 <template v-if="told">
-                    <p class="reader-told">{{ told }}</p>
+                    <p class="reader-told" role="status">{{ told }}</p>
                 </template>
                 <template v-for="(button, i) in buttons" :key="button.label">
                     <Btn :kind="i === 0 ? 'primary' : ''" large :busy="pressing === button.label" :disabled="Boolean(pressing)" @click="press(button)">
@@ -164,10 +183,28 @@ onMounted(load);
                 <template v-else-if="row.type !== 'question'">
                     <Btn large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ NAMES[row.type] || row.type }}</Btn>
                 </template>
+                <template v-if="row.type === 'plan' && !reviewing">
+                    <Btn large @click="reviewing = true">Ask for a review</Btn>
+                </template>
+                <template v-if="row.type === 'plan' && reviewing">
+                    <span class="reader-choose">How many agents</span>
+                    <div class="reader-changes">
+                        <template v-for="count in AGENTS" :key="count">
+                            <button type="button" :class="['reader-change', {on: agents === count}]" @click="agents = count">{{ count }}</button>
+                        </template>
+                    </div>
+                    <span class="reader-choose">How deep</span>
+                    <div class="reader-changes">
+                        <template v-for="one in DEPTHS" :key="one">
+                            <button type="button" :class="['reader-change', {on: depth === one}]" @click="depth = one">{{ one }}</button>
+                        </template>
+                    </div>
+                    <Btn kind="primary" large @click="review">Ask for the review</Btn>
+                </template>
             </footer>
         </template>
         <template v-else-if="told">
-            <p class="reader-told">{{ told }}</p>
+            <p class="reader-told" role="status">{{ told }}</p>
         </template>
         <template v-else>
             <div class="reader-wait"><Spinner /></div>
@@ -220,6 +257,17 @@ onMounted(load);
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+}
+
+.reader-choose {
+    color: var(--text-3);
+    font-size: 13px;
+}
+
+.reader-change.on {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--text);
 }
 
 .reader-change {

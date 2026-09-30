@@ -68,7 +68,7 @@ function moved(i, by) {
             <button type="button" class="board-edit" @click="editing = !editing">{{ editing ? "Done" : "Edit" }}</button>
         </div>
         <template v-if="told">
-            <p class="board-told">{{ told }}</p>
+            <p class="board-told" role="status">{{ told }}</p>
         </template>
         <template v-for="(kind, i) in cards" :key="kind">
             <section class="board-card">

@@ -59,7 +59,7 @@ async function move(place, name) {
         <div class="places-sheet" role="dialog" aria-label="Switch journal or environment">
             <span class="places-title">Switch journal or environment</span>
             <template v-if="told">
-                <p class="places-told">{{ told }}</p>
+                <p class="places-told" role="status">{{ told }}</p>
             </template>
             <template v-if="!places && !told">
                 <Spinner />

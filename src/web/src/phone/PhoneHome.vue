@@ -197,7 +197,7 @@ function sent() {
         <p class="home-updating">Updating…</p>
     </template>
     <template v-if="offline">
-        <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
+        <p class="home-offline" role="status">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
     </template>
     <PhoneNotify />
     <template v-if="!reading">
