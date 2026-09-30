@@ -39,8 +39,13 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     off = fresh()
     off.set_setting("permission_prompts", {"skip": False})
     assert launch_args(off, "claude", ["--model", "opus"]) == ["--model", "opus"], "switched off in Settings, no flag is added"
-    assert DRIVERS["codex"].skipping(["x"], True) == ["--dangerously-bypass-approvals-and-sandbox", "x"], "Codex runs its commands without asking"
     codex = DRIVERS["codex"]
+    assert codex.skipping(["x"], True) == ["--dangerously-bypass-approvals-and-sandbox", "x"], "Codex runs its commands without asking"
+    assert codex.skipping(["--approve-for-me", "x"], True) == ["--dangerously-bypass-approvals-and-sandbox", "x"], \
+        "Codex refuses approve-for-me beside the bypass, so skipping drops it"
+    asked = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nDo you trust the contents of this directory?\r\n\xe2\x80\xba 1. Yes, continue\r\n  2. No, quit"
+    assert (codex.consent(asked), codex.confirm(asked)) == (b"1\r", b""), "Codex's trust question is answered Yes by number, before the opening"
+    assert codex.consent(asked + b"\r\n> Ask Codex to do anything") == b"", "once Codex is at its prompt, nothing more is typed into the question"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \
         (["resume", "--last"], ["resume", "abc"], ["-c", "k=v"]), "Codex continues and resumes with its resume subcommand, and -c stays its config flag"
     assert codex.carried_on(codex.resumed(codex.skipping(["continue"], True), "abc")) == \

@@ -136,3 +136,25 @@ def test_a_long_command_keeps_one_chat_mark_whose_dot_turns_green():
     cards = agents.load(row.n).data["cards"]
     assert [(c["label"], c["state"]) for c in cards] == [("Moved a long command to the background", "done")], \
         "the end updates the one mark instead of adding a second"
+
+
+def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_once(monkeypatch):
+    from providers import DRIVERS, drivers
+    from engine import runtime
+    record = fresh()
+    driver = DRIVERS["codex"](record, "codex-1")
+    screen = runtime.session_file(record.root, "codex-1", "screen")
+    screen.parent.mkdir(parents=True, exist_ok=True)
+    screen.write_bytes(b"\x1b[2m1 background terminal running\x1b[0m")
+    typed = []
+
+    def wrote(raw: bytes) -> bool:
+        typed.append(raw)
+        if raw == b"\r":
+            with screen.open("ab") as shown:
+                shown.write(b"Messages to be submitted after next tool call\r\n  1 background terminal running")
+        return True
+    monkeypatch.setattr(driver, "_wrote", wrote)
+    monkeypatch.setattr(drivers.time, "sleep", lambda seconds: None)
+    assert driver.type_in("1 new message 6") is True, "a message Codex queues counts as delivered, so it is never typed again"
+    assert (typed[-1], typed.count(b"\r")) == (b"\x1b", 1), "Esc sends it now, while the command runs on in its background terminal"

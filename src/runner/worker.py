@@ -29,6 +29,7 @@ CHECKS_EVERY = 1.0
 SERVER_CRASHES = 3
 RETRY_AFTER = 1.0
 STARTUP, EARLY = 30.0, 16384
+CONSENT_EVERY = 3.0
 ENTER_AFTER = 0.3
 
 
@@ -77,7 +78,7 @@ class Confirm:
         self.root, self.session, self.agent = root, session, agent
         self.printed = runtime.session_file(root, session, "printed")
         self.at = self.printed.stat().st_size if self.printed.is_file() else 0
-        self.started = time.time()
+        self.started = self.consented = time.time()
         self.answered = False
 
     def tick(self) -> None:
@@ -86,11 +87,20 @@ class Confirm:
         with self.printed.open("rb") as f:
             f.seek(max(self.at, self.printed.stat().st_size - EARLY))
             early = f.read()
+        if DRIVERS[self.agent].consent(early):
+            self.consent(early)
+            return
         keys = DRIVERS[self.agent].confirm(early)
         if keys:
             self.answered = True
             time.sleep(DRIVERS[self.agent].CONFIRM_AFTER)
             press(self.root, self.session, keys)
+
+    def consent(self, early: bytes) -> None:
+        if time.time() - self.consented < CONSENT_EVERY:
+            return
+        self.consented = time.time()
+        press(self.root, self.session, DRIVERS[self.agent].consent(early))
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:

@@ -47,6 +47,9 @@ class Driver(ABC):
     WORKTREES: tuple = ()
     EXIT = ""
     MOVE_TO_BACKGROUND = b""
+    QUEUED = b""
+    RUNNING = b""
+    SEND_NOW = b""
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
     ELSEWHERE = ""
@@ -79,7 +82,15 @@ class Driver(ABC):
     @classmethod
     def skipping(cls, args: list[str], skip: bool) -> list[str]:
         kept = [arg for arg in args if arg not in cls.SKIP_ARGS]
-        return [*cls.SKIP_ARGS, *kept] if skip else kept
+        return [*cls.SKIP_ARGS, *cls.unautomated(kept)] if skip else kept
+
+    @classmethod
+    def unautomated(cls, args: list[str]) -> list[str]:
+        size = len(cls.AUTO_ARGS)
+        for at in range(len(args) - size + 1):
+            if size and tuple(args[at:at + size]) == cls.AUTO_ARGS:
+                return [*args[:at], *args[at + size:]]
+        return args
 
     @classmethod
     def resuming(cls, args: list[str]) -> bool:
@@ -179,6 +190,10 @@ class Driver(ABC):
     def confirm(cls, printed: bytes) -> bytes:
         return b""
 
+    @classmethod
+    def consent(cls, printed: bytes) -> bytes:
+        return b""
+
     def send(self, text: str = "", groups: dict | None = None, yielding: str = "") -> bool:
         line = joined(text)
         if line:
@@ -249,6 +264,7 @@ class Driver(ABC):
         if self.elsewhere():
             return False
         started = time.time()
+        shown = self._shown_size()
         self.clear_input()
         time.sleep(ENTER_AFTER)
         raw = line.encode()
@@ -265,8 +281,31 @@ class Driver(ABC):
             time.sleep(RECHECK)
             if self._landed(line, started, confirmed):
                 return True
+            if self._queued(shown):
+                return self._send_now(shown)
             self._wrote(b"\r")
         return self._landed(line, started, confirmed)
+
+    def _queued(self, since: int) -> bool:
+        return bool(self.QUEUED) and self.QUEUED in self._shown_since(since)
+
+    def _send_now(self, since: int) -> bool:
+        return self.RUNNING not in self._shown_since(since) or self._wrote(self.SEND_NOW)
+
+    def _screen_file(self) -> Path:
+        return runtime.session_file(self.record.root, self.session, "screen")
+
+    def _shown_size(self) -> int:
+        screen = self._screen_file()
+        return screen.stat().st_size if screen.is_file() else 0
+
+    def _shown_since(self, since: int) -> bytes:
+        try:
+            with self._screen_file().open("rb") as shown:
+                shown.seek(max(since, self._shown_size() - SCREEN_TAIL))
+                return b"".join(ANSI.sub(b"", shown.read()).split())
+        except OSError:
+            return b""
 
     def _landed(self, line: str, since: float, confirmed: bool) -> bool:
         return not self._still_in_input(line) and (not confirmed or self._submitted(since))
@@ -274,14 +313,7 @@ class Driver(ABC):
     def _still_in_input(self, line: str) -> bool:
         if not self.INPUT_MARK:
             return False
-        screen = runtime.session_file(self.record.root, self.session, "screen")
-        try:
-            with screen.open("rb") as shown:
-                shown.seek(max(0, screen.stat().st_size - SCREEN_TAIL))
-                tail = shown.read()
-        except OSError:
-            return False
-        plain = b"".join(ANSI.sub(b"", tail).split())
+        plain = self._shown_since(0)
         if self.INPUT_MARK not in plain:
             return False
         box = plain.rsplit(self.INPUT_MARK, 1)[1]

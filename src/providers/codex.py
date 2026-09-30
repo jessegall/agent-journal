@@ -378,6 +378,10 @@ class CodexDriver(Driver):
     READY = b"AskCodextodoanything"
     BUSY = b"esctointerrupt"
     ASKING = (b"Wouldyouliketorun", b"Yes,proceed", b"Allowcommand", b"Approve")
+    QUEUED = b"Messagestobesubmittedafternexttoolcall"
+    RUNNING = b"backgroundterminalrunning"
+    SEND_NOW = b"\x1b"
+    TRUSTING = re.compile(rb"Doyoutrustthecontentsofthisdirectory.*?(\d)\.Yes,continue", re.S)
     SCREEN_TAIL = 8192
     OPENING = f"{MARK} The journal started this session."
     CONFIRM_AFTER = 3.0
@@ -388,7 +392,13 @@ class CodexDriver(Driver):
     @classmethod
     def confirm(cls, printed: bytes) -> bytes:
         plain = b"".join(ANSI.sub(b"", printed).split())
-        return f"{cls.OPENING}\r".encode() if cls.READY in plain else b""
+        return f"{cls.OPENING}\r".encode() if cls.READY in plain and not cls.consent(printed) else b""
+
+    @classmethod
+    def consent(cls, printed: bytes) -> bytes:
+        plain = b"".join(ANSI.sub(b"", printed).split())
+        asked = [*cls.TRUSTING.finditer(plain)]
+        return asked[-1].group(1) + b"\r" if asked and asked[-1].start() > plain.rfind(cls.READY) else b""
 
     def at_prompt(self) -> bool:
         plain = self._screen()
