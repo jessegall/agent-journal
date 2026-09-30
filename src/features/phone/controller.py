@@ -17,6 +17,7 @@ from engine.sessions import Sessions
 from features.format import VIEWER
 from features.message_buttons.shaping import Button, spent
 from features.phone.places import Place, places
+from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
 from features.shaping import shaped
 from features.sharing.controller import Shares
@@ -27,7 +28,7 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
@@ -207,6 +208,24 @@ class Phones(Controller):
             raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
         return super().update(phone.n, journal=journal, environment=moving.environment)
+
+    def _push_key(self) -> str:
+        return unpadded(Keys.kept(self.record.root).public)
+
+    def _subscribe(self, phone: Phone, endpoint: str) -> Phone:
+        if not allowed(endpoint):
+            raise Refused("a phone's notifications come only through Apple's, Google's, Mozilla's or Microsoft's push service")
+        return super().update(phone.n, push=endpoint, pushed=[waiting["ref"] for waiting in self._waiting(phone)])
+
+    def _notify(self) -> None:
+        phone = self._active()
+        if phone is None or phone.push is None:
+            return
+        waiting = [item["ref"] for item in self._waiting(phone)]
+        if set(waiting) - set(phone.pushed):
+            send(Keys.kept(self.record.root), phone.push, f"https://{Shares(self.record, actor=SYSTEM)._address()}")
+        if waiting != phone.pushed:
+            super().update(phone.n, pushed=waiting)
 
     def _press(self, phone: Phone, pressing):
         kind, _, n = pressing.ref.partition(":")

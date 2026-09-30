@@ -2,6 +2,8 @@ import json
 import mimetypes
 import sys
 from base64 import b64decode
+import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote, unquote
@@ -11,11 +13,13 @@ from engine.package import data  # noqa: E402
 from features.sharing.controller import HEALTH, LAYOUT_FILE  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from features.sharing.preview import card, tags  # noqa: E402
-from features.sharing.routes import ROUTES  # noqa: E402
+from features.sharing.routes import ROUTES, TICKS  # noqa: E402
+from controllers.faults import threw  # noqa: E402
 from engine.color import identity  # noqa: E402
 from resources.base import Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")
+TICK_EVERY = 15
 BODY_LIMIT = 8192
 COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
@@ -185,7 +189,18 @@ class ShareHandler(BaseHTTPRequestHandler):
     do_PUT = do_PATCH = do_DELETE = do_OPTIONS = refused
 
 
+def ticking(shares) -> None:
+    while True:
+        time.sleep(TICK_EVERY)
+        for tick in TICKS:
+            try:
+                tick(shares)
+            except Exception:
+                threw(shares.record.root, shares.record.env, f"a share server tick: {getattr(tick, '__name__', tick)}")
+
+
 def serve(shares, port: int) -> None:
+    threading.Thread(target=ticking, args=(shares,), daemon=True).start()
     handler = type("BoundShareHandler", (ShareHandler,), {"shares": shares})
     with ThreadingHTTPServer(("127.0.0.1", int(port)), handler) as server:
         server.serve_forever()

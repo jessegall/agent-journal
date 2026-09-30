@@ -14,6 +14,8 @@ from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused
 
 APP_PAGE = "phone.html"
+WORKER = "sw.js"
+WORKER_FILE = "phone-sw.js"
 MANIFEST = "manifest.webmanifest"
 ICONS = {"icon-180.png": 180, "icon-192.png": 192, "icon-512.png": 512}
 PAGE_HEADERS = {**APP_HEADERS, "Content-Security-Policy": APP_HEADERS["Content-Security-Policy"] + "; manifest-src 'self'"}
@@ -77,6 +79,15 @@ class Pressing:
 
 
 @dataclass(frozen=True)
+class Subscribing:
+    endpoint: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Subscribing":
+        return cls(endpoint=str(given.get("endpoint", "")))
+
+
+@dataclass(frozen=True)
 class Moving:
     journal: str
     environment: str
@@ -114,7 +125,10 @@ class PhoneRoutes:
             return handler.asset(rest[1])
         if rest[:1] == ["file"] and len(rest) == 4:
             return self.file(handler, rest)
-        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["row"]):
+        if rest == [WORKER]:
+            return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
+                                                                          "Service-Worker-Allowed": "/p/"})
+        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -145,6 +159,8 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
+        if rest == ["push-key"]:
+            return self.json(handler, 200, {"key": self.phones(handler)._push_key()})
         if rest == ["places"]:
             return self.json(handler, 200, {"places": [asdict(place) for place in self.phones(handler)._places()],
                                             "at": str(self.phones(handler)._home(phone).root.resolve())})
@@ -189,7 +205,8 @@ class PhoneRoutes:
                 "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
                 "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
                 "switch": lambda phones: phones._switch(phone, Moving.from_payload(body)),
-                "press": lambda phones: phones._press(phone, Pressing.from_payload(body))}
+                "press": lambda phones: phones._press(phone, Pressing.from_payload(body)),
+                "push": lambda phones: phones._subscribe(phone, Subscribing.from_payload(body).endpoint)}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")
         try:

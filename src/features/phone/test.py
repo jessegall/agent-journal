@@ -174,10 +174,21 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
     assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"
 
 
-def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
+def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, monkeypatch):
+    from features.phone import controller, push
     record, base = served
     _, key = paired(record, base)
+    assert call(base, "/p/push", {"endpoint": "https://example.com/steal"}, key).status == 422, "only a real push service is ever called"
+    assert call(base, "/p/push", {"endpoint": "https://web.push.apple.com/abc"}, key).status == 201
+    pushed = []
+    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     question = Questions(record, actor=AGENT).create("Go ahead?")
+    Phones(record, actor=SYSTEM)._notify()
+    Phones(record, actor=SYSTEM)._notify()
+    head, claims, signature = pushed[0].split(".")
+    public = push.Keys.kept(record.root).public
+    assert len(pushed) == 1 and push.verified(public, f"{head}.{claims}".encode(), push.base64.urlsafe_b64decode(signature + "==")), \
+        "a new question sends one signed push, and not again while it waits"
     assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
     assert call(base, "/p/answer", {"n": question.n, "answer": "Yes"}, key).status == 201
     answered = Questions(record, actor=SYSTEM).load(question.n)

@@ -25,6 +25,8 @@ export const phone = {
     feed: () => got("./feed"),
     bar: () => got("./bar"),
     places: () => got("./places"),
+    pushKey: () => got("./push-key"),
+    subscribe: (endpoint) => sent("./push", {endpoint}),
     move: (journal, environment) => sent("./switch", {journal, environment}),
     row: (ref) => got(`./row/${ref.replace(":", "/")}`),
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),

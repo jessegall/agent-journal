@@ -1,1 +1,2 @@
 ROUTES: dict = {}
+TICKS: list = []

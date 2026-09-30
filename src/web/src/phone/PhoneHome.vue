@@ -8,6 +8,7 @@ import PhoneHold from "./PhoneHold.vue";
 import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
+import PhoneNotify from "./PhoneNotify.vue";
 import Icon from "../kit/Icon.vue";
 import {peeked} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
@@ -60,6 +61,7 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got) return;
     const following = nearBottom() && still();
     feed.value = got;
+    navigator.setAppBadge?.(got.waiting.length).catch(() => {});
     newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
     settle(got.items);
     if (following) toBottom();
@@ -145,6 +147,7 @@ function sent() {
     <template v-if="offline">
         <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
     </template>
+    <PhoneNotify />
     <PhoneWaiting :waiting="feed.waiting" @open="open" />
     <template v-if="reading">
         <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @reply="reply" />
