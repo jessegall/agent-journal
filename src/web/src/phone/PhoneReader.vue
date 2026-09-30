@@ -16,7 +16,7 @@ const CHANGES = ["Make it smaller: ", "Change the order of the phases: ", "Add m
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
 const NAMES = {doc: "document", todo: "to-do"};
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: "Chat"}});
-const emit = defineEmits(["close", "open", "reply"]);
+const emit = defineEmits(["close", "open", "next", "reply"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
 const row = ref(null);
@@ -67,7 +67,7 @@ async function approve() {
         await phone.approve(row.value.n, row.value.updated);
         told.value = "Approved. The agent starts it.";
         refresh();
-        await load();
+        emit("next");
     } catch (error) {
         if (error.status === 409) told.value = "This plan changed since you opened it. Look at it again.";
         else failed(error);
@@ -103,7 +103,7 @@ onMounted(load);
         <template v-if="row">
             <div class="reader-body" :style="{fontSize: `${SIZES[size]}px`}" @scroll="scrolled">
                 <template v-if="row.type === 'question'">
-                    <PhoneQuestion :question="row" />
+                    <PhoneQuestion :question="row" @done="emit('next')" />
                 </template>
                 <template v-else>
                     <span class="reader-kind">{{ KINDS[row.type] || row.type }} · {{ ago(row.created) }}</span>

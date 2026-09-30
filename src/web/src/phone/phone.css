@@ -93,3 +93,15 @@ body {
 .phone .row-pill {
     white-space: nowrap;
 }
+
+.phone button.btn.large,
+.phone button.btn {
+    height: auto;
+    font-size: 15.5px;
+}
+
+.phone button.btn.primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}

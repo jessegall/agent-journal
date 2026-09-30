@@ -8,6 +8,7 @@ import {ago} from "./ago.js";
 
 const UNDO_SECONDS = 5;
 const props = defineProps({question: {type: Object, required: true}});
+const emit = defineEmits(["done"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
 const choice = ref("");
@@ -33,6 +34,7 @@ async function send(answer) {
     try {
         await phone.answer(props.question.n, answer);
         refresh();
+        emit("done");
     } catch (error) {
         missed(error);
     }
@@ -51,6 +53,7 @@ async function dismiss() {
     try {
         await phone.dismiss(props.question.n);
         refresh();
+        emit("done");
     } catch (error) {
         missed(error);
     }

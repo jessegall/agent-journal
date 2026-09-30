@@ -13,6 +13,7 @@ import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
 import Icon from "../kit/Icon.vue";
 import {peeked} from "./peeked.js";
+import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
@@ -98,6 +99,14 @@ function open(target) {
 }
 
 const back = () => history.back();
+
+function next() {
+    const left = ordered(feed.value.waiting).filter((item) => item.ref !== reading.value);
+    if (!left.length) return back();
+    const stack = [...trail.value, left[0].ref];
+    history.replaceState({reading: stack}, "");
+    shown(stack);
+}
 const popped = (event) => shown(event.state?.reading || []);
 
 onMounted(() => {
@@ -197,7 +206,7 @@ function sent() {
             <PhoneViewer :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" />
         </template>
         <template v-else>
-            <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @reply="reply" />
+            <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @next="next" @reply="reply" />
         </template>
     </template>
     <template v-else-if="screen === 'home'">
