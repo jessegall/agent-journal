@@ -1,5 +1,6 @@
 import hashlib
 import mimetypes
+import re
 from dataclasses import dataclass
 import secrets
 import tempfile
@@ -32,14 +33,16 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed", "home")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed", "home", "tries")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
 SOURCE_LIMIT = 400000
+SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|password|token|\.(pem|key|p12|pfx|keystore|jks|kdbx|env)$", re.I)
 CARDS = ("todo", "question", "suggestion", "plan", "report", "doc", "work", "agent")
 WAITING_CARD = "waiting"
 LISTED = 20
+MOST_TRIES = 10
 OFFLINE, IDLE_STATE, WORKING_STATE = "offline", "idle", "working"
 SAID = ("message", "question")
 HIDDEN = ("phone", "share", "plugin")
@@ -111,6 +114,11 @@ class Listed(TypedDict):
     n: int
     title: str
     updated: float
+
+
+class Listing(TypedDict):
+    rows: list[Listed]
+    total: int
 
 
 class Source(TypedDict):
@@ -195,6 +203,7 @@ class Phones(Controller):
             found = next((row["n"] for row in self.summaries() if given & {row.get("code"), row.get("short")} - {"", None}
                           and not row["completed"] and not row["deleted"]), None)
             if found is None:
+                self._missed()
                 return None
             phone = self.load(found)
             if phone.code_until < now or self._active() is not None:
@@ -205,6 +214,15 @@ class Phones(Controller):
         Notices(Record(self.record.root, paired.environment), actor=SYSTEM).create(
             f"A phone connected, {named}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
         return paired, key
+
+    def _missed(self) -> None:
+        for row in self.summaries():
+            if not row.get("code") or row["completed"] or row["deleted"]:
+                continue
+            tries = self.load(row["n"]).tries + 1
+            super().update(row["n"], tries=tries)
+            if tries >= MOST_TRIES:
+                self.complete(row["n"], how=f"{MOST_TRIES} wrong codes were tried, so this code no longer works")
 
     def _active(self) -> Phone | None:
         now = time.time()
@@ -242,13 +260,14 @@ class Phones(Controller):
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
         return super().update(phone.n, journal=journal, environment=moving.environment)
 
-    def _list(self, phone: Phone, kind: str) -> list[Listed]:
+    def _list(self, phone: Phone, kind: str) -> Listing:
         if kind not in CARDS:
             raise Refused(f"a phone's home screen shows {', '.join(CARDS)}, not {kind!r}")
         rows = CONTROLLERS[kind](self._home(phone), actor=SYSTEM).summaries()
         kept = [row for row in rows if not row["deleted"] and not row["completed"] and row.get("environment") in (phone.environment, None, "")]
-        return [Listed(ref=f"{kind}:{row['n']}", type=kind, n=row["n"], title=row["title"], updated=row["updated"])
-                for row in sorted(kept, key=lambda row: row["updated"], reverse=True)[:LISTED]]
+        newest = sorted(kept, key=lambda row: row["updated"], reverse=True)[:LISTED]
+        return Listing(rows=[Listed(ref=f"{kind}:{row['n']}", type=kind, n=row["n"], title=row["title"], updated=row["updated"]) for row in newest],
+                       total=len(kept))
 
     def _arrange(self, phone: Phone, cards: list[str]) -> Phone:
         unknown = [card for card in cards if card not in (*CARDS, WAITING_CARD)]
@@ -264,7 +283,7 @@ class Phones(Controller):
             if len(found) != 1:
                 raise Refused(f"{len(found)} files in the project are called {asked!r}" if found else f"no file {asked!r} in the project")
             target = (project / found[0]).resolve()
-        if project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts):
+        if project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts) or SECRET.search(target.name):
             raise Refused(f"{asked!r} is not a file the phone may read")
         kind = mimetypes.guess_type(target.name)[0] or ""
         text = "" if kind.startswith("image/") else target.read_bytes()[:SOURCE_LIMIT].decode("utf-8", errors="replace")

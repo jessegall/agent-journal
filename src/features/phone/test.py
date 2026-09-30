@@ -65,6 +65,11 @@ def paired(record, base: str, days: int = 7) -> Paired:
 
 def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
     record, base = served
+    guessed = Phones(record, actor=USER).connect(7)
+    for _ in range(10):
+        call(base, "/p/pair", {"code": "wrong-guess", "device": "Pixel"})
+    assert call(base, "/p/pair", {"code": guessed["link"].split("#", 1)[1], "device": "Pixel"})[0] == 410, \
+        "ten wrong codes cancel the code that was waiting"
     made = Phones(record, actor=USER).connect(7)
     code = made["link"].split("#", 1)[1]
     assert made["link"].startswith("https://") and "/p/#" in made["link"], "the code rides in the fragment, which never reaches a server"
@@ -165,9 +170,10 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     (record.root.parent / "notes").mkdir(exist_ok=True)
     (record.root.parent / "notes" / "plan.md").write_text("line one\nline two\n")
     (record.root.parent / ".env").write_text("SECRET=1\n")
+    (record.root.parent / "notes" / "credentials.json").write_text("{}")
     assert call(base, "/p/source?q=notes/plan.md", key=key).body["lines"] == 2
     assert call(base, "/p/source?q=plan.md", key=key).body["path"] == "notes/plan.md", "a bare file name finds the one file of that name"
-    assert [call(base, f"/p/source?q={asked}", key=key).status for asked in (".env", ".journal/record.json", "../../etc/hosts")] == [404, 404, 404], \
+    assert [call(base, f"/p/source?q={asked}", key=key).status for asked in (".env", ".journal/record.json", "../../etc/hosts", "notes/credentials.json")] == [404, 404, 404, 404], \
         "hidden files, the journal's own and anything outside the project stay closed"
     journal = str(record.root.resolve())
     Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "elsewhere")
@@ -182,7 +188,8 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
     assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
     Todos(Record(record.root, "elsewhere"), actor=AGENT).create("Tidy the attic")
-    assert [row["title"] for row in call(base, "/p/list?type=todo", key=key).body["rows"]] == ["Tidy the attic"]
+    listed = call(base, "/p/list?type=todo", key=key).body
+    assert ([row["title"] for row in listed["rows"]], listed["total"]) == (["Tidy the attic"], 1), "a card knows how many rows there are in all"
     assert call(base, "/p/list?type=phone", key=key).status == 404, "the home screen lists only its card kinds"
     assert call(base, "/p/arrange", {"cards": ["todo", "waiting", "todo"]}, key).status == 201
     assert call(base, "/p/state", key=key).body["home"] == ["todo", "waiting"], "the chosen cards keep their order, once each"

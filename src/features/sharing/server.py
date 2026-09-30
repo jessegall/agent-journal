@@ -20,6 +20,7 @@ from resources.base import Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")
 TICK_EVERY = 15
+READ_SECONDS = 15
 BODY_LIMIT = 8192
 COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
@@ -201,7 +202,7 @@ def ticking(shares) -> None:
 
 def serve(shares, port: int) -> None:
     threading.Thread(target=ticking, args=(shares,), daemon=True).start()
-    handler = type("BoundShareHandler", (ShareHandler,), {"shares": shares})
+    handler = type("BoundShareHandler", (ShareHandler,), {"shares": shares, "timeout": READ_SECONDS})
     with ThreadingHTTPServer(("127.0.0.1", int(port)), handler) as server:
         server.serve_forever()
 

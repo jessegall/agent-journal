@@ -21,6 +21,7 @@ class Phone(Shape, Resource):
         Field(TEXT, name="code"),
         Field(TEXT, name="short"),
         Field(NUMBER, default=0, name="code_until"),
+        Field(NUMBER, default=0, name="tries"),
         Field(NUMBER, default=7, name="days"),
         Field(NUMBER, default=0, name="expires"),
         Field(NUMBER, default=0, name="last_seen"),

@@ -183,7 +183,7 @@ class PhoneRoutes:
         if rest == ["list"]:
             kind = parse_qs(urlsplit(handler.path).query).get("type", [""])[0]
             try:
-                return self.json(handler, 200, {"rows": self.phones(handler)._list(phone, kind)})
+                return self.json(handler, 200, self.phones(handler)._list(phone, kind))
             except Refused as refused:
                 return handler.answer(404, str(refused))
         if rest == ["source"]:
