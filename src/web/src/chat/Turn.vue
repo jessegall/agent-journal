@@ -300,6 +300,7 @@ function markClick(data) {
                         peer: !!between,
                         ask: turn.type === 'question',
                         long,
+                        quoting: words.quote,
                         lit: store.focus === turn.ref,
                         'comment-origin': resourceComment,
                         'has-update': updates.length > 0,
@@ -656,6 +657,15 @@ button.thread-pill:hover {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--blocking);
+}
+
+.thread-turn.quoting {
+    min-width: min(280px, calc(100% - var(--turn-gutter)));
+}
+
+.thread-turn.quoting .thread-bubble {
+    min-width: 100%;
+    box-sizing: border-box;
 }
 
 .thread-quote {
