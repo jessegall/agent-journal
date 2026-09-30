@@ -19,6 +19,7 @@ function keep(list) {
 }
 
 export const waitingToSend = ref(kept());
+export const justSent = ref([]);
 
 export const ended = (error) => error instanceof PhoneError && ENDED.includes(error.status);
 
@@ -31,6 +32,7 @@ export async function flush() {
     for (const line of [...waitingToSend.value]) {
         await phone.say(line.brief, line.idempotency, line.about);
         waitingToSend.value = waitingToSend.value.filter((held) => held.idempotency !== line.idempotency);
+        justSent.value = [...justSent.value, line];
         keep(waitingToSend.value);
     }
 }
@@ -38,4 +40,9 @@ export async function flush() {
 export function forget() {
     waitingToSend.value = [];
     keep([]);
+}
+
+export function settle(items) {
+    const shown = new Set(items.map((item) => item.data && item.data.idempotency).filter(Boolean));
+    justSent.value = justSent.value.filter((line) => !shown.has(line.idempotency));
 }

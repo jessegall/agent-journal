@@ -7,9 +7,12 @@ import PhoneCompose from "./PhoneCompose.vue";
 import PhoneReader from "./PhoneReader.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
-import {ended, flush, waitingToSend} from "./outbox.js";
+import {ended, flush, justSent, settle, waitingToSend} from "./outbox.js";
+import {clock} from "../format/time.js";
+import ReadTicks from "../kit/ReadTicks.vue";
 
 const FEED_EVERY = 5000;
+const SENDING = {completed: 0, seen: [], data: {}};
 const READABLE = ["question", "report", "doc", "plan"];
 defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
@@ -32,11 +35,15 @@ async function asked() {
     }
 }
 
-const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => got && (feed.value = got));
+const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
+    if (!got) return;
+    feed.value = got;
+    settle(got.items);
+});
 provide("phoneRefresh", refresh);
 
 const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight));
-watch(() => feed.value.items.length, toBottom);
+watch(() => feed.value.items.length + waitingToSend.value.length + justSent.value.length, toBottom);
 watch(reading, (target) => !target && toBottom());
 watch(list, (el) => el && toBottom());
 
@@ -80,8 +87,17 @@ function sent() {
             <template v-for="item in feed.items" :key="item.type + item.n">
                 <PhoneTurn :item="item" />
             </template>
+            <template v-for="line in justSent" :key="line.idempotency">
+                <p class="home-sent">
+                    {{ line.brief }}
+                    <span>
+                        {{ clock(line.at / 1000) }}
+                        <ReadTicks :message="SENDING" />
+                    </span>
+                </p>
+            </template>
             <template v-for="line in waitingToSend" :key="line.idempotency">
-                <p class="home-held">{{ line.brief }}<span>Waiting to send</span></p>
+                <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
             </template>
         </div>
         <PhoneCompose :about="about" @sent="sent" @unabout="about = ''" />
@@ -122,6 +138,28 @@ function sent() {
     color: var(--text);
     font-size: 14px;
     line-height: 1.4;
+}
+
+.home-sent {
+    align-self: flex-end;
+    max-width: 88%;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--accent-dim);
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.home-sent span {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 4px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    text-align: right;
 }
 
 .home-held {

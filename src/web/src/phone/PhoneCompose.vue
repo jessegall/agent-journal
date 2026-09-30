@@ -68,7 +68,7 @@ async function send() {
     flex-direction: column;
     gap: 6px;
     margin: 0 -16px;
-    padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+    padding: 6px 16px max(6px, calc(env(safe-area-inset-bottom) - 18px));
     max-width: none;
     border-top: 1px solid var(--line);
     background: var(--bg);
