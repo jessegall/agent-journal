@@ -191,6 +191,12 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated - 5}, key).status == 409, "a plan that changed is not approved"
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated}, key).status == 201
     assert plans(record, actor=SYSTEM).load(plan.n).status == "approved"
+    proposal = Docs(record, actor=AGENT).create("Proposal", buttons=[{"label": "Accept", "say": "I accept this proposal", "choice": "answer"},
+                                                                     {"label": "Change it", "say": "I want changes", "choice": "answer"}])
+    assert call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Accept"}, key).status == 201
+    said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
+    assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
+        "a button pressed on the phone says its words, and the other button of the same choice is gone"
     fed = call(base, "/p/feed", key=key).body
     assert fed["agent"] is False, "the phone sees no agent running"
     assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"

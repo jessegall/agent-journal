@@ -40,4 +40,5 @@ export const phone = {
     dismiss: (n) => sent("./dismiss", {n}),
     react: (n, face) => sent("./react", {n, face}),
     approve: (n, updated) => sent("./approve", {n, updated}),
+    press: (ref, label) => sent("./press", {ref, label}),
 };

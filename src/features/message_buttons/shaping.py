@@ -47,6 +47,11 @@ class Button(Loaded):
         return {key: value for key, value in kept.items() if value not in (None, False, "")}
 
 
+def spent(button: Button, buttons: list[Button], pressed: list[str]) -> bool:
+    chosen = {one.choice for one in buttons if one.choice and one.label in pressed}
+    return (not button.again and button.label in pressed) or bool(button.choice and button.choice in chosen)
+
+
 def one(record, given) -> dict:
     if not isinstance(given, dict):
         return {}

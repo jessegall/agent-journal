@@ -9,6 +9,7 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 import {ended} from "./outbox.js";
 import {peeked} from "./peeked.js";
+import {liveButtons} from "../domain/buttons.js";
 
 const SIZES = [16, 18, 20];
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
@@ -26,6 +27,24 @@ const told = ref("");
 const phases = computed(() => (row.value && row.value.data.phases) || []);
 const goal = computed(() => (row.value && row.value.data.goal) || "");
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
+
+const buttons = computed(() => (row.value ? liveButtons(row.value) : []));
+const pressing = ref("");
+
+async function press(button) {
+    pressing.value = button.label;
+    told.value = "";
+    try {
+        await phone.press(`${row.value.type}:${row.value.n}`, button.label);
+        row.value = await phone.row(props.target);
+        refresh();
+    } catch (error) {
+        if (ended(error)) failed(error);
+        else told.value = error.message;
+    } finally {
+        pressing.value = "";
+    }
+}
 
 function chipped(event) {
     const target = peeked(event);
@@ -111,6 +130,11 @@ onMounted(load);
             <footer class="reader-foot">
                 <template v-if="told">
                     <p class="reader-told">{{ told }}</p>
+                </template>
+                <template v-for="(button, i) in buttons" :key="button.label">
+                    <Btn :kind="i === 0 ? 'primary' : ''" large :busy="pressing === button.label" :disabled="Boolean(pressing)" @click="press(button)">
+                        {{ button.label }}
+                    </Btn>
                 </template>
                 <template v-if="ready && confirming">
                     <p class="reader-told">Approve "{{ row.title }}"? The agent starts working on it.</p>

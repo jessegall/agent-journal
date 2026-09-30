@@ -67,6 +67,16 @@ class Reacting:
 
 
 @dataclass(frozen=True)
+class Pressing:
+    ref: str
+    label: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Pressing":
+        return cls(ref=str(given.get("ref", "")), label=str(given.get("label", "")))
+
+
+@dataclass(frozen=True)
 class Moving:
     journal: str
     environment: str
@@ -178,7 +188,8 @@ class PhoneRoutes:
                 "dismiss": lambda phones: phones._dismiss(phone, Chosen.from_payload(body).n),
                 "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
                 "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
-                "switch": lambda phones: phones._switch(phone, Moving.from_payload(body))}
+                "switch": lambda phones: phones._switch(phone, Moving.from_payload(body)),
+                "press": lambda phones: phones._press(phone, Pressing.from_payload(body))}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")
         try:

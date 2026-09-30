@@ -15,6 +15,7 @@ from controllers.notices import Notices
 from engine.record import Record
 from engine.sessions import Sessions
 from features.format import VIEWER
+from features.message_buttons.shaping import Button, spent
 from features.phone.places import Place, places
 from features.phone.resource import Phone
 from features.shaping import shaped
@@ -206,6 +207,28 @@ class Phones(Controller):
             raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
         return super().update(phone.n, journal=journal, environment=moving.environment)
+
+    def _press(self, phone: Phone, pressing):
+        kind, _, n = pressing.ref.partition(":")
+        if not readable(kind) or not n.isdigit():
+            raise Refused(f"no buttons on {pressing.ref!r}")
+        home = self._home(phone)
+        rows = CONTROLLERS[kind](home, actor=USER)
+        row = rows.load(int(n))
+        if row.deleted or not self._reaches(phone, row):
+            raise Refused(f"{pressing.ref} is not in this phone's environment")
+        buttons = [Button.from_payload(given) for given in row.data.get("buttons") or []]
+        pressed = list(row.data.get("pressed") or [])
+        button = next((one for one in buttons if one.label == pressing.label and not spent(one, buttons, pressed)), None)
+        if button is None:
+            raise Stale(f"{pressing.label!r} is no longer on {pressing.ref}")
+        if button.say:
+            Messages(home, actor=USER).create(titled(button.say), brief=button.say, about=pressing.ref, via=f"phone:{phone.n}")
+        elif button.n is None:
+            CONTROLLERS[button.type](home, actor=USER).action(button.action)(**(button.body or {}))
+        else:
+            CONTROLLERS[button.type](home, actor=USER).action(button.action)(button.n, **(button.body or {}))
+        return rows.action("set")(row.n, key="pressed", value=list(dict.fromkeys([*pressed, button.label])))
 
     def _say(self, phone: Phone, said):
         text = said.brief.strip()
