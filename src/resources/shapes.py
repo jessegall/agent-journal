@@ -20,6 +20,10 @@ def typed(value):
 LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
 
 
+def level_named(priority) -> str | None:
+    return next((name for name, n in LEVELS.items() if str(n) == str(priority)), None)
+
+
 def priority_level(value) -> int:
     level = str(value).lower()
     if level in LEVELS:

@@ -27,6 +27,7 @@ from features.phone.resource import Phone
 from features.shaping import shaped
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
+from resources.shapes import level_named
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused, titled
 
 CODE_SECONDS = 600
@@ -434,7 +435,7 @@ class Phones(Controller):
         row, home = self._reached(phone, ref), self._home(phone)
         rows = CONTROLLERS[row.type](home, actor=USER)
         comments = [{**shaped(made, home, VIEWER), "who": made.seen[0] if made.seen else AGENT} for made in rows.comments(row.n)]
-        return {**shaped(rows.read(row.n), home, VIEWER), "comments": comments}
+        return {**shaped(rows.read(row.n), home, VIEWER), "comments": comments, "priority_name": level_named(row.data.get("priority"))}
 
     def _comment(self, phone: Phone, commenting):
         row = self._reached(phone, commenting.ref)
