@@ -42,6 +42,7 @@ def subagents(agent) -> list[dict]:
 KEPT_FOR = 1.0
 KEPT: dict[Path, tuple[float, dict]] = {}
 BUILDING = threading.Lock()
+REBUILDING: set[Path] = set()
 
 
 def rows_of(p) -> list[int]:
@@ -99,11 +100,23 @@ def environment(record: Record) -> dict:
 
 def lately_summarized(root: Path) -> dict:
     with BUILDING:
-        at, made = KEPT.get(root, (0.0, {}))
-        if time.monotonic() - at >= KEPT_FOR:
-            made = summarize(root)
-            KEPT[root] = (time.monotonic(), made)
+        if root not in KEPT:
+            KEPT[root] = (time.monotonic(), summarize(root))
+        at, made = KEPT[root]
+        if time.monotonic() - at >= KEPT_FOR and root not in REBUILDING:
+            REBUILDING.add(root)
+            threading.Thread(target=rebuilt, args=(root,), daemon=True).start()
         return made
+
+
+def rebuilt(root: Path) -> None:
+    try:
+        made = summarize(root)
+        with BUILDING:
+            KEPT[root] = (time.monotonic(), made)
+    finally:
+        with BUILDING:
+            REBUILDING.discard(root)
 
 
 class JournalSummary(TypedDict):
