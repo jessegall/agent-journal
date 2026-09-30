@@ -9,7 +9,7 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 
 const SIZES = [16, 18, 20];
-const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule"};
+const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
 const NAMES = {doc: "document", todo: "to-do"};
 const props = defineProps({target: {type: String, required: true}});
 const emit = defineEmits(["close", "reply"]);
@@ -71,7 +71,7 @@ onMounted(load);
                     <PhoneQuestion :question="row" />
                 </template>
                 <template v-else>
-                    <span class="reader-kind">{{ KINDS[row.type] }} · {{ ago(row.created) }}</span>
+                    <span class="reader-kind">{{ KINDS[row.type] || row.type }} · {{ ago(row.created) }}</span>
                     <h1 class="reader-title">{{ row.title }}</h1>
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>

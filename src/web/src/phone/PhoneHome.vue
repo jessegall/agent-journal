@@ -18,7 +18,6 @@ const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
 const MOVING = 800;
 const SENDING = {completed: 0, seen: [], data: {}};
-const READABLE = ["question", "report", "doc", "plan", "todo", "work", "fact", "rule"];
 defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: false});
@@ -67,7 +66,7 @@ function chipped(event) {
     event.preventDefault();
     event.stopPropagation();
     const target = chip.dataset.peek.split("@")[0];
-    if (READABLE.includes(target.split(":")[0])) reading.value = target;
+    reading.value = target;
 }
 
 function reply(target) {

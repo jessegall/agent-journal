@@ -154,14 +154,14 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
 def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
     record, base = served
     other = Record(record.root, "elsewhere")
-    _, key = paired(record, base)
+    mine, key = paired(record, base)
     call(base, "/p/message", {"brief": "Here only", "idempotency": "z"}, key)
     assert [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "it lands where the phone connected"
     assert not [m for m in Messages(other, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "and nowhere else"
     here, there = Docs(record, actor=AGENT).create("Here"), Docs(other, actor=AGENT).create("There")
     assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
-    assert call(base, "/p/row/reminder/1", key=key).status == 404, "and only the kinds a phone reads open at all"
+    assert call(base, f"/p/row/phone/{mine}", key=key).status == 404, "a row that holds keys never opens, not even its own"
     assert call(base, "/p/bar", key=key).body == {"queue": []}, "the agent's status line reaches the phone"
     waiting = [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
     assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"
