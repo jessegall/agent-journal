@@ -184,7 +184,9 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated - 5}, key).status == 409, "a plan that changed is not approved"
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated}, key).status == 201
     assert plans(record, actor=SYSTEM).load(plan.n).status == "approved"
-    assert call(base, "/p/feed", key=key).body["agent"] is False, "the phone sees no agent running"
+    fed = call(base, "/p/feed", key=key).body
+    assert fed["agent"] is False, "the phone sees no agent running"
+    assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"
     now = time.time()
     CONTROLLERS["agent"](record, actor=SYSTEM).create("codex-1", thoughts=[{"at": now, "text": "Weighing it"}],
                                                        cards=[{"at": now, "label": "Agent committed abc1234", "icon": "commit"}])

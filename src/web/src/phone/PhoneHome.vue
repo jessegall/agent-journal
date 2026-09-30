@@ -28,6 +28,9 @@ const held = ref(null);
 const list = ref(null);
 const compose = ref(null);
 const offline = ref(false);
+const LOADED = (document.querySelector('script[src*="phone-"]')?.src || "").split("/").pop();
+const newer = ref(false);
+const reload = () => window.location.reload();
 
 async function asked() {
     try {
@@ -51,6 +54,7 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got) return;
     const following = nearBottom() && still();
     feed.value = got;
+    newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
     settle(got.items);
     if (following) toBottom();
 });
@@ -118,6 +122,12 @@ function sent() {
         </div>
         <PhoneAgent :running="feed.agent" />
     </header>
+    <template v-if="newer">
+        <p class="home-newer">
+            A newer version of this app is ready. Close the app and open it again to get it.
+            <button type="button" @click="reload">Reload now</button>
+        </p>
+    </template>
     <template v-if="offline">
         <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
     </template>
@@ -184,6 +194,29 @@ function sent() {
 .home-note {
     color: var(--text-3);
     font-size: 13px;
+}
+
+.home-newer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: none;
+    margin: 0 calc(-1 * var(--side));
+    padding: 10px var(--side);
+    background: var(--accent-dim);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.home-newer button {
+    padding: 4px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--raised);
+    color: var(--text);
+    font: inherit;
 }
 
 .home-offline {

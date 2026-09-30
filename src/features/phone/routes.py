@@ -1,5 +1,6 @@
 import json
 import mimetypes
+import re
 from urllib.parse import quote
 from dataclasses import dataclass
 from http.cookies import SimpleCookie
@@ -21,6 +22,7 @@ HEADER = "X-Phone"
 UPLOAD_LIMIT = 25 * 1024 * 1024
 UPLOADED = "application/octet-stream"
 LOCAL = ("127.0.0.1", "localhost")
+BUILD = re.compile(r"assets/(phone-[\w-]+\.js)")
 
 
 @dataclass(frozen=True)
@@ -74,6 +76,14 @@ class Approval:
         return cls(n=int(given.get("n", 0)), updated=float(given.get("updated", 0)))
 
 
+def built() -> str:
+    try:
+        found = BUILD.search((APP_DIR / APP_PAGE).read_text())
+    except OSError:
+        return ""
+    return found.group(1) if found else ""
+
+
 def local(host: str) -> bool:
     return host.split(":", 1)[0] in LOCAL
 
@@ -120,7 +130,7 @@ class PhoneRoutes:
             return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires,
                                             "project": known["project"], "color": known["color"]})
         if rest == ["feed"]:
-            return self.json(handler, 200, self.phones(handler)._feed(phone))
+            return self.json(handler, 200, {**self.phones(handler)._feed(phone), "build": built()})
         if rest == ["bar"]:
             return self.json(handler, 200, self.phones(handler)._bar(phone))
         if len(rest) == 3:
