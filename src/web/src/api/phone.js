@@ -17,8 +17,14 @@ async function sent(path, body) {
     return answered(await fetch(path, {method: "POST", headers: HEADERS, body: JSON.stringify(body), cache: "no-store"}));
 }
 
+const got = async (path) => answered(await fetch(path, {cache: "no-store"}));
+
 export const phone = {
     pair: (code, device) => sent("./pair", {code, device}),
-    state: async () => answered(await fetch("./state", {cache: "no-store"})),
+    state: () => got("./state"),
+    feed: () => got("./feed"),
+    row: (ref) => got(`./row/${ref.replace(":", "/")}`),
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),
+    answer: (n, answer) => sent("./answer", {n, answer}),
+    approve: (n, updated) => sent("./approve", {n, updated}),
 };

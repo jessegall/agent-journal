@@ -9,7 +9,7 @@ from typing import NamedTuple
 import pytest
 
 from controllers.base import Controller
-from controllers.types import Messages, Notices
+from controllers.types import CONTROLLERS, Docs, Messages, Notices, Questions
 from engine.record import Record
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
@@ -134,13 +134,35 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
 
 
-def test_a_phone_speaks_only_in_its_own_environment(served):
+def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
     record, base = served
     other = Record(record.root, "elsewhere")
     _, key = paired(record, base)
     call(base, "/p/message", {"brief": "Here only", "idempotency": "z"}, key)
     assert [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "it lands where the phone connected"
     assert not [m for m in Messages(other, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "and nowhere else"
+    here, there = Docs(record, actor=AGENT).create("Here"), Docs(other, actor=AGENT).create("There")
+    assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
+    assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
+    assert call(base, "/p/row/rule/1", key=key).status == 404, "and only the kinds a phone reads open at all"
+    waiting = [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
+    assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"
+
+
+def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
+    record, base = served
+    _, key = paired(record, base)
+    question = Questions(record, actor=AGENT).create("Go ahead?")
+    assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
+    assert call(base, "/p/answer", {"n": question.n, "answer": "Yes"}, key).status == 201
+    answered = Questions(record, actor=SYSTEM).load(question.n)
+    assert answered.outcome == "Yes" and answered.data["answered_by"] == USER, "the answer is the user's"
+    assert call(base, "/p/answer", {"n": question.n, "answer": "No"}, key).status == 409, "a second tap finds it answered"
+    plans = CONTROLLERS["plan"]
+    plan = Controller.update(plans(record, actor=SYSTEM), plans(record, actor=AGENT).create("Ship it").n, status="ready")
+    assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated - 5}, key).status == 409, "a plan that changed is not approved"
+    assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated}, key).status == 201
+    assert plans(record, actor=SYSTEM).load(plan.n).status == "approved"
 
 
 def test_a_connected_phone_keeps_the_tunnel_wanted(served):
