@@ -19,7 +19,7 @@ from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import VIEWER, formatted
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import installed, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated
+from features.sharing.tunnel import TunlerVersion, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused
 
@@ -181,8 +181,8 @@ class Shares(Controller):
             raise Refused(failed)
         return self.tunnel()
 
-    def version(self) -> str:
-        return installed()
+    def version(self) -> TunlerVersion:
+        return versions(FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"))
 
     def update_tunler(self) -> str:
         self._user_only("update tunler")

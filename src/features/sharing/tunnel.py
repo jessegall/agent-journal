@@ -5,6 +5,7 @@ import secrets
 import shutil
 import subprocess
 import time
+import urllib.request
 from pathlib import Path
 
 from engine.stored import read_json, write_json
@@ -94,9 +95,35 @@ def log_in(host: str, username: str, password: str, master: str | None = None) -
     return Login(connected=False, needs_master=needs, error=lines[0] if needs else lines[-1])
 
 
+class TunlerVersion(TypedDict):
+    current: str
+    latest: str
+    update_available: bool
+
+
 def installed() -> str:
     ok, said = ran("version")
     return said.split()[-1] if ok and said else ""
+
+
+def latest(host: str) -> str:
+    try:
+        with urllib.request.urlopen(f"https://{host}/_tunler/version", timeout=STATUS_SECONDS) as answer:
+            return str(json.loads(answer.read()).get("version", ""))
+    except (OSError, ValueError):
+        return ""
+
+
+def versions(host: str) -> TunlerVersion:
+    ok, said = ran("update", "--check", "--json", f"--host={host}")
+    try:
+        told = json.loads(said) if ok else {}
+    except ValueError:
+        told = {}
+    if "update_available" in told:
+        return TunlerVersion(current=told.get("current", ""), latest=told.get("latest", ""), update_available=bool(told["update_available"]))
+    current, newest = installed(), latest(host)
+    return TunlerVersion(current=current, latest=newest, update_available=bool(current and newest and current != newest))
 
 
 def updated() -> str:
