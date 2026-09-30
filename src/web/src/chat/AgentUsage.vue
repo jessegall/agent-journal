@@ -1,14 +1,8 @@
 <script setup>
 import UsageMeter from "./UsageMeter.vue";
-import {span} from "../format/time.js";
+import {resetLabel, usedPercent as used} from "../format/usage.js";
 
 defineProps({usage: Array});
-const used = (window) => Math.max(0, Math.min(100, Number(window.used ?? 100 - window.remaining)));
-
-function resetLabel(window) {
-    const seconds = window.resets - Date.now() / 1000;
-    return seconds > 0 ? `resets in ${span(seconds)}` : "reset due";
-}
 </script>
 
 <template>

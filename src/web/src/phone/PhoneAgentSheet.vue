@@ -10,9 +10,15 @@ import {announce} from "./announce.js";
 import {ended} from "./outbox.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneSheet from "./PhoneSheet.vue";
+import PhoneAgentControls from "./PhoneAgentControls.vue";
 
-const props = defineProps({state: {type: String, required: true}, environment: {type: String, required: true}, lastActive: {type: Number, default: 0}});
-const emit = defineEmits(["close", "started"]);
+const props = defineProps({
+    state: {type: String, required: true},
+    environment: {type: String, required: true},
+    lastActive: {type: Number, default: 0},
+    live: {type: Object, default: () => ({})},
+});
+const emit = defineEmits(["close", "started", "changed"]);
 const failed = inject("phoneFailed");
 const doing = ref("");
 const root = ref("");
@@ -52,7 +58,14 @@ async function start(agent) {
         <dl class="agent-facts">
             <div class="agent-fact">
                 <dt>State</dt>
-                <dd><PhoneAgent :state="state" /></dd>
+                <dd>
+                    <template v-if="live.paused">
+                        <span class="agent-paused">Paused</span>
+                    </template>
+                    <template v-else>
+                        <PhoneAgent :state="state" />
+                    </template>
+                </dd>
             </div>
             <template v-if="running && doing">
                 <div class="agent-fact">
@@ -67,6 +80,9 @@ async function start(agent) {
                 </div>
             </template>
         </dl>
+        <template v-if="running">
+            <PhoneAgentControls :running="live" :environment="environment" @changed="emit('changed')" />
+        </template>
         <template v-if="told">
             <p class="agent-told" role="status">{{ told }}</p>
         </template>
@@ -123,6 +139,14 @@ async function start(agent) {
 .agent-fact dd {
     margin: 0;
     text-align: right;
+}
+
+.agent-paused {
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--tone-warn) 20%, transparent);
+    color: var(--text);
+    font-weight: 600;
 }
 
 .agent-told {

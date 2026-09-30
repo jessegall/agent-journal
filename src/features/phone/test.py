@@ -272,7 +272,9 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
                                                        cards=[{"at": now, "label": "Agent committed abc1234", "icon": "commit"}])
     shown = {item["type"]: item.get("label") for item in call(base, "/p/feed", key=key).body["items"] if item["type"] in ("thought", "card")}
     assert shown.get("thought") == "Weighing it" and shown.get("card", "").startswith("Agent committed"), "the agent's thoughts and chat marks reach the phone"
-    assert call(base, "/p/stop", {}, key).status == 404, "the phone cannot stop the agent; that stays on the computer"
+    assert call(base, "/p/stop", {}, key).status == 422 and call(base, "/p/pause", {}, key).status == 422, "with no agent running there is nothing to stop or pause"
+    running = call(base, "/p/feed", key=key).body["running"]
+    assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"
 
 
 def test_a_connected_phone_keeps_the_tunnel_wanted(served):

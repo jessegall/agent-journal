@@ -196,14 +196,15 @@ onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin: 0 calc(-1 * var(--side)) -14px;
-    padding: 10px var(--side) 14px;
+    margin: 0 0 -14px;
+    padding: 10px 0 14px;
     border-top: 1px solid var(--line);
     background: var(--raised);
 }
 
 .detail-start,
 .detail-open {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;

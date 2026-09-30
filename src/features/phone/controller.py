@@ -15,7 +15,9 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
+from agents.control import pause, resume
 from controllers.types import Agents, Environments
+from engine.sessions import Sessions
 from controllers.notices import Notices
 from engine.record import Record
 from features.format import VIEWER
@@ -138,11 +140,19 @@ class Waiting(TypedDict):
     created: float
 
 
+class Running(TypedDict):
+    state: str
+    paused: bool
+    context: int
+    usage: list[dict]
+
+
 class Feed(TypedDict):
     items: list[dict]
     waiting: list[Waiting]
     agent: str
     notices: list[dict]
+    running: Running
 
 
 class Code(TypedDict):
@@ -349,7 +359,8 @@ class Phones(Controller):
         marks = [mark for mark in self._marks(home, since) if mark["created"] < before]
         helpers = self._helpers(home) if any(item["data"].get("sent_to") for item in items) else {}
         items = sorted([*({**item, "to": helpers.get(item["data"].get("sent_to"))} for item in items), *marks], key=lambda item: item["created"])
-        return Feed(items=items, waiting=self._waiting(phone), agent=agent_state(home, phone.environment), notices=self._notices(home))
+        return Feed(items=items, waiting=self._waiting(phone), agent=agent_state(home, phone.environment), notices=self._notices(home),
+                    running=self._running(home, phone.environment))
 
 
     def _marks(self, home: Record, since: float) -> list[Mark]:
@@ -421,6 +432,30 @@ class Phones(Controller):
         if row.deleted or not self._reaches(phone, row) or name not in row.files or found.parent != folder or not found.is_file():
             raise Refused(f"no file {name!r} on {ref}")
         return found
+
+    def _running(self, home: Record, environment: str) -> Running:
+        holder = Sessions(home.root).holder(environment)
+        row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
+        if row is None:
+            return Running(state=agent_state(home, environment), paused=False, context=0, usage=[])
+        return Running(state=agent_state(home, environment), paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])))
+
+    def _holder(self, phone: Phone) -> str:
+        holder = Sessions(self._home(phone).root).holder(phone.environment)
+        if not holder:
+            raise Refused(f"no agent runs in {phone.environment} to pause or stop")
+        return holder
+
+    def _pause(self, phone: Phone) -> dict:
+        return pause(self._home(phone).root, phone.environment, self._holder(phone))
+
+    def _resume(self, phone: Phone) -> dict:
+        return resume(self._home(phone).root, phone.environment, self._holder(phone))
+
+    def _stop(self, phone: Phone):
+        self._holder(phone)
+        environments = Environments(self._home(phone), actor=USER)
+        return environments.stop(environments.find(phone.environment).n)
 
     def _helpers(self, home: Record) -> dict[str, str]:
         return {sub["task_id"]: sub["task"] for row in Agents(home, actor=SYSTEM)._standing() for sub in row.data.get("subagent_rows") or [] if sub.get("task_id")}

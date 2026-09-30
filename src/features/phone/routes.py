@@ -263,6 +263,14 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
+        phones = self.phones(handler)
+        controls = {"pause": phones._pause, "resume": phones._resume, "stop": phones._stop}
+        if rest[:1] == rest and rest[0] in controls:
+            try:
+                controls[rest[0]](phone)
+            except Refused as refused:
+                return handler.answer(422, str(refused))
+            return self.json(handler, 201, {"done": rest[0]})
         if rest == ["share"]:
             try:
                 return self.json(handler, 201, {"link": self.phones(handler)._share(phone, Sharing.from_payload(body).ref)})

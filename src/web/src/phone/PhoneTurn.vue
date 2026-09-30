@@ -7,7 +7,7 @@ import {splitQuote} from "./quoted.js";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
 import PhoneTicks from "./PhoneTicks.vue";
-import ChatMark from "../kit/ChatMark.vue";
+import PhoneMark from "./PhoneMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
 import {kindWord} from "./kinds.js";
@@ -67,17 +67,7 @@ function pressed(event) {
         </template>
         <template #card>
             <div :class="['turn-card', {arriving}]" :style="arrival">
-                <ChatMark
-                    :icon="item.icon"
-                    :tone="item.tone"
-                    :color="item.color"
-                    :label="item.label"
-                    :name="item.name"
-                    :detail="item.detail"
-                    :state="item.state"
-                    :command="item.command"
-                    :at="item.created"
-                />
+                <PhoneMark :item="item" />
             </div>
         </template>
         <template #default>

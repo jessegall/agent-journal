@@ -691,7 +691,7 @@ function pick(key) {
         <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="arrived" />
     </template>
     <template v-if="agentOpen">
-        <PhoneAgentSheet :state="feed.agent" :environment="connection.environment" :last-active="lastActive" @close="agentOpen = false" @started="(agentOpen = false), refresh()" />
+        <PhoneAgentSheet :state="feed.agent" :environment="connection.environment" :last-active="lastActive" :live="feed.running || {}" @changed="refresh()" @close="agentOpen = false" @started="(agentOpen = false), refresh()" />
     </template>
     <template v-if="listing">
         <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />
