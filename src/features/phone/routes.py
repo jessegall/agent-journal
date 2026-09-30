@@ -100,8 +100,7 @@ class PhoneRoutes:
             return None
         acts = {"message": lambda phones: phones._say(phone, Said.from_payload(body)),
                 "answer": lambda phones: phones._answer(phone, Chosen.from_payload(body)),
-                "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
-                "stop": lambda phones: phones._stop(phone)}
+                "approve": lambda phones: phones._approve(phone, Approval.from_payload(body))}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")
         try:

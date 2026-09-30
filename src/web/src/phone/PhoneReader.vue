@@ -6,8 +6,10 @@ import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
+import {ago} from "./ago.js";
 
 const SIZES = [16, 18, 20];
+const KINDS = {report: "Report", doc: "Document", plan: "Plan"};
 const props = defineProps({target: {type: String, required: true}});
 const emit = defineEmits(["close", "reply"]);
 const failed = inject("phoneFailed");
@@ -68,6 +70,7 @@ onMounted(load);
                     <PhoneQuestion :question="row" />
                 </template>
                 <template v-else>
+                    <span class="reader-kind">{{ KINDS[row.type] }} · {{ ago(row.created) }}</span>
                     <h1 class="reader-title">{{ row.title }}</h1>
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>
@@ -160,6 +163,11 @@ onMounted(load);
     overflow-y: auto;
     padding: 16px 0 24px;
     line-height: 1.6;
+}
+
+.reader-kind {
+    color: var(--text-3);
+    font-size: 13px;
 }
 
 .reader-title {

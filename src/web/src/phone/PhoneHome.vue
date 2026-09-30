@@ -115,6 +115,7 @@ function sent() {
 }
 
 .home-offline {
+    max-width: none;
     margin: 0 -16px;
     padding: 10px 16px;
     background: color-mix(in oklab, var(--tone-warn) 16%, transparent);
@@ -141,6 +142,7 @@ function sent() {
 
 .home-feed {
     display: flex;
+    overflow-x: hidden;
     flex: 1;
     flex-direction: column;
     gap: 10px;

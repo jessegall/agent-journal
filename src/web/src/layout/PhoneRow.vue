@@ -12,7 +12,7 @@ const emit = defineEmits(["disconnect"]);
             <span class="phone-name">{{ title }}</span>
             <span class="phone-when">Last seen {{ phoneTime(data.last_seen) }}, until {{ phoneTime(data.expires) }}</span>
         </div>
-        <Btn small :busy="busy" @click="emit('disconnect')">Disconnect</Btn>
+        <Btn small :busy="busy" @click="emit('disconnect')">Stop this session</Btn>
     </div>
 </template>
 

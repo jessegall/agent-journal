@@ -33,6 +33,7 @@ class Waiting(TypedDict):
     type: str
     n: int
     title: str
+    created: float
 
 
 class Feed(TypedDict):
@@ -77,6 +78,9 @@ class Phones(Controller):
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")
         if int(days) not in DAYS:
             raise Refused(f"a phone stays connected for {', '.join(map(str, DAYS))} days, not {days}")
+        active = self._active()
+        if active is not None:
+            raise Refused(f"{active.title} is connected: stop that session first, one phone at a time")
         for row in self.summaries():
             if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"]:
                 self.complete(row["n"], how="a newer code replaced it")
@@ -93,7 +97,7 @@ class Phones(Controller):
             if found is None:
                 return None
             phone = self.load(found)
-            if phone.code_until < now:
+            if phone.code_until < now or self._active() is not None:
                 return None
             key = secrets.token_urlsafe(32)
             named = titled(" ".join(str(device).split())[:DEVICE_LONGEST] or "A phone")
@@ -101,6 +105,11 @@ class Phones(Controller):
         Notices(Record(self.record.root, paired.environment), actor=SYSTEM).create(
             f"A phone connected, {named}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
         return paired, key
+
+    def _active(self) -> Phone | None:
+        now = time.time()
+        found = next((row["n"] for row in self.summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]), None)
+        return self.load(found) if found else None
 
     def _by_key(self, key: str) -> Phone | None:
         found = next((row["n"] for row in self.summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
@@ -144,7 +153,7 @@ class Phones(Controller):
             for n in [row["n"] for row in controller.summaries() if not row["deleted"] and not row["completed"]]:
                 row = controller.load(n)
                 if self._reaches(phone, row) and self._owed(row):
-                    found.append(Waiting(ref=row.ref, type=kind, n=row.n, title=row.title))
+                    found.append(Waiting(ref=row.ref, type=kind, n=row.n, title=row.title, created=row.created))
         return found
 
     def _owed(self, row) -> bool:
@@ -181,13 +190,6 @@ class Phones(Controller):
         if plan.updated != approval.updated or plan.status != "ready":
             raise Stale(f"plan {approval.n} changed since you opened it: look at it again")
         return plans.approve(plan.n)
-
-    def _stop(self, phone: Phone):
-        environments = CONTROLLERS["environment"](self._home(phone), actor=USER)
-        found = environments._titled(phone.environment)
-        if found is None:
-            raise Refused(f"environment {phone.environment!r} is gone")
-        return environments.stop(found.n)
 
     def _live(self) -> list[dict]:
         now = time.time()

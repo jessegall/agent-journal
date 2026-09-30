@@ -27,5 +27,4 @@ export const phone = {
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),
     answer: (n, answer) => sent("./answer", {n, answer}),
     approve: (n, updated) => sent("./approve", {n, updated}),
-    stop: () => sent("./stop", {}),
 };

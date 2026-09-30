@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import {ago} from "./ago.js";
 
 defineProps({waiting: {type: Array, required: true}});
 const emit = defineEmits(["open"]);
@@ -26,7 +27,7 @@ function pick(target) {
                     <template v-for="item in waiting" :key="item.ref">
                         <li>
                             <button type="button" class="waiting-item" @click="pick(item.ref)">
-                                <span class="waiting-kind">{{ KINDS[item.type] }}</span>
+                                <span class="waiting-kind">{{ KINDS[item.type] }} · {{ ago(item.created) }}</span>
                                 <span class="waiting-title">{{ item.title }}</span>
                             </button>
                         </li>
@@ -39,6 +40,7 @@ function pick(target) {
 
 <style scoped>
 .waiting {
+    max-width: none;
     margin: 0 -16px;
     border-bottom: 1px solid var(--line);
     background: var(--accent-dim);
@@ -77,13 +79,18 @@ function pick(target) {
 }
 
 .waiting-list {
+    max-height: 55dvh;
     margin: 0;
     padding: 0 8px 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     list-style: none;
 }
 
 .waiting-item {
     display: flex;
+    min-width: 0;
+    overflow-wrap: anywhere;
     flex-direction: column;
     gap: 2px;
     width: 100%;

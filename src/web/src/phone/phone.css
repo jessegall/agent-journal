@@ -1,5 +1,12 @@
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
+    overflow-wrap: anywhere;
     background: var(--bg);
     color: var(--text);
     font-family: var(--font);
@@ -29,4 +36,27 @@ body {
     min-height: 44px;
     justify-content: center;
     font-size: 15px;
+}
+
+.phone img,
+.phone video {
+    max-width: 100%;
+    height: auto;
+}
+
+.phone pre,
+.phone code {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.phone table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.phone * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }

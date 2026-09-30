@@ -3,6 +3,7 @@ import {computed, inject, onUnmounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import {ago} from "./ago.js";
 
 const UNDO_SECONDS = 5;
 const props = defineProps({question: {type: Object, required: true}});
@@ -46,7 +47,7 @@ onUnmounted(() => clearInterval(timer));
 
 <template>
     <article class="question">
-        <span class="question-kind">Question</span>
+        <span class="question-kind">Question · {{ ago(question.created) }}</span>
         <p class="question-title">{{ question.title }}</p>
         <template v-if="question.abstract">
             <TextDisplay class="question-abstract" :text="question.abstract" />

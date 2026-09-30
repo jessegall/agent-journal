@@ -73,6 +73,8 @@ def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
     assert call(base, "/p/pair", {"code": code, "device": "Pixel"})[0] == 200, "looking at the page first does not use the code up"
     assert call(base, "/p/pair", {"code": code, "device": "Other"})[0] == 410, "a code connects one phone, once"
     assert any("A phone connected" in row["title"] for row in Notices(record, actor=SYSTEM).summaries()), "a new phone is announced in the chat"
+    with pytest.raises(Refused):
+        Phones(record, actor=USER).connect(7)
 
 
 def test_a_message_from_the_phone_is_the_users_own(served):
@@ -164,8 +166,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated}, key).status == 201
     assert plans(record, actor=SYSTEM).load(plan.n).status == "approved"
     assert call(base, "/p/feed", key=key).body["agent"] is False, "the phone sees no agent running"
-    stopped = call(base, "/p/stop", {}, key)
-    assert stopped.status == 422, "stopping with no agent running says so rather than failing"
+    assert call(base, "/p/stop", {}, key).status == 404, "the phone cannot stop the agent; that stays on the computer"
 
 
 def test_a_connected_phone_keeps_the_tunnel_wanted(served):

@@ -30,7 +30,7 @@ const busy = ref(false);
 const failure = ref("");
 const stopping = ref(0);
 const ready = computed(() => tunnelStatus.value && tunnelStatus.value.installed && tunnelStatus.value.logged_in);
-const paired = computed(() => made.value && connectedPhones.value.find((phone) => phone.n === made.value.n));
+const active = computed(() => connectedPhones.value[0] || null);
 
 async function fresh() {
     busy.value = true;
@@ -44,10 +44,11 @@ async function fresh() {
     }
 }
 
-async function disconnect(phones) {
-    stopping.value = phones.length > 1 ? -1 : phones[0].n;
+async function stop(phone) {
+    stopping.value = phone.n;
+    failure.value = "";
     try {
-        for (const phone of phones) await api.disconnectPhone(phone.n);
+        await api.disconnectPhone(phone.n);
     } catch (e) {
         failure.value = e.message;
     } finally {
@@ -60,7 +61,8 @@ function pick(key) {
     fresh();
 }
 
-watch(ready, (now) => now && !made.value && fresh());
+watch(active, () => (made.value = null));
+watch([ready, active, made], () => ready.value && !active.value && !made.value && !busy.value && fresh());
 onMounted(checkTunnel);
 </script>
 
@@ -70,9 +72,12 @@ onMounted(checkTunnel);
             <template v-if="tunnelStatus && !ready">
                 <TunnelProblem :status="tunnelStatus" @ready="checkTunnel" />
             </template>
-            <template v-else-if="paired">
-                <p class="phone-done">Connected: {{ paired.title }}. You can close this.</p>
-                <Btn small @click="fresh">Connect another phone</Btn>
+            <template v-else-if="active">
+                <div class="phone-active">
+                    <span class="phone-label">Active session</span>
+                    <p class="phone-done">One phone at a time: stop this session to connect another.</p>
+                    <PhoneRow :title="active.title" :data="active.data" :busy="stopping === active.n" @disconnect="stop(active)" />
+                </div>
             </template>
             <template v-else>
                 <div class="phone-code">
@@ -105,17 +110,6 @@ onMounted(checkTunnel);
                 </ul>
                 <p class="phone-cannot">It can't change settings, run commands or reach other environments. Everything it does is recorded as you.</p>
             </div>
-            <template v-if="connectedPhones.length">
-                <div class="phone-list">
-                    <span class="phone-label">Connected phones</span>
-                    <template v-for="phone in connectedPhones" :key="phone.n">
-                        <PhoneRow :title="phone.title" :data="phone.data" :busy="stopping === phone.n" @disconnect="disconnect([phone])" />
-                    </template>
-                    <template v-if="connectedPhones.length > 1">
-                        <Btn small :busy="stopping === -1" @click="disconnect(connectedPhones)">Disconnect all</Btn>
-                    </template>
-                </div>
-            </template>
         </div>
     </Dialog>
 </template>
@@ -186,10 +180,9 @@ onMounted(checkTunnel);
     line-height: 1.6;
 }
 
-.phone-list {
+.phone-active {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     gap: 8px;
 }
 </style>
