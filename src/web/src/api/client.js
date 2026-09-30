@@ -328,6 +328,14 @@ export class ApiClient {
         return this.post(this.here("/settings"), body);
     }
 
+    mode() {
+        return this.get(this.here("/mode"));
+    }
+
+    saveMode(mode) {
+        return this.post(this.here("/mode"), {mode});
+    }
+
     search(q) {
         return this.get(this.here(`/search${query({q})}`));
     }

@@ -1,5 +1,5 @@
 <script setup>
-defineProps({state: {type: String, required: true}});
+defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}});
 const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
 </script>
 
@@ -7,6 +7,9 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     <span :class="['agent-state', state]">
         <span class="agent-dot" />
         {{ WORDS[state] }}
+        <template v-if="auto">
+            <span class="agent-auto">auto</span>
+        </template>
     </span>
 </template>
 
@@ -23,6 +26,16 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     font-size: 0.765rem;
 }
 
+.agent-auto {
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--accent) 24%, transparent);
+    color: var(--accent-text);
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
 .agent-dot {
     width: 9px;
     height: 9px;
@@ -30,7 +43,17 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     background: var(--text-4);
 }
 
-.idle .agent-dot {
+.idle .agent-auto {
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--accent) 24%, transparent);
+    color: var(--accent-text);
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.agent-dot {
     background: var(--tone-good);
 }
 
@@ -38,7 +61,17 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     color: var(--text);
 }
 
-.working .agent-dot {
+.working .agent-auto {
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--accent) 24%, transparent);
+    color: var(--accent-text);
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.agent-dot {
     background: var(--accent);
     animation: pulse 1.4s ease-in-out infinite;
 }
@@ -50,7 +83,17 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .working .agent-dot {
+    .working .agent-auto {
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--accent) 24%, transparent);
+    color: var(--accent-text);
+    font-size: 0.647rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.agent-dot {
         animation: none;
     }
 }

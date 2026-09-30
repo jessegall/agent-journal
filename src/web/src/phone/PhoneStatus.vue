@@ -47,7 +47,7 @@ const recent = computed(() => queue.value.slice(-RECENT).map((one) => line(one, 
 </script>
 
 <template>
-    <div class="status-wrap">
+    <div :class="['status-wrap', {empty: !shown}]">
         <template v-if="open && recent.length">
             <ul class="status-recent" @click="open = false">
                 <template v-for="one in recent" :key="one.key">

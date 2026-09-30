@@ -1,6 +1,6 @@
 import {onUnmounted, watch} from "vue";
 
-const SIDEWAYS = "table";
+const SIDEWAYS = "table, .mark .command";
 
 function marked(el) {
     const left = el.scrollLeft > 1;

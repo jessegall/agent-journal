@@ -1,41 +1,74 @@
 <script setup>
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
+import Icon from "../kit/Icon.vue";
+import {announce} from "./announce.js";
+import {tick} from "./haptic.js";
 
 const props = defineProps({item: {type: Object, required: true}});
 const label = computed(() => (props.item.name ? `${props.item.label} **${props.item.name}**` : props.item.label));
+
+async function copied() {
+    try {
+        await navigator.clipboard.writeText(props.item.command);
+        tick();
+        announce("Command copied");
+    } catch (error) {
+        announce("The command could not be copied");
+    }
+}
 </script>
 
 <template>
-    <ChatMark
-        :icon="item.icon"
-        :tone="item.tone"
-        :color="item.color"
-        :label="label"
-        :detail="item.detail"
-        :card="item.card"
-        :state="item.state"
-        :command="item.command"
-        :at="item.created"
-    />
+    <div :class="['phone-mark', {console: item.command}]">
+        <ChatMark
+            :icon="item.icon"
+            :tone="item.tone"
+            :color="item.color"
+            :label="label"
+            :detail="item.detail"
+            :card="item.card"
+            :state="item.state"
+            :command="item.command"
+            :at="item.created"
+        />
+        <template v-if="item.command">
+            <button type="button" class="mark-copy" aria-label="Copy the command" @click="copied">
+                <Icon name="copy" :size="14" />
+            </button>
+        </template>
+    </div>
 </template>
 
 <style scoped>
-.mark.console {
-    display: grid;
-    width: 100%;
-    text-align: left;
+.phone-mark {
+    position: relative;
+    max-width: 100%;
 }
 
-.mark.console :deep(.command) {
+.phone-mark.console {
+    width: 100%;
+}
+
+.phone-mark.console :deep(.mark) {
+    display: grid;
+    width: 100%;
+    font-size: 0.706rem;
+}
+
+.phone-mark.console :deep(.head) {
+    justify-content: center;
+}
+
+.phone-mark :deep(.command) {
     display: block;
     grid-column: 1 / -1;
     max-width: 100%;
-    margin-top: 4px;
-    padding: 6px 8px;
+    margin-top: 2px;
+    padding: 6px 36px 6px 8px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--code-bg);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.706rem;
@@ -46,7 +79,23 @@ const label = computed(() => (props.item.name ? `${props.item.label} **${props.i
     -webkit-overflow-scrolling: touch;
 }
 
-.mark :deep(.card) {
+.phone-mark :deep(.card) {
     text-align: left;
+}
+
+.mark-copy {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: -10px -6px -8px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-2);
 }
 </style>

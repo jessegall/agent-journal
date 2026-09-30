@@ -10,7 +10,9 @@ import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import Toast from "../kit/Toast.vue";
 import Spinner from "../kit/Spinner.vue";
-import {peek} from "../route.js";
+import {peek, route} from "../route.js";
+import Segmented from "../kit/Segmented.vue";
+import {DEFAULT_MODE, MODES, modeOf} from "../domain/modes.js";
 import {agent, autoOn, steered, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
@@ -32,6 +34,27 @@ watch(
     () => reported.value === "paused",
     (now) => wanted.value === now && (wanted.value = null)
 );
+
+const mode = ref(DEFAULT_MODE);
+const loadMode = () =>
+    api
+        .mode()
+        .then((got) => (mode.value = got.mode || DEFAULT_MODE))
+        .catch(() => {});
+
+async function pickMode(key) {
+    const was = mode.value;
+    mode.value = key;
+    try {
+        await api.saveMode(key);
+    } catch (e) {
+        mode.value = was;
+        toast.value = {text: e.message};
+    }
+}
+
+onMounted(loadMode);
+watch(() => route.value.env, loadMode);
 
 async function pauseOrResume() {
     const next = !paused.value;
@@ -117,6 +140,7 @@ async function runBar(p) {
                     "
                     @change="setAuto"
                 />
+                <Segmented class="statusbar-mode" :options="MODES" :value="mode" :title="modeOf(mode).note" @pick="pickMode" />
             </template>
             <Btn
                 kind="icon"

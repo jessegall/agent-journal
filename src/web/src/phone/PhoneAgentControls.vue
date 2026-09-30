@@ -1,8 +1,10 @@
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import {resetLabel as resets, usedPercent as used} from "../format/usage.js";
 import Spinner from "../kit/Spinner.vue";
+import Segmented from "../kit/Segmented.vue";
+import {MODES, modeOf} from "../domain/modes.js";
 import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
 
@@ -12,21 +14,54 @@ const failed = inject("phoneFailed");
 const busy = ref("");
 const confirming = ref(false);
 const told = ref("");
-const left = computed(() => (typeof props.running.context === "number" ? Math.max(0, Math.min(100, Math.round(100 - props.running.context))) : null));
+const contextUsed = computed(() => (typeof props.running.context === "number" ? Math.max(0, Math.min(100, Math.round(props.running.context))) : null));
 const windows = computed(() => props.running.usage || []);
-const NEEDS = {pause: "pause", resume: "resume", stop: "stop", auto: "switch auto mode for"};
-const autoOn = computed(() => Boolean(props.running.auto));
+const NEEDS = {pause: "pause", resume: "resume", stop: "stop"};
+const wantedAuto = ref(null);
+const autoOn = computed(() => wantedAuto.value ?? Boolean(props.running.auto));
+const autoTold = ref("");
+const modeTold = ref("");
+const picked = ref("");
+const mode = computed(() => modeOf(picked.value || props.running.mode));
+
+watch(
+    () => props.running.auto,
+    (now) => wantedAuto.value !== null && Boolean(now) === wantedAuto.value && (wantedAuto.value = null),
+);
+
+const failedLine = (error, words, offline) => (error instanceof PhoneError ? words : offline);
 
 async function toggleAuto() {
+    const next = !autoOn.value;
     busy.value = "auto";
-    told.value = "";
+    autoTold.value = "";
+    wantedAuto.value = next;
     try {
-        await phone.auto(!autoOn.value);
-        announce(autoOn.value ? "Auto mode off" : "Auto mode on");
+        await phone.auto(next);
+        announce(next ? "Auto mode on" : "Auto mode off");
         emit("changed");
     } catch (error) {
+        wantedAuto.value = null;
         if (ended(error)) return failed(error);
-        tell(told, error instanceof PhoneError ? error.message : `You need a connection to ${NEEDS.auto} the agent.`);
+        tell(autoTold, failedLine(error, `Couldn't turn Auto ${next ? "on" : "off"}. Try again.`, "You need a connection to switch Auto."));
+    } finally {
+        busy.value = "";
+    }
+}
+
+async function pickMode(key) {
+    if (key === mode.value.key || busy.value) return;
+    busy.value = "mode";
+    modeTold.value = "";
+    picked.value = key;
+    try {
+        await phone.mode(key);
+        announce(`Work mode: ${modeOf(key).label}`);
+        emit("changed");
+    } catch (error) {
+        picked.value = "";
+        if (ended(error)) return failed(error);
+        tell(modeTold, failedLine(error, "Couldn't change the work mode. Try again.", "You need a connection to change the work mode."));
     } finally {
         busy.value = "";
     }
@@ -52,10 +87,30 @@ async function act(what) {
 
 <template>
     <div class="controls">
-        <template v-if="left !== null">
+        <div class="controls-mode">
+            <span id="work-mode" class="controls-name">Work mode</span>
+            <Segmented class="controls-segments" :options="MODES" :value="mode.key" fill aria-labelledby="work-mode" @pick="pickMode" />
+            <span class="controls-note">{{ mode.note }}</span>
+            <template v-if="modeTold">
+                <span class="controls-failed">{{ modeTold }}</span>
+            </template>
+        </div>
+        <div class="controls-box">
+            <button type="button" class="controls-auto" role="switch" :aria-checked="autoOn" :disabled="busy === 'auto'" @click="toggleAuto">
+                <span class="controls-words">
+                    <span class="controls-name">Auto</span>
+                    <span class="controls-note">{{ autoOn ? "The agent works through the to-do list without asking" : "The agent asks before picking up the next to-do" }}</span>
+                </span>
+                <span :class="['controls-switch', {on: autoOn}]" aria-hidden="true"><span /></span>
+            </button>
+            <template v-if="autoTold">
+                <span class="controls-failed">{{ autoTold }}</span>
+            </template>
+        </div>
+        <template v-if="contextUsed !== null">
             <div class="controls-meter">
-                <span class="controls-name">Context {{ left }}% left</span>
-                <span class="controls-track" aria-hidden="true"><span :style="{width: `${left}%`}" /></span>
+                <span class="controls-name">Context · {{ contextUsed }}% used</span>
+                <span class="controls-track" aria-hidden="true"><span :style="{width: `${contextUsed}%`}" /></span>
             </div>
         </template>
         <template v-for="window in windows" :key="window.key || window.label">
@@ -65,13 +120,6 @@ async function act(what) {
                 <span class="controls-track" aria-hidden="true"><span :style="{width: `${used(window)}%`}" /></span>
             </div>
         </template>
-        <button type="button" class="controls-auto" role="switch" :aria-checked="autoOn" :disabled="busy === 'auto'" @click="toggleAuto">
-            <span class="controls-words">
-                <span class="controls-name">Auto</span>
-                <span class="controls-note">{{ autoOn ? "The agent works through the to-do list without asking" : "The agent asks before picking up the next to-do" }}</span>
-            </span>
-            <span :class="['controls-switch', {on: autoOn}]" aria-hidden="true"><span /></span>
-        </button>
         <template v-if="told">
             <p class="controls-told">{{ told }}</p>
         </template>
@@ -143,6 +191,57 @@ async function act(what) {
     height: 100%;
     border-radius: 2px;
     background: var(--accent);
+}
+
+.controls-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--hover);
+}
+
+.controls-segments {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    padding: 3px;
+    border-radius: 12px;
+    background: var(--bg);
+}
+
+.controls-segments :deep(.segmented-option) {
+    flex: 1;
+    height: 44px;
+    border-radius: 9px;
+    color: var(--text-2);
+    font-size: 0.882rem;
+    font-weight: 600;
+}
+
+.controls-segments :deep(.segmented-option.on) {
+    background: var(--accent);
+    color: #fff;
+}
+
+.controls-box {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--hover);
+}
+
+.controls-failed {
+    display: block;
+    padding: 0 16px 10px;
+    color: var(--danger);
+    font-size: 0.765rem;
+}
+
+.controls-mode .controls-failed {
+    padding: 0;
 }
 
 .controls-auto {

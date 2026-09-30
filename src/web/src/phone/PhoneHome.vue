@@ -565,10 +565,7 @@ function pick(key) {
                     </button>
                     <button type="button" class="home-agent" aria-haspopup="dialog" @click="agentOpen = true">
                         <span class="phone-hidden">Agent:</span>
-                        <PhoneAgent :state="feed.agent" />
-                        <template v-if="feed.running?.auto">
-                            <span class="home-auto">auto</span>
-                        </template>
+                        <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" />
                     </button>
                 </header>
                 <template v-if="newer">
@@ -880,21 +877,7 @@ function pick(key) {
     font-size: 0.765rem;
 }
 
-.home-auto {
-    position: absolute;
-    right: -4px;
-    bottom: -4px;
-    padding: 0 5px;
-    border-radius: 7px;
-    background: var(--tone-good);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 14px;
-}
-
 .home-agent {
-    position: relative;
     flex: none;
     min-height: 44px;
     padding: 0;
@@ -1197,12 +1180,18 @@ function pick(key) {
     }
 }
 
-.home-dock :deep(.status:has(.status-text)) {
+.home-dock .status-wrap {
     align-self: flex-start;
-    margin-left: 14px;
+    max-width: calc(100% - 24px);
+    margin-left: 12px;
     padding: 0 10px;
-    border-radius: 11px;
-    background: color-mix(in oklab, var(--bg) 88%, transparent);
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    background: var(--raised);
+}
+
+.home-dock .status-wrap.empty {
+    display: none;
 }
 
 .home-feed {
