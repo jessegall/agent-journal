@@ -101,6 +101,7 @@ const between = computed(() =>
           ? `Sent to ${called(props.turn.data.sent_to)}`
           : ""
 );
+const fromPhone = computed(() => String(props.turn.data?.via || "").startsWith("phone:"));
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const split = computed(() => standaloneUpdates(words.value.text, {types: types.value}));
 const data = computed(() => props.turn.data);
@@ -416,6 +417,10 @@ function markClick(data) {
                     </template>
                     <template v-else-if="mine || turn.type === 'question'">
                         <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
+                        <span class="thread-meta-dot" />
+                    </template>
+                    <template v-if="mine && fromPhone">
+                        <span>from phone</span>
                         <span class="thread-meta-dot" />
                     </template>
                     <template v-if="!turn.pending">

@@ -12,6 +12,7 @@ const files = computed(() => Object.keys(props.item.files || {}));
 const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
 const fileUrl = (name) => `./file/${props.item.type}/${props.item.n}/${encodeURIComponent(name)}`;
+const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const emit = defineEmits(["hold"]);
 const HOLD_FOR = 450;
@@ -53,6 +54,7 @@ const release = () => clearTimeout(timer);
                     <span class="turn-faces">{{ faces.join(" ") }}</span>
                 </template>
                 <span class="turn-meta">
+                    <template v-if="elsewhere">from desktop ·</template>
                     {{ clock(item.created) }}
                     <template v-if="item.who === 'user'">
                         <ReadTicks :message="item" />
