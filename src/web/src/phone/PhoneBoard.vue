@@ -3,6 +3,7 @@ import {computed, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
+import PhoneChevron from "./PhoneChevron.vue";
 import {ago} from "./ago.js";
 import {useUnder} from "./under.js";
 
@@ -97,7 +98,7 @@ function moved(i, by) {
                                     <button type="button" class="board-row" @click="emit('open', row.ref)">
                                         <span class="board-title">{{ row.title }}</span>
                                         <span class="board-age">{{ ago(row.updated) }}</span>
-                                        <Icon name="arrow" :size="14" class="board-chevron" />
+                                        <PhoneChevron class="board-chevron" />
                                     </button>
                                 </li>
                             </template>

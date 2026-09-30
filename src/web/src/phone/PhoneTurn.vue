@@ -73,6 +73,10 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
                 <TextDisplay :text="item.brief || item.title" />
+                <template v-for="part in item.sections || []" :key="part.title">
+                    <h3 class="turn-part">{{ part.title }}</h3>
+                    <TextDisplay :text="part.body" />
+                </template>
                 <template v-if="files.length">
                     <span class="turn-files">
                         <template v-for="name in files" :key="name">
@@ -184,6 +188,12 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
     margin-bottom: 2px;
     color: var(--text-2);
     font-size: 0.706rem;
+}
+
+.turn-part {
+    margin: 10px 0 4px;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .turn-quote {

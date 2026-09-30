@@ -4,7 +4,9 @@ import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import {TICK, line, visibleQueue} from "../layout/bar.js";
 
-const BAR_EVERY = 1000;
+const BUSY_EVERY = 1000;
+const CALM_EVERY = 3000;
+const props = defineProps({working: {type: Boolean, default: false}});
 const queue = ref([]);
 const state = ref({at: 0, since: 0});
 const message = ref(null);
@@ -13,7 +15,7 @@ const elapsed = ref(0);
 usePoll(
     "phone-bar",
     () => phone.bar().catch(() => null),
-    BAR_EVERY,
+    () => (props.working ? BUSY_EVERY : CALM_EVERY),
     (got) => got && Array.isArray(got.queue) && (queue.value = got.queue),
 );
 

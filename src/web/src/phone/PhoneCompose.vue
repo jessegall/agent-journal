@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, nextTick, onUnmounted, ref, watch} from "vue";
+import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {fitLines} from "../composables/fitLines.js";
@@ -36,20 +36,18 @@ watch(
     {immediate: true},
 );
 
-const previews = new Map();
+const previews = reactive(new Map());
 const pictured = (file) => file.type.startsWith("image/");
 
-watch(files, (now) => {
-    now.filter((file) => pictured(file) && !previews.has(file)).forEach((file) => previews.set(file, URL.createObjectURL(file)));
-    [...previews.keys()].filter((file) => !now.includes(file)).forEach((file) => {
-        URL.revokeObjectURL(previews.get(file));
-        previews.delete(file);
-    });
-}, {flush: "sync"});
+function previewed(file) {
+    const reader = new FileReader();
+    reader.onload = () => files.value.includes(file) && previews.set(file, reader.result);
+    reader.readAsDataURL(file);
+}
 
-onUnmounted(() => {
-    previews.forEach((url) => URL.revokeObjectURL(url));
-    previews.clear();
+watch(files, (now) => {
+    now.filter((file) => pictured(file) && !previews.has(file)).forEach(previewed);
+    [...previews.keys()].filter((file) => !now.includes(file)).forEach((file) => previews.delete(file));
 });
 
 function picked(event) {
@@ -191,7 +189,7 @@ async function send() {
     justify-content: center;
     width: 44px;
     height: 44px;
-    margin: -5px;
+    margin: -5px 0;
     border: 0;
     background: none;
     color: var(--text-3);
@@ -264,7 +262,7 @@ async function send() {
     justify-content: center;
     width: 44px;
     height: 44px;
-    margin: -5px;
+    margin: -5px 0;
     border: 0;
     background: none;
     color: #fff;

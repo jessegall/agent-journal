@@ -1,13 +1,12 @@
 <script setup>
-import {onMounted, onUnmounted, provide, ref} from "vue";
+import {computed, onMounted, onUnmounted, provide, ref} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
-import EmptyState from "../kit/EmptyState.vue";
 import Spinner from "../kit/Spinner.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {deviceName} from "./device.js";
 import PhoneHome from "./PhoneHome.vue";
-import {ended, forget} from "./outbox.js";
+import {waitingActions, waitingToSend} from "./outbox.js";
 import {useScreenFill} from "./fill.js";
 import {wanted} from "./wanted.js";
 
@@ -21,9 +20,10 @@ const told = ref("");
 const connection = ref(null);
 const typed = ref("");
 const pairing = ref(false);
+const waiting = computed(() => waitingToSend.value.length + waitingActions.value.length);
+const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 
 function failed(error) {
-    if (ended(error)) forget();
     state.value = error instanceof PhoneError ? STATES[error.status] || "unreachable" : "unreachable";
     told.value = error.message;
 }
@@ -104,14 +104,26 @@ onUnmounted(() => {
             </template>
             <template #ended>
                 <div class="phone-centre">
-                    <EmptyState title="This phone is no longer connected">{{ told }}. Scan a new code from your computer to connect again.</EmptyState>
+                    <h1 class="phone-title">This phone is no longer connected</h1>
+                    <p class="phone-words">
+                        {{ told }}. Scan a new code from your computer to connect again.
+                        <template v-if="waiting">{{ waiting === 1 ? "1 thing waits" : `${waiting} things wait` }} to send and goes once you are back.</template>
+                    </p>
                 </div>
             </template>
             <template #unknown>
                 <div class="phone-centre">
-                    <EmptyState title="Connect this phone">
-                        On your computer, open the journal and press the phone button in the top bar. Scan the code, or type the short code under it here.
-                    </EmptyState>
+                    <template v-if="dropped">
+                        <h1 class="phone-title">This phone was disconnected</h1>
+                        <p class="phone-words">
+                            Pair it again to keep going: on your computer, press the phone button in the top bar, then scan the code or type it here.
+                            <template v-if="waiting">{{ waiting === 1 ? "1 thing waits" : `${waiting} things wait` }} to send and goes once you are back.</template>
+                        </p>
+                    </template>
+                    <template v-else>
+                        <h1 class="phone-title">Connect this phone</h1>
+                        <p class="phone-words">On your computer, open the journal and press the phone button in the top bar. Scan the code, or type the short code under it here.</p>
+                    </template>
                     <form class="phone-typed" @submit.prevent="pairTyped">
                         <input v-model="typed" class="phone-code-box" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" />
                         <Btn kind="primary" large :busy="pairing" @click="pairTyped">Connect</Btn>
@@ -123,7 +135,8 @@ onUnmounted(() => {
             </template>
             <template #unreachable>
                 <div class="phone-centre">
-                    <EmptyState title="Can't reach your computer right now">It may be asleep or offline. Trying again every few seconds.</EmptyState>
+                    <h1 class="phone-title">Can't reach your computer right now</h1>
+                    <p class="phone-words">It may be asleep or offline. Trying again every few seconds.</p>
                     <Btn large @click="load">Try again</Btn>
                 </div>
             </template>

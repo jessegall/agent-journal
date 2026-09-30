@@ -12,14 +12,17 @@ import PhoneNotify from "./PhoneNotify.vue";
 import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
 import PhoneTabs from "./PhoneTabs.vue";
+import PhoneNeeds from "./PhoneNeeds.vue";
 import Icon from "../kit/Icon.vue";
+import PhoneChevron from "./PhoneChevron.vue";
 import {chipOpener} from "./peeked.js";
 import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
-import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingToSend} from "./outbox.js";
+import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
+import Spinner from "../kit/Spinner.vue";
 import {useFades} from "./fades.js";
 import {wanted} from "./wanted.js";
 import {clock} from "../format/time.js";
@@ -43,10 +46,12 @@ const notice = ref("");
 let noticeTimer = 0;
 const heldHere = computed(() => atThisPlace(waitingToSend.value));
 const sentHere = computed(() => atThisPlace(justSent.value));
+const actionsHere = computed(() => atThisPlace(waitingActions.value).length);
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: "offline"});
 const emit = defineEmits(["moved"]);
 const picking = ref(false);
+const listing = ref(false);
 const pages = ref([]);
 const direction = ref("push");
 const screen = ref("chat");
@@ -94,7 +99,17 @@ const far = ref(false);
 const unseen = ref(0);
 const TALKING = ["message", "question"];
 let scrollFrame = 0;
-const briefs = computed(() => new Map(feed.value.items.filter((item) => item.type === "message").map((item) => [item.ref, plain(item.brief || item.title)])));
+const OLDER_AT = 400;
+const earlier = ref([]);
+const olderBusy = ref(false);
+const beginning = ref(false);
+const items = computed(() => {
+    const newest = feed.value.items;
+    if (!earlier.value.length) return newest;
+    const known = new Set(newest.map(keyOf));
+    return [...earlier.value.filter((item) => !known.has(keyOf(item))), ...newest];
+});
+const briefs = computed(() => new Map(items.value.filter((item) => item.type === "message").map((item) => [item.ref, plain(item.brief || item.title)])));
 
 function measure() {
     scrollFrame = 0;
@@ -102,6 +117,31 @@ function measure() {
     if (!el) return;
     far.value = el.scrollHeight - el.clientHeight - el.scrollTop > el.clientHeight;
     if (nearBottom()) unseen.value = 0;
+    if (el.scrollTop < OLDER_AT) loadOlder();
+}
+
+async function loadOlder() {
+    const first = items.value[0];
+    if (olderBusy.value || beginning.value || !ready.value || !first) return;
+    olderBusy.value = true;
+    try {
+        const got = await phone.older(first.created);
+        const known = new Set(items.value.map(keyOf));
+        const found = got.items.filter((item) => !known.has(keyOf(item)));
+        if (!found.length) {
+            beginning.value = true;
+            return;
+        }
+        const el = list.value;
+        const fromBottom = el ? el.scrollHeight - el.scrollTop : 0;
+        earlier.value = [...found, ...earlier.value];
+        await nextTick();
+        if (el) el.scrollTop = el.scrollHeight - fromBottom;
+    } catch (error) {
+        if (ended(error)) failed(error);
+    } finally {
+        olderBusy.value = false;
+    }
 }
 
 function moved() {
@@ -125,7 +165,7 @@ const named = (seconds) => {
     return new Date(seconds * 1000).toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long"});
 };
 const dividers = computed(() =>
-    feed.value.items.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(feed.value.items[i - 1].created) ? named(item.created) : "")),
+    items.value.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(items.value[i - 1].created) ? named(item.created) : "")),
 );
 const keyOf = (item) => item.type + item.n;
 const fresh = (item) => freshKeys.value.has(keyOf(item));
@@ -138,6 +178,11 @@ function took(got) {
     const keys = got.items.map(keyOf);
     freshKeys.value = new Set(seen ? keys.filter((key) => !seen.has(key)) : []);
     seen = new Set(keys);
+    if (earlier.value.length) {
+        const oldest = got.items[0]?.created ?? Infinity;
+        const dropped = feed.value.items.filter((item) => !seen.has(keyOf(item)) && item.created < oldest);
+        if (dropped.length) earlier.value = [...earlier.value, ...dropped];
+    }
     if (!following) unseen.value += got.items.filter((item) => freshKeys.value.has(keyOf(item)) && TALKING.includes(item.type)).length;
     feed.value = got;
     ready.value = true;
@@ -258,7 +303,7 @@ function reply(target, start = "") {
     toBottom();
 }
 
-const findTurn = (key) => feed.value.items.find((item) => keyOf(item) === key);
+const findTurn = (key) => items.value.find((item) => keyOf(item) === key);
 const mine = (reaction, face) => reaction.face === face && reaction.who === "user";
 
 async function react(face) {
@@ -350,7 +395,7 @@ function pick(key) {
 </script>
 
 <template>
-    <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held)">
+    <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held || listing)">
         <div :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']" :inert="pages.length > 0">
             <div :class="['home-top', {under}]">
                 <header class="home-bar">
@@ -358,7 +403,7 @@ function pick(key) {
                         <span class="home-title">
                             <span class="home-dot" :style="{background: connection.color}" />
                             <span class="home-project">{{ connection.project }}</span>
-                            <Icon name="chevron" :size="14" class="home-chevron" />
+                            <PhoneChevron facing="down" :size="12" class="home-chevron" />
                         </span>
                         <span class="home-note">{{ connection.environment }}{{ current || offline ? "" : " · Updating…" }}</span>
                     </button>
@@ -376,11 +421,14 @@ function pick(key) {
                 <template v-if="notice">
                     <p class="home-offline" role="status">{{ notice }}</p>
                 </template>
+                <template v-if="actionsHere">
+                    <p class="home-pending" role="status">{{ actionsHere === 1 ? "1 of your actions waits" : `${actionsHere} of your actions wait` }} to send</p>
+                </template>
                 <template v-if="offline">
                     <p class="home-offline" role="status">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
                 </template>
                 <PhoneNotify />
-                <PhoneWaiting :waiting="feed.waiting" @open="open" />
+                <PhoneWaiting :waiting="feed.waiting" @open="open" @list="listing = true" />
             </div>
             <div class="panes">
                 <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'">
@@ -391,7 +439,15 @@ function pick(key) {
                         <div class="home-feed-box">
                             <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @load.capture="loaded">
                                 <span ref="top" class="home-edge" />
-                                <template v-for="(item, i) in feed.items" :key="keyOf(item)">
+                                <div class="home-older">
+                                    <template v-if="olderBusy">
+                                        <Spinner />
+                                    </template>
+                                    <template v-else-if="beginning">
+                                        <span>Start of the conversation</span>
+                                    </template>
+                                </div>
+                                <template v-for="(item, i) in items" :key="keyOf(item)">
                                     <template v-if="dividers[i]">
                                         <p class="home-day">{{ dividers[i] }}</p>
                                     </template>
@@ -430,7 +486,7 @@ function pick(key) {
                         </div>
                     </template>
                     <template v-if="screen === 'chat'">
-                        <PhoneStatus />
+                        <PhoneStatus :working="feed.agent === 'working'" />
                     </template>
                     <template v-else>
                         <div class="home-status-space" />
@@ -469,6 +525,9 @@ function pick(key) {
     </div>
     <template v-if="picking">
         <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="arrived" />
+    </template>
+    <template v-if="listing">
+        <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />
     </template>
     <template v-if="held">
         <PhoneHold :item="held.item" :rect="held.rect" @react="react" @reply="quoteIt(held.item)" @copy="copy" @close="held = null" />
@@ -614,7 +673,6 @@ function pick(key) {
 .home-chevron {
     flex: none;
     color: var(--text-3);
-    transform: rotate(90deg);
 }
 
 .home-dot {
@@ -684,6 +742,15 @@ function pick(key) {
     font-weight: 600;
 }
 
+.home-pending {
+    margin: 0 0 6px;
+    padding: 6px 12px;
+    border-radius: 14px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 0.824rem;
+}
+
 .home-offline {
     max-width: none;
     margin: 0 calc(-1 * var(--side));
@@ -711,6 +778,16 @@ function pick(key) {
 
 .pane.away {
     visibility: hidden;
+}
+
+.home-older {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    color: var(--text-3);
+    font-size: 0.765rem;
 }
 
 .home-status-space {

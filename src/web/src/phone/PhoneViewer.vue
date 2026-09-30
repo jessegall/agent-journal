@@ -1,7 +1,7 @@
 <script setup>
 import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
-import Icon from "../kit/Icon.vue";
+import PhoneChevron from "./PhoneChevron.vue";
 import Spinner from "../kit/Spinner.vue";
 import {ended} from "./outbox.js";
 import {useUnder} from "./under.js";
@@ -27,7 +27,46 @@ const picture = computed(() => kind === "attachment" && PICTURE.test(name));
 const lines = computed(() => (text.value === null ? [] : highlight(text.value, languageOf(path.value)).map((html, i) => ({n: i + 1, html}))));
 const line = Number(wanted) || 0;
 
+const ZOOM = 2.5;
+const DOUBLE = 300;
+const zoomed = ref(false);
+const stage = ref(null);
+const shared = ref(null);
+let lastTap = 0;
+
+function tapped(event) {
+    const now = Date.now();
+    if (now - lastTap > DOUBLE) {
+        lastTap = now;
+        return;
+    }
+    lastTap = 0;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const [x, y] = [(event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height];
+    zoomed.value = !zoomed.value;
+    nextTick(() => {
+        const box = stage.value;
+        if (!box || !zoomed.value) return;
+        box.scrollLeft = x * box.scrollWidth - box.clientWidth / 2;
+        box.scrollTop = y * box.scrollHeight - box.clientHeight / 2;
+    });
+}
+
+async function share() {
+    try {
+        await navigator.share({files: [shared.value], title: name});
+    } catch (error) {
+        if (error.name !== "AbortError") told.value = error.message;
+    }
+}
+
 async function load() {
+    if (picture.value && navigator.share) {
+        phone
+            .picture(asked, name)
+            .then((file) => navigator.canShare?.({files: [file]}) && (shared.value = file))
+            .catch(() => {});
+    }
     try {
         if (kind === "source") {
             const got = await phone.source(decodeURIComponent(asked));
@@ -52,16 +91,24 @@ onMounted(() => {
 <template>
     <section class="viewer">
         <header :class="['viewer-bar', {under}]">
-            <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
+            <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')"><PhoneChevron facing="left" :size="18" /> {{ back }}</button>
             <span ref="title" class="viewer-name" tabindex="-1">{{ path }}</span>
+            <template v-if="shared">
+                <button type="button" class="viewer-action" @click="share">Share</button>
+            </template>
+            <template v-else-if="picture">
+                <a class="viewer-action" :href="url" :download="name">Save</a>
+            </template>
         </header>
-        <div ref="body" class="viewer-body" data-scroller>
+        <div ref="body" :class="['viewer-body', {dark: picture}]" data-scroller>
             <span ref="edge" class="viewer-edge" />
             <template v-if="told">
                 <p class="viewer-told" role="status">{{ told }}</p>
             </template>
             <template v-else-if="picture">
-                <img class="viewer-picture" :src="url" :alt="name" />
+                <div ref="stage" :class="['viewer-stage', {zoomed}]">
+                    <img class="viewer-picture" :src="url" :alt="name" :style="{width: zoomed ? `${ZOOM * 100}%` : '100%'}" @click="tapped" />
+                </div>
             </template>
             <template v-else-if="text !== null">
                 <div class="viewer-code">
@@ -152,10 +199,55 @@ onMounted(() => {
     padding: 10px 0 calc(24px + env(safe-area-inset-bottom));
 }
 
+.viewer-body.dark {
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+.viewer-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.viewer-stage.zoomed {
+    display: block;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
 .viewer-picture {
     display: block;
-    width: 100%;
-    border-radius: 10px;
+    max-width: none;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    touch-action: manipulation;
+}
+
+.viewer-stage.zoomed .viewer-picture {
+    max-height: none;
+}
+
+.viewer-action {
+    flex: none;
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 44px;
+    text-decoration: none;
 }
 
 .viewer-code {

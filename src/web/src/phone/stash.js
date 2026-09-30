@@ -24,4 +24,3 @@ async function run(mode, work) {
 export const stash = (key, files) => run("readwrite", (store) => store.put(files, key)).catch(() => {});
 export const unstash = (key) => run("readonly", (store) => store.get(key)).catch(() => undefined);
 export const unstashed = (key) => run("readwrite", (store) => store.delete(key)).catch(() => {});
-export const emptied = () => run("readwrite", (store) => store.clear()).catch(() => {});

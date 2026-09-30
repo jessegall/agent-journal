@@ -79,8 +79,8 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
     min-height: 17px;
     padding: 0 5px;
     border-radius: 999px;
-    background: var(--danger);
-    color: var(--bg);
+    background: var(--badge);
+    color: #fff;
     font-size: 11px;
     font-weight: 600;
     line-height: 1;

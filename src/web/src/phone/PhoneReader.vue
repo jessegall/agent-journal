@@ -3,6 +3,7 @@ import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import PhoneChevron from "./PhoneChevron.vue";
 import Spinner from "../kit/Spinner.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
@@ -47,12 +48,16 @@ const ready = computed(() => row.value && row.value.type === "plan" && row.value
 
 const buttons = computed(() => (row.value ? liveButtons(row.value) : []));
 const pressing = ref("");
+const chosen = ref("");
 
 async function press(button) {
     pressing.value = button.label;
     told.value = "";
     try {
         await phone.press(`${row.value.type}:${row.value.n}`, button.label);
+        chosen.value = button.label;
+        announce(`You chose: ${button.label}`);
+        tick();
         row.value = await phone.row(props.target);
         refresh();
     } catch (error) {
@@ -103,10 +108,11 @@ async function approve() {
                 : "Approved. The agent starts it.";
         announce(went === "held" ? "Approval waits to send" : "Plan approved");
         refresh();
-        emit("next");
+        if (went !== "held") emit("next");
     } catch (error) {
         if (error.status === 409) told.value = "This plan changed since you opened it. Look at it again.";
-        else failed(error);
+        else if (ended(error)) failed(error);
+        else told.value = `That didn't go through: ${error.message}. Try again.`;
         await load();
     } finally {
         approving.value = false;
@@ -130,7 +136,7 @@ onMounted(async () => {
 <template>
     <section class="reader" @click.capture="chipped">
         <header :class="['reader-bar', {under}]">
-            <button ref="backButton" type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><Icon name="back" :size="20" /> {{ back }}</button>
+            <button ref="backButton" type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><PhoneChevron facing="left" :size="18" /> {{ back }}</button>
             <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ row ? row.title : "" }}</span>
             <button type="button" class="reader-size" :aria-label="`Text size, ${SIZE_NAMES[size]}`" @click="size = (size + 1) % SIZES.length">
                 Aa
@@ -199,6 +205,9 @@ onMounted(async () => {
                 </template>
             </div>
             <footer class="reader-foot">
+                <template v-if="chosen">
+                    <p class="reader-chosen" role="status"><Icon name="tick" :size="18" /> You chose: {{ chosen }}</p>
+                </template>
                 <template v-if="told">
                     <p class="reader-told" role="status">{{ told }}</p>
                 </template>
@@ -210,7 +219,7 @@ onMounted(async () => {
                 <template v-if="ready && confirming">
                     <p class="reader-told">Approve "{{ row.title }}"? The agent starts working on it.</p>
                     <Btn kind="primary" large :busy="approving" @click="approve">Yes, approve the plan</Btn>
-                    <Btn large @click="confirming = false">Not yet</Btn>
+                    <Btn kind="plain" large @click="confirming = false">Not yet</Btn>
                 </template>
                 <template v-else-if="ready">
                     <Btn kind="primary" large @click="confirming = true">Approve the plan</Btn>
@@ -503,10 +512,7 @@ onMounted(async () => {
 
 .reader-foot :deep(.btn) {
     min-height: 50px;
-    border: 0;
     border-radius: 12px;
-    background: var(--hover);
-    color: var(--text);
     font-size: 1rem;
     font-weight: 600;
 }
@@ -514,6 +520,23 @@ onMounted(async () => {
 .reader-foot :deep(.btn.primary) {
     background: var(--accent);
     color: #fff;
+}
+
+.reader-chosen {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 50px;
+    margin: 0;
+    padding: 0 16px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--tone-good) 16%, transparent);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.reader-chosen :deep(.ico) {
+    color: var(--tone-good);
 }
 
 .reader-foot:empty {

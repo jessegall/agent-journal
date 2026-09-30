@@ -1,6 +1,7 @@
 <script setup>
 import {computed, inject, nextTick, onUnmounted, ref} from "vue";
 import {ended, perform} from "./outbox.js";
+import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
@@ -39,14 +40,27 @@ async function send(answer) {
         if (went === "held") trouble.value = HELD;
         announce(went === "held" ? "Answer waits to send" : "Answer sent");
         refresh();
-        emit("done");
+        if (went !== "held") emit("done");
     } catch (error) {
-        missed(error);
+        missed(error, answer);
     }
 }
 
-function missed(error) {
-    if (error.status === 409) return;
+async function reconciled(mine) {
+    refresh();
+    try {
+        const real = await phone.row(`question:${props.question.n}`);
+        const theirs = real.data?.dismissed ? "Dismissed" : real.outcome || "";
+        if (!theirs) return;
+        said.value = theirs;
+        if (theirs !== mine) trouble.value = `Already answered on the computer: ${theirs}`;
+    } catch (error) {
+        if (ended(error)) failed(error);
+    }
+}
+
+function missed(error, mine) {
+    if (error.status === 409) return reconciled(mine);
     said.value = "";
     if (ended(error)) failed(error);
     else trouble.value = `That didn't go through: ${error.message}. Try again.`;
@@ -56,12 +70,13 @@ async function dismiss() {
     stop();
     said.value = "Dismissed";
     try {
-        if ((await perform({kind: "dismiss", n: props.question.n})) === "held") trouble.value = HELD;
-        announce("Question dismissed");
+        const went = await perform({kind: "dismiss", n: props.question.n});
+        if (went === "held") trouble.value = HELD;
+        announce(went === "held" ? "Dismissal waits to send" : "Question dismissed");
         refresh();
-        emit("done");
+        if (went !== "held") emit("done");
     } catch (error) {
-        missed(error);
+        missed(error, "Dismissed");
     }
 }
 

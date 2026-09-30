@@ -17,16 +17,23 @@ async function sent(path, body) {
     return answered(await fetch(path, {method: "POST", headers: HEADERS, body: JSON.stringify(body), cache: "no-store"}));
 }
 
-const got = async (path) => answered(await fetch(path, {cache: "no-store"}));
+const got = async (path) => answered(await fetch(path, {cache: "no-cache"}));
 
 export const phone = {
     pair: (code, device) => sent("./pair", {code, device}),
     state: () => got("./state"),
     feed: () => got("./feed"),
+    older: (before) => got(`./feed?before=${encodeURIComponent(before)}`),
     bar: () => got("./bar"),
     places: () => got("./places"),
     source: (q) => got(`./source?q=${encodeURIComponent(q)}`),
-    attached: async (path) => (await fetch(`./file/${path}`, {cache: "no-store"})).text(),
+    attached: async (path) => (await fetch(`./file/${path}`, {cache: "no-cache"})).text(),
+    picture: async (path, name) => {
+        const answer = await fetch(`./file/${path}`, {cache: "no-cache"});
+        if (!answer.ok) throw new PhoneError(answer.status, "The picture could not be loaded");
+        const blob = await answer.blob();
+        return new File([blob], name, {type: blob.type});
+    },
     list: (type) => got(`./list?type=${encodeURIComponent(type)}`),
     arrange: (cards) => sent("./arrange", {cards}),
     pushKey: () => got("./push-key"),

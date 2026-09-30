@@ -2,6 +2,7 @@
     --font: -apple-system, "SF Pro Text", system-ui, sans-serif;
     --scrim: rgb(0 0 0 / 45%);
     --shade: rgb(0 0 0 / 45%);
+    --badge: #d70015;
     --shadow-1: 0 8px 24px var(--shade);
 }
 
@@ -88,6 +89,7 @@ body {
 }
 
 .phone-centre {
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -153,6 +155,19 @@ body {
     box-sizing: border-box;
 }
 
+.phone-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.phone-words {
+    max-width: 340px;
+    margin: 0;
+    color: var(--text-2);
+    line-height: 1.4;
+}
+
 .phone-typed {
     display: flex;
     flex-direction: column;
@@ -189,6 +204,23 @@ body {
     height: auto;
     border-radius: 12px;
     font-size: 1rem;
+}
+
+.phone .btn.ghost {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--accent-text);
+}
+
+.phone .btn.plain {
+    border-color: transparent;
+    background: none;
+    color: var(--text-2);
+}
+
+.phone :is(.tab, .reader-back, .viewer-back, .waiting, .home-newest, .compose-clip, .compose-send, .reader-size, .board-edit) .ico,
+.phone a .ico {
+    color: inherit;
 }
 
 .phone button.btn.primary {

@@ -1,6 +1,6 @@
 import {ref} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
-import {emptied, stash, unstash, unstashed} from "./stash.js";
+import {stash, unstash, unstashed} from "./stash.js";
 
 const KEY = "phone-outbox";
 const ACTIONS = "phone-actions";
@@ -106,13 +106,6 @@ export function discard(idempotency) {
     unstashed(idempotency);
     waitingToSend.value = waitingToSend.value.filter((held) => held.idempotency !== idempotency);
     keep(waitingToSend.value);
-}
-
-export function forget() {
-    carried.clear();
-    emptied();
-    waitingToSend.value = [];
-    keep([]);
 }
 
 export function settle(items) {
