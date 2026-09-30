@@ -1,11 +1,13 @@
+import os
 import shutil
+import signal
 import time
 from collections import Counter
 from controllers.base import CONTROLLERS, Controller, internal
 from engine import attic
 from engine.record import Record
 from engine.seats import terminal_of
-from engine.sessions import Sessions
+from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from resources import types
 from resources.base import AGENT, ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
@@ -56,9 +58,13 @@ class Environments(Controller):
         if not holder:
             self._refuse(f"no agent holds environment {env.title!r}")
         terminal = terminal_of(self.record.root, holder)
-        if not terminal:
-            self._refuse(f"session {holder} runs outside the journal's terminals; end it where it runs")
-        ask_session(self.record.root, terminal)
+        if terminal:
+            ask_session(self.record.root, terminal)
+            return self._stopping(env.n, session=holder)
+        running = sessions.read(holder)
+        if not running.pid or not alive(running.pid):
+            self._refuse(f"the agent in {env.title} runs outside the journal's terminals and its process is not found; end it where it runs")
+        os.kill(running.pid, signal.SIGTERM)
         return self._stopping(env.n, session=holder)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):

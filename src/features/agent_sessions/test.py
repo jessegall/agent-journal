@@ -91,7 +91,11 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     users = Environments(record, actor=USER)
     held_env = users._titled("t")
     assert "journal environment stop" in refused(lambda: users.vacant("t")), "a held environment says how to end its agent"
-    assert "outside the journal's terminals" in refused(lambda: users.stop(held_env.n)), "a live agent with no terminal the journal knows is left alone"
+    import subprocess
+    outside = subprocess.Popen(["sleep", "30"])
+    sessions.bind("busy", "t", pid=outside.pid, provider="claude")
+    users.stop(held_env.n)
+    assert outside.wait(timeout=5) != 0, "an agent in a terminal the journal did not open is ended by its process when the user stops it"
     sessions.bind("gone-9", "u", pid=999999, provider="claude")
     assert "no agent holds" in refused(lambda: users.stop(users._titled("u").n)), "an agent that is gone holds nothing to stop"
 
