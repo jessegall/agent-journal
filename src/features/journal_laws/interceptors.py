@@ -8,9 +8,11 @@ from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 from providers.payload import ReadCall
 from resources.types import TYPES
+from engine.reach import Reach
 
 
 class EnforceDispatchLaw(Canceler):
+    reach = Reach.MAIN
     event = DISPATCHING
 
     def cancel(self, context: AgentContext, data) -> str:
@@ -18,6 +20,7 @@ class EnforceDispatchLaw(Canceler):
 
 
 class WhisperLawOnKeyword(ToolInterceptor):
+    reach = Reach.MAIN
     behaviour = WHISPER
     refuses = False
 
@@ -54,6 +57,7 @@ def lines_in(path: Path) -> int:
 
 
 class RefuseWholeLongReads(ToolInterceptor):
+    reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
         shell = context.provider.shell_command(call)
         cat = CAT.search(shell) if shell else None

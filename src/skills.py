@@ -11,6 +11,7 @@ from controllers.types import CONTROLLERS
 from providers import PROVIDERS
 from providers.base import LIBRARY
 from engine.package import data
+from engine.reach import Reach
 from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name
 
 HERE = data()
@@ -91,8 +92,14 @@ def nouns(names) -> list[str]:
     return [name for name in names if "_" not in name]
 
 
+def reaching(f) -> str:
+    told = [*(f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN),
+            *(f"the guard {guard.name}" for guard in f.journal.agent.guards if guard.reach != Reach.MAIN)]
+    return f"These reach your subagents too: {', '.join(told)}." if told else "Its lines and guards are for the main agent only; none reach a subagent."
+
+
 def folded_parts(folded: list) -> str:
-    return "".join(f"\n## {f.title}\n\n{f.abstract}.\n\n{f.help}\n" for f in folded)
+    return "".join(f"\n## {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n" for f in folded)
 
 
 def moments(whens: list[str]) -> str:
@@ -110,7 +117,7 @@ def feature_skill(f) -> str:
     when = moments([f.when, *(g.when for g in folded)])
     loaded = f"Load it when {when}. {f.abstract}." if when else f"{f.abstract}. It runs by itself; load it to read how it works."
     return (head(f.name, loaded, [*f.keywords, *(w for g in folded for w in g.keywords)], nouns([f.name, *(g.name for g in folded)]))
-            + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
+            + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
 
 
 def subject_skill(source: Path) -> str:

@@ -268,6 +268,7 @@ class Comment(Shape, Resource):
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
+SUBAGENT = "subagent"
 
 
 class AgentRow(Shape, Resource):
@@ -305,7 +306,7 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="monitors"),
         Field(default=list, name="monitor_rows"),
         Field(default="", name="parent"),
-        Field(FLAG, False, name="subagent"),
+        Field(default="", name="dispatcher"),
         Field(FLAG, False, name="compacting"),
         Field(default=dict, name="running"),
         Field(default=list, name="commands"),
@@ -329,6 +330,10 @@ class AgentRow(Shape, Resource):
     icon = "bot"
     in_sidebar = False
     notified = ()
+
+    @property
+    def subagent(self) -> bool:
+        return bool(self.dispatcher or self.parent)
 
     @property
     def background_run(self) -> str:

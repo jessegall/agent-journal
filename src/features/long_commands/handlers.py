@@ -29,7 +29,7 @@ class MoveLongCommands(Handler):
             return
         context.state.set("asked", started)
         reason = cancelled(LONG_COMMAND, PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row.title,
-                           {"command": last.command, "seconds": seconds})
+                           {"command": last.command, "seconds": seconds}, row.subagent)
         if reason:
             context.agent.say(KEPT, reason=reason)
             return

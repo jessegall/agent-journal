@@ -2,9 +2,11 @@ from pathlib import Path
 
 from engine.worktree import checkout, share_journal
 from features.parts import AgentContext, ToolInterceptor
+from engine.reach import Reach
 
 
 class LinkWorktreeJournal(ToolInterceptor):
+    reach = Reach.BOTH
     before_checks = True
     def intercept(self, context: AgentContext, call) -> str:
         cwd = getattr(context.hook, "cwd", "")

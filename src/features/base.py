@@ -1,25 +1,21 @@
 import re
 from abc import ABC
+from dataclasses import asdict
 from functools import cached_property
 from typing import ClassVar
 
 from controllers.types import Agents, Environments, Features
 from features import trigger
 from features.trigger import NEVER, Trigger
-from engine.gates import gate_file
+from engine.gates import Hold, hold
+from engine.reach import Reach, Unreached
 from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
 from resources.base import Refused, SYSTEM
-from engine.stored import read_json, write_json
 from engine.wording import plural
 
 REGISTRY: dict[str, type] = {}
-
-
-def held(record, session: str) -> str:
-    holds = read_json(gate_file(record.root, record.env, session), {})
-    return "; ".join(why for why in holds.values() if why)
 
 
 class Behaviour:
@@ -34,8 +30,9 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
 class Line:
-    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None, label: str = ""):
-        self.name, self.title, self.brief, self.lead, self.label = name, paragraphs(title), paragraphs(brief), lead, label
+    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None, label: str = "",
+                 reach: Reach = Reach.MAIN):
+        self.name, self.title, self.brief, self.lead, self.label, self.reach = name, paragraphs(title), paragraphs(brief), lead, label, reach
         self.while_waiting = while_waiting   # whether it is still said while the agent waits; None takes the feature's answer
 
     def placeholders(self) -> list[str]:
@@ -49,7 +46,7 @@ class Line:
         return fill(self.title), fill(self.brief)
 
     def describe(self) -> dict:
-        return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders()}
+        return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders(), "reach": self.reach}
 
 
 SWITCHES: dict[str, tuple] = {}
@@ -106,7 +103,6 @@ class FeatureDetails:
     keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
     when: ClassVar[str] = ""   # when the agent should load its skill; empty for a feature that runs by itself
     speaks_while_waiting: ClassVar[bool] = False   # whether its lines still reach an agent that declared a wait
-    runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
     has_skill: ClassVar[bool] = True   # False for housekeeping that asks nothing of the agent
@@ -132,7 +128,6 @@ class Feature(ABC):
     keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
     when: ClassVar[str] = ""
     speaks_while_waiting: ClassVar[bool] = False
-    runs_for_subagents: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
 
@@ -142,11 +137,13 @@ class Feature(ABC):
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
             cls.title, cls.abstract, cls.help, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), d.when
-            cls.aliases, cls.runs_for_subagents, cls.fixed, cls.default = d.aliases, d.runs_for_subagents, d.fixed, d.default
+            cls.aliases, cls.fixed, cls.default = d.aliases, d.fixed, d.default
             named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
             cls.speaks_while_waiting = d.speaks_while_waiting
             for line in cls.lines.values():
                 line.while_waiting = d.speaks_while_waiting if line.while_waiting is None else line.while_waiting
+                if not isinstance(line.reach, Reach):
+                    raise Unreached(f"the {d.name} line {line.name!r}")
             cls.keywords = d.keywords or tuple(dict.fromkeys(w for word in named for w in (word, word[:-1] if word.endswith("s") else f"{word}s")))
         if cls.name:
             REGISTRY[cls.name] = cls
@@ -208,9 +205,6 @@ class Feature(ABC):
         trigger.fired(record, agent, self.keyed(key))
         return True
 
-    def mine(self, agent) -> bool:
-        return self.runs_for_subagents or not agent.subagent
-
     def settings_view(self, record) -> dict | None:
         return dict(self.values(record)) if self.settings else None
 
@@ -220,8 +214,8 @@ class Feature(ABC):
     def setting(self, record, key: str, default=None):
         return record.setting(self.name, {}).get(key, default)
 
-    def live(self, record) -> list:
-        return [agent for agent in Agents(record, actor=SYSTEM)._standing() if self.mine(agent)]
+    def reached(self, record, reach: Reach) -> list:
+        return [agent for agent in Agents(record, actor=SYSTEM)._standing() if reach.reaches(agent.subagent)]
 
     def line(self, name: str, values: dict) -> tuple[str, str]:
         if name not in self.lines:
@@ -229,17 +223,15 @@ class Feature(ABC):
         return self.lines[name].filled(values)
 
     def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:
-        self._gate(record, self.line(line, values)[0], key, agent)
+        self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach), key, agent)
 
-    def _gate(self, record, why: str, key: str, agent) -> None:
-        for agent in [agent] if agent else self.live(record):
-            f = gate_file(record.root, record.env, agent.title)
-            held = read_json(f, {})
-            if held.get(self.keyed(key), "") != why:
-                write_json(f, {**held, self.keyed(key): why})
+    def _gate(self, record, given: Hold, key: str, agent) -> None:
+        for row in [agent] if agent else Agents(record, actor=SYSTEM)._standing():
+            if given.reach.reaches(row.subagent):
+                hold(record.root, record.env, row.title, self.keyed(key), given)
 
     def release(self, record, key: str = "", agent=None) -> None:
-        self._gate(record, "", key, agent)
+        self._gate(record, Hold(reach=Reach.BOTH), key, agent)
 
     @cached_property
     def journal(self) -> Journal:
@@ -254,4 +246,5 @@ class Feature(ABC):
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.spec(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
+                "guards": [asdict(guard) for guard in self.journal.agent.guards],
                 "settings": [s.describe() for s in self.settings]}

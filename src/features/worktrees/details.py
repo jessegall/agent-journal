@@ -27,4 +27,3 @@ class WorktreesDetails(FeatureDetails):
         comes back with that work at the next journal claude -w NAME.
     """
 
-    runs_for_subagents = True

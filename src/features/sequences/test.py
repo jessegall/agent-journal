@@ -169,7 +169,7 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
 
 
 def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
-    from features.base import held
+    from engine.gates import held
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")

@@ -1,13 +1,17 @@
+import inspect
 import json
 
 
 import features
-from controllers.types import Works
-from runner.hooks import handle
-from engine.gates import gate_file
-from features.base import held
+from controllers.types import Agents, Works
+from runner.hooks import gated, handle
+from engine.gates import AFTERWARDS, CANCELERS, LONG_COMMAND, POLICIES, cancelled, gate_file
+from engine.gates import held
+from engine.wording import APPENDS
 from providers import PROVIDERS
-from resources.base import AGENT
+from providers.payload import Hook
+from resources.base import AGENT, SYSTEM
+from resources.types import SUBAGENT
 from tests.conftest import fresh
 
 
@@ -52,7 +56,7 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         Works(record, actor=AGENT).complete(work.n, "done")
         assert hook("PreToolUse", "Write", file_path="y.py") == provider.blocking(REFUSED), \
             f"{name}: work ended, nothing open: refused again"
-        assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == REFUSED, \
+        assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == {"why": REFUSED, "reach": "main"}, \
             f"{name}: the flag is a file per environment and session, with the why"
 
 
@@ -118,3 +122,53 @@ def test_a_command_runs_as_the_session_its_own_shell_names_for_every_provider(mo
         args = vars(parser("todo").parse_args(["--root", str(record.root), "todo", "all"]))
         assert context(args)["session"] == "second-agent", \
             f"{provider.name}: with two agents in one environment, a command runs as the agent whose shell ran it"
+
+
+def values_for(feature, key: str, line) -> dict:
+    appended = [p for append in APPENDS.get(f"{feature.name}.{key}", []) for p in inspect.signature(append).parameters.values()
+                if p.default is p.empty and p.kind is p.POSITIONAL_OR_KEYWORD]
+    return {**{p.name: [1] if p.annotation is list else "1" for p in appended}, **{name: "1" for name in line.placeholders()}}
+
+
+def spied(guard, asked: list):
+    def ask(*given):
+        asked.append(guard)
+        return ""
+    ask.guard = guard
+    return ask
+
+
+def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
+    features.load()
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    main = agents.by_session("claude-1")
+    helper = agents.update(agents.by_session("claude-helper").n, status=SUBAGENT)
+    for feature in features.FEATURES.values():
+        for key, line in feature.lines.items():
+            for row in (main, helper):
+                arrived = feature.journal.whisper(record, row, key, **values_for(feature, key, line)) is not None
+                assert arrived == line.reach.reaches(row.subagent), f"{feature.name}.{key} is {line.reach}; it arrived at a subagent row: {row.subagent}"
+
+    provider = PROVIDERS["claude"]()
+    asked: list = []
+    kept = (list(POLICIES), list(AFTERWARDS), {name: list(each) for name, each in CANCELERS.items()})
+    POLICIES[:] = [spied(policy.guard, asked) for policy in kept[0]]
+    AFTERWARDS[:] = [spied(policy.guard, asked) for policy in kept[1]]
+    for name, each in kept[2].items():
+        CANCELERS[name] = [spied(cancel.guard, asked) for cancel in each]
+    every = [policy.guard for policy in (*kept[0], *kept[1], *(cancel for each in kept[2].values() for cancel in each))]
+    dispatch = {"subagent_type": "general-purpose", "model": "haiku", "description": "look", "prompt": "look"}
+    try:
+        for subagent in (False, True):
+            asked.clear()
+            called = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Agent", "tool_input": dispatch}
+            hook = Hook.read({**called, "agent_id": "helper"} if subagent else called, provider.tool_kinds)
+            gated(provider, record, hook, "claude-1")
+            cancelled(LONG_COMMAND, provider, record, hook, "claude-1", {}, subagent)
+            wanted = sorted((g for g in every if g.reaches(subagent)), key=repr)
+            assert sorted(asked, key=repr) == wanted, f"a {'subagent' if subagent else 'main agent'}'s call asks exactly the guards that reach it"
+    finally:
+        POLICIES[:], AFTERWARDS[:] = kept[0], kept[1]
+        CANCELERS.clear()
+        CANCELERS.update(kept[2])

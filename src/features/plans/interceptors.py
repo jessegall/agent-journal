@@ -1,9 +1,11 @@
 from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
 from controllers.types import Todos
 from features.plans.progress import held, running
+from engine.reach import Reach
 
 
 class RefusePlanMode(ToolInterceptor):
+    reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
         if not call.plans:
             return ""

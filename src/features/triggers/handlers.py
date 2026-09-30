@@ -4,6 +4,7 @@ from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
 from features.triggers.resource import DENY, FIRED, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
 from resources.base import SYSTEM, USER
+from engine.reach import Reach
 
 WATCHING = "watching"
 CHAT_DENIED = "caught a denied word in the agent's message"
@@ -27,6 +28,7 @@ def fire(context, agent, row, done: str = "", about: str = "") -> None:
 
 
 class WatchWhatTheAgentDoes(ToolInterceptor):
+    reach = Reach.MAIN
     behaviour = WATCHING
 
     def intercept(self, context: AgentContext, call) -> str:

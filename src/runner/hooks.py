@@ -18,14 +18,16 @@ from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
 from engine.fields import Loaded
 from engine.gates import AFTERWARDS, CANCELABLE, CANCELERS, DISPATCHING, LONG_COMMAND, POLICIES, cancelled, gate_file, start_file
+from engine.reach import Reach
 from engine.runtime import default_env
 
 PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."
+PAUSE = Reach.BOTH
 
 
 def gated(provider, record, hook, session: str) -> str | None:
     dispatch = provider.dispatch(hook.tool)
-    reason = cancelled(DISPATCHING, provider, record, hook, session, dispatch) if dispatch else None
+    reason = cancelled(DISPATCHING, provider, record, hook, session, dispatch, provider.is_subagent(hook)) if dispatch else None
     bus.defer(lambda: [policy(provider, record, hook, session) for policy in AFTERWARDS if serving(policy, provider, hook)])
     return reason or next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, session))), None)
 
@@ -41,8 +43,11 @@ JOURNAL = re.compile(r"(?:\A|[|;&\n]|\$\()[ \t]*(journal[ \t]+[^|;&\n]+)")
 
 
 def serving(policy, provider, hook) -> bool:
-    feature = getattr(policy, "feature", None)
-    return not provider.is_subagent(hook) or bool(feature and feature.runs_for_subagents)
+    return policy.guard.reaches(provider.is_subagent(hook))
+
+
+def paused(row, subagent: bool) -> bool:
+    return bool(row.paused) and PAUSE.reaches(subagent)
 
 
 def alongside(hook) -> str:
@@ -199,12 +204,13 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     record = Record(root, env, memo=True)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(hook.session)
-    if provider.is_subagent(hook):
+    subagent = provider.is_subagent(hook)
+    if subagent:
         if hook.event == PERMISSION or row.asking:
             agents.update(row.n, asking=provider.asking(hook))
         if hook.event != "PreToolUse":
             return {}
-        why = PAUSED if row.paused else gated(provider, record, hook, row.title)
+        why = PAUSED if paused(row, subagent) else gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(why)
     wrote = hook.event == "PostToolUse" and commands.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
@@ -213,7 +219,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         bus.defer(lambda: ran.tool_ran(record, row.n, provider, hook.tool))
     if wrote:
         bus.defer(lambda: files.announce(record, row.n, skill_folders()))
-    if hook.event == "PreToolUse" and row.paused:
+    if hook.event == "PreToolUse" and paused(row, subagent):
         return provider.blocking(PAUSED)
     if hook.event == "PreToolUse":
         why = gated(provider, record, hook, row.title)

@@ -107,12 +107,15 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
     from controllers.types import Agents
     from engine.gates import CANCELERS, LONG_COMMAND
+    from engine.reach import Guard, Reach
     from resources.base import SYSTEM
     record = fresh()
     moved = []
     monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm run build", "tool": "Bash", "at": time.time() - 45}])
-    CANCELERS.setdefault(LONG_COMMAND, []).append(lambda provider, record, hook, session, data: "the build must stay in view")
+    keep = lambda provider, record, hook, session, data: "the build must stay in view"
+    keep.guard = Guard("Keep the build in view", Reach.MAIN)
+    CANCELERS.setdefault(LONG_COMMAND, []).append(keep)
     try:
         tick(record)
     finally:

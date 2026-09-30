@@ -18,6 +18,7 @@ from features.triggers.resource import FIRED, START
 from controllers.types import CONTROLLERS
 from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
+from engine.reach import Reach
 
 STEP = "step"
 STEP_HELD = "step held"
@@ -240,6 +241,7 @@ class NudgeWaitingStep(Handler):
 
 
 class HoldJournalWritesForTheStep(ToolInterceptor):
+    reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
         found = context.journal.sequences._in_hand()
         if not found or found[2].get("followed") == found[2]["step"]:

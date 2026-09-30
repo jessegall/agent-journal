@@ -19,6 +19,7 @@ from features.plugins.skills import withdrawn
 from features.plugins.source import environment, folder, logged, plugin_socket
 from features.status_bar import commands
 from resources.base import OWNER, PLUGIN, SYSTEM
+from engine.reach import Reach
 
 EACH = 1.5
 LONGEST_EACH = 3.0
@@ -72,6 +73,7 @@ def placed(record, row) -> Placement:
 
 
 class AskPluginsToRefuse(ToolInterceptor):
+    reach = Reach.MAIN
     def intercept(self, context: Context, call_) -> str:
         record, hook = context.record, context.hook
         writes = commands.writes(hook)
@@ -104,6 +106,7 @@ class AskPluginsToRefuse(ToolInterceptor):
 
 
 class AskPluginsToCancel(Canceler):
+    reach = Reach.MAIN
     def __init__(self, event: str):
         self.event = event
 

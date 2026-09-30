@@ -2,6 +2,7 @@ import re
 import shlex
 
 from features.parts import AgentContext, ToolInterceptor
+from engine.reach import Reach
 
 SEPARATORS = {"&&", "||", ";", "|", "&", "\n"}
 VALUED = {"--root", "--env", "--as", "--session", "--agent", "--page", "--back"}
@@ -68,6 +69,7 @@ def searches(command: str) -> list[str]:
 
 
 class MarkHistorySearches(ToolInterceptor):
+    reach = Reach.MAIN
     refuses = False
 
     def intercept(self, context: AgentContext, call) -> str:

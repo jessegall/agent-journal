@@ -4,6 +4,7 @@ from engine.events.resources import ResourceCreated
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.sharing.visitors import AGREEMENT, UNAGREED, read_now
 from resources.base import SYSTEM
+from engine.reach import Reach
 
 AGREE_COMMAND = "share agree"
 
@@ -19,6 +20,7 @@ class HoldOnVisitorComment(Handler):
 
 
 class RefuseUntilAgreed(ToolInterceptor):
+    reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
         held = context.agent.row.data.get(UNAGREED, [])
         if not held or any(AGREE_COMMAND in command for command in call.commands):

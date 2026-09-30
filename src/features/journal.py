@@ -78,9 +78,10 @@ class Journal:
         return AgentHooks(self.feature)
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, delivery: str = CHANNEL, **values):
-        if not self.feature.mine(agent) or (not self.feature.lines[line].while_waiting and waiting(record, agent)):
+        spec = self.feature.lines[line]
+        if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
-        lead, yields = self.feature.lines[line].lead, not self.feature.lines[line].while_waiting
+        lead, yields = spec.lead, not spec.while_waiting
         message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery, yields=yields)
         added = appended(f"{self.feature.name}.{line}", values, "").removeprefix(" - ")
         return self.send(record, replace(message, brief=". ".join(part for part in (added, message.brief) if part)))

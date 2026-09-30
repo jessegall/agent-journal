@@ -124,7 +124,7 @@ def agents_of(journal, works: dict, main: str, assigned: set) -> list[AgentChip]
     for row in journal.agents._standing():
         name = row.agent if row.agent else row.title
         held = min((w for w in works.values() if worker_of(w, main)["agent"] == name), key=lambda w: bool(w.parked), default=None)
-        subagent = row.status == "subagent" or bool(row.parent)
+        subagent = row.subagent
         quiet = time.time() - row.updated > QUIET_SUBAGENT
         if row.status == "stopped" or (name != main and not subagent) or (subagent and quiet and not held and name not in assigned):
             continue

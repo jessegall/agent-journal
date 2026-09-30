@@ -7,9 +7,9 @@ from engine.events.resources import AgentChanged, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions, live
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
+from resources.types import SUBAGENT
 
 
-SUBAGENT = "subagent"
 STOPPED = "stopped"
 STOP = "stop"
 MINUTE = 60
@@ -127,7 +127,8 @@ class ClearLapsedAssignments(Handler):
             if not who or who not in subagents or time.time() - float(subagents[who].active) < limit:
                 continue
             todos.update(t.n, assigned="", lapsed=who)
-            context.agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
+            dispatcher = context.journal.agents.by_session(subagents[who].dispatcher)
+            context.speaking_to(dispatcher).agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
 
 
 class ClearLapsedAssignmentsOnChange(OnAgentUpdated, ClearLapsedAssignments):

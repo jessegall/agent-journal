@@ -22,9 +22,9 @@ def fresh(env: str = "t") -> Record:
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
-    from engine.gates import gate_file
+    from engine.gates import Hold, gate_file
     f = gate_file(record.root, record.env, session)
-    return json.loads(f.read_text()) if f.is_file() else {}
+    return {key: Hold.from_json(raw).why for key, raw in json.loads(f.read_text()).items()} if f.is_file() else {}
 
 
 def refused(fn) -> str:

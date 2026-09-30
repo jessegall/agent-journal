@@ -213,7 +213,7 @@ class ResetEditsOnLog(Handler):
     def handle(self, context: Context, event: WorkLogged) -> None:
         if not event.section:
             return
-        for row in context.feature.live(context.record):
+        for row in context.feature.reached(context.record, context.feature.lines["log held"].reach):
             trigger.write(context.record, row, context.feature.name, edits=0)
         context.release()
 

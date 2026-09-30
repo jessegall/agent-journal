@@ -10,6 +10,7 @@ from engine import bus
 from engine.events.base import AgentEvent
 from engine.events.resources import AgentChanged
 from engine.gates import AFTERWARDS, CANCELERS, POLICIES
+from engine.reach import Guard, Reach
 from engine.state import State
 from engine.wording import APPENDS
 from features.format import FORMATTERS
@@ -138,6 +139,7 @@ class TextFormatter:
 
 
 class ToolInterceptor:
+    reach: ClassVar[Reach]
     behaviour: ClassVar[str | None] = None
     refuses: ClassVar[bool] = True
     limit: ClassVar[str] = ""
@@ -149,6 +151,7 @@ class ToolInterceptor:
 
 
 class Canceler:
+    reach: ClassVar[Reach]
     event: ClassVar[str] = ""
 
     def cancel(self, context: "AgentContext", data) -> str:
@@ -236,12 +239,14 @@ def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str)
 class AgentHooks:
     def __init__(self, feature):
         self.feature = feature
+        self.guards: list[Guard] = []
 
     def append_to_line(self, on: str, addition) -> None:
         APPENDS.setdefault(on, []).append(addition)
 
     def interceptor(self, interceptor: ToolInterceptor) -> None:
-        feature = self.feature
+        feature, guard = self.feature, Guard.of(interceptor)
+        self.guards.append(guard)
 
         def policy(provider, record, hook, session) -> str:
             if hook.tool.loads_skill and not interceptor.before_checks:
@@ -252,20 +257,22 @@ class AgentHooks:
             context = AgentContext.of(feature, record, row, provider, hook)
             refused = interceptor.intercept(context, hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
-        policy.feature = feature
+        policy.guard = guard
         if interceptor.before_checks:
             POLICIES.insert(0, policy)
             return
         (POLICIES if interceptor.refuses else AFTERWARDS).append(policy)
 
     def canceler(self, canceler: Canceler) -> None:
-        feature = self.feature
+        feature, guard = self.feature, Guard.of(canceler)
+        self.guards.append(guard)
 
         def cancel(provider, record, hook, session, data) -> str:
             if not feature.enabled(record):
                 return ""
             row = Agents(record, actor=SYSTEM)._shared(session)
             return canceler.cancel(AgentContext.of(feature, record, row, provider, hook), data) or ""
+        cancel.guard = guard
         CANCELERS.setdefault(canceler.event, []).append(cancel)
 
 

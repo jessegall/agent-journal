@@ -8,6 +8,7 @@ from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
+from engine.reach import Reach
 
 WHISPER = "whisper"
 
@@ -63,6 +64,7 @@ def recite(context: AgentContext, resources: str, text_of) -> None:
 
 
 class WhisperOnKeyword(ToolInterceptor):
+    reach = Reach.MAIN
     refuses = False
 
     def __init__(self, resources: str):

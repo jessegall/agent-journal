@@ -3,9 +3,8 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
-from engine.gates import gate_file
+from engine.gates import Hold, hold
 from engine.fields import Loaded
-from engine.stored import read_json, write_json
 from features.plugins.declared import declared, settings_of
 from features.plugins.lifecycle import called
 from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
@@ -43,14 +42,7 @@ class Look:
 
 
 def held(root: Path, env: str, session: str, plugin: str, why: str) -> None:
-    f = gate_file(root, env, session)
-    holds = read_json(f, {})
-    key = f"{HELD}:{plugin}"
-    if why:
-        holds[key] = why
-    else:
-        holds.pop(key, None)
-    write_json(f, holds)
+    hold(root, env, session, f"{HELD}:{plugin}", Hold(why))
 
 
 def nudged(record, journal, plugin: str, session: str, text: str, private: bool) -> None:

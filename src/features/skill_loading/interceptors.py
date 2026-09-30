@@ -6,11 +6,13 @@ from features.parts import AgentContext, ToolInterceptor
 from features.recital import mentioned
 from features.skill_loading.catalogue import keywords, loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require
+from engine.reach import Reach
 
 NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 
 class RequireCommandSkill(ToolInterceptor):
+    reach = Reach.MAIN
     refuses = False
 
     def intercept(self, context: AgentContext, call) -> str:
@@ -27,6 +29,7 @@ class RequireCommandSkill(ToolInterceptor):
 
 
 class RequireKeywordSkill(ToolInterceptor):
+    reach = Reach.MAIN
     behaviour = "keywords"
     refuses = False
 
@@ -43,6 +46,7 @@ def require_named(record, row, text: str) -> None:
 
 
 class RefuseUntilLoaded(ToolInterceptor):
+    reach = Reach.MAIN
     limit = "most_refusals"
     steps_aside = "steps_aside"
 
