@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
@@ -24,8 +24,23 @@ const faces = computed(() => [...new Set((props.item.reactions || []).map((r) =>
 const emit = defineEmits(["hold"]);
 const HOLD_FOR = 450;
 let timer = 0;
-const press = () => (timer = setTimeout(() => emit("hold", props.item), HOLD_FOR));
-const release = () => clearTimeout(timer);
+const pressing = ref(false);
+
+function held() {
+    pressing.value = false;
+    navigator.vibrate?.(10);
+    emit("hold", props.item);
+}
+
+function press() {
+    pressing.value = true;
+    timer = setTimeout(held, HOLD_FOR);
+}
+
+function release() {
+    pressing.value = false;
+    clearTimeout(timer);
+}
 </script>
 
 <template>
@@ -53,7 +68,7 @@ const release = () => clearTimeout(timer);
         </template>
         <template #default>
             <div
-                :class="['turn', item.who]"
+                :class="['turn', item.who, {pressing}]"
                 @touchstart.passive="press"
                 @touchend="release"
                 @touchmove.passive="release"
@@ -101,6 +116,7 @@ const release = () => clearTimeout(timer);
 <style scoped>
 .turn {
     max-width: 88%;
+    transition: transform 0.45s ease, opacity 0.45s ease;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
@@ -123,7 +139,13 @@ const release = () => clearTimeout(timer);
 
 .turn.agent {
     align-self: flex-start;
+    border: 1px solid var(--border);
     background: var(--raised);
+}
+
+.turn.pressing {
+    transform: scale(0.97);
+    opacity: 0.85;
 }
 
 .turn-thought {

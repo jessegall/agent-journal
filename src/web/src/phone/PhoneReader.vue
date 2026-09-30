@@ -89,7 +89,14 @@ onMounted(load);
     <section class="reader" @click.capture="chipped">
         <header class="reader-bar">
             <button type="button" class="reader-back" @click="emit('close')"><Icon name="back" :size="16" /> {{ back }}</button>
-            <button type="button" class="reader-size" title="Text size" @click="size = (size + 1) % SIZES.length">Aa</button>
+            <button type="button" class="reader-size" title="Text size" @click="size = (size + 1) % SIZES.length">
+                Aa
+                <span class="reader-steps">
+                    <template v-for="(step, i) in SIZES" :key="step">
+                        <span :class="['reader-step', {on: i === size}]" />
+                    </template>
+                </span>
+            </button>
             <span class="reader-progress" :style="{width: `${progress * 100}%`}" />
         </header>
         <template v-if="row">
@@ -199,8 +206,27 @@ onMounted(load);
     background: var(--accent);
 }
 
+.reader-steps {
+    display: inline-flex;
+    gap: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.reader-step {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-4);
+}
+
+.reader-step.on {
+    background: var(--accent);
+}
+
 .reader-body {
-    flex: 1;
+    flex: 0 1 auto;
+    min-height: 0;
     overflow-y: auto;
     padding: 16px 0 24px;
     line-height: 1.6;

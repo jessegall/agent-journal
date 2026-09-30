@@ -141,9 +141,9 @@ function sent() {
             <span class="home-title">
                 <span class="home-dot" :style="{background: connection.color}" />
                 {{ connection.project }}
+                <span class="home-note">· {{ connection.environment }}</span>
                 <Icon name="chevron" :size="14" class="home-chevron" />
             </span>
-            <span class="home-note">{{ connection.environment }}</span>
         </button>
         <PhoneAgent :running="feed.agent" />
     </header>
@@ -234,7 +234,8 @@ function sent() {
 
 .home-note {
     color: var(--text-3);
-    font-size: 13px;
+    font-weight: 400;
+    font-size: 14px;
 }
 
 .home-newer {

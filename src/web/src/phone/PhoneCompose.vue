@@ -130,6 +130,18 @@ async function send() {
     background: var(--raised);
 }
 
+.compose-clip,
+.compose-send {
+    position: relative;
+}
+
+.compose-clip::after,
+.compose-send::after {
+    position: absolute;
+    inset: -5px;
+    content: "";
+}
+
 .compose-clip {
     display: flex;
     flex: none;

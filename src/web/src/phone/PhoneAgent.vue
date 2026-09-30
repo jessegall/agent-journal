@@ -24,8 +24,8 @@ defineProps({running: Boolean});
 }
 
 .agent-dot {
-    width: 7px;
-    height: 7px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--text-4);
 }

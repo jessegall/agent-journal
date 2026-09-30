@@ -89,3 +89,7 @@ body {
     color: var(--danger);
     font-size: 14px;
 }
+
+.phone .row-pill {
+    white-space: nowrap;
+}
