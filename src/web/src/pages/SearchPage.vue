@@ -38,7 +38,7 @@ watch(
         </template>
         <div class="cards">
             <template v-for="r in hits" :key="r.ref">
-                <div class="hit">
+                <div :class="['hit', {filed: r.matches.length}]">
                     <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
                     <template v-if="r.matches.length">
                         <div class="matches">
@@ -90,12 +90,24 @@ watch(
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-auto-rows: 1fr;
     gap: 12px;
     margin-top: 18px;
 }
 
 .hit {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
+}
+
+.hit :deep(.card) {
+    flex: 1;
+}
+
+.hit.filed :deep(.card) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .matches {
@@ -103,6 +115,9 @@ watch(
     flex-direction: column;
     gap: 3px;
     padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
 }
 
 .matches a {

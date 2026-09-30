@@ -89,7 +89,11 @@ const holds = computed(() => {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
     min-height: 130px;
+    overflow: hidden;
     padding: 14px 16px;
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -134,6 +138,11 @@ const holds = computed(() => {
     color: var(--text-3);
 }
 .title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
     font-weight: 500;
 }
 .plan-steps {
@@ -149,6 +158,14 @@ const holds = computed(() => {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.abstract :deep(*) {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 .parts {
     margin-top: auto;

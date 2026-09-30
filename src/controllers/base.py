@@ -17,6 +17,13 @@ from controllers.stored import Stored
 
 WORDS = ("title", "abstract", "brief")
 LAST = 25
+SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
+
+
+def searchable(r: Resource) -> str:
+    parts = [r.title, r.brief, r.abstract, *(f"{s[SECTION.title]} {s[SECTION.body]}" for s in r.sections),
+             *(f"{name} {tags}" for name, tags in r.files.items())]
+    return "\n".join(parts).lower()
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
 
@@ -326,11 +333,21 @@ class Controller(Stored, Files, Links):
 
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
-        rows = (self._peek(row["n"]) for row in reversed(self.summaries()) if not row["deleted"])
-        hits = (r for r in rows if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
-                or any(want in s[SECTION.title].lower() or want in s[SECTION.body].lower() for s in r.sections)
-                or any(want in name.lower() or want in str(tags).lower() for name, tags in r.files.items()))
-        return [r.fork() for r, _ in zip(hits, range(LAST))]
+        texts = self._texts()
+        hits = (row["n"] for row in reversed(self.summaries()) if not row["deleted"] and want in texts.get(row["n"], ""))
+        return [self._peek(n).fork() for n, _ in zip(hits, range(LAST))]
+
+    def _warm(self) -> None:
+        super()._warm()
+        self._texts()
+
+    def _texts(self) -> dict[int, str]:
+        kept = SEARCHABLE.setdefault(str(self.record.folder(self.type, self.resource.scope)), {})
+        for row in self.summaries():
+            if row["deleted"] or kept.get(row["n"], (None,))[0] == row["updated"]:
+                continue
+            kept[row["n"]] = (row["updated"], searchable(self._peek(row["n"])))
+        return {n: text for n, (_, text) in kept.items()}
 
     def find(self, name: str) -> Resource:
         if str(name).isdigit():

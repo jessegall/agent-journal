@@ -33,6 +33,10 @@ HEADERS = {
 }
 
 
+def routed(parts: list[str]):
+    return ROUTES.get(parts[0]) if parts else None
+
+
 class ShareHandler(BaseHTTPRequestHandler):
     shares = None
     server_version = "share"
@@ -48,8 +52,8 @@ class ShareHandler(BaseHTTPRequestHandler):
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if parts == [HEALTH]:
             return self.send(200, b"ok", {"Content-Type": "text/plain"})
-        if parts and parts[0] in ROUTES:
-            return ROUTES[parts[0]].get(self, parts[1:])
+        if (route := routed(parts)) is not None:
+            return route.get(self, parts[1:])
         if len(parts) < 2 or parts[0] != "s":
             return self.page(404, unshared())
         share = self.shares._by_token(parts[1])
@@ -90,8 +94,8 @@ class ShareHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
-        if parts and parts[0] in ROUTES:
-            return ROUTES[parts[0]].post(self, parts[1:])
+        if (route := routed(parts)) is not None:
+            return route.post(self, parts[1:])
         if len(parts) != 3 or parts[0] != "s" or parts[2] != "comment":
             return self.refused()
         share = self.shares._by_token(parts[1])
