@@ -7,11 +7,11 @@ const version = ref(null);
 const busy = ref(false);
 const told = ref("");
 
-async function update() {
+async function run(action) {
     busy.value = true;
     told.value = "";
     try {
-        told.value = await api.updateTunler();
+        told.value = await action();
         version.value = await api.tunlerVersion();
     } catch (e) {
         told.value = e.message;
@@ -24,15 +24,21 @@ onMounted(async () => (version.value = await api.tunlerVersion().catch(() => nul
 </script>
 
 <template>
-    <template v-if="version && version.current">
+    <template v-if="version">
         <div class="tunler-version">
-            <span class="tunler-version-name">tunler {{ version.current }}</span>
-            <template v-if="version.update_available">
-                <span class="tunler-version-new">{{ version.latest || "A newer version" }} is available</span>
-                <Btn small kind="primary" :busy="busy" @click="update">Update tunler</Btn>
+            <template v-if="version.current">
+                <span class="tunler-version-name">tunler {{ version.current }}</span>
+                <template v-if="version.update_available">
+                    <span class="tunler-version-new">{{ version.latest || "A newer version" }} is available</span>
+                    <Btn small kind="primary" :busy="busy" @click="run(() => api.updateTunler())">Update tunler</Btn>
+                </template>
+                <template v-else>
+                    <span class="tunler-version-new">up to date</span>
+                </template>
             </template>
             <template v-else>
-                <span class="tunler-version-new">up to date</span>
+                <span class="tunler-version-new">tunler is not installed on this machine</span>
+                <Btn small kind="primary" :busy="busy" @click="run(() => api.installTunler())">Install tunler</Btn>
             </template>
             <template v-if="told">
                 <span class="tunler-version-told">{{ told }}</span>

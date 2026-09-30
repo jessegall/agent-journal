@@ -1,5 +1,6 @@
 import json
 import os
+import platform
 import re
 import secrets
 import shutil
@@ -16,6 +17,8 @@ TUNNEL_FILE = "sharing.json"
 OWNED = "domain is owned by another user"
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
+ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
+DOWNLOAD_SECONDS = 60
 
 
 def subdomain(root: Path) -> str:
@@ -139,6 +142,22 @@ def versions(host: str) -> TunlerVersion:
         return TunlerVersion(current=told.get("current", ""), latest=told.get("latest", ""), update_available=bool(told["update_available"]))
     current, newest = installed(), latest(host)
     return TunlerVersion(current=current, latest=newest, update_available=bool(current and newest and current != newest))
+
+
+def install(host: str) -> str:
+    machine = platform.machine().lower()
+    build = f"tunler-{platform.system().lower()}-{ARCHES.get(machine, machine)}"
+    part = LOCAL_BIN.with_name("tunler.part")
+    LOCAL_BIN.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with urllib.request.urlopen(f"https://{host}/dl/{build}", timeout=DOWNLOAD_SECONDS) as answer:
+            part.write_bytes(answer.read())
+    except OSError as error:
+        part.unlink(missing_ok=True)
+        return f"tunler could not be downloaded: {error}"
+    part.chmod(0o700)
+    part.replace(LOCAL_BIN)
+    return f"tunler {installed()} is installed"
 
 
 def updated() -> str:

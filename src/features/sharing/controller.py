@@ -19,7 +19,7 @@ from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import VIEWER, formatted
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TunlerVersion, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused
 
@@ -171,7 +171,7 @@ class Shares(Controller):
 
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
-        host = endpoint.strip() if endpoint else FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
+        host = endpoint.strip() if endpoint else self._host()
         return {**log_in(host, username.strip(), password, master_password or None), **self.tunnel()}
 
     def logout(self) -> dict:
@@ -182,18 +182,25 @@ class Shares(Controller):
         return self.tunnel()
 
     def version(self) -> TunlerVersion:
-        return versions(FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"))
+        return versions(self._host())
+
+    def install_tunler(self) -> str:
+        self._user_only("install tunler")
+        return install(self._host())
 
     def update_tunler(self) -> str:
         self._user_only("update tunler")
         return updated()
+
+    def _host(self) -> str:
+        return FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
 
     def domains(self) -> list[str]:
         return owned()
 
     def release(self, domain: str) -> list[str]:
         self._user_only("release a tunler domain")
-        failed = unclaim(domain, FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"))
+        failed = unclaim(domain, self._host())
         if failed:
             raise Refused(failed)
         return owned()

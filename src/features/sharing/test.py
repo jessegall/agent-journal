@@ -216,3 +216,19 @@ def test_an_address_owned_by_another_account_is_swapped_for_a_new_one(monkeypatc
     log.write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
     tick(record)
     assert subdomain(record.root) != before and asked == [watchdog.TUNNEL], "a refused address is replaced and the tunnel restarted on the new one"
+
+
+def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only(tmp_path, monkeypatch):
+    import io
+    import stat
+    from features.sharing import tunnel
+    asked = []
+    monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "bin" / "tunler")
+    monkeypatch.setattr(tunnel.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(tunnel.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: asked.append(url) or io.BytesIO(b"binary"))
+    monkeypatch.setattr(tunnel, "installed", lambda: "v0.2.2")
+    assert tunnel.install("tunler.example") == "tunler v0.2.2 is installed"
+    assert asked == ["https://tunler.example/dl/tunler-darwin-amd64"], "the build for this system and processor"
+    assert (tunnel.LOCAL_BIN.read_bytes(), stat.S_IMODE(tunnel.LOCAL_BIN.stat().st_mode), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == \
+        (b"binary", 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"

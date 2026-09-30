@@ -118,6 +118,10 @@ export class ApiClient {
         return this.command("share", "update_tunler");
     }
 
+    installTunler() {
+        return this.command("share", "install_tunler");
+    }
+
     tunnelDomains() {
         return this.command("share", "domains");
     }
