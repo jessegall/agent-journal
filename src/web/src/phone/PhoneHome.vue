@@ -4,6 +4,8 @@ import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneCompose from "./PhoneCompose.vue";
+import PhoneHold from "./PhoneHold.vue";
+import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
@@ -20,6 +22,8 @@ const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: false});
 const reading = ref("");
 const about = ref("");
+const quote = ref("");
+const held = ref(null);
 const list = ref(null);
 const offline = ref(false);
 
@@ -66,6 +70,28 @@ function reply(target) {
     reading.value = "";
 }
 
+async function react(face) {
+    const item = held.value;
+    held.value = null;
+    try {
+        await phone.react(item.n, face);
+        refresh();
+    } catch (error) {
+        if (ended(error)) failed(error);
+    }
+}
+
+function quoteIt() {
+    quote.value = plain(held.value.brief || held.value.title).split("\n").filter((line) => !line.startsWith(">")).join(" ").slice(0, 200);
+    about.value = held.value.ref;
+    held.value = null;
+}
+
+function copy() {
+    navigator.clipboard?.writeText(plain(held.value.brief || held.value.title)).catch(() => {});
+    held.value = null;
+}
+
 function sent() {
     about.value = "";
     refresh();
@@ -75,8 +101,11 @@ function sent() {
 <template>
     <header class="home-bar">
         <div class="home-names">
-            <span class="home-title">Your journal</span>
-            <span class="home-note">{{ connection.phone }}</span>
+            <span class="home-title">
+                <span class="home-dot" :style="{background: connection.color}" />
+                {{ connection.project }}
+            </span>
+            <span class="home-note">{{ connection.environment }}</span>
         </div>
         <PhoneAgent :running="feed.agent" />
     </header>
@@ -90,7 +119,7 @@ function sent() {
     <template v-else>
         <div ref="list" class="home-feed" @click.capture="chipped">
             <template v-for="item in feed.items" :key="item.type + item.n">
-                <PhoneTurn :item="item" />
+                <PhoneTurn :item="item" @hold="(it) => it.type === 'message' && (held = it)" />
             </template>
             <template v-for="line in justSent" :key="line.idempotency">
                 <p class="home-sent">
@@ -105,7 +134,10 @@ function sent() {
                 <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
             </template>
         </div>
-        <PhoneCompose :about="about" @sending="toBottom" @sent="sent" @unabout="about = ''" />
+        <PhoneCompose :about="about" :quote="quote" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
+    </template>
+    <template v-if="held">
+        <PhoneHold :item="held" @react="react" @reply="quoteIt" @copy="copy" @close="held = null" />
     </template>
 </template>
 
@@ -125,7 +157,16 @@ function sent() {
     gap: 2px;
 }
 
+.home-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+
 .home-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
     font-weight: 600;
     font-size: 16.5px;
 }

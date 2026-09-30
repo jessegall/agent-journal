@@ -145,8 +145,25 @@ class Phones(Controller):
     def _feed(self, phone: Phone) -> Feed:
         home = self._home(phone)
         said = [self._said(home, kind, row) for kind in SAID for row in self._latest(home, kind)]
-        return Feed(items=sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:], waiting=self._waiting(phone),
+        items = sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:]
+        faces = self._faces(home, {item["ref"] for item in items})
+        items = [{**item, "reactions": faces.get(item["ref"], [])} for item in items]
+        return Feed(items=items, waiting=self._waiting(phone),
                     agent=bool(Sessions(self.record.root).holder(phone.environment)))
+
+    def _faces(self, home: Record, refs: set[str]) -> dict[str, list[dict]]:
+        reactions = CONTROLLERS["reaction"](home, actor=SYSTEM)
+        found: dict[str, list[dict]] = {}
+        for n in [row["n"] for row in reactions.summaries() if not row["deleted"] and set(row.get("refs", [])) & refs]:
+            made = reactions.load(n)
+            for ref in set(made.refs) & refs:
+                found.setdefault(ref, []).append({"face": made.face, "who": made.seen[0] if made.seen else ""})
+        return found
+
+    def _react(self, phone: Phone, reacting):
+        messages = Messages(self._home(phone), actor=USER)
+        messages.react(reacting.n, reacting.face)
+        return messages.load(reacting.n)
 
     def _latest(self, home: Record, kind: str) -> list:
         rows = [row for row in CONTROLLERS[kind](home, actor=SYSTEM).summaries() if not row["deleted"]]

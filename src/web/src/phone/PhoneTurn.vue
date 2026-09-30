@@ -9,6 +9,12 @@ import {clock} from "../format/time.js";
 
 const props = defineProps({item: {type: Object, required: true}});
 const files = computed(() => Object.keys(props.item.files || {}));
+const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
+const emit = defineEmits(["hold"]);
+const HOLD_FOR = 450;
+let timer = 0;
+const press = () => (timer = setTimeout(() => emit("hold", props.item), HOLD_FOR));
+const release = () => clearTimeout(timer);
 </script>
 
 <template>
@@ -17,13 +23,22 @@ const files = computed(() => Object.keys(props.item.files || {}));
             <PhoneQuestion :question="item" />
         </template>
         <template #default>
-            <div :class="['turn', item.who]">
+            <div
+                :class="['turn', item.who]"
+                @touchstart.passive="press"
+                @touchend="release"
+                @touchmove.passive="release"
+                @contextmenu.prevent="emit('hold', item)"
+            >
                 <TextDisplay :text="item.brief || item.title" />
                 <template v-if="files.length">
                     <span class="turn-files">
                         <Icon name="paperclip" :size="12" />
                         {{ files.join(", ") }}
                     </span>
+                </template>
+                <template v-if="faces.length">
+                    <span class="turn-faces">{{ faces.join(" ") }}</span>
                 </template>
                 <span class="turn-meta">
                     {{ clock(item.created) }}
@@ -39,10 +54,21 @@ const files = computed(() => Object.keys(props.item.files || {}));
 <style scoped>
 .turn {
     max-width: 88%;
+    -webkit-touch-callout: none;
+    user-select: none;
     padding: 10px 12px;
     border-radius: 12px;
     line-height: 1.5;
     overflow-wrap: anywhere;
+}
+
+.turn-faces {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: var(--bg);
+    font-size: 14px;
 }
 
 .turn-files {
@@ -64,7 +90,16 @@ const files = computed(() => Object.keys(props.item.files || {}));
     font-size: 11.5px;
 }
 
-.turn.agent .turn-files {
+.turn.agent .turn-faces {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: var(--bg);
+    font-size: 14px;
+}
+
+.turn-files {
     display: flex;
     align-items: center;
     gap: 5px;

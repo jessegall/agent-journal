@@ -35,5 +35,6 @@ export const phone = {
         ),
     answer: (n, answer) => sent("./answer", {n, answer}),
     dismiss: (n) => sent("./dismiss", {n}),
+    react: (n, face) => sent("./react", {n, face}),
     approve: (n, updated) => sent("./approve", {n, updated}),
 };

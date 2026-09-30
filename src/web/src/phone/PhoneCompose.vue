@@ -3,11 +3,12 @@ import {computed, inject, nextTick, ref} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {fitLines} from "../composables/fitLines.js";
+import {withQuote} from "../format/quote.js";
 import {ended, flush, hold} from "./outbox.js";
 
 const MOST_LINES = 5;
-const props = defineProps({about: {type: String, default: ""}});
-const emit = defineEmits(["sending", "sent", "unabout"]);
+const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}});
+const emit = defineEmits(["sending", "sent", "unabout", "unquote"]);
 const failed = inject("phoneFailed");
 const words = ref("");
 const files = ref([]);
@@ -27,7 +28,9 @@ const grow = () => fitLines(box.value, MOST_LINES);
 async function send() {
     if (!ready.value || sending.value) return;
     sending.value = true;
-    hold(said.value || `Sent ${files.value.map((file) => file.name).join(", ")}`, props.about, files.value);
+    const text = said.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
+    hold(withQuote(props.quote, text), props.about, files.value);
+    emit("unquote");
     words.value = "";
     files.value = [];
     emit("sending");
@@ -45,10 +48,16 @@ async function send() {
 
 <template>
     <form class="compose" @submit.prevent="send">
-        <template v-if="about">
+        <template v-if="about && !quote">
             <div class="compose-about">
                 About {{ about.replace(":", " ") }}
                 <CloseButton @click="emit('unabout')" />
+            </div>
+        </template>
+        <template v-if="quote">
+            <div class="compose-quote">
+                <span>{{ quote }}</span>
+                <CloseButton @click="emit('unquote')" />
             </div>
         </template>
         <template v-if="files.length">
@@ -126,6 +135,24 @@ async function send() {
     border: 0;
     background: none;
     color: var(--text-3);
+}
+
+.compose-quote {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 10px;
+    border-left: 3px solid var(--accent);
+    color: var(--text-2);
+    font-size: 13.5px;
+}
+
+.compose-quote span {
+    flex: 1;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .compose-files {

@@ -95,6 +95,9 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         upload(other.n)
     with pytest.raises(urllib.error.HTTPError):
         upload(made["n"], "text/plain")
+    assert call(base, "/p/react", {"n": made["n"], "face": "👍"}, key).status == 201
+    reacted = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
+    assert reacted and reacted[0]["reactions"] == [{"face": "👍", "who": USER}], "a reaction from the phone is the user's and shows on the message"
 
 
 def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):

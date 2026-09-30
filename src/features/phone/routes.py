@@ -53,6 +53,16 @@ class Chosen:
 
 
 @dataclass(frozen=True)
+class Reacting:
+    n: int
+    face: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Reacting":
+        return cls(n=int(given.get("n", 0)), face=str(given.get("face", "")))
+
+
+@dataclass(frozen=True)
 class Approval:
     n: int
     updated: float
@@ -89,7 +99,9 @@ class PhoneRoutes:
         if phone is None:
             return None
         if rest == ["state"]:
-            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires})
+            known = identity(handler.shares.record.root)
+            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires,
+                                            "project": known["project"], "color": known["color"]})
         if rest == ["feed"]:
             return self.json(handler, 200, self.phones(handler)._feed(phone))
         if len(rest) == 3:
@@ -122,6 +134,7 @@ class PhoneRoutes:
         acts = {"message": lambda phones: phones._say(phone, Said.from_payload(body)),
                 "answer": lambda phones: phones._answer(phone, Chosen.from_payload(body)),
                 "dismiss": lambda phones: phones._dismiss(phone, Chosen.from_payload(body).n),
+                "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
                 "approve": lambda phones: phones._approve(phone, Approval.from_payload(body))}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")
