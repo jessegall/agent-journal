@@ -103,12 +103,30 @@ def defer(job: Callable[[], None]) -> None:
     queue.append((job, None))
 
 
+def defer_once(key: str, job: Callable[[], None]) -> None:
+    queue, after = getattr(_held, "queue", None), getattr(_held, "after", None)
+    if queue is not None:
+        if key not in (held for item, held in queue if callable(item)):
+            queue.append((job, key))
+        return
+    if after is not None:
+        after.setdefault(key, job)
+        return
+    job()
+
+
 def release(queue: list) -> None:
-    for item, record in queue:
-        if callable(item):
-            item()
-            continue
-        emit(item, record)
+    _held.after = {}
+    try:
+        for item, record in queue:
+            if callable(item):
+                item()
+                continue
+            emit(item, record)
+    finally:
+        after, _held.after = _held.after, None
+    for job in after.values():
+        job()
 
 
 def listening() -> bool:

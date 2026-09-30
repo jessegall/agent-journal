@@ -1,3 +1,4 @@
+from engine import bus
 from engine.events.agents import SessionStarted
 from engine.events.resources import AnyEvent
 from features.parts import AgentContext, Context, Handler, in_background
@@ -16,4 +17,5 @@ class GreetOnce(Handler):
 class RebuildStartBlock(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if event.type in TYPES and (TYPES[event.type].start_heading or event.type in SHAPING):
-            rebuild(context.record)
+            record = context.record
+            bus.defer_once(f"start block {record.root} {record.env}", lambda: rebuild(record))

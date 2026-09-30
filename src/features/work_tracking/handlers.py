@@ -2,6 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
+from engine import bus
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
@@ -50,6 +51,9 @@ class HoldUntilDeclared(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if event.type != "work" and (event.type, event.action) != ("agent", "created"):
             return
+        bus.defer_once(f"undeclared {context.record.root} {context.record.env}", lambda: self.settle(context))
+
+    def settle(self, context: Context) -> None:
         if working(context):
             context.release()
         else:
