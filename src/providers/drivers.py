@@ -61,6 +61,7 @@ class Driver(ABC):
         self.session = session
         self.fd = fd
         self.born = time.time()
+        self.sent_now = 0.0
         self.held: list[str] = []
         self.failed = False
         self.yielding: list[str] = []
@@ -290,7 +291,10 @@ class Driver(ABC):
         return bool(self.QUEUED) and self.QUEUED in self._shown_since(since)
 
     def _send_now(self, since: int) -> bool:
-        return self.RUNNING not in self._shown_since(since) or self._wrote(self.SEND_NOW)
+        if self.RUNNING not in self._shown_since(since):
+            return True
+        self.sent_now = time.time()
+        return self._wrote(self.SEND_NOW)
 
     def _screen_file(self) -> Path:
         return runtime.session_file(self.record.root, self.session, "screen")

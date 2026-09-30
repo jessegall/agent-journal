@@ -47,6 +47,7 @@ def after(written: list, line: int) -> list[str]:
 
 
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
+MOVED_ON = "Moved a long command to the background"
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
 
 
@@ -378,12 +379,20 @@ class Engine(Seat):
                 actor.notify(e)
                 count += 1
         waiting = len(self.agent.pending)
+        flushed = time.time()
         line = self.agent.flush()
         if line:
             self.typed_at = time.time()
             self.noted(line, ran.DELIVERED)
+            if self.agent.driver.sent_now >= flushed:
+                self.moved_on()
             return f"typed {waiting} in one line"
         return f"delivered {count}" if count else ""
+
+    def moved_on(self) -> None:
+        row = self.agent.driver.last_report()
+        if row is not None:
+            Agents(self.record, actor=SYSTEM).card(row.n, label=MOVED_ON, icon="terminal", detail="Your message went in while the command runs on")
 
     def idle_without_report(self) -> bool:
         driver = self.agent.driver
