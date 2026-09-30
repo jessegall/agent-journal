@@ -10,6 +10,7 @@ from controllers.marks import internal
 from controllers.messages import Messages
 from controllers.notices import Notices
 from engine.record import Record
+from engine.sessions import Sessions
 from features.format import VIEWER
 from features.phone.resource import Phone
 from features.shaping import shaped
@@ -37,6 +38,7 @@ class Waiting(TypedDict):
 class Feed(TypedDict):
     items: list[dict]
     waiting: list[Waiting]
+    agent: bool
 
 
 class Code(TypedDict):
@@ -122,7 +124,8 @@ class Phones(Controller):
     def _feed(self, phone: Phone) -> Feed:
         home = self._home(phone)
         said = [self._said(home, kind, row) for kind in SAID for row in self._latest(home, kind)]
-        return Feed(items=sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:], waiting=self._waiting(phone))
+        return Feed(items=sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:], waiting=self._waiting(phone),
+                    agent=bool(Sessions(self.record.root).holder(phone.environment)))
 
     def _latest(self, home: Record, kind: str) -> list:
         rows = [row for row in CONTROLLERS[kind](home, actor=SYSTEM).summaries() if not row["deleted"]]
@@ -178,6 +181,13 @@ class Phones(Controller):
         if plan.updated != approval.updated or plan.status != "ready":
             raise Stale(f"plan {approval.n} changed since you opened it: look at it again")
         return plans.approve(plan.n)
+
+    def _stop(self, phone: Phone):
+        environments = CONTROLLERS["environment"](self._home(phone), actor=USER)
+        found = environments._titled(phone.environment)
+        if found is None:
+            raise Refused(f"environment {phone.environment!r} is gone")
+        return environments.stop(found.n)
 
     def _live(self) -> list[dict]:
         now = time.time()

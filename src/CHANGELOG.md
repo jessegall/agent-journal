@@ -4,6 +4,25 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.203.0 — Your phone, connected by a QR code
+
+The phone button in the viewer's top bar shows a code to scan. It works once, for ten
+minutes, and the phone it connects stays connected for 1, 7 or 30 days, through the same
+tunler address as shared links. On the phone the chat fills the screen; what needs you, open
+questions, plans ready to approve, new reports and documents, sits on one line at the top
+that opens in place. Answer a question from its card, with five seconds to undo; read a
+report, document or plan with its text size and reading progress; approve a plan after a
+confirmation or ask for changes; send the agent instructions; see whether an agent is running
+and stop it. Everything the phone does is recorded as you, naming the phone. Messages typed
+while your computer cannot be reached wait and send when it can.
+
+The phone holds a key in a secure cookie; the journal keeps only a fingerprint of it and of
+the one-time code, which rides after the # in the link so no server ever sees it. Every
+phone action must come from its own page, and a phone reaches only the environment it
+connected from. Disconnect a phone in the same dialog and its next tap is refused; each new
+phone puts a warning in the chat. A locked phone learns nothing new until it is opened:
+there are no notifications yet.
+
 ## 2.202.0 — The code follows its own commandments
 
 Every finding the code-commandments judge raised against the journal is fixed, except twelve

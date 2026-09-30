@@ -163,6 +163,9 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated - 5}, key).status == 409, "a plan that changed is not approved"
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated}, key).status == 201
     assert plans(record, actor=SYSTEM).load(plan.n).status == "approved"
+    assert call(base, "/p/feed", key=key).body["agent"] is False, "the phone sees no agent running"
+    stopped = call(base, "/p/stop", {}, key)
+    assert stopped.status == 422, "stopping with no agent running says so rather than failing"
 
 
 def test_a_connected_phone_keeps_the_tunnel_wanted(served):
