@@ -243,5 +243,7 @@ function sent() {
     min-height: 0;
     padding: 12px 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 </style>
