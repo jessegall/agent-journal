@@ -15,7 +15,7 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
-from controllers.types import Environments
+from controllers.types import Agents, Environments
 from controllers.notices import Notices
 from engine.record import Record
 from features.format import VIEWER
@@ -347,7 +347,8 @@ class Phones(Controller):
         items = [{**item, "reactions": faces.get(item["ref"], [])} for item in items]
         since = items[0]["created"] if items else before
         marks = [mark for mark in self._marks(home, since) if mark["created"] < before]
-        items = sorted([*items, *marks], key=lambda item: item["created"])
+        helpers = self._helpers(home) if any(item["data"].get("sent_to") for item in items) else {}
+        items = sorted([*({**item, "to": helpers.get(item["data"].get("sent_to"))} for item in items), *marks], key=lambda item: item["created"])
         return Feed(items=items, waiting=self._waiting(phone), agent=agent_state(home, phone.environment), notices=self._notices(home))
 
 
@@ -420,6 +421,9 @@ class Phones(Controller):
         if row.deleted or not self._reaches(phone, row) or name not in row.files or found.parent != folder or not found.is_file():
             raise Refused(f"no file {name!r} on {ref}")
         return found
+
+    def _helpers(self, home: Record) -> dict[str, str]:
+        return {sub["task_id"]: sub["task"] for row in Agents(home, actor=SYSTEM)._standing() for sub in row.data.get("subagent_rows") or [] if sub.get("task_id")}
 
     def _notices(self, home: Record) -> list[dict]:
         return [shaped(row, home, VIEWER) for row in CONTROLLERS["notice"](home, actor=SYSTEM)._standing() if not row.data.get("agent")]
