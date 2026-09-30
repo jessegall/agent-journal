@@ -10,6 +10,7 @@ class Tag:
     name: str
     runs: str
     hint: str
+    options: tuple[str, ...] = ()
 
     @property
     def command(self) -> re.Pattern:
@@ -23,12 +24,13 @@ TAGS = (
     Tag("todo", "todo create {name} --brief {text}", '[!todo="the title"] files it with the turn as its brief'),
     Tag("fact", "fact create {name} --brief {text}", '[!fact="the claim", keywords=(...)] files it with the turn as its brief'),
     Tag("rule", "rule create {name} --brief {text}", '[!rule="the ruling", keywords=(...)] files it with the turn as its brief'),
-    Tag(AWAIT, "work await {text}", "[!await] makes the rest of the turn what you wait for"),
+    Tag(AWAIT, "work await {text}", "[!await] makes the rest of the turn what you wait for; [!await on=(\"<id>\", \"helper:<n>\")] waits on those", ("on",)),
 )
 RUNS = {tag.name: tag.runs for tag in TAGS}
+OPTIONS = {tag.name: tag.options for tag in TAGS}
 RETIRED = ("discovery", "correction", "blocked", "info")
 VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
-EXTRA = r'\s*,\s*[a-z_]+=' + VALUE
+EXTRA = r'(?:\s*,\s*|\s+)[a-z_]+=' + VALUE
 ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')

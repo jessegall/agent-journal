@@ -2,7 +2,7 @@ import io
 
 from engine.events.engine import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
-from features.command_tags.reading import CARRIED, internal, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
+from features.command_tags.reading import CARRIED, OPTIONS, internal, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
 from resources.base import AGENT
 from features.command_line import command_line
 
@@ -24,12 +24,13 @@ class RunTagCommands(Handler):
                 continue
             out, err = io.StringIO(), io.StringIO()
             code = command_line().run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
-                        *self.argv(commands[name], n, argument, text), *self.settings(extras)], out=out, err=err)
+                        *self.argv(commands[name], n, argument, text), *self.settings(name, extras)], out=out, err=err)
             if code:
                 context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
 
-    def settings(self, extras: str) -> list[str]:
-        return [word for key, value in named(extras).items() for word in ("--set", f"{key}={value}")]
+    def settings(self, name: str, extras: str) -> list[str]:
+        return [word for key, value in named(extras).items()
+                for word in ((f"--{key}", value) if key in OPTIONS.get(name, ()) else ("--set", f"{key}={value}"))]
 
     def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
         return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]

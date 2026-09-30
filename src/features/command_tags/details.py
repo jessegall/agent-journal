@@ -29,7 +29,8 @@ class TagsDetails(FeatureDetails):
 
         [!await] <what you wait for> runs journal work await with the rest of the turn and keeps
         it out of the chat, which already shows what the work waits on: use it instead of a
-        work await command followed by a note.
+        work await command followed by a note. [!await on=("<id>", "helper:<n>")] <what> names
+        the runs, subagents or helpers it waits on, so it stands until they are back.
 
         tags.runs maps a tag to the command it stands for, so [!reply:12] runs
         journal message reply 12 with the turn as its text ([!reply:12,13] answers both messages with one reply), and [!todo="the title"] files a

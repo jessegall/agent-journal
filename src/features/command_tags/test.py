@@ -152,6 +152,13 @@ def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
         engine.announce_written()
     assert [n for n in Nudges(record).all() if 'keywords="' in n.brief and "--set" not in n.brief], "a refusal is said in the tag's own spelling"
     assert Rules(record, actor="system").all()[-1].data["keywords"] == ["git switch"], "a rule is filed by its tag"
+    from controllers.types import Works
+    work = Works(record, actor="agent").create("ship it")
+    text = '[!await on=("b36lq7m0o", "helper:2")] the suite and Rhea'
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": text})
+    engine.announce_written()
+    waited = Works(record, actor="system").load(work.n)
+    assert (waited.awaiting, waited.awaiting_on) == ("the suite and Rhea", "b36lq7m0o,helper:2"), "the await tag names what the wait is on"
 
 
 def test_one_reply_answers_several_messages():
