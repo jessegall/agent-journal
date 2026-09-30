@@ -11,7 +11,7 @@ from engine.worktree import checkout, environment
 from resources.base import AGENT, SYSTEM
 from engine import bus, chat, files, ran, runtime
 from engine.stored import read_json, write_json
-from providers import skill_folders
+from providers import PROVIDERS, skill_folders
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
 from engine.fields import Loaded
@@ -104,16 +104,33 @@ def display_chunk(root: Path, raw: dict) -> None:
     send_to_chat(root, session, "".join(parts[i] for i in sorted(parts, key=int)))
 
 
+def shown(parts: dict) -> str:
+    return "".join(parts[i] for i in sorted(parts, key=int)).strip()
+
+
 def stopped(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, {})
-        cut = [message for message, parts in held.items() if message != DONE
-               and "".join(parts[i] for i in sorted(parts, key=int)).strip() and text.strip().startswith("".join(parts[i] for i in sorted(parts, key=int)).strip())]
+        cut = [message for message, parts in held.items() if message != DONE and shown(parts) and text.strip().startswith(shown(parts))]
         if not cut:
             return
         write_json(f, {**{key: value for key, value in held.items() if key not in cut}, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
     send_to_chat(root, session, text)
+
+
+def unfinished(root: Path, session: str, row) -> None:
+    f = runtime.session_file(root, session, "displayed.json")
+    pending = [shown(parts) for message, parts in read_json(f, {}).items() if message != DONE and shown(parts)]
+    provider = PROVIDERS.get(row.provider)
+    if not pending or provider is None or not row.transcript:
+        return
+    for turn in provider().tail(row.transcript):
+        if turn.has_agent_text and any(turn.text.strip().startswith(prefix) for prefix in pending):
+            stopped(root, session, turn.text)
+    with SHOWING:
+        held = read_json(f, {})
+        write_json(f, {DONE: held.get(DONE, [])})
 
 
 def send_to_chat(root: Path, session: str, text: str) -> None:
@@ -189,4 +206,6 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
     if hook.event == "Stop" and hook.last_message:
         stopped(root, hook.session, hook.last_message)
+    if hook.event == "UserPromptSubmit":
+        unfinished(root, hook.session, row)
     return {}
