@@ -31,7 +31,7 @@ def kickoff(row, folder: Path) -> str:
 class Helpers(Controller):
     resource = Helper
 
-    def dispatch(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False) -> str:
+    def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False) -> str:
         from providers import DRIVERS
         if provider not in DRIVERS:
             raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
