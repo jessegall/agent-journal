@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
+import PhoneActions from "./PhoneActions.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
 import ReadTicks from "../kit/ReadTicks.vue";
@@ -8,7 +9,7 @@ import ChatMark from "../kit/ChatMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
 
-const props = defineProps({item: {type: Object, required: true}, fresh: {type: Boolean, default: false}});
+const props = defineProps({item: {type: Object, required: true}, fresh: {type: Boolean, default: false}, briefs: {type: Map, default: () => new Map()}});
 const files = computed(() => Object.keys(props.item.files || {}));
 const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
@@ -24,6 +25,7 @@ const about = computed(() => (props.item.who === "user" ? (props.item.refs || []
 const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const holdable = computed(() => props.item.type === "message");
+const quoted = computed(() => (about.value ? props.briefs.get(about.value) || "" : ""));
 const emit = defineEmits(["hold"]);
 const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(".turn").getBoundingClientRect());
 </script>
@@ -55,14 +57,19 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
             <div :class="['turn', item.who, {fresh}]" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
                 <template v-if="holdable">
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
-                    <button type="button" class="turn-actions" aria-label="Message actions" @click="pressed">
-                        <Icon name="dots" :size="14" />
-                    </button>
                 </template>
                 <template v-if="item.who !== 'user'">
-                    <span class="turn-who">Agent, {{ clock(item.created) }}</span>
+                    <span class="turn-who">
+                        Agent, {{ clock(item.created) }}
+                        <template v-if="holdable">
+                            <PhoneActions @press="pressed" />
+                        </template>
+                    </span>
                 </template>
-                <template v-if="about">
+                <template v-if="quoted">
+                    <a class="turn-quote" href="#" :data-peek="about" :aria-label="`Reply to: ${quoted}`">{{ quoted }}</a>
+                </template>
+                <template v-else-if="about">
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
                 <TextDisplay :text="item.brief || item.title" />
@@ -97,6 +104,9 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
                         <template v-if="elsewhere">from desktop ·</template>
                         {{ clock(item.created) }}
                         <ReadTicks :message="item" />
+                        <template v-if="holdable">
+                            <PhoneActions @press="pressed" />
+                        </template>
                     </span>
                 </template>
             </div>
@@ -166,34 +176,30 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
     transform: scale(calc(0.6 + 0.4 * var(--pull, 0)));
 }
 
-.turn-actions {
-    position: absolute;
-    top: 4px;
-    right: 4px;
+.turn-who {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: var(--hover);
-    color: var(--text-2);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.turn-actions:focus-visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.turn-who {
-    display: block;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 2px;
-    color: var(--text-3);
+    color: var(--text-2);
     font-size: 0.706rem;
+}
+
+.turn-quote {
+    display: -webkit-box;
+    margin: 0 0 6px;
+    padding: 4px 10px;
+    overflow: hidden;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--bg) 40%, transparent);
+    color: var(--text-2);
+    font-size: 0.824rem;
+    line-height: 1.3;
+    text-decoration: none;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .turn-thought {
@@ -301,7 +307,7 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
     justify-content: flex-end;
     gap: 4px;
     margin-top: 4px;
-    color: var(--text-3);
-    font-size: 0.676rem;
+    color: var(--text-2);
+    font-size: 0.706rem;
 }
 </style>

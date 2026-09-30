@@ -89,6 +89,9 @@ async function move(place, name) {
                             >
                                 <span :class="['places-state', {working: place.working.includes(name)}]" />
                                 <span class="places-env-name">{{ name }}</span>
+                                <template v-if="moving === `${place.root}:${name}`">
+                                    <Spinner />
+                                </template>
                                 <template v-if="here(place, name)">
                                     <span class="places-here">Open</span>
                                 </template>

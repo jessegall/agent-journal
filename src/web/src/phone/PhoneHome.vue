@@ -18,7 +18,9 @@ import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
-import {atThisPlace, discard, ended, flush, justSent, setPlace, settle, waitingToSend} from "./outbox.js";
+import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingToSend} from "./outbox.js";
+import PhoneSkeleton from "./PhoneSkeleton.vue";
+import {useFades} from "./fades.js";
 import {wanted} from "./wanted.js";
 import {clock} from "../format/time.js";
 import ReadTicks from "../kit/ReadTicks.vue";
@@ -87,7 +89,33 @@ async function asked() {
 
 let movedAt = 0;
 const still = () => Date.now() - movedAt > MOVING;
-const moved = () => (movedAt = Date.now());
+const ready = ref(false);
+const far = ref(false);
+const unseen = ref(0);
+const TALKING = ["message", "question"];
+let scrollFrame = 0;
+const briefs = computed(() => new Map(feed.value.items.filter((item) => item.type === "message").map((item) => [item.ref, plain(item.brief || item.title)])));
+
+function measure() {
+    scrollFrame = 0;
+    const el = list.value;
+    if (!el) return;
+    far.value = el.scrollHeight - el.clientHeight - el.scrollTop > el.clientHeight;
+    if (nearBottom()) unseen.value = 0;
+}
+
+function moved() {
+    movedAt = Date.now();
+    if (!scrollFrame) scrollFrame = requestAnimationFrame(measure);
+}
+
+function newest() {
+    const el = list.value;
+    if (!el) return;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({top: el.scrollHeight, behavior: smooth ? "smooth" : "auto"});
+    unseen.value = 0;
+}
 const DAY = 86400000;
 const dayOf = (seconds) => new Date(seconds * 1000).toDateString();
 const named = (seconds) => {
@@ -110,7 +138,13 @@ function took(got) {
     const keys = got.items.map(keyOf);
     freshKeys.value = new Set(seen ? keys.filter((key) => !seen.has(key)) : []);
     seen = new Set(keys);
+    if (!following) unseen.value += got.items.filter((item) => freshKeys.value.has(keyOf(item)) && TALKING.includes(item.type)).length;
     feed.value = got;
+    ready.value = true;
+    nextTick(() => {
+        fade();
+        measure();
+    });
     current.value = true;
     navigator.setAppBadge?.(got.waiting.length).catch(() => {});
     newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
@@ -200,6 +234,7 @@ onUnmounted(() => {
     window.removeEventListener("popstate", popped);
     document.removeEventListener("visibilitychange", returned);
     cancelAnimationFrame(loadFrame);
+    cancelAnimationFrame(scrollFrame);
     clearTimeout(moving);
     clearTimeout(noticeTimer);
 });
@@ -213,6 +248,7 @@ const backLabel = (i) => (i > 0 ? "Back" : LABELS[screen.value]);
 const stackStyle = computed(() => ({"--settle": `${edge.settle.value}ms`}));
 
 const chipped = chipOpener(open);
+const fade = useFades(list);
 
 function reply(target, start = "") {
     about.value = target;
@@ -230,9 +266,11 @@ async function react(face) {
     held.value = null;
     tick();
     const had = item.reactions || [];
-    item.reactions = had.some((r) => mine(r, face)) ? had.filter((r) => !mine(r, face)) : [...had, {face, who: "user"}];
+    const removing = had.some((r) => mine(r, face));
+    item.reactions = removing ? had.filter((r) => !mine(r, face)) : [...had, {face, who: "user"}];
     try {
-        await phone.react(item.n, face);
+        const went = await perform({kind: "react", n: item.n, face});
+        announce(went === "held" ? "Reaction waits to send" : removing ? `Removed ${face}` : `Reacted ${face}`);
         refresh();
     } catch (error) {
         item.reactions = had;
@@ -245,6 +283,11 @@ function noticed(words) {
     clearTimeout(noticeTimer);
     notice.value = words;
     noticeTimer = setTimeout(() => (notice.value = ""), 4000);
+}
+
+function arrived() {
+    picking.value = false;
+    emit("moved");
 }
 
 function leaving() {
@@ -341,36 +384,51 @@ function pick(key) {
             </div>
             <div class="panes">
                 <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'">
-                    <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @load.capture="loaded">
-                        <span ref="top" class="home-edge" />
-                        <template v-for="(item, i) in feed.items" :key="keyOf(item)">
-                            <template v-if="dividers[i]">
-                                <p class="home-day">{{ dividers[i] }}</p>
+                    <template v-if="switching || !ready">
+                        <PhoneSkeleton />
+                    </template>
+                    <template v-else>
+                        <div class="home-feed-box">
+                            <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @load.capture="loaded">
+                                <span ref="top" class="home-edge" />
+                                <template v-for="(item, i) in feed.items" :key="keyOf(item)">
+                                    <template v-if="dividers[i]">
+                                        <p class="home-day">{{ dividers[i] }}</p>
+                                    </template>
+                                    <PhoneTurn :item="item" :fresh="fresh(item)" :briefs="briefs" @hold="(it, rect) => it.type === 'message' && (held = {item: it, rect})" />
+                                </template>
+                                <template v-for="line in sentHere" :key="line.idempotency">
+                                    <p class="home-sent">
+                                        {{ line.brief }}
+                                        <span>
+                                            {{ clock(line.at / 1000) }}
+                                            <ReadTicks :message="SENDING" />
+                                        </span>
+                                    </p>
+                                </template>
+                                <template v-for="line in heldHere" :key="line.idempotency">
+                                    <template v-if="line.lost">
+                                        <p class="home-held">
+                                            {{ line.brief }}
+                                            <span>The attached file was lost, so this was not sent. Attach it again in a new message.</span>
+                                            <button type="button" class="home-drop" @click="discard(line.idempotency)">Remove</button>
+                                        </p>
+                                    </template>
+                                    <template v-else>
+                                        <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
+                                    </template>
+                                </template>
+                            </div>
+                            <template v-if="far">
+                                <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
+                                    <Icon name="down" :size="20" />
+                                    <template v-if="unseen">
+                                        <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
+                                    </template>
+                                </button>
                             </template>
-                            <PhoneTurn :item="item" :fresh="fresh(item)" @hold="(it, rect) => it.type === 'message' && (held = {item: it, rect})" />
-                        </template>
-                        <template v-for="line in sentHere" :key="line.idempotency">
-                            <p class="home-sent">
-                                {{ line.brief }}
-                                <span>
-                                    {{ clock(line.at / 1000) }}
-                                    <ReadTicks :message="SENDING" />
-                                </span>
-                            </p>
-                        </template>
-                        <template v-for="line in heldHere" :key="line.idempotency">
-                            <template v-if="line.lost">
-                                <p class="home-held">
-                                    {{ line.brief }}
-                                    <span>The attached file was lost, so this was not sent. Attach it again in a new message.</span>
-                                    <button type="button" class="home-drop" @click="discard(line.idempotency)">Remove</button>
-                                </p>
-                            </template>
-                            <template v-else>
-                                <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
-                            </template>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                     <template v-if="screen === 'chat'">
                         <PhoneStatus />
                     </template>
@@ -410,7 +468,7 @@ function pick(key) {
         </TransitionGroup>
     </div>
     <template v-if="picking">
-        <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="emit('moved')" />
+        <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="arrived" />
     </template>
     <template v-if="held">
         <PhoneHold :item="held.item" :rect="held.rect" @react="react" @reply="quoteIt(held.item)" @copy="copy" @close="held = null" />
@@ -723,6 +781,57 @@ function pick(key) {
     display: block;
     color: var(--text-3);
     font-size: 0.735rem;
+}
+
+.home-feed-box {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.home-newest {
+    position: absolute;
+    right: 0;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--raised);
+    color: var(--text);
+    box-shadow: var(--shadow-1);
+    animation: newest-in 200ms ease-out;
+}
+
+.home-unseen {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+@keyframes newest-in {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
 }
 
 .home-feed {

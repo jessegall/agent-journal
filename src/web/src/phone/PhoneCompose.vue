@@ -3,8 +3,8 @@ import {computed, inject, nextTick, onUnmounted, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {fitLines} from "../composables/fitLines.js";
-import {withQuote} from "../format/quote.js";
 import {ended, flush, hold} from "./outbox.js";
+import {announce} from "./announce.js";
 
 const MOST_LINES = 5;
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
@@ -63,17 +63,20 @@ async function send() {
     if (!ready.value || sending.value) return;
     sending.value = true;
     const text = said.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
-    hold(withQuote(props.quote, text), props.about, files.value);
+    hold(text, props.about, files.value);
     emit("unquote");
     words.value = "";
     files.value = [];
     emit("sending");
+    focus();
     nextTick(grow);
     try {
         await flush();
+        announce("Message sent");
         emit("sent");
     } catch (error) {
         if (ended(error)) failed(error);
+        else announce("Message waits to send");
     } finally {
         sending.value = false;
     }
@@ -110,7 +113,7 @@ async function send() {
             </div>
         </template>
         <div class="compose-bar" @click="tapped">
-            <button type="button" class="compose-clip" aria-label="Attach files or photos" @click="picker.click()">
+            <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.click()">
                 <Icon name="paperclip" :size="18" />
             </button>
             <input ref="picker" type="file" multiple hidden @change="picked" />
@@ -124,7 +127,7 @@ async function send() {
                 @input="grow"
             />
             <template v-if="ready">
-                <button type="submit" class="compose-send" :disabled="sending" aria-label="Send to the agent">
+                <button type="submit" class="compose-send" :disabled="sending" aria-label="Send to the agent" @mousedown.prevent>
                     <Icon name="up" :size="18" />
                 </button>
             </template>
@@ -169,11 +172,16 @@ async function send() {
     position: relative;
 }
 
-.compose-clip::after,
-.compose-send::after {
+.compose-send::before {
     position: absolute;
-    inset: -5px;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--accent);
     content: "";
+}
+
+.compose-send :deep(svg) {
+    position: relative;
 }
 
 .compose-clip {
@@ -181,8 +189,9 @@ async function send() {
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+    margin: -5px;
     border: 0;
     background: none;
     color: var(--text-3);
@@ -253,11 +262,11 @@ async function send() {
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+    margin: -5px;
     border: 0;
-    border-radius: 50%;
-    background: var(--accent);
+    background: none;
     color: #fff;
 }
 

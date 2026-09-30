@@ -57,10 +57,9 @@ const summary = computed(() => {
 .waiting-summary {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
+    padding: 10px 0;
     font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.25;
 }
 
 .waiting-go {

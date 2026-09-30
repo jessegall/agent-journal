@@ -9,7 +9,7 @@ import {useUnder} from "./under.js";
 const LIST_EVERY = 15000;
 const SHOWN = 5;
 const WAITING = "waiting";
-const DEFAULT = [WAITING, "todo", "question", "agent"];
+const DEFAULT = [WAITING, "todo", "question", "plan", "report", "doc", "agent"];
 const NAMES = {
     waiting: "Needs you",
     todo: "To-dos",

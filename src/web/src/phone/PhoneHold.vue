@@ -11,6 +11,14 @@ const TOP = 56;
 const props = defineProps({item: {type: Object, required: true}, rect: {type: Object, default: null}});
 const emit = defineEmits(["react", "reply", "copy", "close"]);
 const box = ref(null);
+const faces = ref(null);
+const edges = ref({left: false, right: false});
+
+function scrolled() {
+    const el = faces.value;
+    if (!el) return;
+    edges.value = {left: el.scrollLeft > 1, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1};
+}
 const top = ref(0);
 const mine = computed(() => props.item.who === "user");
 const hint = firstTime("phone-reply-hint");
@@ -27,6 +35,7 @@ onMounted(() => {
     const wanted = props.rect ? props.rect.top - 60 : window.innerHeight / 3;
     top.value = wanted;
     nextTick(() => {
+        scrolled();
         const tall = box.value?.offsetHeight || 0;
         top.value = Math.max(TOP, Math.min(wanted, window.innerHeight - tall - MARGIN * 3));
     });
@@ -38,7 +47,7 @@ onMounted(() => {
         <button type="button" class="hold-backdrop" aria-label="Close" tabindex="-1" @click="emit('close')" />
         <div ref="box" :class="['hold-box', {mine}]" role="dialog" aria-modal="true" aria-label="Message actions" tabindex="-1" :style="{top: `${top}px`, ...side}">
             <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
-            <div class="hold-faces" role="group" aria-label="React">
+            <div ref="faces" :class="['hold-faces', {'fade-left': edges.left, 'fade-right': edges.right}]" role="group" aria-label="React" @scroll.passive="scrolled">
                 <template v-for="face in FACES" :key="face">
                     <button type="button" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</button>
                 </template>
@@ -214,6 +223,9 @@ onMounted(() => {
 .hold-hint {
     max-width: 240px;
     margin: 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--raised);
     color: var(--text-2);
     font-size: 0.765rem;
 }

@@ -1,6 +1,6 @@
 <script setup>
 defineProps({state: {type: String, required: true}});
-const WORDS = {offline: "Offline", idle: "Idle", working: "Working"};
+const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
 </script>
 
 <template>

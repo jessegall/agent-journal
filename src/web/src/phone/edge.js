@@ -1,4 +1,4 @@
-import {onUnmounted, ref} from "vue";
+import {onUnmounted, ref, watch} from "vue";
 import {CONTROLS, sidewaysScroller, useDrag} from "./drag.js";
 
 const EDGE = 24;
@@ -18,6 +18,12 @@ export function useEdgeBack(stack, {depth, back}) {
     let awaiting = -1;
 
     const width = () => stack.value?.clientWidth || 1;
+    const departing = () => [...(stack.value?.querySelectorAll(".page:not(.beneath):not(.buried)") || [])].at(-1);
+    const covers = (x) => {
+        const page = departing();
+        return Boolean(page) && page.getBoundingClientRect().left <= x;
+    };
+    const slid = (event) => pending && event.propertyName === "transform" && event.target === departing() && rest();
     const busy = () => pending !== null || awaiting >= 0;
 
     function pulled(dx) {
@@ -50,8 +56,9 @@ export function useEdgeBack(stack, {depth, back}) {
         axis: "x",
         begin: (event, first) => {
             if (busy()) {
+                const covered = covers(first.clientX);
                 if (pending) rest();
-                return {held: true};
+                return covered ? {held: true} : null;
             }
             if (!depth() || first.clientX > EDGE || event.target.closest(CONTROLS)) return null;
             if (sidewaysScroller(event.target, stack.value)) return null;
@@ -87,7 +94,17 @@ export function useEdgeBack(stack, {depth, back}) {
         return true;
     }
 
+    watch(
+        stack,
+        (el, before) => {
+            before?.removeEventListener("transitionend", slid);
+            el?.addEventListener("transitionend", slid);
+        },
+        {immediate: true, flush: "post"},
+    );
+
     onUnmounted(() => {
+        stack.value?.removeEventListener("transitionend", slid);
         clearTimeout(resting);
         clearTimeout(stuck);
     });

@@ -9,6 +9,8 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 import {ended, flush, hold, perform} from "./outbox.js";
 import {chipOpener} from "./peeked.js";
+import {todoFacts} from "./todo.js";
+import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
 import {announce} from "./announce.js";
@@ -38,6 +40,9 @@ const under = useUnder(edge);
 const titled = useUnder(heading);
 const phases = computed(() => (row.value && row.value.data.phases) || []);
 const goal = computed(() => (row.value && row.value.data.goal) || "");
+const todo = computed(() => (row.value && row.value.type === "todo" ? todoFacts(row.value) : null));
+const body = ref(null);
+const fade = useFades(body);
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
 
 const buttons = computed(() => (row.value ? liveButtons(row.value) : []));
@@ -117,6 +122,7 @@ function scrolled(event) {
 onMounted(async () => {
     await load();
     await nextTick();
+    fade();
     (heading.value || backButton.value)?.focus({preventScroll: true});
 });
 </script>
@@ -137,7 +143,7 @@ onMounted(async () => {
             <span class="reader-progress" :style="{width: `${progress * 100}%`}" />
         </header>
         <template v-if="row">
-            <div class="reader-body" data-scroller :style="{fontSize: `${SIZES[size]}rem`}" @scroll.passive="scrolled">
+            <div ref="body" class="reader-body" data-scroller :style="{fontSize: `${SIZES[size]}rem`}" @scroll.passive="scrolled">
                 <span ref="edge" class="reader-edge" />
                 <template v-if="row.type === 'question'">
                     <PhoneQuestion :question="row" @done="emit('next')" />
@@ -147,6 +153,26 @@ onMounted(async () => {
                     <h1 ref="heading" class="reader-title" tabindex="-1">{{ row.title }}</h1>
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>
+                    </template>
+                    <template v-if="todo">
+                        <dl class="reader-facts">
+                            <template v-for="fact in todo.facts" :key="fact.label">
+                                <div class="reader-fact">
+                                    <dt>{{ fact.label }}</dt>
+                                    <dd>{{ fact.value }}</dd>
+                                </div>
+                            </template>
+                            <template v-if="todo.after.length">
+                                <div class="reader-fact">
+                                    <dt>Waits on</dt>
+                                    <dd>
+                                        <template v-for="ref in todo.after" :key="ref">
+                                            <a class="reader-chip" href="#" :data-peek="ref">{{ ref.replace(":", " ") }}</a>
+                                        </template>
+                                    </dd>
+                                </div>
+                            </template>
+                        </dl>
                     </template>
                     <template v-if="row.abstract">
                         <TextDisplay class="reader-abstract" :text="row.abstract" />
@@ -364,8 +390,51 @@ onMounted(async () => {
     background: var(--accent);
 }
 
+.reader-facts {
+    margin: 0 0 16px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--raised);
+    font-size: 1rem;
+}
+
+.reader-fact {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    min-height: 44px;
+    padding: 11px 16px;
+}
+
+.reader-fact + .reader-fact {
+    border-top: 1px solid var(--line);
+}
+
+.reader-fact dt {
+    color: var(--text-2);
+}
+
+.reader-fact dd {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    color: var(--text);
+    text-align: right;
+}
+
+.reader-chip {
+    padding: 1px 8px;
+    border-radius: 9px;
+    background: var(--hover);
+    color: var(--accent-text);
+    text-decoration: none;
+}
+
 .reader-body {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior-y: contain;
@@ -420,6 +489,9 @@ onMounted(async () => {
 .reader-foot {
     display: flex;
     flex: none;
+    max-height: 45%;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
     flex-direction: column;
     gap: 8px;
     max-width: none;
@@ -442,6 +514,10 @@ onMounted(async () => {
 .reader-foot :deep(.btn.primary) {
     background: var(--accent);
     color: #fff;
+}
+
+.reader-foot:empty {
+    display: none;
 }
 
 .reader-told {

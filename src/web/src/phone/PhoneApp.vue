@@ -83,6 +83,7 @@ useScreenFill();
 onMounted(() => {
     document.addEventListener("touchstart", pressable, {passive: true});
     navigator.serviceWorker?.addEventListener("message", heard);
+    navigator.serviceWorker?.register("./sw.js", {scope: "./"}).catch(() => {});
     load();
 });
 onUnmounted(() => {

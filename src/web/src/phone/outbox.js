@@ -9,6 +9,7 @@ const RUN = {
     answer: (action) => phone.answer(action.n, action.answer),
     dismiss: (action) => phone.dismiss(action.n),
     approve: (action) => phone.approve(action.n, action.updated),
+    react: (action) => phone.react(action.n, action.face),
 };
 
 function kept(key = KEY) {
