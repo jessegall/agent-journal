@@ -33,8 +33,10 @@ from features.status_bar.bar import current
 from resources.shapes import level_named
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused, titled
 from features.work_modes.modes import mode_of, pick
+from features.helpers.controller import Helpers
 
 CODE_SECONDS = 600
+HELPERS_SHOWN = 10
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
@@ -149,6 +151,7 @@ class Running(TypedDict):
     usage: list[dict]
     auto: bool
     mode: str
+    helpers: list[dict]
 
 
 class Feed(TypedDict):
@@ -453,11 +456,15 @@ class Phones(Controller):
     def _running(self, home: Record, environment: str) -> Running:
         holder = Sessions(home.root).holder(environment)
         row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
-        auto = bool(home.setting("features", {}).get(AUTO))
+        shared = dict(state=agent_state(home, environment), auto=bool(home.setting("features", {}).get(AUTO)), mode=mode_of(home), helpers=self._helpers_of(home))
         if row is None:
-            return Running(state=agent_state(home, environment), paused=False, context=0, usage=[], auto=auto, mode=mode_of(home))
-        return Running(state=agent_state(home, environment), paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])),
-                       auto=auto, mode=mode_of(home))
+            return Running(paused=False, context=0, usage=[], **shared)
+        return Running(paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), **shared)
+
+    def _helpers_of(self, home: Record) -> list[dict]:
+        return [{"n": row.n, "title": row.title, "completed": row.completed,
+                 "data": {"name": row.name, "provider": row.provider, "model": row.model, "report": row.report}}
+                for row in Helpers(home, actor=SYSTEM).all(completed=True, last=HELPERS_SHOWN)]
 
     def _holder(self, phone: Phone) -> str:
         holder = Sessions(self._home(phone).root).holder(phone.environment)

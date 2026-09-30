@@ -11,6 +11,7 @@ import {ended} from "./outbox.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 import PhoneAgentControls from "./PhoneAgentControls.vue";
+import PhoneHelpers from "./PhoneHelpers.vue";
 
 const props = defineProps({
     state: {type: String, required: true},
@@ -29,7 +30,8 @@ const running = computed(() => props.state !== "offline");
 onMounted(async () => {
     try {
         const [bar, places] = await Promise.all([phone.bar(), phone.places()]);
-        doing.value = plainDoing(line(bar.queue?.at(-1), 0)?.text || "");
+        const words = plainDoing(line(bar.queue?.at(-1), 0)?.text || "");
+        doing.value = words === "Working" ? "" : words;
         root.value = places.at;
     } catch (error) {
         if (ended(error)) failed(error);
@@ -80,6 +82,7 @@ async function start(agent) {
                 </div>
             </template>
         </dl>
+        <PhoneHelpers :helpers="live.helpers || []" />
         <template v-if="running">
             <PhoneAgentControls :running="live" :environment="environment" @changed="emit('changed')" />
         </template>

@@ -15,6 +15,9 @@ import AgentControls from "./AgentControls.vue";
 import AgentUsage from "./AgentUsage.vue";
 import "./drop.css";
 import SwitchCase from "../kit/SwitchCase.vue";
+import HelperList from "./HelperList.vue";
+import {useHelpers} from "./helpers.js";
+import {helperState} from "../domain/helpers.js";
 import {go, peek, route} from "../route.js";
 import {span} from "../format/time.js";
 import {agent, feedOn, store} from "../state/store.js";
@@ -48,6 +51,7 @@ const viewGroups = computed(() =>
         return {key, items, shown: items.some((v) => !v.open)};
     })
 );
+const {rows: helpers, refresh: refreshHelpers} = useHelpers();
 const counts = computed(() => [
     {
         key: "skills",
@@ -68,6 +72,13 @@ const counts = computed(() => [
         icon: "agents",
         n: live(data.value && data.value.subagent_rows),
         title: "Subagents: helpers the agent dispatched",
+        rows: [],
+    },
+    {
+        key: "helpers",
+        icon: "family",
+        n: helpers.value.filter((row) => helperState(row) !== "finished").length,
+        title: "Helpers: agents on other providers that this session dispatched",
         rows: [],
     },
     {
@@ -397,6 +408,9 @@ function openSkills() {
                             :rows="data.monitor_rows || []"
                             :total="data.monitors || 0"
                         />
+                    </template>
+                    <template #helpers>
+                        <HelperList :rows="helpers" @changed="refreshHelpers" />
                     </template>
                     <template #shells>
                         <CrewList
