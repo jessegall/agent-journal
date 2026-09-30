@@ -16,6 +16,7 @@ import ReadTicks from "../kit/ReadTicks.vue";
 
 const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
+const MOVING = 800;
 const SENDING = {completed: 0, seen: [], data: {}};
 const READABLE = ["question", "report", "doc", "plan", "todo", "work", "fact", "rule"];
 defineProps({connection: {type: Object, required: true}});
@@ -41,11 +42,14 @@ async function asked() {
     }
 }
 
+let movedAt = 0;
+const still = () => Date.now() - movedAt > MOVING;
+const moved = () => (movedAt = Date.now());
 const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
 
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got) return;
-    const following = nearBottom();
+    const following = nearBottom() && still();
     feed.value = got;
     settle(got.items);
     if (following) toBottom();
@@ -53,7 +57,6 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
 provide("phoneRefresh", refresh);
 
 const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight));
-watch(() => feed.value.items.length + waitingToSend.value.length + justSent.value.length, toBottom);
 watch(reading, (target) => !target && toBottom());
 watch(list, (el) => el && toBottom());
 
@@ -122,7 +125,7 @@ function sent() {
         <PhoneReader :key="reading" :target="reading" @close="reading = ''" @reply="reply" />
     </template>
     <template v-else>
-        <div ref="list" class="home-feed" @click.capture="chipped" @load.capture="nearBottom() && toBottom()">
+        <div ref="list" class="home-feed" @click.capture="chipped" @scroll.passive="moved" @load.capture="nearBottom() && still() && toBottom()">
             <template v-for="item in feed.items" :key="item.type + item.n">
                 <PhoneTurn :item="item" @hold="(it) => it.type === 'message' && (held = it)" />
             </template>
