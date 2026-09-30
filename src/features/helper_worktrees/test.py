@@ -1,0 +1,135 @@
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+
+import features
+from engine.record import Record
+from features.helper_worktrees.controller import Worktrees
+from providers import PROVIDERS
+from resources.base import AGENT
+from runner.hooks import handle
+from tests.conftest import fresh, refused
+
+
+def git(where: Path, *args: str) -> str:
+    return subprocess.run(["git", *args], cwd=where, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
+
+
+def commit(where: Path, name: str, text: str) -> str:
+    (where / name).write_text(text)
+    git(where, "add", name)
+    git(where, "commit", "-q", "-m", f"write {name}")
+    return git(where, "rev-parse", "HEAD")
+
+
+@dataclass(frozen=True)
+class Repo:
+    record: Record
+    project: Path
+
+
+def project_on(branch: str) -> Repo:
+    record = fresh()
+    record.root.mkdir(parents=True, exist_ok=True)
+    project = record.root.resolve().parent
+    git(project, "init", "-q", "-b", "main")
+    git(project, "config", "user.email", "t@t")
+    git(project, "config", "user.name", "t")
+    (project / ".gitignore").write_text("/.journal\n/.claude/worktrees/\n")
+    git(project, "add", ".gitignore")
+    git(project, "commit", "-q", "-m", "start")
+    git(project, "checkout", "-q", "-b", branch)
+    commit(project, "shared.txt", "one\n")
+    return Repo(record, project)
+
+
+def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
+    features.load()
+    repo = project_on("phone-connection")
+    record, project = repo.record, repo.project
+    working_tip = commit(project, "later.txt", "later\n")
+    said = Worktrees(record, actor=AGENT).cut("rhea", helper="Rhea")
+    row = Worktrees(record, actor=AGENT).all()[0]
+    folder = Path(row.path)
+    assert (row.working, row.base, row.branch, row.helper) == ("phone-connection", working_tip, "helper-rhea", "Rhea"), \
+        "the row names the working branch, the commit it was cut at, its branch and its helper"
+    assert git(folder, "rev-parse", "HEAD") == working_tip and (folder / "later.txt").is_file(), \
+        "the worktree starts at the working branch's tip, with its latest commit, not at main"
+    assert str(folder) in said and "helper-rhea" in said, "the path and branch are printed for the dispatch prompt"
+    assert (folder / ".journal").resolve() == record.root.resolve(), "the helper writes to the project's journal"
+    assert refused(lambda: Worktrees(record, actor=AGENT).cut("rhea")).startswith("the worktree rhea is taken"), "a name is cut once"
+
+
+def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased():
+    features.load()
+    repo = project_on("phone-connection")
+    record, project = repo.record, repo.project
+    worktrees = Worktrees(record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    folder = Path(row.path)
+    commit(folder, "helper.txt", "from the helper\n")
+    commit(project, "main.txt", "meanwhile\n")
+    assert "phone-connection gained 1 commit" in worktrees.drift(row.n) and "does not contain" in worktrees.drift(row.n), \
+        "drift names what the working branch gained and that the helper lacks its tip"
+    assert "rebase it onto phone-connection" in refused(lambda: worktrees.take(row.n)), "a stale branch is refused, with the rebase to do"
+    git(folder, "rebase", "-q", "phone-connection")
+    assert worktrees.take(row.n).startswith("took 1 commit from helper-rhea onto phone-connection"), "a rebased branch is taken"
+    assert (project / "helper.txt").read_text() == "from the helper\n" and git(project, "log", "-1", "--format=%s") == "write helper.txt", \
+        "the helper's commit lands on the working branch by cherry-pick"
+
+
+def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
+    features.load()
+    repo = project_on("phone-connection")
+    record, project = repo.record, repo.project
+    worktrees = Worktrees(record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    commit(Path(row.path), "shared.txt", "changed by the helper\n")
+    (project / "shared.txt").write_text("someone else's edit\n")
+    assert "shared.txt" in refused(lambda: worktrees.take(row.n)), "another agent's edit to a touched file is never overwritten"
+    git(project, "checkout", "--", "shared.txt")
+    (project / "unrelated.txt").write_text("someone else's work\n")
+    assert worktrees.take(row.n).startswith("took 1 commit"), "an unrelated uncommitted file does not stop the take"
+    assert (project / "unrelated.txt").read_text() == "someone else's work\n", "and it is left as it was"
+
+
+def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never():
+    features.load()
+    repo = project_on("phone-connection")
+    record, project = repo.record, repo.project
+    worktrees = Worktrees(record, actor=AGENT)
+    worktrees.cut("rhea")
+    folder = Path(worktrees.all()[0].path)
+    provider = PROVIDERS["claude"]()
+    read = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(project), "tool_name": "Read",
+            "tool_input": {"file_path": str(folder / "shared.txt")}}
+    helper = lambda: handle(provider, record.root, record.env, {**read, "agent_id": "rhea"}).get("reason", "")
+    assert helper() == "", "nothing is said while the working branch has not moved"
+    commit(project, "main.txt", "meanwhile\n")
+    told = helper()
+    assert told.startswith("phone-connection moved 1 commit") and "rebase onto phone-connection" in told, "the helper is told the branch moved"
+    assert helper() == "", "once for that tip"
+    assert "moved" not in handle(provider, record.root, record.env, read).get("reason", ""), \
+        "the main agent reading the helper's files is never told to rebase"
+    commit(project, "again.txt", "and again\n")
+    assert helper().startswith("phone-connection moved 2 commits"), "a new tip is told again"
+
+
+def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
+    features.load()
+    repo = project_on("phone-connection")
+    record, project = repo.record, repo.project
+    worktrees = Worktrees(record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    folder = Path(row.path)
+    last = commit(folder, "helper.txt", "kept\n")
+    (folder / "loose.txt").write_text("not committed\n")
+    assert "uncommitted changes" in refused(lambda: worktrees.complete(row.n)), "uncommitted work is never thrown away"
+    (folder / "loose.txt").unlink()
+    worktrees.complete(row.n)
+    assert (folder.exists(), git(project, "branch", "--list", "helper-rhea")) == (False, ""), "the worktree and its branch are gone"
+    assert git(project, "rev-parse", "refs/journal/helpers/rhea") == last, "its last commit is kept under refs/journal/helpers"
+    assert refused(lambda: worktrees.take(row.n)) == f"worktree {row.n} is dropped", "a dropped worktree takes nothing"
