@@ -1,0 +1,33 @@
+import time
+from typing import ClassVar
+
+from resources.base import PROJECT, Resource, ResourceDetails
+from resources.shapes import NUMBER, TEXT, Field, Shape
+
+
+class Phone(Shape, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Phone",
+        abstract="A phone the user connected by scanning a code, which reads the chat and acts as the user from anywhere",
+        help="The viewer's Connect your phone dialog shows the code; journal phone disconnect <n> cuts a phone off at once.",
+    )
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, name="environment"),
+        Field(TEXT, name="key"),
+        Field(TEXT, name="code"),
+        Field(NUMBER, default=0, name="code_until"),
+        Field(NUMBER, default=7, name="days"),
+        Field(NUMBER, default=0, name="expires"),
+        Field(NUMBER, default=0, name="last_seen"),
+    ]
+    type = "phone"
+    icon = "phone"
+    scope = PROJECT
+    takes_comments = False
+    in_sidebar = False
+    indexed = ("environment", "key", "code", "code_until", "expires", "last_seen")
+    command_names = {"complete": "disconnect"}
+
+    @property
+    def connected(self) -> bool:
+        return bool(self.key) and not self.completed and self.expires > time.time()
