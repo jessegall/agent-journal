@@ -49,6 +49,7 @@ LISTED = 20
 MOST_TRIES = 10
 SAID = ("message", "question", "comment")
 REACTED = ("message", "comment")
+AUTO = "work_tracking.auto"
 HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
 
@@ -145,6 +146,7 @@ class Running(TypedDict):
     paused: bool
     context: int
     usage: list[dict]
+    auto: bool
 
 
 class Feed(TypedDict):
@@ -271,7 +273,15 @@ class Phones(Controller):
         if found is None or moving.environment not in found.environments:
             raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
-        return super().update(phone.n, journal=journal, environment=moving.environment)
+        return super().update(phone.n, journal=journal, environment=moving.environment, picked={**phone.picked, found.root: time.time()})
+
+    def _picked(self, phone: Phone) -> list[Place]:
+        return sorted(self._places(), key=lambda place: -phone.picked.get(place.root, 0.0))
+
+    def _auto(self, phone: Phone, on: bool) -> bool:
+        home = self._home(phone)
+        home.set_setting("features", {**home.setting("features", {}), AUTO: on})
+        return on
 
     def _list(self, phone: Phone, kind: str) -> Listing:
         if kind not in CARDS:
@@ -436,9 +446,10 @@ class Phones(Controller):
     def _running(self, home: Record, environment: str) -> Running:
         holder = Sessions(home.root).holder(environment)
         row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
+        auto = bool(home.setting("features", {}).get(AUTO))
         if row is None:
-            return Running(state=agent_state(home, environment), paused=False, context=0, usage=[])
-        return Running(state=agent_state(home, environment), paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])))
+            return Running(state=agent_state(home, environment), paused=False, context=0, usage=[], auto=auto)
+        return Running(state=agent_state(home, environment), paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), auto=auto)
 
     def _holder(self, phone: Phone) -> str:
         holder = Sessions(self._home(phone).root).holder(phone.environment)

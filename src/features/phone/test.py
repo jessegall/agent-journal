@@ -275,6 +275,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert call(base, "/p/stop", {}, key).status == 422 and call(base, "/p/pause", {}, key).status == 422, "with no agent running there is nothing to stop or pause"
     running = call(base, "/p/feed", key=key).body["running"]
     assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"
+    assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \
+        "the phone switches auto mode, the same setting the desktop's switch flips"
 
 
 def test_a_connected_phone_keeps_the_tunnel_wanted(served):

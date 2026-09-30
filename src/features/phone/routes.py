@@ -71,6 +71,15 @@ class Reacting:
 
 
 @dataclass(frozen=True)
+class Switching:
+    on: bool
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Switching":
+        return cls(on=given.get("on") is True)
+
+
+@dataclass(frozen=True)
 class Sharing:
     ref: str
 
@@ -222,7 +231,7 @@ class PhoneRoutes:
         if rest == ["push-key"]:
             return self.json(handler, 200, {"key": self.phones(handler)._push_key()})
         if rest == ["places"]:
-            return self.json(handler, 200, {"places": [asdict(place) for place in self.phones(handler)._places()],
+            return self.json(handler, 200, {"places": [asdict(place) for place in self.phones(handler)._picked(phone)],
                                             "at": str(self.phones(handler)._home(phone).root.resolve())})
         if rest == ["state"]:
             known = identity(self.phones(handler)._home(phone).root)
@@ -271,6 +280,8 @@ class PhoneRoutes:
             except Refused as refused:
                 return handler.answer(422, str(refused))
             return self.json(handler, 201, {"done": rest[0]})
+        if rest == ["auto"]:
+            return self.json(handler, 201, {"auto": phones._auto(phone, Switching.from_payload(body).on)})
         if rest == ["share"]:
             try:
                 return self.json(handler, 201, {"link": self.phones(handler)._share(phone, Sharing.from_payload(body).ref)})
