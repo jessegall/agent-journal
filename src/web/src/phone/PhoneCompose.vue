@@ -7,20 +7,30 @@ import {ended, flush, hold} from "./outbox.js";
 
 const MOST_LINES = 5;
 const props = defineProps({about: {type: String, default: ""}});
-const emit = defineEmits(["sent", "unabout"]);
+const emit = defineEmits(["sending", "sent", "unabout"]);
 const failed = inject("phoneFailed");
 const words = ref("");
+const files = ref([]);
+const picker = ref(null);
 const box = ref(null);
 const sending = ref(false);
 const said = computed(() => words.value.trim());
+const ready = computed(() => Boolean(said.value || files.value.length));
+
+function picked(event) {
+    files.value = [...files.value, ...event.target.files];
+    event.target.value = "";
+}
 
 const grow = () => fitLines(box.value, MOST_LINES);
 
 async function send() {
-    if (!said.value || sending.value) return;
+    if (!ready.value || sending.value) return;
     sending.value = true;
-    hold(said.value, props.about);
+    hold(said.value || `Sent ${files.value.map((file) => file.name).join(", ")}`, props.about, files.value);
     words.value = "";
+    files.value = [];
+    emit("sending");
     nextTick(grow);
     try {
         await flush();
@@ -41,7 +51,21 @@ async function send() {
                 <CloseButton @click="emit('unabout')" />
             </div>
         </template>
+        <template v-if="files.length">
+            <div class="compose-files">
+                <template v-for="(file, i) in files" :key="file.name + file.size + file.lastModified">
+                    <span class="compose-file">
+                        {{ file.name }}
+                        <CloseButton @click="files = files.filter((_, at) => at !== i)" />
+                    </span>
+                </template>
+            </div>
+        </template>
         <div class="compose-bar">
+            <button type="button" class="compose-clip" aria-label="Attach files or photos" @click="picker.click()">
+                <Icon name="paperclip" :size="18" />
+            </button>
+            <input ref="picker" type="file" multiple hidden @change="picked" />
             <textarea
                 ref="box"
                 v-model="words"
@@ -51,7 +75,7 @@ async function send() {
                 aria-label="Message the agent"
                 @input="grow"
             />
-            <template v-if="said">
+            <template v-if="ready">
                 <button type="submit" class="compose-send" :disabled="sending" aria-label="Send to the agent">
                     <Icon name="up" :size="18" />
                 </button>
@@ -86,10 +110,43 @@ async function send() {
     display: flex;
     align-items: flex-end;
     gap: 6px;
-    padding: 5px 5px 5px 14px;
+    padding: 5px 5px 5px 4px;
     border: 1px solid var(--border-2);
     border-radius: 22px;
     background: var(--raised);
+}
+
+.compose-clip {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+}
+
+.compose-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.compose-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 2px 4px 2px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    color: var(--text-2);
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .compose-words {

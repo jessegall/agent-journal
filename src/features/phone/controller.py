@@ -1,6 +1,8 @@
 import hashlib
 import secrets
+import tempfile
 import time
+from pathlib import Path
 from typing import TypedDict
 
 import controllers.types as types_module
@@ -153,7 +155,7 @@ class Phones(Controller):
     def _said(self, home: Record, kind: str, row) -> dict | None:
         if kind == "message" and row.data.get("window"):
             return None
-        return {**shaped(row, home, VIEWER), "who": row.seen[0] if kind == "message" and row.seen else "agent"}
+        return {**shaped(row, home, VIEWER), "who": row.seen[0] if kind == "message" and row.seen else "agent", "files": dict(row.files)}
 
     def _waiting(self, phone: Phone) -> list[Waiting]:
         home = self._home(phone)
@@ -193,6 +195,17 @@ class Phones(Controller):
         if not chosen.answer.strip():
             raise Refused("an answer needs words")
         return questions.complete(chosen.n, how=chosen.answer.strip(), via=f"phone:{phone.n}")
+
+    def _attach(self, phone: Phone, n: int, name: str, data: bytes):
+        messages = Messages(self._home(phone), actor=USER)
+        message = messages.load(n)
+        if message.deleted or message.data.get("via") != f"phone:{phone.n}":
+            raise Refused(f"message {n} was not sent from this phone")
+        named = Path(name).name.strip() or "file"
+        with tempfile.TemporaryDirectory() as folder:
+            kept = Path(folder) / named
+            kept.write_bytes(data)
+            return messages.attach(message.n, str(kept))
 
     def _dismiss(self, phone: Phone, n: int):
         questions = CONTROLLERS["question"](self._home(phone), actor=USER)

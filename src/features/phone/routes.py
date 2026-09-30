@@ -16,6 +16,8 @@ ICONS = {"icon-180.png": 180, "icon-192.png": 192, "icon-512.png": 512}
 PAGE_HEADERS = {**APP_HEADERS, "Content-Security-Policy": APP_HEADERS["Content-Security-Policy"] + "; manifest-src 'self'"}
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
+UPLOAD_LIMIT = 25 * 1024 * 1024
+UPLOADED = "application/octet-stream"
 LOCAL = ("127.0.0.1", "localhost")
 
 
@@ -105,6 +107,8 @@ class PhoneRoutes:
         return handler.send(200, json.dumps(body).encode(), {"Content-Type": "application/manifest+json", "Cache-Control": "no-store"})
 
     def post(self, handler, rest: list[str]) -> None:
+        if rest[:1] == ["attach"]:
+            return self.attach(handler, rest[1:])
         if not self.trusted(handler):
             return handler.answer(403, "refused")
         body = self.body(handler)
@@ -129,6 +133,22 @@ class PhoneRoutes:
             return handler.answer(422, str(refused))
         return self.json(handler, 201, {"n": made.n})
 
+    def attach(self, handler, rest: list[str]) -> None:
+        if not self.trusted(handler, UPLOADED):
+            return handler.answer(403, "refused")
+        length = handler.headers.get("Content-Length", "")
+        size = int(length) if length.isdigit() else 0
+        if len(rest) != 2 or not rest[0].isdigit() or not 0 < size <= UPLOAD_LIMIT:
+            return handler.answer(413, "a file goes to one of this phone's messages, up to 25 MB")
+        phone = self.phone(handler)
+        if phone is None:
+            return None
+        try:
+            made = self.phones(handler)._attach(phone, int(rest[0]), rest[1], handler.rfile.read(size))
+        except Refused as refused:
+            return handler.answer(422, str(refused))
+        return self.json(handler, 201, {"n": made.n, "files": sorted(made.files)})
+
     def pair(self, handler, pairing: Pairing) -> None:
         paired = self.phones(handler)._pair(pairing.code, pairing.device)
         if paired is None:
@@ -148,11 +168,11 @@ class PhoneRoutes:
             return None
         return phone
 
-    def trusted(self, handler) -> bool:
+    def trusted(self, handler, kind: str = "application/json") -> bool:
         host = handler.headers.get("Host", "")
         origin = f"{'http' if local(host) else 'https'}://{host}"
         return (handler.headers.get("Origin") == origin and handler.headers.get(HEADER) == "1"
-                and handler.headers.get("Content-Type", "").startswith("application/json"))
+                and handler.headers.get("Content-Type", "").startswith(kind))
 
     def body(self, handler) -> dict | None:
         length = handler.headers.get("Content-Length", "")

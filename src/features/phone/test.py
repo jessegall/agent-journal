@@ -86,6 +86,15 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     message = Messages(record, actor=SYSTEM).load(made["n"])
     assert message.seen[:1] == [USER] and message.data["via"] == f"phone:{n}", "it is recorded as the user, naming the phone"
     assert len([m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
+    upload = lambda n, kind="application/octet-stream": urllib.request.urlopen(urllib.request.Request(
+        f"{base}/p/attach/{n}/photo.jpg", b"\xff\xd8picture", {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"},
+        method="POST"), timeout=5).status
+    assert upload(made["n"]) == 201 and "photo.jpg" in Messages(record, actor=SYSTEM).load(made["n"]).files, "a photo goes onto the phone's message"
+    other = Messages(record, actor=USER).create("from the computer", brief="from the computer")
+    with pytest.raises(urllib.error.HTTPError):
+        upload(other.n)
+    with pytest.raises(urllib.error.HTTPError):
+        upload(made["n"], "text/plain")
 
 
 def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):

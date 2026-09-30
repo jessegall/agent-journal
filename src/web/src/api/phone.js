@@ -25,6 +25,14 @@ export const phone = {
     feed: () => got("./feed"),
     row: (ref) => got(`./row/${ref.replace(":", "/")}`),
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),
+    attach: async (n, file) =>
+        answered(
+            await fetch(`./attach/${n}/${encodeURIComponent(file.name)}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/octet-stream", "X-Phone": "1"},
+                body: file,
+            })
+        ),
     answer: (n, answer) => sent("./answer", {n, answer}),
     dismiss: (n) => sent("./dismiss", {n}),
     approve: (n, updated) => sent("./approve", {n, updated}),

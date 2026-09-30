@@ -1,11 +1,14 @@
 <script setup>
+import {computed} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import Icon from "../kit/Icon.vue";
 import ReadTicks from "../kit/ReadTicks.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
 
-defineProps({item: {type: Object, required: true}});
+const props = defineProps({item: {type: Object, required: true}});
+const files = computed(() => Object.keys(props.item.files || {}));
 </script>
 
 <template>
@@ -16,6 +19,12 @@ defineProps({item: {type: Object, required: true}});
         <template #default>
             <div :class="['turn', item.who]">
                 <TextDisplay :text="item.brief || item.title" />
+                <template v-if="files.length">
+                    <span class="turn-files">
+                        <Icon name="paperclip" :size="12" />
+                        {{ files.join(", ") }}
+                    </span>
+                </template>
                 <span class="turn-meta">
                     {{ clock(item.created) }}
                     <template v-if="item.who === 'user'">
@@ -36,6 +45,15 @@ defineProps({item: {type: Object, required: true}});
     overflow-wrap: anywhere;
 }
 
+.turn-files {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    color: var(--text-2);
+    font-size: 13px;
+}
+
 .turn-meta {
     display: flex;
     align-items: center;
@@ -46,7 +64,16 @@ defineProps({item: {type: Object, required: true}});
     font-size: 11.5px;
 }
 
-.turn.agent .turn-meta {
+.turn.agent .turn-files {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    color: var(--text-2);
+    font-size: 13px;
+}
+
+.turn-meta {
     justify-content: flex-start;
 }
 

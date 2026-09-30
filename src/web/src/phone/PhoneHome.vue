@@ -12,6 +12,7 @@ import {clock} from "../format/time.js";
 import ReadTicks from "../kit/ReadTicks.vue";
 
 const FEED_EVERY = 5000;
+const NEAR_BOTTOM = 120;
 const SENDING = {completed: 0, seen: [], data: {}};
 const READABLE = ["question", "report", "doc", "plan"];
 defineProps({connection: {type: Object, required: true}});
@@ -35,10 +36,14 @@ async function asked() {
     }
 }
 
+const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
+
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got) return;
+    const following = nearBottom();
     feed.value = got;
     settle(got.items);
+    if (following) toBottom();
 });
 provide("phoneRefresh", refresh);
 
@@ -100,7 +105,7 @@ function sent() {
                 <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
             </template>
         </div>
-        <PhoneCompose :about="about" @sent="sent" @unabout="about = ''" />
+        <PhoneCompose :about="about" @sending="toBottom" @sent="sent" @unabout="about = ''" />
     </template>
 </template>
 
