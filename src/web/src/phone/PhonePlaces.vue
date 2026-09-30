@@ -22,6 +22,24 @@ onMounted(async () => {
 
 const here = (place, name) => place.root === at.value && name === props.environment;
 
+const AGENTS = [
+    {key: "claude", label: "Claude"},
+    {key: "codex", label: "Codex"},
+];
+
+async function start(place, name, agent) {
+    moving.value = `${place.root}:${name}`;
+    told.value = "";
+    try {
+        await phone.start(place.root, name, agent);
+        emit("moved");
+    } catch (error) {
+        told.value = error.message;
+    } finally {
+        moving.value = "";
+    }
+}
+
 async function move(place, name) {
     if (here(place, name)) return emit("close");
     moving.value = `${place.root}:${name}`;
@@ -51,17 +69,30 @@ async function move(place, name) {
                     <span class="places-name">
                         <span class="places-dot" :style="{background: place.color}" />
                         {{ place.project }}
+                        <template v-if="!place.running">
+                            <span class="places-off">not running</span>
+                        </template>
                     </span>
                     <div class="places-environments">
                         <template v-for="name in place.environments" :key="name">
-                            <button
-                                type="button"
-                                :class="['places-environment', {here: here(place, name)}]"
-                                :disabled="Boolean(moving)"
-                                @click="move(place, name)"
-                            >
-                                {{ name }}
-                            </button>
+                            <div class="places-row">
+                                <button
+                                    type="button"
+                                    :class="['places-environment', {here: here(place, name)}]"
+                                    :disabled="Boolean(moving)"
+                                    @click="move(place, name)"
+                                >
+                                    <span :class="['places-state', {working: place.working.includes(name)}]" />
+                                    {{ name }}
+                                </button>
+                                <template v-if="!place.working.includes(name)">
+                                    <template v-for="agent in AGENTS" :key="agent.key">
+                                        <button type="button" class="places-start" :disabled="Boolean(moving)" @click="start(place, name, agent.key)">
+                                            Start {{ agent.label }}
+                                        </button>
+                                    </template>
+                                </template>
+                            </div>
                         </template>
                     </div>
                 </div>
@@ -129,8 +160,45 @@ async function move(place, name) {
 
 .places-environments {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
+}
+
+.places-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.places-off {
+    color: var(--text-4);
+    font-weight: 400;
+    font-size: 12.5px;
+}
+
+.places-state {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--text-4);
+}
+
+.places-state.working {
+    background: var(--tone-good);
+}
+
+.places-start {
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px dashed var(--border-2);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 13.5px;
 }
 
 .places-environment {

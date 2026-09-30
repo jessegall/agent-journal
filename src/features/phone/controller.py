@@ -12,13 +12,14 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
+from controllers.types import Environments
 from controllers.notices import Notices
 from engine.record import Record
 from engine.sessions import Sessions
 from features.format import VIEWER
 from features.message_buttons.shaping import Button, spent
 from engine.project_files import matching
-from features.phone.places import Place, places
+from features.phone.places import MAIN, Place, places
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
 from features.shaping import shaped
@@ -211,6 +212,15 @@ class Phones(Controller):
 
     def _places(self) -> list[Place]:
         return places(self.record.root)
+
+    def _start(self, phone: Phone, starting) -> Phone:
+        found = next((place for place in self._places() if place.root == starting.journal), None)
+        if found is None or starting.environment not in found.environments:
+            raise Refused(f"no journal at {starting.journal!r} with an environment {starting.environment!r} on this machine")
+        if starting.environment in found.working:
+            raise Stale(f"an agent is already working in {starting.environment}")
+        Environments(Record(Path(found.root), MAIN), actor=USER).action("launch")(found.row(starting.environment), agent=starting.agent)
+        return self._switch(phone, starting)
 
     def _switch(self, phone: Phone, moving) -> Phone:
         found = next((place for place in self._places() if place.root == moving.journal), None)

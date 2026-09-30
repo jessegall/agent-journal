@@ -151,7 +151,7 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
 
 
-def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
+def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatch):
     record, base = served
     other = Record(record.root, "elsewhere")
     mine, key = paired(record, base)
@@ -176,6 +176,11 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
         "only a running journal on this machine can be switched to"
     assert call(base, "/p/switch", {"journal": journal, "environment": "elsewhere"}, key).status == 201
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 200, "after switching, the other environment's rows open"
+    from features.starting_agents import commands
+    launched = []
+    monkeypatch.setattr(commands, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent)))
+    assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
+    assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
     assert call(base, "/p/bar", key=key).body == {"queue": []}, "the agent's status line reaches the phone"
     waiting = [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
     assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"

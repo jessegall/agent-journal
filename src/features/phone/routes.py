@@ -88,6 +88,17 @@ class Subscribing:
 
 
 @dataclass(frozen=True)
+class Starting:
+    journal: str
+    environment: str
+    agent: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Starting":
+        return cls(journal=str(given.get("journal", "")), environment=str(given.get("environment", "")), agent=str(given.get("agent", "claude")))
+
+
+@dataclass(frozen=True)
 class Moving:
     journal: str
     environment: str
@@ -211,6 +222,7 @@ class PhoneRoutes:
                 "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
                 "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
                 "switch": lambda phones: phones._switch(phone, Moving.from_payload(body)),
+                "start": lambda phones: phones._start(phone, Starting.from_payload(body)),
                 "press": lambda phones: phones._press(phone, Pressing.from_payload(body)),
                 "push": lambda phones: phones._subscribe(phone, Subscribing.from_payload(body).endpoint)}
         if rest[:1] != rest or rest[0] not in acts:

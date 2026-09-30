@@ -29,6 +29,7 @@ export const phone = {
     pushKey: () => got("./push-key"),
     subscribe: (endpoint) => sent("./push", {endpoint}),
     move: (journal, environment) => sent("./switch", {journal, environment}),
+    start: (journal, environment, agent) => sent("./start", {journal, environment, agent}),
     row: (ref) => got(`./row/${ref.replace(":", "/")}`),
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),
     attach: async (n, file) =>
