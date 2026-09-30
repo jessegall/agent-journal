@@ -18,6 +18,7 @@ import {peek, peekChip, peekRef, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
+import ReadTicks from "../kit/ReadTicks.vue";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
 import {words as plain} from "../text/words.js";
@@ -100,13 +101,6 @@ const between = computed(() =>
           ? `Sent to ${called(props.turn.data.sent_to)}`
           : ""
 );
-const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
-const state = computed(() => {
-    const turn = props.turn;
-    if (turn.completed) return "filed";
-    if (turn.seen.includes("agent")) return "read";
-    return turn.data && turn.data.delivered ? "delivered" : "sent";
-});
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const split = computed(() => standaloneUpdates(words.value.text, {types: types.value}));
 const data = computed(() => props.turn.data);
@@ -428,21 +422,7 @@ function markClick(data) {
                         <span>{{ clock(turn.created) }}</span>
                     </template>
                     <template v-if="mine && !turn.pending">
-                        <span :class="['thread-ticks', state]" :title="SAID[state]">
-                            <svg
-                                viewBox="0 0 19 12"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.6"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            >
-                                <path d="M1.5 6.6 4.4 9.5 10 2.8" />
-                                <template v-if="state !== 'sent'">
-                                    <path d="M8 6.6 10.9 9.5 16.5 2.8" />
-                                </template>
-                            </svg>
-                        </span>
+                        <ReadTicks :message="turn" />
                     </template>
                 </div>
             </div>
@@ -874,26 +854,6 @@ button.thread-pill:hover {
 .thread-ref {
     font-size: 11px;
     opacity: 0.62;
-}
-
-.thread-ticks {
-    display: inline-flex;
-    margin-left: 1px;
-    opacity: 0.45;
-}
-
-.thread-ticks svg {
-    width: 16px;
-    height: 10px;
-}
-
-.thread-ticks.read {
-    opacity: 0.8;
-}
-
-.thread-ticks.filed {
-    opacity: 1;
-    color: var(--accent-text);
 }
 
 .thread-tools {
