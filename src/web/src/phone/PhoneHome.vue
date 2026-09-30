@@ -70,9 +70,13 @@ function reply(target) {
     reading.value = "";
 }
 
+const mine = (reaction, face) => reaction.face === face && reaction.who === "user";
+
 async function react(face) {
     const item = held.value;
     held.value = null;
+    const had = item.reactions || [];
+    item.reactions = had.some((r) => mine(r, face)) ? had.filter((r) => !mine(r, face)) : [...had, {face, who: "user"}];
     try {
         await phone.react(item.n, face);
         refresh();
