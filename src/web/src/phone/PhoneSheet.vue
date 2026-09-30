@@ -60,7 +60,7 @@ defineExpose({close});
 
 <template>
     <div class="sheet-root">
-        <button type="button" class="sheet-backdrop" aria-label="Close" tabindex="-1" :style="{opacity: shade}" @click="close" />
+        <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="close" />
         <div
             ref="sheet"
             :class="['sheet', {large, dragging, leaving}]"

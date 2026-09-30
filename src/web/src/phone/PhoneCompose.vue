@@ -2,7 +2,6 @@
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
-import {fitLines} from "../composables/fitLines.js";
 import {ended, flush, hold} from "./outbox.js";
 import {announce} from "./announce.js";
 
@@ -55,7 +54,15 @@ function picked(event) {
     event.target.value = "";
 }
 
-const grow = () => fitLines(box.value, MOST_LINES);
+function grow() {
+    const el = box.value;
+    if (!el) return;
+    el.style.height = "auto";
+    const style = getComputedStyle(el);
+    const cap = MOST_LINES * parseFloat(style.lineHeight) + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    el.style.height = `${Math.min(el.scrollHeight, cap)}px`;
+    if (el.selectionEnd === el.value.length) el.scrollTop = el.scrollHeight;
+}
 
 async function send() {
     if (!ready.value || sending.value) return;

@@ -103,6 +103,9 @@ const OLDER_AT = 400;
 const earlier = ref([]);
 const olderBusy = ref(false);
 const beginning = ref(false);
+const olderFailed = ref(false);
+let olderSpent = false;
+const freshGesture = () => (olderSpent = false);
 const items = computed(() => {
     const newest = feed.value.items;
     if (!earlier.value.length) return newest;
@@ -122,26 +125,37 @@ function measure() {
 
 async function loadOlder() {
     const first = items.value[0];
-    if (olderBusy.value || beginning.value || !ready.value || !first) return;
+    if (olderBusy.value || olderSpent || olderFailed.value || beginning.value || !ready.value || !first) return;
     olderBusy.value = true;
+    olderSpent = true;
     try {
         const got = await phone.older(first.created);
         const known = new Set(items.value.map(keyOf));
         const found = got.items.filter((item) => !known.has(keyOf(item)));
         if (!found.length) {
             beginning.value = true;
+            announce("Start of the conversation");
             return;
         }
+        announce(`Loaded ${found.length} earlier ${found.length === 1 ? "message" : "messages"}`);
         const el = list.value;
         const fromBottom = el ? el.scrollHeight - el.scrollTop : 0;
         earlier.value = [...found, ...earlier.value];
         await nextTick();
         if (el) el.scrollTop = el.scrollHeight - fromBottom;
+        fade();
     } catch (error) {
         if (ended(error)) failed(error);
+        else olderFailed.value = true;
     } finally {
         olderBusy.value = false;
     }
+}
+
+function retryOlder() {
+    olderFailed.value = false;
+    olderSpent = false;
+    loadOlder();
 }
 
 function moved() {
@@ -369,9 +383,9 @@ function copy() {
     setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }
 
-function holding(key, rect) {
+function holding(key, rect, el) {
     const item = findTurn(key);
-    if (item) held.value = {item, rect};
+    if (item) held.value = {item, rect, el};
 }
 
 useBubbles(list, {
@@ -396,7 +410,7 @@ function pick(key) {
 
 <template>
     <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held || listing)">
-        <div :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']" :inert="pages.length > 0">
+        <div :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']" :inert="pages.length > (edge.leaving.value ? 1 : 0)">
             <div :class="['home-top', {under}]">
                 <header class="home-bar">
                     <button type="button" class="home-names" aria-label="Switch journal or environment" @click="picking = true">
@@ -437,11 +451,15 @@ function pick(key) {
                     </template>
                     <template v-else>
                         <div class="home-feed-box">
-                            <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @load.capture="loaded">
+                            <div ref="list" class="home-feed" data-scroller @click.capture="chipped" @scroll.passive="moved" @touchstart.passive="freshGesture" @wheel.passive="freshGesture" @load.capture="loaded">
                                 <span ref="top" class="home-edge" />
                                 <div class="home-older">
                                     <template v-if="olderBusy">
                                         <Spinner />
+                                    </template>
+                                    <template v-else-if="olderFailed">
+                                        <span>Couldn't load earlier messages.</span>
+                                        <button type="button" class="home-retry" @click="retryOlder">Try again</button>
                                     </template>
                                     <template v-else-if="beginning">
                                         <span>Start of the conversation</span>
@@ -451,7 +469,7 @@ function pick(key) {
                                     <template v-if="dividers[i]">
                                         <p class="home-day">{{ dividers[i] }}</p>
                                     </template>
-                                    <PhoneTurn :item="item" :fresh="fresh(item)" :briefs="briefs" @hold="(it, rect) => it.type === 'message' && (held = {item: it, rect})" />
+                                    <PhoneTurn :item="item" :fresh="fresh(item)" :briefs="briefs" @hold="(it, rect, el) => it.type === 'message' && (held = {item: it, rect, el})" />
                                 </template>
                                 <template v-for="line in sentHere" :key="line.idempotency">
                                     <p class="home-sent">
@@ -476,12 +494,12 @@ function pick(key) {
                                 </template>
                             </div>
                             <template v-if="far">
-                                <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
-                                    <Icon name="down" :size="20" />
-                                    <template v-if="unseen">
-                                        <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
-                                    </template>
-                                </button>
+                                <div class="home-newest-band">
+                                    <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
+                                        <Icon name="down" :size="16" />
+                                        <span aria-hidden="true">{{ unseen ? `${unseen} new` : "Newest" }}</span>
+                                    </button>
+                                </div>
                             </template>
                         </div>
                     </template>
@@ -512,7 +530,7 @@ function pick(key) {
         </div>
         <TransitionGroup :name="direction">
             <template v-for="(page, i) in pages" :key="page.id">
-                <div :class="['layer', 'page', place(i)]" :inert="i < pages.length - 1">
+                <div :class="['layer', 'page', place(i), {departing: edge.leaving.value && i === pages.length - 1}]" :inert="i < pages.length - (edge.leaving.value ? 2 : 1)">
                     <template v-if="VIEWED.includes(page.ref.split(':')[0])">
                         <PhoneViewer :target="page.ref" :back="backLabel(i)" @close="back" />
                     </template>
@@ -530,7 +548,7 @@ function pick(key) {
         <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />
     </template>
     <template v-if="held">
-        <PhoneHold :item="held.item" :rect="held.rect" @react="react" @reply="quoteIt(held.item)" @copy="copy" @close="held = null" />
+        <PhoneHold :item="held.item" :rect="held.rect" :source="held.el" @react="react" @reply="quoteIt(held.item)" @copy="copy" @close="held = null" />
     </template>
     <p class="phone-hidden" aria-live="polite">{{ spoken }}</p>
 </template>
@@ -581,6 +599,10 @@ function pick(key) {
 
 .layer.beneath::after {
     opacity: calc(0.25 * (1 - var(--p)));
+}
+
+.page.departing {
+    pointer-events: none;
 }
 
 .layer.buried {
@@ -783,9 +805,10 @@ function pick(key) {
 .home-older {
     display: flex;
     flex: none;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    height: 36px;
+    min-height: 36px;
     color: var(--text-3);
     font-size: 0.765rem;
 }
@@ -868,40 +891,42 @@ function pick(key) {
     min-height: 0;
 }
 
-.home-newest {
-    position: absolute;
-    right: 0;
-    bottom: 12px;
+.home-newest-band {
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
+    height: 52px;
+    max-width: none;
+}
+
+.home-newest {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 16px;
     border: 1px solid var(--line);
-    border-radius: 50%;
+    border-radius: 22px;
     background: var(--raised);
-    color: var(--text);
+    color: var(--accent-text);
     box-shadow: var(--shadow-1);
+    font: inherit;
+    font-size: 0.882rem;
+    font-weight: 600;
     animation: newest-in 200ms ease-out;
 }
 
-.home-unseen {
-    position: absolute;
-    top: -6px;
-    right: -4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    min-height: 20px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 11px;
+.home-retry {
+    min-height: 32px;
+    margin-left: 8px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 16px;
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--accent-text);
+    font: inherit;
     font-weight: 600;
-    line-height: 1;
 }
 
 @keyframes newest-in {

@@ -2,6 +2,7 @@
     --font: -apple-system, "SF Pro Text", system-ui, sans-serif;
     --scrim: rgb(0 0 0 / 45%);
     --shade: rgb(0 0 0 / 45%);
+    --scrim-menu: rgb(0 0 0 / 55%);
     --badge: #d70015;
     --shadow-1: 0 8px 24px var(--shade);
 }
@@ -11,6 +12,7 @@
         --danger: #a83f2f;
         --scrim: rgb(0 0 0 / 22%);
         --shade: rgb(0 0 0 / 22%);
+        --scrim-menu: rgb(0 0 0 / 35%);
     }
 }
 
@@ -72,7 +74,8 @@ body {
     transition-duration: 0ms;
 }
 
-.phone button.hold-backdrop:active {
+.phone button.hold-backdrop:active,
+.phone button.viewer-zoom:active {
     opacity: 1;
 }
 

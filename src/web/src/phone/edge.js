@@ -11,6 +11,7 @@ const GIVE_UP = 1000;
 
 export function useEdgeBack(stack, {depth, back}) {
     const dragging = ref(false);
+    const leaving = ref(false);
     const settle = ref(0);
     let resting = 0;
     let stuck = 0;
@@ -47,6 +48,7 @@ export function useEdgeBack(stack, {depth, back}) {
         stuck = setTimeout(() => {
             if (awaiting < 0) return;
             awaiting = -1;
+            leaving.value = false;
             pulled(0);
         }, GIVE_UP);
         back();
@@ -61,7 +63,7 @@ export function useEdgeBack(stack, {depth, back}) {
                 return covered ? {held: true} : null;
             }
             if (!depth() || first.clientX > EDGE || event.target.closest(CONTROLS)) return null;
-            if (sidewaysScroller(event.target, stack.value)) return null;
+            if (sidewaysScroller(event.target, stack.value)?.scrollLeft > 0) return null;
             return {};
         },
         accepts: (d) => d > 0,
@@ -78,6 +80,7 @@ export function useEdgeBack(stack, {depth, back}) {
             dragging.value = false;
             pulled(target);
             pending = committed ? () => popping(expected) : null;
+            leaving.value = committed;
             resting = setTimeout(rest, settle.value);
         },
     });
@@ -86,6 +89,7 @@ export function useEdgeBack(stack, {depth, back}) {
         if (awaiting < 0) return false;
         const swiped = count === awaiting;
         awaiting = -1;
+        leaving.value = false;
         clearTimeout(stuck);
         if (!swiped) return false;
         dragging.value = true;
@@ -109,5 +113,5 @@ export function useEdgeBack(stack, {depth, back}) {
         clearTimeout(stuck);
     });
 
-    return {dragging, settle, landed, busy};
+    return {dragging, leaving, settle, landed, busy};
 }

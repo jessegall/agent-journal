@@ -6,6 +6,7 @@ import Spinner from "../kit/Spinner.vue";
 import {ended} from "./outbox.js";
 import {useUnder} from "./under.js";
 import {highlight, languageOf} from "../text/highlight.js";
+import {announce} from "./announce.js";
 
 const TEXT = /\.(txt|md|json|log|csv|ya?ml|toml|py|js|ts|vue|css|html|sh|sql|xml)$/i;
 const PICTURE = /\.(png|jpe?g|gif|webp|heic)$/i;
@@ -36,14 +37,16 @@ let lastTap = 0;
 
 function tapped(event) {
     const now = Date.now();
-    if (now - lastTap > DOUBLE) {
+    const pointer = event.detail > 0;
+    if (pointer && now - lastTap > DOUBLE) {
         lastTap = now;
         return;
     }
     lastTap = 0;
     const rect = event.currentTarget.getBoundingClientRect();
-    const [x, y] = [(event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height];
+    const [x, y] = pointer ? [(event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height] : [0.5, 0.5];
     zoomed.value = !zoomed.value;
+    announce(zoomed.value ? "Zoomed in" : "Zoomed out");
     nextTick(() => {
         const box = stage.value;
         if (!box || !zoomed.value) return;
@@ -92,7 +95,7 @@ onMounted(() => {
     <section class="viewer">
         <header :class="['viewer-bar', {under}]">
             <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')"><PhoneChevron facing="left" :size="18" /> {{ back }}</button>
-            <span ref="title" class="viewer-name" tabindex="-1">{{ path }}</span>
+            <span ref="title" :class="['viewer-name', {plain: picture}]" tabindex="-1">{{ path }}</span>
             <template v-if="shared">
                 <button type="button" class="viewer-action" @click="share">Share</button>
             </template>
@@ -107,7 +110,9 @@ onMounted(() => {
             </template>
             <template v-else-if="picture">
                 <div ref="stage" :class="['viewer-stage', {zoomed}]">
-                    <img class="viewer-picture" :src="url" :alt="name" :style="{width: zoomed ? `${ZOOM * 100}%` : '100%'}" @click="tapped" />
+                    <button type="button" class="viewer-zoom" :aria-pressed="zoomed" :aria-label="zoomed ? 'Zoom out' : 'Zoom in'" :style="{width: zoomed ? `${ZOOM * 100}%` : '100%'}" @click="tapped">
+                        <img class="viewer-picture" :src="url" :alt="name" />
+                    </button>
                 </div>
             </template>
             <template v-else-if="text !== null">
@@ -223,17 +228,39 @@ onMounted(() => {
     -webkit-overflow-scrolling: touch;
 }
 
+.viewer-zoom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    touch-action: manipulation;
+}
+
+.viewer-stage.zoomed .viewer-zoom {
+    height: auto;
+}
+
 .viewer-picture {
     display: block;
+    width: 100%;
     max-width: none;
     height: auto;
     max-height: 100%;
     object-fit: contain;
-    touch-action: manipulation;
 }
 
 .viewer-stage.zoomed .viewer-picture {
     max-height: none;
+}
+
+.viewer-name.plain {
+    color: var(--text-2);
+    font-family: var(--font);
+    font-size: 0.882rem;
 }
 
 .viewer-action {

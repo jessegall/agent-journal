@@ -43,9 +43,12 @@ function done(action) {
     keep(waitingActions.value, ACTIONS);
 }
 
+const inFlight = new Set();
+
 async function sendActions(asked = "") {
     for (const action of [...waitingActions.value]) {
-        if (!belongs(action)) continue;
+        if (!belongs(action) || inFlight.has(action.id)) continue;
+        inFlight.add(action.id);
         try {
             await RUN[action.kind](action);
             done(action);
@@ -53,6 +56,8 @@ async function sendActions(asked = "") {
             if (unreachable(error)) return false;
             done(action);
             if (action.id === asked) throw error;
+        } finally {
+            inFlight.delete(action.id);
         }
     }
     return true;
@@ -77,7 +82,7 @@ export function hold(brief, about, files = []) {
     keep(waitingToSend.value);
 }
 
-export async function flush() {
+async function flushOnce() {
     await sendActions();
     for (const line of [...waitingToSend.value]) {
         if (!belongs(line) || line.lost) continue;
@@ -94,6 +99,25 @@ export async function flush() {
         justSent.value = [...justSent.value, line];
         keep(waitingToSend.value);
     }
+}
+
+let flushing = null;
+let again = false;
+
+async function flushAll() {
+    do {
+        again = false;
+        await flushOnce();
+    } while (again);
+}
+
+export function flush() {
+    if (flushing) {
+        again = true;
+        return flushing;
+    }
+    flushing = flushAll().finally(() => (flushing = null));
+    return flushing;
 }
 
 function lose(line) {

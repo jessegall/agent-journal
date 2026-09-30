@@ -25,9 +25,13 @@ const about = computed(() => (props.item.who === "user" ? (props.item.refs || []
 const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const holdable = computed(() => props.item.type === "message");
+const onlyFiles = computed(() => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`);
 const quoted = computed(() => (about.value ? props.briefs.get(about.value) || "" : ""));
 const emit = defineEmits(["hold"]);
-const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(".turn").getBoundingClientRect());
+function pressed(event) {
+    const bubble = event.currentTarget.closest(".turn");
+    emit("hold", props.item, bubble.getBoundingClientRect(), bubble);
+}
 </script>
 
 <template>
@@ -72,7 +76,9 @@ const pressed = (event) => emit("hold", props.item, event.currentTarget.closest(
                 <template v-else-if="about">
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
-                <TextDisplay :text="item.brief || item.title" />
+                <template v-if="!onlyFiles">
+                    <TextDisplay :text="item.brief || item.title" />
+                </template>
                 <template v-for="part in item.sections || []" :key="part.title">
                     <h3 class="turn-part">{{ part.title }}</h3>
                     <TextDisplay :text="part.body" />

@@ -17,7 +17,10 @@ async function sent(path, body) {
     return answered(await fetch(path, {method: "POST", headers: HEADERS, body: JSON.stringify(body), cache: "no-store"}));
 }
 
-const got = async (path) => answered(await fetch(path, {cache: "no-cache"}));
+async function got(path) {
+    const answer = await fetch(path, {cache: "no-cache"});
+    return answered(answer.status === 304 ? await fetch(path, {cache: "no-store"}) : answer);
+}
 
 export const phone = {
     pair: (code, device) => sent("./pair", {code, device}),

@@ -138,7 +138,7 @@ function moved(i, by) {
     flex-direction: column;
     gap: 28px;
     min-height: 0;
-    padding: 0 0 24px;
+    padding: 0 0 calc(32px + env(safe-area-inset-bottom));
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;

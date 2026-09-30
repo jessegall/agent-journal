@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import {firstTime} from "./once.js";
 import {plain} from "./plain.js";
@@ -8,7 +8,22 @@ import {useTrap} from "./trap.js";
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const MARGIN = 12;
 const TOP = 56;
-const props = defineProps({item: {type: Object, required: true}, rect: {type: Object, default: null}});
+const props = defineProps({item: {type: Object, required: true}, rect: {type: Object, default: null}, source: {type: Object, default: null}});
+const preview = ref(null);
+
+function cloned() {
+    if (!props.source || !preview.value) return;
+    const copy = props.source.cloneNode(true);
+    copy.removeAttribute("data-hold");
+    delete copy.dataset.pressing;
+    delete copy.dataset.dragging;
+    copy.style.transform = "";
+    copy.style.maxWidth = "100%";
+    copy.style.margin = "0";
+    copy.inert = true;
+    copy.setAttribute("aria-hidden", "true");
+    preview.value.replaceChildren(copy);
+}
 const emit = defineEmits(["react", "reply", "copy", "close"]);
 const box = ref(null);
 const faces = ref(null);
@@ -31,22 +46,39 @@ const width = computed(() => (props.rect ? `${Math.min(props.rect.width, window.
 
 useTrap(box, () => emit("close"));
 
-onMounted(() => {
+let watcher = null;
+
+function placed() {
     const wanted = props.rect ? props.rect.top - 60 : window.innerHeight / 3;
-    top.value = wanted;
+    const tall = box.value?.offsetHeight || 0;
+    top.value = Math.max(TOP, Math.min(wanted, window.innerHeight - tall - MARGIN * 3));
+}
+
+onMounted(() => {
+    cloned();
+    placed();
     nextTick(() => {
         scrolled();
-        const tall = box.value?.offsetHeight || 0;
-        top.value = Math.max(TOP, Math.min(wanted, window.innerHeight - tall - MARGIN * 3));
+        placed();
+        watcher = new ResizeObserver(placed);
+        if (box.value) watcher.observe(box.value);
     });
 });
+
+onUnmounted(() => watcher?.disconnect());
 </script>
 
 <template>
     <div class="hold-root">
-        <button type="button" class="hold-backdrop" aria-label="Close" tabindex="-1" @click="emit('close')" />
+        <button type="button" class="hold-backdrop" aria-hidden="true" tabindex="-1" @click="emit('close')" />
         <div ref="box" :class="['hold-box', {mine}]" role="dialog" aria-modal="true" aria-label="Message actions" tabindex="-1" :style="{top: `${top}px`, ...side}">
-            <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
+            <template v-if="source">
+                <p class="phone-hidden">{{ plain(item.brief || item.title) }}</p>
+                <div ref="preview" class="hold-clone" :style="{width}" />
+            </template>
+            <template v-else>
+                <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
+            </template>
             <div ref="faces" :class="['hold-faces', {'fade-left': edges.left, 'fade-right': edges.right}]" role="group" aria-label="React" @scroll.passive="scrolled">
                 <template v-for="face in FACES" :key="face">
                     <button type="button" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</button>
@@ -65,11 +97,11 @@ onMounted(() => {
                         <Icon name="copy" :size="18" />
                     </button>
                 </li>
+                <template v-if="hint">
+                    <li class="hold-hint">Tip: swipe a message to the right to reply.</li>
+                </template>
             </ul>
             <button type="button" class="hold-close" @click="emit('close')">Close</button>
-            <template v-if="hint">
-                <p class="hold-hint">Tip: swipe a message to the right to reply.</p>
-            </template>
         </div>
     </div>
 </template>
@@ -89,9 +121,9 @@ onMounted(() => {
     max-width: none;
     padding: 0;
     border: 0;
-    background: var(--scrim);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    background: var(--scrim-menu);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     animation: hold-fade 200ms linear;
 }
 
@@ -100,7 +132,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px;
     max-width: calc(100% - 24px);
     outline: none;
     transform-origin: top left;
@@ -220,12 +252,15 @@ onMounted(() => {
     font-weight: 600;
 }
 
+.hold-clone {
+    max-height: 38vh;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: var(--shadow-1);
+}
+
 .hold-hint {
-    max-width: 240px;
-    margin: 0;
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: var(--raised);
+    padding: 10px 16px;
     color: var(--text-2);
     font-size: 0.765rem;
 }

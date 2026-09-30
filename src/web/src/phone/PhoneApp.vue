@@ -125,7 +125,8 @@ onUnmounted(() => {
                         <p class="phone-words">On your computer, open the journal and press the phone button in the top bar. Scan the code, or type the short code under it here.</p>
                     </template>
                     <form class="phone-typed" @submit.prevent="pairTyped">
-                        <input v-model="typed" class="phone-code-box" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" />
+                        <label class="phone-hidden" for="phone-code">Pairing code</label>
+                        <input id="phone-code" v-model="typed" class="phone-code-box" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" />
                         <Btn kind="primary" large :busy="pairing" @click="pairTyped">Connect</Btn>
                         <template v-if="told && pairing === false && typed">
                             <p class="phone-typed-told">{{ told }}</p>

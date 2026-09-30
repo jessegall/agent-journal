@@ -33,7 +33,7 @@ export function useBubbles(list, {hold, reply}) {
                 calm(context);
                 context.held = true;
                 navigator.vibrate?.(10);
-                hold(el.dataset.hold, el.getBoundingClientRect());
+                hold(el.dataset.hold, el.getBoundingClientRect(), el);
             }, HOLD_FOR);
             return context;
         },
