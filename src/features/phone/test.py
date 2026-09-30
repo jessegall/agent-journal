@@ -252,6 +252,10 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     urgent = Todos(record, actor=AGENT).create("Ship the fix")
     Todos(record, actor=AGENT).priority(urgent.n, "high")
     assert call(base, f"/p/row/todo/{urgent.n}", key=key).body["priority_name"] == "high", "a priority that is a named level reaches the phone by its name"
+    pinned = Notices(record, actor=AGENT).create("The design is ready", link="https://example.com/design", label="Open the design")
+    pins = lambda: [notice["n"] for notice in call(base, "/p/feed", key=key).body["notices"]]
+    assert pinned.n in pins(), "the chat's pinned notices reach the phone"
+    assert call(base, "/p/close", {"n": pinned.n}, key).status == 201 and pinned.n not in pins(), "and closing one there closes it everywhere"
     said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"

@@ -258,6 +258,7 @@ class PhoneRoutes:
                 "arrange": lambda phones: phones._arrange(phone, Arranging.from_payload(body).cards),
                 "press": lambda phones: phones._press(phone, Pressing.from_payload(body)),
                 "comment": lambda phones: phones._comment(phone, Commenting.from_payload(body)),
+                "close": lambda phones: phones._close(phone, Chosen.from_payload(body).n),
                 "push": lambda phones: phones._subscribe(phone, Subscribing.from_payload(body).endpoint)}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")

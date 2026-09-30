@@ -142,6 +142,7 @@ class Feed(TypedDict):
     items: list[dict]
     waiting: list[Waiting]
     agent: str
+    notices: list[dict]
 
 
 class Code(TypedDict):
@@ -347,7 +348,7 @@ class Phones(Controller):
         since = items[0]["created"] if items else before
         marks = [mark for mark in self._marks(home, since) if mark["created"] < before]
         items = sorted([*items, *marks], key=lambda item: item["created"])
-        return Feed(items=items, waiting=self._waiting(phone), agent=agent_state(home, phone.environment))
+        return Feed(items=items, waiting=self._waiting(phone), agent=agent_state(home, phone.environment), notices=self._notices(home))
 
 
     def _marks(self, home: Record, since: float) -> list[Mark]:
@@ -421,6 +422,15 @@ class Phones(Controller):
         if row.deleted or not self._reaches(phone, row) or name not in row.files or found.parent != folder or not found.is_file():
             raise Refused(f"no file {name!r} on {ref}")
         return found
+
+    def _notices(self, home: Record) -> list[dict]:
+        return [shaped(row, home, VIEWER) for row in CONTROLLERS["notice"](home, actor=SYSTEM)._standing() if not row.data.get("agent")]
+
+    def _close(self, phone: Phone, n: int):
+        notices = CONTROLLERS["notice"](self._home(phone), actor=USER)
+        if notices.load(n).data.get("agent"):
+            raise Refused(f"notice {n} belongs to a subagent's chat, not the phone's")
+        return notices.complete(n, how="closed on the phone")
 
     def _reached(self, phone: Phone, ref: str):
         kind, _, n = ref.partition(":")
