@@ -45,7 +45,6 @@ WAITING_CARD = "waiting"
 LISTED = 20
 MOST_TRIES = 10
 SAID = ("message", "question", "comment")
-REPLIED = "message:"
 REACTED = ("message", "comment")
 HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
@@ -383,8 +382,6 @@ class Phones(Controller):
 
     def _said(self, home: Record, kind: str, row) -> dict | None:
         if kind == "message" and row.data.get("window"):
-            return None
-        if kind == "comment" and not any(ref.startswith(REPLIED) for ref in row.refs):
             return None
         return {**shaped(row, home, VIEWER), "who": row.seen[0] if kind != "question" and row.seen else "agent", "files": dict(row.files)}
 

@@ -256,6 +256,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     pins = lambda: [notice["n"] for notice in call(base, "/p/feed", key=key).body["notices"]]
     assert pinned.n in pins(), "the chat's pinned notices reach the phone"
     assert call(base, "/p/close", {"n": pinned.n}, key).status == 201 and pinned.n not in pins(), "and closing one there closes it everywhere"
+    assert any(item["type"] == "comment" and item["brief"] == "Looks right to me" for item in call(base, "/p/feed", key=key).body["items"]), "a comment on a row shows in the phone's chat, as on the desktop"
     said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
