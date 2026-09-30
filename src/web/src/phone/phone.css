@@ -184,6 +184,27 @@ body {
     }
 }
 
+.phone [data-flash] {
+    animation: flash 1.2s ease-out;
+}
+
+@keyframes flash {
+    from {
+        box-shadow: 0 0 0 3px var(--accent), 0 0 0 9px color-mix(in oklab, var(--accent) 30%, transparent);
+    }
+}
+
+.phone .home-feed {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.phone .home-feed :is(input, textarea) {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 .phone button {
     -webkit-touch-callout: none;
     transition: opacity 200ms ease-out, background-color 200ms ease-out;

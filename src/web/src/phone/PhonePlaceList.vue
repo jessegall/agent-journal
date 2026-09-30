@@ -19,11 +19,11 @@ const emit = defineEmits(["pick"]);
                 <ul class="place-rows">
                     <template v-for="name in place.environments" :key="name">
                         <li>
-                            <button type="button" class="place-row" :aria-current="here(place, name) ? 'true' : undefined" @click="emit('pick', place, name)">
+                            <button type="button" class="place-row" :data-place="`${place.root}:${name}`" :aria-current="here(place, name) ? 'true' : undefined" @click="emit('pick', place, name)">
                                 <span :class="['place-state', {working: place.working.includes(name)}]" />
                                 <span class="place-env">{{ name }}</span>
                                 <template v-if="here(place, name)">
-                                    <span class="place-here">Open now</span>
+                                    <span class="place-here">Current</span>
                                 </template>
                                 <PhoneChevron class="place-chevron" />
                             </button>

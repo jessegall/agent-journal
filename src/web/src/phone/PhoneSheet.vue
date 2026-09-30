@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import {CONTROLS, useDrag} from "./drag.js";
 import {useTrap} from "./trap.js";
 
@@ -8,7 +8,7 @@ const FLICK = 0.5;
 const GROW_AT = 60;
 const DAMPED = 0.2;
 const OUT = 250;
-const props = defineProps({label: {type: String, required: true}, bodyDrag: {type: Boolean, default: true}});
+const props = defineProps({label: {type: String, required: true}, bodyDrag: {type: Boolean, default: true}, tall: {type: Boolean, default: false}});
 const emit = defineEmits(["close"]);
 const sheet = ref(null);
 const body = ref(null);
@@ -16,6 +16,24 @@ const pulled = ref(0);
 const dragging = ref(false);
 const leaving = ref(false);
 const large = ref(false);
+const room = ref(null);
+
+function fitted() {
+    const view = window.visualViewport;
+    if (!view) return;
+    room.value = view.height < window.innerHeight - 1 ? {top: `${view.offsetTop}px`, height: `${view.height}px`, bottom: "auto"} : null;
+}
+
+onMounted(() => {
+    window.visualViewport?.addEventListener("resize", fitted);
+    window.visualViewport?.addEventListener("scroll", fitted);
+    fitted();
+});
+
+onUnmounted(() => {
+    window.visualViewport?.removeEventListener("resize", fitted);
+    window.visualViewport?.removeEventListener("scroll", fitted);
+});
 
 const overflowing = () => body.value && body.value.scrollHeight > body.value.clientHeight + 1;
 const shade = computed(() => (leaving.value ? 0 : Math.max(0, 1 - pulled.value / (sheet.value?.offsetHeight || 1))));
@@ -60,11 +78,11 @@ defineExpose({close});
 </script>
 
 <template>
-    <div class="sheet-root">
+    <div :class="['sheet-root', {lifted: room}]" :style="room || undefined">
         <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="close" />
         <div
             ref="sheet"
-            :class="['sheet', {large, dragging, leaving}]"
+            :class="['sheet', {large: large || tall, dragging, leaving}]"
             role="dialog"
             aria-modal="true"
             :aria-label="label"
@@ -114,6 +132,10 @@ defineExpose({close});
     transform: translateY(var(--pulled));
     transition: transform 300ms var(--push);
     animation: sheet-in var(--sheet-in) var(--push);
+}
+
+.sheet-root.lifted .sheet {
+    max-height: calc(100% - 12px);
 }
 
 .sheet.large {

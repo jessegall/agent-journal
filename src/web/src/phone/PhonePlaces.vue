@@ -1,5 +1,6 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {nextTick, onMounted, ref} from "vue";
+import {announce} from "./announce.js";
 import {phone} from "../api/phone.js";
 import Spinner from "../kit/Spinner.vue";
 import PhoneSheet from "./PhoneSheet.vue";
@@ -33,7 +34,10 @@ onMounted(async () => {
 
 const here = (place, name) => place.root === at.value && name === props.environment;
 
+let tapped = "";
+
 function pick(place, name) {
+    tapped = `${place.root}:${name}`;
     forward.value = true;
     told.value = "";
     chosen.value = {place, name};
@@ -43,6 +47,7 @@ function back() {
     forward.value = false;
     pulled.value = 0;
     chosen.value = null;
+    nextTick(() => setTimeout(() => [...document.querySelectorAll(".place-row")].find((row) => row.dataset.place === tapped)?.focus({preventScroll: true}), 320));
 }
 
 useDrag(pane, {
@@ -79,12 +84,13 @@ function open(close) {
 
 function start(agent) {
     const {place, name} = chosen.value;
-    switched(() => phone.start(place.root, name, agent), agent);
+    announce(`Starting ${agent.label}`);
+    switched(() => phone.start(place.root, name, agent.key), agent.key);
 }
 </script>
 
 <template>
-    <PhoneSheet v-slot="{close}" label="Switch journal or environment" :body-drag="!chosen" @close="emit('close')">
+    <PhoneSheet v-slot="{close}" label="Switch journal or environment" :body-drag="!chosen" :tall="Boolean(chosen)" @close="emit('close')">
         <template v-if="told">
             <p class="places-told" role="status">{{ told }}</p>
         </template>
@@ -133,7 +139,7 @@ function start(agent) {
 
 .places-track {
     position: relative;
-    overflow: hidden;
+    overflow-x: clip;
 }
 
 .places-pane {

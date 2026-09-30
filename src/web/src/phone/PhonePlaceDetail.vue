@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, nextTick, onMounted, ref} from "vue";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
 import {ago} from "./ago.js";
@@ -18,7 +18,15 @@ const emit = defineEmits(["back", "open", "start"]);
 const detail = computed(() => props.place.details?.[props.name] || {});
 const running = computed(() => props.place.working.includes(props.name));
 const state = computed(() => detail.value.agent || (running.value ? "idle" : "offline"));
-const waits = computed(() => Object.entries(detail.value.waiting || {}).filter(([, count]) => count > 0));
+const waits = computed(() =>
+    Object.entries(detail.value.waiting || {})
+        .filter(([, count]) => count > 0)
+        .map(([kind, count]) => counted(count, kindWord(kind), kindCard(kind).toLowerCase()))
+        .join(", "),
+);
+const heading = ref(null);
+
+onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));
 </script>
 
 <template>
@@ -27,7 +35,12 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
             <PhoneChevron facing="left" :size="16" />
             Journals
         </button>
-        <h3 class="detail-title">{{ name }}</h3>
+        <h3 ref="heading" class="detail-title" tabindex="-1">
+            {{ name }}
+            <template v-if="current">
+                <span class="detail-current">Current</span>
+            </template>
+        </h3>
         <p class="detail-project">
             <span class="detail-dot" :style="{background: place.color}" />
             {{ place.project }}
@@ -50,10 +63,10 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
                     <dd>{{ plainDoing(detail.doing) }}</dd>
                 </div>
             </template>
-            <template v-for="[kind, count] in waits" :key="kind">
+            <template v-if="waits">
                 <div class="detail-fact">
-                    <dt>Waiting</dt>
-                    <dd>{{ counted(count, kindWord(kind), kindCard(kind).toLowerCase()) }}</dd>
+                    <dt>Waiting on you</dt>
+                    <dd>{{ waits }}</dd>
                 </div>
             </template>
             <template v-if="detail.inHand">
@@ -70,9 +83,15 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
             </template>
         </dl>
         <div class="detail-actions">
+            <button type="button" class="detail-open" :disabled="Boolean(busy)" @click="emit('open')">
+                <template v-if="busy === 'open'">
+                    <Spinner />
+                </template>
+                {{ running || current ? "Open" : "Open without starting" }}
+            </button>
             <template v-if="!running">
                 <template v-for="agent in AGENTS" :key="agent.key">
-                    <button type="button" :class="['detail-start', {quiet: current}]" :disabled="Boolean(busy)" @click="emit('start', agent.key)">
+                    <button type="button" class="detail-start" :disabled="Boolean(busy)" @click="emit('start', agent)">
                         <template v-if="busy === agent.key">
                             <Spinner />
                         </template>
@@ -80,12 +99,6 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
                     </button>
                 </template>
             </template>
-            <button type="button" :class="['detail-open', {quiet: !running && !current}]" :disabled="Boolean(busy)" @click="emit('open')">
-                <template v-if="busy === 'open'">
-                    <Spinner />
-                </template>
-                {{ running || current ? "Open" : "Open without starting" }}
-            </button>
         </div>
     </div>
 </template>
@@ -108,6 +121,21 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
     background: none;
     color: var(--accent-text);
     font: inherit;
+}
+
+.detail-title:focus {
+    outline: none;
+}
+
+.detail-current {
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 9px;
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--accent-text);
+    font-size: 0.765rem;
+    font-weight: 600;
+    vertical-align: middle;
 }
 
 .detail-title {
@@ -162,9 +190,16 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
 }
 
 .detail-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin: 0 calc(-1 * var(--side)) -14px;
+    padding: 10px var(--side) 14px;
+    border-top: 1px solid var(--line);
+    background: var(--raised);
 }
 
 .detail-start,
@@ -186,8 +221,7 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
     color: #fff;
 }
 
-.detail-start.quiet,
-.detail-open.quiet {
+.detail-start {
     background: color-mix(in oklab, var(--accent) 14%, transparent);
     color: var(--accent-text);
 }

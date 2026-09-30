@@ -60,8 +60,8 @@ onUnmounted(() => watcher?.disconnect());
 }
 
 .fold-toggle {
-    min-height: 32px;
-    margin-top: 2px;
+    min-height: 44px;
+    margin: -4px 0 -8px;
     padding: 0;
     border: 0;
     background: none;

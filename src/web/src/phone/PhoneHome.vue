@@ -23,8 +23,10 @@ import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
+import PhoneNotices from "./PhoneNotices.vue";
 import Spinner from "../kit/Spinner.vue";
 import {useFades} from "./fades.js";
+import {reveal} from "./reveal.js";
 import {wanted} from "./wanted.js";
 import {lastLooked, looked} from "./looked.js";
 import {clock} from "../format/time.js";
@@ -230,6 +232,35 @@ const newFrom = computed(() => {
 });
 const joined = computed(() => items.value.map((item, i) => !dividers.value[i] && joins(items.value[i - 1], item)));
 const arrivals = ref(new Map());
+const closedNotices = ref(new Set());
+const REF = /^[a-z_]+:\d+$/;
+const notices = computed(() => (feed.value.notices || []).filter((notice) => !closedNotices.value.has(notice.n)));
+
+function openNotice(notice) {
+    const link = notice.data?.link || "";
+    if (REF.test(link)) return open(link);
+    if (link) window.open(link, "_blank", "noopener");
+}
+
+async function closeNotice(notice) {
+    closedNotices.value = new Set([...closedNotices.value, notice.n]);
+    try {
+        const went = await perform({kind: "close", n: notice.n});
+        announce(went === "held" ? "Closing waits to send" : "Notice closed");
+    } catch (error) {
+        closedNotices.value = new Set([...closedNotices.value].filter((n) => n !== notice.n));
+        if (ended(error)) failed(error);
+        else noticed("That notice could not be closed. Try again.");
+    }
+}
+
+function announceArrivals(coming) {
+    if (!coming.length) return;
+    if (coming.length > 1) return announce(`${coming.length} new messages`);
+    const item = coming[0];
+    const who = item.type === "question" ? "Question" : "Agent";
+    announce(`${who}: ${plain(item.label || item.brief || item.title || "").slice(0, 80)}`);
+}
 const BURST = 600;
 const STAGGER = 90;
 const arriveAt = (item) => arrivals.value.get(keyOf(item)) ?? -1;
@@ -245,6 +276,7 @@ function took(got) {
     const coming = first || landNext ? [] : got.items.filter((item) => freshKeys.value.has(keyOf(item)) && item.who !== "user");
     const step = coming.length > 1 ? Math.min(STAGGER, BURST / (coming.length - 1)) : 0;
     arrivals.value = new Map(coming.map((item, i) => [keyOf(item), Math.round(i * step)]));
+    announceArrivals(coming);
     seen = new Set(keys);
     if (earlier.value.length) {
         const oldest = got.items[0]?.created ?? Infinity;
@@ -323,11 +355,30 @@ watch(list, (el) => el && toBottom());
 
 const made = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 const entry = (target) => ({id: made(), ref: target});
+const saved = (list) => ({pages: list.map(({id, ref}) => ({id, ref}))});
+const FLASH = 1200;
+const IN_CHAT = /^(message|comment):/;
+let flashing = "";
+
+function flashTo(key) {
+    const el = list.value?.querySelector(`[data-hold="${key}"]`);
+    if (!el) return;
+    reveal(list.value, el, true);
+    el.dataset.flash = "";
+    setTimeout(() => delete el.dataset.flash, FLASH);
+}
 
 function open(target) {
+    const key = target.replace(":", "");
+    if (IN_CHAT.test(target) && findTurn(key)) {
+        screen.value = "chat";
+        if (!pages.value.length) return nextTick(() => flashTo(key));
+        flashing = key;
+        return history.go(-pages.value.length);
+    }
     const next = [...pages.value, entry(target)];
     direction.value = "push";
-    history.pushState({pages: next}, "");
+    history.pushState(saved(next), "");
     pages.value = next;
 }
 
@@ -344,7 +395,7 @@ function next() {
     if (!left.length) return back();
     const stay = [...pages.value.slice(0, -1), entry(left[0].ref)];
     direction.value = "push";
-    history.replaceState({pages: stay}, "");
+    history.replaceState(saved(stay), "");
     pages.value = stay;
 }
 
@@ -353,6 +404,10 @@ function popped(event) {
     const swiped = edge.landed(now.length);
     direction.value = swiped ? "swiped" : now.length >= pages.value.length ? "push" : "pop";
     pages.value = now;
+    if (!flashing || now.length) return;
+    const key = flashing;
+    flashing = "";
+    setTimeout(() => flashTo(key), 320);
 }
 
 onMounted(() => {
@@ -590,6 +645,7 @@ function pick(key) {
                         </div>
                     </template>
                     <div ref="dock" class="home-dock">
+                        <PhoneNotices :notices="notices" @open="openNotice" @close="closeNotice" />
                         <template v-if="screen === 'chat'">
                             <PhoneStatus :working="feed.agent === 'working'" />
                         </template>
@@ -1024,24 +1080,16 @@ function pick(key) {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    margin-left: -20px;
+    width: 44px;
+    height: 44px;
+    margin-left: -22px;
     padding: 0;
     border: 1px solid var(--line);
     border-radius: 50%;
-    background: color-mix(in oklab, var(--raised) 80%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
+    background: var(--raised);
     color: var(--text);
     box-shadow: var(--shadow-1);
     animation: newest-in 200ms ease-out;
-}
-
-.home-newest::after {
-    position: absolute;
-    inset: -2px;
-    content: "";
 }
 
 .home-unseen {
@@ -1100,6 +1148,28 @@ function pick(key) {
 
 .home-dock > * {
     pointer-events: auto;
+}
+
+.home-dock::before {
+    position: absolute;
+    top: -16px;
+    right: -12px;
+    bottom: -8px;
+    left: -12px;
+    z-index: -1;
+    background: color-mix(in oklab, var(--bg) 72%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+    content: "";
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px);
+    mask-image: linear-gradient(to bottom, transparent, #000 16px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .home-dock::before {
+        background: color-mix(in oklab, var(--bg) 94%, transparent);
+    }
 }
 
 @media (max-height: 420px) {

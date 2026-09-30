@@ -54,10 +54,10 @@ async function start(agent) {
                 <dt>State</dt>
                 <dd><PhoneAgent :state="state" /></dd>
             </div>
-            <template v-if="running">
+            <template v-if="running && doing">
                 <div class="agent-fact">
                     <dt>Doing now</dt>
-                    <dd>{{ doing || "Nothing at the moment" }}</dd>
+                    <dd>{{ doing }}</dd>
                 </div>
             </template>
             <template v-if="lastActive">

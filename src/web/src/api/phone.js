@@ -63,4 +63,5 @@ export const phone = {
     approve: (n, updated) => sent("./approve", {n, updated}),
     press: (ref, label) => sent("./press", {ref, label}),
     comment: (ref, text) => sent("./comment", {ref, text}),
+    close: (n) => sent("./close", {n}),
 };

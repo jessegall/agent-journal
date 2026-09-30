@@ -29,7 +29,11 @@ const filedAs = computed(
     () => new Set((props.item.sections || []).flatMap((part) => [...part.body.matchAll(FILED_REF)].map((found) => `${found[1]}:${found[2]}`))),
 );
 const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []).filter((ref) => filedAs.value.has(ref)) : []));
-const about = computed(() => (props.item.who === "user" ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
+const IN_CHAT = /^(message|comment):/;
+const parent = computed(() =>
+    props.item.type === "comment" && !(props.item.refs || []).some((ref) => IN_CHAT.test(ref)) ? (props.item.refs || []).find((ref) => ref.includes(":")) : undefined,
+);
+const about = computed(() => (props.item.who === "user" && !parent.value ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const HOLDABLE = ["message", "comment"];
@@ -86,8 +90,11 @@ function pressed(event) {
                 <template v-else-if="about">
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
+                <template v-if="parent">
+                    <a class="turn-about" href="#" :data-peek="parent">on {{ named(parent) }}</a>
+                </template>
                 <template v-if="inline.quote && !quoted">
-                    <p class="turn-quote">{{ inline.quote }}</p>
+                    <p class="turn-quote"><span class="phone-hidden">Reply to: </span>{{ inline.quote }}</p>
                 </template>
                 <PhoneFold>
                     <template v-if="!onlyFiles">
@@ -306,6 +313,13 @@ function pressed(event) {
     text-align: center;
 }
 
+@keyframes face-in-spring {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+}
+
 @keyframes face-in {
     from {
         transform: scale(0.6);
@@ -340,7 +354,7 @@ function pressed(event) {
 }
 
 .turn-faces {
-    animation: face-in 150ms ease-out;
+    animation: face-in-spring 220ms var(--spring);
     display: inline-block;
     margin-top: 6px;
     padding: 1px 7px;
