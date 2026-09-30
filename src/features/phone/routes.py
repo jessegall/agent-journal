@@ -148,7 +148,7 @@ class PhoneRoutes:
             return self.file(handler, rest)
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
-                                                                          "Service-Worker-Allowed": "/p/"})
+                                                                          "Service-Worker-Allowed": "/p/", **APP_HEADERS})
         if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:

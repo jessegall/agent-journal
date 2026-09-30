@@ -264,3 +264,5 @@ def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
     assert (body["display"], body["start_url"]) == ("standalone", "/p/") and body["icons"], "it opens full screen from the home screen"
     with urllib.request.urlopen(f"{base}/p/icon-180.png", timeout=5) as got:
         assert got.read(8) == b"\x89PNG\r\n\x1a\n", "with an icon of its own"
+    with urllib.request.urlopen(f"{base}/p/sw.js", timeout=5) as got:
+        assert "connect-src 'self'" in got.headers["Content-Security-Policy"], "its worker may fetch the page, so a reload works offline and online"
