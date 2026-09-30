@@ -21,7 +21,7 @@ const DAYS = [
 const CAN = [
     "Read the chat and see what needs you",
     "Answer questions",
-    "Read reports, documents and plans",
+    "Read reports, documents, plans and to-dos",
     "Approve a plan or ask for changes",
     "Send the agent instructions",
 ];

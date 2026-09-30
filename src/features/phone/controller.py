@@ -28,7 +28,7 @@ SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
 SAID = ("message", "question")
-READABLE = ("question", "report", "doc", "plan")
+READABLE = ("question", "report", "doc", "plan", "todo", "work", "fact", "rule")
 WAITING = ("question", "plan", "report", "doc")
 
 
@@ -198,7 +198,7 @@ class Phones(Controller):
     def _file(self, phone: Phone, ref: str, name: str) -> Path:
         kind, _, n = ref.partition(":")
         if kind not in (*SAID, *READABLE) or not n.isdigit():
-            raise Refused(f"a phone opens files of messages, questions, reports, documents and plans, not {ref!r}")
+            raise Refused(f"a phone opens files of messages and of the rows it can read, not {ref!r}")
         controller = CONTROLLERS[kind](self._home(phone), actor=SYSTEM)
         row = controller.load(int(n))
         folder = controller.folder(row.n).resolve()
@@ -210,7 +210,7 @@ class Phones(Controller):
     def _read(self, phone: Phone, ref: str) -> dict:
         kind, _, n = ref.partition(":")
         if kind not in READABLE or not n.isdigit():
-            raise Refused(f"a phone opens a question, a report, a document or a plan, not {ref!r}")
+            raise Refused(f"a phone opens a question, a report, a document, a plan, a to-do, work, a fact or a rule, not {ref!r}")
         home = self._home(phone)
         row = CONTROLLERS[kind](home, actor=SYSTEM).load(int(n))
         if row.deleted or not self._reaches(phone, row):

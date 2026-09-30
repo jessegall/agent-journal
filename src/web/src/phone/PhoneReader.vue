@@ -9,7 +9,8 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 
 const SIZES = [16, 18, 20];
-const KINDS = {report: "Report", doc: "Document", plan: "Plan"};
+const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule"};
+const NAMES = {doc: "document", todo: "to-do"};
 const props = defineProps({target: {type: String, required: true}});
 const emit = defineEmits(["close", "reply"]);
 const failed = inject("phoneFailed");
@@ -81,6 +82,9 @@ onMounted(load);
                     <template v-if="row.brief">
                         <TextDisplay :text="row.brief" />
                     </template>
+                    <template v-if="row.outcome">
+                        <p class="reader-goal">Done: {{ row.outcome }}</p>
+                    </template>
                     <template v-for="part in row.sections || []" :key="part.title">
                         <h2 class="reader-part">{{ part.title }}</h2>
                         <TextDisplay :text="part.body" />
@@ -110,7 +114,7 @@ onMounted(load);
                     <Btn large @click="emit('reply', row.type + ':' + row.n)">Ask for changes</Btn>
                 </template>
                 <template v-else-if="row.type !== 'question'">
-                    <Btn large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ row.type === "doc" ? "document" : row.type }}</Btn>
+                    <Btn large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ NAMES[row.type] || row.type }}</Btn>
                 </template>
             </footer>
         </template>

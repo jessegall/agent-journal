@@ -16,7 +16,7 @@ import ReadTicks from "../kit/ReadTicks.vue";
 const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
 const SENDING = {completed: 0, seen: [], data: {}};
-const READABLE = ["question", "report", "doc", "plan"];
+const READABLE = ["question", "report", "doc", "plan", "todo", "work", "fact", "rule"];
 defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: false});
