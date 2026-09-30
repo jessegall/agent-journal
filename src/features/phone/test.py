@@ -106,6 +106,13 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     assert call(base, "/p/react", {"n": made["n"], "face": "👍"}, key).status == 201
     reacted = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
     assert reacted and reacted[0]["reactions"] == [{"face": "👍", "who": USER}], "a reaction from the phone is the user's and shows on the message"
+    fetch = lambda path, **sent: urllib.request.urlopen(urllib.request.Request(f"{base}{path}", headers={"Cookie": f"__Host-phone={key}", **sent}), timeout=5)
+    with pytest.raises(urllib.error.HTTPError) as unchanged:
+        fetch("/p/feed", **{"If-None-Match": fetch("/p/feed").headers["ETag"]})
+    assert unchanged.value.code == 304, "an unchanged feed is not sent again"
+    assert fetch("/p/", **{"Accept-Encoding": "gzip"}).headers["Content-Encoding"] == "gzip", "the app travels compressed"
+    older = call(base, f"/p/feed?before={message.created}", key=key).body["items"]
+    assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
 
 
 def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):

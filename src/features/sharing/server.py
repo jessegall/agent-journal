@@ -1,3 +1,4 @@
+import gzip
 import json
 import mimetypes
 import sys
@@ -22,6 +23,8 @@ APP_DIR = data("web", "dist")
 TICK_EVERY = 15
 READ_SECONDS = 15
 BODY_LIMIT = 8192
+PACKED_FROM = 1024
+PACKED = ("text/", "application/javascript", "image/svg+xml")
 COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
 PREVIEW = "preview.png"
@@ -171,7 +174,13 @@ class ShareHandler(BaseHTTPRequestHandler):
         if found.parent != (APP_DIR / "assets").resolve() or not found.is_file():
             return self.page(404, unshared())
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
-        self.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
+        answer = self.packed if kind.startswith(PACKED) else self.send
+        answer(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
+
+    def packed(self, code: int, body: bytes, headers: dict) -> None:
+        if "gzip" not in self.headers.get("Accept-Encoding", "") or len(body) < PACKED_FROM:
+            return self.send(code, body, headers)
+        self.send(code, gzip.compress(body, 6), {**headers, "Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
 
     def page(self, code: int, text: str) -> None:
         self.send(code, text.encode(), {"Content-Type": "text/html; charset=utf-8"})

@@ -1,5 +1,7 @@
 import hashlib
+from itertools import islice
 import mimetypes
+import math
 import re
 from dataclasses import dataclass
 import secrets
@@ -336,14 +338,15 @@ class Phones(Controller):
         return Messages(self._home(phone), actor=USER).create(titled(text), brief=text, idempotency=said.idempotency, about=said.about,
                                                              via=f"phone:{phone.n}")
 
-    def _feed(self, phone: Phone) -> Feed:
+    def _feed(self, phone: Phone, before: float = math.inf) -> Feed:
         home = self._home(phone)
-        said = [self._said(home, kind, row) for kind in SAID for row in self._latest(home, kind)]
+        said = [self._said(home, kind, row) for kind in SAID for row in self._latest(home, kind, before)]
         items = sorted((item for item in said if item), key=lambda item: item["created"])[-FEED:]
         faces = self._faces(home, {item["ref"] for item in items})
         items = [{**item, "reactions": faces.get(item["ref"], [])} for item in items]
-        since = items[0]["created"] if items else 0.0
-        items = sorted([*items, *self._marks(home, since)], key=lambda item: item["created"])
+        since = items[0]["created"] if items else before
+        marks = [mark for mark in self._marks(home, since) if mark["created"] < before]
+        items = sorted([*items, *marks], key=lambda item: item["created"])
         return Feed(items=items, waiting=self._waiting(phone), agent=self._agent(home, phone.environment))
 
     def _agent(self, home: Record, environment: str) -> str:
@@ -376,9 +379,10 @@ class Phones(Controller):
         messages.react(reacting.n, reacting.face)
         return messages.load(reacting.n)
 
-    def _latest(self, home: Record, kind: str) -> list:
-        rows = [row for row in CONTROLLERS[kind](home, actor=SYSTEM).summaries() if not row["deleted"]]
-        return [CONTROLLERS[kind](home, actor=SYSTEM).load(row["n"]) for row in rows[-FEED:]]
+    def _latest(self, home: Record, kind: str, before: float) -> list:
+        rows = CONTROLLERS[kind](home, actor=SYSTEM)
+        loaded = (rows.load(row["n"]) for row in reversed(rows.summaries()) if not row["deleted"])
+        return list(islice((row for row in loaded if row.created < before), FEED))[::-1]
 
     def _said(self, home: Record, kind: str, row) -> dict | None:
         if kind == "message" and row.data.get("window"):

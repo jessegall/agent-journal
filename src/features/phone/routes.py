@@ -1,3 +1,4 @@
+import hashlib
 import json
 import mimetypes
 import re
@@ -161,7 +162,7 @@ class PhoneRoutes:
             return handler.page(404, unshared())
         if not handler.path.split("?", 1)[0].endswith("/"):
             return handler.send(301, b"", {"Location": "/p/"})
-        return handler.send(200, page.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **PAGE_HEADERS})
+        return handler.packed(200, page.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **PAGE_HEADERS})
 
     def file(self, handler, rest: list[str]) -> None:
         phone = self.phone(handler)
@@ -202,7 +203,11 @@ class PhoneRoutes:
             return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires, "home": phone.home,
                                             "project": known["project"], "color": known["color"]})
         if rest == ["feed"]:
-            return self.json(handler, 200, {**self.phones(handler)._feed(phone), "build": built()})
+            before = parse_qs(urlsplit(handler.path).query).get("before", ["inf"])[0]
+            try:
+                return self.json(handler, 200, {**self.phones(handler)._feed(phone, float(before)), "build": built()})
+            except ValueError:
+                return handler.answer(400, "before is a time in seconds")
         if rest == ["bar"]:
             return self.json(handler, 200, self.phones(handler)._bar(phone))
         if len(rest) == 3:
@@ -308,4 +313,9 @@ class PhoneRoutes:
         return Phones(Record(handler.shares.record.root, handler.shares.record.env), actor=SYSTEM)
 
     def json(self, handler, code: int, body: dict, headers: dict | None = None) -> None:
-        handler.send(code, json.dumps(body).encode(), {"Content-Type": "application/json", **APP_HEADERS, **(headers or {})})
+        raw = json.dumps(body).encode()
+        tag = f'"{hashlib.sha1(raw).hexdigest()}"'
+        kept = {**APP_HEADERS, "ETag": tag, "Cache-Control": "private, no-cache"}
+        if handler.command == "GET" and code == 200 and handler.headers.get("If-None-Match") == tag:
+            return handler.send(304, b"", kept)
+        handler.packed(code, raw, {"Content-Type": "application/json", **kept, **(headers or {})})
