@@ -1,7 +1,7 @@
 import json
 import mimetypes
 import re
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote, urlsplit
 from dataclasses import asdict, dataclass
 from http.cookies import SimpleCookie
 
@@ -128,7 +128,7 @@ class PhoneRoutes:
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/"})
-        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["row"]):
+        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -159,6 +159,12 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
+        if rest == ["source"]:
+            asked = parse_qs(urlsplit(handler.path).query).get("q", [""])[0]
+            try:
+                return self.json(handler, 200, self.phones(handler)._source(phone, asked))
+            except Refused as refused:
+                return handler.answer(404, str(refused))
         if rest == ["push-key"]:
             return self.json(handler, 200, {"key": self.phones(handler)._push_key()})
         if rest == ["places"]:

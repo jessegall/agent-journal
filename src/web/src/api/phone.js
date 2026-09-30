@@ -25,6 +25,7 @@ export const phone = {
     feed: () => got("./feed"),
     bar: () => got("./bar"),
     places: () => got("./places"),
+    source: (q) => got(`./source?q=${encodeURIComponent(q)}`),
     pushKey: () => got("./push-key"),
     subscribe: (endpoint) => sent("./push", {endpoint}),
     move: (journal, environment) => sent("./switch", {journal, environment}),

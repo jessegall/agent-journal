@@ -162,6 +162,13 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
     assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
     assert call(base, f"/p/row/phone/{mine}", key=key).status == 404, "a row that holds keys never opens, not even its own"
+    (record.root.parent / "notes").mkdir(exist_ok=True)
+    (record.root.parent / "notes" / "plan.md").write_text("line one\nline two\n")
+    (record.root.parent / ".env").write_text("SECRET=1\n")
+    assert call(base, "/p/source?q=notes/plan.md", key=key).body["lines"] == 2
+    assert call(base, "/p/source?q=plan.md", key=key).body["path"] == "notes/plan.md", "a bare file name finds the one file of that name"
+    assert [call(base, f"/p/source?q={asked}", key=key).status for asked in (".env", ".journal/record.json", "../../etc/hosts")] == [404, 404, 404], \
+        "hidden files, the journal's own and anything outside the project stay closed"
     journal = str(record.root.resolve())
     Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "elsewhere")
     assert "elsewhere" in next(p for p in call(base, "/p/places", key=key).body["places"] if p["root"] == journal)["environments"]

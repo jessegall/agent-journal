@@ -9,6 +9,7 @@ import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
 import PhoneNotify from "./PhoneNotify.vue";
+import PhoneViewer from "./PhoneViewer.vue";
 import Icon from "../kit/Icon.vue";
 import {peeked} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
@@ -29,6 +30,7 @@ const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const reading = ref("");
 const trail = ref([]);
+const VIEWED = ["source", "attachment"];
 const about = ref("");
 const quote = ref("");
 const held = ref(null);
@@ -174,7 +176,12 @@ function sent() {
     <PhoneNotify />
     <PhoneWaiting :waiting="feed.waiting" @open="open" />
     <template v-if="reading">
-        <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @reply="reply" />
+        <template v-if="VIEWED.includes(reading.split(':')[0])">
+            <PhoneViewer :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" />
+        </template>
+        <template v-else>
+            <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @reply="reply" />
+        </template>
     </template>
     <template v-else>
         <div ref="list" class="home-feed" @click.capture="chipped" @scroll.passive="moved" @load.capture="nearBottom() && still() && toBottom()">

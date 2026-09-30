@@ -83,7 +83,7 @@ function release() {
                 <template v-if="files.length">
                     <span class="turn-files">
                         <template v-for="name in files" :key="name">
-                            <a class="turn-file" :href="fileUrl(name)" target="_blank" rel="noopener">
+                            <a class="turn-file" :href="fileUrl(name)" :data-peek="`attachment:${item.type}/${item.n}/${encodeURIComponent(name)}`">
                                 <template v-if="picture(name)">
                                     <img class="turn-picture" :src="fileUrl(name)" :alt="name" loading="lazy" />
                                 </template>

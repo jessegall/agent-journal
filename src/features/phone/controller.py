@@ -1,4 +1,5 @@
 import hashlib
+import mimetypes
 from dataclasses import dataclass
 import secrets
 import tempfile
@@ -16,6 +17,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.format import VIEWER
 from features.message_buttons.shaping import Button, spent
+from engine.project_files import matching
 from features.phone.places import Place, places
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
@@ -32,6 +34,7 @@ KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
+SOURCE_LIMIT = 400000
 SAID = ("message", "question")
 HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
@@ -94,6 +97,13 @@ class Session:
             *(self.mark(done["at"], "The agent compacted its context", icon="activity", tone="warn") for done in self.compactions),
             *(self.mark(w["at"], w["title"], icon="reminders") for w in self.whispers),
         ]
+
+
+class Source(TypedDict):
+    path: str
+    kind: str
+    text: str
+    lines: int
 
 
 class Waiting(TypedDict):
@@ -208,6 +218,20 @@ class Phones(Controller):
             raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
         return super().update(phone.n, journal=journal, environment=moving.environment)
+
+    def _source(self, phone: Phone, asked: str) -> Source:
+        project = self._home(phone).root.parent.resolve()
+        target = (project / asked).resolve()
+        if not target.is_file():
+            found = matching(project, asked)
+            if len(found) != 1:
+                raise Refused(f"{len(found)} files in the project are called {asked!r}" if found else f"no file {asked!r} in the project")
+            target = (project / found[0]).resolve()
+        if project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts):
+            raise Refused(f"{asked!r} is not a file the phone may read")
+        kind = mimetypes.guess_type(target.name)[0] or ""
+        text = "" if kind.startswith("image/") else target.read_bytes()[:SOURCE_LIMIT].decode("utf-8", errors="replace")
+        return Source(path=str(target.relative_to(project)), kind=kind, text=text, lines=len(text.splitlines()))
 
     def _push_key(self) -> str:
         return unpadded(Keys.kept(self.record.root).public)
