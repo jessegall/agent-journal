@@ -77,3 +77,29 @@ def test_a_due_check_runs_in_one_engine_while_another_holds_it():
     assert (first is not None, claim(record.root, 3)) == (True, None), "a second engine finds the check already claimed and leaves it"
     first.close()
     assert claim(record.root, 3) is not None, "once the run ends, the check can be claimed again"
+
+
+def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on_a_pass():
+    from controllers.types import Agents, Nudges
+    from features.helper_worktrees.test import commit, git, project_on
+    features.load()
+    repo = project_on("work")
+    (repo.project / "hooks").mkdir()
+    commit(repo.project, "hooks/test.py", "def test(): pass\n")
+    commit(repo.project, "hooks/code.py", "one\n")
+    Agents(repo.record, actor=SYSTEM).create("claude-1")
+    checks = Checks(repo.record, actor=USER)
+    suite = checks.create("the suites pass", command="true", touched="echo ran {tests}")
+    (repo.project / "hooks" / "code.py").write_text("two\n")
+    (repo.project / "notes.txt").write_text("a note\n")
+    said = checks.touched(suite.n)
+    assert "ran hooks/test.py" in said and "no test covers notes.txt" in said, "the test beside a changed file runs, and what no test covers is named"
+    checks._gated(suite.n, "change the hook", ["hooks/code.py"])
+    assert git(repo.project, "log", "-1", "--format=%s") == "change the hook" and "notes.txt" in git(repo.project, "status", "--short"), \
+        "a pass commits exactly the named paths"
+    assert any("passed and" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "the agent is told it landed"
+    checks.update(suite.n, command="false")
+    (repo.project / "hooks" / "code.py").write_text("three\n")
+    checks._gated(suite.n, "break the hook", ["hooks/code.py"])
+    assert git(repo.project, "log", "-1", "--format=%s") == "change the hook", "a failure commits nothing"
+    assert any("failed, nothing was committed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "and the agent is told why"

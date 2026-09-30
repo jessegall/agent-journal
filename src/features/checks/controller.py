@@ -11,7 +11,10 @@ from controllers.faults import threw
 from engine import runtime
 from engine.stored import read_json
 from features.checks.resource import Check, CheckReport, CheckRun
-from resources.base import Refused
+from controllers.types import Nudges
+from engine.worktree import git
+from features.checks.touched import changed, covering
+from resources.base import SYSTEM, Refused, titled
 from typing import TypedDict
 
 TIMEOUT = 600
@@ -69,6 +72,50 @@ class Checks(Controller):
             threading.Thread(target=self._ran_in_background, args=(n,), daemon=True).start()
             return f"check {n} is running; its result lands on the row, and a failure is told to you"
         return self._ran(n)
+
+    def touched(self, n: int) -> str:
+        check = self.load(n)
+        if not check.touched:
+            raise Refused(f"check {n} names no command for touched tests: journal check set {n} touched \"<command with {{tests}}>\"")
+        project = self.record.root.resolve().parent
+        found = covering(project, changed(project))
+        if not found.tests:
+            return f"no test covers what changed ({found.uncovered or 'nothing changed'}); the full check is the gate"
+        code, output = streamed(["/bin/sh", "-c", check.touched.replace("{tests}", " ".join(found.tests))], project, TIMEOUT, lambda _: None)
+        uncovered = f"\nno test covers {found.uncovered}; the full check is the gate for those" if found.bare else ""
+        return f"{tail(output)}{uncovered}" if code == 0 else f"failed:\n{tail(output)}"
+
+    def gate(self, n: int, message: str, paths: str):
+        if not self.load(n).command:
+            raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
+        named = [path.strip() for path in paths.split(",") if path.strip()]
+        if not named:
+            raise Refused("name the paths the commit takes: --paths <path>,<path>")
+        threading.Thread(target=self._gated, args=(n, message, named), daemon=True).start()
+        return f"check {n} is running; on a pass it commits {len(named)} paths, and you are told either way"
+
+    def _gated(self, n: int, message: str, paths: list[str]) -> None:
+        try:
+            self._ran(n)
+            told = self._landed(self.load(n), message, paths)
+        except Exception:
+            threw(self.record.root, self.record.env, f"gating on check {n}")
+            return
+        Nudges(self.record, actor=SYSTEM)._to_primary(titled(told.split("\n")[0]), told)
+
+    def _landed(self, check, message: str, paths: list[str]) -> str:
+        if not check.last_run.ok:
+            return f"check {check.n} failed, nothing was committed\n{check.last_run.output}"
+        project = self.record.root.resolve().parent
+        added = git(project, "add", "--", *paths)
+        made = git(project, "commit", "-q", "-m", message) if not added.returncode else added
+        if made.returncode:
+            return f"check {check.n} passed but the commit failed\n{(made.stderr or made.stdout).strip()}"
+        head = git(project, "log", "--oneline", "-1").stdout.strip()
+        if not check.then:
+            return f"check {check.n} passed and {head} is committed"
+        code, output = streamed(["/bin/sh", "-c", check.then], project, TIMEOUT, lambda _: None)
+        return f"check {check.n} passed and {head} is committed; then {'ran' if code == 0 else 'failed'}\n{tail(output)}"
 
     def sweep(self, wait: bool = False):
         return [self.run(check.n, wait=wait) for check in self._standing() if check.command]

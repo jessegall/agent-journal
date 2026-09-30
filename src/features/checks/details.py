@@ -23,6 +23,13 @@ class ChecksDetails(FeatureDetails):
         A check may also write a report to the file named by $JOURNAL_REPORT: {"title": ...,
         "summary": ..., "findings": [{"name", "file", "line", "where", "text", "group"}]}. The
         viewer shows its findings under the check, grouped, each opening its file at its line.
+
+        While you iterate, journal check touched <n> runs only the tests beside what changed since
+        the last commit, through the check's touched command (--set touched="<command with
+        {tests}>"), and names what no test covers. To commit, journal check gate <n> "<message>"
+        --paths <path>,<path> runs the whole check in the background and commits exactly those
+        paths on a pass, then runs the check's then command (--set then="<push, install>"); you
+        are told either way, so there is no log to read.
     """
 
     lines = [

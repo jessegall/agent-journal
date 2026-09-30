@@ -50,6 +50,8 @@ class Check(Shape, Resource):
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="command"),
+        Field(TEXT, name="touched"),
+        Field(TEXT, name="then"),
         Field(NUMBER, default=0, name="every"),
         Field(TEXT, name="failure"),
         Field(default=dict, name="last"),
