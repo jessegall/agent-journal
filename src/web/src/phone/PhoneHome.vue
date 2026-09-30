@@ -7,6 +7,7 @@ import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
 import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
+import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
 import {ended, flush, justSent, settle, waitingToSend} from "./outbox.js";
@@ -138,6 +139,7 @@ function sent() {
                 <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
             </template>
         </div>
+        <PhoneStatus />
         <PhoneCompose :about="about" :quote="quote" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
     </template>
     <template v-if="held">

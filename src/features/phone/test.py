@@ -161,7 +161,8 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
     here, there = Docs(record, actor=AGENT).create("Here"), Docs(other, actor=AGENT).create("There")
     assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
-    assert call(base, "/p/row/rule/1", key=key).status == 404, "and only the kinds a phone reads open at all"
+    assert call(base, "/p/row/reminder/1", key=key).status == 404, "and only the kinds a phone reads open at all"
+    assert call(base, "/p/bar", key=key).body == {"queue": []}, "the agent's status line reaches the phone"
     waiting = [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
     assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"
 

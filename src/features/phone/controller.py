@@ -17,6 +17,7 @@ from features.format import VIEWER
 from features.phone.resource import Phone
 from features.shaping import shaped
 from features.sharing.controller import Shares
+from features.status_bar.bar import current
 from resources.base import PROJECT, SYSTEM, USER, Refused, titled
 
 CODE_SECONDS = 600
@@ -150,6 +151,9 @@ class Phones(Controller):
         items = [{**item, "reactions": faces.get(item["ref"], [])} for item in items]
         return Feed(items=items, waiting=self._waiting(phone),
                     agent=bool(Sessions(self.record.root).holder(phone.environment)))
+
+    def _bar(self, phone: Phone) -> dict:
+        return current(self._home(phone))
 
     def _faces(self, home: Record, refs: set[str]) -> dict[str, list[dict]]:
         reactions = CONTROLLERS["reaction"](home, actor=SYSTEM)

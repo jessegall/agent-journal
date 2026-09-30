@@ -23,6 +23,7 @@ export const phone = {
     pair: (code, device) => sent("./pair", {code, device}),
     state: () => got("./state"),
     feed: () => got("./feed"),
+    bar: () => got("./bar"),
     row: (ref) => got(`./row/${ref.replace(":", "/")}`),
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),
     attach: async (n, file) =>

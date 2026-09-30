@@ -84,7 +84,7 @@ class PhoneRoutes:
             return handler.asset(rest[1])
         if rest[:1] == ["file"] and len(rest) == 4:
             return self.file(handler, rest)
-        if rest[:1] in (["state"], ["feed"], ["row"]):
+        if rest[:1] in (["state"], ["feed"], ["bar"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -121,6 +121,8 @@ class PhoneRoutes:
                                             "project": known["project"], "color": known["color"]})
         if rest == ["feed"]:
             return self.json(handler, 200, self.phones(handler)._feed(phone))
+        if rest == ["bar"]:
+            return self.json(handler, 200, self.phones(handler)._bar(phone))
         if len(rest) == 3:
             try:
                 return self.json(handler, 200, self.phones(handler)._read(phone, f"{rest[1]}:{rest[2]}"))
