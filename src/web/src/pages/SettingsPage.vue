@@ -148,7 +148,7 @@ const sections = computed(() => ({
 const pageTabs = computed(() => [
     {key: "options", title: "Options"},
     {key: "environments", title: "Environments", count: rows("environment").filter((e) => !e.completed).length},
-    {key: "tunnel", title: "Tunnel"},
+    {key: "tunnel", title: "Tunler"},
 ]);
 watch(tab, (key) => remember(TAB, key));
 const nothing = computed(() => Object.values(sections.value).every((list) => !list.length));
