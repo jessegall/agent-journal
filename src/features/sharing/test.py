@@ -134,7 +134,7 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     asked = []
     monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
-    monkeypatch.setattr(Shares, "reachable", lambda self, n: {"reachable": False})
+    monkeypatch.setattr(Shares, "_answering", lambda self: False)
     tick(record)
     assert asked == [], "one missed check is not enough"
     tick(record)

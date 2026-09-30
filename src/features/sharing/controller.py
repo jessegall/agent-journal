@@ -32,6 +32,7 @@ SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 UNLOCKED: dict[int, str] = {}
 LAYOUT_FILE = "layout.json"
+HEALTH = "health"
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
 
@@ -54,6 +55,16 @@ def matches(password: str, kept: str) -> bool:
 
 def scoped(text: str, scope: set[str]) -> str:
     return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
+
+
+def answers(url: str) -> bool:
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=REACH_SECONDS) as answer:
+            return answer.status < 500
+    except urllib.error.HTTPError as error:
+        return error.code < 500
+    except (OSError, ValueError):
+        return False
 
 
 def until(expires: str) -> float:
@@ -153,8 +164,10 @@ class Shares(Controller):
         return lines
 
     def tunnel(self) -> dict:
-        host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
-        return {**tunler_status(), "address": f"{subdomain(self.record.root)}.{host}"}
+        return {**tunler_status(), "address": self._address()}
+
+    def _address(self) -> str:
+        return f"{subdomain(self.record.root)}.{FEATURES['sharing'].setting(self.record, 'host', 'tunler.jessegall.nl')}"
 
     def login(self, email: str, password: str) -> dict:
         failed = log_in(FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"), email.strip(), password)
@@ -163,18 +176,13 @@ class Shares(Controller):
         return self.tunnel()
 
     def reachable(self, n: int) -> dict:
-        share = self.load(n)
-        try:
-            with urllib.request.urlopen(urllib.request.Request(share.abstract, method="HEAD"), timeout=REACH_SECONDS) as answer:
-                return {"reachable": answer.status < 500}
-        except urllib.error.HTTPError as error:
-            return {"reachable": error.code < 500}
-        except (OSError, ValueError):
-            return {"reachable": False}
+        return {"reachable": answers(self.load(n).abstract)}
+
+    def _answering(self) -> bool:
+        return answers(f"https://{self._address()}/{HEALTH}")
 
     def _link(self, token: str) -> str:
-        host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
-        return f"https://{subdomain(self.record.root)}.{host}/s/{token}"
+        return f"https://{self._address()}/s/{token}"
 
     def _target(self, ref: str):
         kind, _, number = str(ref).strip().replace(" ", ":", 1).partition(":")

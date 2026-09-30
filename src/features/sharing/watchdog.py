@@ -6,7 +6,7 @@ from engine.services import UP, want
 from engine.state import State
 from features.parts import Context, Handler
 from features.sharing.controller import Shares
-from features.sharing.services import TUNNEL, open_shares
+from features.sharing.services import TUNNEL, wanted
 from features.sharing.tunnel import tunler
 from resources.base import SYSTEM
 
@@ -18,11 +18,10 @@ class KeepTunnelAnswering(Handler):
     def handle(self, context: Context, event: ClockTicked) -> None:
         if context.record.env != runtime.env(context.record.root):
             return
-        shares = open_shares(context.record.root)
-        if not shares or not tunler():
+        if not wanted(context.record.root) or not tunler():
             return
         state = State(context.record.root / "runtime" / "sharing-tunnel.json")
-        if Shares(context.record, actor=SYSTEM).reachable(shares[0]["n"])["reachable"]:
+        if Shares(context.record, actor=SYSTEM)._answering():
             state.set("misses", 0)
             return
         misses = int(state.get("misses", 0)) + 1

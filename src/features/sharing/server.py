@@ -8,9 +8,10 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
-from features.sharing.controller import LAYOUT_FILE  # noqa: E402
+from features.sharing.controller import HEALTH, LAYOUT_FILE  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from features.sharing.preview import card, tags  # noqa: E402
+from features.sharing.routes import ROUTES  # noqa: E402
 from engine.color import identity  # noqa: E402
 from resources.base import Refused  # noqa: E402
 
@@ -45,6 +46,10 @@ class ShareHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
+        if parts == [HEALTH]:
+            return self.send(200, b"ok", {"Content-Type": "text/plain"})
+        if parts and parts[0] in ROUTES:
+            return ROUTES[parts[0]].get(self, parts[1:])
         if len(parts) < 2 or parts[0] != "s":
             return self.page(404, unshared())
         share = self.shares._by_token(parts[1])
@@ -85,6 +90,8 @@ class ShareHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
+        if parts and parts[0] in ROUTES:
+            return ROUTES[parts[0]].post(self, parts[1:])
         if len(parts) != 3 or parts[0] != "s" or parts[2] != "comment":
             return self.refused()
         share = self.shares._by_token(parts[1])
