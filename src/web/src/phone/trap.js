@@ -17,10 +17,10 @@ export function useTrap(box, close) {
         const [first, last] = [all[0], all.at(-1)];
         if (event.shiftKey && document.activeElement === first) {
             event.preventDefault();
-            last.focus();
+            last.focus({preventScroll: true});
         } else if (!event.shiftKey && document.activeElement === last) {
             event.preventDefault();
-            first.focus();
+            first.focus({preventScroll: true});
         }
     }
 

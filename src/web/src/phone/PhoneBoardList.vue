@@ -9,6 +9,7 @@ defineProps({
     shown: {type: Array, required: true},
     total: {type: Number, required: true},
     fresh: {type: Array, default: () => []},
+    mark: {type: String, default: "New"},
 });
 const emit = defineEmits(["open", "more"]);
 </script>
@@ -25,7 +26,7 @@ const emit = defineEmits(["open", "more"]);
                         <button type="button" class="board-row" @click="emit('open', row.ref)">
                             <span class="board-title">{{ row.title }}</span>
                             <template v-if="fresh.includes(row.ref)">
-                                <span class="board-new">New</span>
+                                <span class="board-new">{{ mark }}</span>
                             </template>
                             <span class="board-age">{{ ago(row.updated) }}</span>
                             <PhoneChevron class="board-chevron" />

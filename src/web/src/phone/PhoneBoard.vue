@@ -35,7 +35,6 @@ async function fetched() {
 
 const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = remember(CACHE, got)));
 
-const waitingRefs = computed(() => new Set(cards.value.includes(WAITING) ? props.waiting.filter((item) => item.type === "question").map((item) => item.ref) : []));
 const newRefs = computed(() => new Set(props.waiting.map((item) => item.ref)));
 const board = ref(null);
 
@@ -45,9 +44,9 @@ onMounted(() => {
 });
 const listed = (kind) => lists.value[kind]?.rows || [];
 const rows = (kind) =>
-    kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind).filter((row) => !waitingRefs.value.has(row.ref));
+    kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind);
 const total = (kind) =>
-    kind === WAITING ? props.waiting.length : Math.max((lists.value[kind]?.total || 0) - (listed(kind).length - rows(kind).length), rows(kind).length);
+    kind === WAITING ? props.waiting.length : Math.max(lists.value[kind]?.total || 0, rows(kind).length);
 const removed = ref(null);
 let removedTimer = 0;
 
@@ -129,6 +128,7 @@ function moved(i, by) {
                             :shown="shown(kind)"
                             :total="total(kind)"
                             :fresh="kind === 'waiting' ? [] : [...newRefs]"
+                            :mark="kind === 'question' ? 'Waiting' : 'New'"
                             @open="(ref) => emit('open', ref)"
                             @more="more(kind)"
                         />
@@ -136,6 +136,7 @@ function moved(i, by) {
                 </template>
             </template>
         </TransitionGroup>
+        <button type="button" class="board-edit-end" @click="editing = !editing">{{ editing ? "Done" : "Edit Home" }}</button>
         <template v-if="editing && missing.length">
             <section class="board-card" aria-label="Add a card">
                 <header class="board-head">
@@ -194,6 +195,19 @@ function moved(i, by) {
     margin: 0;
     color: var(--text-3);
     font-size: 0.794rem;
+}
+
+.board-edit-end {
+    align-self: center;
+    min-height: 44px;
+    margin-top: -12px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 22px;
+    background: var(--raised);
+    color: var(--accent-text);
+    font: inherit;
+    font-weight: 600;
 }
 
 .board-cards {

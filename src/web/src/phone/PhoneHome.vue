@@ -124,6 +124,8 @@ const far = ref(false);
 const unseen = ref(0);
 const TALKING = ["message", "question", "comment"];
 let scrollFrame = 0;
+let stuck = true;
+const keptDown = () => stuck && toBottom();
 const OLDER_AT = 400;
 const earlier = ref([]);
 const olderBusy = ref(false);
@@ -149,7 +151,8 @@ function measure() {
     const el = list.value;
     if (!el) return;
     far.value = el.scrollHeight - el.clientHeight - el.scrollTop > el.clientHeight;
-    if (nearBottom()) {
+    stuck = nearBottom();
+    if (stuck) {
         unseen.value = 0;
         looked(placeKey, items.value.at(-1)?.created || 0);
     }
@@ -217,15 +220,19 @@ const dividers = computed(() =>
 const keyOf = (item) => item.type + item.n;
 const RUN_GAP = 300;
 const fromDesktop = (item) => item.who === "user" && !String(item.data?.via || "").startsWith("phone:");
+const BUBBLES = ["message", "comment"];
 const joins = (before, item) =>
-    Boolean(before) && before.type === "message" && item.type === "message" && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
+    Boolean(before) && BUBBLES.includes(before.type) && BUBBLES.includes(item.type) && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
 const newFrom = computed(() => {
     if (lookedAt.value === null) return "";
     const first = items.value.find((item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type));
     return first ? keyOf(first) : "";
 });
 const joined = computed(() => items.value.map((item, i) => !dividers.value[i] && joins(items.value[i - 1], item)));
-const fresh = (item) => freshKeys.value.has(keyOf(item));
+const arrivals = ref(new Map());
+const BURST = 600;
+const STAGGER = 90;
+const arriveAt = (item) => arrivals.value.get(keyOf(item)) ?? -1;
 const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
 
 let seen = null;
@@ -233,7 +240,11 @@ let seen = null;
 function took(got) {
     const following = nearBottom() && still();
     const keys = got.items.map(keyOf);
+    const first = !seen;
     freshKeys.value = new Set(seen ? keys.filter((key) => !seen.has(key)) : []);
+    const coming = first || landNext ? [] : got.items.filter((item) => freshKeys.value.has(keyOf(item)) && item.who !== "user");
+    const step = coming.length > 1 ? Math.min(STAGGER, BURST / (coming.length - 1)) : 0;
+    arrivals.value = new Map(coming.map((item, i) => [keyOf(item), Math.round(i * step)]));
     seen = new Set(keys);
     if (earlier.value.length) {
         const oldest = got.items[0]?.created ?? Infinity;
@@ -265,7 +276,9 @@ function toMark() {
     const el = list.value;
     const mark = el?.querySelector(".home-new");
     if (!mark) return false;
-    el.scrollTop = Math.max(0, mark.offsetTop - 8);
+    const after = el.scrollHeight - dockHeight.value - mark.offsetTop;
+    const room = el.clientHeight - dockHeight.value;
+    el.scrollTop = after <= room ? el.scrollHeight : Math.max(0, mark.offsetTop - 8);
     return true;
 }
 
@@ -343,6 +356,8 @@ function popped(event) {
 }
 
 onMounted(() => {
+    window.visualViewport?.addEventListener("resize", keptDown);
+    window.visualViewport?.addEventListener("scroll", keptDown);
     dockWatcher = new ResizeObserver(docked);
     if (dock.value) dockWatcher.observe(dock.value);
     window.addEventListener("popstate", popped);
@@ -352,6 +367,8 @@ onMounted(() => {
 });
 onUnmounted(() => {
     dockWatcher?.disconnect();
+    window.visualViewport?.removeEventListener("resize", keptDown);
+    window.visualViewport?.removeEventListener("scroll", keptDown);
     window.removeEventListener("popstate", popped);
     document.removeEventListener("visibilitychange", returned);
     window.removeEventListener("offline", wentOffline);
@@ -391,7 +408,7 @@ async function react(face) {
     const removing = had.some((r) => mine(r, face));
     item.reactions = removing ? had.filter((r) => !mine(r, face)) : [...had, {face, who: "user"}];
     try {
-        const went = await perform({kind: "react", n: item.n, face});
+        const went = await perform({kind: "react", n: item.n, face, type: item.type});
         announce(went === "held" ? "Reaction waits to send" : removing ? `Removed ${face}` : `Reacted ${face}`);
         refresh();
     } catch (error) {
@@ -537,7 +554,7 @@ function pick(key) {
                                     <template v-if="dividers[i]">
                                         <p class="home-day">{{ dividers[i] }}</p>
                                     </template>
-                                    <PhoneTurn :item="item" :fresh="fresh(item)" :briefs="briefs" :joined="joined[i]" :continues="joined[i + 1] === true" @hold="(it, rect, el) => it.type === 'message' && (held = {item: it, rect, el})" />
+                                    <PhoneTurn :item="item" :arrive="arriveAt(item)" :briefs="briefs" :joined="joined[i]" :continues="joined[i + 1] === true" @hold="(it, rect, el) => (held = {item: it, rect, el})" />
                                 </template>
                                 <template v-for="line in sentHere" :key="line.idempotency">
                                     <p class="home-sent">
@@ -563,8 +580,10 @@ function pick(key) {
                             </div>
                             <template v-if="far">
                                 <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
-                                    <Icon name="down" :size="16" />
-                                    <span aria-hidden="true">{{ unseen ? `${unseen} new` : "Newest" }}</span>
+                                    <Icon name="down" :size="18" />
+                                    <template v-if="unseen">
+                                        <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
+                                    </template>
                                 </button>
                             </template>
                         </div>
@@ -582,6 +601,7 @@ function pick(key) {
                             :quote="quote"
                             :draft="draft"
                             @sending="toBottom"
+                            @focused="keptDown"
                             @sent="sent"
                             @unabout="about = ''"
                             @unquote="(quote = ''), (about = '')"
@@ -997,26 +1017,48 @@ function pick(key) {
 
 .home-newest {
     position: absolute;
-    bottom: calc(var(--dock, 140px) + 10px);
+    bottom: calc(var(--dock, 140px) + 8px);
     left: 50%;
     z-index: 2;
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 6px;
-    min-height: 44px;
-    padding: 0 16px;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: -20px;
+    padding: 0;
     border: 1px solid var(--line);
-    border-radius: 22px;
+    border-radius: 50%;
     background: color-mix(in oklab, var(--raised) 80%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(160%);
     backdrop-filter: blur(14px) saturate(160%);
-    color: var(--accent-text);
+    color: var(--text);
     box-shadow: var(--shadow-1);
-    font: inherit;
-    font-size: 0.882rem;
-    font-weight: 600;
     animation: newest-in 200ms ease-out;
+}
+
+.home-newest::after {
+    position: absolute;
+    inset: -2px;
+    content: "";
+}
+
+.home-unseen {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    min-height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
 }
 
 .home-retry {
@@ -1034,12 +1076,12 @@ function pick(key) {
 @keyframes newest-in {
     from {
         opacity: 0;
-        transform: translateX(-50%) scale(0.8);
+        transform: scale(0.8);
     }
 }
 
 .home-feed.spaced {
-    padding-bottom: calc(var(--dock, 140px) + 64px);
+    padding-bottom: calc(var(--dock, 140px) + 56px);
 }
 
 .home-dock {
@@ -1057,6 +1099,13 @@ function pick(key) {
 
 .home-dock > * {
     pointer-events: auto;
+}
+
+@media (max-height: 420px) {
+    .home-dock .status-wrap,
+    .home-dock .home-status-space {
+        display: none;
+    }
 }
 
 .home-dock :deep(.status:has(.status-text)) {

@@ -7,7 +7,9 @@ import PhoneChevron from "./PhoneChevron.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
-import {ended, flush, hold, perform} from "./outbox.js";
+import {atThisPlace, ended, flush, hold, perform, waitingActions} from "./outbox.js";
+import PhoneComments from "./PhoneComments.vue";
+import PhoneCommentSheet from "./PhoneCommentSheet.vue";
 import {chipOpener} from "./peeked.js";
 import {todoFacts} from "./todo.js";
 import {kindTitle, kindWord} from "./kinds.js";
@@ -111,6 +113,39 @@ async function load() {
         if (ended(error)) failed(error);
         else if (error.status === 404) missing.value = true;
         else told.value = error.message;
+    }
+}
+
+const commenting = ref(false);
+const justCommented = ref([]);
+const myRef = computed(() => (row.value ? `${row.value.type}:${row.value.n}` : props.target));
+const heldComments = computed(() =>
+    atThisPlace(waitingActions.value)
+        .filter((action) => action.kind === "comment" && action.ref === myRef.value)
+        .map((action) => ({key: action.id, who: "user", text: action.text, created: 0, waiting: true})),
+);
+const comments = computed(() => [
+    ...(row.value?.comments || []).map((made) => ({key: made.ref, who: made.who, text: made.brief || made.title, created: made.created})),
+    ...justCommented.value,
+    ...heldComments.value,
+]);
+
+async function commented(text) {
+    const local = {key: `local-${Date.now()}`, who: "user", text, created: Date.now() / 1000};
+    justCommented.value = [...justCommented.value, local];
+    told.value = "";
+    try {
+        const went = await perform({kind: "comment", ref: myRef.value, text});
+        justCommented.value = justCommented.value.filter((one) => one !== local);
+        if (went === "held") return announce("Comment waits to send");
+        announce("Comment added");
+        justCommented.value = [...justCommented.value, local];
+        await load();
+        justCommented.value = [];
+    } catch (error) {
+        justCommented.value = justCommented.value.filter((one) => one !== local);
+        if (ended(error)) failed(error);
+        else told.value = error.status === 422 ? `A ${kindWord(row.value.type)} takes no comments.` : `That comment didn't go through: ${error.message}`;
     }
 }
 
@@ -230,6 +265,7 @@ onMounted(async () => {
                         </details>
                     </template>
                 </template>
+                <PhoneComments :comments="comments" />
             </div>
             <footer class="reader-foot">
                 <template v-if="finished">
@@ -266,7 +302,7 @@ onMounted(async () => {
                     </div>
                 </template>
                 <template v-else-if="row.type !== 'question'">
-                    <Btn :kind="buttons.length ? 'ghost' : 'primary'" large @click="emit('reply', row.type + ':' + row.n)">Reply about this {{ kindWord(row.type) }}</Btn>
+                    <Btn :kind="buttons.length ? 'ghost' : 'primary'" large @click="commenting = true">Comment</Btn>
                 </template>
                 <template v-if="row.type === 'plan' && !reviewing">
                     <Btn kind="plain" large @click="reviewing = true">Ask for a review</Btn>
@@ -298,6 +334,9 @@ onMounted(async () => {
         </template>
         <template v-else>
             <PhoneSkeletonPage :kind="target.split(':')[0]" />
+        </template>
+        <template v-if="commenting && row">
+            <PhoneCommentSheet :title="row.title" @close="commenting = false" @send="commented" />
         </template>
     </section>
 </template>

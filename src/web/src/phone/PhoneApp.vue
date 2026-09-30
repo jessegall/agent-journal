@@ -81,9 +81,14 @@ async function pairTyped() {
 }
 
 const pressable = () => {};
+const typing = () => document.activeElement?.matches?.("textarea, input, [contenteditable]");
+const pinned = () => !typing() && (window.scrollX || window.scrollY) && window.scrollTo(0, 0);
+const released = () => setTimeout(pinned, 300);
 const heard = (event) => event.data?.open && (wanted.value = event.data.open);
 onMounted(() => {
     document.addEventListener("touchstart", pressable, {passive: true});
+    window.addEventListener("scroll", pinned, {passive: true});
+    document.addEventListener("focusout", released);
     navigator.serviceWorker?.addEventListener("message", heard);
     navigator.serviceWorker?.register("./sw.js", {scope: "./"}).catch(() => {});
     load();
@@ -91,6 +96,8 @@ onMounted(() => {
 onUnmounted(() => {
     clearInterval(retry);
     document.removeEventListener("touchstart", pressable);
+    window.removeEventListener("scroll", pinned);
+    document.removeEventListener("focusout", released);
     navigator.serviceWorker?.removeEventListener("message", heard);
 });
 </script>

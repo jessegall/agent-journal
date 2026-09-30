@@ -105,6 +105,85 @@ body {
     }
 }
 
+.phone .arriving {
+    position: relative;
+    animation: arrive-grow 380ms var(--push) both;
+    animation-delay: var(--arrive-delay, 0ms);
+}
+
+.phone .agent.arriving,
+.phone .turn-thought.arriving,
+.phone .question.arriving {
+    transform-origin: bottom left;
+}
+
+.phone .turn-card.arriving {
+    transform-origin: bottom center;
+}
+
+.phone .arriving > * {
+    animation: arrive-text 260ms ease-out both;
+    animation-delay: calc(var(--arrive-delay, 0ms) + 200ms);
+}
+
+.phone .arriving::after {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--hover) 30%, var(--sel) 50%, var(--hover) 70%) 0 0 / 300% 100%;
+    content: "";
+    pointer-events: none;
+    animation: arrive-shimmer 520ms linear both;
+    animation-delay: var(--arrive-delay, 0ms);
+}
+
+@keyframes arrive-grow {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96, 0.7);
+    }
+
+    30% {
+        opacity: 1;
+    }
+}
+
+@keyframes arrive-text {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes arrive-shimmer {
+    from {
+        opacity: 1;
+        background-position: 100% 0;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        background-position: 0 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .phone .arriving {
+        animation: arrive-text 200ms ease-out both !important;
+    }
+
+    .phone .arriving > * {
+        animation: none !important;
+    }
+
+    .phone .arriving::after {
+        display: none;
+    }
+}
+
 .phone button {
     -webkit-touch-callout: none;
     transition: opacity 200ms ease-out, background-color 200ms ease-out;

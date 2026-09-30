@@ -2,6 +2,7 @@
 import {computed} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import PhoneActions from "./PhoneActions.vue";
+import PhoneFold from "./PhoneFold.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
 import PhoneTicks from "./PhoneTicks.vue";
@@ -12,7 +13,7 @@ import {kindWord} from "./kinds.js";
 
 const props = defineProps({
     item: {type: Object, required: true},
-    fresh: {type: Boolean, default: false},
+    arrive: {type: Number, default: -1},
     briefs: {type: Map, default: () => new Map()},
     joined: {type: Boolean, default: false},
     continues: {type: Boolean, default: false},
@@ -30,11 +31,15 @@ const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []
 const about = computed(() => (props.item.who === "user" ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
-const holdable = computed(() => props.item.type === "message");
+const HOLDABLE = ["message", "comment"];
+const holdable = computed(() => HOLDABLE.includes(props.item.type));
+const arriving = computed(() => props.arrive >= 0);
+const arrival = computed(() => (arriving.value ? {"--arrive-delay": `${props.arrive}ms`} : undefined));
 const onlyFiles = computed(() => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`);
 const quoted = computed(() => (about.value ? props.briefs.get(about.value) || "" : ""));
 const emit = defineEmits(["hold"]);
 function pressed(event) {
+    if (!holdable.value) return;
     const bubble = event.currentTarget.closest(".turn");
     emit("hold", props.item, bubble.getBoundingClientRect(), bubble);
 }
@@ -43,13 +48,13 @@ function pressed(event) {
 <template>
     <SwitchCase :value="item.type">
         <template #question>
-            <PhoneQuestion :question="item" />
+            <PhoneQuestion :class="{arriving}" :style="arrival" :question="item" />
         </template>
         <template #thought>
-            <TextDisplay :class="['turn-thought', {fresh}]" :text="item.label" />
+            <TextDisplay :class="['turn-thought', {arriving}]" :style="arrival" :text="item.label" />
         </template>
         <template #card>
-            <div :class="['turn-card', {fresh}]">
+            <div :class="['turn-card', {arriving}]" :style="arrival">
                 <ChatMark
                     :icon="item.icon"
                     :tone="item.tone"
@@ -64,7 +69,7 @@ function pressed(event) {
             </div>
         </template>
         <template #default>
-            <div :class="['turn', item.who, {fresh, joined}]" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
+            <div :class="['turn', item.who, {arriving, joined}]" :style="arrival" :data-hold="holdable ? item.type + item.n : undefined" @contextmenu.prevent="pressed">
                 <template v-if="holdable">
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
                 </template>
@@ -79,13 +84,15 @@ function pressed(event) {
                 <template v-else-if="about">
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
-                <template v-if="!onlyFiles">
-                    <TextDisplay :text="item.brief || item.title" />
-                </template>
-                <template v-for="part in item.sections || []" :key="part.title">
-                    <h3 class="turn-part">{{ part.title }}</h3>
-                    <TextDisplay :text="part.body" />
-                </template>
+                <PhoneFold>
+                    <template v-if="!onlyFiles">
+                        <TextDisplay :text="item.brief || item.title" />
+                    </template>
+                    <template v-for="part in item.sections || []" :key="part.title">
+                        <h3 class="turn-part">{{ part.title }}</h3>
+                        <TextDisplay :text="part.body" />
+                    </template>
+                </PhoneFold>
                 <template v-if="files.length">
                     <span class="turn-files">
                         <template v-for="name in files" :key="name">
@@ -298,17 +305,6 @@ function pressed(event) {
     from {
         transform: scale(0.6);
         opacity: 0;
-    }
-}
-
-.fresh {
-    animation: turn-in 200ms ease-out;
-}
-
-@keyframes turn-in {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
     }
 }
 

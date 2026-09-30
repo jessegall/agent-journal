@@ -7,7 +7,9 @@ import {announce} from "./announce.js";
 
 const MOST_LINES = 5;
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
-const emit = defineEmits(["sending", "sent", "unabout", "unquote"]);
+const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused"]);
+const SHORT = 420;
+const SHORT_LINES = 2;
 const failed = inject("phoneFailed");
 const words = ref("");
 const files = ref([]);
@@ -17,7 +19,7 @@ const sending = ref(false);
 const said = computed(() => words.value.trim());
 const ready = computed(() => Boolean(said.value || files.value.length));
 
-const focus = () => box.value && box.value.focus();
+const focus = () => box.value?.focus({preventScroll: true});
 const tapped = (event) => !event.target.closest("button, textarea") && focus();
 
 defineExpose({focus});
@@ -59,7 +61,8 @@ function grow() {
     if (!el) return;
     el.style.height = "auto";
     const style = getComputedStyle(el);
-    const cap = MOST_LINES * parseFloat(style.lineHeight) + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const lines = window.innerHeight < SHORT ? SHORT_LINES : MOST_LINES;
+    const cap = lines * parseFloat(style.lineHeight) + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     el.style.height = `${Math.min(el.scrollHeight, cap)}px`;
     if (el.selectionEnd === el.value.length) el.scrollTop = el.scrollHeight;
 }
@@ -73,7 +76,7 @@ async function send() {
     words.value = "";
     files.value = [];
     emit("sending");
-    focus();
+    box.value?.blur();
     nextTick(grow);
     try {
         await flush();
@@ -125,6 +128,7 @@ async function send() {
             placeholder="Message the agent"
             aria-label="Message the agent"
             @input="grow"
+            @focus="emit('focused')"
         />
         <div class="compose-controls">
             <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.click()">

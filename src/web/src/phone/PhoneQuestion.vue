@@ -108,7 +108,7 @@ function pick(answer) {
     clearInterval(timer);
     choice.value = answer;
     left.value = UNDO_SECONDS;
-    nextTick(() => card.value?.querySelector(".sending-undo")?.focus());
+    nextTick(() => card.value?.querySelector(".sending-undo")?.focus({preventScroll: true}));
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
 
