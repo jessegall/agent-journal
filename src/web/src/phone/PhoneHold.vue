@@ -1,7 +1,7 @@
 <script setup>
 import {plain} from "./plain.js";
 
-const FACES = ["👍", "❤️", "😄", "🎉", "🙏", "👀"];
+const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 defineProps({item: {type: Object, required: true}});
 const emit = defineEmits(["react", "reply", "copy", "close"]);
 </script>
@@ -56,11 +56,22 @@ const emit = defineEmits(["react", "reply", "copy", "close"]);
 
 .hold-faces {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 6px;
+    gap: 8px;
+    margin: 0 -16px 6px;
+    padding: 0 16px 4px;
+    max-width: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.hold-faces::-webkit-scrollbar {
+    display: none;
 }
 
 .hold-face {
+    flex: none;
     width: 48px;
     height: 48px;
     border: 0;
