@@ -77,7 +77,7 @@ def repository(tmp_path, manifest, extra=None, name="plugin"):
 def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     record = alone()
     installed(record, "guardian", "read x; echo '{\"refuse\": \"src/Generated is generated; edit the stub instead\"}'\n")
-    assert writing(record) == {"decision": "block", "reason": "guardian: src/Generated is generated; edit the stub instead"}, \
+    assert writing(record) == CLAUDE.blocking("guardian: src/Generated is generated; edit the stub instead"), \
         "the plugin's reason is given to the agent, under its name"
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
     guardian = Plugins(record, actor=SYSTEM)._titled("guardian")
@@ -86,16 +86,16 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert not log(record.root, "guardian").exists(), "and the log can be emptied"
     served = alone("served")
     installed(served, "served", "read x; echo '{\"refuse\": \"from the command\"}'\n", refuse_socket="hooks", services={"hooks": {"run": "true"}})
-    assert writing(served) == {"decision": "block", "reason": "served: from the command"}, "with nothing listening on its socket the command is run"
+    assert writing(served) == CLAUDE.blocking("served: from the command"), "with nothing listening on its socket the command is run"
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listening:
         path = plugin_socket(served.root, "served")
         path.unlink(missing_ok=True)
         listening.bind(str(path))
         listening.listen()
         threading.Thread(target=lambda: answer_once(listening), daemon=True).start()
-        assert writing(served) == {"decision": "block", "reason": "served: from its service"}, "a plugin's running service answers without a process started"
+        assert writing(served) == CLAUDE.blocking("served: from its service"), "a plugin's running service answers without a process started"
         threading.Thread(target=lambda: answer_once(listening, b"garbled\n"), daemon=True).start()
-        assert writing(served) == {"decision": "block", "reason": "served: from the command"}, "a service that answers nonsense is passed over for the command"
+        assert writing(served) == CLAUDE.blocking("served: from the command"), "a service that answers nonsense is passed over for the command"
         path.unlink()
 
 

@@ -71,6 +71,15 @@ class Reacting:
 
 
 @dataclass(frozen=True)
+class Sharing:
+    ref: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Sharing":
+        return cls(ref=str(given.get("ref", "")))
+
+
+@dataclass(frozen=True)
 class Commenting:
     ref: str
     text: str
@@ -161,7 +170,7 @@ class PhoneRoutes:
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/", **APP_HEADERS})
-        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"]):
+        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"], ["export"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -204,6 +213,12 @@ class PhoneRoutes:
                 return self.json(handler, 200, self.phones(handler)._source(phone, asked))
             except Refused as refused:
                 return handler.answer(404, str(refused))
+        if rest[:1] == ["export"] and len(rest) == 3:
+            try:
+                made = self.phones(handler)._export(phone, f"{rest[1]}:{rest[2]}")
+            except Refused as refused:
+                return handler.answer(404, str(refused))
+            return handler.send(200, made.body, {"Content-Type": made.kind, "Content-Disposition": f"attachment; filename*=UTF-8''{quote(made.name)}"})
         if rest == ["push-key"]:
             return self.json(handler, 200, {"key": self.phones(handler)._push_key()})
         if rest == ["places"]:
@@ -248,6 +263,11 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
+        if rest == ["share"]:
+            try:
+                return self.json(handler, 201, {"link": self.phones(handler)._share(phone, Sharing.from_payload(body).ref)})
+            except Refused as refused:
+                return handler.answer(422, str(refused))
         acts = {"message": lambda phones: phones._say(phone, Said.from_payload(body)),
                 "answer": lambda phones: phones._answer(phone, Chosen.from_payload(body)),
                 "dismiss": lambda phones: phones._dismiss(phone, Chosen.from_payload(body).n),

@@ -21,6 +21,7 @@ from engine.record import Record
 from features.format import VIEWER
 from features.message_buttons.shaping import Button, spent
 from engine.project_files import matching
+from features.phone.export import Export, export
 from features.phone.places import MAIN, Place, agent_state, places
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
@@ -428,6 +429,13 @@ class Phones(Controller):
         if notices.load(n).data.get("agent"):
             raise Refused(f"notice {n} belongs to a subagent's chat, not the phone's")
         return notices.complete(n, how="closed on the phone")
+
+    def _export(self, phone: Phone, ref: str) -> Export:
+        return export(self._reached(phone, ref))
+
+    def _share(self, phone: Phone, ref: str) -> str:
+        row = self._reached(phone, ref)
+        return CONTROLLERS["share"](self._home(phone), actor=USER).create(f"{row.type}:{row.n}").abstract
 
     def _reached(self, phone: Phone, ref: str):
         kind, _, n = ref.partition(":")

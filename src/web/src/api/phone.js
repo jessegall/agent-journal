@@ -64,4 +64,16 @@ export const phone = {
     press: (ref, label) => sent("./press", {ref, label}),
     comment: (ref, text) => sent("./comment", {ref, text}),
     close: (n) => sent("./close", {n}),
+    share: (ref) => sent("./share", {ref}),
+    exportUrl: (ref) => `./export/${ref.replace(":", "/")}`,
+    exported: async (ref, fallback) => {
+        const answer = await fetch(`./export/${ref.replace(":", "/")}`, {cache: "no-cache"});
+        if (!answer.ok) throw new PhoneError(answer.status, "The document could not be made");
+        const told = answer.headers.get("Content-Disposition") || "";
+        const coded = told.match(/filename\*=UTF-8''([^;]+)/i);
+        const plain = told.match(/filename="?([^";]+)"?/i);
+        const name = coded ? decodeURIComponent(coded[1]) : plain ? plain[1] : fallback;
+        const blob = await answer.blob();
+        return new File([blob], name, {type: blob.type || "application/octet-stream"});
+    },
 };

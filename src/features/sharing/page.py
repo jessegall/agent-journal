@@ -15,19 +15,20 @@ LIST_ITEM = re.compile(r"^\s*(?:[-*]|(\d+)\.)\s+(.*)$")
 HEADING = re.compile(r"^(#{1,4})\s+(.*)$")
 FENCES = ("```", "~~~")
 PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
+EXPORTED = "."
 
 
 class Page:
-    def __init__(self, token: str, scope: set[str]):
-        self.token, self.scope = token, scope
+    def __init__(self, root: str, scope: set[str]):
+        self.root, self.scope = root, scope
 
     def href(self, ref: str) -> str:
         kind, _, n = ref.partition(":")
-        return f"/s/{self.token}/{kind}/{n}"
+        return f"{self.root}/{kind}/{n}"
 
     def file_href(self, ref: str, name: str) -> str:
         kind, _, n = ref.partition(":")
-        return f"/s/{self.token}/files/{kind}/{n}/{quote(name, safe='')}"
+        return f"{self.root}/files/{kind}/{n}/{quote(name, safe='')}"
 
     def refs(self, text: str) -> str:
         names, pattern = named()
@@ -165,16 +166,23 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
 """
 
 
-def document(title: str, body: str, expires: float, back: str | None = None) -> str:
-    home = "<span></span>" if back is None else f'<a href="{back}">Back to the start</a>'
+def framed(title: str, body: str) -> str:
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         '<meta name="robots" content="noindex, nofollow">'
         f"<title>{html.escape(title)}</title><style>{STYLE}</style></head>"
-        f'<body><main><header class="bar">{home}<span>{html.escape(ending(expires))}</span></header>'
-        f"{body}<footer>Shared from an agent journal</footer></main></body></html>"
+        f"<body><main>{body}<footer>Shared from an agent journal</footer></main></body></html>"
     )
+
+
+def document(title: str, body: str, expires: float, back: str | None = None) -> str:
+    home = "<span></span>" if back is None else f'<a href="{back}">Back to the start</a>'
+    return framed(title, f'<header class="bar">{home}<span>{html.escape(ending(expires))}</span></header>{body}')
+
+
+def exported(r) -> str:
+    return framed(r.title, Page(EXPORTED, {f"{r.type}:{r.n}"}).row(r))
 
 
 def unshared() -> str:

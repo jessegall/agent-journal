@@ -143,7 +143,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         scope = self.shares._scope(share)
         if ref not in scope:
             return self.page(404, unshared())
-        page = Page(share.token, scope)
+        page = Page(f"/s/{share.token}", scope)
         row = self.shares._shared_row(share, ref)
         members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
         body = page.collection(row, members) if members else page.row(row)

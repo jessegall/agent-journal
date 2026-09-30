@@ -29,16 +29,16 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         assert held(record, session) == REFUSED, f"{name}: a fresh session with nothing open: the flag says refused"
         assert hook("PreToolUse", "Read", file_path="x.py") == {}, f"{name}: a read passes"
         assert hook("PreToolUse", "Bash", command="cat x.py | grep y") == {}, f"{name}: a Bash read passes"
-        assert hook("PreToolUse", "Edit", file_path="x.py") == {"decision": "block", "reason": REFUSED}, \
+        assert hook("PreToolUse", "Edit", file_path="x.py") == provider.blocking(REFUSED), \
             f"{name}: an edit is refused, in the harness's shape"
-        assert hook("PreToolUse", "Bash", command="git commit -m x") == {"decision": "block", "reason": REFUSED}, \
+        assert hook("PreToolUse", "Bash", command="git commit -m x") == provider.blocking(REFUSED), \
             f"{name}: a writing command is refused"
-        assert hook("PreToolUse", "Bash", command="echo x > out.txt") == {"decision": "block", "reason": REFUSED}, \
+        assert hook("PreToolUse", "Bash", command="echo x > out.txt") == provider.blocking(REFUSED), \
             f"{name}: a redirect is a write"
         assert hook("PreToolUse", "Bash", command="make > /dev/null") == {}, f"{name}: a redirect to /dev/null is not"
         assert hook("PreToolUse", "Bash", command="python3 tests/x.py 2>&1 | tail -1") == {}, f"{name}: joining stderr is not a write"
         project = str(root.parent)
-        assert hook("PreToolUse", "Write", cwd=project, file_path="web/x.js") == {"decision": "block", "reason": REFUSED}, \
+        assert hook("PreToolUse", "Write", cwd=project, file_path="web/x.js") == provider.blocking(REFUSED), \
             f"{name}: a project file is gated"
         assert hook("PreToolUse", "Write", cwd=project, file_path=".journal/environments/main/notes.md") == {}, \
             f"{name}: a file inside the journal is not project work"
@@ -50,7 +50,7 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         assert held(record, session) == "", f"{name}: work open: the flag flips to allowed"
         assert hook("PreToolUse", "Edit", file_path="x.py") == {}, f"{name}: the same edit passes"
         Works(record, actor=AGENT).complete(work.n, "done")
-        assert hook("PreToolUse", "Write", file_path="y.py") == {"decision": "block", "reason": REFUSED}, \
+        assert hook("PreToolUse", "Write", file_path="y.py") == provider.blocking(REFUSED), \
             f"{name}: work ended, nothing open: refused again"
         assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == REFUSED, \
             f"{name}: the flag is a file per environment and session, with the why"

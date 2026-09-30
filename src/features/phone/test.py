@@ -257,6 +257,10 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert pinned.n in pins(), "the chat's pinned notices reach the phone"
     assert call(base, "/p/close", {"n": pinned.n}, key).status == 201 and pinned.n not in pins(), "and closing one there closes it everywhere"
     assert any(item["type"] == "comment" and item["brief"] == "Looks right to me" for item in call(base, "/p/feed", key=key).body["items"]), "a comment on a row shows in the phone's chat, as on the desktop"
+    with urllib.request.urlopen(urllib.request.Request(f"{base}/p/export/doc/{proposal.n}", headers={"Cookie": f"__Host-phone={key}"}), timeout=30) as sent:
+        assert "Proposal" in sent.headers["Content-Disposition"] and sent.read(), "a document leaves the phone as a file named for it"
+    shared = call(base, "/p/share", {"ref": f"doc:{proposal.n}"}, key)
+    assert shared.status == 201 and "/s/" in shared.body["link"], "and as a share link the user made, open at once"
     said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"

@@ -155,7 +155,8 @@ class Provider(ABC):
         return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}
 
     def blocking(self, reason: str) -> dict:
-        return {"decision": "block", "reason": reason}
+        return {"decision": "block", "reason": reason,
+                "hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": reason}}
 
     def refused(self, response: dict) -> bool:
         return Decision.from_json(response).decision == "block"

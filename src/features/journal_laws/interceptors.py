@@ -69,7 +69,8 @@ class RefuseWholeLongReads(ToolInterceptor):
         count, limit = lines_in(path), int(context.settings.whole_read_lines)
         if count <= limit:
             return ""
-        instead = "read a range (offset and limit)" if whole else "print a range with sed -n"
+        instead = "read a range (offset 1, limit 120)" if whole else f"print a range: sed -n '1,120p' {named}"
         context.journal.agents.card(context.agent.row.n, label=f"Refused reading a long file whole `{path}`", icon="terminal", tone="danger",
                                     title=f"{count:,} lines; told to {instead} or grep instead")
-        return f"{named} has {count:,} lines: {instead}, or grep for what you need first (law L3, read narrowly)"
+        return (f"{named} has {count:,} lines, too long to read whole (law L3, read narrowly). Instead: {instead}, then the next range; "
+                f"or list its headings first with grep -n '^#' {named} and read only the part you need; or grep -n for the line you want.")

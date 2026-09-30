@@ -98,7 +98,7 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-read", "tool_name": tool,
                                                                                         "cwd": str(project), "tool_input": given})
     whole = hook("Read", {"file_path": str(project / "long.py")})
-    assert whole.get("decision") == "block" and "has 400 lines: read a range (offset and limit)" in whole.get("reason", ""), whole
+    assert whole.get("decision") == "block" and "has 400 lines" in whole.get("reason", "") and "read a range (offset 1, limit 120)" in whole.get("reason", "") and whole["hookSpecificOutput"]["permissionDecision"] == "deny", whole
     from controllers.types import Agents
     card = Agents(record).by_session("claude-read").data["cards"][-1]
     assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("400 lines"), card
@@ -107,7 +107,7 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     (project / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n\0\0\0\r" + b"\n" * 900)
     assert hook("Read", {"file_path": str(project / "shot.png")}).get("decision") != "block", "an image is not text and passes"
     cat = hook("Bash", {"command": "cat long.py"})
-    assert cat.get("decision") == "block" and "print a range with sed -n" in cat.get("reason", ""), cat
+    assert cat.get("decision") == "block" and "sed -n '1,120p'" in cat.get("reason", ""), cat
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
     dropped = record.folder("dump") / "001" / "proposal.md"
     dropped.parent.mkdir(parents=True)
@@ -167,7 +167,7 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
                                                                                        "cwd": str(project), "tool_input": given})
     for tool, given in (("exec", {"input": "cat long.py"}), ("exec_command", {"cmd": "cat long.py"}), ("shell", {"command": ["cat", "long.py"]})):
         refused = hook(tool, given)
-        assert refused.get("decision") == "block" and "print a range with sed -n" in refused.get("reason", ""), (tool, refused)
+        assert refused.get("decision") == "block" and "sed -n '1,120p'" in refused.get("reason", ""), (tool, refused)
     assert hook("exec", {"input": "sed -n '1,50p' long.py"}).get("decision") != "block", "a range passes"
 
 

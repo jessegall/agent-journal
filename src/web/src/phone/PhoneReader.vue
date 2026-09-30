@@ -10,6 +10,7 @@ import {ago} from "./ago.js";
 import {atThisPlace, ended, flush, hold, perform, waitingActions} from "./outbox.js";
 import PhoneComments from "./PhoneComments.vue";
 import PhoneCommentSheet from "./PhoneCommentSheet.vue";
+import PhoneShareSheet from "./PhoneShareSheet.vue";
 import {chipOpener} from "./peeked.js";
 import {todoFacts} from "./todo.js";
 import {kindTitle, kindWord} from "./kinds.js";
@@ -117,6 +118,7 @@ async function load() {
 }
 
 const commenting = ref(false);
+const sharing = ref(false);
 const justCommented = ref([]);
 const myRef = computed(() => (row.value ? `${row.value.type}:${row.value.n}` : props.target));
 const heldComments = computed(() =>
@@ -190,6 +192,9 @@ onMounted(async () => {
         <header :class="['reader-bar', {under}]">
             <button ref="backButton" type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')"><PhoneChevron facing="left" :size="18" /> {{ back }}</button>
             <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ row ? row.title : "" }}</span>
+            <template v-if="row">
+                <button type="button" class="reader-share" aria-label="Share" @click="sharing = true"><Icon name="share" :size="20" /></button>
+            </template>
             <button type="button" class="reader-size" :aria-label="`Text size, ${SIZE_NAMES[size]}`" @click="size = (size + 1) % SIZES.length">
                 Aa
                 <span class="reader-steps">
@@ -335,6 +340,9 @@ onMounted(async () => {
         <template v-else>
             <PhoneSkeletonPage :kind="target.split(':')[0]" />
         </template>
+        <template v-if="sharing && row">
+            <PhoneShareSheet :target="`${row.type}:${row.n}`" :title="row.title" @close="sharing = false" />
+        </template>
         <template v-if="commenting && row">
             <PhoneCommentSheet :title="row.title" @close="commenting = false" @send="commented" />
         </template>
@@ -386,6 +394,19 @@ onMounted(async () => {
 
 .reader-size {
     justify-content: flex-end;
+}
+
+.reader-share {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
 }
 
 .reader-name {
