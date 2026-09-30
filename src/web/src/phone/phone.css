@@ -205,6 +205,10 @@ body {
     user-select: text;
 }
 
+.keyboard-up .phone .tabs {
+    display: none;
+}
+
 .phone button {
     -webkit-touch-callout: none;
     transition: opacity 200ms ease-out, background-color 200ms ease-out;

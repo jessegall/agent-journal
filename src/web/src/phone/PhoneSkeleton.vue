@@ -26,7 +26,7 @@ const BUBBLES = [
     gap: 10px;
     flex: 1;
     min-height: 0;
-    padding: 12px 0 calc(var(--dock, 0px) + 12px);
+    padding: 12px 0 calc(var(--dock, 0px) + 12px + var(--keyboard, 0px));
     overflow: hidden;
 }
 

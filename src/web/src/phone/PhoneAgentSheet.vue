@@ -67,7 +67,7 @@ async function start(agent) {
                     </template>
                 </dd>
             </div>
-            <template v-if="running && doing">
+            <template v-if="state === 'working' && doing">
                 <div class="agent-fact">
                     <dt>Doing now</dt>
                     <dd>{{ doing }}</dd>

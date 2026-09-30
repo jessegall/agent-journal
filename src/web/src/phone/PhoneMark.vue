@@ -19,3 +19,34 @@ const label = computed(() => (props.item.name ? `${props.item.label} **${props.i
         :at="item.created"
     />
 </template>
+
+<style scoped>
+.mark.console {
+    display: grid;
+    width: 100%;
+    text-align: left;
+}
+
+.mark.console :deep(.command) {
+    display: block;
+    grid-column: 1 / -1;
+    max-width: 100%;
+    margin-top: 4px;
+    padding: 6px 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border-radius: 8px;
+    background: var(--code-bg);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 0.706rem;
+    line-height: 1.5;
+    text-align: left;
+    white-space: pre;
+    word-break: normal;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mark :deep(.card) {
+    text-align: left;
+}
+</style>

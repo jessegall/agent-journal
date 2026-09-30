@@ -264,7 +264,7 @@ function pressed(event) {
     margin: -4px 0;
 }
 
-.turn-card :deep(.mark) {
+.turn-card :deep(.mark:not(.console)) {
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;

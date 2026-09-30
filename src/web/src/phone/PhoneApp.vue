@@ -8,6 +8,7 @@ import {deviceName} from "./device.js";
 import PhoneHome from "./PhoneHome.vue";
 import {waitingActions, waitingToSend} from "./outbox.js";
 import {wanted} from "./wanted.js";
+import {useKeyboard} from "./keyboard.js";
 
 const OPEN = "open=";
 
@@ -81,6 +82,7 @@ async function pairTyped() {
 }
 
 const pressable = () => {};
+useKeyboard();
 const typing = () => document.activeElement?.matches?.("textarea, input, [contenteditable]");
 const pinned = () => !typing() && (window.scrollX || window.scrollY) && window.scrollTo(0, 0);
 const released = () => setTimeout(pinned, 300);

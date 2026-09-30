@@ -68,6 +68,7 @@ export const phone = {
     pause: () => sent("./pause", {}),
     resume: () => sent("./resume", {}),
     stop: () => sent("./stop", {}),
+    auto: (on) => sent("./auto", {on}),
     exportUrl: (ref) => `./export/${ref.replace(":", "/")}`,
     exported: async (ref, fallback) => {
         const answer = await fetch(`./export/${ref.replace(":", "/")}`, {cache: "no-cache"});

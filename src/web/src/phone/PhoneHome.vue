@@ -566,6 +566,9 @@ function pick(key) {
                     <button type="button" class="home-agent" aria-haspopup="dialog" @click="agentOpen = true">
                         <span class="phone-hidden">Agent:</span>
                         <PhoneAgent :state="feed.agent" />
+                        <template v-if="feed.running?.auto">
+                            <span class="home-auto">auto</span>
+                        </template>
                     </button>
                 </header>
                 <template v-if="newer">
@@ -877,7 +880,21 @@ function pick(key) {
     font-size: 0.765rem;
 }
 
+.home-auto {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    padding: 0 5px;
+    border-radius: 7px;
+    background: var(--tone-good);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 14px;
+}
+
 .home-agent {
+    position: relative;
     flex: none;
     min-height: 44px;
     padding: 0;
@@ -1075,7 +1092,7 @@ function pick(key) {
 
 .home-newest {
     position: absolute;
-    bottom: calc(var(--dock, 140px) + 14px);
+    bottom: calc(var(--dock, 140px) + 14px + var(--keyboard, 0px));
     left: 50%;
     z-index: 2;
     display: flex;
@@ -1131,13 +1148,13 @@ function pick(key) {
 }
 
 .home-feed.spaced {
-    padding-bottom: calc(var(--dock, 140px) + 56px);
+    padding-bottom: calc(var(--dock, 140px) + 56px + var(--keyboard, 0px));
 }
 
 .home-dock {
     position: absolute;
     right: calc(12px - var(--side));
-    bottom: 8px;
+    bottom: calc(8px + var(--keyboard, 0px));
     left: calc(12px - var(--side));
     z-index: 3;
     display: flex;
@@ -1195,7 +1212,7 @@ function pick(key) {
     flex-direction: column;
     gap: 10px;
     min-height: 0;
-    padding: 2px 0 calc(var(--dock, 140px) + 12px);
+    padding: 2px 0 calc(var(--dock, 140px) + 12px + var(--keyboard, 0px));
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;

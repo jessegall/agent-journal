@@ -14,7 +14,23 @@ const confirming = ref(false);
 const told = ref("");
 const left = computed(() => (typeof props.running.context === "number" ? Math.max(0, Math.min(100, Math.round(100 - props.running.context))) : null));
 const windows = computed(() => props.running.usage || []);
-const NEEDS = {pause: "pause", resume: "resume", stop: "stop"};
+const NEEDS = {pause: "pause", resume: "resume", stop: "stop", auto: "switch auto mode for"};
+const autoOn = computed(() => Boolean(props.running.auto));
+
+async function toggleAuto() {
+    busy.value = "auto";
+    told.value = "";
+    try {
+        await phone.auto(!autoOn.value);
+        announce(autoOn.value ? "Auto mode off" : "Auto mode on");
+        emit("changed");
+    } catch (error) {
+        if (ended(error)) return failed(error);
+        tell(told, error instanceof PhoneError ? error.message : `You need a connection to ${NEEDS.auto} the agent.`);
+    } finally {
+        busy.value = "";
+    }
+}
 const DONE = {pause: "Paused", resume: "Resumed", stop: "Stopped the agent"};
 
 async function act(what) {
@@ -49,6 +65,13 @@ async function act(what) {
                 <span class="controls-track" aria-hidden="true"><span :style="{width: `${used(window)}%`}" /></span>
             </div>
         </template>
+        <button type="button" class="controls-auto" role="switch" :aria-checked="autoOn" :disabled="busy === 'auto'" @click="toggleAuto">
+            <span class="controls-words">
+                <span class="controls-name">Auto</span>
+                <span class="controls-note">{{ autoOn ? "The agent works through the to-do list without asking" : "The agent asks before picking up the next to-do" }}</span>
+            </span>
+            <span :class="['controls-switch', {on: autoOn}]" aria-hidden="true"><span /></span>
+        </button>
         <template v-if="told">
             <p class="controls-told">{{ told }}</p>
         </template>
@@ -120,6 +143,58 @@ async function act(what) {
     height: 100%;
     border-radius: 2px;
     background: var(--accent);
+}
+
+.controls-auto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--hover);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+}
+
+.controls-words {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.controls-switch {
+    position: relative;
+    flex: none;
+    width: 51px;
+    height: 31px;
+    border-radius: 16px;
+    background: var(--border-3);
+    transition: background-color 200ms ease-out;
+}
+
+.controls-switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+    transition: transform 200ms var(--push);
+}
+
+.controls-switch.on {
+    background: var(--tone-good);
+}
+
+.controls-switch.on span {
+    transform: translateX(20px);
 }
 
 .controls-told,
