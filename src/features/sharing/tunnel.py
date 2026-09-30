@@ -94,6 +94,18 @@ def log_in(host: str, username: str, password: str, master: str | None = None) -
     return Login(connected=False, needs_master=needs, error=lines[0] if needs else lines[-1])
 
 
+def installed() -> str:
+    ok, said = ran("version")
+    return said.split()[-1] if ok and said else ""
+
+
+def updated() -> str:
+    ok, said = ran("update")
+    if not ok:
+        return said or "tunler did not update"
+    return said.splitlines()[-1] if said else "tunler is up to date"
+
+
 def log_out() -> str:
     ok, said = ran("logout")
     return "" if ok else said or "tunler did not log out"

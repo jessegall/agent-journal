@@ -110,6 +110,14 @@ export class ApiClient {
         return this.command("share", "logout");
     }
 
+    tunlerVersion() {
+        return this.command("share", "version");
+    }
+
+    updateTunler() {
+        return this.command("share", "update_tunler");
+    }
+
     tunnelDomains() {
         return this.command("share", "domains");
     }

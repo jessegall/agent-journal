@@ -6,6 +6,7 @@ import ListBox from "../kit/ListBox.vue";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
 import TunnelLogin from "../resource/TunnelLogin.vue";
 import TunnelDomain from "./TunnelDomain.vue";
+import TunlerVersion from "./TunlerVersion.vue";
 
 const domains = ref([]);
 const switching = ref(false);
@@ -70,6 +71,7 @@ onMounted(load);
                     <p class="tunnel-failure">{{ failure }}</p>
                 </template>
             </div>
+            <TunlerVersion />
         </ListBox>
         <template v-if="domains.length">
             <ListBox title="Domains this account owns" :count="domains.length">
@@ -110,5 +112,9 @@ onMounted(load);
 .tunnel-actions {
     display: flex;
     gap: 8px;
+}
+
+.tunnel-state > .btn {
+    align-self: flex-start;
 }
 </style>

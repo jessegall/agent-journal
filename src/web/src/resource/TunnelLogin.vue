@@ -2,6 +2,7 @@
 import {ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import FormField from "../kit/FormField.vue";
 import TextInput from "../kit/TextInput.vue";
 
 const props = defineProps({host: {type: String, default: ""}});
@@ -47,26 +48,21 @@ async function connect() {
 
 <template>
     <form class="tunnel-login" @submit.prevent="connect">
-        <TextInput :value="endpoint" label="Server" placeholder="tunler.jessegall.nl" @input="endpoint = $event.target.value" />
-        <TextInput :value="username" label="Username" autocomplete="username" @input="username = $event.target.value" />
-        <TextInput
-            :value="password"
-            label="Password"
-            type="password"
-            autocomplete="current-password"
-            placeholder="At least 8 characters"
-            @input="password = $event.target.value"
-        />
+        <FormField label="Server">
+            <TextInput :value="endpoint" placeholder="tunler.jessegall.nl" @input="endpoint = $event.target.value" />
+        </FormField>
+        <FormField label="Username">
+            <TextInput :value="username" autocomplete="username" @input="username = $event.target.value" />
+        </FormField>
+        <FormField label="Password" hint="at least 8 characters">
+            <TextInput :value="password" type="password" autocomplete="current-password" @input="password = $event.target.value" />
+        </FormField>
         <template v-if="asking">
             <p class="tunnel-note">{{ note }}</p>
         </template>
-        <TextInput
-            :value="master"
-            :label="asking ? 'Master password' : 'Master password, only to create a new account'"
-            type="password"
-            autocomplete="off"
-            @input="master = $event.target.value"
-        />
+        <FormField label="Master password" :hint="asking ? '' : 'only to create a new account'">
+            <TextInput :value="master" type="password" autocomplete="off" @input="master = $event.target.value" />
+        </FormField>
         <template v-if="failure">
             <p class="tunnel-failure">{{ failure }}</p>
         </template>
@@ -82,7 +78,7 @@ async function connect() {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 12px;
 }
 
 .tunnel-login .btn {
