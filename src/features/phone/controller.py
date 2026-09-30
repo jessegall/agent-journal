@@ -1,4 +1,5 @@
 import hashlib
+from dataclasses import dataclass
 import secrets
 import tempfile
 import time
@@ -35,6 +36,61 @@ WAITING = ("question", "plan", "report", "doc")
 
 def readable(kind: str) -> bool:
     return kind in CONTROLLERS and kind not in HIDDEN
+
+
+class Marked(TypedDict):
+    type: str
+    n: str
+    ref: str
+    who: str
+    created: float
+    label: str
+
+
+class Mark(Marked, total=False):
+    name: str
+    detail: str
+    icon: str
+    tone: str
+    color: str
+    state: str
+    command: str
+
+
+@dataclass(frozen=True)
+class Session:
+    n: int
+    thoughts: list
+    cards: list
+    subagents: list
+    skill_loads: list
+    compactions: list
+    whispers: list
+
+    @classmethod
+    def from_view(cls, view: dict) -> "Session":
+        data = view["data"]
+        return cls(view["n"], data.get("thoughts") or [], data.get("cards") or [], data.get("subagent_rows") or [], data.get("skill_loads") or [],
+                   data.get("compactions") or [], data.get("whispers") or [])
+
+    def mark(self, at: float, label: str, kind: str = "card", **shown: str | None) -> Mark:
+        return Mark(type=kind, n=f"{self.n}-{at}", ref=f"{kind}:{self.n}-{at}", who="agent", created=at, label=label,
+                    **{key: value for key, value in shown.items() if value is not None})
+
+    def marks(self) -> list[Mark]:
+        return [
+            *(self.mark(t["at"], t["text"], kind="thought") for t in self.thoughts),
+            *(self.mark(c["at"], c["label"], icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
+                        color=c.get("color"), state=c.get("state"), command=c.get("command")) for c in self.cards),
+            *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", icon="agents", name=sub["task"],
+                        detail=sub["refusal"] if sub.get("refusal") else sub.get("model"), tone="danger" if sub.get("refusal") else None)
+              for sub in self.subagents if "at" in sub),
+            *(self.mark(sub["ended"], f"Subagent {sub.get('status', 'finished')}", icon="agents", name=sub["task"], tone="good")
+              for sub in self.subagents if sub.get("ended") and not sub.get("refusal")),
+            *(self.mark(load["at"], "Loaded skill", icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
+            *(self.mark(done["at"], "The agent compacted its context", icon="activity", tone="warn") for done in self.compactions),
+            *(self.mark(w["at"], w["title"], icon="reminders") for w in self.whispers),
+        ]
 
 
 class Waiting(TypedDict):
@@ -158,17 +214,11 @@ class Phones(Controller):
         return Feed(items=items, waiting=self._waiting(phone),
                     agent=bool(Sessions(self.record.root).holder(phone.environment)))
 
-    def _marks(self, home: Record, since: float) -> list[dict]:
+    def _marks(self, home: Record, since: float) -> list[Mark]:
         agents = CONTROLLERS["agent"](home, actor=SYSTEM)
         rows = [shaped(agents.load(row["n"]), home, VIEWER) for row in agents.summaries() if not row["deleted"] and row["updated"] >= since]
-        sessions = [row for row in rows if not row["data"].get("parent")]
-        thoughts = [{"type": "thought", "n": f"{row['n']}-{t['at']}", "ref": f"thought:{row['n']}-{t['at']}", "who": "agent", "created": t["at"],
-                     "title": t["text"]}
-                    for row in sessions for t in row["data"].get("thoughts") or [] if t["at"] >= since]
-        cards = [{"type": "card", "n": f"{row['n']}-{c['at']}", "ref": f"card:{row['n']}-{c['at']}", "who": "agent", "created": c["at"],
-                  "title": c.get("label", ""), "brief": c.get("detail", "")}
-                 for row in sessions for c in row["data"].get("cards") or [] if c["at"] >= since]
-        return [*thoughts, *cards]
+        found = [made for row in rows if not row["data"].get("parent") for made in Session.from_view(row).marks()]
+        return [made for made in found if made["created"] >= since]
 
     def _bar(self, phone: Phone) -> dict:
         return current(self._home(phone))

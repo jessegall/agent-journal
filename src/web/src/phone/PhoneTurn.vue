@@ -4,6 +4,7 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
 import ReadTicks from "../kit/ReadTicks.vue";
+import ChatMark from "../kit/ChatMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {clock} from "../format/time.js";
 
@@ -33,14 +34,21 @@ const release = () => clearTimeout(timer);
             <PhoneQuestion :question="item" />
         </template>
         <template #thought>
-            <TextDisplay class="turn-thought" :text="item.title" />
+            <TextDisplay class="turn-thought" :text="item.label" />
         </template>
         <template #card>
             <div class="turn-card">
-                <TextDisplay :text="item.title" />
-                <template v-if="item.brief">
-                    <TextDisplay class="turn-card-detail" :text="item.brief" />
-                </template>
+                <ChatMark
+                    :icon="item.icon"
+                    :tone="item.tone"
+                    :color="item.color"
+                    :label="item.label"
+                    :name="item.name"
+                    :detail="item.detail"
+                    :state="item.state"
+                    :command="item.command"
+                    :at="item.created"
+                />
             </div>
         </template>
         <template #default>
@@ -132,16 +140,9 @@ const release = () => clearTimeout(timer);
 }
 
 .turn-card {
-    align-self: center;
-    max-width: 92%;
-    margin: 0;
-    color: var(--text-3);
-    font-size: 12px;
-    text-align: center;
-}
-
-.turn-card-detail {
-    color: var(--text-4);
+    align-self: flex-start;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .turn-filed {
