@@ -8,12 +8,13 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "./ago.js";
 import {ended} from "./outbox.js";
+import {peeked} from "./peeked.js";
 
 const SIZES = [16, 18, 20];
 const KINDS = {report: "Report", doc: "Document", plan: "Plan", todo: "To-do", work: "Work", fact: "Fact", rule: "Rule", message: "Message"};
 const NAMES = {doc: "document", todo: "to-do"};
-const props = defineProps({target: {type: String, required: true}});
-const emit = defineEmits(["close", "reply"]);
+const props = defineProps({target: {type: String, required: true}, back: {type: String, default: "Chat"}});
+const emit = defineEmits(["close", "open", "reply"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
 const row = ref(null);
@@ -25,6 +26,11 @@ const told = ref("");
 const phases = computed(() => (row.value && row.value.data.phases) || []);
 const goal = computed(() => (row.value && row.value.data.goal) || "");
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
+
+function chipped(event) {
+    const target = peeked(event);
+    if (target) emit("open", target);
+}
 
 async function load() {
     try {
@@ -61,9 +67,9 @@ onMounted(load);
 </script>
 
 <template>
-    <section class="reader">
+    <section class="reader" @click.capture="chipped">
         <header class="reader-bar">
-            <button type="button" class="reader-back" @click="emit('close')"><Icon name="back" :size="16" /> Chat</button>
+            <button type="button" class="reader-back" @click="emit('close')"><Icon name="back" :size="16" /> {{ back }}</button>
             <button type="button" class="reader-size" title="Text size" @click="size = (size + 1) % SIZES.length">Aa</button>
             <span class="reader-progress" :style="{width: `${progress * 100}%`}" />
         </header>
@@ -85,7 +91,7 @@ onMounted(load);
                         <TextDisplay :text="row.brief" />
                     </template>
                     <template v-if="row.outcome">
-                        <p class="reader-goal">Done: {{ row.outcome }}</p>
+                        <TextDisplay class="reader-goal" :text="`Done: ${row.outcome}`" />
                     </template>
                     <template v-for="part in row.sections || []" :key="part.title">
                         <h2 class="reader-part">{{ part.title }}</h2>
@@ -143,6 +149,8 @@ onMounted(load);
     align-items: center;
     justify-content: space-between;
     min-height: 48px;
+    margin: 0 calc(-1 * var(--side));
+    padding: 0 var(--side);
     border-bottom: 1px solid var(--line);
 }
 
@@ -215,7 +223,8 @@ onMounted(load);
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 10px 0 calc(14px + env(safe-area-inset-bottom));
+    margin: 0 calc(-1 * var(--side));
+    padding: 10px var(--side) calc(14px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
 }
 

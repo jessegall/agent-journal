@@ -7,6 +7,7 @@ import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
 import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
+import {peeked} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
@@ -22,6 +23,7 @@ defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: false});
 const reading = ref("");
+const trail = ref([]);
 const about = ref("");
 const quote = ref("");
 const held = ref(null);
@@ -64,17 +66,24 @@ const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list
 watch(reading, (target) => !target && toBottom());
 watch(list, (el) => el && toBottom());
 
-function chipped(event) {
-    const chip = event.target.closest("[data-peek]");
-    if (!chip) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const target = chip.dataset.peek.split("@")[0];
+function open(target) {
+    if (reading.value) trail.value = [...trail.value, reading.value];
     reading.value = target;
+}
+
+function back() {
+    reading.value = trail.value.at(-1) || "";
+    trail.value = trail.value.slice(0, -1);
+}
+
+function chipped(event) {
+    const target = peeked(event);
+    if (target) open(target);
 }
 
 function reply(target) {
     about.value = target;
+    trail.value = [];
     reading.value = "";
 }
 
@@ -131,9 +140,9 @@ function sent() {
     <template v-if="offline">
         <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
     </template>
-    <PhoneWaiting :waiting="feed.waiting" @open="(target) => (reading = target)" />
+    <PhoneWaiting :waiting="feed.waiting" @open="open" />
     <template v-if="reading">
-        <PhoneReader :key="reading" :target="reading" @close="reading = ''" @reply="reply" />
+        <PhoneReader :key="reading" :target="reading" :back="trail.length ? 'Back' : 'Chat'" @close="back" @open="open" @reply="reply" />
     </template>
     <template v-else>
         <div ref="list" class="home-feed" @click.capture="chipped" @scroll.passive="moved" @load.capture="nearBottom() && still() && toBottom()">
