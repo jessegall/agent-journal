@@ -1,4 +1,6 @@
+import hashlib
 import re
+import time
 from dataclasses import dataclass
 import threading
 from pathlib import Path
@@ -55,7 +57,9 @@ def start(root: Path, env: str, compacted: bool) -> str:
 
 SHOWING = threading.Lock()
 DONE = "_done"
+SENT = "_sent"
 KEPT_DONE = 50
+CATCH_UP = 600.0
 REPLAYING = threading.Lock()
 
 
@@ -112,28 +116,40 @@ def stopped(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, {})
-        cut = [message for message, parts in held.items() if message != DONE and shown(parts) and text.strip().startswith(shown(parts))]
+        cut = [message for message, parts in held.items() if message not in (DONE, SENT) and shown(parts) and text.strip().startswith(shown(parts))]
         if not cut:
             return
         write_json(f, {**{key: value for key, value in held.items() if key not in cut}, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
     send_to_chat(root, session, text)
 
 
+def fingerprint(text: str) -> str:
+    return hashlib.sha1(" ".join(text.split()).encode()).hexdigest()
+
+
 def unfinished(root: Path, session: str, row) -> None:
-    f = runtime.session_file(root, session, "displayed.json")
-    pending = [shown(parts) for message, parts in read_json(f, {}).items() if message != DONE and shown(parts)]
     provider = PROVIDERS.get(row.provider)
-    if not pending or provider is None or not row.transcript:
+    if provider is None or not row.transcript:
         return
-    for turn in provider().tail(row.transcript):
-        if turn.has_agent_text and any(turn.text.strip().startswith(prefix) for prefix in pending):
-            stopped(root, session, turn.text)
+    said = [turn.text for turn in provider().tail(row.transcript) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
+    f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, {})
-        write_json(f, {DONE: held.get(DONE, [])})
+        first = SENT not in held
+        write_json(f, {DONE: held.get(DONE, []), SENT: [*held.get(SENT, []), *(map(fingerprint, said) if first else [])][-KEPT_DONE:]})
+    if first:
+        return
+    for text in said:
+        send_to_chat(root, session, text)
 
 
 def send_to_chat(root: Path, session: str, text: str) -> None:
+    f = runtime.session_file(root, session, "displayed.json")
+    with SHOWING:
+        held = read_json(f, {})
+        if fingerprint(text) in held.get(SENT, []):
+            return
+        write_json(f, {**held, SENT: [*held.get(SENT, []), fingerprint(text)][-KEPT_DONE:]})
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)
     if row and text.strip():
@@ -206,6 +222,6 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
     if hook.event == "Stop" and hook.last_message:
         stopped(root, hook.session, hook.last_message)
-    if hook.event == "UserPromptSubmit":
+    if hook.event in ("Stop", "UserPromptSubmit"):
         unfinished(root, hook.session, row)
     return {}
