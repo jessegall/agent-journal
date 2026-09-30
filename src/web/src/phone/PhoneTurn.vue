@@ -16,12 +16,12 @@ defineProps({item: {type: Object, required: true}});
         <template #default>
             <div :class="['turn', item.who]">
                 <TextDisplay :text="item.brief || item.title" />
-                <template v-if="item.who === 'user'">
-                    <span class="turn-meta">
-                        {{ clock(item.created) }}
+                <span class="turn-meta">
+                    {{ clock(item.created) }}
+                    <template v-if="item.who === 'user'">
                         <ReadTicks :message="item" />
-                    </span>
-                </template>
+                    </template>
+                </span>
             </div>
         </template>
     </SwitchCase>
@@ -44,6 +44,10 @@ defineProps({item: {type: Object, required: true}});
     margin-top: 4px;
     color: var(--text-3);
     font-size: 11.5px;
+}
+
+.turn.agent .turn-meta {
+    justify-content: flex-start;
 }
 
 .turn.user {
