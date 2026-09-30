@@ -6,20 +6,19 @@ import Turn from "./Turn.vue";
 const props = defineProps({turn: {type: Object, required: true}});
 const emit = defineEmits(["reply", "pin"]);
 const unfolded = ref(false);
-const data = computed(() => props.turn.data);
+const mark = computed(() => ({
+    icon: props.turn.icon,
+    tone: props.turn.data.tone,
+    color: props.turn.data.color,
+    label: props.turn.title,
+    at: props.turn.created,
+    title: unfolded.value ? "Fold them back into one line" : "Show each of them",
+}));
 </script>
 
 <template>
     <div class="thread-turn group" :data-ref="turn.ref">
-        <ChatMark
-            :icon="turn.icon"
-            :tone="data.tone"
-            :color="data.color"
-            :label="turn.title"
-            :at="turn.created"
-            :title="unfolded ? 'Fold them back into one line' : 'Show each of them'"
-            @click="unfolded = !unfolded"
-        />
+        <ChatMark :mark="mark" @click="unfolded = !unfolded" />
         <template v-if="unfolded">
             <div class="thread-group">
                 <template v-for="t in turn.turns" :key="t.ref">

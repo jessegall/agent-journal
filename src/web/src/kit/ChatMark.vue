@@ -1,89 +1,53 @@
 <script setup>
-import StateDot from "./StateDot.vue";
-import {computed, onUnmounted, ref, useAttrs, watchEffect} from "vue";
+import {computed, useAttrs} from "vue";
+import ChatMarkStatus from "./ChatMarkStatus.vue";
 import Icon from "./Icon.vue";
 import TextDisplay from "./TextDisplay.vue";
-import {clock, stopwatch} from "../format/time.js";
+import {clock} from "../format/time.js";
 
-const props = defineProps({
-    icon: {type: String, default: "dot"},
-    color: {type: String, default: ""},
-    tone: {type: String, default: ""},
-    label: {type: String, required: true},
-    name: {type: String, default: ""},
-    at: {type: Number, default: 0},
-    detail: {type: String, default: ""},
-    card: {type: String, default: ""},
-    command: {type: String, default: ""},
-    title: {type: String, default: ""},
-    state: {type: String, default: ""},
-    started: {type: Number, default: 0},
-    ended: {type: Number, default: 0},
-    depth: {type: Number, default: 0},
-});
+const props = defineProps({mark: {type: Object, required: true}});
 
 const attrs = useAttrs();
 const tag = computed(() => (attrs.onClick ? "button" : "span"));
-const shade = computed(() => props.color || (props.tone ? `var(--tone-${props.tone})` : ""));
-const hover = computed(() => [props.title, props.at ? clock(props.at) : ""].filter(Boolean).join(" · "));
-const tint = computed(() => ({...(shade.value ? {"--mark": shade.value} : {}), ...(props.depth ? {"--depth": props.depth} : {})}));
-const now = ref(Date.now() / 1000);
-let ticking = 0;
-watchEffect(() => {
-    clearInterval(ticking);
-    if (props.started && !props.ended) ticking = setInterval(() => (now.value = Date.now() / 1000), 1000);
-});
-onUnmounted(() => clearInterval(ticking));
-const took = computed(() => {
-    if (!props.started) return "";
-    return props.ended ? `ran ${stopwatch(props.ended - props.started)}` : stopwatch(now.value - props.started);
-});
+const shade = computed(() => props.mark.color || (props.mark.tone ? `var(--tone-${props.mark.tone})` : ""));
+const hover = computed(() => [props.mark.title, props.mark.at ? clock(props.mark.at) : ""].filter(Boolean).join(" · "));
+const tint = computed(() => ({
+    ...(shade.value ? {"--mark": shade.value} : {}),
+    ...(props.mark.depth ? {"--depth": props.mark.depth} : {}),
+}));
 </script>
 
 <template>
     <component
         :is="tag"
         :type="tag === 'button' ? 'button' : undefined"
-        :class="['mark', {tinted: shade, console: command, nested: depth > 0, [`ended-${state}`]: ended}]"
+        :class="['mark', {tinted: shade, console: mark.command, nested: mark.depth > 0, [`ended-${mark.state}`]: mark.ended}]"
         :style="tint"
         :title="hover"
     >
-        <Icon :name="icon" />
+        <Icon :name="mark.icon || 'dot'" />
         <span class="head">
-            <TextDisplay :text="label" inline />
-            <template v-if="name">
-                <strong>{{ name }}</strong>
+            <TextDisplay :text="mark.label" inline />
+            <template v-if="mark.name">
+                <strong>{{ mark.name }}</strong>
             </template>
-            <template v-if="state || took">
-                <span class="status">
-                    <template v-if="took">
-                        <span class="took">{{ took }}</span>
-                    </template>
-                    <template v-if="state">
-                        <StateDot class="mark-dot" :state="state" :title="{done: 'Ended', failed: 'Failed'}[state] || 'Still running'" />
-                    </template>
-                </span>
+            <template v-if="mark.state || mark.started">
+                <ChatMarkStatus :mark="mark" />
             </template>
         </span>
-        <template v-if="detail">
-            <TextDisplay class="detail" :text="detail" inline />
+        <template v-if="mark.detail">
+            <TextDisplay class="detail" :text="mark.detail" inline />
         </template>
-        <template v-if="command">
-            <code class="detail command">{{ command }}</code>
+        <template v-if="mark.command">
+            <code class="detail command">{{ mark.command }}</code>
         </template>
-        <template v-if="card">
-            <TextDisplay class="card" :text="card" />
+        <template v-if="mark.card">
+            <TextDisplay class="card" :text="mark.card" />
         </template>
     </component>
 </template>
 
 <style scoped>
-.status .mark-dot {
-    width: 5px;
-    height: 5px;
-    border-width: 1px;
-}
-
 .mark.nested {
     position: relative;
     margin-left: calc(var(--depth) * 16px);
@@ -164,20 +128,6 @@ button.mark:hover {
 .mark.ended-failed {
     border-color: color-mix(in srgb, var(--danger) 55%, var(--border-2));
     background: color-mix(in srgb, var(--danger) 9%, transparent);
-}
-
-.took {
-    font-size: 10px;
-}
-
-.status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-    padding-left: 6px;
-    color: var(--text-4);
-    font-variant-numeric: tabular-nums;
 }
 
 .head :deep(.md) {

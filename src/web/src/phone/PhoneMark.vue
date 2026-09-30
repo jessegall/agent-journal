@@ -6,7 +6,10 @@ import {announce} from "./announce.js";
 import {tick} from "./haptic.js";
 
 const props = defineProps({item: {type: Object, required: true}});
-const label = computed(() => (props.item.name ? `${props.item.label} **${props.item.name}**` : props.item.label));
+const mark = computed(() => {
+    const {icon, tone, color, label, name, detail, card, state, command, created} = props.item;
+    return {icon, tone, color, label: name ? `${label} **${name}**` : label, detail, card, state, command, at: created};
+});
 
 async function copied() {
     try {
@@ -21,17 +24,7 @@ async function copied() {
 
 <template>
     <div :class="['phone-mark', {console: item.command}]">
-        <ChatMark
-            :icon="item.icon"
-            :tone="item.tone"
-            :color="item.color"
-            :label="label"
-            :detail="item.detail"
-            :card="item.card"
-            :state="item.state"
-            :command="item.command"
-            :at="item.created"
-        />
+        <ChatMark :mark="mark" />
         <template v-if="item.command">
             <button type="button" class="mark-copy" aria-label="Copy the command" @click="copied">
                 <Icon name="copy" :size="14" />

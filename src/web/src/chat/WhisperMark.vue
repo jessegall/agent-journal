@@ -13,15 +13,15 @@ const props = defineProps({
 const type = computed(() => props.row.split(":")[0]);
 const n = computed(() => Number(props.row.split(":")[1]));
 const named = computed(() => `${(meta(type.value) || {title: type.value}).title.toLowerCase()} ${n.value}`);
+const mark = computed(() => ({
+    icon: "reminders",
+    label: "Reminded the agent of",
+    name: named.value,
+    at: props.at,
+    title: `Open ${named.value}: ${props.title}`,
+}));
 </script>
 
 <template>
-    <ChatMark
-        icon="reminders"
-        label="Reminded the agent of"
-        :name="named"
-        :at="at"
-        :title="`Open ${named}: ${title}`"
-        @click="peekRef(row)"
-    />
+    <ChatMark :mark="mark" @click="peekRef(row)" />
 </template>

@@ -28,23 +28,24 @@ const color = computed(() => (tone.value ? "" : SUBAGENT_COLOR));
 const detail = computed(() => (props.refusal ? `${props.task}: ${props.refusal}` : props.task));
 const card = computed(() => (props.report ? `report ${props.report}` : ""));
 const name = computed(() => [props.kind || "subagent", props.model].filter(Boolean).join(" · "));
+const mark = computed(() => ({
+    icon: "agents",
+    color: color.value,
+    tone: tone.value,
+    label: label.value,
+    name: name.value,
+    at: props.at,
+    detail: detail.value,
+}));
+const openable = computed(() => ({...mark.value, title: "Open the subagent"}));
+const reported = computed(() => ({...mark.value, card: card.value}));
 </script>
 
 <template>
     <template v-if="session && !report">
-        <ChatMark
-            icon="agents"
-            :color="color"
-            :tone="tone"
-            :label="label"
-            :name="name"
-            :at="at"
-            :detail="detail"
-            title="Open the subagent"
-            @click="open"
-        />
+        <ChatMark :mark="openable" @click="open" />
     </template>
     <template v-else>
-        <ChatMark icon="agents" :color="color" :tone="tone" :label="label" :name="name" :at="at" :detail="detail" :card="card" />
+        <ChatMark :mark="reported" />
     </template>
 </template>
