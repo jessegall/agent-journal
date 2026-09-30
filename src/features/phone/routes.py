@@ -4,11 +4,16 @@ from http.cookies import SimpleCookie
 
 from engine.record import Record
 from features.phone.controller import Phones, Stale
+from engine.color import identity
 from features.sharing.page import unshared
+from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused
 
 APP_PAGE = "phone.html"
+MANIFEST = "manifest.webmanifest"
+ICONS = {"icon-180.png": 180, "icon-192.png": 192, "icon-512.png": 512}
+PAGE_HEADERS = {**APP_HEADERS, "Content-Security-Policy": APP_HEADERS["Content-Security-Policy"] + "; manifest-src 'self'"}
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
 LOCAL = ("127.0.0.1", "localhost")
@@ -65,12 +70,17 @@ class PhoneRoutes:
             return handler.asset(rest[1])
         if rest[:1] in (["state"], ["feed"], ["row"]):
             return self.read(handler, rest)
+        if rest == [MANIFEST]:
+            return self.manifest(handler)
+        if len(rest) == 1 and rest[0] in ICONS:
+            color = identity(handler.shares.record.root)["color"]
+            return handler.send(200, icon(color, ICONS[rest[0]]), {"Content-Type": "image/png", "Cache-Control": "public, max-age=86400"})
         page = APP_DIR / APP_PAGE
         if rest or not page.is_file():
             return handler.page(404, unshared())
         if not handler.path.split("?", 1)[0].endswith("/"):
             return handler.send(301, b"", {"Location": "/p/"})
-        return handler.send(200, page.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **APP_HEADERS})
+        return handler.send(200, page.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **PAGE_HEADERS})
 
     def read(self, handler, rest: list[str]) -> None:
         phone = self.phone(handler)
@@ -86,6 +96,13 @@ class PhoneRoutes:
             except Refused as refused:
                 return handler.answer(404, str(refused))
         return handler.answer(404, "no such page")
+
+    def manifest(self, handler) -> None:
+        known = identity(handler.shares.record.root)
+        body = {"name": f"{known['project']} journal", "short_name": known["project"], "start_url": "/p/", "scope": "/p/", "display": "standalone",
+                "background_color": "#131416", "theme_color": known["color"],
+                "icons": [{"src": f"/p/{name}", "sizes": f"{side}x{side}", "type": "image/png"} for name, side in ICONS.items()]}
+        return handler.send(200, json.dumps(body).encode(), {"Content-Type": "application/manifest+json", "Cache-Control": "no-store"})
 
     def post(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler):

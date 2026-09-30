@@ -6,6 +6,8 @@ from html import escape
 CARD = (1200, 630)
 DESCRIBED = 200
 DARKER = 90
+DISC = 0.22
+WHITE = b"\xff\xff\xff"
 FALLBACK = (0, 144, 255)
 
 
@@ -18,15 +20,33 @@ def chunk(kind: bytes, body: bytes) -> bytes:
     return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
 
 
+def shades(color: str, height: int) -> list[bytes]:
+    top = rgb(color)
+    bottom = tuple(max(0, value - DARKER) for value in top)
+    return [bytes(round(a + (b - a) * y / height) for a, b in zip(top, bottom)) for y in range(height)]
+
+
+def png(width: int, rows: list[bytes]) -> bytes:
+    header = struct.pack(">IIBBBBB", width, len(rows), 8, 2, 0, 0, 0)
+    pixels = b"".join(b"\x00" + row for row in rows)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(pixels, 9)) + chunk(b"IEND", b"")
+
+
 @lru_cache(maxsize=16)
 def card(color: str) -> bytes:
     width, height = CARD
-    top = rgb(color)
-    bottom = tuple(max(0, value - DARKER) for value in top)
-    shade = lambda y: bytes(round(a + (b - a) * y / height) for a, b in zip(top, bottom))
-    pixels = b"".join(b"\x00" + shade(y) * width for y in range(height))
-    header = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
-    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(pixels, 9)) + chunk(b"IEND", b"")
+    return png(width, [shade * width for shade in shades(color, height)])
+
+
+@lru_cache(maxsize=16)
+def icon(color: str, side: int) -> bytes:
+    middle, radius = side / 2, side * DISC
+    rows = []
+    for y, shade in enumerate(shades(color, side)):
+        reach = radius ** 2 - (y + 0.5 - middle) ** 2
+        left, right = (round(middle - reach ** 0.5), round(middle + reach ** 0.5)) if reach > 0 else (side, side)
+        rows.append(shade * left + WHITE * (right - left) + shade * (side - right))
+    return png(side, rows)
 
 
 def tags(title: str, description: str, image: str, url: str, site: str) -> str:

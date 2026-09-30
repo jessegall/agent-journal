@@ -174,3 +174,15 @@ def test_a_connected_phone_keeps_the_tunnel_wanted(served):
     assert not wanted(record.root)
     paired(record, base)
     assert wanted(record.root), "the share server and tunnel stay up while a phone is connected"
+
+
+def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
+    record, base = served
+    made = Phones(record, actor=USER).connect(7)
+    assert len(made["short"]) == 9 and made["short"][4] == "-", "a short code reads as two groups of four"
+    assert call(base, "/p/pair", {"code": made["short"].lower().replace("-", " "), "device": "iPhone"}).status == 200, "typed loosely, it still pairs"
+    manifest = urllib.request.urlopen(f"{base}/p/manifest.webmanifest", timeout=5)
+    body = json.loads(manifest.read())
+    assert (body["display"], body["start_url"]) == ("standalone", "/p/") and body["icons"], "it opens full screen from the home screen"
+    with urllib.request.urlopen(f"{base}/p/icon-180.png", timeout=5) as got:
+        assert got.read(8) == b"\x89PNG\r\n\x1a\n", "with an icon of its own"

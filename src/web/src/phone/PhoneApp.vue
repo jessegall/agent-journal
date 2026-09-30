@@ -15,6 +15,8 @@ const RETRY_EVERY = 10000;
 const state = ref("loading");
 const told = ref("");
 const connection = ref(null);
+const typed = ref("");
+const pairing = ref(false);
 
 function failed(error) {
     if (ended(error)) forget();
@@ -44,6 +46,19 @@ async function load() {
 
 const retry = setInterval(() => state.value === "unreachable" && !document.hidden && load(), RETRY_EVERY);
 
+async function pairTyped() {
+    pairing.value = true;
+    try {
+        await phone.pair(typed.value.trim(), deviceName());
+        typed.value = "";
+        await load();
+    } catch (error) {
+        told.value = error.message;
+    } finally {
+        pairing.value = false;
+    }
+}
+
 onMounted(load);
 onUnmounted(() => clearInterval(retry));
 </script>
@@ -64,7 +79,16 @@ onUnmounted(() => clearInterval(retry));
             </template>
             <template #unknown>
                 <div class="phone-centre">
-                    <EmptyState title="Connect this phone">On your computer, open the journal, press the phone button in the top bar, and scan the code.</EmptyState>
+                    <EmptyState title="Connect this phone">
+                        On your computer, open the journal and press the phone button in the top bar. Scan the code, or type the short code under it here.
+                    </EmptyState>
+                    <form class="phone-typed" @submit.prevent="pairTyped">
+                        <input v-model="typed" class="phone-code-box" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" />
+                        <Btn kind="primary" large :busy="pairing" @click="pairTyped">Connect</Btn>
+                        <template v-if="told && pairing === false && typed">
+                            <p class="phone-typed-told">{{ told }}</p>
+                        </template>
+                    </form>
                 </div>
             </template>
             <template #unreachable>

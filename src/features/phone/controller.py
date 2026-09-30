@@ -21,7 +21,9 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "code_until", "expires", "environment", "days")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "days")
+SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+SHORT_LENGTH = 8
 FEED = 40
 SAID = ("message", "question")
 READABLE = ("question", "report", "doc", "plan")
@@ -45,12 +47,17 @@ class Feed(TypedDict):
 class Code(TypedDict):
     n: int
     link: str
+    short: str
     code_until: float
     address: str
 
 
 class Stale(Refused):
     pass
+
+
+def typed(code: str) -> str:
+    return "".join(letter for letter in code.upper() if letter in SHORT_LETTERS)
 
 
 def hashed(secret: str) -> str:
@@ -85,15 +92,18 @@ class Phones(Controller):
             if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"]:
                 self.complete(row["n"], how="a newer code replaced it")
         code = secrets.token_urlsafe(24)
-        made = super().create("A phone, not yet connected", environment=self.record.env, code=hashed(code), code_until=time.time() + CODE_SECONDS,
-                              days=int(days))
+        short = "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
+        made = super().create("A phone, not yet connected", environment=self.record.env, code=hashed(code), short=hashed(short),
+                              code_until=time.time() + CODE_SECONDS, days=int(days))
         address = Shares(self.record, actor=SYSTEM)._address()
-        return Code(n=made.n, link=f"https://{address}/p/#{code}", code_until=made.code_until, address=address)
+        return Code(n=made.n, link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", code_until=made.code_until, address=address)
 
     def _pair(self, code: str, device: str) -> tuple[Phone, str] | None:
         now = time.time()
         with self.record.locked(PROJECT):
-            found = next((row["n"] for row in self.summaries() if row.get("code") == hashed(code) and not row["completed"] and not row["deleted"]), None)
+            given = {hashed(code), hashed(typed(code))}
+            found = next((row["n"] for row in self.summaries() if given & {row.get("code"), row.get("short")} - {"", None}
+                          and not row["completed"] and not row["deleted"]), None)
             if found is None:
                 return None
             phone = self.load(found)
@@ -101,7 +111,7 @@ class Phones(Controller):
                 return None
             key = secrets.token_urlsafe(32)
             named = titled(" ".join(str(device).split())[:DEVICE_LONGEST] or "A phone")
-            paired = super().update(phone.n, title=named, key=hashed(key), code="", code_until=0, expires=now + phone.days * 86400, last_seen=now)
+            paired = super().update(phone.n, title=named, key=hashed(key), code="", short="", code_until=0, expires=now + phone.days * 86400, last_seen=now)
         Notices(Record(self.record.root, paired.environment), actor=SYSTEM).create(
             f"A phone connected, {named}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
         return paired, key

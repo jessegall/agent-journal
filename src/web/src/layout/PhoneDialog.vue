@@ -93,6 +93,8 @@ onMounted(checkTunnel);
                         <Segmented :options="DAYS" :value="days" @pick="pick" />
                         <Btn small :busy="busy" @click="fresh">New code</Btn>
                         <template v-if="made">
+                            <span class="phone-short-label">Or type this code in the home-screen app</span>
+                            <span class="phone-short">{{ made.short }}</span>
                             <span class="phone-address">{{ made.address }}</span>
                         </template>
                     </div>
@@ -166,6 +168,17 @@ onMounted(checkTunnel);
     font-size: 12px;
     font-family: var(--mono);
     overflow-wrap: anywhere;
+}
+
+.phone-short-label {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.phone-short {
+    color: var(--text);
+    font: 600 17px/1 var(--mono);
+    letter-spacing: 0.1em;
 }
 
 .phone-failure {
