@@ -147,8 +147,7 @@ function release() {
 }
 
 .turn.agent {
-    align-self: stretch;
-    max-width: 100%;
+    align-self: flex-start;
     border: 1px solid var(--border);
     background: var(--raised);
 }
