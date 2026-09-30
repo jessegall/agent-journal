@@ -1,12 +1,19 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import {ago} from "./ago.js";
 
-defineProps({waiting: {type: Array, required: true}});
+const props = defineProps({waiting: {type: Array, required: true}});
 const emit = defineEmits(["open"]);
-const open = ref(false);
+const open = ref(true);
 const KINDS = {question: "Question", plan: "Plan to approve", report: "New report", doc: "New document"};
+const ORDER = ["question", "plan", "report", "doc"];
+const sorted = computed(() => [...props.waiting].sort((a, b) => ORDER.indexOf(a.type) - ORDER.indexOf(b.type) || b.created - a.created));
+
+watch(
+    () => props.waiting.map((item) => item.ref),
+    (now, before) => now.some((ref) => !before.includes(ref)) && (open.value = true),
+);
 
 function pick(target) {
     open.value = false;
@@ -24,9 +31,9 @@ function pick(target) {
             </button>
             <template v-if="open">
                 <ul class="waiting-list">
-                    <template v-for="item in waiting" :key="item.ref">
+                    <template v-for="item in sorted" :key="item.ref">
                         <li>
-                            <button type="button" class="waiting-item" @click="pick(item.ref)">
+                            <button type="button" :class="['waiting-item', item.type]" @click="pick(item.ref)">
                                 <span class="waiting-kind">{{ KINDS[item.type] }} · {{ ago(item.created) }}</span>
                                 <span class="waiting-title">{{ item.title }}</span>
                             </button>
@@ -39,10 +46,16 @@ function pick(target) {
 </template>
 
 <style scoped>
+.waiting-item.question {
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+}
+
 .waiting {
     max-width: none;
     margin: 0 calc(-1 * var(--side));
     border-bottom: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
     background: var(--accent-dim);
 }
 
