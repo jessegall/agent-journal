@@ -7,19 +7,24 @@ const FLICK = 0.5;
 const BACKWARD = -0.3;
 const FASTEST = 180;
 const SLOWEST = 320;
+const GIVE_UP = 1000;
 
-export function useEdgeBack(stack, {covered, back}) {
+export function useEdgeBack(stack, {depth, back}) {
     const dragging = ref(false);
     const settle = ref(0);
-    let swiped = false;
     let resting = 0;
+    let stuck = 0;
     let pending = null;
+    let awaiting = -1;
 
-    function pulled(dx, width) {
+    const width = () => stack.value?.clientWidth || 1;
+    const busy = () => pending !== null || awaiting >= 0;
+
+    function pulled(dx) {
         const el = stack.value;
         if (!el) return;
         el.style.setProperty("--dx", `${dx}px`);
-        el.style.setProperty("--p", String(Math.min(1, dx / width)));
+        el.style.setProperty("--p", String(Math.min(1, dx / width())));
     }
 
     function rest() {
@@ -30,49 +35,62 @@ export function useEdgeBack(stack, {covered, back}) {
         after?.();
     }
 
+    function popping(expected) {
+        awaiting = expected;
+        clearTimeout(stuck);
+        stuck = setTimeout(() => {
+            if (awaiting < 0) return;
+            awaiting = -1;
+            pulled(0);
+        }, GIVE_UP);
+        back();
+    }
+
     useDrag(stack, {
         axis: "x",
         begin: (event, first) => {
-            if (pending) {
-                rest();
-                return null;
+            if (busy()) {
+                if (pending) rest();
+                return {held: true};
             }
-            if (!covered() || first.clientX > EDGE || event.target.closest(CONTROLS)) return null;
+            if (!depth() || first.clientX > EDGE || event.target.closest(CONTROLS)) return null;
             if (sidewaysScroller(event.target, stack.value)) return null;
-            return {width: stack.value.clientWidth};
+            return {};
         },
         accepts: (d) => d > 0,
-        move: (d, context) => {
+        move: (d) => {
             if (!dragging.value) dragging.value = true;
-            pulled(Math.max(0, d), context.width);
+            pulled(Math.max(0, d));
         },
-        end: (d, v, context) => {
-            const committed = v > FLICK || (d > COMMIT * context.width && v >= BACKWARD);
-            const target = committed ? context.width : 0;
+        end: (d, v) => {
+            const full = width();
+            const committed = v > FLICK || (d > COMMIT * full && v >= BACKWARD);
+            const target = committed ? full : 0;
+            const expected = depth() - 1;
             settle.value = Math.round(Math.min(SLOWEST, Math.max(FASTEST, Math.abs(target - d) / Math.max(Math.abs(v), 0.001))));
             dragging.value = false;
-            pulled(target, context.width);
-            pending = committed
-                ? () => {
-                      swiped = true;
-                      back();
-                  }
-                : null;
+            pulled(target);
+            pending = committed ? () => popping(expected) : null;
             resting = setTimeout(rest, settle.value);
         },
     });
 
-    function landed() {
-        const was = swiped;
-        swiped = false;
-        if (!was) return false;
+    function landed(count) {
+        if (awaiting < 0) return false;
+        const swiped = count === awaiting;
+        awaiting = -1;
+        clearTimeout(stuck);
+        if (!swiped) return false;
         dragging.value = true;
-        pulled(0, 1);
+        pulled(0);
         requestAnimationFrame(() => requestAnimationFrame(() => (dragging.value = false)));
         return true;
     }
 
-    onUnmounted(() => clearTimeout(resting));
+    onUnmounted(() => {
+        clearTimeout(resting);
+        clearTimeout(stuck);
+    });
 
-    return {dragging, settle, landed};
+    return {dragging, settle, landed, busy};
 }

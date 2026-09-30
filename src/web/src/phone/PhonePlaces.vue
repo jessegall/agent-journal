@@ -5,7 +5,7 @@ import Spinner from "../kit/Spinner.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 
 const props = defineProps({environment: {type: String, required: true}});
-const emit = defineEmits(["close", "moved"]);
+const emit = defineEmits(["close", "moved", "switching", "stayed"]);
 const places = ref(null);
 const at = ref("");
 const moving = ref("");
@@ -31,10 +31,12 @@ const AGENTS = [
 async function start(place, name, agent) {
     moving.value = `${place.root}:${name}`;
     told.value = "";
+    emit("switching");
     try {
         await phone.start(place.root, name, agent);
         emit("moved");
     } catch (error) {
+        emit("stayed");
         told.value = error.message;
     } finally {
         moving.value = "";
@@ -44,10 +46,12 @@ async function start(place, name, agent) {
 async function move(place, name) {
     if (here(place, name)) return emit("close");
     moving.value = `${place.root}:${name}`;
+    emit("switching");
     try {
         await phone.move(place.root, name);
         emit("moved");
     } catch (error) {
+        emit("stayed");
         told.value = error.message;
     } finally {
         moving.value = "";
@@ -68,7 +72,7 @@ async function move(place, name) {
             <section class="places-journal">
                 <h3 class="places-name">
                     <span class="places-dot" :style="{background: place.color}" />
-                    {{ place.project }}
+                    <span class="places-project">{{ place.project }}</span>
                     <template v-if="!place.running">
                         <span class="places-off">not running</span>
                     </template>
@@ -186,6 +190,17 @@ async function move(place, name) {
 
 .places-env-name {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.places-project {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .places-here {

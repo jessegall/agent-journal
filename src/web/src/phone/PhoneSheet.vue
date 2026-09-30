@@ -32,6 +32,7 @@ useTrap(sheet, close);
 useDrag(sheet, {
     axis: "y",
     begin: (event) => {
+        if (leaving.value) return null;
         const grabbed = Boolean(event.target.closest(".sheet-grab"));
         if (!grabbed && event.target.closest(CONTROLS)) return null;
         return {grabbed};
@@ -81,6 +82,7 @@ defineExpose({close});
 .sheet-root {
     position: fixed;
     inset: 0;
+    height: var(--app-height, auto);
     z-index: 20;
     display: flex;
     align-items: flex-end;

@@ -69,6 +69,7 @@ onMounted(() => {
 .hold-root {
     position: fixed;
     inset: 0;
+    height: var(--app-height, auto);
     z-index: 20;
     max-width: none;
 }

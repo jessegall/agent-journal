@@ -35,13 +35,14 @@ const missing = computed(() => Object.keys(NAMES).filter((kind) => !cards.value.
 
 async function fetched() {
     const kinds = cards.value.filter((kind) => kind !== WAITING);
-    const got = await Promise.all(kinds.map((kind) => phone.list(kind).then((answer) => answer.rows).catch(() => [])));
+    const got = await Promise.all(kinds.map((kind) => phone.list(kind).catch(() => ({rows: [], total: 0}))));
     return Object.fromEntries(kinds.map((kind, i) => [kind, got[i]]));
 }
 
 const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = got));
 
-const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : lists.value[kind] || []);
+const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : lists.value[kind]?.rows || []);
+const total = (kind) => (kind === WAITING ? props.waiting.length : Math.max(lists.value[kind]?.total || 0, rows(kind).length));
 const shown = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, SHOWN));
 
 function more(kind) {
@@ -79,7 +80,7 @@ function moved(i, by) {
             <section class="board-card" :aria-label="NAMES[kind]">
                 <header class="board-head">
                     <h2 class="board-name">{{ NAMES[kind] }}</h2>
-                    <span class="board-count">{{ rows(kind).length }}</span>
+                    <span class="board-count">{{ total(kind) }}</span>
                     <template v-if="editing">
                         <span class="board-tools">
                             <button type="button" aria-label="Move up" :disabled="i === 0" @click="moved(i, -1)">↑</button>
@@ -102,7 +103,10 @@ function moved(i, by) {
                             </template>
                         </ul>
                         <template v-if="rows(kind).length > shown(kind).length">
-                            <button type="button" class="board-more" @click="more(kind)">Show all {{ rows(kind).length }}</button>
+                            <button type="button" class="board-more" @click="more(kind)">{{ total(kind) > rows(kind).length ? `Show ${rows(kind).length} of ${total(kind)}` : `Show all ${rows(kind).length}` }}</button>
+                        </template>
+                        <template v-else-if="total(kind) > rows(kind).length">
+                            <p class="board-part">Showing {{ rows(kind).length }} of {{ total(kind) }}</p>
                         </template>
                     </template>
                     <template v-else>
@@ -206,11 +210,13 @@ function moved(i, by) {
 .board-tools button {
     width: 36px;
     height: 36px;
+    padding: 0;
     border: 0;
     border-radius: 8px;
     background: var(--hover);
     color: var(--text-2);
     font: inherit;
+    font-size: 16px;
 }
 
 .board-group {
@@ -274,6 +280,14 @@ function moved(i, by) {
 .board-empty {
     margin: 0;
     padding: 12px 16px;
+    color: var(--text-3);
+    font-size: 0.882rem;
+}
+
+.board-part {
+    margin: 0;
+    padding: 11px 16px;
+    border-top: 1px solid var(--line);
     color: var(--text-3);
     font-size: 0.882rem;
 }

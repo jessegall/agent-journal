@@ -1,6 +1,8 @@
 import {onMounted, onUnmounted} from "vue";
 
 const SLACK = 2;
+const STATUS_BAR = 62;
+const SETTLED = 400;
 const EVENTS = ["resize", "pageshow", "orientationchange"];
 
 const standalone = () => window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -17,15 +19,17 @@ function topInset() {
 
 function measured() {
     const root = document.documentElement;
+    const app = document.querySelector(".phone");
+    root.style.removeProperty("--app-height");
+    if (!app || !standalone() || !iPhone()) return;
     const [narrow, long] = [Math.min(screen.width, screen.height), Math.max(screen.width, screen.height)];
     const [wide, tall] = window.innerHeight >= window.innerWidth ? [narrow, long] : [long, narrow];
-    const short = tall - window.innerHeight;
-    const fits = standalone() && iPhone() && wide === window.innerWidth && short > 0 && short <= topInset() + SLACK;
-    if (fits) root.style.setProperty("--app-height", `${tall}px`);
-    else root.style.removeProperty("--app-height");
+    const short = tall - app.getBoundingClientRect().bottom;
+    if (wide === window.innerWidth && short > 0 && short <= Math.max(topInset(), STATUS_BAR) + SLACK) root.style.setProperty("--app-height", `${tall}px`);
 }
 
 let frame = 0;
+let later = 0;
 
 function soon() {
     cancelAnimationFrame(frame);
@@ -37,11 +41,13 @@ const returned = () => !document.hidden && soon();
 export function useScreenFill() {
     onMounted(() => {
         measured();
+        later = setTimeout(soon, SETTLED);
         EVENTS.forEach((name) => window.addEventListener(name, soon));
         document.addEventListener("visibilitychange", returned);
     });
     onUnmounted(() => {
         cancelAnimationFrame(frame);
+        clearTimeout(later);
         EVENTS.forEach((name) => window.removeEventListener(name, soon));
         document.removeEventListener("visibilitychange", returned);
     });

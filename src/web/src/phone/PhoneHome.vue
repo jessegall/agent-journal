@@ -18,7 +18,8 @@ import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
-import {ended, flush, justSent, settle, waitingToSend} from "./outbox.js";
+import {atThisPlace, discard, ended, flush, justSent, setPlace, settle, waitingToSend} from "./outbox.js";
+import {wanted} from "./wanted.js";
 import {clock} from "../format/time.js";
 import ReadTicks from "../kit/ReadTicks.vue";
 import {useBubbles} from "./bubbles.js";
@@ -32,7 +33,14 @@ const NEAR_BOTTOM = 120;
 const MOVING = 800;
 const SENDING = {completed: 0, seen: [], data: {}};
 const LABELS = {chat: "Chat", home: "Home"};
-defineProps({connection: {type: Object, required: true}});
+const props = defineProps({connection: {type: Object, required: true}});
+const here = () => `${props.connection.project}/${props.connection.environment}`;
+setPlace(here());
+const switching = ref(false);
+const notice = ref("");
+let noticeTimer = 0;
+const heldHere = computed(() => atThisPlace(waitingToSend.value));
+const sentHere = computed(() => atThisPlace(justSent.value));
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: "offline"});
 const emit = defineEmits(["moved"]);
@@ -64,6 +72,7 @@ const chatUnder = useUnder(top);
 const under = computed(() => (screen.value === "chat" ? chatUnder.value : homeUnder.value));
 
 async function asked() {
+    if (switching.value) return null;
     try {
         const got = await phone.feed();
         offline.value = false;
@@ -110,7 +119,7 @@ function took(got) {
 }
 
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
-    if (!got) return;
+    if (!got || switching.value) return;
     if (held.value) waitingFeed = got;
     else took(got);
 });
@@ -146,7 +155,7 @@ function open(target) {
 
 const back = () => history.back();
 
-const edge = useEdgeBack(stack, {covered: () => pages.value.length > 0, back});
+const edge = useEdgeBack(stack, {depth: () => pages.value.length, back});
 
 const SETTLE = 800;
 const SPOKEN_AFTER = 300;
@@ -155,7 +164,16 @@ let moving = 0;
 function next() {
     const from = pages.value.at(-1)?.id;
     clearTimeout(moving);
-    moving = setTimeout(() => pages.value.at(-1)?.id === from && moveOn(), SETTLE);
+    moving = setTimeout(() => moveWhenStill(from), SETTLE);
+}
+
+function moveWhenStill(from) {
+    if (pages.value.at(-1)?.id !== from) return;
+    if (edge.dragging.value || edge.busy()) {
+        moving = setTimeout(() => moveWhenStill(from), SETTLE);
+        return;
+    }
+    moveOn();
 }
 
 function moveOn() {
@@ -169,7 +187,7 @@ function moveOn() {
 
 function popped(event) {
     const now = event.state?.pages || [];
-    const swiped = edge.landed();
+    const swiped = edge.landed(now.length);
     direction.value = swiped ? "swiped" : now.length >= pages.value.length ? "push" : "pop";
     pages.value = now;
 }
@@ -183,6 +201,7 @@ onUnmounted(() => {
     document.removeEventListener("visibilitychange", returned);
     cancelAnimationFrame(loadFrame);
     clearTimeout(moving);
+    clearTimeout(noticeTimer);
 });
 
 const place = (i) => {
@@ -216,9 +235,37 @@ async function react(face) {
         await phone.react(item.n, face);
         refresh();
     } catch (error) {
+        item.reactions = had;
         if (ended(error)) failed(error);
+        else noticed("That reaction didn't go through. Try again.");
     }
 }
+
+function noticed(words) {
+    clearTimeout(noticeTimer);
+    notice.value = words;
+    noticeTimer = setTimeout(() => (notice.value = ""), 4000);
+}
+
+function leaving() {
+    switching.value = true;
+    setPlace("");
+}
+
+function staying() {
+    switching.value = false;
+    setPlace(here());
+}
+
+watch(
+    wanted,
+    (target) => {
+        if (!target) return;
+        wanted.value = "";
+        open(target);
+    },
+    {immediate: true, flush: "post"},
+);
 
 function quoteIt(item) {
     quote.value = plain(item.brief || item.title).split("\n").filter((line) => !line.startsWith(">")).join(" ").slice(0, 200);
@@ -283,6 +330,9 @@ function pick(key) {
                         <button type="button" @click="reload">Reload now</button>
                     </p>
                 </template>
+                <template v-if="notice">
+                    <p class="home-offline" role="status">{{ notice }}</p>
+                </template>
                 <template v-if="offline">
                     <p class="home-offline" role="status">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
                 </template>
@@ -299,7 +349,7 @@ function pick(key) {
                             </template>
                             <PhoneTurn :item="item" :fresh="fresh(item)" @hold="(it, rect) => it.type === 'message' && (held = {item: it, rect})" />
                         </template>
-                        <template v-for="line in justSent" :key="line.idempotency">
+                        <template v-for="line in sentHere" :key="line.idempotency">
                             <p class="home-sent">
                                 {{ line.brief }}
                                 <span>
@@ -308,8 +358,17 @@ function pick(key) {
                                 </span>
                             </p>
                         </template>
-                        <template v-for="line in waitingToSend" :key="line.idempotency">
-                            <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
+                        <template v-for="line in heldHere" :key="line.idempotency">
+                            <template v-if="line.lost">
+                                <p class="home-held">
+                                    {{ line.brief }}
+                                    <span>The attached file was lost, so this was not sent. Attach it again in a new message.</span>
+                                    <button type="button" class="home-drop" @click="discard(line.idempotency)">Remove</button>
+                                </p>
+                            </template>
+                            <template v-else>
+                                <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
+                            </template>
                         </template>
                     </div>
                     <template v-if="screen === 'chat'">
@@ -351,7 +410,7 @@ function pick(key) {
         </TransitionGroup>
     </div>
     <template v-if="picking">
-        <PhonePlaces :environment="connection.environment" @close="picking = false" @moved="emit('moved')" />
+        <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="emit('moved')" />
     </template>
     <template v-if="held">
         <PhoneHold :item="held.item" :rect="held.rect" @react="react" @reply="quoteIt(held.item)" @copy="copy" @close="held = null" />
@@ -480,6 +539,7 @@ function pick(key) {
 }
 
 .home-names {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -521,7 +581,11 @@ function pick(key) {
 }
 
 .home-note {
+    max-width: 100%;
+    overflow: hidden;
     padding-left: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--text-3);
     font-size: 0.765rem;
 }
@@ -641,6 +705,18 @@ function pick(key) {
     border: 1px dashed var(--border-3);
     border-radius: 18px;
     line-height: 1.35;
+}
+
+.home-drop {
+    min-height: 32px;
+    margin-top: 6px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--hover);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.882rem;
 }
 
 .home-held span {

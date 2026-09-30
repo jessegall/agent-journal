@@ -17,14 +17,21 @@ self.addEventListener("push", (event) => {
             if (self.navigator.setAppBadge) await self.navigator.setAppBadge(waiting.length).catch(() => {});
             const title = waiting.length > 1 ? `${waiting.length} things need you` : "Your agent needs you";
             const body = waiting.length ? waiting[0].title : "Open the journal to see what waits.";
-            await self.registration.showNotification(title, {body, tag: TAG, renotify: true, icon: "./icon-192.png"});
+            const data = {ref: waiting.length ? waiting[0].ref : ""};
+            await self.registration.showNotification(title, {body, tag: TAG, renotify: true, icon: "./icon-192.png", data});
         })(),
     );
 });
 
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
+    const ref = (event.notification.data && event.notification.data.ref) || "";
     event.waitUntil(
-        self.clients.matchAll({type: "window"}).then((open) => (open.length ? open[0].focus() : self.clients.openWindow("./"))),
+        (async () => {
+            const open = await self.clients.matchAll({type: "window", includeUncontrolled: true});
+            if (!open.length) return self.clients.openWindow(ref ? `./#open=${encodeURIComponent(ref)}` : "./");
+            if (ref) open[0].postMessage({open: ref});
+            return open[0].focus();
+        })(),
     );
 });

@@ -9,6 +9,9 @@ import {deviceName} from "./device.js";
 import PhoneHome from "./PhoneHome.vue";
 import {ended, forget} from "./outbox.js";
 import {useScreenFill} from "./fill.js";
+import {wanted} from "./wanted.js";
+
+const OPEN = "open=";
 
 const STATES = {401: "unknown", 410: "ended"};
 const RETRY_EVERY = 10000;
@@ -30,6 +33,11 @@ provide("phoneFailed", failed);
 async function connect() {
     const code = location.hash.slice(1);
     if (!code) return;
+    if (code.startsWith(OPEN)) {
+        history.replaceState(null, "", location.pathname);
+        wanted.value = decodeURIComponent(code.slice(OPEN.length));
+        return;
+    }
     history.replaceState(null, "", location.pathname);
     await phone.pair(code, deviceName());
 }
@@ -70,14 +78,17 @@ async function pairTyped() {
 }
 
 const pressable = () => {};
+const heard = (event) => event.data?.open && (wanted.value = event.data.open);
 useScreenFill();
 onMounted(() => {
     document.addEventListener("touchstart", pressable, {passive: true});
+    navigator.serviceWorker?.addEventListener("message", heard);
     load();
 });
 onUnmounted(() => {
     clearInterval(retry);
     document.removeEventListener("touchstart", pressable);
+    navigator.serviceWorker?.removeEventListener("message", heard);
 });
 </script>
 

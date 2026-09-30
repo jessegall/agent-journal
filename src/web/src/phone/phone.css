@@ -7,6 +7,7 @@
 
 @media (prefers-color-scheme: light) {
     :root {
+        --danger: #a83f2f;
         --scrim: rgb(0 0 0 / 22%);
         --shade: rgb(0 0 0 / 22%);
     }

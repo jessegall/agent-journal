@@ -5,6 +5,7 @@ import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import {ended} from "./outbox.js";
 import {useUnder} from "./under.js";
+import {highlight, languageOf} from "../text/highlight.js";
 
 const TEXT = /\.(txt|md|json|log|csv|ya?ml|toml|py|js|ts|vue|css|html|sh|sql|xml)$/i;
 const PICTURE = /\.(png|jpe?g|gif|webp|heic)$/i;
@@ -23,7 +24,7 @@ const edge = ref(null);
 const title = ref(null);
 const under = useUnder(edge);
 const picture = computed(() => kind === "attachment" && PICTURE.test(name));
-const lines = computed(() => (text.value === null ? [] : text.value.split("\n").map((words, i) => ({n: i + 1, words}))));
+const lines = computed(() => (text.value === null ? [] : highlight(text.value, languageOf(path.value)).map((html, i) => ({n: i + 1, html}))));
 const line = Number(wanted) || 0;
 
 async function load() {
@@ -63,11 +64,16 @@ onMounted(() => {
                 <img class="viewer-picture" :src="url" :alt="name" />
             </template>
             <template v-else-if="text !== null">
-                <ol class="viewer-lines">
-                    <template v-for="one in lines" :key="one.n">
-                        <li :data-line="one.n" :class="{here: one.n === line}">{{ one.words || " " }}</li>
-                    </template>
-                </ol>
+                <div class="viewer-code">
+                    <ol class="viewer-lines" :style="{'--digits': String(lines.length).length}">
+                        <template v-for="one in lines" :key="one.n">
+                            <li :data-line="one.n" :class="{here: one.n === line}">
+                                <span class="viewer-n" aria-hidden="true">{{ one.n }}</span>
+                                <code class="viewer-text" v-html="one.html || ' '" />
+                            </li>
+                        </template>
+                    </ol>
+                </div>
             </template>
             <template v-else-if="url">
                 <a class="viewer-download" :href="url" download>Download {{ name }}</a>
@@ -140,7 +146,8 @@ onMounted(() => {
 .viewer-body {
     flex: 1;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior: contain;
     padding: 10px 0 calc(24px + env(safe-area-inset-bottom));
 }
@@ -151,25 +158,55 @@ onMounted(() => {
     border-radius: 10px;
 }
 
+.viewer-code {
+    max-width: none;
+    margin: 0 calc(-1 * var(--side));
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
 .viewer-lines {
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
     margin: 0;
-    padding: 0 0 0 3.2em;
+    padding: 0 var(--side) 0 0;
     color: var(--text);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.735rem;
     line-height: 1.55;
+    list-style: none;
 }
 
 .viewer-lines li {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    display: flex;
+    max-width: none;
 }
 
-.viewer-lines li::marker {
+.viewer-n {
+    position: sticky;
+    left: 0;
+    flex: none;
+    width: calc(var(--side) + var(--digits, 3) * 1ch + 1ch);
+    padding-right: 1ch;
+    background: var(--bg);
     color: var(--text-4);
+    text-align: right;
+    user-select: none;
 }
 
-.viewer-lines li.here {
+.viewer-text {
+    max-width: none;
+    padding-left: 1ch;
+    font: inherit;
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.viewer-lines li.here,
+.viewer-lines li.here .viewer-n {
     background: var(--accent-dim);
 }
 

@@ -70,8 +70,8 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
 
 .tab-badge {
     position: absolute;
-    top: -4px;
-    left: 16px;
+    top: -6px;
+    left: calc(100% - 10px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -81,7 +81,7 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
     border-radius: 999px;
     background: var(--danger);
     color: var(--bg);
-    font-size: 0.647rem;
+    font-size: 11px;
     font-weight: 600;
     line-height: 1;
     text-align: center;
