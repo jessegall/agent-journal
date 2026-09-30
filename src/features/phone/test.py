@@ -45,7 +45,8 @@ def call(base: str, path: str, body: dict | None = None, key: str | None = None,
     request = urllib.request.Request(f"{base}{path}", data, {k: v for k, v in sent.items() if v}, method=method or ("POST" if data else "GET"))
     try:
         with urllib.request.urlopen(request, timeout=5) as got:
-            return Answer(got.status, json.loads(got.read() or b"{}"), got.headers.get("Set-Cookie", ""))
+            body = json.loads(got.read()) if got.headers.get_content_type() == "application/json" else {}
+            return Answer(got.status, body, got.headers.get("Set-Cookie", ""))
     except urllib.error.HTTPError as error:
         return Answer(error.code, {}, "")
 

@@ -53,6 +53,9 @@ class Phones(Controller):
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")
         if int(days) not in DAYS:
             raise Refused(f"a phone stays connected for {', '.join(map(str, DAYS))} days, not {days}")
+        for row in self.summaries():
+            if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"]:
+                self.complete(row["n"], how="a newer code replaced it")
         code = secrets.token_urlsafe(24)
         made = super().create("A phone, not yet connected", environment=self.record.env, code=hashed(code), code_until=time.time() + CODE_SECONDS,
                               days=int(days))

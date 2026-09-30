@@ -102,6 +102,14 @@ export class ApiClient {
         return `${this.base}/extension.zip`;
     }
 
+    connectPhone(days) {
+        return this.command("phone", "connect", {days});
+    }
+
+    disconnectPhone(n) {
+        return this.act("phone", n, "disconnect");
+    }
+
     shareLayout(name, layout, {expires = "7d", once = false} = {}) {
         return this.command("share", "share_layout", {name, layout: JSON.stringify(layout), expires, once});
     }
