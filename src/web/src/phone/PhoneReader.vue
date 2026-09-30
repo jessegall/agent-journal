@@ -20,7 +20,7 @@ import {cached, remember} from "./cache.js";
 import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
-import {announce} from "./announce.js";
+import {announce, tell} from "./announce.js";
 import {tick} from "./haptic.js";
 
 const SIZES = [1, 1.12, 1.24];
@@ -80,7 +80,7 @@ async function press(button) {
         refresh();
     } catch (error) {
         if (ended(error)) failed(error);
-        else told.value = error.message;
+        else tell(told, error.message);
     } finally {
         pressing.value = "";
     }
@@ -94,8 +94,7 @@ async function review() {
     const who = agents.value === 1 ? "one agent" : `${agents.value} agents`;
     hold(`Please have ${who} give plan ${row.value.n} ${depth.value}, and compile what they find into a report linked to the plan.`, `plan:${row.value.n}`);
     reviewing.value = false;
-    told.value = "Asked for a review. The findings come back as a report linked to this plan.";
-    announce("Review asked for");
+    tell(told, "Asked for a review. The findings come back as a report linked to this plan.");
     try {
         await flush();
         refresh();
@@ -147,7 +146,7 @@ async function commented(text) {
     } catch (error) {
         justCommented.value = justCommented.value.filter((one) => one !== local);
         if (ended(error)) failed(error);
-        else told.value = error.status === 422 ? `A ${kindWord(row.value.type)} takes no comments.` : `That comment didn't go through: ${error.message}`;
+        else tell(told, error.status === 422 ? `A ${kindWord(row.value.type)} takes no comments.` : `That comment didn't go through: ${error.message}`);
     }
 }
 
@@ -156,17 +155,18 @@ async function approve() {
     tick();
     try {
         const went = await perform({kind: "approve", n: row.value.n, updated: row.value.updated});
-        told.value =
+        tell(
+            told,
             went === "held"
                 ? "No connection right now: the approval goes as soon as the phone reaches your computer, if the plan is unchanged."
-                : "Approved. The agent starts it.";
-        announce(went === "held" ? "Approval waits to send" : "Plan approved");
+                : "Approved. The agent starts it.",
+        );
         refresh();
         if (went !== "held") finished.value = true;
     } catch (error) {
-        if (error.status === 409) told.value = "This plan changed since you opened it. Look at it again.";
+        if (error.status === 409) tell(told, "This plan changed since you opened it. Look at it again.");
         else if (ended(error)) failed(error);
-        else told.value = `That didn't go through: ${error.message}. Try again.`;
+        else tell(told, `That didn't go through: ${error.message}. Try again.`);
         await load();
     } finally {
         approving.value = false;
@@ -282,10 +282,10 @@ onMounted(async () => {
                     </template>
                 </template>
                 <template v-if="chosen">
-                    <p class="reader-chosen" role="status"><Icon name="tick" :size="18" /> You chose: {{ chosen }}</p>
+                    <p class="reader-chosen"><Icon name="tick" :size="18" /> You chose: {{ chosen }}</p>
                 </template>
                 <template v-if="told">
-                    <p class="reader-told" role="status">{{ told }}</p>
+                    <p class="reader-told">{{ told }}</p>
                 </template>
                 <template v-for="(button, i) in buttons" :key="button.label">
                     <Btn :kind="i === 0 ? 'primary' : ''" large :busy="pressing === button.label" :disabled="Boolean(pressing)" @click="press(button)">

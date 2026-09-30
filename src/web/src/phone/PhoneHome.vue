@@ -1075,7 +1075,7 @@ function pick(key) {
 
 .home-newest {
     position: absolute;
-    bottom: calc(var(--dock, 140px) + 8px);
+    bottom: calc(var(--dock, 140px) + 14px);
     left: 50%;
     z-index: 2;
     display: flex;

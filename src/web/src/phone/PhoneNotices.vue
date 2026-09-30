@@ -5,24 +5,23 @@ import PhoneChevron from "./PhoneChevron.vue";
 
 const props = defineProps({notices: {type: Array, required: true}});
 const emit = defineEmits(["open", "close"]);
+const ALL_UP_TO = 2;
 const opened = ref(false);
-const shown = computed(() => (props.notices.length > 1 && !opened.value ? [] : props.notices));
+const newestFirst = computed(() => [...props.notices].sort((a, b) => (b.created || 0) - (a.created || 0)));
+const folded = computed(() => props.notices.length > ALL_UP_TO && !opened.value);
+const shown = computed(() => (folded.value ? newestFirst.value.slice(0, 1) : newestFirst.value));
 const TONES = ["good", "warn", "danger"];
+const TONE_WORDS = {good: "Done: ", warn: "Warning: ", danger: "Problem: ", plain: ""};
 const tone = (notice) => (TONES.includes(notice.data?.tone) ? notice.data.tone : "plain");
+const said = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${notice.data?.label ? `. ${notice.data.label}` : ""}`;
 </script>
 
 <template>
     <template v-if="notices.length">
         <div class="notices" role="region" aria-label="Pinned notices">
-            <template v-if="notices.length > 1">
-                <button type="button" class="notices-fold" :aria-expanded="opened" @click="opened = !opened">
-                    <span class="notices-count">{{ notices.length }} notices</span>
-                    <PhoneChevron :facing="opened ? 'down' : 'up'" :size="14" />
-                </button>
-            </template>
             <template v-for="notice in shown" :key="notice.n">
                 <div :class="['notice', tone(notice)]">
-                    <button type="button" class="notice-open" @click="emit('open', notice)">
+                    <button type="button" class="notice-open" :aria-label="said(notice)" @click="emit('open', notice)">
                         <span class="notice-mark" aria-hidden="true" />
                         <span class="notice-title">{{ notice.title }}</span>
                         <template v-if="notice.data?.label">
@@ -33,6 +32,12 @@ const tone = (notice) => (TONES.includes(notice.data?.tone) ? notice.data.tone :
                         <Icon name="close" :size="14" />
                     </button>
                 </div>
+            </template>
+            <template v-if="notices.length > ALL_UP_TO">
+                <button type="button" class="notices-fold" :aria-expanded="opened" @click="opened = !opened">
+                    <span class="notices-count">{{ opened ? "Show fewer" : `+${notices.length - 1} more` }}</span>
+                    <PhoneChevron :facing="opened ? 'down' : 'up'" :size="14" />
+                </button>
             </template>
         </div>
     </template>
@@ -52,7 +57,7 @@ const tone = (notice) => (TONES.includes(notice.data?.tone) ? notice.data.tone :
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 40px;
+    min-height: 44px;
     padding: 0 14px;
     border: 1px solid var(--border-2);
     border-radius: 14px;
@@ -125,6 +130,7 @@ const tone = (notice) => (TONES.includes(notice.data?.tone) ? notice.data.tone :
 .notice-close {
     display: flex;
     flex: none;
+    margin-left: 10px;
     align-items: center;
     justify-content: center;
     width: 44px;

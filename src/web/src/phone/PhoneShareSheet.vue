@@ -1,7 +1,7 @@
 <script setup>
 import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
-import {announce} from "./announce.js";
+import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
 import PhoneSheet from "./PhoneSheet.vue";
 import PhoneShareRow from "./PhoneShareRow.vue";
@@ -29,8 +29,7 @@ onMounted(async () => {
 
 function missed(error, what) {
     if (error?.name === "AbortError") return false;
-    told.value = `${what} didn't go through: ${error?.message || "unknown reason"}.`;
-    announce(told.value);
+    tell(told, `${what} didn't go through: ${error?.message || "unknown reason"}.`);
     return false;
 }
 
@@ -107,7 +106,7 @@ async function sendDocument(close) {
             </li>
         </ul>
         <template v-if="told">
-            <p class="share-told" role="status">{{ told }}</p>
+            <p class="share-told">{{ told }}</p>
         </template>
         <button type="button" class="share-cancel" @click="close">Cancel</button>
     </PhoneSheet>

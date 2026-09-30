@@ -6,7 +6,7 @@ import PhoneSending from "./PhoneSending.vue";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
-import {announce} from "./announce.js";
+import {announce, tell} from "./announce.js";
 import {tick} from "./haptic.js";
 
 const UNDO_SECONDS = 5;
@@ -58,8 +58,8 @@ async function send(answer) {
     said.value = answer;
     try {
         const went = await perform({kind: "answer", n: props.question.n, answer});
-        if (went === "held") trouble.value = HELD;
-        announce(went === "held" ? "Answer waits to send" : "Answer sent");
+        if (went === "held") tell(trouble, HELD);
+        else announce("Answer sent");
         refresh();
         if (went !== "held") emit("done");
     } catch (error) {
@@ -74,7 +74,7 @@ async function reconciled(mine) {
         const theirs = real.data?.dismissed ? "Dismissed" : real.outcome || "";
         if (!theirs) return;
         said.value = theirs;
-        if (theirs !== mine) trouble.value = `Already answered on the computer: ${theirs}`;
+        if (theirs !== mine) tell(trouble, `Already answered on the computer: ${theirs}`);
     } catch (error) {
         if (ended(error)) failed(error);
     }
@@ -84,7 +84,7 @@ function missed(error, mine) {
     if (error.status === 409) return reconciled(mine);
     said.value = "";
     if (ended(error)) failed(error);
-    else trouble.value = `That didn't go through: ${error.message}. Try again.`;
+    else tell(trouble, `That didn't go through: ${error.message}. Try again.`);
 }
 
 async function dismiss() {
@@ -92,8 +92,8 @@ async function dismiss() {
     said.value = "Dismissed";
     try {
         const went = await perform({kind: "dismiss", n: props.question.n});
-        if (went === "held") trouble.value = HELD;
-        announce(went === "held" ? "Dismissal waits to send" : "Question dismissed");
+        if (went === "held") tell(trouble, HELD);
+        else announce("Question dismissed");
         refresh();
         if (went !== "held") emit("done");
     } catch (error) {
@@ -155,7 +155,7 @@ onUnmounted(() => {
             </div>
             <button type="button" class="question-dismiss" @click="dismiss">Dismiss</button>
             <template v-if="trouble">
-                <p class="question-trouble" role="status">{{ trouble }}</p>
+                <p class="question-trouble">{{ trouble }}</p>
             </template>
         </template>
     </article>

@@ -3,7 +3,7 @@ import {computed, inject, ref} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import {resetLabel as resets, usedPercent as used} from "../format/usage.js";
 import Spinner from "../kit/Spinner.vue";
-import {announce} from "./announce.js";
+import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
 
 const props = defineProps({running: {type: Object, default: () => ({})}, environment: {type: String, required: true}});
@@ -27,8 +27,7 @@ async function act(what) {
         emit("changed");
     } catch (error) {
         if (ended(error)) return failed(error);
-        told.value = error instanceof PhoneError ? error.message : `You need a connection to ${NEEDS[what]} the agent.`;
-        announce(told.value);
+        tell(told, error instanceof PhoneError ? error.message : `You need a connection to ${NEEDS[what]} the agent.`);
     } finally {
         busy.value = "";
     }
@@ -51,18 +50,18 @@ async function act(what) {
             </div>
         </template>
         <template v-if="told">
-            <p class="controls-told" role="status">{{ told }}</p>
+            <p class="controls-told">{{ told }}</p>
         </template>
         <template v-if="confirming">
             <p class="controls-ask">Stop the agent in {{ environment }}? It ends its session.</p>
             <div class="controls-row">
+                <button type="button" class="controls-button" @click="confirming = false">Cancel</button>
                 <button type="button" class="controls-button danger" :disabled="Boolean(busy)" @click="act('stop')">
                     <template v-if="busy === 'stop'">
                         <Spinner />
                     </template>
                     Stop
                 </button>
-                <button type="button" class="controls-button" @click="confirming = false">Cancel</button>
             </div>
         </template>
         <template v-else>

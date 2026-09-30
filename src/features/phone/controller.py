@@ -443,14 +443,20 @@ class Phones(Controller):
     def _holder(self, phone: Phone) -> str:
         holder = Sessions(self._home(phone).root).holder(phone.environment)
         if not holder:
-            raise Refused(f"no agent runs in {phone.environment} to pause or stop")
+            raise Refused(f"No agent is running in {phone.environment}, so there is nothing to pause or stop")
         return holder
 
     def _pause(self, phone: Phone) -> dict:
-        return pause(self._home(phone).root, phone.environment, self._holder(phone))
+        return self._pressed(phone, pause)
 
     def _resume(self, phone: Phone) -> dict:
-        return resume(self._home(phone).root, phone.environment, self._holder(phone))
+        return self._pressed(phone, resume)
+
+    def _pressed(self, phone: Phone, press) -> dict:
+        try:
+            return press(self._home(phone).root, phone.environment, self._holder(phone))
+        except Refused as refused:
+            raise Refused(f"The agent in {phone.environment} isn't running right now, so there is nothing to pause or resume") from refused
 
     def _stop(self, phone: Phone):
         self._holder(phone)
