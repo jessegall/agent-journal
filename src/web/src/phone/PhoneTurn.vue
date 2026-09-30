@@ -2,13 +2,18 @@
 import {computed} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import PhoneActions from "./PhoneActions.vue";
-import PhoneFold from "./PhoneFold.vue";
 import {splitQuote} from "./quoted.js";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
-import PhoneTicks from "./PhoneTicks.vue";
 import PhoneMark from "./PhoneMark.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import PhonePeer from "./PhonePeer.vue";
+import PhoneQuote from "./PhoneQuote.vue";
+import PhoneParent from "./PhoneParent.vue";
+import PhoneBody from "./PhoneBody.vue";
+import PhoneFiles from "./PhoneFiles.vue";
+import PhoneReactions from "./PhoneReactions.vue";
+import PhoneMeta from "./PhoneMeta.vue";
 import {clock} from "../format/time.js";
 import {kindWord} from "./kinds.js";
 
@@ -20,9 +25,6 @@ const props = defineProps({
     continues: {type: Boolean, default: false},
 });
 const files = computed(() => Object.keys(props.item.files || {}));
-const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
-const picture = (name) => PICTURES.test(name);
-const fileUrl = (name) => `./file/${props.item.type}/${props.item.n}/${encodeURIComponent(name)}`;
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
 const FILED_REF = /\b([a-z_]+)[ :](\d+)\b/g;
 const filedAs = computed(
@@ -35,6 +37,8 @@ const parent = computed(() =>
 );
 const about = computed(() => (props.item.who === "user" && !parent.value ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
+const aboutLabel = computed(() => (about.value ? `About ${named(about.value)}` : ""));
+const parentLabel = computed(() => (parent.value ? named(parent.value) : ""));
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const between = computed(() => Boolean(props.item.data?.sent_to || props.item.data?.peer));
 const betweenLabel = computed(() => {
@@ -76,48 +80,20 @@ function pressed(event) {
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
                 </template>
                 <template v-if="between">
-                    <span class="turn-peer-head">{{ betweenLabel }}</span>
+                    <PhonePeer :label="betweenLabel" />
                 </template>
                 <template v-else-if="item.who !== 'user' && !joined">
                     <span class="turn-who">
                         Agent, {{ clock(item.created) }}
                     </span>
                 </template>
-                <template v-if="quoted">
-                    <a class="turn-quote" href="#" :data-peek="about" :aria-label="`Reply to: ${quoted}`">{{ quoted }}</a>
-                </template>
-                <template v-else-if="about">
-                    <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
-                </template>
+                <PhoneQuote :quoted="quoted" :about="about" :about-label="aboutLabel" :inline-quote="inline.quote" />
                 <template v-if="parent">
-                    <a class="turn-about" href="#" :data-peek="parent">on {{ named(parent) }}</a>
+                    <PhoneParent :target="parent" :label="parentLabel" />
                 </template>
-                <template v-if="inline.quote && !quoted">
-                    <p class="turn-quote"><span class="phone-hidden">Reply to: </span>{{ inline.quote }}</p>
-                </template>
-                <PhoneFold>
-                    <template v-if="!onlyFiles">
-                        <TextDisplay :text="inline.body || item.brief || item.title" />
-                    </template>
-                    <template v-for="part in item.sections || []" :key="part.title">
-                        <h3 class="turn-part">{{ part.title }}</h3>
-                        <TextDisplay :text="part.body" />
-                    </template>
-                </PhoneFold>
+                <PhoneBody :body="inline.body || item.brief || item.title" :sections="item.sections || []" :only-files="onlyFiles" />
                 <template v-if="files.length">
-                    <span class="turn-files">
-                        <template v-for="name in files" :key="name">
-                            <a class="turn-file" :href="fileUrl(name)" :data-peek="`attachment:${item.type}/${item.n}/${encodeURIComponent(name)}`">
-                                <template v-if="picture(name)">
-                                    <img class="turn-picture" :src="fileUrl(name)" :alt="name" loading="lazy" />
-                                </template>
-                                <template v-else>
-                                    <Icon name="paperclip" :size="12" />
-                                    {{ name }}
-                                </template>
-                            </a>
-                        </template>
-                    </span>
+                    <PhoneFiles :type="item.type" :n="item.n" :files="files" />
                 </template>
                 <template v-if="filed.length">
                     <span class="turn-filed">
@@ -128,14 +104,10 @@ function pressed(event) {
                     </span>
                 </template>
                 <template v-if="faces.length">
-                    <span :key="faces.join('')" class="turn-faces">{{ faces.join(" ") }}</span>
+                    <PhoneReactions :faces="faces" />
                 </template>
                 <template v-if="item.who === 'user' && !continues && !between">
-                    <span class="turn-meta">
-                        <template v-if="elsewhere">from desktop ·</template>
-                        {{ clock(item.created) }}
-                        <PhoneTicks :message="item" />
-                    </span>
+                    <PhoneMeta :item="item" :elsewhere="elsewhere" />
                 </template>
                 <template v-if="holdable">
                     <PhoneActions :class="['turn-actions', item.who === 'user' && !between ? 'at-foot' : 'at-head', {quiet: item.who === 'user' ? continues : joined}]" @press="pressed" />
@@ -216,15 +188,6 @@ function pressed(event) {
     line-height: 1.45;
 }
 
-.turn-peer-head {
-    display: block;
-    margin-bottom: 2px;
-    padding-right: 26px;
-    color: var(--text-2);
-    font-size: 0.706rem;
-    font-weight: 600;
-}
-
 .turn-actions {
     position: absolute;
     right: -6px;
@@ -284,28 +247,6 @@ function pressed(event) {
     padding-right: 26px;
 }
 
-.turn-part {
-    margin: 10px 0 4px;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.turn-quote {
-    display: -webkit-box;
-    margin: 0 0 6px;
-    padding: 4px 10px;
-    overflow: hidden;
-    border-left: 3px solid var(--accent);
-    border-radius: 4px;
-    background: color-mix(in oklab, var(--bg) 40%, transparent);
-    color: var(--text-2);
-    font-size: 0.824rem;
-    line-height: 1.3;
-    text-decoration: none;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
 .turn-thought {
     align-self: flex-start;
     max-width: 78%;
@@ -333,28 +274,6 @@ function pressed(event) {
     text-align: center;
 }
 
-@keyframes face-in-spring {
-    from {
-        transform: scale(0.5);
-        opacity: 0;
-    }
-}
-
-@keyframes face-in {
-    from {
-        transform: scale(0.6);
-        opacity: 0;
-    }
-}
-
-.turn-about {
-    display: inline-block;
-    margin-bottom: 4px;
-    color: var(--accent-text);
-    font-size: 0.706rem;
-    text-decoration: none;
-}
-
 .turn-filed {
     display: flex;
     flex-wrap: wrap;
@@ -371,52 +290,5 @@ function pressed(event) {
     border-radius: 9px;
     color: var(--accent-text);
     text-decoration: none;
-}
-
-.turn-faces {
-    animation: face-in-spring 220ms var(--spring);
-    display: inline-block;
-    margin-top: 6px;
-    padding: 1px 7px;
-    border-radius: 9px;
-    background: var(--bg);
-    font-size: 0.824rem;
-}
-
-.turn-files {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-    color: var(--text-2);
-    font-size: 0.765rem;
-}
-
-.turn-file {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--accent-text);
-}
-
-.turn-picture {
-    display: block;
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-.turn-meta {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    margin-top: 4px;
-    color: var(--text-2);
-    font-size: 0.706rem;
-    padding-right: 26px;
 }
 </style>

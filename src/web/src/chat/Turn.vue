@@ -2,32 +2,32 @@
 import TextDisplay from "../kit/TextDisplay.vue";
 import ReplyTool from "./ReplyTool.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
-import Icon from "../kit/Icon.vue";
-import BubbleHeader from "../kit/BubbleHeader.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import SubagentMark from "./SubagentMark.vue";
 import ChatMark from "../kit/ChatMark.vue";
 import WhisperMark from "./WhisperMark.vue";
-import Folded from "../kit/Folded.vue";
 import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import MadeCard from "./MadeCard.vue";
+import TurnHeader from "./TurnHeader.vue";
+import TurnQuote from "./TurnQuote.vue";
+import TurnParent from "./TurnParent.vue";
+import TurnPeer from "./TurnPeer.vue";
+import TurnText from "./TurnText.vue";
+import TurnActions from "./TurnActions.vue";
+import TurnReactions from "./TurnReactions.vue";
 import {openUpdate} from "./updateView.js";
 import {peek, peekChip, peekRef, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {quoted} from "../format/quote.js";
-import {clock} from "../format/time.js";
-import ReadTicks from "../kit/ReadTicks.vue";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
-import {words as plain} from "../text/words.js";
 import {optimistic} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import {standaloneUpdates} from "../text/cards.js";
 import "../text/all.js";
 
-const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "edit", "grew", "pin"]);
 const picking = ref(false);
@@ -37,7 +37,6 @@ const LONG = 6;
 const FOLD_AT = 420;
 const PEER_FOLD_AT = 140;
 const PEER_KEEP = 96;
-const text = ref(null);
 
 const scope = useScope();
 const rowsOf = (type) => scope.rows(type);
@@ -101,7 +100,6 @@ const between = computed(() =>
           ? `Sent to ${called(props.turn.data.sent_to)}`
           : ""
 );
-const fromPhone = computed(() => String(props.turn.data?.via || "").startsWith("phone:"));
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const split = computed(() => standaloneUpdates(words.value.text, {types: types.value}));
 const data = computed(() => props.turn.data);
@@ -126,14 +124,6 @@ const commentParent = computed(() => {
     const [type, n] = parent.split(":");
     return {type, n: Number(n), label: `${meta(type).title.toLowerCase()} ${n}`};
 });
-const copied = ref(false);
-
-async function copy() {
-    await navigator.clipboard.writeText(plain(words.value.text));
-    copied.value = true;
-    setTimeout(() => (copied.value = false), 1500);
-}
-
 const messageReply = computed(() => commentParent.value?.type === "message");
 const resourceComment = computed(() => !!commentParent.value && !messageReply.value);
 
@@ -309,16 +299,10 @@ function markClick(data) {
                 </template>
                 <div v-show="bubbled" ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
                     <template v-if="resourceComment">
-                        <BubbleHeader
-                            icon="bubble"
-                            :label="`Comment on ${commentParent.label}`"
-                            tone="blocking"
-                            clickable
-                            @click="openComment"
-                        />
+                        <TurnParent :label="commentParent.label" @open="openComment" />
                     </template>
                     <template v-if="between">
-                        <BubbleHeader icon="agents" :label="between" tone="muted" small />
+                        <TurnPeer :label="between" />
                     </template>
                     <template v-if="results.length || turn.type === 'question'">
                         <div :class="['thread-results', {live: !turn.completed}]">
@@ -333,19 +317,17 @@ function markClick(data) {
                         </div>
                     </template>
                     <template v-if="words.quote">
-                        <div
-                            class="thread-quote"
-                            title="Go to what this answers"
-                            @click.stop="resourceComment ? openComment() : toQuoted()"
-                            v-html="quoteHtml"
-                        />
+                        <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
                     </template>
                     <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
                         <p class="thread-ask">{{ turn.title }}</p>
                     </template>
-                    <Folded :at="between ? PEER_FOLD_AT : FOLD_AT" :keep="between ? PEER_KEEP : 320">
-                        <div ref="text" class="thread-text" @click="chipOrUpdate" v-html="html" />
-                    </Folded>
+                    <TurnText
+                        :html="html"
+                        :fold-at="between ? PEER_FOLD_AT : FOLD_AT"
+                        :keep="between ? PEER_KEEP : 320"
+                        @activate="chipOrUpdate"
+                    />
                     <template v-if="turn.type === 'question'">
                         <template v-if="turn.abstract">
                             <TextDisplay class="thread-context" :text="turn.abstract" />
@@ -362,74 +344,21 @@ function markClick(data) {
                 <template v-for="(card, i) in split.cards" :key="`update-${i}`">
                     <div class="thread-update" @click="chipOrUpdate" v-html="card" />
                 </template>
-                <div :class="['thread-tools', {picking}]">
-                    <template v-if="picking">
-                        <div class="thread-face-row">
-                            <template v-for="f in FACES" :key="f">
-                                <button type="button" class="thread-face-pick" :title="`React ${f}`" @click.stop="react(f)">{{ f }}</button>
-                            </template>
-                        </div>
-                        <button type="button" class="thread-tool" title="Never mind" @click.stop="picking = false">
-                            <Icon name="close" />
-                        </button>
-                    </template>
-                    <template v-else>
-                        <button type="button" class="thread-tool" title="React to this" @click.stop="picking = true">React</button>
-                        <ReplyTool @reply="emit('reply', {text: words.text, ref: turn.ref})" />
-                        <button
-                            type="button"
-                            class="thread-tool"
-                            title="Pin this over the chat"
-                            @click.stop="emit('pin', {text: words.text, ref: turn.ref})"
-                        >
-                            Pin
-                        </button>
-                        <button type="button" class="thread-tool" title="Copy the text of this" @click.stop="copy">
-                            {{ copied ? "Copied" : "Copy" }}
-                        </button>
-                        <template v-if="mine && !turn.completed">
-                            <button
-                                type="button"
-                                class="thread-tool"
-                                title="Delete it — it comes off the list and stays in the record"
-                                @click.stop="drop"
-                            >
-                                Delete
-                            </button>
-                        </template>
-                    </template>
-                </div>
+                <TurnActions
+                    :turn="turn"
+                    :mine="mine"
+                    :text="words.text"
+                    :picking="picking"
+                    @update:picking="picking = $event"
+                    @reply="emit('reply', $event)"
+                    @pin="emit('pin', $event)"
+                    @delete="drop"
+                    @react="react"
+                />
                 <template v-if="faces.length">
-                    <div class="thread-faces">
-                        <template v-for="f in faces" :key="f.face">
-                            <button type="button" :class="['thread-face', {mine: f.mine}]" :title="f.title" @click.stop="react(f.face)">
-                                {{ f.face }}
-                                <template v-if="f.n > 1">
-                                    <span class="thread-face-n">{{ f.n }}</span>
-                                </template>
-                            </button>
-                        </template>
-                    </div>
+                    <TurnReactions :faces="faces" @react="react" />
                 </template>
-                <div class="thread-meta">
-                    <template v-if="turn.pending">
-                        <span>sending</span>
-                    </template>
-                    <template v-else-if="mine || turn.type === 'question'">
-                        <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
-                        <span class="thread-meta-dot" />
-                    </template>
-                    <template v-if="mine && fromPhone">
-                        <span>from phone</span>
-                        <span class="thread-meta-dot" />
-                    </template>
-                    <template v-if="!turn.pending">
-                        <span>{{ clock(turn.created) }}</span>
-                    </template>
-                    <template v-if="mine && !turn.pending">
-                        <ReadTicks :message="turn" />
-                    </template>
-                </div>
+                <TurnHeader :turn="turn" />
             </div>
         </template>
     </SwitchCase>
@@ -587,7 +516,7 @@ function markClick(data) {
     cursor: pointer;
 }
 
-.thread-turn.mine .thread-text {
+.thread-turn.mine :deep(.thread-text) {
     padding-bottom: 4px;
 }
 
@@ -653,179 +582,6 @@ button.thread-pill:hover {
     box-sizing: border-box;
 }
 
-.thread-quote {
-    cursor: pointer;
-    width: 0;
-    min-width: 100%;
-    box-sizing: border-box;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-    overflow: hidden;
-    margin: 0 0 6px;
-    padding: 2px 0 2px 9px;
-    border-left: 2px solid var(--accent);
-    color: var(--text-3);
-    font-size: 12px;
-    white-space: pre-wrap;
-}
-
-.thread-quote :deep(p) {
-    margin: 0;
-}
-
-.thread-quote:hover {
-    color: var(--text-2);
-}
-
-.thread-text :deep(p) {
-    margin: 0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    text-wrap: pretty;
-}
-
-.thread-text :deep(p + p) {
-    margin-top: 0.7em;
-}
-
-.thread-text :deep(code) {
-    padding: 1px 5px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.06);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 0.92em;
-}
-
-.thread-text :deep(:not(pre) > code) {
-    white-space: nowrap;
-}
-
-.thread-text :deep(pre.chat-code) {
-    margin: 6px 0;
-    padding: 9px 11px;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: pre;
-}
-
-.thread-text :deep(pre.chat-code code) {
-    padding: 0;
-    background: none;
-    font-size: inherit;
-}
-
-.thread-text :deep(table) {
-    display: block;
-    max-width: 100%;
-    margin: 6px 0;
-    overflow-x: auto;
-    border-collapse: collapse;
-    font-size: 12px;
-}
-
-.thread-text :deep(th),
-.thread-text :deep(td) {
-    padding: 4px 8px;
-    border: 1px solid var(--border);
-    text-align: left;
-    vertical-align: top;
-    white-space: nowrap;
-}
-
-.thread-text :deep(th) {
-    color: var(--text);
-    background: var(--raised);
-    font-weight: 600;
-}
-
-.thread-text :deep(a) {
-    color: var(--accent-text);
-}
-
-.thread-text :deep(.file-pill) {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-}
-
-.thread-text :deep(.file-pill .ico) {
-    width: 11px;
-    height: 11px;
-}
-
-.thread-text :deep(.console-card) {
-    position: relative;
-    margin: 0.5em 0 0.8em;
-    padding: 10px 12px 9px;
-    border: 1px solid #3a2a2a;
-    border-radius: 8px;
-    background: #121012;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    line-height: 1.5;
-    overflow-x: auto;
-}
-
-.thread-text :deep(.console-label) {
-    position: absolute;
-    bottom: 5px;
-    right: 9px;
-    font-size: 9.5px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #6b5c5c;
-}
-
-.thread-text :deep(.console-entry + .console-entry) {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #2a2222;
-}
-
-.thread-text :deep(.console-head) {
-    color: #f0a0a0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.thread-text :deep(.console-frame) {
-    padding-left: 1.6em;
-    color: var(--text-3);
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.thread-text :deep(.console-more) {
-    margin-top: 6px;
-}
-
-.thread-text :deep(.console-more summary) {
-    cursor: pointer;
-    list-style: none;
-    color: var(--accent-text);
-    font-size: 11px;
-}
-
-.thread-text :deep(.console-more-expanded) {
-    display: none;
-}
-
-.thread-text :deep(.console-more[open] .console-more-collapsed) {
-    display: none;
-}
-
-.thread-text :deep(.console-more[open] .console-more-expanded) {
-    display: inline;
-}
-
 .thread-ask {
     margin: 0 0 6px;
     font-size: 14.5px;
@@ -837,28 +593,6 @@ button.thread-pill:hover {
     margin: 4px 0 0;
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.thread-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 3px;
-    font-size: 10.5px;
-    color: var(--text-4);
-}
-
-.thread-meta-dot {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: var(--text-3);
-    opacity: 0.7;
-}
-
-.thread-ref {
-    font-size: 11px;
-    opacity: 0.62;
 }
 
 .thread-tools {
@@ -879,16 +613,10 @@ button.thread-pill:hover {
         transform 0.16s ease-out;
 }
 
-.thread-turn:hover .thread-tools,
-.thread-tools:focus-within {
+.thread-turn:hover :deep(.thread-tools) {
     opacity: 1;
     transform: none;
     pointer-events: auto;
-}
-
-.thread-tools.picking {
-    gap: 1px;
-    padding: 1px 3px;
 }
 
 .thread-tool {
@@ -908,76 +636,10 @@ button.thread-pill:hover {
     color: var(--text);
 }
 
-.thread-tool .ico {
-    width: 11px;
-    height: 11px;
-}
-
-.thread-face-row {
-    display: flex;
-    gap: 1px;
-    max-width: 144px;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
-.thread-face-pick {
-    flex: none;
-    padding: 0 4px;
-    border: 0;
-    border-radius: 20px;
-    background: transparent;
-    font-size: 12px;
-    line-height: 18px;
-    cursor: pointer;
-}
-
-.thread-face-pick:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.thread-faces {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    margin-top: 2px;
-}
-
-.thread-turn.mine .thread-faces {
+.thread-turn.mine :deep(.thread-faces) {
     justify-content: flex-end;
 }
 
-.thread-face {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 1px 6px;
-    border: 1px solid transparent;
-    border-radius: 20px;
-    background: transparent;
-    font-size: 12px;
-    line-height: 18px;
-    cursor: pointer;
-    transition:
-        background 0.15s,
-        border-color 0.15s;
-}
-
-.thread-face:hover {
-    background: var(--hover);
-}
-
-.thread-face.mine {
-    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-    background: color-mix(in srgb, var(--accent) 16%, var(--raised));
-}
-
-.thread-face-n {
-    font-size: 10.5px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
 .thread-turn.lit .thread-bubble {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
