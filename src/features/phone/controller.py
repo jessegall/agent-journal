@@ -12,7 +12,7 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
-from controllers.types import Environments
+from controllers.types import Agents, Environments
 from controllers.notices import Notices
 from engine.record import Record
 from engine.sessions import Sessions
@@ -26,6 +26,7 @@ from features.shaping import shaped
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
 from resources.base import PROJECT, SYSTEM, USER, Refused, titled
+from resources.types import BUSY, WORKING
 
 CODE_SECONDS = 600
 DAYS = (1, 7, 30)
@@ -39,6 +40,7 @@ SOURCE_LIMIT = 400000
 CARDS = ("todo", "question", "suggestion", "plan", "report", "doc", "work", "agent")
 WAITING_CARD = "waiting"
 LISTED = 20
+OFFLINE, IDLE_STATE, WORKING_STATE = "offline", "idle", "working"
 SAID = ("message", "question")
 HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
@@ -129,7 +131,7 @@ class Waiting(TypedDict):
 class Feed(TypedDict):
     items: list[dict]
     waiting: list[Waiting]
-    agent: bool
+    agent: str
 
 
 class Code(TypedDict):
@@ -323,8 +325,14 @@ class Phones(Controller):
         items = [{**item, "reactions": faces.get(item["ref"], [])} for item in items]
         since = items[0]["created"] if items else 0.0
         items = sorted([*items, *self._marks(home, since)], key=lambda item: item["created"])
-        return Feed(items=items, waiting=self._waiting(phone),
-                    agent=bool(Sessions(home.root).holder(phone.environment)))
+        return Feed(items=items, waiting=self._waiting(phone), agent=self._agent(home, phone.environment))
+
+    def _agent(self, home: Record, environment: str) -> str:
+        holder = Sessions(home.root).holder(environment)
+        if not holder:
+            return OFFLINE
+        row = Agents(home, actor=SYSTEM)._titled(holder)
+        return WORKING_STATE if row is not None and row.data.get("status") in (BUSY, WORKING) else IDLE_STATE
 
     def _marks(self, home: Record, since: float) -> list[Mark]:
         agents = CONTROLLERS["agent"](home, actor=SYSTEM)

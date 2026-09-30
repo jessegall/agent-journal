@@ -230,7 +230,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
     fed = call(base, "/p/feed", key=key).body
-    assert fed["agent"] is False, "the phone sees no agent running"
+    assert fed["agent"] == "offline", "the phone sees no agent running"
     assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"
     now = time.time()
     CONTROLLERS["agent"](record, actor=SYSTEM).create("codex-1", thoughts=[{"at": now, "text": "Weighing it"}],

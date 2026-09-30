@@ -1,5 +1,5 @@
 <script setup>
-import {inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import PhoneAgent from "./PhoneAgent.vue";
@@ -27,7 +27,7 @@ const MOVING = 800;
 const SENDING = {completed: 0, seen: [], data: {}};
 defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
-const feed = ref({items: [], waiting: [], agent: false});
+const feed = ref({items: [], waiting: [], agent: "offline"});
 const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const reading = ref("");
@@ -67,6 +67,17 @@ async function asked() {
 let movedAt = 0;
 const still = () => Date.now() - movedAt > MOVING;
 const moved = () => (movedAt = Date.now());
+const DAY = 86400000;
+const dayOf = (seconds) => new Date(seconds * 1000).toDateString();
+const named = (seconds) => {
+    const day = dayOf(seconds);
+    if (day === new Date().toDateString()) return "Today";
+    if (day === new Date(Date.now() - DAY).toDateString()) return "Yesterday";
+    return new Date(seconds * 1000).toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long"});
+};
+const dividers = computed(() =>
+    feed.value.items.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(feed.value.items[i - 1].created) ? named(item.created) : "")),
+);
 const nearBottom = () => !list.value || list.value.scrollHeight - list.value.clientHeight - list.value.scrollTop < NEAR_BOTTOM;
 
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
@@ -174,7 +185,7 @@ function sent() {
                 <Icon name="chevron" :size="14" class="home-chevron" />
             </span>
         </button>
-        <PhoneAgent :running="feed.agent" />
+        <PhoneAgent :state="feed.agent" />
     </header>
     <template v-if="newer">
         <p class="home-newer">
@@ -214,7 +225,10 @@ function sent() {
     </template>
     <template v-else>
         <div ref="list" class="home-feed" @click.capture="chipped" @scroll.passive="moved" @load.capture="nearBottom() && still() && toBottom()">
-            <template v-for="item in feed.items" :key="item.type + item.n">
+            <template v-for="(item, i) in feed.items" :key="item.type + item.n">
+                <template v-if="dividers[i]">
+                    <p class="home-day">{{ dividers[i] }}</p>
+                </template>
                 <PhoneTurn :item="item" @hold="(it) => it.type === 'message' && (held = it)" />
             </template>
             <template v-for="line in justSent" :key="line.idempotency">
@@ -336,6 +350,16 @@ function sent() {
     background: var(--bg);
     color: var(--text);
     font-weight: 600;
+}
+
+.home-day {
+    align-self: center;
+    margin: 6px 0 0;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: var(--raised);
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .home-updating {

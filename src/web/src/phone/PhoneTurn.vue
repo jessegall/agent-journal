@@ -76,6 +76,9 @@ function release() {
                 @touchmove.passive="release"
                 @contextmenu.prevent="emit('hold', item)"
             >
+                <template v-if="item.who !== 'user'">
+                    <span class="turn-who">Agent, {{ clock(item.created) }}</span>
+                </template>
                 <template v-if="about">
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
@@ -106,13 +109,13 @@ function release() {
                 <template v-if="faces.length">
                     <span class="turn-faces">{{ faces.join(" ") }}</span>
                 </template>
-                <span class="turn-meta">
-                    <template v-if="elsewhere">from desktop ·</template>
-                    {{ clock(item.created) }}
-                    <template v-if="item.who === 'user'">
+                <template v-if="item.who === 'user'">
+                    <span class="turn-meta">
+                        <template v-if="elsewhere">from desktop ·</template>
+                        {{ clock(item.created) }}
                         <ReadTicks :message="item" />
-                    </template>
-                </span>
+                    </span>
+                </template>
             </div>
         </template>
     </SwitchCase>
@@ -139,13 +142,22 @@ function release() {
 
 .turn.user {
     align-self: flex-end;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
     background: var(--accent-dim);
 }
 
 .turn.agent {
-    align-self: flex-start;
+    align-self: stretch;
+    max-width: 100%;
     border: 1px solid var(--border);
     background: var(--raised);
+}
+
+.turn-who {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .turn.pressing {
@@ -241,9 +253,5 @@ function release() {
     margin-top: 4px;
     color: var(--text-3);
     font-size: 11.5px;
-}
-
-.turn.agent .turn-meta {
-    justify-content: flex-start;
 }
 </style>
