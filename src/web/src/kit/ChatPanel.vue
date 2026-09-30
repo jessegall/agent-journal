@@ -1,4 +1,5 @@
 <script setup>
+import {fitLines} from "../composables/fitLines.js";
 import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "./Btn.vue";
 
@@ -30,14 +31,7 @@ function send() {
 
 const MOST_LINES = 6;
 
-function grow() {
-    const box = input.value;
-    if (!box) return;
-    box.style.height = "auto";
-    box.style.height = `${Math.min(box.scrollHeight, MOST_LINES * parseFloat(getComputedStyle(box).lineHeight))}px`;
-}
-
-watch(words, () => nextTick(grow));
+watch(words, () => nextTick(() => fitLines(input.value, MOST_LINES)));
 
 defineExpose({focus: () => nextTick(() => input.value && input.value.focus())});
 </script>
@@ -70,7 +64,6 @@ defineExpose({focus: () => nextTick(() => input.value && input.value.focus())});
                 :disabled="locked"
                 :maxlength="limit || null"
                 spellcheck="false"
-                @input="grow"
                 @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), send())"
             />
             <span class="tail">

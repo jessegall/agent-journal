@@ -206,7 +206,7 @@ onMounted(load);
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 10px 0 14px;
+    padding: 10px 0 calc(14px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
 }
 

@@ -35,10 +35,10 @@ async function asked() {
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => got && (feed.value = got));
 provide("phoneRefresh", refresh);
 
-watch(
-    () => feed.value.items.length,
-    () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight))
-);
+const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight));
+watch(() => feed.value.items.length, toBottom);
+watch(reading, (target) => !target && toBottom());
+watch(list, (el) => el && toBottom());
 
 function chipped(event) {
     const chip = event.target.closest("[data-peek]");

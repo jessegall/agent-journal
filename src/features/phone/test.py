@@ -160,6 +160,9 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served):
     answered = Questions(record, actor=SYSTEM).load(question.n)
     assert answered.outcome == "Yes" and answered.data["answered_by"] == USER, "the answer is the user's"
     assert call(base, "/p/answer", {"n": question.n, "answer": "No"}, key).status == 409, "a second tap finds it answered"
+    unwanted = Questions(record, actor=AGENT).create("Rename the repo?")
+    assert call(base, "/p/dismiss", {"n": unwanted.n}, key).status == 201 and Questions(record, actor=SYSTEM).load(unwanted.n).data["dismissed"], \
+        "a question can be dismissed from the phone"
     plans = CONTROLLERS["plan"]
     plan = Controller.update(plans(record, actor=SYSTEM), plans(record, actor=AGENT).create("Ship it").n, status="ready")
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated - 5}, key).status == 409, "a plan that changed is not approved"

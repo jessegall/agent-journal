@@ -26,5 +26,6 @@ export const phone = {
     row: (ref) => got(`./row/${ref.replace(":", "/")}`),
     say: (brief, idempotency, about = "") => sent("./message", {brief, idempotency, about}),
     answer: (n, answer) => sent("./answer", {n, answer}),
+    dismiss: (n) => sent("./dismiss", {n}),
     approve: (n, updated) => sent("./approve", {n, updated}),
 };

@@ -194,6 +194,12 @@ class Phones(Controller):
             raise Refused("an answer needs words")
         return questions.complete(chosen.n, how=chosen.answer.strip(), via=f"phone:{phone.n}")
 
+    def _dismiss(self, phone: Phone, n: int):
+        questions = CONTROLLERS["question"](self._home(phone), actor=USER)
+        if questions.load(n).completed:
+            raise Stale(f"question {n} was already answered")
+        return questions.dismiss(n)
+
     def _approve(self, phone: Phone, approval):
         plans = CONTROLLERS["plan"](self._home(phone), actor=USER)
         plan = plans.load(approval.n)

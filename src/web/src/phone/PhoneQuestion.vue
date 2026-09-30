@@ -1,6 +1,7 @@
 <script setup>
 import {computed, inject, onUnmounted, ref} from "vue";
 import {phone} from "../api/phone.js";
+import {ended} from "./outbox.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "./ago.js";
@@ -13,7 +14,11 @@ const choice = ref("");
 const left = ref(0);
 const own = ref("");
 const said = ref("");
+const trouble = ref("");
 const options = computed(() => props.question.data.options || []);
+const outcome = computed(() =>
+    props.question.data.dismissed || said.value === "Dismissed" ? "Dismissed" : `Answered: ${props.question.outcome || said.value}`
+);
 let timer = 0;
 
 function stop() {
@@ -23,15 +28,31 @@ function stop() {
 
 async function send(answer) {
     stop();
+    trouble.value = "";
     said.value = answer;
     try {
         await phone.answer(props.question.n, answer);
         refresh();
     } catch (error) {
-        if (error.status !== 409) {
-            said.value = "";
-            failed(error);
-        }
+        missed(error);
+    }
+}
+
+function missed(error) {
+    if (error.status === 409) return;
+    said.value = "";
+    if (ended(error)) failed(error);
+    else trouble.value = `That didn't go through: ${error.message}. Try again.`;
+}
+
+async function dismiss() {
+    stop();
+    said.value = "Dismissed";
+    try {
+        await phone.dismiss(props.question.n);
+        refresh();
+    } catch (error) {
+        missed(error);
     }
 }
 
@@ -53,7 +74,7 @@ onUnmounted(() => clearInterval(timer));
             <TextDisplay class="question-abstract" :text="question.abstract" />
         </template>
         <template v-if="question.completed || said">
-            <p class="question-answer">Answered: {{ question.outcome || said }}</p>
+            <p class="question-answer">{{ outcome }}</p>
         </template>
         <template v-else-if="choice">
             <div class="question-held">
@@ -71,6 +92,10 @@ onUnmounted(() => clearInterval(timer));
                 <input v-model="own" class="question-words" placeholder="Or answer in your own words" />
                 <Btn large @click="own.trim() && send(own.trim())">Answer</Btn>
             </form>
+            <button type="button" class="question-dismiss" @click="dismiss">Dismiss</button>
+            <template v-if="trouble">
+                <p class="question-trouble" role="status">{{ trouble }}</p>
+            </template>
         </template>
     </article>
 </template>
@@ -137,6 +162,23 @@ onUnmounted(() => clearInterval(timer));
     justify-content: space-between;
     gap: 10px;
     color: var(--text-2);
+}
+
+.question-dismiss {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 14px;
+}
+
+.question-trouble {
+    margin: 0;
+    color: var(--danger);
+    font-size: 14px;
 }
 
 .question-answer {
