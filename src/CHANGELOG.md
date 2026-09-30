@@ -4,6 +4,24 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.205.0 — the phone switches journals, Codex hears you mid-command
+
+The phone switches between every running journal on this machine and their environments, from
+the journal name at the top of its chat, on the same address. It shows the agent's thoughts, every
+chat mark the desktop shows (drawn the same way), what the agent is running above the message bar,
+what your message was filed as, and which messages came from the other device. Any row named in the
+chat opens in its reader, chips inside the reader open too, and Back steps through them. Reactions
+show at once, holding a message no longer selects its text, tapping the message bar or Reply opens
+the keyboard, the chat stays where you scrolled, and the app says when a newer version is installed.
+Connect your phone waits for the tunnel before it shows the code.
+
+Codex launches from the journal again: it no longer gets two approval flags it refuses together, and
+its folder trust question is answered Yes by number. A message typed while Codex runs a long command
+is sent once and at once, the command runs on in its background terminal, and the chat shows it
+moved to the background.
+
+Settings > Tunler installs tunler when this machine has none.
+
 ## 2.204.0 — tunler accounts, a home-screen phone, and a faster search
 
 tunler v0.2.1 logs in with a username and the account's password, and needs the server's
