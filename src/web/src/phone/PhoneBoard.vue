@@ -91,7 +91,6 @@ function moved(i, by) {
     <div ref="board" class="board" data-scroller>
         <div class="board-bar">
             <h1 ref="heading" class="board-large">Home</h1>
-            <button type="button" class="board-edit" @click="editing = !editing">{{ editing ? "Done" : "Edit" }}</button>
         </div>
         <template v-if="told">
             <p class="board-told" role="status">{{ told }}</p>
@@ -136,7 +135,7 @@ function moved(i, by) {
                 </template>
             </template>
         </TransitionGroup>
-        <button type="button" class="board-edit-end" @click="editing = !editing">{{ editing ? "Done" : "Edit Home" }}</button>
+        <button type="button" class="board-edit-end" @click="editing = !editing">{{ editing ? "Done" : "Edit cards" }}</button>
         <template v-if="editing && missing.length">
             <section class="board-card" aria-label="Add a card">
                 <header class="board-head">

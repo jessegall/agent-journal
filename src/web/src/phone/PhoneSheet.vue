@@ -8,7 +8,7 @@ const FLICK = 0.5;
 const GROW_AT = 60;
 const DAMPED = 0.2;
 const OUT = 250;
-defineProps({label: {type: String, required: true}});
+const props = defineProps({label: {type: String, required: true}, bodyDrag: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const sheet = ref(null);
 const body = ref(null);
@@ -39,6 +39,7 @@ useDrag(sheet, {
     },
     accepts: (d, context) => {
         if (context.grabbed) return true;
+        if (!props.bodyDrag) return false;
         const top = body.value.scrollTop <= 0;
         if (d > 0) return top;
         return top && !large.value && overflowing();

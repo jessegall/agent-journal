@@ -3,7 +3,8 @@ import {computed} from "vue";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
 import {ago} from "./ago.js";
-import {kindCard} from "./kinds.js";
+import {kindCard, kindWord} from "./kinds.js";
+import {counted, plainDoing} from "./doing.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneChevron from "./PhoneChevron.vue";
 
@@ -46,19 +47,19 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
             <template v-if="detail.doing">
                 <div class="detail-fact">
                     <dt>Doing now</dt>
-                    <dd>{{ detail.doing }}</dd>
+                    <dd>{{ plainDoing(detail.doing) }}</dd>
                 </div>
             </template>
             <template v-for="[kind, count] in waits" :key="kind">
                 <div class="detail-fact">
-                    <dt>{{ kindCard(kind) }}</dt>
-                    <dd>{{ count }} waiting</dd>
+                    <dt>Waiting</dt>
+                    <dd>{{ counted(count, kindWord(kind), kindCard(kind).toLowerCase()) }}</dd>
                 </div>
             </template>
             <template v-if="detail.inHand">
                 <div class="detail-fact">
                     <dt>In hand</dt>
-                    <dd>{{ detail.inHand }}</dd>
+                    <dd>{{ counted(detail.inHand, "to-do", "to-dos") }}</dd>
                 </div>
             </template>
             <template v-if="detail.lastActive">
@@ -71,7 +72,7 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
         <div class="detail-actions">
             <template v-if="!running">
                 <template v-for="agent in AGENTS" :key="agent.key">
-                    <button type="button" class="detail-start" :disabled="Boolean(busy)" @click="emit('start', agent.key)">
+                    <button type="button" :class="['detail-start', {quiet: current}]" :disabled="Boolean(busy)" @click="emit('start', agent.key)">
                         <template v-if="busy === agent.key">
                             <Spinner />
                         </template>
@@ -79,11 +80,11 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
                     </button>
                 </template>
             </template>
-            <button type="button" :class="['detail-open', {quiet: !running}]" :disabled="Boolean(busy)" @click="emit('open')">
+            <button type="button" :class="['detail-open', {quiet: !running && !current}]" :disabled="Boolean(busy)" @click="emit('open')">
                 <template v-if="busy === 'open'">
                     <Spinner />
                 </template>
-                {{ current ? "Back to it" : running ? "Open" : "Open without starting" }}
+                {{ running || current ? "Open" : "Open without starting" }}
             </button>
         </div>
     </div>
@@ -185,6 +186,7 @@ const waits = computed(() => Object.entries(detail.value.waiting || {}).filter((
     color: #fff;
 }
 
+.detail-start.quiet,
 .detail-open.quiet {
     background: color-mix(in oklab, var(--accent) 14%, transparent);
     color: var(--accent-text);

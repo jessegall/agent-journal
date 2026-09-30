@@ -130,7 +130,7 @@ body {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--hover) 30%, var(--sel) 50%, var(--hover) 70%) 0 0 / 300% 100%;
+    background: linear-gradient(90deg, var(--hover) 30%, var(--sel) 50%, var(--hover) 70%) 0 0 / 300% 100% var(--raised);
     content: "";
     pointer-events: none;
     animation: arrive-shimmer 520ms linear both;

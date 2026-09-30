@@ -455,6 +455,7 @@ function quoteIt(item) {
     held.value = null;
     screen.value = "chat";
     compose.value.focus();
+    toBottom();
 }
 
 function copy() {

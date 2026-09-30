@@ -3,6 +3,7 @@ import {computed} from "vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import PhoneActions from "./PhoneActions.vue";
 import PhoneFold from "./PhoneFold.vue";
+import {splitQuote} from "./quoted.js";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Icon from "../kit/Icon.vue";
 import PhoneTicks from "./PhoneTicks.vue";
@@ -34,6 +35,7 @@ const faces = computed(() => [...new Set((props.item.reactions || []).map((r) =>
 const HOLDABLE = ["message", "comment"];
 const holdable = computed(() => HOLDABLE.includes(props.item.type));
 const arriving = computed(() => props.arrive >= 0);
+const inline = computed(() => splitQuote(props.item.brief || props.item.title));
 const arrival = computed(() => (arriving.value ? {"--arrive-delay": `${props.arrive}ms`} : undefined));
 const onlyFiles = computed(() => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`);
 const quoted = computed(() => (about.value ? props.briefs.get(about.value) || "" : ""));
@@ -84,9 +86,12 @@ function pressed(event) {
                 <template v-else-if="about">
                     <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
                 </template>
+                <template v-if="inline.quote && !quoted">
+                    <p class="turn-quote">{{ inline.quote }}</p>
+                </template>
                 <PhoneFold>
                     <template v-if="!onlyFiles">
-                        <TextDisplay :text="item.brief || item.title" />
+                        <TextDisplay :text="inline.body || item.brief || item.title" />
                     </template>
                     <template v-for="part in item.sections || []" :key="part.title">
                         <h3 class="turn-part">{{ part.title }}</h3>

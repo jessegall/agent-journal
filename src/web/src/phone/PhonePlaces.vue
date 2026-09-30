@@ -84,7 +84,7 @@ function start(agent) {
 </script>
 
 <template>
-    <PhoneSheet v-slot="{close}" label="Switch journal or environment" @close="emit('close')">
+    <PhoneSheet v-slot="{close}" label="Switch journal or environment" :body-drag="!chosen" @close="emit('close')">
         <template v-if="told">
             <p class="places-told" role="status">{{ told }}</p>
         </template>

@@ -131,7 +131,7 @@ const comments = computed(() => [
 ]);
 
 async function commented(text) {
-    const local = {key: `local-${Date.now()}`, who: "user", text, created: Date.now() / 1000};
+    const local = {key: `local-${Date.now()}`, who: "user", text, created: Date.now() / 1000, waiting: true};
     justCommented.value = [...justCommented.value, local];
     told.value = "";
     try {
@@ -139,7 +139,7 @@ async function commented(text) {
         justCommented.value = justCommented.value.filter((one) => one !== local);
         if (went === "held") return announce("Comment waits to send");
         announce("Comment added");
-        justCommented.value = [...justCommented.value, local];
+        justCommented.value = [...justCommented.value, {...local, waiting: false}];
         await load();
         justCommented.value = [];
     } catch (error) {

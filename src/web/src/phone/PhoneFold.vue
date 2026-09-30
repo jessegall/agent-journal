@@ -5,6 +5,12 @@ const props = defineProps({lines: {type: Number, default: 8}});
 const inner = ref(null);
 const tall = ref(false);
 const open = ref(false);
+const full = ref(0);
+
+function toggled() {
+    full.value = inner.value?.scrollHeight || 0;
+    open.value = !open.value;
+}
 const SLACK = 1.5;
 let watcher = null;
 
@@ -13,6 +19,7 @@ function measure() {
     if (!el) return;
     const line = parseFloat(getComputedStyle(el).lineHeight) || 22;
     tall.value = el.scrollHeight > line * (props.lines + SLACK);
+    full.value = el.scrollHeight;
 }
 
 onMounted(() => {
@@ -26,16 +33,25 @@ onUnmounted(() => watcher?.disconnect());
 
 <template>
     <div class="fold">
-        <div :class="['fold-box', {folded: tall && !open}]" :style="{'--lines': lines}">
+        <div :class="['fold-box', {folded: tall && !open, opened: tall && open}]" :style="{'--lines': lines, '--full': `${full}px`}">
             <div ref="inner" class="fold-inner"><slot /></div>
         </div>
         <template v-if="tall">
-            <button type="button" class="fold-toggle" :aria-expanded="open" @click.stop="open = !open">{{ open ? "Show less" : "Read more" }}</button>
+            <button type="button" class="fold-toggle" :aria-expanded="open" @click.stop="toggled">{{ open ? "Show less" : "Read more" }}</button>
         </template>
     </div>
 </template>
 
 <style scoped>
+.fold-box {
+    transition: max-height 200ms ease-out;
+}
+
+.fold-box.opened {
+    max-height: var(--full);
+    overflow: hidden;
+}
+
 .fold-box.folded {
     max-height: calc(var(--lines) * 1.35em);
     overflow: hidden;

@@ -4,6 +4,7 @@ import {phone} from "../api/phone.js";
 import {line} from "../layout/bar.js";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
+import {plainDoing} from "./doing.js";
 import {ago} from "./ago.js";
 import {announce} from "./announce.js";
 import {ended} from "./outbox.js";
@@ -22,7 +23,7 @@ const running = computed(() => props.state !== "offline");
 onMounted(async () => {
     try {
         const [bar, places] = await Promise.all([phone.bar(), phone.places()]);
-        doing.value = line(bar.queue?.at(-1), 0)?.text || "";
+        doing.value = plainDoing(line(bar.queue?.at(-1), 0)?.text || "");
         root.value = places.at;
     } catch (error) {
         if (ended(error)) failed(error);
