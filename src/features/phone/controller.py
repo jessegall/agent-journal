@@ -15,6 +15,7 @@ from controllers.notices import Notices
 from engine.record import Record
 from engine.sessions import Sessions
 from features.format import VIEWER
+from features.phone.places import Place, places
 from features.phone.resource import Phone
 from features.shaping import shaped
 from features.sharing.controller import Shares
@@ -25,7 +26,7 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "short", "code_until", "expires", "environment", "days")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
@@ -194,7 +195,17 @@ class Phones(Controller):
         return phone
 
     def _home(self, phone: Phone) -> Record:
-        return Record(self.record.root, phone.environment)
+        return Record(self.record.root if phone.journal is None else Path(phone.journal), phone.environment)
+
+    def _places(self) -> list[Place]:
+        return places(self.record.root)
+
+    def _switch(self, phone: Phone, moving) -> Phone:
+        found = next((place for place in self._places() if place.root == moving.journal), None)
+        if found is None or moving.environment not in found.environments:
+            raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
+        journal = None if Path(found.root) == self.record.root.resolve() else found.root
+        return super().update(phone.n, journal=journal, environment=moving.environment)
 
     def _say(self, phone: Phone, said):
         text = said.brief.strip()
@@ -212,7 +223,7 @@ class Phones(Controller):
         since = items[0]["created"] if items else 0.0
         items = sorted([*items, *self._marks(home, since)], key=lambda item: item["created"])
         return Feed(items=items, waiting=self._waiting(phone),
-                    agent=bool(Sessions(self.record.root).holder(phone.environment)))
+                    agent=bool(Sessions(home.root).holder(phone.environment)))
 
     def _marks(self, home: Record, since: float) -> list[Mark]:
         agents = CONTROLLERS["agent"](home, actor=SYSTEM)

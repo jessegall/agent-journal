@@ -2,7 +2,7 @@ import json
 import mimetypes
 import re
 from urllib.parse import quote
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from http.cookies import SimpleCookie
 
 from engine.record import Record
@@ -67,6 +67,16 @@ class Reacting:
 
 
 @dataclass(frozen=True)
+class Moving:
+    journal: str
+    environment: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Moving":
+        return cls(journal=str(given.get("journal", "")), environment=str(given.get("environment", "")))
+
+
+@dataclass(frozen=True)
 class Approval:
     n: int
     updated: float
@@ -94,7 +104,7 @@ class PhoneRoutes:
             return handler.asset(rest[1])
         if rest[:1] == ["file"] and len(rest) == 4:
             return self.file(handler, rest)
-        if rest[:1] in (["state"], ["feed"], ["bar"], ["row"]):
+        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["row"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -125,8 +135,11 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
+        if rest == ["places"]:
+            return self.json(handler, 200, {"places": [asdict(place) for place in self.phones(handler)._places()],
+                                            "at": str(self.phones(handler)._home(phone).root.resolve())})
         if rest == ["state"]:
-            known = identity(handler.shares.record.root)
+            known = identity(self.phones(handler)._home(phone).root)
             return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires,
                                             "project": known["project"], "color": known["color"]})
         if rest == ["feed"]:
@@ -164,7 +177,8 @@ class PhoneRoutes:
                 "answer": lambda phones: phones._answer(phone, Chosen.from_payload(body)),
                 "dismiss": lambda phones: phones._dismiss(phone, Chosen.from_payload(body).n),
                 "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
-                "approve": lambda phones: phones._approve(phone, Approval.from_payload(body))}
+                "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
+                "switch": lambda phones: phones._switch(phone, Moving.from_payload(body))}
         if rest[:1] != rest or rest[0] not in acts:
             return handler.answer(404, "no such action")
         try:

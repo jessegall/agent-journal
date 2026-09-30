@@ -44,6 +44,14 @@ async function load() {
     }
 }
 
+async function reconnect() {
+    try {
+        connection.value = await phone.state();
+    } catch (error) {
+        failed(error);
+    }
+}
+
 const retry = setInterval(() => state.value === "unreachable" && !document.hidden && load(), RETRY_EVERY);
 
 async function pairTyped() {
@@ -70,7 +78,7 @@ onUnmounted(() => clearInterval(retry));
                 <div class="phone-centre"><Spinner /></div>
             </template>
             <template #connected>
-                <PhoneHome :connection="connection" />
+                <PhoneHome :key="connection.project + connection.environment" :connection="connection" @moved="reconnect" />
             </template>
             <template #ended>
                 <div class="phone-centre">

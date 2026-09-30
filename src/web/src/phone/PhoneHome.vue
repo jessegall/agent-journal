@@ -7,6 +7,8 @@ import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
 import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
+import PhonePlaces from "./PhonePlaces.vue";
+import Icon from "../kit/Icon.vue";
 import {peeked} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
@@ -22,6 +24,8 @@ const SENDING = {completed: 0, seen: [], data: {}};
 defineProps({connection: {type: Object, required: true}});
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: false});
+const emit = defineEmits(["moved"]);
+const picking = ref(false);
 const reading = ref("");
 const trail = ref([]);
 const about = ref("");
@@ -122,13 +126,14 @@ function sent() {
 
 <template>
     <header class="home-bar">
-        <div class="home-names">
+        <button type="button" class="home-names" aria-label="Switch journal or environment" @click="picking = true">
             <span class="home-title">
                 <span class="home-dot" :style="{background: connection.color}" />
                 {{ connection.project }}
+                <Icon name="chevron" :size="14" class="home-chevron" />
             </span>
             <span class="home-note">{{ connection.environment }}</span>
-        </div>
+        </button>
         <PhoneAgent :running="feed.agent" />
     </header>
     <template v-if="newer">
@@ -165,6 +170,9 @@ function sent() {
         <PhoneStatus />
         <PhoneCompose ref="compose" :about="about" :quote="quote" @sending="toBottom" @sent="sent" @unabout="about = ''" @unquote="(quote = ''), (about = '')" />
     </template>
+    <template v-if="picking">
+        <PhonePlaces :environment="connection.environment" @close="picking = false" @moved="emit('moved')" />
+    </template>
     <template v-if="held">
         <PhoneHold :item="held" @react="react" @reply="quoteIt" @copy="copy" @close="held = null" />
     </template>
@@ -183,7 +191,19 @@ function sent() {
 .home-names {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 2px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+.home-chevron {
+    color: var(--text-3);
+    transform: rotate(90deg);
 }
 
 .home-dot {

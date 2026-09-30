@@ -13,6 +13,7 @@ class Phone(Shape, Resource):
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="environment"),
+        Field(name="journal"),
         Field(TEXT, name="key"),
         Field(TEXT, name="code"),
         Field(TEXT, name="short"),

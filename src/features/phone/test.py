@@ -162,6 +162,13 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served):
     assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
     assert call(base, f"/p/row/phone/{mine}", key=key).status == 404, "a row that holds keys never opens, not even its own"
+    journal = str(record.root.resolve())
+    Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "elsewhere")
+    assert "elsewhere" in next(p for p in call(base, "/p/places", key=key).body["places"] if p["root"] == journal)["environments"]
+    assert call(base, "/p/switch", {"journal": "/somewhere/else/.journal", "environment": "main"}, key).status == 422, \
+        "only a running journal on this machine can be switched to"
+    assert call(base, "/p/switch", {"journal": journal, "environment": "elsewhere"}, key).status == 201
+    assert call(base, f"/p/row/doc/{there.n}", key=key).status == 200, "after switching, the other environment's rows open"
     assert call(base, "/p/bar", key=key).body == {"queue": []}, "the agent's status line reaches the phone"
     waiting = [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]]
     assert f"doc:{here.n}" not in waiting and f"doc:{there.n}" not in waiting, "a document read on the phone no longer waits"
