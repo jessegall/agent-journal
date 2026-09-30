@@ -167,7 +167,7 @@ class Shares(Controller):
         return {**tunler_status(), "address": self._address()}
 
     def _address(self) -> str:
-        return f"{subdomain(self.record.root)}.{FEATURES['sharing'].setting(self.record, 'host', 'tunler.jessegall.nl')}"
+        return f"{subdomain(self.record.root)}.{self._host()}"
 
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
@@ -211,6 +211,9 @@ class Shares(Controller):
 
     def reachable(self, n: int) -> dict:
         return {"reachable": answers(self.load(n).abstract)}
+
+    def answering(self) -> dict:
+        return {"reachable": self._answering()}
 
     def _answering(self) -> bool:
         return answers(f"https://{self._address()}/{HEALTH}")

@@ -122,6 +122,10 @@ export class ApiClient {
         return this.command("share", "install_tunler");
     }
 
+    tunnelAnswering() {
+        return this.command("share", "answering");
+    }
+
     tunnelDomains() {
         return this.command("share", "domains");
     }

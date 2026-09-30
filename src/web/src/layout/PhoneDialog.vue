@@ -5,6 +5,8 @@ import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import QrCode from "../kit/QrCode.vue";
 import Segmented from "../kit/Segmented.vue";
+import Spinner from "../kit/Spinner.vue";
+import {usePoll} from "../poll.js";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
 import {connectedPhones} from "../composables/phones.js";
 import PhoneRow from "./PhoneRow.vue";
@@ -24,6 +26,7 @@ const CAN = [
     "Send the agent instructions",
 ];
 
+const ASK_EVERY = 1500;
 const days = ref("7");
 const made = ref(null);
 const busy = ref(false);
@@ -31,6 +34,15 @@ const failure = ref("");
 const stopping = ref(0);
 const ready = computed(() => tunnelStatus.value && tunnelStatus.value.installed && tunnelStatus.value.logged_in);
 const active = computed(() => connectedPhones.value[0] || null);
+const reachable = ref(false);
+const shown = computed(() => made.value && reachable.value);
+
+usePoll(
+    "phone-tunnel",
+    () => (made.value && !reachable.value ? api.tunnelAnswering().catch(() => null) : null),
+    ASK_EVERY,
+    (got) => got && (reachable.value = Boolean(got.reachable)),
+);
 
 async function fresh() {
     busy.value = true;
@@ -81,18 +93,23 @@ onMounted(checkTunnel);
             </template>
             <template v-else>
                 <div class="phone-code">
-                    <template v-if="made">
+                    <template v-if="shown">
                         <QrCode :text="made.link" :size="184" />
                     </template>
                     <template v-else>
-                        <div class="phone-code-empty" />
+                        <div class="phone-code-empty">
+                            <template v-if="made">
+                                <Spinner />
+                                Opening the tunnel
+                            </template>
+                        </div>
                     </template>
                     <div class="phone-code-side">
                         <p class="phone-how">Scan this with your phone's camera. The code works once, for 10 minutes.</p>
                         <span class="phone-label">Stays connected for</span>
                         <Segmented :options="DAYS" :value="days" @pick="pick" />
                         <Btn small :busy="busy" @click="fresh">New code</Btn>
-                        <template v-if="made">
+                        <template v-if="shown">
                             <span class="phone-short-label">Or type this code in the home-screen app</span>
                             <span class="phone-short">{{ made.short }}</span>
                             <span class="phone-address">{{ made.address }}</span>
@@ -135,10 +152,16 @@ onMounted(checkTunnel);
 }
 
 .phone-code-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 184px;
     height: 184px;
     border-radius: 10px;
     background: var(--raised);
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .phone-code-side {
