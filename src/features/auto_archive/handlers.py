@@ -6,7 +6,7 @@ from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER
 
 KEEP = {"report": 14, "todo": 7}
-PACK_AFTER = 30
+PACK_AFTER = 3
 UNPACKED = ("agent", "feature")
 DAY = 86400
 

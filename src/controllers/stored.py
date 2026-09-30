@@ -302,12 +302,12 @@ class Stored:
     def _pack(self, before: float) -> int:
         folder = self.record.folder(self.type, self.resource.scope)
         chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before]
-        months: dict[str, list[dict]] = {}
+        days: dict[str, list[dict]] = {}
         for row in chosen:
-            months.setdefault(time.strftime("%Y-%m", time.localtime(row["updated"])), []).append(row)
+            days.setdefault(time.strftime("%Y-%m-%d", time.localtime(row["updated"])), []).append(row)
         with self.record.locked(self.resource.scope):
-            for month, rows in months.items():
-                self._packed_into(folder, f"{month}.zip", rows)
+            for day, rows in days.items():
+                self._packed_into(folder, f"{day}.zip", rows)
         return len(chosen)
 
     def _packed_into(self, folder: Path, name: str, rows: list[dict]) -> None:
