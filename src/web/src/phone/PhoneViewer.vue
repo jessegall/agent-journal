@@ -29,7 +29,7 @@ async function load() {
             path.value = got.path;
             text.value = got.text;
         } else if (TEXT.test(name)) {
-            text.value = await (await fetch(url, {cache: "no-store"})).text();
+            text.value = await phone.attached(asked);
         }
     } catch (error) {
         if (ended(error)) failed(error);

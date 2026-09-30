@@ -26,6 +26,7 @@ export const phone = {
     bar: () => got("./bar"),
     places: () => got("./places"),
     source: (q) => got(`./source?q=${encodeURIComponent(q)}`),
+    attached: async (path) => (await fetch(`./file/${path}`, {cache: "no-store"})).text(),
     list: (type) => got(`./list?type=${encodeURIComponent(type)}`),
     arrange: (cards) => sent("./arrange", {cards}),
     pushKey: () => got("./push-key"),
