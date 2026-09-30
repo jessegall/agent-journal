@@ -20,7 +20,7 @@ def file(root: Path) -> Path:
 
 
 def settings(root: Path) -> dict:
-    return read_json(file(root), {})
+    return read_json(file(root), dict, {})
 
 
 def custom(root: Path) -> str:

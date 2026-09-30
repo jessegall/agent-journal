@@ -62,7 +62,7 @@ class Keys:
     @classmethod
     def kept(cls, root: Path) -> "Keys":
         where = root / KEYS_FILE
-        found = read_json(where, {})
+        found = read_json(where, dict, {})
         if isinstance(found.get("secret"), str):
             return cls(int(found["secret"], 16))
         keys = cls.made()

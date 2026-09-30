@@ -83,7 +83,7 @@ class Sessions:
         return runtime.session_file(self.root, session, "session.json")
 
     def read(self, session: str) -> SessionRecord:
-        return SessionRecord.from_json(read_json(self.path(session), {}))
+        return read_json(self.path(session), SessionRecord.from_json, SessionRecord.from_json({}))
 
     def known(self, session: str) -> bool:
         return self.path(session).is_file()
@@ -92,7 +92,7 @@ class Sessions:
         self.path(session).parent.mkdir(parents=True, exist_ok=True)
         with (self.path(session).parent / "session.lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            raw = read_json(self.path(session), {})
+            raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)
         return SessionRecord.from_json(got)
@@ -140,7 +140,7 @@ class Sessions:
         return self.read(session).environment
 
     def all(self) -> dict[str, SessionRecord]:
-        return {p.parent.name: SessionRecord.from_json(read_json(p, {})) for p in sorted(runtime.sessions(self.root).glob("*/session.json"))}
+        return {p.parent.name: read_json(p, SessionRecord.from_json, SessionRecord.from_json({})) for p in sorted(runtime.sessions(self.root).glob("*/session.json"))}
 
     def running(self) -> list[str]:
         return [name for name, s in self.all().items() if s.pid and alive(s.pid)]

@@ -11,7 +11,7 @@ def run(root: Path) -> str:
     for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
         record = Record(root, home.name)
         rows = Features(record, actor=SYSTEM)
-        for name, on in read_json(home / "settings.json", {}).get("features", {}).items():
+        for name, on in read_json(home / "settings.json", dict, {}).get("features", {}).items():
             if "." in name or rows.named(name):
                 continue
             rows.create(name, enabled=bool(on))

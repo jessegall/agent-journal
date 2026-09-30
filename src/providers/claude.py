@@ -166,7 +166,7 @@ class Claude(Provider):
     def setting(self, project: Path, key: str) -> str:
         found = ""
         for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
-            saved = read_json(settings, {})
+            saved = read_json(settings, dict, {})
             found = (saved.get(key) if isinstance(saved, dict) else "") or found
         return found
 
@@ -174,7 +174,7 @@ class Claude(Provider):
         return self.reported(transcript, "effort").get("level", "") or self.setting(project, "effortLevel")
 
     def reported(self, transcript: Path | None, key: str) -> dict:
-        status = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), {}) if transcript else {}
+        status = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), dict, {}) if transcript else {}
         found = status.get(key) if isinstance(status, dict) else None
         return found if isinstance(found, dict) else {}
 
@@ -187,7 +187,7 @@ class Claude(Provider):
 
     def channel(self, project: Path, command: str) -> None:
         f = project / ".mcp.json"
-        known = read_json(f, {})
+        known = read_json(f, dict, {})
         servers = known.get("mcpServers") or {}
         words = command.split()
         servers[SERVER] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
@@ -251,8 +251,8 @@ class Claude(Provider):
 
     def shared(self, project: Path) -> None:
         f = project / ".claude" / "settings.json"
-        had = read_json(f, None)
-        if not isinstance(had, dict):
+        had = read_json(f, dict, None)
+        if had is None:
             return
         kept = {event: [b for b in blocks if not journal_hook(json.dumps(b))] for event, blocks in (had.get("hooks") or {}).items()}
         cleaned = {**had, "hooks": {event: blocks for event, blocks in kept.items() if blocks}}
@@ -516,8 +516,8 @@ class Claude(Provider):
 
     def settling(self, path: Path) -> bool:
         for line in reversed(tail(path, SETTLE_BYTES)):
-            raw = parsed(line)
-            row = Row.from_payload(raw) if isinstance(raw, dict) and raw.get("message") else None
+            raw = parsed(line, dict)
+            row = Row.from_payload(raw) if raw is not None and raw.get("message") else None
             if row and row.type in ("user", "assistant"):
                 return row.type == "user" or (bool(row.blocks) and all(block.type == "thinking" for block in row.blocks))
         return False
@@ -533,10 +533,9 @@ class Claude(Provider):
         ends, at, done = [], offset, offset
         for line in lines[:-1]:
             at += len(line) + 1
-            raw = parsed(line.decode(errors="replace"))
-            if not isinstance(raw, dict):
+            row = parsed(line.decode(errors="replace"), Row.from_payload)
+            if row is None:
                 continue
-            row = Row.from_payload(raw)
             if row.type == "assistant" and row.blocks:
                 blocks.setdefault(row.message_id, []).extend(row.blocks)
                 if row.of_type("tool_use"):
@@ -596,7 +595,7 @@ class ClaudeDriver(Driver):
     @classmethod
     def trusted(cls, folder: Path) -> None:
         state = claude_state()
-        known = read_json(state, {})
+        known = read_json(state, dict, {})
         projects = known.get("projects") or {}
         entry = projects.get(str(folder.resolve())) or {}
         approved = entry.get("enabledMcpjsonServers") or []
@@ -651,7 +650,7 @@ class ClaudeDriver(Driver):
             with runtime.channel_queue(root, pid).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
             handed = runtime.session_file(root, self.session, HANDED)
-            held = Handed.from_json(read_json(handed, {}))
+            held = read_json(handed, Handed.from_json, Handed.from_json({}))
             write_json(handed, replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
             return True
         except OSError:
@@ -679,7 +678,7 @@ class ClaudeDriver(Driver):
 
     def _delivering(self) -> bool:
         handed = runtime.session_file(self.record.root, self.session, HANDED)
-        held = Handed.from_json(read_json(handed, {}))
+        held = read_json(handed, Handed.from_json, Handed.from_json({}))
         if time.time() < held.typed_until:
             return False
         last = self.last_report()

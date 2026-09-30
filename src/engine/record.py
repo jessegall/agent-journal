@@ -232,7 +232,7 @@ class Record:
             return {}
         held = SETTINGS.get(str(f))
         if not held or held[0] != stamp:
-            held = SETTINGS[str(f)] = (stamp, read_json(f, {}))
+            held = SETTINGS[str(f)] = (stamp, read_json(f, dict, {}))
         if self.memo is not None:
             self.memo["settings"] = held[1]
         return held[1]
@@ -240,7 +240,7 @@ class Record:
     def set_setting(self, key: str, value) -> None:
         f = self.home / "settings.json"
         with self.locked():
-            write_json(f, {**read_json(f, {}), key: value}, indent=2)
+            write_json(f, {**read_json(f, dict, {}), key: value}, indent=2)
         if self.memo is not None:
             self.memo.pop("settings", None)
 

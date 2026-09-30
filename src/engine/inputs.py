@@ -51,8 +51,8 @@ def queue(root: Path, session: str, keys: tuple, label: str, action: str = "", p
     folder.mkdir(parents=True, exist_ok=True)
     if queued.lasting:
         for path in folder.glob("*.json"):
-            older = read_json(path)
-            if isinstance(older, dict) and Input.from_json(older).session == session and Input.from_json(older).action == action:
+            older = read_json(path, Input.from_json, None)
+            if older is not None and older.session == session and older.action == action:
                 path.unlink(missing_ok=True)
     target = folder / f"{time.time_ns()}-{uuid.uuid4().hex}.json"
     write_json(target, asdict(queued))
@@ -62,11 +62,10 @@ def queue(root: Path, session: str, keys: tuple, label: str, action: str = "", p
 def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) -> Input | None:
     folder = Path(root) / "runtime" / "inputs"
     for path in sorted(folder.glob("*.json")):
-        raw = read_json(path)
-        if not isinstance(raw, dict):
+        queued = read_json(path, Input.from_json, None)
+        if queued is None:
             path.unlink(missing_ok=True)
             continue
-        queued = Input.from_json(raw)
         if not queued.lasting and time.time() - queued.at > STALE:
             path.unlink(missing_ok=True)
             continue

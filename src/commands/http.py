@@ -655,7 +655,7 @@ def get_plugin_dashboard(req: Request) -> Reply:
     board = next((b for b in declared(row).dashboards if b.name == req.params["name"]), None)
     if board is None:
         raise Missing(f"{called(row)} declares no dashboard {req.params['name']}")
-    found = read_json(data(req.record().root, called(row)) / "dashboards" / f"{board.name}.json", None)
+    found = read_json(data(req.record().root, called(row)) / "dashboards" / f"{board.name}.json", dict, None)
     if found is None:
         return Reply(200, {"title": board.title, "missing": f"{called(row)} has not written its {board.title} dashboard yet"})
     try:

@@ -162,7 +162,7 @@ class Stored:
             return {}
         held = PACKS.get(str(index))
         if not held or held[0] != stamp:
-            held = PACKS[str(index)] = (stamp, {int(n): row for n, row in (read_json(index) or {}).items()})
+            held = PACKS[str(index)] = (stamp, {int(n): row for n, row in read_json(index, dict, {}).items()})
         return held[1]
 
     def _stamps(self, folder: Path) -> dict[int, str]:
@@ -216,7 +216,7 @@ class Stored:
 
     def _indexed(self, folder: Path) -> list[dict]:
         stamps = self._stamps(folder)
-        known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
+        known = INDEXED.get(str(folder)) or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
         needed = {"files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
         rows = {}
         for n, stamp in stamps.items():

@@ -75,9 +75,9 @@ def unsent(root: Path) -> Path:
 def replay(root: Path) -> None:
     with REPLAYING:
         for f in sorted(unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)):
-            raw = read_json(f, None)
+            raw = read_json(f, dict, None)
             f.unlink(missing_ok=True)
-            if isinstance(raw, dict):
+            if raw is not None:
                 display_chunk(root, raw)
 
 
@@ -101,7 +101,7 @@ def display_chunk(root: Path, raw: dict) -> None:
     session, message = chunk.session, chunk.message
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
-        held = read_json(f, {})
+        held = read_json(f, dict, {})
         if message in held.get(DONE, []):
             return
         parts = {**held.get(message, {}), str(chunk.index): chunk.delta}
@@ -120,7 +120,7 @@ def shown(parts: dict) -> str:
 def stopped(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
-        held = read_json(f, {})
+        held = read_json(f, dict, {})
         cut = [message for message, parts in held.items() if message not in (DONE, SENT) and shown(parts) and text.strip().startswith(shown(parts))]
         if not cut:
             return
@@ -139,7 +139,7 @@ def unfinished(root: Path, session: str, row) -> None:
     said = [turn.text for turn in provider().tail(row.transcript) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
-        held = read_json(f, {})
+        held = read_json(f, dict, {})
         first = SENT not in held
         write_json(f, {DONE: held.get(DONE, []), SENT: [*held.get(SENT, []), *(map(fingerprint, said) if first else [])][-KEPT_DONE:]})
     if first:
@@ -151,7 +151,7 @@ def unfinished(root: Path, session: str, row) -> None:
 def send_to_chat(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
-        held = read_json(f, {})
+        held = read_json(f, dict, {})
         if fingerprint(text) in held.get(SENT, []):
             return
         write_json(f, {**held, SENT: [*held.get(SENT, []), fingerprint(text)][-KEPT_DONE:]})

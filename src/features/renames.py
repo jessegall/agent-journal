@@ -25,7 +25,7 @@ def owned(kept: dict, was: str, now: str) -> dict:
 
 def in_settings(home: Path, was: str, now: str) -> bool:
     f = home / "settings.json"
-    kept = read_json(f, {})
+    kept = read_json(f, dict, {})
     after = owned({k: moved(v, was, now) if k in KEYED and isinstance(v, dict) else v for k, v in kept.items()}, was, now)
     if after == kept:
         return False
@@ -36,7 +36,7 @@ def in_settings(home: Path, was: str, now: str) -> bool:
 def in_gates(runtime: Path, was: str, now: str) -> int:
     changed = 0
     for f in sorted(runtime.glob("sessions/*/gate-*.json")):
-        holds = read_json(f)
+        holds = read_json(f, dict, None)
         if holds is None:
             continue
         after = moved(holds, was, now)
@@ -69,7 +69,7 @@ def in_cursors(home: Path, was: str, now: str) -> int:
 def in_skills(home: Path, was: str, now: str) -> bool:
     from providers.skill_homes import skill_name
     f = home / "settings.json"
-    kept = read_json(f, {})
+    kept = read_json(f, dict, {})
     chosen = kept.get("skills")
     if "." in now or not isinstance(chosen, list) or skill_name(was) not in chosen:
         return False

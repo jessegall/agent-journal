@@ -26,7 +26,7 @@ def listed(record: Record) -> Path:
 
 
 def moved(record: Record) -> list[dict]:
-    return read_json(listed(record), []) + (state(record).get("moved") or [])
+    return read_json(listed(record), list, []) + (state(record).get("moved") or [])
 
 
 def keep_moved(record: Record, entries: list[dict]) -> None:
@@ -37,7 +37,7 @@ def keep_moved(record: Record, entries: list[dict]) -> None:
 
 
 def others(project: Path, agent: str) -> list[Path]:
-    return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, {})) != read_json(f, {})]
+    return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, dict, {})) != read_json(f, dict, {})]
 
 
 def git(folder: Path, *args: str) -> str:
@@ -68,7 +68,7 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
             to = folder / f"hooks-{i}-{f.name}"
             shutil.copy2(f, to)
             entries.append({"from": str(f), "to": str(to), "copy": True})
-            f.write_text(json.dumps(kept(read_json(f, {})), indent=2) + "\n")
+            f.write_text(json.dumps(kept(read_json(f, dict, {})), indent=2) + "\n")
     except Exception as error:
         keep_moved(record, entries)
         put_back(record)

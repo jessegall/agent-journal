@@ -77,7 +77,7 @@ class ServiceState:
 
     @classmethod
     def read(cls, path: Path) -> "ServiceState":
-        raw = read_json(Path(path), {})
+        raw = read_json(Path(path), dict, {})
         return cls(**known(cls, raw if isinstance(raw, dict) else {}))
 
     def write(self, path: Path) -> None:
@@ -155,7 +155,7 @@ def watch(spec: ServiceSpec, child, lifeline: int, stopping) -> str:
 
 def main(argv: list[str]) -> int:
     lifeline, spec_path = int(argv[0]), Path(argv[1])
-    spec = ServiceSpec.from_json(read_json(spec_path, {}))
+    spec = read_json(spec_path, ServiceSpec.from_json, ServiceSpec.from_json({}))
     held = lease(spec)
     if not held:
         return TAKEN

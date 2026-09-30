@@ -22,7 +22,7 @@ DOWNLOAD_SECONDS = 60
 
 
 def subdomain(root: Path) -> str:
-    kept = read_json(Path(root) / TUNNEL_FILE, {}) or {}
+    kept = read_json(Path(root) / TUNNEL_FILE, dict, {})
     if kept.get("subdomain"):
         return kept["subdomain"]
     prefix = re.sub(r"[^a-z0-9]+", "-", Path(root).resolve().parent.name.lower())[:20].strip("-") or "journal"
@@ -32,7 +32,7 @@ def subdomain(root: Path) -> str:
 
 
 def readdressed(root: Path) -> str:
-    kept = read_json(Path(root) / TUNNEL_FILE, {}) or {}
+    kept = read_json(Path(root) / TUNNEL_FILE, dict, {})
     write_json(Path(root) / TUNNEL_FILE, {key: value for key, value in kept.items() if key != "subdomain"})
     return subdomain(root)
 

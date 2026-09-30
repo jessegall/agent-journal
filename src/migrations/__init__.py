@@ -28,7 +28,7 @@ def ledger(root: Path) -> Path:
 
 
 def applied(root: Path) -> dict:
-    return read_json(ledger(root), {})
+    return read_json(ledger(root), dict, {})
 
 
 @dataclass(frozen=True)

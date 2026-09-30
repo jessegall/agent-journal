@@ -94,7 +94,7 @@ def seats(root: Path, within: float | None = None) -> list[Seat]:
                 continue
         except OSError:
             continue
-        seat = read_json(path)
+        seat = read_json(path, dict, None)
         if seat is not None:
             found.append(Seat.of(seat, path.parent.name))
     return found

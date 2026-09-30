@@ -61,7 +61,7 @@ class Identity(Loaded):
 
 
 def known() -> list[KnownJournal]:
-    found = (KnownJournal.from_json(j) for j in read_json(machine(), []) if isinstance(j, dict))
+    found = (KnownJournal.from_json(j) for j in read_json(machine(), list, []) if isinstance(j, dict))
     return [j for j in found if j.root]
 
 
@@ -176,7 +176,7 @@ def free_from(start: int) -> int:
 
 
 def last(root: Path) -> ViewerMark:
-    return ViewerMark.from_json(read_json(marker(root), {}))
+    return read_json(marker(root), ViewerMark.from_json, ViewerMark.from_json({}))
 
 
 def restart(root: Path, project: Path) -> str:

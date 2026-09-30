@@ -34,7 +34,7 @@ def gate_file(root: Path, env: str, session: str) -> Path:
 
 def hold(root: Path, env: str, session: str, key: str, given: Hold) -> None:
     f = gate_file(root, env, session)
-    holds = read_json(f, {})
+    holds = read_json(f, dict, {})
     kept = {k: v for k, v in holds.items() if k != key}
     changed = {**kept, key: asdict(given)} if given.why else kept
     if changed != holds:
@@ -42,5 +42,5 @@ def hold(root: Path, env: str, session: str, key: str, given: Hold) -> None:
 
 
 def held(record, session: str, subagent: bool = False) -> str:
-    holds = (Hold.from_json(raw) for raw in read_json(gate_file(record.root, record.env, session), {}).values())
+    holds = (Hold.from_json(raw) for raw in read_json(gate_file(record.root, record.env, session), dict, {}).values())
     return "; ".join(one.why for one in holds if one.why and one.reach.reaches(subagent))

@@ -78,7 +78,7 @@ def shown(root: Path) -> tuple[str, ...]:
 
 
 def running(root: Path) -> bool:
-    pid = read_json(root / "runtime" / "viewer.json", {}).get("pid")
+    pid = read_json(root / "runtime" / "viewer.json", dict, {}).get("pid")
     if not isinstance(pid, int):
         return False
     try:

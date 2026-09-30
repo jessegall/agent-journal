@@ -141,7 +141,7 @@ class Engine(Seat):
             return
         self.peer_size = size
         f = runtime.session_file(self.record.root, row.title, "peers.json")
-        seen = read_json(f, None)
+        seen = read_json(f, dict, None)
         log = PeerLog.from_json(seen)
         recent = sorted((t for t in provider().tail(row.transcript) if t.kind == PEER and t.who.startswith((f"{PEER}:", f"{SENT}:"))), key=lambda t: t.at)
         newest = max([t.at for t in recent] + [log.at])
@@ -164,7 +164,7 @@ class Engine(Seat):
             return
         written = turns(self.record, row)
         f = runtime.announced_file(self.record.root, row.title)
-        announced = read_json(f, None)
+        announced = read_json(f, dict, None)
         now = {"line": written[-1].line if written else -1, "last_message": row.last_message or ""}
         if announced == now:
             return

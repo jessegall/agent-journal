@@ -3,14 +3,16 @@ import os
 import threading
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Any, Callable, TypeVar
 
 UNDO = threading.local()
+T = TypeVar("T")
 
 
-def read_json(path: Path, default=None):
+def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
     try:
-        return json.loads(Path(path).read_text())
-    except (OSError, ValueError):
+        return into(json.loads(Path(path).read_text()))
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
         return default
 
 

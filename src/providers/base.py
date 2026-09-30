@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, Callable, ClassVar, TypeVar
 
 from engine.fields import Loaded
 from engine.transcript import Turn
@@ -61,10 +61,13 @@ def recent(rows: list[dict]) -> list[dict]:
     return [row for row in rows if row.get("running") or id(row) in late]
 
 
-def parsed(line: str):
+T = TypeVar("T")
+
+
+def parsed(line: str, into: Callable[[Any], T]) -> T | None:
     try:
-        return json.loads(line)
-    except ValueError:
+        return into(json.loads(line))
+    except (ValueError, TypeError, KeyError, AttributeError):
         return None
 
 
@@ -225,11 +228,11 @@ class Provider(ABC):
                 source.seek(held[0])
                 raw = source.read(size - held[0])
             whole = raw[:raw.rfind(b"\n") + 1]
-            added = [self.row_of(row) for row in (parsed(line) for line in whole.decode(errors="replace").splitlines()) if isinstance(row, dict)]
+            added = [self.row_of(row) for row in (parsed(line, dict) for line in whole.decode(errors="replace").splitlines()) if row is not None]
             rows = (held[1] + added)[-RECENT_ROWS:]
             RECENT[str(path)] = (held[0] + len(whole), rows)
             return rows
-        rows = [self.row_of(row) for row in (parsed(line) for line in tail(path, RECENT_BYTES)) if isinstance(row, dict)][-RECENT_ROWS:]
+        rows = [self.row_of(row) for row in (parsed(line, dict) for line in tail(path, RECENT_BYTES)) if row is not None][-RECENT_ROWS:]
         RECENT[str(path)] = (size, rows)
         return rows
 
@@ -289,8 +292,8 @@ class Provider(ABC):
     def read_turns(self, lines: list[bytes], count: int) -> list:
         turns = []
         for i, line in enumerate(lines, count + 1):
-            row = parsed(line.decode(errors="replace"))
-            turn = self.turn(self.row_of(row)) if isinstance(row, dict) else None
+            row = parsed(line.decode(errors="replace"), dict)
+            turn = self.turn(self.row_of(row)) if row is not None else None
             if turn:
                 turns.append(Turn(i, *turn))
         return turns
@@ -403,8 +406,8 @@ class Provider(ABC):
                 raw = source.read(size - offset)
             whole = raw[:raw.rfind(b"\n") + 1]
             for line in whole.decode(errors="replace").splitlines():
-                row = parsed(line)
-                if isinstance(row, dict):
+                row = parsed(line, dict)
+                if row is not None:
                     state = fold(state, self.row_of(row))
             offset += len(whole)
             keep_fold(key, offset, state)
@@ -418,7 +421,7 @@ class Provider(ABC):
         return []
 
     def settings(self, project: Path) -> dict:
-        return read_json(self.config(project), {})
+        return read_json(self.config(project), dict, {})
 
     def hook_files(self, project: Path) -> list[Path]:
         return [self.config(project)]
@@ -431,7 +434,7 @@ class Provider(ABC):
         for f in self.hook_files(project):
             if f == self.config(project):
                 continue
-            hooks = (read_json(f, {}) or {}).get("hooks") or {}
+            hooks = read_json(f, dict, {}).get("hooks") or {}
             if hooks:
                 shown = f"~/{f.relative_to(Path.home())}" if f.is_relative_to(Path.home()) and not f.is_relative_to(project) else str(f.relative_to(project))
                 found.append({"path": shown, "hooks": hooks})

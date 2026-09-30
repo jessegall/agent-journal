@@ -58,7 +58,7 @@ class Wanted(Loaded):
 
     @classmethod
     def read(cls, root: Path, sid: str) -> "Wanted":
-        return cls.from_json(read_json(want_file(root, sid), {}))
+        return read_json(want_file(root, sid), cls.from_json, cls.from_json({}))
 
 
 def status(root: Path, sid: str) -> ServiceState:
@@ -196,8 +196,8 @@ class Manager:
             place(self.root, sid).unlink(missing_ok=True)
 
     def stored_build(self, sid: str) -> str:
-        stored = read_json(spec_file(self.root, sid))
-        return ServiceSpec.from_json(stored).build if stored else ""
+        stored = read_json(spec_file(self.root, sid), ServiceSpec.from_json, None)
+        return stored.build if stored is not None else ""
 
     def one(self, spec: ServiceSpec) -> bool:
         sid = spec.id

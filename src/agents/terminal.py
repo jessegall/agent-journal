@@ -34,7 +34,7 @@ class Launched(Loaded):
 
     @classmethod
     def read(cls, root: Path, session: str) -> "Launched":
-        return cls.from_json(read_json(runtime.session_file(root, session, LAUNCHED), {}))
+        return read_json(runtime.session_file(root, session, LAUNCHED), cls.from_json, cls.from_json({}))
 
 
 def watched(root: Path) -> tuple:
@@ -188,7 +188,7 @@ class ScreenPart:
 def screen_since(root: Path, terminal: str, since: int) -> ScreenPart:
     import base64
     screen = runtime.session_file(root, terminal, "screen")
-    shape = read_json(runtime.session_file(root, terminal, "screen.json"), {"rows": 40, "cols": 120})
+    shape = read_json(runtime.session_file(root, terminal, "screen.json"), dict, {"rows": 40, "cols": 120})
     if not screen.is_file():
         return ScreenPart.blank(int(shape["rows"]), int(shape["cols"]))
     size = screen.stat().st_size

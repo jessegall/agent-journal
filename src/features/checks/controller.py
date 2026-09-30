@@ -85,7 +85,7 @@ class Checks(Controller):
         uncovered = f"\nno test covers {found.uncovered}; the full check is the gate for those" if found.bare else ""
         return f"{tail(output)}{uncovered}" if code == 0 else f"failed:\n{tail(output)}"
 
-    def gate(self, n: int, message: str, paths: str):
+    def gate(self, n: int, message: str, paths: str = ""):
         if not self.load(n).command:
             raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
         named = [path.strip() for path in paths.split(",") if path.strip()]
@@ -143,10 +143,10 @@ class Checks(Controller):
         code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output, env={**os.environ, REPORT: str(report)})
         check = self.load(n)
         kept = tail(output)
-        written = read_json(report, None)
+        written = read_json(report, CheckReport.from_json, None)
         run = CheckRun(ok=code == 0, code=-1 if code is None else code, at=began, took=round(time.time() - began, 2), steps=steps(output),
                        output=kept if kept or code is not None else "the command did not finish",
-                       report=CheckReport.from_json(written) if isinstance(written, dict) else None)
+                       report=written)
         check.last = run.to_json()
         check.runs = [run.summary, *check.runs][:KEPT_RUNS]
         check.running = {}

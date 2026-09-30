@@ -61,7 +61,7 @@ def last(record, session: str, name: str) -> Mark:
     stamp = stamped(f)
     held = HELD.get(f)
     if not held or held[0] != stamp:
-        held = HELD[f] = (stamp, Mark.from_json(read_json(f, {})))
+        held = HELD[f] = (stamp, read_json(f, Mark.from_json, Mark.from_json({})))
     return held[1]
 
 

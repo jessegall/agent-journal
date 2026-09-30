@@ -10,7 +10,7 @@ class State:
         self.path = Path(path)
 
     def all(self) -> dict:
-        found = read_json(self.path, {})
+        found = read_json(self.path, dict, {})
         return found if isinstance(found, dict) else {}
 
     def get(self, key: str, default=None):

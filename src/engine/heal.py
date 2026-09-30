@@ -13,11 +13,11 @@ def ledger(root: Path) -> Path:
 
 
 def broken(root: Path) -> list[str]:
-    return list(read_json(ledger(root), {}).get("builds") or [])
+    return list(read_json(ledger(root), dict, {}).get("builds") or [])
 
 
 def refused(root: Path, version: str) -> bool:
-    since = read_json(ledger(root), {}).get("at") or {}
+    since = read_json(ledger(root), dict, {}).get("at") or {}
     return any(name.startswith(f"journal-{version}-") and time.time() - since.get(name, 0) < REFUSED_FOR for name in broken(root))
 
 
@@ -29,7 +29,7 @@ def heal(root: Path) -> str:
     if not kept:
         return ""
     previous = max(kept, key=lambda build: build.stat().st_mtime)
-    at = {**(read_json(ledger(root), {}).get("at") or {}), current.name: time.time()}
+    at = {**(read_json(ledger(root), dict, {}).get("at") or {}), current.name: time.time()}
     write_json(ledger(root), {"builds": bad, "at": at})
     point(root, previous)
     return f"journal: {current.name} would not start, so the journal went back to {previous.name}"

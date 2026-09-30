@@ -273,8 +273,7 @@ class Codex(Provider):
 
     def token_counts(self, path: Path | None):
         for line in reversed(tail(path, TAIL_BYTES)):
-            raw = parsed(line)
-            row = Row.from_payload(raw) if isinstance(raw, dict) else None
+            row = parsed(line, Row.from_payload)
             if row and row.type == "event_msg" and row.payload.type == "token_count":
                 yield row.payload
 
@@ -347,8 +346,7 @@ class Codex(Provider):
             return {}
         with Path(path).open() as source:
             for line in source:
-                raw = parsed(line)
-                row = Row.from_payload(raw) if isinstance(raw, dict) else None
+                row = parsed(line, Row.from_payload)
                 if row and row.type == "session_meta":
                     return {AgentRow.parent: row.payload.parent_thread}
         return {}
