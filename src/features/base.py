@@ -52,17 +52,21 @@ class Line:
         return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders()}
 
 
-SWITCHES: dict[str, dict] = {}
+SWITCHES: dict[str, tuple] = {}
 GENERATION = [0]
 
 
 def booted(record) -> dict[str, bool]:
-    SWITCHES[str(record.home)] = {row.title: bool(row.enabled) for row in Features(record, actor=SYSTEM)._every() if not row.deleted}
-    return SWITCHES[str(record.home)]
+    rows = Features(record, actor=SYSTEM)
+    SWITCHES[str(record.home)] = (rows.moved(), {row.title: bool(row.enabled) for row in rows._every() if not row.deleted})
+    return SWITCHES[str(record.home)][1]
 
 
 def switches(record) -> dict[str, bool]:
-    return SWITCHES.get(str(record.home)) or booted(record)
+    held = SWITCHES.get(str(record.home))
+    if held and held[0] == Features(record, actor=SYSTEM).moved():
+        return held[1]
+    return booted(record)
 
 
 def rebooted(event=None, record=None) -> None:

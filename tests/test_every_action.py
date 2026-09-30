@@ -176,3 +176,19 @@ def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
         for run in runs:
             run.join()
         assert len(made) == len(set(made)), f"{type_} rows made at once from two environments share a number: {sorted(made)}"
+
+
+def test_every_listing_answers_the_same_through_a_worker_and_sees_its_writes():
+    from commands import workers
+    from commands.cli import captured, served
+    record = fresh("wk")
+    features.load(record.root)
+    workers.start(record.root, 1)
+    try:
+        nouns = sorted(served() - workers.IN_SERVER)
+        apart = [noun for noun in nouns if workers.run(["--env", record.env, noun, "all"], record.root) != captured(["--env", record.env, noun, "all"], record.root)]
+        assert apart == [], "a listing reads the same from a worker as from the server"
+        workers.run(["--env", record.env, "--as", USER, "todo", "create", "made in a worker"], record.root)
+        assert "made in a worker" in captured(["--env", record.env, "todo", "all"], record.root)[0], "the server sees a worker's write at once"
+    finally:
+        workers.stop()

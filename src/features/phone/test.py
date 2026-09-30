@@ -111,6 +111,9 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         fetch("/p/feed", **{"If-None-Match": fetch("/p/feed").headers["ETag"]})
     assert unchanged.value.code == 304, "an unchanged feed is not sent again"
     assert fetch("/p/", **{"Accept-Encoding": "gzip"}).headers["Content-Encoding"] == "gzip", "the app travels compressed"
+    Messages(record, actor=AGENT).reply(made["n"], "Yes, that is done")
+    replied = [item for item in call(base, "/p/feed", key=key).body["items"] if item["type"] == "comment"]
+    assert replied and "that is done" in replied[-1]["brief"] and replied[-1]["who"] == AGENT, "the agent's reply to a message reaches the phone"
     older = call(base, f"/p/feed?before={message.created}", key=key).body["items"]
     assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
 

@@ -122,7 +122,7 @@ const still = () => Date.now() - movedAt > MOVING;
 const ready = ref(false);
 const far = ref(false);
 const unseen = ref(0);
-const TALKING = ["message", "question"];
+const TALKING = ["message", "question", "comment"];
 let scrollFrame = 0;
 const OLDER_AT = 400;
 const earlier = ref([]);

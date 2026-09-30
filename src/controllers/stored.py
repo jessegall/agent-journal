@@ -110,6 +110,10 @@ class Stored:
         return sorted(set(self._stamps(folder)) | set(self._packed()))
 
     @internal
+    def moved(self) -> tuple:
+        return self._moved(self.record.folder(self.type, self.resource.scope))
+
+    @internal
     def summaries(self) -> list[dict]:
         folder = self.record.folder(self.type, self.resource.scope)
         moved = self._moved(folder)
