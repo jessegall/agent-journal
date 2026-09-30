@@ -14,11 +14,13 @@ const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
 const fileUrl = (name) => `./file/${props.item.type}/${props.item.n}/${encodeURIComponent(name)}`;
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
-const NOT_FILED = ["message", "comment", "reaction"];
 const NAMES = {todo: "to-do", doc: "document"};
-const filed = computed(() =>
-    props.item.who === "user" ? (props.item.refs || []).filter((ref) => !NOT_FILED.includes(ref.split(":")[0])) : [],
+const FILED_REF = /\b([a-z_]+)[ :](\d+)\b/g;
+const filedAs = computed(
+    () => new Set((props.item.sections || []).flatMap((part) => [...part.body.matchAll(FILED_REF)].map((found) => `${found[1]}:${found[2]}`))),
 );
+const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []).filter((ref) => filedAs.value.has(ref)) : []));
+const about = computed(() => (props.item.who === "user" ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${NAMES[ref.split(":")[0]] || ref.split(":")[0]} ${ref.split(":")[1]}`;
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const emit = defineEmits(["hold"]);
@@ -74,6 +76,9 @@ function release() {
                 @touchmove.passive="release"
                 @contextmenu.prevent="emit('hold', item)"
             >
+                <template v-if="about">
+                    <a class="turn-about" href="#" :data-peek="about">About {{ named(about) }}</a>
+                </template>
                 <TextDisplay :text="item.brief || item.title" />
                 <template v-if="files.length">
                     <span class="turn-files">
@@ -165,6 +170,14 @@ function release() {
     align-self: flex-start;
     max-width: 100%;
     min-width: 0;
+}
+
+.turn-about {
+    display: inline-block;
+    margin-bottom: 4px;
+    color: var(--accent-text);
+    font-size: 12px;
+    text-decoration: none;
 }
 
 .turn-filed {

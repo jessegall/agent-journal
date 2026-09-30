@@ -35,6 +35,8 @@ const held = ref(null);
 const list = ref(null);
 const compose = ref(null);
 const offline = ref(false);
+const current = ref(false);
+const returned = () => !document.hidden && (current.value = false);
 const LOADED = (document.querySelector('script[src*="phone-"]')?.src || "").split("/").pop();
 const newer = ref(false);
 const reload = () => window.location.reload();
@@ -61,6 +63,7 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got) return;
     const following = nearBottom() && still();
     feed.value = got;
+    current.value = true;
     navigator.setAppBadge?.(got.waiting.length).catch(() => {});
     newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
     settle(got.items);
@@ -88,8 +91,14 @@ function open(target) {
 const back = () => history.back();
 const popped = (event) => shown(event.state?.reading || []);
 
-onMounted(() => window.addEventListener("popstate", popped));
-onUnmounted(() => window.removeEventListener("popstate", popped));
+onMounted(() => {
+    window.addEventListener("popstate", popped);
+    document.addEventListener("visibilitychange", returned);
+});
+onUnmounted(() => {
+    window.removeEventListener("popstate", popped);
+    document.removeEventListener("visibilitychange", returned);
+});
 
 function chipped(event) {
     const target = peeked(event);
@@ -152,6 +161,9 @@ function sent() {
             A newer version of this app is ready.
             <button type="button" @click="reload">Reload now</button>
         </p>
+    </template>
+    <template v-if="!current && !offline">
+        <p class="home-updating">Updating…</p>
     </template>
     <template v-if="offline">
         <p class="home-offline">Can't reach your computer right now. Trying again; what you write waits and sends then.</p>
@@ -259,6 +271,13 @@ function sent() {
     background: var(--raised);
     color: var(--text);
     font: inherit;
+}
+
+.home-updating {
+    margin: 0;
+    padding: 2px 0 6px;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .home-offline {

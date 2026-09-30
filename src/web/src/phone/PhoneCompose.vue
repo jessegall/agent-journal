@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, nextTick, ref} from "vue";
+import {computed, inject, nextTick, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {fitLines} from "../composables/fitLines.js";
@@ -22,6 +22,17 @@ const focus = () => box.value && box.value.focus();
 const tapped = (event) => !event.target.closest("button, textarea") && focus();
 
 defineExpose({focus});
+
+const previews = new Map();
+const pictured = (file) => file.type.startsWith("image/");
+
+watch(files, (now) => {
+    now.filter((file) => pictured(file) && !previews.has(file)).forEach((file) => previews.set(file, URL.createObjectURL(file)));
+    [...previews.keys()].filter((file) => !now.includes(file)).forEach((file) => {
+        URL.revokeObjectURL(previews.get(file));
+        previews.delete(file);
+    });
+}, {flush: "sync"});
 
 function picked(event) {
     files.value = [...files.value, ...event.target.files];
@@ -69,7 +80,12 @@ async function send() {
             <div class="compose-files">
                 <template v-for="(file, i) in files" :key="file.name + file.size + file.lastModified">
                     <span class="compose-file">
-                        {{ file.name }}
+                        <template v-if="pictured(file)">
+                            <img class="compose-thumb" :src="previews.get(file)" :alt="file.name" />
+                        </template>
+                        <template v-else>
+                            {{ file.name }}
+                        </template>
                         <CloseButton @click="files = files.filter((_, at) => at !== i)" />
                     </span>
                 </template>
@@ -176,6 +192,13 @@ async function send() {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+}
+
+.compose-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
 }
 
 .compose-file {
