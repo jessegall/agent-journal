@@ -252,8 +252,8 @@ class Manager:
         if spec.restart == "never" and current.state in ("exited", "stopped"):
             return False
         write_json(spec_file(self.root, sid), asdict(replace(spec, owner=os.getpid())))
-        keeper = self.start(spec, self.lifeline)
-        replace(current, state="starting", keeper=keeper, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
+        replace(current, state="starting", keeper=0, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
+        self.start(spec, self.lifeline)
         return True
 
     def unneeded(self, spec: ServiceSpec, now: float) -> str:

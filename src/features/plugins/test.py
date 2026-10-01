@@ -1,9 +1,10 @@
 from pathlib import Path
 import json
+import os
 import shutil
 import socket
-import sys
 import subprocess
+import sys
 import threading
 import time
 
@@ -292,6 +293,10 @@ def test_stopping_a_service_stops_every_process_it_forked():
     status_file(record.root, "moved.web").write_text(json.dumps({"state": "ready", "keeper": running.pid, "build": "port 8440"}))
     Manager(record.root, start=lambda spec, lifeline: 0).one(rebuilt)
     assert running.wait(timeout=5) is not None, "a keeper running another build than the one wanted is restarted, even when a failed start rewrote the spec file"
+    quick = lambda spec, lifeline: status_file(record.root, spec.id).write_text(json.dumps({"state": "ready", "keeper": os.getpid()})) or os.getpid()
+    Manager(record.root, start=quick).one(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")))
+    assert json.loads(status_file(record.root, "quick.web").read_text())["state"] == "ready", \
+        "a keeper that is ready before its manager looks again keeps its ready, never overwritten with starting"
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
