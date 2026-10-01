@@ -117,9 +117,14 @@ async function act(row, action) {
 }
 
 .helper-head {
+    position: sticky;
+    top: -6px;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 6px 0;
+    background: var(--raised);
 }
 
 .helper-dot {

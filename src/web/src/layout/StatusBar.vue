@@ -200,6 +200,7 @@ async function runBar(p) {
                         :min-width="320"
                         :max-width="380"
                         :max-height="480"
+                        :gap="12"
                         @click.stop
                         @close="helpersOpen = false"
                     >

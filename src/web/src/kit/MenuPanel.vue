@@ -9,12 +9,12 @@ const props = defineProps({
     minWidth: {type: Number, default: 0},
     maxWidth: {type: Number, default: 0},
     maxHeight: {type: Number, default: 0},
+    gap: {type: Number, default: 4},
 });
 const panel = ref(null);
 const px = (value) => (value ? `${value}px` : undefined);
 const size = computed(() => ({minWidth: px(props.minWidth), maxWidth: px(props.maxWidth), maxHeight: px(props.maxHeight)}));
 const EDGE = 8;
-const GAP = 4;
 const drawn = ref({w: 0, h: 0});
 const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
 const onScreen = (r) => ({
@@ -32,8 +32,8 @@ const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : r
 
 function room(bounds, edge) {
     return {
-        below: bounds.bottom - edge.bottom - GAP - EDGE,
-        above: edge.top - bounds.top - GAP - EDGE,
+        below: bounds.bottom - edge.bottom - props.gap - EDGE,
+        above: edge.top - bounds.top - props.gap - EDGE,
         across: bounds.right - bounds.left - 2 * EDGE,
     };
 }
@@ -55,8 +55,8 @@ const place = computed(() => {
     const x = clampTo(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
     const up = h > space.below && space.above > space.below;
     const vertical = up
-        ? {bottom: `${window.innerHeight - edge.top + GAP}px`, maxHeight: within(props.maxHeight, space.above)}
-        : {top: `${edge.bottom + GAP}px`, maxHeight: within(props.maxHeight, space.below)};
+        ? {bottom: `${window.innerHeight - edge.top + props.gap}px`, maxHeight: within(props.maxHeight, space.above)}
+        : {top: `${edge.bottom + props.gap}px`, maxHeight: within(props.maxHeight, space.below)};
     return {...size.value, ...vertical, left: `${x}px`, maxWidth: within(props.maxWidth, window.innerWidth - x - EDGE)};
 });
 const emit = defineEmits(["close"]);
