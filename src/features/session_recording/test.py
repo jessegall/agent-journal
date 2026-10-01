@@ -11,6 +11,7 @@ import pytest
 
 import features
 from controllers.types import Agents, Todos
+from engine.stored import undoable
 from features.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
 from features.session_recording.demo import leaks
@@ -115,7 +116,9 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     recordings = Recordings(record, actor=SYSTEM)
     recordings.scrub(str(folder))
     shipped = tmp_path / "demo.json"
-    recordings.build(str(folder), str(shipped))
+    with undoable() as undo:
+        recordings.build(str(folder), str(shipped))
+        assert undo.events == [], "the throwaway world's events never wait to be released into the command's record"
     demo = json.loads(shipped.read_text())
     assert len(demo["moments"]) == 3
     assert len(set(demo["answers"])) < len(demo["moments"]) * len(demo["moments"][0]["answers"]), "an answer that did not change is stored once"

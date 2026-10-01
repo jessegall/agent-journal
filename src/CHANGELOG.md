@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.223.0 — tidier phone screens and a demo build that finishes
+
+**The phone's chat marks look like the desktop's:** small, at the left, the icon beside the text, with a gap
+between them, instead of tall centred boxes pressed together.
+
+**Approving a plan on the phone** leaves only the next step: Approve the plan and Ask for changes go once the
+plan is approved, and Comment steps back behind Next.
+
+**A text field with buttons wraps them below itself in a narrow pane**, so a question card in a narrow chat
+keeps its answer row inside the card.
+
+**`journal record build` finishes** instead of ending with `! no agent 1`: the throwaway world the demo is
+built in no longer leaves its events queued for the command's own record.
+
 ## 2.222.0 — the demo is yours to play
 
 **In the live demo you play the user.** Each message waits in the box until you press Send, each plan waits

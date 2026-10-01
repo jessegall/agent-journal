@@ -15,7 +15,7 @@ HERE = Path(__file__).resolve().parent
 SRC = HERE.parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
-from features.session_recording.demo import BRANCHES, branched  # noqa: E402
+from features.session_recording.demo import BRANCHES  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
 SCENARIOS = ("bakery", "helpers", "ledgerly")
@@ -113,9 +113,9 @@ def played(key: str, project: Path, pace: float, folder: Path | None = None) -> 
 
 
 def shipped(key: str, project: Path, folder: Path) -> Path:
-    subprocess.run([str(project / ".journal" / "journal"), "record", "scrub", str(folder)], check=True, capture_output=True, timeout=300)
     into = SHIPPED / f"{key}.json"
-    into.write_text(json.dumps(branched(folder)))
+    for step in (["scrub", str(folder)], ["build", str(folder), str(into)]):
+        subprocess.run([str(project / ".journal" / "journal"), "record", *step], check=True, capture_output=True, timeout=600)
     return into
 
 
