@@ -19,7 +19,6 @@ from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from runner.engines import Children  # noqa: E402
-from commands import workers  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
 from runner.hooks import replay  # noqa: E402
@@ -179,7 +178,6 @@ def run(root: Path, port: int = 8430) -> None:
     warm_viewer(root, default_env(root))
     read_transcripts(root)
     gc.freeze()
-    workers.start(root, int(home.setting(workers.WORKERS, 0)), server.fileno())
     threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
@@ -196,7 +194,6 @@ def run(root: Path, port: int = 8430) -> None:
     finally:
         engines.set()
         children.stop()
-        workers.stop()
         server.server_close()
     if halting.is_set():
         print("journal: stopped", flush=True)

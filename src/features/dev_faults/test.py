@@ -105,6 +105,10 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
         runtime.STARTED[0] = 0.0
     reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
     assert "request GET /api/pages is slower than its budget" in notified(record), "once warm, the budget holds again"
+    reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
+    assert "request GET /api/main/board is slower than its budget" not in notified(record), "a request's first, cold run after a start is let be"
+    reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
+    assert "request GET /api/main/board is slower than its budget" in notified(record), "its next run is held to the budget"
 
 
 def test_a_slow_request_waits_while_the_agent_waits():
@@ -120,7 +124,8 @@ def test_a_slow_request_waits_while_the_agent_waits():
     reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
     assert not [n for n in nudges(record) if "slower than its budget" in n], "a wait hears only what needs the agent to act"
     Works(record, actor=AGENT).update(work.n, awaiting="")
-    reports.spent(record.root, record.env, "request", "GET /api/agents", 400)
+    for _ in range(2):
+        reports.spent(record.root, record.env, "request", "GET /api/agents", 400)
     assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
 
 

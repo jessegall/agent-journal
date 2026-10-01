@@ -18,6 +18,7 @@ TOLD_EVERY = 25
 RETIRED = "slow"
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
+SERVED: set[str] = set()
 PROFILING = "profile-requests"
 
 
@@ -85,7 +86,7 @@ class FaultReports:
         (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
 
     def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None, garbage: float = 0.0) -> None:
-        if took < min(BUDGET.values() or [0]) or (kind in WARMED and runtime.warming()) or runtime.tests_running(Path(root)):
+        if took < min(BUDGET.values() or [0]) or cold(kind, name) or runtime.tests_running(Path(root)):
             return
         try:
             record = Record(Path(root), env)
@@ -104,3 +105,11 @@ class FaultReports:
             return False
         self.threw(record, message, where, stack, kind)
         return True
+
+
+def cold(kind: str, name: str) -> bool:
+    if kind not in WARMED:
+        return False
+    first = name not in SERVED
+    SERVED.add(name)
+    return first or runtime.warming()
