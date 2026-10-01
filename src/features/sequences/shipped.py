@@ -83,8 +83,8 @@ REVISING_THE_DRAFTS = ShippedSequence(
                                "least 6 remain unless they asked for fewer, and that the order between cards still holds (journal "
                                "ticket depend). Draft what a removal left uncovered. Then journal sequence next <this sequence> --about <ref>."),
         ("Say one line", "Say it in the panel in one short line with journal board say <board n> \"<line>\", of at most 200 characters about what changed, like \"Made the "
-                         "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Finish with "
-                         "journal sequence next <this sequence> --about <ref>."),
+                         "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Then say you wait "
+                         "for the user with journal board wait <board n>, and finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )
 BUILDING_A_BOARD = ShippedSequence(

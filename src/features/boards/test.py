@@ -51,8 +51,14 @@ def test_a_request_opens_a_session_that_cancel_closes():
     boards.retry(board.n)
     assert (boards.load(board.n).drafting["phase"], sum("board-filler" in n for n in nudges(record))) == ("exploring", before + 2), \
         "Retry puts the board back where it stalled and asks for the filler again"
+    filler_board = Boards(record, actor=AGENT, agent="board-filler")
+    assert "not drafting" in refused(lambda: filler_board.wait(board.n)), "only a board being drafted can wait for the user"
+    filler_board._update_drafting(boards.load(board.n), phase="drafting")
+    filler_board.wait(board.n)
+    assert boards.load(board.n).drafting["phase"] == "waiting", "the filler says it waits for the user's picks, and no stall is called"
     more = boards.follow_up(board.n, "Also by mail")
-    assert boards.load(board.n).drafting["asked"] == [made.ref, more.ref], "a follow-up joins the request, so a cancel covers it too"
+    assert (boards.load(board.n).drafting["asked"], boards.load(board.n).drafting["phase"]) == ([made.ref, more.ref], "drafting"), \
+        "a follow-up joins the request, so a cancel covers it too, and the board is being drafted again"
     drafter = Tickets(record, actor=AGENT)
     kept, stray = (drafter.create(t, abstract=t, board=board.n, draft=True) for t in ("Share a link", "Invite by mail"))
     planner = Boards(record, actor=AGENT)

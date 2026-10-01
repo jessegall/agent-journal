@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {useReveal} from "../composables/reveal.js";
+import TextDisplay from "./TextDisplay.vue";
 
 const props = defineProps({
     text: {type: String, default: ""},
@@ -43,9 +44,11 @@ let flipping = 0;
 const later = () => (flipping = setTimeout(() => (flip(), later()), NOTE_SOONEST + Math.random() * (NOTE_LATEST - NOTE_SOONEST)));
 later();
 onUnmounted(() => clearTimeout(flipping));
-const count = useReveal(props.typed ? props.text.length : 0);
-const shown = computed(() => (props.typed && count.value < props.text.length ? props.text.slice(0, count.value) : props.text));
-const writing = computed(() => props.typed && count.value < props.text.length);
+const MARKS = /\[\[\w+ [^|\]]+\|([^\]]+)\]\]/g;
+const plain = computed(() => props.text.replace(MARKS, "$1"));
+const count = useReveal(props.typed ? plain.value.length : 0);
+const shown = computed(() => plain.value.slice(0, count.value));
+const writing = computed(() => props.typed && count.value < plain.value.length);
 </script>
 
 <template>
@@ -87,8 +90,11 @@ const writing = computed(() => props.typed && count.value < props.text.length);
                     </template>
                 </div>
             </template>
+            <template v-else-if="writing">
+                <span class="caret">{{ shown }}</span>
+            </template>
             <template v-else>
-                <span :class="{caret: writing}">{{ shown }}</span>
+                <TextDisplay :text="text" inline />
             </template>
         </div>
     </template>

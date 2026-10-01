@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.217.0 — New work waits for you without calling a stall
+
+**The board's agent says it waits for you.** `journal board wait <n>` ends a drafting or revising
+round: the New work panel shows the drafts ready to pick and no longer warns that nothing was
+written to the board. Your next message in the panel starts the round again.
+
+**The New work panel draws chips** in the agent's lines, as the chat does, instead of showing their
+raw markup.
+
 ## 2.216.0 — answer a permission from the phone
 
 **The phone answers a permission prompt.** When the agent, or one of its helpers, waits on a

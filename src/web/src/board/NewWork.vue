@@ -69,6 +69,7 @@ const drafting = computed(() => (since.value && store.board.drafting) || {});
 const phase = computed(() => drafting.value.phase || "");
 const lost = computed(() => phase.value === "lost");
 const halted = computed(() => phase.value === "stalled");
+const filling = computed(() => ["drafting", "waiting"].includes(phase.value));
 const step = useStepAbout(() => drafting.value.asked || []);
 const stepAt = ref(0);
 watch(step, () => (stepAt.value = Date.now() / 1000), {immediate: true});
@@ -128,7 +129,7 @@ const summary = computed(() => {
     if (!since.value) return {text: "", step: ""};
     if (lost.value) return {text: drafting.value.reading || "Not clear yet", step: "Still reading the request"};
     const text = drafting.value.reading || (writing.value ? "Not clear yet" : "");
-    if (phase.value === "drafting" && !writing.value && drafts.value.length) return {text, step: `${drafts.value.length} drafts ready`};
+    if (filling.value && !writing.value && drafts.value.length) return {text, step: `${drafts.value.length} drafts ready`};
     if (asking.value) return {text, step: "Asking you"};
     return {text, step: STEP_WORDS[step.value] || (writing.value ? "Reading the request" : "")};
 });
@@ -240,7 +241,7 @@ watch([() => store.board.drafting.picks?.at || 0, since], ([at]) => {
 });
 
 watch(
-    () => drafts.value.length >= 1 || reading.value || phase.value === "drafting",
+    () => drafts.value.length >= 1 || reading.value || filling.value,
     (dock) => dock && (docked.value = true),
     {immediate: true}
 );
