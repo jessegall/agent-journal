@@ -17,6 +17,7 @@ STAGES = ("To do", "Doing", "Review", "Done")
 START_OVER = "Start over"
 CANCEL_HOLDS = 600
 BUILD_LOG = 40
+PANEL_REPLY = 200
 SECTION_STATES = ("now", "read", "out", "asked")
 EXPLORING, DRAFTING_PHASE, LOST, WAITING = "exploring", "drafting", "lost", "waiting"
 IDEAS, IDEA = 5, 60
@@ -327,7 +328,8 @@ class Boards(Controller):
 
     def _filed(self, board, text: str, idempotency: str, **data):
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(text), brief=text.strip(), about=board.ref, window=board.ref, new_work=True, idempotency=idempotency, **data)
+            titled(text), brief=text.strip(), about=board.ref, window=board.ref, new_work=True, idempotency=idempotency,
+            reply_with=f'journal board say {board.n} "<one line, at most {PANEL_REPLY} characters>"', **data)
 
     def build(self, n: int, name: str = "", steer: str = ""):
         board = self.load(n)

@@ -233,7 +233,7 @@ class Driver(ABC):
             return ""
         self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
-                else "; ".join(dict.fromkeys(self.held + counted(self.groups))))
+                else "; ".join(dict.fromkeys(self.held + counted(self.groups, self.record))))
         self.held, self.groups, self.sent_at = [], {}, time.time()
         self.failed = not self.deliver(line)
         return "" if self.failed else line

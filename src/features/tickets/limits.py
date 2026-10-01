@@ -1,10 +1,10 @@
+from features.boards.controller import PANEL_REPLY
 from features.parts import ActionInterceptor, Context
 from features.sequences.exploration import FILLER
 from resources.base import AGENT, Refused
 
 CARD_LINE = 140
 CARD_TITLE = 60
-PANEL_REPLY = 200
 
 
 class DraftsCarryOneLine(ActionInterceptor):

@@ -53,11 +53,11 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
 
 def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     from engine.wording import counted
-    fresh()
-    assert counted({("message", "created"): {4465: None}}) == ["1 new message 4465 - answer by opening your turn with [!reply:4465]"], \
+    record = fresh()
+    assert counted({("message", "created"): {4465: None}}, record) == ["1 new message 4465 - answer by opening your turn with [!reply:4465]"], \
         "the tags feature adds to the messages line; no second line follows"
-    assert counted({("message", "created"): {1: None, 2: None}})[0].endswith("answer each by opening a turn with [!reply:<n>]")
-    assert counted({("todo", "created"): {3: None}}) == ["1 new todo 3"], "a line nobody appends to is left as it is"
+    assert counted({("message", "created"): {1: None, 2: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
+    assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     from controllers.types import Agents
     from resources.base import AGENT, USER
     record = fresh()

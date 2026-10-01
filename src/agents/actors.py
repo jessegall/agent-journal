@@ -122,7 +122,7 @@ class Agent(Actor):
         self.pending = [e for e in self.pending if e not in done]
         if not sent:
             return ""
-        return "; ".join([line, *counted(groups)] if line else counted(groups))
+        return "; ".join([line, *counted(groups, self.record)] if line else counted(groups, self.record))
 
     def state(self) -> str:
         if not self.driver.alive():

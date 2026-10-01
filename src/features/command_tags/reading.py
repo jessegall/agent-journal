@@ -1,6 +1,10 @@
 import re
 from dataclasses import dataclass
 
+from controllers.types import Messages
+from resources.base import SYSTEM
+
+REPLY_WITH = "reply_with"
 REPLY = "reply"
 AWAIT = "await"
 
@@ -84,7 +88,18 @@ def tag_spelling(text: str) -> str:
     return SETTING.sub(r"\1=", text)
 
 
-def answered(numbers: list, **_) -> str:
+def answered(numbers: list, record, **_) -> str:
+    messages = Messages(record, actor=SYSTEM)
+    rows = [messages.load(n) for n in numbers if messages._exists(n)]
+    panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
+    told = [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
+    here = [n for n in numbers if n not in panel]
+    if here:
+        told.append(tagged(here))
+    return "; ".join(told)
+
+
+def tagged(numbers: list) -> str:
     return f"answer by opening your turn with [!reply:{numbers[0]}]" if len(numbers) == 1 else "answer each by opening a turn with [!reply:<n>]"
 
 

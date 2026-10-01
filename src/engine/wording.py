@@ -10,10 +10,10 @@ APPENDS: dict[str, list] = {}
 
 
 def appended(on: str, values: dict, line: str) -> str:
-    return " - ".join([line, *(append(**values) for append in APPENDS.get(on, []))])
+    return " - ".join([line, *(added for added in (append(**values) for append in APPENDS.get(on, [])) if added)])
 
 
-def counted(groups: dict[tuple, dict]) -> list[str]:
-    return [appended(f"{type_}.{action}", {"numbers": list(ns)}, f"{plural(len(ns), f'new {type_}')} {', '.join(map(str, ns))}" if action == "created"
+def counted(groups: dict[tuple, dict], record) -> list[str]:
+    return [appended(f"{type_}.{action}", {"numbers": list(ns), "record": record}, f"{plural(len(ns), f'new {type_}')} {', '.join(map(str, ns))}" if action == "created"
                     else f"{noun(len(ns), type_)} {', '.join(map(str, ns))} {action}")
             for (type_, action), ns in groups.items()]
