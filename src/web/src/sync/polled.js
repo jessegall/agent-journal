@@ -5,6 +5,18 @@ import {readSummary} from "./summary.js";
 
 const LIVE = 5;
 const newest = () => (store.events.length ? store.events[store.events.length - 1].id : 0);
+const polledTo = {env: "", id: 0};
+
+function pollEvents() {
+    if (polledTo.env !== api.env()) Object.assign(polledTo, {env: api.env(), id: newest()});
+    return api.events(polledTo.id);
+}
+
+function heardPolled(fresh) {
+    if (!fresh.length) return;
+    polledTo.id = fresh[fresh.length - 1].id;
+    heardEvents(fresh);
+}
 
 export const polled = {
     bar: ["bar", () => api.bar(), 500, (got) => Array.isArray(got && got.queue) && (store.bar = got)],
@@ -16,5 +28,5 @@ export const polled = {
     journals: ["journals", () => api.journals(), 10000, (got) => (store.journals = got)],
     summary: ["summary", readSummary, 4000],
     manifest: ["manifest", () => api.manifest(), 30000, (got) => (store.spec = got)],
-    events: ["events", () => api.events(newest()), 5000, (fresh) => fresh.length && heardEvents(fresh)],
+    events: ["events", pollEvents, 5000, heardPolled],
 };
