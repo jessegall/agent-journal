@@ -330,7 +330,9 @@ onMounted(async () => {
     overflow-y: auto;
     overscroll-behavior-y: contain;
     padding: 8px 0 24px;
+    overflow-x: hidden;
     line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .reader-kind {
@@ -380,8 +382,18 @@ onMounted(async () => {
     background: var(--bg);
 }
 
+.reader-foot > :deep(*) {
+    flex: none;
+}
+
 .reader-foot :deep(.btn) {
+    height: auto;
     min-height: 50px;
+    padding-block: 8px;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+    overflow-wrap: anywhere;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;

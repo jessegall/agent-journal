@@ -67,6 +67,8 @@ defineProps({facts: {type: Array, required: true}, after: {type: Array, required
 }
 
 .reader-chip {
+    max-width: 100%;
+    overflow-wrap: anywhere;
     padding: 1px 8px;
     border-radius: 9px;
     background: var(--hover);

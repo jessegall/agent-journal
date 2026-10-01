@@ -260,10 +260,22 @@ body {
     height: auto;
 }
 
-.phone pre,
-.phone code {
+.phone code,
+.phone .md :not(pre) > code {
     white-space: pre-wrap;
-    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.phone pre {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    white-space: pre;
+}
+
+.phone pre code {
+    white-space: pre;
+    overflow-wrap: normal;
 }
 
 .phone table {
