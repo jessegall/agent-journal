@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Works
 from features.parts import Command, Context
-from resources.base import Refused
+from resources.base import Refused, titled
 
 
 def in_hand(works: Works, n: int = 0):
@@ -45,7 +45,8 @@ class AwaitWork(Command):
     def run(self, context: Context, works: Works, *words: str, n: int = 0, on: str = ""):
         n, awaiting = numbered(words, n, "say what you are waiting for: journal work await <n> \"<what>\"")
         named = ",".join(part.strip() for part in on.split(",") if part.strip())
-        return works.update(in_hand(works, n).n, awaiting=awaiting, awaiting_since=time.time(), awaiting_on=named)
+        row = in_hand(works, n) if n or works.active() else works.create(titled(f"Waiting on {awaiting}"))
+        return works.update(row.n, awaiting=awaiting, awaiting_since=time.time(), awaiting_on=named)
 
 
 class ResumeWork(Command):
