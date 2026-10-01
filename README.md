@@ -1,15 +1,15 @@
 # agent-journal
 
-A project journal and live viewer for Claude Code and Codex.
+A project journal, live viewer and phone app for Claude Code and Codex.
 
 Long agent sessions lose decisions when context is compacted, a terminal closes, or another
 session takes over. Agent Journal keeps the durable state beside your project: current work,
 to-dos, messages, facts, rules, reminders, plans, reports, docs, and the history connecting
 them. Every new session receives the part it needs, while the full record stays readable in
-plain files and in the browser.
+plain files, in the browser and on your phone. Claude and Codex use the same record, engine,
+viewer, and command line; `journal version` says which one you have.
 
-The current package is 2.84.11. Claude and Codex use the same record, engine, viewer, and command
-line.
+![The chat with the agent, its work and the rail beside it](docs/screenshots/chat.png)
 
 ## Install
 
@@ -18,64 +18,63 @@ From the root of your project, with `git` and `python3` available:
     curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
 
 The installer fetches the package as plain source and packs its Python on your machine into one
-file, `.journal/journal.pyz`, with the viewer, skills and hook scripts beside it in `.journal/src`. It
-preserves the project record on upgrades,
-wires each agent it finds, writes that agent's generated journal skills, installs a `journal`
-shim in `~/.local/bin` when that directory exists, injects the journal's immutable dispatch law
-into `CLAUDE.md` and `AGENTS.md`, and runs migrations. Run the installer again, or use
-`journal upgrade`, to update an existing installation.
+file, `.journal/journal.pyz`, with the viewer, skills and hook scripts beside it in `.journal/src`.
+It preserves the project record on upgrades, wires each agent it finds, writes that agent's
+generated journal skills, installs a `journal` shim in `~/.local/bin` when that directory exists,
+injects the journal's law into `CLAUDE.md` and `AGENTS.md`, and runs migrations.
 
 Claude hooks live beside existing settings in `.claude/settings.json`; Codex hooks live in
 `.codex/hooks.json`. Hooks contain no journal decisions: they report activity and enforce the
 write gate. Features in the engine decide what the agent should hear.
+
+The journal updates itself: every half hour it checks for a newer published version and installs
+it (the Updates feature; switch it off in Settings to have the agent told instead). Upgrade by hand
+with `journal upgrade`. Release history is in [CHANGELOG.md](src/CHANGELOG.md).
 
 ## Start Claude or Codex
 
     journal claude
     journal codex
 
-These launch the chosen agent under the same supervisor. Arguments after the driver name pass
-through unchanged, so commands such as `journal claude --continue` and a quoted first prompt
-still work.
+These launch the chosen agent under the same supervisor; arguments after the driver name pass
+through unchanged. The installed hooks are inert in standalone Claude and Codex sessions: the
+launcher marks only the agent process it starts.
 
-The installed hooks are inert in standalone Claude and Codex sessions. The launcher marks only
-the agent process it starts, and hooks return immediately when that mark is absent.
+The launcher binds the session to an environment (`main` by default), starts this project's viewer
+on a free local port, runs the journal engine beside the agent, and keeps a live terminal band with
+the agent, its state, context, the work in hand and the viewer's address.
 
-The launcher:
-
-- binds the session to the current environment, `main` by default;
-- starts this project's viewer on an available local port and opens it in the browser;
-- runs the journal engine beside the agent and delivers messages while the agent is idle;
-- keeps a live terminal band showing the agent, environment, state, context, active work or
-  command, current time, and the clickable viewer URL.
-
-Use `journal serve` to run only the viewer. It reloads changed Python package code on the same
-port; frontend assets continue to refresh from disk. Use `journal status` to see the record's
-current counts, and `journal verify` to check hooks, engine, viewer, and this session's latest report.
+You can also start an agent from the viewer's sidebar or from the phone. With the
+`wake_on_message` setting on, writing in an environment where no agent runs starts one there,
+resuming the conversation that environment last had, so the same agent reads your message next.
 
 ## The viewer
 
-Home is a conversation with the active agent. Messages, answers, reactions, and receipts share
-one thread. The rail keeps questions, reports, notifications, and to-dos within reach; Activity
-shows what changed while the agent worked. A notice can stay pinned above the chat, and any turn
-or unsent composer text can become one.
+Home is a conversation with the agent. Messages, replies, reactions and receipts share one thread;
+a question you ask shows that an answer is on its way until the reply lands. The rail keeps
+questions, reports, notifications and to-dos within reach, and a notice can stay pinned above the
+chat. The status bar holds the work mode, auto mode and the helpers the agent has out.
 
-Environment pages contain the work that belongs to one line of effort: to-dos, work, plans,
-reports, facts, reminders, and settings. Project pages contain rules, docs, tools, connections,
-checks, plugins, services, and Skills. The Skills page shows every Claude and Codex skill, whether it is loaded or stale,
-and lets you ask the agent to load it now or at every start. Search covers the record; Files
-collects attachments. The viewer creates, assigns, and removes environments without deleting
-their record; the CLI also renames and moves them.
+Environment pages contain one line of work: to-dos (also as a board of lanes), work, plans,
+reports, facts, reminders and settings. Project pages contain rules, docs, tools, checks, plugins,
+services and skills. The viewer is live: a change made by the command line, an agent or another
+tab arrives without a reload.
 
-The viewer is live: controller writes made by the CLI, an agent, or another open tab arrive over
-the same event stream. Resource inspectors open over the current page, so following a link does
-not discard where you were.
+The hub shows every journal running on this machine, the running ones first, each expandable to its
+environments, with Start and Stop for their agents.
 
-The Hub page shows every journal running on this machine as one status bar each, expandable to
-every environment with its plans, auto switch and counts, and links to open that journal's viewer
-or chat. Viewers find each other on ports 8420–8439 and read one another directly; a journal whose
-viewer has stopped stays on the hub, grey, until you forget it. Peers on versions before 2.3.0
-are listed but cannot be read.
+![A plan with its phases](docs/screenshots/plan.png)
+
+## On your phone
+
+<img src="docs/screenshots/phone-chat.png" alt="The chat on the phone" width="260"> <img src="docs/screenshots/phone-agent.png" alt="The agent sheet on the phone" width="260">
+
+The viewer's phone button shows a code: scan it and the phone app opens the same chat, from
+anywhere, over a tunnel whose address never changes. It works as an app on the home screen, keeps
+what you write while offline and sends it when the connection returns, and switches between the
+journals on your computer. Its agent sheet starts, pauses and stops the agent, picks the work mode
+and auto mode, and shows context, usage and the helpers. A watch opens the address from outside
+once a minute and restarts whichever part has stopped answering.
 
 ## What changes in an agent session
 
@@ -84,60 +83,62 @@ These are engine-backed mechanisms, not prompt suggestions:
 - A file write with no declared work is refused. Start a row with `journal todo start <n>`, or
   declare standalone work with `journal work start "..."`.
 - Putting work off in prose without filing a to-do is named back to the agent.
-- At 50, 70, 90, and 95 percent of the context window, writes wait for a decision: create a fact,
-  create a project-wide rule, or run `journal nothing "<why>"`.
-- Facts and rules are repeated as context fills. A selected rule can also be injected into the
-  same managed block in both `AGENTS.md` and `CLAUDE.md` from its viewer control.
-- Standing reminders return when the agent comes to rest after work.
-- Auto mode is off by default. When enabled in Settings, the next ready to-do is offered whenever
-  no work is open. The launcher also selects the provider's automatic approval mode and refuses
-  blocking question tools; questions only the user can answer are filed in the journal while the
-  agent continues with other ready work.
-- Hooks only report status or refuse an unscoped write. Work selection, reminders, retention,
-  context decisions, messages, and every other behavior belong to switchable engine features.
+- At marks of the context window, writes wait for a decision: a fact, a project-wide rule, or
+  `journal nothing "<why>"`. Facts, rules and reminders return as context fills.
+- A message you leave is answered before the agent writes anything else, and a message that asks
+  something closes only on a written reply.
+- Auto mode works through the to-do list without asking; a question only you can answer is filed
+  while the agent carries on with other ready work.
+- The work mode says how the agent works: hands-on, as orchestrator sending helpers and reviewing
+  what they bring back, or solo with no helpers at all.
+- Every subagent dispatch names its model and a concrete job; the journal's law refuses one that
+  does not.
 
-- A permission prompt in the agent's terminal shows in the chat, naming the call, with Allow and
-  Deny. Settings can restart the agent in the same conversation without permission prompts.
-- A command that fails leaves nothing half done: the files it wrote are put back and its events
-  are never told.
+Hooks only report status or refuse an unscoped write; every other behaviour belongs to a
+switchable feature, and Settings lists every line a feature can say to the agent.
 
-Every line a feature can say to the agent is declared by that feature under its own name, and
-Settings lists them all. A feature can say only its own lines.
+## Helpers, boards and critique rounds
 
-An environment is one line of work with its own messages, to-dos, facts, plans, and settings. A
-rule and a doc are project-wide. The viewer can bind an idle session to another environment; an
-agent never changes branches or environments on its own.
+A **helper** is an agent on any provider sent for one bounded job: `journal helper dispatch Rhea
+"profile the hooks" --provider codex --model <model>`. It works in an environment of its own,
+kept out of the lists, and in a worktree cut from the tip of the working branch when it changes
+code; its report comes back to the chat, and `journal worktree take` brings its commits home once
+it has rebased.
 
-## Message tags
+A **board** turns a request into tickets, each run by an agent in its own environment and
+worktree, while your agent orchestrates: it reviews plans, passes checkpoints and merges.
 
-Everything the agent writes reaches the chat as a plain message.
+A **critique round** sends critics through an app, each with a lens of their own (first-time user,
+accessibility, native feel, words, edge cases), and gathers what they find into one report for
+the designer: `journal critique round "the new agent sheet"`.
 
-A tag runs the command it stands for, with the turn as its text: `[!reply:12]` replies to
-message 12, `[!log:7]` logs work 7, `[!end:7]` ends it, and `[!todo="the title"]` files a to-do with
-the turn as its brief. Which tag runs which command is the `tags.runs` setting.
+## Checks and commit gates
 
-## Checks, suggestions, and plugins
-
-A check is a script that passes or fails, run by hand, by its button, or every so many minutes:
+A check is a script that passes or fails, run by hand or every so many minutes:
 `journal check create "the suite passes" --set command="pytest -q" --set every=30`. A failure is
 filed and told to the agent; the next pass clears it.
 
-A suggestion is a change the agent proposes unasked. You accept, adjust, or decline it in the
-viewer; nothing waits on it, and a decline is a ruling it does not propose again.
+While iterating, `journal check touched <n>` runs only the tests beside what changed. To commit,
+`journal check gate <n> "<message>" --paths a,b` runs the whole check in a process of its own and
+commits exactly those paths when it passes, then runs the check's follow-up (a push, an install);
+the agent is told either way.
+
+## Message tags
+
+Everything the agent writes reaches the chat as a plain message. A tag runs the command it stands
+for, with the turn as its text: `[!reply:12]` replies to message 12, `[!log:7]` logs work 7,
+`[!todo="the title"]` files a to-do, and `[!await on=("<run id>", "helper:2")]` waits until those
+are back. Which tag runs which command is the `tags.runs` setting.
+
+## Plugins and the Chrome extension
 
 A plugin is a repository installed from a GitHub URL or a local path, pinned to a commit. It hears
-the journal's events, can answer them, and can run services of its own; `journal services` lists
-them.
+the journal's events, can answer them, run services of its own (`journal services`) and show
+dashboards.
 
-## Chrome extension
-
-Settings serves a version-matched extension zip. Download it, unpack it, and load the folder from
-Chrome's extension page. The same chat can then float over the viewer or follow you to other tabs;
-its bar can be dragged, its corner resized, and its journal and environment switched in place.
-
-With the extension active, **Alt+J** opens the floating chat and **Alt+P** lets you point at a page
-element. The composer can also select an element, take a picture, or let the agent drive the tab
-while you explicitly leave it at the wheel.
+Settings serves a version-matched Chrome extension. With it, **Alt+J** opens the chat over any tab
+and **Alt+P** points at a page element; the agent can drive the tab while you leave it at the
+wheel.
 
 ## Commands
 
@@ -149,12 +150,8 @@ Every record command is a noun and a word:
     journal work end 18 --how "The migration landed"
     journal todo done 12 --how "Published with the release"
     journal question ask "Which name should the release use?"
-    journal question answer 3 --how "Aurora"
-    journal rule inject 4
-    journal plan continue 1
+    journal plan start 1
 
-`journal --help` lists top-level commands. `journal <noun> --help` lists the words for a resource,
-and `journal help <word>` prints focused help. The generated `journal` skill carries the same
+`journal --help` lists the nouns, `journal <noun> --help` the words for one, and
+`journal help <word>` prints focused help. The generated `journal` skill carries the same
 reference for each agent.
-
-The journal updates itself: every half hour it checks for a newer published version and installs it (the Updates feature; switch it off in Settings to have the agent told instead). Upgrade by hand with `journal upgrade`. Release history is in [CHANGELOG.md](src/CHANGELOG.md), and in the viewer under the version at the foot of the sidebar.
