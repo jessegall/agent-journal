@@ -122,7 +122,7 @@ class Checks(Controller):
             return f"check {check.n} failed, nothing was committed\n{check.last_run.output}"
         project = self.record.root.resolve().parent
         added = git(project, "add", "--", *paths)
-        made = git(project, "commit", "-q", "-m", message) if not added.returncode else added
+        made = git(project, "commit", "-q", "-m", message, "--", *paths) if not added.returncode else added
         if made.returncode:
             return f"check {check.n} passed but the commit failed\n{(made.stderr or made.stdout).strip()}"
         head = git(project, "log", "--oneline", "-1").stdout.strip()

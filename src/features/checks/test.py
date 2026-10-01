@@ -101,9 +101,10 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     assert args[-6:] == ["gate", str(suite.n), "change the hook", "--paths", "hooks/code.py", "--wait"] and how["start_new_session"], \
         "a gate runs in a process of its own, so a server restarted by another gate's install cannot cut it off"
     monkeypatch.undo()
+    git(repo.project, "add", "notes.txt")
     checks.gate(suite.n, "change the hook", paths="hooks/code.py", wait=True)
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook" and "notes.txt" in git(repo.project, "status", "--short"), \
-        "a pass commits exactly the named paths"
+        "a pass commits exactly the named paths, never what else was staged"
     assert any("passed and" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "the agent is told it landed"
     checks.update(suite.n, command="false")
     (repo.project / "hooks" / "code.py").write_text("three\n")
