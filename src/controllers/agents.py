@@ -7,9 +7,6 @@ KEPT_CARDS = 50
 
 
 
-def reported_at(row: dict) -> float:
-    at = row.get("at")
-    return 0.0 if at is None else float(at)
 
 class Agents(Controller):
     resource = types.AgentRow
@@ -42,6 +39,8 @@ class Agents(Controller):
         key = card.get("key")
         if key and any(kept.get("key") == key for kept in cards):
             return self.update(row.n, cards=[{**kept, **card} if kept.get("key") == key else kept for kept in cards])
+        if "label" not in card:
+            return row
         return self.update(row.n, cards=[*cards, {"at": time.time(), **card}][-KEPT_CARDS:])
 
     def stop_task(self, n: int, task: str, description: str = ""):
@@ -50,6 +49,5 @@ class Agents(Controller):
         return self._stopping(int(n), task=task.strip(), description=description.strip() or task.strip())
 
     def primary(self):
-        rows = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
-        found = max(rows, key=reported_at, default=None)
-        return self.load(found["n"]) if found else None
+        standing = [self.load(row["n"]) for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
+        return max(standing, key=lambda agent: float(agent.at), default=None)

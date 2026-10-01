@@ -294,6 +294,9 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
         subagent_rows=[{"id": "sub-1", "session": "session-1", "task": "Check the phone feed", "type": "Explore", "model": "haiku",
                         "at": now, "running": True, "tool": "Read", "file": "src/features/phone/controller.py"}],
     )
+    agent = CONTROLLERS["agent"](record, actor=SYSTEM)
+    agent.card(agent.by_session("codex-1").n, key="command:gone", state="done", ended=now)
+    assert all("label" in card for card in agent.by_session("codex-1").data["cards"]), "an update to a mark no longer kept is dropped, so every mark keeps its label"
     helper = Helpers(record, actor=SYSTEM).create("Split the phone view", name="Rhea", provider="codex", model="gpt-5-codex",
                                                   environment=f"{record.env}-rhea")
     from controllers.types import Environments
