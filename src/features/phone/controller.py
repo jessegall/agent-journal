@@ -261,7 +261,7 @@ class Phones(Controller):
         return phone
 
     def _home(self, phone: Phone) -> Record:
-        return Record(self.record.root if phone.journal is None else Path(phone.journal), phone.environment)
+        return Record(self.record.root if phone.journal is None else Path(phone.journal), phone.environment, memo=True)
 
     def _places(self) -> list[Place]:
         return places(self.record.root)

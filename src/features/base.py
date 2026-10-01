@@ -60,10 +60,13 @@ def booted(record) -> dict[str, bool]:
 
 
 def switches(record) -> dict[str, bool]:
+    if record.memo is not None and "switches" in record.memo:
+        return record.memo["switches"]
     held = SWITCHES.get(str(record.home))
-    if held and held[0] == Features(record, actor=SYSTEM).moved():
-        return held[1]
-    return booted(record)
+    found = held[1] if held and held[0] == Features(record, actor=SYSTEM).moved() else booted(record)
+    if record.memo is not None:
+        record.memo["switches"] = found
+    return found
 
 
 def rebooted(event=None, record=None) -> None:
