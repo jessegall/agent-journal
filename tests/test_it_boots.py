@@ -202,16 +202,29 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
 
 
 def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatch):
+    import threading
     import types
     import migrations
+    from engine.stored import write_text
     root = tmp_path / ".journal"
     (root / "environments" / "main" / "todo").mkdir(parents=True)
     kept = root / "environments" / "main" / "todo" / "001.md"
+    added = root / "environments" / "main" / "todo" / "002.md"
+    started = threading.Event()
+    writers = []
     kept.write_text("the user's row")
     touched, broke = types.ModuleType("migrations.m9998_touch"), types.ModuleType("migrations.m9999_break")
     touched.run = lambda r: kept.write_text("changed halfway") or "touched"
 
     def breaking(r):
+        def writing():
+            started.set()
+            write_text(added, "written while migrating")
+        writer = threading.Thread(target=writing)
+        writers.append(writer)
+        writer.start()
+        assert started.wait(timeout=1), "the record write starts during the migration"
+        assert writer.is_alive(), "a record write waits for the migration to finish"
         raise RuntimeError("the migration broke")
     broke.run = breaking
     monkeypatch.setitem(sys.modules, "migrations.m9998_touch", touched)
@@ -221,9 +234,10 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
         migrations.run(root)
     except RuntimeError:
         pass
+    writers[0].join(timeout=1)
     left = lambda: list(root.glob(f".{migrations.BACKUP}-*"))
-    assert (kept.read_text(), migrations.applied(root), left()) == ("the user's row", {}, []), \
-        "a failed migration puts every file back, records nothing as applied, and clears its backup"
+    assert (kept.read_text(), added.read_text(), migrations.applied(root), left()) == ("the user's row", "written while migrating", {}, []), \
+        "a failed migration restores its backup before a waiting record write lands"
     monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch"])
     assert migrations.run(root) == ["m9998_touch"] and not left(), "a run that succeeds deletes its backup"
 

@@ -6,7 +6,7 @@ import shutil
 import time
 from pathlib import Path
 from engine.package import modules
-from engine.stored import read_json, write_text
+from engine.stored import hold_record_writes, read_json, write_text
 from engine.fields import Loaded
 from dataclasses import dataclass
 
@@ -74,6 +74,11 @@ def run(root: Path) -> list[str]:
     import features
     features.load()
     root = Path(root)
+    with hold_record_writes(root):
+        return run_locked(root)
+
+
+def run_locked(root: Path) -> list[str]:
     done = applied(root)
     pending = [name for name in names() if name not in done]
     if not pending:
