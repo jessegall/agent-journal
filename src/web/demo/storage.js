@@ -1,7 +1,7 @@
 import {scenario} from "./scenarios.js";
 
 const PREFIX = "demo:";
-const OWNED = [PREFIX, "journal.", "events:"];
+const OWNED = [PREFIX, "journal.", "events:", "phone-"];
 
 export const BUILD = __DEMO_BUILD__;
 const key = `${PREFIX}${BUILD}:${scenario.key}:state`;
@@ -11,6 +11,14 @@ export function readState() {
         return JSON.parse(localStorage.getItem(key));
     } catch (e) {
         return null;
+    }
+}
+
+export function keep(name, value) {
+    try {
+        localStorage.setItem(name, value);
+    } catch (e) {
+        return;
     }
 }
 

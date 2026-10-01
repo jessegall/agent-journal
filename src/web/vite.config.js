@@ -8,7 +8,7 @@ export default defineConfig(({mode}) => {
         base: "./",
         define: {__DEMO__: demo, __DEMO_BUILD__: JSON.stringify(String(Date.now()))},
         build: demo
-            ? {outDir: "dist-demo", rollupOptions: {input: {main: "index.html"}}}
+            ? {outDir: "dist-demo", rollupOptions: {input: {main: "index.html", phone: "phone.html"}}}
             : {rollupOptions: {input: {main: "index.html", share: "share.html", phone: "phone.html"}}},
         server: {proxy: {"/api": "http://127.0.0.1:8430"}},
     };

@@ -15,9 +15,26 @@ export class StandIn {
         this.state = readState() || this.fresh(0);
     }
 
-    shift() {
-        if (!this.state.shift) this.state.shift = Date.now() / 1000 - this.demo.moments[0].at;
-        return this.state.shift;
+    walled(recorded) {
+        const clock = this.state.clock;
+        const after = clock.findIndex(([at]) => at >= recorded);
+        if (after === 0 || after === -1) {
+            const [at, wall] = clock[after === 0 ? 0 : clock.length - 1];
+            return wall + (recorded - at);
+        }
+        const [[from, fromWall], [to, toWall]] = [clock[after - 1], clock[after]];
+        return fromWall + ((recorded - from) * (toWall - fromWall)) / (to - from || 1);
+    }
+
+    unwalled(wall) {
+        const clock = this.state.clock;
+        const after = clock.findIndex(([, at]) => at >= wall);
+        if (after === 0 || after === -1) {
+            const [at, shown] = clock[after === 0 ? 0 : clock.length - 1];
+            return at + (wall - shown);
+        }
+        const [[from, fromWall], [to, toWall]] = [clock[after - 1], clock[after]];
+        return from + ((wall - fromWall) * (to - from)) / (toWall - fromWall || 1);
     }
 
     get moment() {
@@ -28,7 +45,8 @@ export class StandIn {
         const {rows, events, settings} = structuredClone(this.demo.moments[at]);
         const sent = this.state ? this.state.sent : {};
         const viewer = this.state ? this.state.settings.viewer : settings.viewer;
-        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, shift: this.state ? this.state.shift : 0, sent}));
+        const clock = [...(this.state ? this.state.clock : []), [this.demo.moments[at].at, Date.now() / 1000]];
+        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, clock, sent}));
     }
 
     unbranded(state) {
@@ -62,6 +80,41 @@ export class StandIn {
         return {demo: true, notice: NOTICE};
     }
 
+    phoneAnswer(method, url, body) {
+        const [path, search] = url.slice(2).split("?");
+        const query = new URLSearchParams(search || "");
+        const parts = path.split("/").filter(Boolean);
+        if (method !== "GET") return this.phoneWrote(parts, body || {});
+        const found = this.phoneRead(parts, query);
+        return new Response(this.dated(found === undefined ? {error: NOTICE} : found), {status: found === undefined ? 404 : 200});
+    }
+
+    phoneRead([first, kind, n], query) {
+        if (first === "feed") return this.phoneFeed(query);
+        if (first === "list") return this.moment[`phone.list.${query.get("type")}`];
+        if (first === "row") return this.moment[`phone.row.${kind}:${n}`];
+        return this.moment[`phone.${first}`];
+    }
+
+    phoneFeed(query) {
+        const feed = this.moment["phone.feed"];
+        const agent = (this.state.rows.agent || []).at(-1);
+        const state = agent && ["busy", "working"].includes(agent.data.status) ? "working" : "idle";
+        const items = query.get("before") ? [] : feed.items.map((item) => this.stampedItem(item));
+        return {...feed, items, more: false, build: "", agent: state, running: {...feed.running, state}};
+    }
+
+    stampedItem(item) {
+        const [kind, n] = item.ref.split(":");
+        const idempotency = kind === "message" && this.state.sent[n];
+        return idempotency ? {...item, data: {...item.data, idempotency}} : item;
+    }
+
+    phoneWrote([first], body) {
+        if (first !== "message") return new Response(JSON.stringify({error: RECORDED}), {status: 422});
+        return new Response(this.dated(this.sent(body)), {status: 201});
+    }
+
     answer(method, url, body) {
         const where = asked(url);
         const parts = where.pathname
@@ -73,7 +126,7 @@ export class StandIn {
     }
 
     dated(found) {
-        return JSON.stringify(found, (key, value) => (lately(value) ? value + this.shift() : value));
+        return JSON.stringify(found, (key, value) => (lately(value) ? this.walled(value) : value));
     }
 
     top(name) {
@@ -97,7 +150,7 @@ export class StandIn {
     }
 
     list(type, query) {
-        const since = query.get("since") ? Number(query.get("since")) - this.shift() : 0;
+        const since = query.get("since") ? this.unwalled(Number(query.get("since"))) : 0;
         const before = Number(query.get("before") || 0);
         const only = (query.get("n") || "").split(",").filter(Boolean).map(Number);
         const last = Number(query.get("last") || PAGE);
@@ -130,7 +183,7 @@ export class StandIn {
         const feed = this.moment[`edits.${agent}`] || {cursor: 0, edits: [], older: false};
         if (which === "older") return {edits: [], older: false};
         if (which === "file") return (this.moment[`edited.${agent}`] || {})[query.get("id")];
-        const since = Number(query.get("since") || 0) - this.shift();
+        const since = this.unwalled(Number(query.get("since") || 0));
         const edits = feed.edits.filter((card) => card.at > since);
         return {cursor: edits.length ? edits.at(-1).at : since, edits, older: false};
     }

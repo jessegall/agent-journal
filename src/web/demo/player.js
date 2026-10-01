@@ -1,10 +1,11 @@
-import {store} from "../src/state/store.js";
+import {prefill} from "../src/state/prefill.js";
 import {QuietStream} from "./stream.js";
 
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
 const LONGEST = 4;
-const SHORTEST = 0.35;
+const SHORTEST = 0.6;
 const OPENING = 1200;
+const TYPED = 2200;
 
 const newest = (moment) => Math.max(0, ...(moment.events || []).map((e) => e.id));
 const asks = (moment, before) =>
@@ -16,6 +17,7 @@ export class Player {
         const moments = standIn.demo.moments;
         this.prompts = moments.map((moment, at) => (at > 0 && asks(moment, moments[at - 1]) ? at : -1)).filter((at) => at > 0);
         this.timer = null;
+        this.stepped = () => {};
         if (standIn.state.at > 0) return this.offer();
         this.timer = setTimeout(() => this.send(), OPENING / SPEED);
     }
@@ -34,7 +36,8 @@ export class Player {
 
     offer() {
         const at = this.waiting;
-        store.prefill = at === undefined ? "" : this.asked(at);
+        prefill.value = at === undefined ? "" : this.asked(at);
+        if (at !== undefined) this.timer = setTimeout(() => this.send(), TYPED / SPEED);
     }
 
     asked(at) {
@@ -51,7 +54,7 @@ export class Player {
     send() {
         const at = this.waiting;
         if (at === undefined) return null;
-        store.prefill = "";
+        prefill.value = "";
         this.goTo(at);
         this.play();
         return this.message(at);
@@ -61,6 +64,7 @@ export class Player {
         const known = new Set(this.standIn.state.events.map((e) => e.id));
         while (this.standIn.state.at < at && this.standIn.step());
         this.standIn.state.events.filter((e) => !known.has(e.id)).forEach((e) => QuietStream.tell(this.standIn.dated(e)));
+        this.stepped();
     }
 
     play() {

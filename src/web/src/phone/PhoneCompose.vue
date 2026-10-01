@@ -4,8 +4,11 @@ import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {ended, flush, hold} from "./outbox.js";
 import {announce} from "./announce.js";
+import {prefill} from "../state/prefill.js";
 
 const MOST_LINES = 5;
+const REPLAY = __DEMO__;
+const hinted = () => window.dispatchEvent(new CustomEvent("replay-hint"));
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
 const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused"]);
 const SHORT = 420;
@@ -26,12 +29,12 @@ defineExpose({focus});
 
 watch(
     () => props.draft,
-    (start) => {
-        if (!start) return;
+    (start, was) => {
+        if (!start && !was) return;
         words.value = start;
         nextTick(() => {
             grow();
-            focus();
+            if (start) focus();
         });
     },
     {immediate: true},
@@ -69,6 +72,7 @@ function grow() {
 
 async function send() {
     if (!ready.value || sending.value) return;
+    if (REPLAY && said.value !== prefill.value.trim()) return hinted();
     sending.value = true;
     const text = said.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
     hold(text, props.about, files.value);

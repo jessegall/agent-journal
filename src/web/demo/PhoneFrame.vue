@@ -1,18 +1,23 @@
 <script setup>
 import Btn from "../src/kit/Btn.vue";
-import {innerAddress, viewAs} from "./view.js";
+import Segmented from "../src/kit/Segmented.vue";
+import {SCENARIOS, play, scenario} from "./scenarios.js";
+import {phoneAddress, viewAs} from "./view.js";
+import {restart} from "./storage.js";
 
-const address = innerAddress();
+const address = phoneAddress();
 </script>
 
 <template>
     <div class="phone-frame-page">
         <header class="phone-frame-bar">
-            <span class="phone-frame-title">The demo at phone size</span>
+            <span class="phone-frame-title">The phone app</span>
+            <Segmented :options="SCENARIOS" :value="scenario.key" @pick="play" />
+            <Btn small title="Start the replay again" @click="restart">Restart</Btn>
             <Btn small @click="viewAs('desktop')">Desktop view</Btn>
         </header>
         <div class="phone-frame-device">
-            <iframe :src="address" title="The demo at phone size" />
+            <iframe :src="address" title="The phone app" />
         </div>
     </div>
 </template>
@@ -34,7 +39,7 @@ const address = innerAddress();
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    width: 410px;
+    width: 640px;
     max-width: 100%;
     font-size: 13px;
 }

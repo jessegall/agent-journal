@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.212.0 — the demo plays on a phone, in the phone app
+
+**On a phone the demo opens in the phone app**, with a band to switch scenarios, restart, or open
+the desktop version; on a computer the Phone view shows the real phone app in a phone-sized frame.
+Every scenario plays in both, and a third scenario, Hedgerow, is worked entirely from the phone.
+
+**The replay runs by itself and on its own clock.** Each recorded message sits in the field for a
+moment and sends itself; a visitor who types their own is told it is a replay. Every time in the
+replay is a real time on the visitor's clock.
+
+**A document reads as being written only while its agent is still working**, in the viewer too: it
+settles as soon as the agent stops, instead of 45 seconds after the last write.
+
 ## 2.211.0 — the demo goes live, with a second scenario
 
 **The demo is published at https://jessegall.github.io/agent-journal/** on every push to main,
