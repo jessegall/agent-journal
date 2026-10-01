@@ -55,3 +55,6 @@ __pycache__/
 .venv/
 
 /.env
+# machine-specific: written by the installer with this machine's paths
+.mcp.json
+.codex/hooks.json

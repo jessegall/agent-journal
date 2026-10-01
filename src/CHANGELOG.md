@@ -416,7 +416,7 @@ On a folder of repositories, a started ticket branches every repository from its
 
 ## 2.178.0 — A worktree across a folder of repositories
 
-Started with a worktree in a folder that holds several git repositories, such as workspace, the journal makes one working folder, .claude/worktrees/<name>, with a worktree of every repository in it on the same branch, worktree-<name>, and links the folder's own files (CLAUDE.md, AGENTS.md, skills, the journal) in. A folder that is a repository with others inside it gets its own worktree with theirs placed in it. Leaving it keeps each repository's work, as for any worktree. Tickets on such a folder come next. Nothing to do.
+Started with a worktree in a folder that holds several git repositories, such as a client's workspace, the journal makes one working folder, .claude/worktrees/<name>, with a worktree of every repository in it on the same branch, worktree-<name>, and links the folder's own files (CLAUDE.md, AGENTS.md, skills, the journal) in. A folder that is a repository with others inside it gets its own worktree with theirs placed in it. Leaving it keeps each repository's work, as for any worktree. Tickets on such a folder come next. Nothing to do.
 
 ## 2.177.0 — A shared link shows a proper preview
 
@@ -2569,7 +2569,7 @@ What to do about it: `journal upgrade`.
 
 ## 2.80.2 — Two plan templates ship with the journal
 
-To-do 705, from design 7. Every project now has two plan templates. Blank plan carries the usual steps of building a plan with the user. Functional design, then technical implementation is A functional-design-first case (message 1457): its first phase writes a functional doc and ends at a checkpoint where you approve it, and only its second phase files and builds the technical to-dos. Both appear under Start from when a plan is created. They are added once, by a migration, and a template you edit or retire is never added again.
+To-do 705, from design 7. Every project now has two plan templates. Blank plan carries the usual steps of building a plan with the user. Functional design, then technical implementation suits a team that approves the functional design first: its first phase writes a functional doc and ends at a checkpoint where you approve it, and only its second phase files and builds the technical to-dos. Both appear under Start from when a plan is created. They are added once, by a migration, and a template you edit or retire is never added again.
 
 What to do about it: `journal upgrade`.
 
@@ -3226,7 +3226,7 @@ What to do about it: `journal upgrade`.
 
 ## 2.24.1 — A to-do whose work is parked is not offered again
 
-Under auto, a to-do whose work was open but parked — handed to a subagent, say — was offered straight back as "todo N next" on every idle, while resuming the work brought back the reminder to end or park it; nothing settled both. A to-do with open work, parked or not, is no longer next. Reported by the another project session.
+Under auto, a to-do whose work was open but parked — handed to a subagent, say — was offered straight back as "todo N next" on every idle, while resuming the work brought back the reminder to end or park it; nothing settled both. A to-do with open work, parked or not, is no longer next. Reported by another project's session.
 
 What to do about it: `journal upgrade`.
 
@@ -3234,7 +3234,7 @@ What to do about it: `journal upgrade`.
 
 An agent writing a plan was not told how one is built, and left plans half made. The plans feature now names the next step while a plan is being built: add its phases, then `journal plan stage <n> todos`, then put each phase's rows under it, then `journal plan ready <n>`. The plans skill and the journal skill spell out the same order.
 
-A plan whose to-dos were not among the latest 25 open rows showed placeholders, or 0/0, in place of its phases' rows. A listing can now be asked for rows by number (`?n=1,2,3`), and the plan page fetches the rows it is missing. Reported and first written by the another project session.
+A plan whose to-dos were not among the latest 25 open rows showed placeholders, or 0/0, in place of its phases' rows. A listing can now be asked for rows by number (`?n=1,2,3`), and the plan page fetches the rows it is missing. Reported and first written by another project's session.
 
 What to do about it: `journal upgrade`.
 
@@ -8107,7 +8107,7 @@ reader knows which kind they just filed.
 
 THE LAYOUT THIS BROKE ON IS ORDINARY AND IN DAILY USE:
 
-    workspace/        no git here at all — but this is where .journal lives
+    workspace/               no git here at all — but this is where .journal lives
       chronos/               a repository
         .claude/worktrees/…  Claude Code's own worktrees, three levels down
       site/                  another repository
