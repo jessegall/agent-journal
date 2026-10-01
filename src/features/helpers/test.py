@@ -30,8 +30,10 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     assert cwd == record.root.resolve().parent and "helper 1" in said, "without a worktree it works in the project"
     place = Environments(record, actor=SYSTEM)._titled(f"{record.env}-rhea-lovelace")
     assert place.helping and place.launched_from == record.env, "its environment is marked as the helper's and names the dispatcher"
-    assert f"{record.env}-rhea-lovelace" not in [e["name"] for e in summarize(record.root)["environments"]], \
-        "the hub's summary leaves it out"
+    summary = summarize(record.root)
+    assert f"{record.env}-rhea-lovelace" not in [e["name"] for e in summary["environments"]], "the hub's summary leaves it out"
+    assert [(h["name"], h["owner"]) for h in summary["helpers"]] == [(f"{record.env}-rhea-lovelace", "helper:1")], \
+        "and lists it apart, for the panel of agents at work"
 
 
 def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
@@ -68,6 +70,8 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     row = helpers.load(1)
     cut = Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree))
     assert calls[0][0] == Path(cut.path) and cut.helper == "Rhea", "a code-changing helper works in a worktree cut for it"
+    from engine.worktree import checkout, environment
+    assert environment(checkout(Path(cut.path))) == row.environment, "its worktree is named after its environment, so its session binds there and nowhere else"
     helpers.complete(1)
     assert not Environments(repo.record, actor=SYSTEM)._titled(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"

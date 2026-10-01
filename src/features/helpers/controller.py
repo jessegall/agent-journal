@@ -44,13 +44,13 @@ class Helpers(Controller):
         slug = slugged(name)
         if not slug:
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")
-        place = Environments(self.record, actor=SYSTEM).unused(f"{self.record.env}-{slug}", ": finish that helper first, or choose another name")
+        place = Environments(self.record, actor=SYSTEM).unused(slugged(f"{self.record.env}-{slug}"), ": finish that helper first, or choose another name")
         row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place)
         folder = self.record.root.resolve().parent
         if worktree:
             cut = Worktrees(self.record, actor=SYSTEM)
-            cut.cut(slug, helper=name)
-            given = cut._titled(slug, standing=True)
+            cut.cut(place, helper=name)
+            given = cut._titled(place, standing=True)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         driver = DRIVERS[provider]
