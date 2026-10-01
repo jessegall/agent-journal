@@ -3,6 +3,7 @@ import time
 from controllers.types import Environments, Works
 from providers import DRIVERS
 from resources.base import SYSTEM
+from resources.types import AT_REST
 
 AUTO = "work_tracking.auto"
 
@@ -33,7 +34,7 @@ STILL_THERE = "journal: you have been quiet for {minutes} minutes with work stil
 
 
 def still_there(record, quiet: float, state: str) -> str:
-    if not automatic(record) or quiet < QUIET_FOR or state in ("idle", "stopped"):
+    if not automatic(record) or quiet < QUIET_FOR or state in AT_REST:
         return ""
     waiting = [w for w in Works(record, actor=SYSTEM)._standing() if not w.parked]
     return STILL_THERE.format(minutes=int(quiet // 60)) if waiting else ""

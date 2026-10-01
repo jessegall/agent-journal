@@ -274,6 +274,7 @@ class Comment(Shape, Resource):
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
+AT_REST = (STOPPED, IDLE)
 SUBAGENT = "subagent"
 HELPER = "helper"
 
