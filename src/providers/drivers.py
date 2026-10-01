@@ -21,6 +21,7 @@ PASTE_OVER, TYPED_PER_SECOND = 200, 4000
 PASTE_START, PASTE_END = b"\x1b[200~", b"\x1b[201~"
 DRAFT_LINES = 8
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
+SUGGESTION = rb"\1[a suggestion, not sent: \2]"
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
@@ -55,6 +56,7 @@ class Driver(ABC):
     SEND_NOW = b""
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
+    SUGGESTED = re.compile(rb"(?!)")
     ELSEWHERE = ""
     name = ""
     ALLOW, DENY = b"1", b"\x1b"
@@ -404,8 +406,14 @@ class Driver(ABC):
         except OSError:
             return 0.0
 
-    def last_printed(self, size: int = 400) -> str:
+    def printed_tail(self, size: int) -> bytes:
         try:
-            return ANSI.sub(b"", self.printed.read_bytes()[-size:]).decode(errors="replace")
+            return self.printed.read_bytes()[-size:]
         except OSError:
-            return ""
+            return b""
+
+    def last_printed(self, size: int = 400) -> str:
+        return ANSI.sub(b"", self.printed_tail(size)).decode(errors="replace")
+
+    def screen(self, size: int) -> str:
+        return ANSI.sub(b"", self.SUGGESTED.sub(SUGGESTION, self.printed_tail(size))).decode(errors="replace")

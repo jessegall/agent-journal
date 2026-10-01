@@ -234,7 +234,7 @@ class Tickets(Prioritised, Controller):
         if not session:
             self._refuse(f"{self.type} {ticket.n} has no agent running to look at")
         driver = DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
-        shown = [line.rstrip() for line in driver.last_printed(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
+        shown = [line.rstrip() for line in driver.screen(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
         return "\n".join(shown[-int(lines):])
 
     def send_back(self, n: int, note: str):
