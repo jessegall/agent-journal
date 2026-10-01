@@ -142,7 +142,9 @@ const items = computed(() => {
     const known = new Set(newest.map(keyOf));
     return [...earlier.value.filter((item) => !known.has(keyOf(item))), ...newest];
 });
-const briefs = computed(() => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plain(item.brief || item.title)])));
+const briefs = computed(
+    () => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plain(item.brief || item.title)]))
+);
 
 function measure() {
     scrollFrame = 0;
@@ -213,7 +215,7 @@ const named = (seconds) => {
     return new Date(seconds * 1000).toLocaleDateString(undefined, {weekday: "long", day: "numeric", month: "long"});
 };
 const dividers = computed(() =>
-    items.value.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(items.value[i - 1].created) ? named(item.created) : "")),
+    items.value.map((item, i) => (i === 0 || dayOf(item.created) !== dayOf(items.value[i - 1].created) ? named(item.created) : ""))
 );
 const keyOf = (item) => item.type + item.n;
 const RUN_GAP = 300;
@@ -221,7 +223,14 @@ const fromDesktop = (item) => item.who === "user" && !String(item.data?.via || "
 const BUBBLES = ["message", "comment"];
 const peer = (item) => Boolean(item.data?.sent_to || item.data?.peer);
 const joins = (before, item) =>
-    Boolean(before) && !peer(before) && !peer(item) && BUBBLES.includes(before.type) && BUBBLES.includes(item.type) && before.who === item.who && fromDesktop(before) === fromDesktop(item) && item.created - before.created < RUN_GAP;
+    Boolean(before) &&
+    !peer(before) &&
+    !peer(item) &&
+    BUBBLES.includes(before.type) &&
+    BUBBLES.includes(item.type) &&
+    before.who === item.who &&
+    fromDesktop(before) === fromDesktop(item) &&
+    item.created - before.created < RUN_GAP;
 const newFrom = computed(() => {
     if (lookedAt.value === null) return "";
     const first = items.value.find((item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type));
@@ -315,7 +324,9 @@ function land() {
     nextTick(() => {
         pinned = toMark();
         if (!pinned) return toBottom();
-        unseen.value = items.value.filter((item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type)).length;
+        unseen.value = items.value.filter(
+            (item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type)
+        ).length;
         measure();
     });
 }
@@ -497,11 +508,15 @@ watch(
         wanted.value = "";
         open(target);
     },
-    {immediate: true, flush: "post"},
+    {immediate: true, flush: "post"}
 );
 
 function quoteIt(item) {
-    quote.value = plain(item.brief || item.title).split("\n").filter((line) => !line.startsWith(">")).join(" ").slice(0, 200);
+    quote.value = plain(item.brief || item.title)
+        .split("\n")
+        .filter((line) => !line.startsWith(">"))
+        .join(" ")
+        .slice(0, 200);
     about.value = item.ref;
     held.value = null;
     screen.value = "chat";
@@ -541,8 +556,16 @@ function pick(key) {
 </script>
 
 <template>
-    <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held || listing || agentOpen)">
-        <div :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']" :inert="pages.length > (edge.leaving.value ? 1 : 0)">
+    <div
+        ref="stack"
+        :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]"
+        :style="stackStyle"
+        :inert="Boolean(picking || held || listing || agentOpen)"
+    >
+        <div
+            :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']"
+            :inert="pages.length > (edge.leaving.value ? 1 : 0)"
+        >
             <PhoneHomeBar
                 :connection="connection"
                 :feed="feed"
@@ -559,13 +582,29 @@ function pick(key) {
                 @list="listing = true"
             />
             <div class="panes">
-                <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'" :style="{'--dock': `${dockHeight}px`}">
+                <section
+                    id="pane-chat"
+                    role="tabpanel"
+                    aria-label="Chat"
+                    :class="['pane', {away: screen !== 'chat'}]"
+                    :inert="screen !== 'chat'"
+                    :style="{'--dock': `${dockHeight}px`}"
+                >
                     <template v-if="switching || !ready">
                         <PhoneSkeleton />
                     </template>
                     <template v-else>
                         <div class="home-feed-box">
-                            <div ref="list" :class="['home-feed', {spaced: far}]" data-scroller @click.capture="chipped" @scroll.passive="moved" @touchstart.passive="freshGesture" @wheel.passive="freshGesture" @load.capture="loaded">
+                            <div
+                                ref="list"
+                                :class="['home-feed', {spaced: far}]"
+                                data-scroller
+                                @click.capture="chipped"
+                                @scroll.passive="moved"
+                                @touchstart.passive="freshGesture"
+                                @wheel.passive="freshGesture"
+                                @load.capture="loaded"
+                            >
                                 <span ref="top" class="home-edge" />
                                 <PhoneHomeOlder :busy="olderBusy" :failed="olderFailed" :beginning="beginning" @retry="retryOlder" />
                                 <template v-for="(item, i) in items" :key="keyOf(item)">
@@ -575,12 +614,24 @@ function pick(key) {
                                     <template v-if="dividers[i]">
                                         <p class="home-day">{{ dividers[i] }}</p>
                                     </template>
-                                    <PhoneTurn :item="item" :arrive="arriveAt(item)" :briefs="briefs" :joined="joined[i]" :continues="joined[i + 1] === true" @hold="(it, rect, el) => (held = {item: it, rect, el})" />
+                                    <PhoneTurn
+                                        :item="item"
+                                        :arrive="arriveAt(item)"
+                                        :briefs="briefs"
+                                        :joined="joined[i]"
+                                        :continues="joined[i + 1] === true"
+                                        @hold="(it, rect, el) => (held = {item: it, rect, el})"
+                                    />
                                 </template>
                                 <PhoneHomeSending :sent="sentHere" :held="heldHere" :offline="offline" @discard="discard" />
                             </div>
                             <template v-if="far">
-                                <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
+                                <button
+                                    type="button"
+                                    class="home-newest"
+                                    :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'"
+                                    @click="newest"
+                                >
                                     <Icon name="down" :size="18" />
                                     <template v-if="unseen">
                                         <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
@@ -606,13 +657,19 @@ function pick(key) {
                             @focused="keptDown"
                             @sent="sent"
                             @unabout="about = ''"
-                            @unquote="(quote = ''), (about = '')"
+                            @unquote="((quote = ''), (about = ''))"
                         />
                     </div>
                 </section>
                 <template v-if="screen === 'home'">
                     <section id="pane-home" role="tabpanel" aria-label="Home" class="pane">
-                        <PhoneBoard :home="connection.home || []" :waiting="feed.waiting" :place="placeKey" @open="open" @under="homeUnder = $event" />
+                        <PhoneBoard
+                            :home="connection.home || []"
+                            :waiting="feed.waiting"
+                            :place="placeKey"
+                            @open="open"
+                            @under="homeUnder = $event"
+                        />
                     </section>
                 </template>
             </div>
@@ -620,28 +677,61 @@ function pick(key) {
         </div>
         <TransitionGroup :name="direction">
             <template v-for="(page, i) in pages" :key="page.id">
-                <div :class="['layer', 'page', place(i), {departing: edge.leaving.value && i === pages.length - 1}]" :inert="i < pages.length - (edge.leaving.value ? 2 : 1)">
+                <div
+                    :class="['layer', 'page', place(i), {departing: edge.leaving.value && i === pages.length - 1}]"
+                    :inert="i < pages.length - (edge.leaving.value ? 2 : 1)"
+                >
                     <template v-if="VIEWED.includes(page.ref.split(':')[0])">
                         <PhoneViewer :target="page.ref" :back="backLabel(i)" @close="back" />
                     </template>
                     <template v-else>
-                        <PhoneReader :target="page.ref" :back="backLabel(i)" :up-next="nextAfter(page.ref)" @close="back" @open="open" @next="next" @reply="reply" />
+                        <PhoneReader
+                            :target="page.ref"
+                            :back="backLabel(i)"
+                            :up-next="nextAfter(page.ref)"
+                            @close="back"
+                            @open="open"
+                            @next="next"
+                            @reply="reply"
+                        />
                     </template>
                 </div>
             </template>
         </TransitionGroup>
     </div>
     <template v-if="picking">
-        <PhonePlaces :environment="connection.environment" @close="picking = false" @switching="leaving" @stayed="staying" @moved="arrived" />
+        <PhonePlaces
+            :environment="connection.environment"
+            @close="picking = false"
+            @switching="leaving"
+            @stayed="staying"
+            @moved="arrived"
+        />
     </template>
     <template v-if="agentOpen">
-        <PhoneAgentSheet :state="feed.agent" :environment="connection.environment" :last-active="lastActive" :live="feed.running || {}" @changed="refresh()" @close="agentOpen = false" @started="(agentOpen = false), refresh()" />
+        <PhoneAgentSheet
+            :state="feed.agent"
+            :environment="connection.environment"
+            :last-active="lastActive"
+            :live="feed.running || {}"
+            @changed="refresh()"
+            @close="agentOpen = false"
+            @started="((agentOpen = false), refresh())"
+        />
     </template>
     <template v-if="listing">
         <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />
     </template>
     <template v-if="held">
-        <PhoneHold :item="held.item" :rect="held.rect" :source="held.el" @react="react" @reply="quoteIt(held.item)" @copy="copy" @close="held = null" />
+        <PhoneHold
+            :item="held.item"
+            :rect="held.rect"
+            :source="held.el"
+            @react="react"
+            @reply="quoteIt(held.item)"
+            @copy="copy"
+            @close="held = null"
+        />
     </template>
     <p class="phone-hidden" aria-live="polite">{{ spoken }}</p>
 </template>
@@ -910,9 +1000,7 @@ function pick(key) {
 }
 
 .home-dock .status-wrap {
-    align-self: flex-start;
-    max-width: calc(100% - 24px);
-    margin-left: 12px;
+    align-self: stretch;
     padding: 0 10px;
     border: 1px solid var(--border-2);
     border-radius: 12px;

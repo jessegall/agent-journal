@@ -14,10 +14,13 @@ defineProps({
         </a>
     </template>
     <template v-else-if="about">
-        <a class="turn-about" href="#" :data-peek="about">{{ aboutLabel }}</a>
+        <a class="turn-about" href="#" :data-peek="about" :aria-label="`About ${aboutLabel}`">{{ aboutLabel }}</a>
     </template>
     <template v-if="inlineQuote && !quoted">
-        <p class="turn-quote"><span class="phone-hidden">Reply to: </span>{{ inlineQuote }}</p>
+        <p class="turn-quote">
+            <span class="phone-hidden">Reply to:</span>
+            {{ inlineQuote }}
+        </p>
     </template>
 </template>
 
@@ -51,7 +54,10 @@ a.turn-quote {
 
 .turn-about {
     display: inline-block;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    padding: 1px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
     color: var(--accent-text);
     font-size: 0.706rem;
     text-decoration: none;

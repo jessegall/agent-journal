@@ -30,22 +30,31 @@ const files = computed(() => Object.keys(props.item.files || {}));
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
 const FILED_REF = /\b([a-z_]+)[ :](\d+)\b/g;
 const filedAs = computed(
-    () => new Set((props.item.sections || []).flatMap((part) => [...part.body.matchAll(FILED_REF)].map((found) => `${found[1]}:${found[2]}`))),
+    () =>
+        new Set((props.item.sections || []).flatMap((part) => [...part.body.matchAll(FILED_REF)].map((found) => `${found[1]}:${found[2]}`)))
 );
 const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []).filter((ref) => filedAs.value.has(ref)) : []));
 const parent = computed(() =>
-    props.item.type === "comment" && !(props.item.refs || []).some((ref) => IN_CHAT.test(ref)) ? (props.item.refs || []).find((ref) => ref.includes(":")) : undefined,
+    props.item.type === "comment" && !(props.item.refs || []).some((ref) => IN_CHAT.test(ref))
+        ? (props.item.refs || []).find((ref) => ref.includes(":"))
+        : undefined
 );
 const answers = computed(() => answered(props.item));
-const about = computed(() => (props.item.who === "user" && !parent.value && !answers.value ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
+const about = computed(() =>
+    props.item.who === "user" && !parent.value && !answers.value
+        ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref))
+        : undefined
+);
 const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
-const aboutLabel = computed(() => (about.value ? `About ${named(about.value)}` : ""));
+const aboutLabel = computed(() => (about.value ? named(about.value).replace(/^./, (first) => first.toUpperCase()) : ""));
 const parentLabel = computed(() => (parent.value ? named(parent.value) : ""));
 const faces = computed(() => [...new Set((props.item.reactions || []).map((r) => r.face))]);
 const between = computed(() => Boolean(props.item.data?.sent_to || props.item.data?.peer));
 const betweenLabel = computed(() => {
     if (props.item.data?.peer) return `From ${props.item.data.peer}`;
-    const name = String(props.item.to || "").split(":")[0].trim();
+    const name = String(props.item.to || "")
+        .split(":")[0]
+        .trim();
     return `To ${name || "a helper"}`;
 });
 const HOLDABLE = ["message", "comment"];
@@ -53,7 +62,9 @@ const holdable = computed(() => HOLDABLE.includes(props.item.type));
 const arriving = computed(() => props.arrive >= 0);
 const inline = computed(() => splitQuote(props.item.brief || props.item.title));
 const arrival = computed(() => (arriving.value ? {"--arrive-delay": `${props.arrive}ms`} : undefined));
-const onlyFiles = computed(() => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`);
+const onlyFiles = computed(
+    () => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`
+);
 const quoted = computed(() => (answers.value ? props.briefs.get(answers.value) || EARLIER : ""));
 const emit = defineEmits(["hold"]);
 function pressed(event) {
@@ -77,7 +88,13 @@ function pressed(event) {
             </div>
         </template>
         <template #default>
-            <div :class="['turn', between ? 'peer' : item.who, {arriving, joined}]" :style="arrival" :data-hold="holdable ? item.type + item.n : undefined" :data-noswipe="between ? '' : undefined" @contextmenu.prevent="pressed">
+            <div
+                :class="['turn', between ? 'peer' : item.who, {arriving, joined}]"
+                :style="arrival"
+                :data-hold="holdable ? item.type + item.n : undefined"
+                :data-noswipe="between ? '' : undefined"
+                @contextmenu.prevent="pressed"
+            >
                 <template v-if="holdable">
                     <span class="turn-reply" aria-hidden="true"><Icon name="reply" :size="16" /></span>
                 </template>
@@ -85,9 +102,7 @@ function pressed(event) {
                     <PhonePeer :label="betweenLabel" />
                 </template>
                 <template v-else-if="item.who !== 'user' && !joined">
-                    <span class="turn-who">
-                        Agent, {{ clock(item.created) }}
-                    </span>
+                    <span class="turn-who">Agent, {{ clock(item.created) }}</span>
                 </template>
                 <PhoneQuote :quoted="quoted" :about="answers || about" :about-label="aboutLabel" :inline-quote="inline.quote" />
                 <template v-if="parent">
@@ -113,7 +128,14 @@ function pressed(event) {
                 </template>
                 <PhoneOwed :item="item" />
                 <template v-if="holdable">
-                    <PhoneActions :class="['turn-actions', item.who === 'user' && !between ? 'at-foot' : 'at-head', {quiet: item.who === 'user' ? continues : joined}]" @press="pressed" />
+                    <PhoneActions
+                        :class="[
+                            'turn-actions',
+                            item.who === 'user' && !between ? 'at-foot' : 'at-head',
+                            {quiet: item.who === 'user' ? continues : joined},
+                        ]"
+                        @press="pressed"
+                    />
                 </template>
             </div>
         </template>
