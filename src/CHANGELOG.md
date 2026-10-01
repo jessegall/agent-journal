@@ -4,6 +4,29 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.208.0 — auto-update that installs; helpers that keep to their job
+
+**Auto-update installs by itself whenever it is on**; the separate install switch is gone. With it
+off, Home shows the banner and the agent is told to run `journal upgrade`. A journal still on an
+older version needs one `journal upgrade` by hand to get here.
+
+**Helpers** start with their job as a to-do on their own list, with auto mode on, and read the
+standing facts of the environment that sent them. Their worktree carries their environment's
+name, so no stray environment turns up in the sidebar. They show in the panel of agents at work
+(the Orchestrator layout), their name in the helper list opens their inspector, where their
+to-dos open in place, and Stop asks first. Pressing Play on a board switches the work mode to
+Orchestrator.
+
+The dashboard stays fast while agents and helpers write: after a write from another process the
+server updates only the rows that changed instead of rebuilding its list of every row. Codex hooks
+answer in 8 to 17 ms (they re-linked the worktree's shared files on every tool call), and every
+write to the record waits while migrations run, so a failed migration's rollback loses nothing.
+
+On the phone: a picked answer is held as long as the setting says (3 seconds, as on the desktop),
+the line showing what the agent is doing is as wide as the message field, a message's subject is
+a chip, and a reply streamed in pieces reaches the chat once. "Jesse's setup" is a built-in
+layout. The commit gate commits only the paths it is given.
+
 ## 2.207.0 — written documents filed whole; a status that knows its agent
 
 A document whose text is already written is filed in one go with `journal doc file "<title>" <file>`:
