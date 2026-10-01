@@ -134,7 +134,7 @@ def carried() -> dict | None:
     return json.loads(given) if given else None
 
 
-def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> dict:
+def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None, conversation: str = "") -> dict:
     from providers import DRIVERS
     if not taken:
         cwd, args = DRIVERS[agent].placed(cwd, args)
@@ -147,7 +147,7 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
             "worker": entry("worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
             **({"adopt": {"pid": taken["pid"], "fd": taken["fd"], "session": taken["session"], "saved": taken["saved"]}, "args": args}
-               if taken else launching(root, cwd, env, agent, args))}
+               if taken else launching(root, cwd, env, agent, args, conversation))}
 
 
 def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
@@ -165,12 +165,12 @@ def launch_log(root: Path, env: str) -> Path:
     return runtime.folder(root) / "launches" / f"{env}.log"
 
 
-def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
+def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> int:
     started = entry("supervisor")
     log = launch_log(root, env)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("wb") as kept:
-        child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args), "headless": True})],
+        child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args, conversation=conversation), "headless": True})],
                                  stdin=subprocess.DEVNULL, stdout=kept, stderr=kept, start_new_session=True)
     hold_build(root, CODE, child.pid)
     return child.pid

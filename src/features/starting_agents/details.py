@@ -1,4 +1,5 @@
 from features.base import FeatureDetails
+from features.settings import Setting
 
 
 class StartingAgentsDetails(FeatureDetails):
@@ -12,7 +13,17 @@ class StartingAgentsDetails(FeatureDetails):
     help = """
         Always on: the user starts an agent in an environment from the sidebar or when making a new
         environment, and journal environment stop ends it. Only the user starts one; an agent that
-        asks is refused.
+        asks is refused. With wake_on_message on, a message the user writes in an environment where
+        no agent runs starts one there, resuming the conversation the environment last had on the
+        same provider, so the same agent wakes and reads the message next.
     """
 
     fixed = True
+
+    settings = [
+        Setting(
+            name="wake_on_message",
+            default=False,
+            title="Start the environment's last agent when the user writes and none is running",
+        ),
+    ]
