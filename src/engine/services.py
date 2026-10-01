@@ -213,6 +213,10 @@ class Manager:
     def one(self, spec: ServiceSpec) -> bool:
         sid = spec.id
         current = status(self.root, sid)
+        stray = holder(self.root, sid)
+        if not self.living(current.keeper) and self.living(stray):
+            current = replace(current, keeper=stray)
+            current.write(spec.status)
         if self.living(current.keeper) and self.stored_build(sid) != spec.build:
             self.remove(sid)
             current = status(self.root, sid)

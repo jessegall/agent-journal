@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import shutil
 import socket
+import sys
 import subprocess
 import threading
 import time
@@ -253,6 +254,26 @@ def test_stopping_a_service_stops_every_process_it_forked():
     idle = json.loads(status_file(record.root, "idle.web").read_text())
     assert (started, idle["state"], "no C# here" in idle["why"]) == (["busy.web"], "not needed", True), \
         "a service whose when-command fails is left unstarted as not needed, with the command's own words; one that answers 0 starts"
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    Manager(record.root).one(ServiceSpec(id="real.web", plugin="real", service="web", run=[sys.executable, "-m", "http.server", str(port), "--bind", "127.0.0.1"],
+                                         port=port, url=f"http://127.0.0.1:{port}", **files_for(record.root, "real.web")))
+    deadline = time.time() + 15
+    while time.time() < deadline and json.loads(status_file(record.root, "real.web").read_text()).get("state") != "ready":
+        time.sleep(0.2)
+    assert json.loads(status_file(record.root, "real.web").read_text()).get("state") == "ready", \
+        "the keeper it ships reads its spec from disk and brings a real service up, as it does for the phone's server and tunnel"
+    Manager(record.root).remove("real.web")
+    holding = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    lock_file(record.root, "held.web").write_text(str(holding.pid))
+    status_file(record.root, "held.web").write_text(json.dumps({"state": "starting", "keeper": 999999}))
+    spawned = []
+    Manager(record.root, start=lambda spec, lifeline: spawned.append(spec.id) or 0).one(
+        ServiceSpec(id="held.web", plugin="held", service="web", run=["true"], **files_for(record.root, "held.web")))
+    assert spawned == [] and json.loads(status_file(record.root, "held.web").read_text())["keeper"] == holding.pid, \
+        "a live keeper that holds the lock is adopted, never started again beside itself"
+    holding.kill()
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
