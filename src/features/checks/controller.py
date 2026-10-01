@@ -1,11 +1,14 @@
+import fcntl
 import os
 import re
+import subprocess
 import threading
 import time
 
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
+from engine.package import entry
 from engine.proc import streamed
 from controllers.faults import threw
 from engine import runtime
@@ -22,6 +25,7 @@ SAID_LINES = 40
 KEPT_RUNS = 20
 STAMP_EVERY = 1.0
 REPORTS = "check-reports"
+GATES = "gates.lock"
 REPORT = "JOURNAL_REPORT"
 PERCENT = re.compile(r"(\d{1,3})%")
 COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
@@ -85,14 +89,21 @@ class Checks(Controller):
         uncovered = f"\nno test covers {found.uncovered}; the full check is the gate for those" if found.bare else ""
         return f"{tail(output)}{uncovered}" if code == 0 else f"failed:\n{tail(output)}"
 
-    def gate(self, n: int, message: str, paths: str = ""):
+    def gate(self, n: int, message: str, paths: str = "", wait: bool = False):
         if not self.load(n).command:
             raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
         named = [path.strip() for path in paths.split(",") if path.strip()]
         if not named:
             raise Refused("name the paths the commit takes: --paths <path>,<path>")
-        threading.Thread(target=self._gated, args=(n, message, named), daemon=True).start()
-        return f"check {n} is running; on a pass it commits {len(named)} paths, and you are told either way"
+        if wait:
+            with open(runtime.folder(self.record.root) / GATES, "a") as held:
+                fcntl.flock(held, fcntl.LOCK_EX)
+                self._gated(n, message, named)
+            return f"check {n} gated its commit"
+        subprocess.Popen([*entry("journal"), "--root", str(self.record.root), "--env", self.record.env, "check", "gate", str(n), message,
+                          "--paths", ",".join(named), "--wait"], cwd=self.record.root.parent, start_new_session=True,
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return f"check {n} is running in a process of its own, after any gate before it; on a pass it commits {len(named)} paths, and you are told either way"
 
     def _gated(self, n: int, message: str, paths: list[str]) -> None:
         try:
