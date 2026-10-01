@@ -10,16 +10,23 @@ const counts = (rows) => ({all: rows.length, open: rows.filter((r) => !r.complet
 export class StandIn {
     constructor(demo) {
         this.demo = demo;
-        this.state = readState() || this.fresh();
+        this.state = readState() || this.fresh(0);
     }
 
-    fresh() {
-        const events = [];
-        Object.values(this.demo.rows).forEach((rows) =>
-            rows.forEach((row) => events.push({at: row.created, type: row.type, n: row.n, action: "created", actor: row.by}))
-        );
-        events.sort((a, b) => a.at - b.at).forEach((event, index) => Object.assign(event, {id: index + 1, data: {}, handled: true}));
-        return {rows: this.demo.rows, events, settings: this.demo.settings, mode: "hands-on"};
+    get moment() {
+        return this.demo.moments[this.state.at];
+    }
+
+    fresh(at) {
+        const {rows, events, settings, mode} = structuredClone(this.demo.moments[at]);
+        return {at, rows, events, settings, mode: mode.mode};
+    }
+
+    step() {
+        if (this.state.at + 1 >= this.demo.moments.length) return false;
+        this.state = this.fresh(this.state.at + 1);
+        this.save();
+        return true;
     }
 
     save() {
@@ -42,23 +49,23 @@ export class StandIn {
     }
 
     top(name) {
+        const {manifest, identity, pages, agents} = this.moment;
         return {
-            manifest: this.demo.manifest,
-            identity: {project: this.demo.manifest.project, color: "#ffc53d", default_color: "#ffc53d", custom_color: "", root: "", version: "demo", environments: ["main"]},
-            pages: [],
-            journals: [{port: 0, project: this.demo.manifest.project, version: "demo", root: "", current: true, running: true}],
+            manifest,
+            identity,
+            pages,
+            journals: [{port: 0, project: manifest.project, version: "demo", root: "", current: true, running: true}],
             summary: this.summary(),
             upstream: {newer: false, installs: false},
-            agents: [],
+            agents,
             services: [],
         }[name];
     }
 
     summary() {
-        const project = this.demo.manifest.project;
-        const counts = {messages: 0, questions: 0, todos: this.held("todo").filter((r) => !r.completed).length, suggestions: 0, prompts: 0};
-        const env = {name: "main", agent: null, work: null, last: null, plans: [], subagents: [], auto: false, silent: false, counts, owner: ""};
-        return {project, root: "", version: "demo", start: "main", color: "#ffc53d", environments: [env], helpers: []};
+        const {summary} = this.moment;
+        const todos = this.held("todo").filter((r) => !r.completed).length;
+        return {...summary, environments: summary.environments.map((env) => ({...env, counts: {...env.counts, todos}}))};
     }
 
     list(type, query) {
@@ -82,9 +89,9 @@ export class StandIn {
         if (second === "events") return this.state.events.filter((e) => e.id > Number(query.get("since") || 0)).slice(-Number(query.get("last") || 100));
         if (second === "settings") return this.state.settings;
         if (second === "mode") return {mode: this.state.mode};
-        if (second === "bar") return {queue: []};
-        if (second === "family") return {members: [], links: []};
-        if (!this.demo.manifest.types[second]) return undefined;
+        if (second === "bar") return this.moment.bar;
+        if (second === "family") return this.moment.family;
+        if (!this.moment.manifest.types[second]) return undefined;
         if (!third) return this.list(second, query);
         const row = this.held(second).find((r) => r.n === Number(third));
         return row && stripped(row);
@@ -104,7 +111,7 @@ export class StandIn {
         const [, second, third, fourth] = parts;
         if (second === "settings") return this.change(() => this.saved(body));
         if (second === "mode") return this.change(() => (this.state.mode = body.mode));
-        if (parts.length === 1 || !this.demo.manifest.types[second]) return undefined;
+        if (parts.length === 1 || !this.moment.manifest.types[second]) return undefined;
         if (!third) return this.create(second, body);
         if (third === "linked_to") return [];
         const row = this.held(second).find((r) => r.n === Number(third));

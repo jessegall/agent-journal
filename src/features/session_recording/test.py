@@ -1,10 +1,16 @@
 import json
+import subprocess
+from pathlib import Path
+
+import pytest
 
 import features
 from controllers.types import Agents, Todos
 from features.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
-from resources.base import AGENT, SYSTEM
+from features.session_recording.demo import leaks
+from features.session_recording.scrub import Scrubber
+from resources.base import AGENT, SYSTEM, Refused
 from tests.conftest import fresh
 
 
@@ -46,3 +52,64 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     recordings.stop()
     assert (tmp_path / "demo" / "transcripts" / "t-claude-1.jsonl").read_text() == "{}\n"
     assert recordings.load(row.n).completed, "the recording is closed"
+
+
+WEB = Path(__file__).resolve().parents[2] / "web" / "demo"
+BOOT = """
+import {readFileSync} from "node:fs";
+globalThis.__DEMO_BUILD__ = "test";
+globalThis.location = {origin: "http://demo"};
+const {expand} = await import(process.argv[1] + "/moments.js");
+const {StandIn} = await import(process.argv[1] + "/standIn.js");
+const standIn = new StandIn({moments: expand(JSON.parse(readFileSync(process.argv[2], "utf8")))});
+const todos = async () => (await standIn.answer("GET", "/api/t/todo?completed=1").json()).rows.map((row) => row.title);
+const first = await todos();
+const dashboard = await standIn.answer("GET", "/api/t/dashboard?types=todo&completed=1&last=25&events=100").json();
+const stepped = [standIn.step(), standIn.step(), standIn.step()];
+console.log(JSON.stringify({project: standIn.moment.manifest.project, first, last: await todos(), stepped, dashboard: Object.keys(dashboard)}));
+"""
+
+
+def recorded_session(tmp_path):
+    features.load()
+    record = fresh()
+    folder = tmp_path / "recording"
+    recorder = Recorder(record.root, folder)
+    machine = f"{Path.home()}/projects/shop mail jesse@example.org at https://abc.tunler.example.net/x session 123e4567-e89b-12d3-a456-426614174000"
+    (record.root.parent / "notes.txt").write_text(machine)
+    todo = Todos(record, actor=AGENT).create("first row", brief=machine)
+    recorder.poll()
+    Todos(record, actor=AGENT).update(todo.n, title="renamed row")
+    recorder.poll()
+    Todos(record, actor=AGENT).create("third row")
+    recorder.poll()
+    return record, folder
+
+
+def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_path):
+    record, folder = recorded_session(tmp_path)
+    recordings = Recordings(record, actor=SYSTEM)
+    assert leaks(folder, Scrubber()), "the synthetic session holds a home path, an email, a tunnel host and a session id"
+    with pytest.raises(Refused, match="journal record scrub"):
+        recordings.build(str(folder), str(tmp_path / "demo.json"))
+    recordings.scrub(str(folder))
+    assert not leaks(folder, Scrubber())
+    assert "jesse@example.org" not in (folder / "frames.jsonl").read_text() + "".join(blob.read_text() for blob in (folder / "blobs").iterdir())
+
+
+def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path):
+    record, folder = recorded_session(tmp_path)
+    recordings = Recordings(record, actor=SYSTEM)
+    recordings.scrub(str(folder))
+    shipped = tmp_path / "demo.json"
+    recordings.build(str(folder), str(shipped))
+    demo = json.loads(shipped.read_text())
+    assert len(demo["moments"]) == 3
+    assert len(set(demo["answers"])) < len(demo["moments"]) * len(demo["moments"][0]["answers"]), "an answer that did not change is stored once"
+    assert not Scrubber().leaks(shipped.read_text()) and "/home/demo" in shipped.read_text()
+    done = subprocess.run(["node", "--input-type=module", "-e", BOOT, WEB.as_uri(), str(shipped)], capture_output=True, text=True, timeout=60)
+    assert done.returncode == 0, done.stderr
+    got = json.loads(done.stdout)
+    assert got["first"] == ["first row"] and got["last"] == ["renamed row", "third row"], "stepping replays the recorded moments in order"
+    assert got["stepped"] == [True, True, False]
+    assert "rows" in got["dashboard"]

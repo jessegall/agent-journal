@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import signal
@@ -10,7 +11,9 @@ from controllers.base import Controller
 from controllers.types import Agents
 from engine.package import entry
 from engine.record import Record
+from features.session_recording.demo import built, leaks, scrubbed
 from features.session_recording.resource import Recording
+from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
 
 
@@ -50,6 +53,20 @@ class Recordings(Controller):
         copied = self._transcribed(Path(row.folder))
         self.complete(row.n, f"recorded into {row.folder} with {copied} transcripts")
         return f"recording stopped; {copied} transcripts copied into {row.folder}/transcripts"
+
+    def scrub(self, folder: str) -> str:
+        target = Path(folder)
+        scrubber = Scrubber()
+        scrubbed(target, scrubber)
+        still = leaks(target, scrubber)
+        if still:
+            raise Refused("the recording still holds the machine: " + "; ".join(still[:5]))
+        return f"{target} holds nothing about this machine"
+
+    def build(self, folder: str, into: str, env: str = "") -> str:
+        demo = built(Path(folder), env)
+        Path(into).write_text(json.dumps(demo))
+        return f"wrote {len(demo['moments'])} moments and {len(demo['answers'])} answers into {into}"
 
     def _running(self):
         return next((row for row in self.all() if alive(row.pid)), None)

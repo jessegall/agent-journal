@@ -16,5 +16,5 @@ export async function install() {
     globalThis.EventSource = QuietStream;
     keepOut();
     window.addEventListener("hashchange", keepOut);
-    document.title = standIn.demo.manifest.project;
+    document.title = standIn.moment.manifest.project;
 }

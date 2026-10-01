@@ -1,0 +1,40 @@
+import getpass
+import re
+import socket
+from pathlib import Path
+
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+SESSION = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")
+TUNNEL = re.compile(r"[\w.-]*(?:tunler|trycloudflare|ngrok)[\w.-]*\.[a-z]{2,}", re.IGNORECASE)
+KEPT_EMAIL = "demo@example.com"
+HOME = "/home/demo"
+PROJECT = "/home/demo/project"
+SHORTEST_NAME = 4
+
+
+class Scrubber:
+    def __init__(self, folders: list[str] | None = None):
+        self.sessions: dict[str, str] = {}
+        self.paths = {str(Path.home()): HOME, **dict.fromkeys(folders or [], PROJECT)}
+        self.names = {name: "demo" for name in (getpass.getuser(), Path.home().name) if len(name) >= SHORTEST_NAME}
+        host = socket.gethostname().split(".")[0]
+        if len(host) >= SHORTEST_NAME:
+            self.names[host] = "demo-host"
+
+    def text(self, raw: str) -> str:
+        for path in sorted(self.paths, key=len, reverse=True):
+            raw = raw.replace(path, self.paths[path])
+        raw = TUNNEL.sub("demo.example.com", raw)
+        raw = EMAIL.sub(KEPT_EMAIL, raw)
+        raw = SESSION.sub(lambda found: self.sessions.setdefault(found.group(), f"session-{len(self.sessions) + 1:04d}"), raw)
+        for name, stands_for in self.names.items():
+            raw = re.sub(rf"\b{re.escape(name)}\b", stands_for, raw)
+        return raw
+
+    def leaks(self, raw: str) -> list[str]:
+        found = [path for path in self.paths if path in raw]
+        found += [name for name in self.names if re.search(rf"\b{re.escape(name)}\b", raw)]
+        found += TUNNEL.findall(raw)
+        found += [email for email in EMAIL.findall(raw) if email != KEPT_EMAIL]
+        found += SESSION.findall(raw)
+        return sorted(set(found))
