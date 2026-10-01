@@ -4,6 +4,28 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.207.0 — written documents filed whole; a status that knows its agent
+
+A document whose text is already written is filed in one go with `journal doc file "<title>" <file>`:
+each heading becomes a chapter, the text above them the brief, and the agent goes straight to the
+closing steps (collection, links, answer) instead of laying out and writing chapters one by one. An
+agent that starts a document the long way with the text already in hand is told to file it whole.
+
+A collection made from a dump no longer shows the dump among its cards; a line under its title says
+which dump it came from and opens it. Existing collections are updated on upgrade.
+
+The desktop, the hub and the phone show the agent that is actually working: an environment that kept
+older launch records of the same running agent showed it as Not responding while it worked.
+
+Commands sent from the viewer and the phone run in the server again; the separate worker processes
+(`server.workers`) are gone, and so is the setting. The slow-request alerts no longer count a
+request's first run after the server starts, when it reads everything from disk.
+
+Also: the desktop Stop sits beside Pause and asks once, with Cancel focused, on every surface; the
+hub ranks journals waiting on you first and keeps its order under the pointer; the journal finds
+claude and codex where they install themselves, and the installer puts the `journal` command on
+the PATH in your shell's profile.
+
 ## 2.206.0 — helpers, work modes and critique rounds; a phone that stays reachable
 
 The agent can send a **helper** on Codex or Claude for one bounded job (`journal helper dispatch`):
