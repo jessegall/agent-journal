@@ -61,6 +61,7 @@ export const phone = {
     dismiss: (n) => sent("./dismiss", {n}),
     react: (n, face, type = "message") => sent("./react", {n, face, type}),
     approve: (n, updated) => sent("./approve", {n, updated}),
+    proceed: (n, updated) => sent("./continue", {n, updated}),
     press: (ref, label) => sent("./press", {ref, label}),
     comment: (ref, text) => sent("./comment", {ref, text}),
     close: (n) => sent("./close", {n}),

@@ -29,6 +29,9 @@ from features.phone.places import MAIN, Place, places
 from surfaces.agent_state import agent_state
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
+from features.plans.controller import WAITING as PLAN_WAITS
+from features.plans.progress import phase_rows, running as running_plans
+from features.plans.resource import PHASE
 from features.shaping import shaped
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
@@ -233,12 +236,36 @@ class Running(TypedDict):
     subagents: list[dict]
 
 
+class PlanTodo(TypedDict):
+    n: int
+    title: str
+    done: bool
+
+
+class PlanPhase(TypedDict):
+    title: str
+    checkpoint: bool
+    todos: list[PlanTodo]
+
+
+class PlanStrip(TypedDict):
+    n: int
+    title: str
+    abstract: str
+    status: str
+    current: int
+    updated: float
+    phases: list[PlanPhase]
+    hold: int
+
+
 class Feed(TypedDict):
     items: list[dict]
     waiting: list[Waiting]
     agent: str
     notices: list[dict]
     running: Running
+    plan: PlanStrip | None
 
 
 class Code(TypedDict):
@@ -462,8 +489,17 @@ class Phones(Controller):
         helpers = self._helpers(home) if any(item["data"].get("sent_to") for item in items) else {}
         items = sorted([*({**item, "to": helpers.get(item["data"].get("sent_to"))} for item in items), *marks], key=lambda item: item["created"])
         return Feed(items=items, waiting=self._waiting(phone), agent=agent_state(home, phone.environment), notices=self._notices(home),
-                    running=self._running(home, phone.environment))
+                    running=self._running(home, phone.environment), plan=self._plan(home))
 
+    def _plan(self, home: Record) -> PlanStrip | None:
+        plan = next(iter(running_plans(home)), None)
+        if plan is None:
+            return None
+        phases = [PlanPhase(title=formatted(phase[PHASE.title], home, VIEWER), checkpoint=bool(phase[PHASE.checkpoint]),
+                            todos=[PlanTodo(n=row.n, title=formatted(row.title, home, VIEWER), done=bool(row.completed)) for row in phase_rows(home, phase)])
+                  for phase in plan.phases]
+        return PlanStrip(n=plan.n, title=formatted(plan.title, home, VIEWER), abstract=formatted(plan.abstract, home, VIEWER), status=plan.status,
+                         current=plan.current, updated=plan.updated, phases=phases, hold=dict(FEATURES["ask_questions"].values(home))["hold"])
 
     def _marks(self, home: Record, since: float) -> list[Mark]:
         agents = CONTROLLERS["agent"](home, actor=SYSTEM)
@@ -707,6 +743,13 @@ class Phones(Controller):
         if plan.updated != approval.updated or plan.status != "ready":
             raise Stale(f"plan {approval.n} changed since you opened it: look at it again")
         return plans.approve(plan.n)
+
+    def _continue(self, phone: Phone, approval):
+        plans = CONTROLLERS["plan"](self._home(phone), actor=USER)
+        plan = plans.load(approval.n)
+        if plan.updated != approval.updated or plan.status != PLAN_WAITS:
+            raise Stale(f"plan {approval.n} changed since you opened it: look at it again")
+        return plans.resume(plan.n)
 
     def _live(self) -> list[dict]:
         now = time.time()

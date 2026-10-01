@@ -3,6 +3,7 @@ import PhoneAgent from "./PhoneAgent.vue";
 import PhoneAtWorkChip from "./PhoneAtWorkChip.vue";
 import PhoneChevron from "./PhoneChevron.vue";
 import PhoneNotify from "./PhoneNotify.vue";
+import PhonePlanStrip from "./PhonePlanStrip.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
 
 const props = defineProps({
@@ -14,8 +15,11 @@ const props = defineProps({
     newer: {type: Boolean, default: false},
     notice: {type: String, default: ""},
     actionsHere: {type: Number, default: 0},
+    go: {type: Object, required: true},
+    away: {type: Boolean, default: false},
+    chat: {type: Boolean, default: true},
 });
-const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list"]);
+const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list", "plan"]);
 </script>
 
 <template>
@@ -55,6 +59,9 @@ const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list"
             </p>
         </template>
         <PhoneNotify />
+        <template v-if="feed.plan && chat">
+            <PhonePlanStrip :plan="feed.plan" :go="go" :away="away" @open="emit('plan')" />
+        </template>
         <PhoneWaiting :waiting="feed.waiting" @open="(target) => emit('open', target)" @list="emit('list')" />
     </div>
 </template>

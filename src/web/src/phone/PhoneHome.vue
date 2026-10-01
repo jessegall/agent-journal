@@ -29,6 +29,8 @@ import PhoneHomeBar from "./PhoneHomeBar.vue";
 import PhoneHomeOlder from "./PhoneHomeOlder.vue";
 import PhoneHomeSending from "./PhoneHomeSending.vue";
 import PhoneAtWork from "./PhoneAtWork.vue";
+import PhonePlanSheet from "./PhonePlanSheet.vue";
+import {usePlanGo} from "./planGo.js";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
@@ -57,6 +59,7 @@ const picking = ref(false);
 const listing = ref(false);
 const agentOpen = ref(false);
 const atWorkOpen = ref(false);
+const planOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
 const pages = ref([]);
 const direction = ref("push");
@@ -339,6 +342,7 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     else took(got);
 });
 provide("phoneRefresh", refresh);
+const go = usePlanGo(computed(() => feed.value.plan), refresh, failed);
 
 watch(offline, (now, before) => {
     if (now !== before) announce(now ? "Offline, waiting to reconnect" : "Back online");
@@ -562,7 +566,7 @@ function pick(key) {
         ref="stack"
         :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]"
         :style="stackStyle"
-        :inert="Boolean(picking || held || listing || agentOpen || atWorkOpen)"
+        :inert="Boolean(picking || held || listing || agentOpen || atWorkOpen || planOpen)"
     >
         <div
             :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']"
@@ -577,9 +581,13 @@ function pick(key) {
                 :newer="newer"
                 :notice="notice"
                 :actions-here="actionsHere"
+                :go="go"
+                :away="far"
+                :chat="screen === 'chat'"
                 @places="picking = true"
                 @agent="agentOpen = true"
                 @at-work="atWorkOpen = true"
+                @plan="planOpen = true"
                 @reload="reload"
                 @open="open"
                 @list="listing = true"
@@ -730,6 +738,9 @@ function pick(key) {
             @read="open"
             @close="atWorkOpen = false"
         />
+    </template>
+    <template v-if="planOpen && feed.plan">
+        <PhonePlanSheet :plan="feed.plan" :go="go" @read="(target) => ((planOpen = false), open(target))" @close="planOpen = false" />
     </template>
     <template v-if="listing">
         <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />
