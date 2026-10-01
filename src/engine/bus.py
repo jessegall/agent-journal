@@ -95,6 +95,19 @@ def held():
         _held.queue = None
 
 
+@contextmanager
+def settled():
+    if getattr(_held, "queue", None) is not None:
+        yield
+        return
+    queue: list = []
+    try:
+        with held() as queue:
+            yield
+    finally:
+        release(queue)
+
+
 def defer(job: Callable[[], None]) -> None:
     queue = getattr(_held, "queue", None)
     if queue is None:
