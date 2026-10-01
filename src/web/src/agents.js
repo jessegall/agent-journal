@@ -17,3 +17,7 @@ export function pendingChoice(data, key) {
     const choice = data && data.pending && data.pending[key];
     return choice && Date.now() / 1000 - choice.at < WAITS_FOR ? choice.value : "";
 }
+
+export const usageWindows = (data) => (data && data.usage && data.usage.windows) || [];
+
+export const loadedSkills = (data) => (data && data.skills) || [];

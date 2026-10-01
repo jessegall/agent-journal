@@ -1,27 +1,13 @@
 <script setup>
 import Folded from "../kit/Folded.vue";
-import SectionHeading from "../kit/SectionHeading.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
-import CloseButton from "../kit/CloseButton.vue";
 import {computed, inject, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";
-import Btn from "../kit/Btn.vue";
-import CommentToggle from "./CommentToggle.vue";
-import DownloadLink from "./DownloadLink.vue";
-import Icon from "../kit/Icon.vue";
-import {openPictures} from "../platform/view.js";
-import {peek, route} from "../route.js";
 import {byRef, parkedFor, waitsOn} from "../domain/records.js";
-import {age} from "../format/time.js";
-import {label, meta, word} from "../state/store.js";
-import ResourceActions from "./ResourceActions.vue";
+import {meta} from "../state/store.js";
 import Sections from "./Sections.vue";
-import Chapters from "./Chapters.vue";
 import {useWriting} from "../composables/writing.js";
-import {isUpdate, updateLabel} from "../domain/updates.js";
 import OptionsPicker from "./OptionsPicker.vue";
 import StageMeanings from "./StageMeanings.vue";
-import Priority from "./Priority.vue";
 import DataFields from "./DataFields.vue";
 import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
@@ -29,14 +15,21 @@ import Links from "./Links.vue";
 import Asked from "./Asked.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
-import ShareButton from "./ShareButton.vue";
 import CheckResult from "./CheckResult.vue";
 import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import ResourceCard from "./ResourceCard.vue";
-import AttachFiles from "./AttachFiles.vue";
 import {standing} from "../domain/documents.js";
+import ResourceBlock from "./ResourceBlock.vue";
+import ResourceControls from "./ResourceControls.vue";
+import ResourceDocs from "./ResourceDocs.vue";
+import ResourceEdit from "./ResourceEdit.vue";
+import ResourceFiles from "./ResourceFiles.vue";
+import ResourceHead from "./ResourceHead.vue";
+import ResourceKeywords from "./ResourceKeywords.vue";
+import ResourceMadeFor from "./ResourceMadeFor.vue";
+import ResourceOutcome from "./ResourceOutcome.vue";
+import ResourceWaits from "./ResourceWaits.vue";
 
 const props = defineProps({
     resource: Object,
@@ -45,23 +38,12 @@ const props = defineProps({
     links: {type: Boolean, default: true},
     readOnly: Boolean,
 });
-const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
 const talk = inject("talk", null);
 const talking = computed(() => Boolean(talk?.running.value));
 const data = computed(() => props.resource.data || {});
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
-const PICTURE = /\.(png|jpe?g|gif|webp)$/i;
-const pictures = computed(() =>
-    files.value.filter(([name]) => PICTURE.test(name)).map(([name]) => ({name, url: fileUrl(props.resource.type, props.resource.n, name)}))
-);
-const showPicture = (name) =>
-    openPictures(
-        pictures.value,
-        pictures.value.findIndex((p) => p.name === name)
-    );
-const template = computed(() => props.resource.data.template || "");
 const blocked = computed(() => props.resource.data.blocked || "");
 const seenBy = computed(() => props.resource.seen.join(", ") || "nobody");
 const briefLabel = computed(() => kind.value.labels.brief || "");
@@ -74,14 +56,6 @@ const madeFor = computed(() => (kind.value.fields.applies_to ? props.resource.da
 const keywords = computed(() =>
     kind.value.fields.keywords && Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []
 );
-const SCOPES = [
-    ["text", "Text", "What the agent writes: edits and chat"],
-    ["commands", "Commands", "Shell commands"],
-    ["both", "Both", "Shell commands, edits and chat"],
-    ["everything", "Everything", "Any tool call, file paths, searches and URLs included"],
-];
-const scope = computed(() => props.resource.data.keywords_in || "both");
-const matchIn = (value) => api.act(props.resource.type, props.resource.n, "set", {key: "keywords_in", value});
 const waits = computed(() => (props.resource.completed ? [] : waitsOn(props.resource)));
 const editing = ref(false);
 const draft = reactive({title: "", abstract: "", brief: "", error: ""});
@@ -127,102 +101,35 @@ async function follow() {
     await nextTick();
     part.scrollIntoView({block: "center", behavior: "smooth"});
 }
-const chaptered = computed(
-    () => kind.value.view === "document" && !["message", "sequence"].includes(props.resource.type) && props.resource.sections.length >= 2
-);
 </script>
 
 <template>
     <article ref="page" class="body">
-        <header class="head">
-            <div class="top">
-                <span class="kind">
-                    <Icon :name="kind.icon" :size="13" />
-                    {{ isUpdate(resource) ? updateLabel(resource) : `${kind.title} ${resource.n}` }}
-                </span>
-                <template v-if="state && !readOnly">
-                    <SwitchCase :value="state.key">
-                        <template #replaced>
-                            <button type="button" class="standing replaced" :title="state.hint" @click="peek('doc', state.by)">
-                                {{ state.label }}
-                                <Icon name="arrow" :size="10" />
-                            </button>
-                        </template>
-                        <template #default>
-                            <span :class="['standing', state.key]" :title="state.hint">
-                                <template v-if="state.key === 'final'">
-                                    <Icon name="check" :size="10" />
-                                </template>
-                                {{ state.label }}
-                            </span>
-                        </template>
-                    </SwitchCase>
-                </template>
-                <template v-if="data.system">
-                    <span class="standing system" title="Ships with the journal; it can be read but not changed">
-                        <Icon name="lock" :size="10" />
-                        System
-                    </span>
-                </template>
-                <template v-if="writing && kind.view === 'document' && !readOnly">
-                    <button type="button" class="writing-now" title="Go to what the agent is writing" @click="follow">
-                        <span class="writing-dot" />
-                        Agent writing
-                        <template v-if="writing.section">
-                            <span class="writing-where">{{ writing.section }}</span>
-                        </template>
-                    </button>
-                </template>
-                <span class="age">{{ age(resource.created) }}</span>
-                <slot name="tools" />
-                <template v-if="!readOnly">
-                    <template v-if="kind.view === 'document'">
-                        <DownloadLink :resource="resource" />
-                    </template>
-                    <CloseButton @click="emit('close')" />
-                </template>
-            </div>
-            <template v-if="data.template && !readOnly">
-                <button type="button" class="from" @click="peek('template', Number(template))">
-                    <Icon name="docs" :size="11" />
-                    Made from template {{ template }}
-                </button>
-            </template>
-            <template v-if="editing">
-                <input
-                    v-model="draft.title"
-                    class="edit-title"
-                    maxlength="80"
-                    placeholder="Title, at most 80 characters"
-                    @keydown.esc="editing = false"
-                />
-            </template>
-            <template v-else>
-                <h2 class="title">{{ resource.title }}</h2>
-                <template v-if="chaptered">
-                    <Chapters :sections="resource.sections" :body="page" />
-                </template>
-            </template>
-        </header>
+        <ResourceHead
+            v-model:title="draft.title"
+            :resource="resource"
+            :kind="kind"
+            :state="state"
+            :writing="writing"
+            :read-only="readOnly"
+            :editing="editing"
+            :body="page"
+            @close="emit('close')"
+            @follow="follow"
+            @cancel="editing = false"
+        >
+            <template #tools><slot name="tools" /></template>
+        </ResourceHead>
         <slot name="head" />
         <template v-if="editing">
-            <form class="edit" @submit.prevent="save">
-                <textarea
-                    v-model="draft.abstract"
-                    rows="2"
-                    maxlength="200"
-                    placeholder="Abstract, at most 200 characters"
-                    @keydown.esc="editing = false"
-                />
-                <textarea v-model="draft.brief" rows="6" :placeholder="briefLabel || 'Brief'" @keydown.esc="editing = false" />
-                <div class="edit-row">
-                    <Btn kind="primary" small @click="save">Save</Btn>
-                    <Btn small @click="editing = false">Cancel</Btn>
-                    <template v-if="draft.error">
-                        <span class="edit-error">{{ draft.error }}</span>
-                    </template>
-                </div>
-            </form>
+            <ResourceEdit
+                v-model:abstract="draft.abstract"
+                v-model:brief="draft.brief"
+                :brief-label="briefLabel"
+                :error="draft.error"
+                @save="save"
+                @cancel="editing = false"
+            />
         </template>
         <template v-else-if="resource.abstract">
             <TextDisplay class="abstract" :text="resource.abstract" />
@@ -231,36 +138,17 @@ const chaptered = computed(
             <p class="waits">This was deleted.</p>
         </template>
         <template v-else-if="!editing && !readOnly">
-            <div class="controls">
-                <ResourceActions :resource="resource" @edit="edit" @close="emit('close')" />
-                <span class="controls-end">
-                    <template v-if="state && !data.system">
-                        <AttachFiles :resource="resource" />
-                    </template>
-                    <template v-if="['doc', 'collection', 'report'].includes(resource.type) && !data.system">
-                        <ShareButton :resource="resource" />
-                    </template>
-                    <CommentToggle :resource="resource" />
-                </span>
-                <template v-if="ranked">
-                    <Priority :resource="resource" />
-                </template>
-            </div>
+            <ResourceControls
+                :resource="resource"
+                :standing="Boolean(state)"
+                :system="Boolean(data.system)"
+                :ranked="ranked"
+                @edit="edit"
+                @close="emit('close')"
+            />
         </template>
         <template v-if="!resource.completed && (blocked || parkedFor(resource) || waits.length)">
-            <p class="waits">
-                <template v-if="blocked">Blocked: {{ blocked }}</template>
-                <template v-if="parkedFor(resource)">Parked: {{ parkedFor(resource) }}</template>
-                <template v-if="waits.length">
-                    Waits on
-                    <template v-for="(ref, i) in waits" :key="ref">
-                        <button type="button" class="wait" @click="peek(ref.split(':')[0], Number(ref.split(':')[1]))">
-                            {{ ref.replace("todo:", "to-do ").replace("plan:", "plan ") }}
-                        </button>
-                        {{ i < waits.length - 1 ? ", " : "" }}
-                    </template>
-                </template>
-            </p>
+            <ResourceWaits :resource="resource" :blocked="blocked" :waits="waits" />
         </template>
         <template v-if="resource.type === 'rule' && !resource.completed">
             <RuleControls :resource="resource" />
@@ -281,46 +169,15 @@ const chaptered = computed(
             <StageMeanings :board="resource" />
         </template>
         <template v-if="madeFor">
-            <section class="block">
-                <SectionHeading>Made for</SectionHeading>
-                <div class="keywords">
-                    <template v-if="madeFor.length">
-                        <template v-for="type in madeFor" :key="type">
-                            <span class="keyword">{{ meta(type) ? meta(type).title : type }}</span>
-                        </template>
-                    </template>
-                    <template v-else>
-                        <span class="keyword">any kind of row</span>
-                    </template>
-                </div>
-            </section>
+            <ResourceMadeFor :types="madeFor" />
         </template>
         <template v-if="keywords.length">
-            <section class="block">
-                <SectionHeading>Keywords</SectionHeading>
-                <p class="lead">Said to the agent when one of these words comes up in what it is about to run or write.</p>
-                <div class="keywords">
-                    <template v-for="word in keywords" :key="word">
-                        <span class="keyword">{{ word }}</span>
-                    </template>
-                </div>
-                <div class="scopes">
-                    <span class="scopes-label">Matched in</span>
-                    <template v-for="[value, name, hint] in SCOPES" :key="value">
-                        <button type="button" :class="['scope', {on: scope === value}]" :title="hint" @click="matchIn(value)">
-                            {{ name }}
-                        </button>
-                    </template>
-                </div>
-            </section>
+            <ResourceKeywords :resource="resource" :keywords="keywords" />
         </template>
         <template v-if="resource.brief && !editing">
-            <section class="block">
-                <template v-if="briefLabel">
-                    <SectionHeading>{{ briefLabel }}</SectionHeading>
-                </template>
+            <ResourceBlock :heading="briefLabel">
                 <TextDisplay :text="resource.brief" />
-            </section>
+            </ResourceBlock>
         </template>
         <template v-if="resource.type === 'sequence'">
             <SequenceSteps :resource="resource" />
@@ -337,41 +194,10 @@ const chaptered = computed(
             <Trace :resource="resource" />
         </template>
         <template v-if="outcomeShown">
-            <section class="block">
-                <SectionHeading>
-                    {{
-                        state
-                            ? "Note when marked final"
-                            : label(
-                                  resource.type,
-                                  "outcome",
-                                  word(resource.type, "complete").replace(/^\w/, (c) => c.toUpperCase())
-                              )
-                    }}
-                </SectionHeading>
-                <TextDisplay :text="resource.outcome || age(resource.completed)" />
-            </section>
+            <ResourceOutcome :resource="resource" :documented="Boolean(state)" />
         </template>
         <template v-if="files.length">
-            <section class="block">
-                <SectionHeading>Files</SectionHeading>
-                <template v-for="[name, description] in files" :key="name">
-                    <a class="file" :href="fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
-                        <Icon name="clip" :size="13" />
-                        <span class="file-text">
-                            <span class="file-name">{{ name }}</span>
-                            <template v-if="description">
-                                <span class="description">{{ description }}</span>
-                            </template>
-                        </span>
-                    </a>
-                    <template v-if="PICTURE.test(name)">
-                        <button type="button" class="file-preview" :title="`Show ${name}`" @click="showPicture(name)">
-                            <img :src="fileUrl(resource.type, resource.n, name)" :alt="name" loading="lazy" />
-                        </button>
-                    </template>
-                </template>
-            </section>
+            <ResourceFiles :resource="resource" :files="files" />
         </template>
         <template v-if="!readOnly">
             <Asked :resource="resource" />
@@ -381,14 +207,7 @@ const chaptered = computed(
         </template>
         <slot />
         <template v-if="docs.length">
-            <section class="linked-docs">
-                <SectionHeading class="linked-docs-head">Documents</SectionHeading>
-                <div class="linked-docs-cards">
-                    <template v-for="d in docs" :key="d.ref">
-                        <ResourceCard :resource="d" @click="peek('doc', d.n)" />
-                    </template>
-                </div>
-            </section>
+            <ResourceDocs :docs="docs" />
         </template>
         <template v-if="links && !readOnly">
             <Links :resource="resource" :except="docs.map((d) => d.ref)" />
@@ -403,24 +222,6 @@ const chaptered = computed(
 </template>
 
 <style scoped>
-.from {
-    display: inline-flex;
-    align-items: center;
-    align-self: flex-start;
-    gap: 5px;
-    margin-top: 6px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--text-3);
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.from:hover {
-    color: var(--text);
-}
-
 .body {
     display: flex;
     flex-direction: column;
@@ -428,80 +229,6 @@ const chaptered = computed(
     min-height: 100%;
     padding: 16px 16px 0;
     overflow-wrap: anywhere;
-}
-.head {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    margin: -16px -16px 0;
-    padding: 16px 16px 8px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-}
-
-.top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-3);
-    font-size: 11.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-.kind {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    color: var(--accent-text);
-}
-.age {
-    flex: 1 0 auto;
-    white-space: nowrap;
-}
-
-.writing-now {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    max-width: 280px;
-    padding: 0 8px 0 7px;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    border-radius: 99px;
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 10.5px;
-    line-height: 17px;
-    letter-spacing: 0;
-    text-transform: none;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.writing-now:hover {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.writing-dot {
-    flex: none;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent-text);
-    animation: writing-pulse 1.4s ease-in-out infinite;
-}
-
-.writing-where {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text-2);
-}
-
-.writing-where::before {
-    content: "· ";
 }
 
 @keyframes writing-pulse {
@@ -511,236 +238,20 @@ const chaptered = computed(
     }
 }
 
-.standing {
-    flex: none;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 7px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 10.5px;
-    line-height: 17px;
-    letter-spacing: 0;
-    text-transform: none;
-    background: none;
-}
-
-.standing.draft {
-    border-style: dashed;
-    color: var(--text-3);
-}
-
-.standing.replaced {
-    cursor: pointer;
-}
-
-.standing.replaced:hover {
-    border-color: var(--accent);
-    color: var(--accent-text);
-}
-.title {
-    margin: 10px 0 0;
-    font-size: 19px;
-    font-weight: 600;
-    line-height: 1.3;
-}
 .abstract {
     margin: 12px 0 8px;
     color: var(--text-2);
 }
-.edit-title {
-    width: 100%;
-    margin: 10px 0 0;
-    padding: 6px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--raised);
-    font-size: 17px;
-    font-weight: 600;
-}
-.edit {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 12px 0;
-}
-.edit textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--raised);
-    font: inherit;
-    resize: vertical;
-}
-.edit-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.edit-error {
-    color: var(--danger);
-    font-size: 12px;
-}
-.block {
-    margin-top: 16px;
-}
 
-.lead {
-    margin: 0 0 8px;
-    color: var(--text-4);
-    font-size: 12px;
-}
-
-.keywords {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.scopes {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    margin-top: 8px;
-}
-.scopes-label {
-    margin-right: 4px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-.scope {
-    padding: 2px 8px;
-    border: 1px solid transparent;
-    border-radius: 99px;
-    background: none;
-    color: var(--text-3);
-    font-size: 12px;
-    cursor: pointer;
-}
-.scope:hover {
-    color: var(--text-2);
-}
-.scope.on {
-    border-color: var(--border-2);
-    background: var(--raised);
-    color: var(--text);
-}
-.keyword {
-    padding: 2px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    background: var(--raised);
-    color: var(--text-2);
-    font-size: 12px;
-}
-.block h3 {
-    margin: 0 0 4px;
-}
-.file {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 3px 0;
-    color: var(--accent-text);
-}
-.file-preview {
-    display: block;
-    margin: 2px 0 8px 19px;
-    padding: 0;
-    overflow: hidden;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--raised);
-    cursor: zoom-in;
-}
-
-.file-preview img {
-    display: block;
-    max-width: 220px;
-    max-height: 140px;
-    object-fit: cover;
-}
-
-.file-preview:hover {
-    border-color: var(--border-3);
-}
-
-.file .ico {
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-.file-text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-.file-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.description {
-    color: var(--text-3);
-    font-size: 12px;
-}
 .foot {
     margin-top: 18px;
     color: var(--text-3);
     font-size: 11.5px;
 }
+
 .waits {
     margin: 10px 0 0;
     color: var(--blocking);
     font-size: 12.5px;
-}
-
-.wait {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    cursor: pointer;
-}
-
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.controls-end {
-    order: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-left: auto;
-}
-
-.linked-docs {
-    margin: 18px 0 0;
-}
-
-.linked-docs-head {
-    margin: 0 0 8px;
-    color: var(--text-3);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.linked-docs-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 10px;
 }
 </style>

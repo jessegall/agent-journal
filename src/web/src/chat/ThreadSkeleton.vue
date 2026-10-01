@@ -1,26 +1,26 @@
 <script setup>
 const shapes = [
-    [46, 38],
-    [30, 22],
-    [58, 64],
-    [40, 30],
-    [34, 22],
-    [62, 86],
-    [26, 22],
-    [50, 44],
-    [38, 30],
-    [56, 58],
-    [30, 22],
-    [44, 38],
-    [60, 72],
-    [36, 30],
+    {id: "shape-1", width: 46, height: 38, mine: false},
+    {id: "shape-2", width: 30, height: 22, mine: true},
+    {id: "shape-3", width: 58, height: 64, mine: false},
+    {id: "shape-4", width: 40, height: 30, mine: false},
+    {id: "shape-5", width: 34, height: 22, mine: true},
+    {id: "shape-6", width: 62, height: 86, mine: false},
+    {id: "shape-7", width: 26, height: 22, mine: false},
+    {id: "shape-8", width: 50, height: 44, mine: true},
+    {id: "shape-9", width: 38, height: 30, mine: false},
+    {id: "shape-10", width: 56, height: 58, mine: false},
+    {id: "shape-11", width: 30, height: 22, mine: true},
+    {id: "shape-12", width: 44, height: 38, mine: false},
+    {id: "shape-13", width: 60, height: 72, mine: false},
+    {id: "shape-14", width: 36, height: 30, mine: true},
 ];
 </script>
 
 <template>
     <div class="thread-skeleton" aria-label="Loading messages">
-        <template v-for="([width, height], i) in shapes" :key="i">
-            <div :class="['thread-shape', {mine: i % 3 === 1}]" :style="{width: `${width}%`, height: `${height}px`}" />
+        <template v-for="shape in shapes" :key="shape.id">
+            <div :class="['thread-shape', {mine: shape.mine}]" :style="{width: `${shape.width}%`, height: `${shape.height}px`}" />
         </template>
     </div>
 </template>
