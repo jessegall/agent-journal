@@ -49,10 +49,6 @@ async function copied() {
     font-size: 0.706rem;
 }
 
-.phone-mark.console :deep(.head) {
-    justify-content: center;
-}
-
 .phone-mark :deep(.command) {
     display: block;
     grid-column: 1 / -1;

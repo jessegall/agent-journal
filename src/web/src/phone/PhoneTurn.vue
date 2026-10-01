@@ -283,20 +283,13 @@ function pressed(event) {
 }
 
 .turn-card {
-    align-self: center;
+    align-self: flex-start;
     max-width: 100%;
     min-width: 0;
-    margin: -4px 0;
 }
 
 .turn-card :deep(.mark:not(.console)) {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 2px 6px;
     font-size: 0.706rem;
-    text-align: center;
 }
 
 .turn-filed {
