@@ -1,13 +1,14 @@
 <script setup>
 import {computed, ref} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {HELPER_WORDS, helperLine, helperState, helpersInOrder} from "../domain/helpers.js";
+import {HELPER_WORDS, helperView, helpersInOrder} from "../domain/helpers.js";
 import PhoneChevron from "./PhoneChevron.vue";
 
 const props = defineProps({helpers: {type: Array, default: () => []}, stopping: {type: Number, default: 0}});
 const emit = defineEmits(["stop"]);
-const listed = computed(() => helpersInOrder(props.helpers, 3));
+const listed = computed(() => helpersInOrder(props.helpers, 3).map(helperView));
 const opened = ref(0);
+const asking = ref(0);
 const toggle = (row) => (opened.value = opened.value === row.n ? 0 : row.n);
 </script>
 
@@ -16,26 +17,50 @@ const toggle = (row) => (opened.value = opened.value === row.n ? 0 : row.n);
         <section class="helpers" aria-label="Helpers">
             <h3 class="helpers-title">Helpers</h3>
             <ul class="helpers-list">
-                <template v-for="row in listed" :key="row.n">
+                <template v-for="helper in listed" :key="helper.n">
                     <li>
-                        <button type="button" :class="['helper', {stoppable: helperState(row) === 'running'}]" :aria-expanded="row.data?.report ? opened === row.n : undefined" :disabled="!row.data?.report" @click="toggle(row)">
-                            <span :class="['helper-dot', helperState(row)]" aria-hidden="true" />
+                        <button
+                            type="button"
+                            :class="['helper', {stoppable: helper.state === 'running'}]"
+                            :aria-expanded="helper.report ? opened === helper.n : undefined"
+                            :disabled="!helper.report"
+                            @click="toggle(helper)"
+                        >
+                            <span :class="['helper-dot', helper.state]" aria-hidden="true" />
                             <span class="helper-words">
-                                <span class="helper-name">{{ row.data?.name || `Helper ${row.n}` }} · {{ row.title }}</span>
-                                <span class="helper-line">{{ helperLine(row) }}</span>
+                                <span class="helper-name">{{ helper.name }} · {{ helper.title }}</span>
+                                <span class="helper-line">{{ helper.line }}</span>
                             </span>
-                            <span :class="['helper-state', helperState(row)]">{{ HELPER_WORDS[helperState(row)] }}</span>
-                            <template v-if="row.data?.report">
-                                <PhoneChevron :facing="opened === row.n ? 'up' : 'down'" :size="12" />
+                            <span :class="['helper-state', helper.state]">{{ HELPER_WORDS[helper.state] }}</span>
+                            <template v-if="helper.report">
+                                <PhoneChevron :facing="opened === helper.n ? 'up' : 'down'" :size="12" />
                             </template>
                         </button>
-                        <template v-if="helperState(row) === 'running'">
-                            <button type="button" class="helper-stop" :disabled="stopping === row.n" :aria-label="`Stop ${row.data?.name || 'the helper'}`" @click="emit('stop', row)">
-                                {{ stopping === row.n ? "Stopping…" : "Stop" }}
-                            </button>
+                        <template v-if="helper.state === 'running'">
+                            <template v-if="asking === helper.n">
+                                <p class="helper-ask">
+                                    {{ helper.name }} is working on “{{ helper.title }}”. Stop it anyway? It ends its session.
+                                </p>
+                                <div class="helper-choices">
+                                    <button type="button" class="helper-stop" @click="asking = 0">Cancel</button>
+                                    <button
+                                        type="button"
+                                        class="helper-stop danger"
+                                        :disabled="stopping === helper.n"
+                                        @click="emit('stop', helper.row)"
+                                    >
+                                        {{ stopping === helper.n ? "Stopping…" : "Stop" }}
+                                    </button>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <button type="button" class="helper-stop" :aria-label="`Stop ${helper.name}`" @click="asking = helper.n">
+                                    Stop
+                                </button>
+                            </template>
                         </template>
-                        <template v-if="opened === row.n">
-                            <TextDisplay class="helper-report" :text="row.data.report" />
+                        <template v-if="opened === helper.n">
+                            <TextDisplay class="helper-report" :text="helper.report" />
                         </template>
                     </li>
                 </template>
@@ -141,6 +166,35 @@ const toggle = (row) => (opened.value = opened.value === row.n ? 0 : row.n);
 
 .helper.stoppable {
     padding-right: 84px;
+}
+
+.helper-ask {
+    margin: 8px 12px 0;
+    color: var(--text);
+    font-size: 0.882rem;
+    line-height: 1.4;
+}
+
+.helper-choices {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px 12px 12px;
+}
+
+.helper-choices .helper-stop {
+    position: static;
+    margin-top: 0;
+}
+
+.helper-choices .helper-stop:first-child {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.helper-stop.danger {
+    background: var(--danger);
+    color: #fff;
 }
 
 .helper-stop {

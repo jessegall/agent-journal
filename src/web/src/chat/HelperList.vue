@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import TicketAgent from "../board/TicketAgent.vue";
+import AgentStopButton from "./AgentStopButton.vue";
 import {HELPER_WORDS, helperLine, helperState, helpersInOrder} from "../domain/helpers.js";
 
 const props = defineProps({rows: {type: Array, default: () => []}});
@@ -54,7 +55,13 @@ async function act(row, action) {
                 </button>
                 <span :class="['helper-state', helperState(row)]">{{ HELPER_WORDS[helperState(row)] }}</span>
                 <template v-if="helperState(row) === 'running'">
-                    <Btn small :busy="busy === row.n" @click="act(row, 'stop')">Stop</Btn>
+                    <AgentStopButton
+                        quiet
+                        :environment="row.data?.name || `Helper ${row.n}`"
+                        :work="row.title"
+                        :stop="() => api.act('helper', row.n, 'stop')"
+                        @stopped="emit('changed')"
+                    />
                 </template>
                 <template v-else-if="helperState(row) === 'reported'">
                     <Btn small kind="primary" :busy="busy === row.n" @click="act(row, 'complete')">Finish</Btn>
