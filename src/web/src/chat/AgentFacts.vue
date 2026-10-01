@@ -174,6 +174,15 @@ const toggle = (key, e) => emit("toggle", key, e);
                     {{ data.branch }}
                 </AgentFact>
             </template>
+            <AgentFact
+                :class="['agent-fact', 'agent-count', 'agent-stop', {open: open === 'stop'}]"
+                icon="stop"
+                title="Stop the agent; it ends its session"
+                :aria-expanded="open === 'stop'"
+                @click="toggle('stop', $event)"
+            >
+                Stop
+            </AgentFact>
         </template>
     </div>
 </template>
@@ -239,5 +248,10 @@ const toggle = (key, e) => emit("toggle", key, e);
     height: 100%;
     border-radius: inherit;
     background: var(--accent-text);
+}
+
+.agent-stop:hover,
+.agent-stop.open {
+    color: var(--danger);
 }
 </style>

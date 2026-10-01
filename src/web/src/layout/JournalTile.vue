@@ -3,20 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {runPlan, setAuto} from "../actions/work.js";
 import {planButton} from "./statusline.js";
-import {
-    STATE_WORDS,
-    agentLine,
-    ago,
-    counted,
-    countsOf,
-    envState,
-    environmentsOf,
-    focusOf,
-    journalState,
-    leadOf,
-    planMeter,
-    totalsOf,
-} from "../sync/hub.js";
+import {STATE_WORDS, ago, counted, countsOf, environmentsOf, focusOf, journalState, leadOf, planMeter, totalsOf} from "../sync/hub.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import Icon from "../kit/Icon.vue";
@@ -24,9 +11,9 @@ import IconCount from "../kit/IconCount.vue";
 import Meter from "../kit/Meter.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import {SILENT} from "../domain/agentStates.js";
-import Switch from "../kit/Switch.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Tile from "../kit/Tile.vue";
+import JournalTileEnv from "./JournalTileEnv.vue";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});
 const emit = defineEmits(["toggle", "changed"]);
@@ -113,45 +100,13 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 </template>
             </div>
             <template v-for="e in environments" :key="e.name">
-                <div :class="['jt-env', envState(e)]">
-                    <div class="jt-env-line">
-                        <StatusLabel :class="['jt-env-state', {silent: e.silent}]" :state="envState(e)">
-                            {{ STATE_WORDS[envState(e)] }}
-                        </StatusLabel>
-                        <a class="jt-env-name" :href="server.page(e.name)">{{ e.name }}</a>
-                        <span class="jt-env-work">{{ focusOf(e).known ? focusOf(e).title : "" }}</span>
-                        <span class="jt-env-counts">
-                            <template v-for="c in countsOf(e.counts)" :key="c.key">
-                                <IconCount :icon="c.icon" :count="c.n" :title="c.text" :hot="c.hot" :href="server.page(e.name, c.page)" />
-                            </template>
-                        </span>
-                        <span class="jt-env-agent">{{ agentLine(e) }}</span>
-                        <template v-if="e.owner">
-                            <Chip :title="`The journal steers this agent for ${e.owner.replace(':', ' ')}; it needs no auto mode`">
-                                Steered by {{ e.owner.replace(":", " ") }}
-                            </Chip>
-                        </template>
-                        <template v-else>
-                            <Switch
-                                :on="e.auto"
-                                word="auto"
-                                :title="
-                                    e.auto
-                                        ? 'The agent works through the to-do list without asking'
-                                        : 'The agent asks before picking up the next to-do'
-                                "
-                                @change="(on) => switchAuto(e, on)"
-                            />
-                        </template>
-                    </div>
-                    <template v-for="p in e.plans" :key="p.n">
-                        <Meter class="jt-env-plan" v-bind="planMeter(p)">
-                            <template v-if="wordFor(p)">
-                                <Btn small @click="runStep(e, p)">{{ wordFor(p) }}</Btn>
-                            </template>
-                        </Meter>
-                    </template>
-                </div>
+                <JournalTileEnv
+                    :env="e"
+                    :server="server"
+                    @auto="(on) => switchAuto(e, on)"
+                    @step="(p) => runStep(e, p)"
+                    @changed="emit('changed')"
+                />
             </template>
         </template>
     </Tile>
@@ -288,106 +243,5 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
     margin-left: auto;
     color: var(--danger);
     font-size: 11.5px;
-}
-
-.jt-env {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 8px 16px;
-    border-top: 1px solid var(--line);
-    font-size: 12px;
-}
-
-.jt-env-line {
-    display: grid;
-    grid-template-columns: 100px minmax(80px, 170px) minmax(0, 1fr) auto auto auto;
-    align-items: center;
-    gap: 16px;
-    min-height: 28px;
-}
-
-.jt-env.stopped .jt-env-line > :not(.switch-button) {
-    opacity: 0.6;
-}
-
-.jt-env-name {
-    overflow: hidden;
-    color: var(--text);
-    font-size: 12.5px;
-    font-weight: 500;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.jt-env-name:hover {
-    color: var(--accent-text);
-}
-
-.jt-env-work {
-    overflow: hidden;
-    color: var(--text-2);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.jt-env-counts {
-    display: inline-flex;
-    gap: 12px;
-    font-size: 11.5px;
-}
-
-.jt-env-agent {
-    color: var(--text-3);
-    font-size: 11.5px;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
-
-.jt-env-plan {
-    max-width: 560px;
-    padding: 2px 0 4px 116px;
-}
-
-@container (max-width: 720px) {
-    .jt-env-line {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px 12px;
-    }
-
-    .jt-env-state {
-        width: 76px;
-    }
-
-    .jt-env-name {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .jt-env-work {
-        flex-basis: 100%;
-        order: 1;
-        white-space: normal;
-    }
-
-    .jt-env-work:empty,
-    .jt-env-counts:empty,
-    .jt-env-agent:empty {
-        display: none;
-    }
-
-    .jt-env-counts {
-        order: 2;
-    }
-
-    .jt-env-agent {
-        order: 3;
-        margin-left: auto;
-    }
-
-    .jt-env-plan {
-        padding-left: 0;
-    }
 }
 </style>

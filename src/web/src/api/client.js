@@ -392,6 +392,13 @@ export class ApiClient {
         return this.act("environment", n, "stop");
     }
 
+    async stopAgentNamed(name) {
+        const got = await this.list("environment");
+        const row = (got.rows || []).find((e) => e.title === name && !e.completed && !e.deleted);
+        if (!row) throw new Error(`There is no environment called ${name}.`);
+        return this.stopAgentIn(row.n);
+    }
+
     appoint(session) {
         return this.post(this.here("/appoint"), {session});
     }

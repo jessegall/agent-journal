@@ -9,6 +9,8 @@ import AgentControls from "./AgentControls.vue";
 import AgentFacts from "./AgentFacts.vue";
 import AgentPresets from "./AgentPresets.vue";
 import AgentSkills from "./AgentSkills.vue";
+import AgentStopConfirm from "./AgentStopConfirm.vue";
+import {api} from "../api/client.js";
 import AgentUsage from "./AgentUsage.vue";
 import CrewList from "./CrewList.vue";
 import LoopList from "./LoopList.vue";
@@ -22,7 +24,9 @@ usePoll(...polled.agents);
 
 const open = ref("");
 const schemesOpen = ref(false);
-watch(open, () => (schemesOpen.value = false));
+const stopping = ref(false);
+const stopError = ref("");
+watch(open, () => ((schemesOpen.value = false), (stopError.value = "")));
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
 const skills = computed(() => loadedSkills(data.value));
 const usage = computed(() => usageWindows(data.value));
@@ -54,6 +58,19 @@ function pickPreset(key) {
     open.value = "";
     views.preset(key);
 }
+async function stopAgent() {
+    stopping.value = true;
+    stopError.value = "";
+    try {
+        await api.stopAgentNamed(route.value.env);
+        open.value = "";
+    } catch (e) {
+        stopError.value = e.message;
+    } finally {
+        stopping.value = false;
+    }
+}
+
 function openSkills() {
     open.value = "";
     go(route.value.env, "skills");
@@ -89,6 +106,15 @@ function openSkills() {
                     </template>
                     <template #presets>
                         <AgentPresets v-model:schemes-open="schemesOpen" @preset="pickPreset" @scheme="pickScheme" />
+                    </template>
+                    <template #stop>
+                        <AgentStopConfirm
+                            :environment="route.env"
+                            :busy="stopping"
+                            :error="stopError"
+                            @cancel="open = ''"
+                            @stop="stopAgent"
+                        />
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />

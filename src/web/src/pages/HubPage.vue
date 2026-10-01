@@ -42,18 +42,6 @@ function toggleStopped() {
             />
         </FactBar>
 
-        <template v-if="needs.length">
-            <ListBox title="Waiting on you" :count="tally.needs">
-                <template v-for="item in needs" :key="item.key">
-                    <ListRow :kind="`${item.journal.project} · ${item.env.name}`">
-                        <template v-for="ask in item.asks" :key="ask.key">
-                            <IconCount :icon="ask.icon" :count="ask.count" :label="ask.text" :href="ask.href" hot />
-                        </template>
-                    </ListRow>
-                </template>
-            </ListBox>
-        </template>
-
         <ListBox title="Journals" :count="online.length">
             <template v-if="loaded && running.length < 2">
                 <EmptyState class="hub-empty">
@@ -68,6 +56,18 @@ function toggleStopped() {
                 </template>
             </TransitionGroup>
         </ListBox>
+
+        <template v-if="needs.length">
+            <ListBox title="Waiting on you" :count="tally.needs">
+                <template v-for="item in needs" :key="item.key">
+                    <ListRow :kind="`${item.journal.project} · ${item.env.name}`">
+                        <template v-for="ask in item.asks" :key="ask.key">
+                            <IconCount :icon="ask.icon" :count="ask.count" :label="ask.text" :href="ask.href" hot />
+                        </template>
+                    </ListRow>
+                </template>
+            </ListBox>
+        </template>
 
         <template v-if="stopped.length">
             <ListBox title="Stopped" :count="stopped.length" folds :open="!stoppedFolded" @toggle="toggleStopped">
