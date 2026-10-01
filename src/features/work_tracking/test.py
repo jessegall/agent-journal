@@ -46,6 +46,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     todos = Todos(record, actor=USER)
     todos.create("first")
     todos.create("second")
+    record.set_setting("features", {"work_tracking.auto": False})
     idle(record)
     assert nudges(record) == [], "auto off: nothing offered"
     record.features = {**record.features, "work_tracking.auto": True}
@@ -55,6 +56,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     from engine.record import Record
     from features.work_tracking.auto import automatic
     Environments(record, actor=USER).create("ticket-3", owner="ticket:3")
+    Record(record.root, "spare").set_setting("features", {"work_tracking.auto": False})
     assert (automatic(Record(record.root, "ticket-3")), automatic(Record(record.root, "spare"))) == (True, False), \
         "a ticket's environment is always in auto mode, with no switch to turn it off"
     work = Works(record, actor=AGENT).create("on it", todo=1)

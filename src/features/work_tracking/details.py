@@ -57,7 +57,7 @@ class WorkDetails(FeatureDetails):
             name="auto",
             title="Work the list without asking",
             abstract="The next ready row is offered on idle, and blocking questions are refused",
-            default=False,
+            default=True,
             trigger=Trigger(on=IDLE),
         ),
     ]
