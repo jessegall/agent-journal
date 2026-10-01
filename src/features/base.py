@@ -49,24 +49,19 @@ class Line:
         return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders(), "reach": self.reach}
 
 
-SWITCHES: dict[str, tuple] = {}
+SWITCHES: dict[str, dict[str, bool]] = {}
 GENERATION = [0]
 
 
 def booted(record) -> dict[str, bool]:
     rows = Features(record, actor=SYSTEM)
-    SWITCHES[str(record.home)] = (rows.moved(), {row.title: bool(row.enabled) for row in rows._every() if not row.deleted})
-    return SWITCHES[str(record.home)][1]
+    SWITCHES[str(record.home)] = {row.title: bool(row.enabled) for row in rows._every() if not row.deleted}
+    return SWITCHES[str(record.home)]
 
 
 def switches(record) -> dict[str, bool]:
-    if record.memo is not None and "switches" in record.memo:
-        return record.memo["switches"]
     held = SWITCHES.get(str(record.home))
-    found = held[1] if held and held[0] == Features(record, actor=SYSTEM).moved() else booted(record)
-    if record.memo is not None:
-        record.memo["switches"] = found
-    return found
+    return held if held is not None else booted(record)
 
 
 def rebooted(event=None, record=None) -> None:
