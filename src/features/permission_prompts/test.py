@@ -45,7 +45,8 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert codex.skipping(["--approve-for-me", "x"], True) == ["--dangerously-bypass-approvals-and-sandbox", "x"], \
         "Codex refuses approve-for-me beside the bypass, so skipping drops it"
     asked = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nDo you trust the contents of this directory?\r\n\xe2\x80\xba 1. Yes, continue\r\n  2. No, quit"
-    assert (codex.consent(asked), codex.confirm(asked)) == (b"1\r", b""), "Codex's trust question is answered Yes by number, before the opening"
+    assert (codex.consent(asked), codex.opening(asked)) == (b"1\r", ""), "Codex's trust question is answered Yes by number, before the opening"
+    assert codex.opening(b"\x1b[2m> Ask Codex to do anything\x1b[0m") == codex.OPENING, "at its empty prompt Codex is given the journal's opening line"
     assert codex.consent(asked + b"\r\n> Ask Codex to do anything") == b"", "once Codex is at its prompt, nothing more is typed into the question"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \
         (["resume", "--last"], ["resume", "abc"], ["-c", "k=v"]), "Codex continues and resumes with its resume subcommand, and -c stays its config flag"

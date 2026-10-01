@@ -33,7 +33,7 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
     launched = subprocess.Popen([*journal, name], cwd=place / "project", env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     try:
         began = time.time()
-        awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].confirm(b"Ask Codex to do anything") else f"{name}.started")
+        awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].opening(b"Ask Codex to do anything") else f"{name}.started")
         while not awaited.exists() and launched.poll() is None and time.time() - began < WAIT:
             time.sleep(0.1)
         if during:

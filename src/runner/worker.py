@@ -78,8 +78,9 @@ def press(root: Path, session: str, keys: bytes) -> None:
 
 
 class Confirm:
-    def __init__(self, root: Path, session: str, agent: str):
+    def __init__(self, root: Path, env: str, session: str, agent: str):
         self.root, self.session, self.agent = root, session, agent
+        self.driver = DRIVERS[agent](Record(root, env), session)
         self.printed = runtime.session_file(root, session, "printed")
         self.at = self.printed.stat().st_size if self.printed.is_file() else 0
         self.started = self.consented = time.time()
@@ -94,11 +95,11 @@ class Confirm:
         if DRIVERS[self.agent].consent(early):
             self.consent(early)
             return
-        keys = DRIVERS[self.agent].confirm(early)
-        if keys:
+        opening = DRIVERS[self.agent].opening(early)
+        if opening:
             self.answered = True
             time.sleep(DRIVERS[self.agent].CONFIRM_AFTER)
-            press(self.root, self.session, keys)
+            self.driver.type_in(opening)
 
     def consent(self, early: bytes) -> None:
         if time.time() - self.consented < CONSENT_EVERY:
@@ -114,7 +115,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     stopping = session_flag(root, session)
     stamps = watched(root)
     began = time.time()
-    confirm = Confirm(root, session, agent)
+    confirm = Confirm(root, env, session, agent)
     last_check = last_viewer = last_services = last_checks = 0.0
     watching = None
     exits: list = []

@@ -12,7 +12,7 @@ from providers.codex_rows import Row
 from engine.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import tail, write_text
-from providers.drivers import ANSI, MARK, Driver
+from providers.drivers import ANSI, Driver
 from typing import TypedDict
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
@@ -382,16 +382,16 @@ class CodexDriver(Driver):
     SEND_NOW = b"\x1b"
     TRUSTING = re.compile(rb"Doyoutrustthecontentsofthisdirectory.*?(\d)\.Yes,continue", re.S)
     SCREEN_TAIL = 8192
-    OPENING = f"{MARK} The journal started this session."
+    OPENING = "The journal started this session."
     CONFIRM_AFTER = 3.0
     RESUME = "resume"
     CONTINUING = ("continue", "--continue")
     name = "codex"
 
     @classmethod
-    def confirm(cls, printed: bytes) -> bytes:
+    def opening(cls, printed: bytes) -> str:
         plain = b"".join(ANSI.sub(b"", printed).split())
-        return f"{cls.OPENING}\r".encode() if cls.READY in plain and not cls.consent(printed) else b""
+        return cls.OPENING if cls.READY in plain and not cls.consent(printed) else ""
 
     @classmethod
     def consent(cls, printed: bytes) -> bytes:
