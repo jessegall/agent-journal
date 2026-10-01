@@ -8,6 +8,7 @@ import time
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
+from controllers.marks import lasting
 from engine.package import entry
 from engine.proc import streamed
 from controllers.faults import threw
@@ -77,6 +78,7 @@ class Checks(Controller):
             return f"check {n} is running; its result lands on the row, and a failure is told to you"
         return self._ran(n)
 
+    @lasting
     def touched(self, n: int) -> str:
         check = self.load(n)
         if not check.touched:
@@ -89,6 +91,7 @@ class Checks(Controller):
         uncovered = f"\nno test covers {found.uncovered}; the full check is the gate for those" if found.bare else ""
         return f"{tail(output)}{uncovered}" if code == 0 else f"failed:\n{tail(output)}"
 
+    @lasting
     def gate(self, n: int, message: str, paths: str = "", wait: bool = False):
         if not self.load(n).command:
             raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")

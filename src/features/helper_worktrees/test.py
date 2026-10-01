@@ -1,46 +1,12 @@
-import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 
 import features
-from engine.record import Record
 from features.helper_worktrees.controller import Worktrees
 from providers import PROVIDERS
 from resources.base import AGENT
 from runner.hooks import handle
-from tests.conftest import fresh, refused
-
-
-def git(where: Path, *args: str) -> str:
-    return subprocess.run(["git", *args], cwd=where, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
-
-
-def commit(where: Path, name: str, text: str) -> str:
-    (where / name).write_text(text)
-    git(where, "add", name)
-    git(where, "commit", "-q", "-m", f"write {name}")
-    return git(where, "rev-parse", "HEAD")
-
-
-@dataclass(frozen=True)
-class Repo:
-    record: Record
-    project: Path
-
-
-def project_on(branch: str) -> Repo:
-    record = fresh()
-    record.root.mkdir(parents=True, exist_ok=True)
-    project = record.root.resolve().parent
-    git(project, "init", "-q", "-b", "main")
-    git(project, "config", "user.email", "t@t")
-    git(project, "config", "user.name", "t")
-    (project / ".gitignore").write_text("/.journal\n/.claude/worktrees/\n")
-    git(project, "add", ".gitignore")
-    git(project, "commit", "-q", "-m", "start")
-    git(project, "checkout", "-q", "-b", branch)
-    commit(project, "shared.txt", "one\n")
-    return Repo(record, project)
+from tests.conftest import refused
+from tests.kit import commit, git, project_on
 
 
 def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():

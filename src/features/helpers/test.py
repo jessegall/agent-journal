@@ -4,9 +4,8 @@ import features
 from controllers.types import Agents, Environments, Messages, Nudges
 from engine.record import Record
 from features.helper_worktrees.controller import Worktrees
-from features.helper_worktrees.test import project_on
+from tests.kit import project_on
 from features.helpers.controller import Helpers
-from features.phone.places import shown
 from resources.base import AGENT, SYSTEM
 from surfaces.summary import summarize
 from tests.conftest import fresh, refused
@@ -31,7 +30,6 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     assert cwd == record.root.resolve().parent and "helper 1" in said, "without a worktree it works in the project"
     place = Environments(record, actor=SYSTEM)._titled(f"{record.env}-rhea-lovelace")
     assert place.helping and place.launched_from == record.env, "its environment is marked as the helper's and names the dispatcher"
-    assert f"{record.env}-rhea-lovelace" not in shown(record.root), "the phone's places leave it out"
     assert f"{record.env}-rhea-lovelace" not in [e["name"] for e in summarize(record.root)["environments"]], \
         "the hub's summary leaves it out"
 

@@ -81,7 +81,7 @@ def test_a_due_check_runs_in_one_engine_while_another_holds_it():
 
 def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on_a_pass(monkeypatch):
     from controllers.types import Agents, Nudges
-    from features.helper_worktrees.test import commit, git, project_on
+    from tests.kit import commit, git, project_on
     features.load()
     repo = project_on("work")
     (repo.project / "hooks").mkdir()

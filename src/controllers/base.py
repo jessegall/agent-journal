@@ -29,7 +29,8 @@ COMMANDS: dict[str, dict] = {}
 
 
 def networked(type_: str, name: str) -> bool:
-    return bool(getattr(COMMANDS.get(type_, {}).get(name), "network", False))
+    held = COMMANDS.get(type_, {}).get(name) or getattr(CONTROLLERS.get(type_), name, None)
+    return bool(getattr(held, "network", False))
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
 NAMED: dict[str, type] = {}
