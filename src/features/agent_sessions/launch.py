@@ -16,7 +16,11 @@ def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, 
 
 
 def start_in(record, name: str, abstract: str, owner: str, provider: str, args: list[str], cwd: Path) -> str:
-    from agents.terminal import detached
+    prepared(record, name, abstract, owner)
+    return launched(record, name, provider, args, cwd)
+
+
+def prepared(record, name: str, abstract: str, owner: str) -> Record:
     environments = Environments(record, actor=SYSTEM)
     if not environments._titled(name):
         environments.create(name, abstract=abstract, owner=owner, launched_from=record.env)
@@ -24,5 +28,10 @@ def start_in(record, name: str, abstract: str, owner: str, provider: str, args: 
     prompted(place)
     for feature in QUIET:
         Features(place, actor=SYSTEM).switch(feature, False)
+    return place
+
+
+def launched(record, name: str, provider: str, args: list[str], cwd: Path) -> str:
+    from agents.terminal import detached
     detached(record.root, cwd, name, provider, args)
     return name

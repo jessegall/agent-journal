@@ -4,11 +4,11 @@ from pathlib import Path
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Environments, Messages, Nudges
+from controllers.types import Environments, Messages, Nudges, Todos
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions
-from features.agent_sessions.launch import start_in
+from features.agent_sessions.launch import launched, prepared
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
 from resources.base import AGENT, SYSTEM, Refused, titled
@@ -20,8 +20,10 @@ def slugged(name: str) -> str:
     return SLUG.sub("-", name.lower()).strip("-")[:30]
 
 
-def kickoff(row, folder: Path) -> str:
+def kickoff(row, folder: Path, todo: int) -> str:
     return (f"You are {row.name}, a helper dispatched for one bounded job. The job: {row.title}\n\n{row.brief}\n\n"
+            f"It is to-do {todo} on your own list: take it with journal todo start {todo}, keep its work log as you go, "
+            f"and close it with journal todo done {todo} --how \"<what landed>\" before you report. "
             f"Work only on this job, in {folder}. Commit what you change there; never push, never switch branches. "
             f"Do not write to the user, and do not write rules, facts or docs. "
             f"When the job is done, or you cannot go on, finish with journal helper report \"<what you did, what you found, what is left>\": "
@@ -54,8 +56,9 @@ class Helpers(Controller):
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         driver = DRIVERS[provider]
-        start_in(self.record, place, f"Where helper {row.name} works on {job}", row.ref, provider,
-                 driver.prompted([*driver.AUTO_ARGS, "--model", model], kickoff(row, folder)), folder)
+        home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref)
+        todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
+        launched(self.record, place, provider, driver.prompted([*driver.AUTO_ARGS, "--model", model], kickoff(row, folder, todo.n)), folder)
         return row
 
     def say(self, n: int, text: str) -> str:

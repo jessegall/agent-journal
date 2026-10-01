@@ -27,6 +27,12 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     assert (row.name, row.provider, row.model, row.environment) == ("Rhea Lovelace", "codex", "gpt-5.5", f"{record.env}-rhea-lovelace"), "the row names who, where and on what"
     assert (env, agent) == (f"{record.env}-rhea-lovelace", "codex") and args[args.index("--model") + 1] == "gpt-5.5", "it runs on the named provider and model"
     assert "Profile the slow hooks" in args[-1] and "journal helper report" in args[-1], "the kickoff holds the job and how to report"
+    from features.work_tracking.auto import automatic
+    from controllers.types import Todos
+    home = Record(record.root, f"{record.env}-rhea-lovelace")
+    job, = Todos(home, actor=SYSTEM).all()
+    assert (job.title, job.brief, "journal todo start 1" in args[-1], automatic(home)) == ("Profile the slow hooks", "Time each hook", True, True), \
+        "its job waits as a to-do on its own list, the kickoff names it, and auto mode keeps it going"
     assert cwd == record.root.resolve().parent and "helper 1" in said, "without a worktree it works in the project"
     place = Environments(record, actor=SYSTEM)._titled(f"{record.env}-rhea-lovelace")
     assert place.helping and place.launched_from == record.env, "its environment is marked as the helper's and names the dispatcher"
