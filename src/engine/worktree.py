@@ -187,6 +187,10 @@ def branched(project: Path, branch: str, start: str, fresh: bool = False) -> str
 
 
 def tip(project: Path, ref: str = "HEAD") -> str:
+    branch = ref.removeprefix("refs/heads/")
+    loose = project / ".git" / "refs" / "heads" / branch
+    if ref != "HEAD" and loose.is_file():
+        return loose.read_text().strip()
     return git(project, "rev-parse", ref).stdout.strip()
 
 
@@ -231,11 +235,15 @@ def share_journal(top: Path, root: Path) -> None:
         return
     skills = [Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
     hooks = [Path(path) for path in SHARED_IF_IGNORED if (project / path).exists()]
-    wanted = [Path(path) for path in SHARED] + ignored(project, hooks) + untracked(project, skills)
+    linked_hooks = [path for path in hooks if is_linked(top / path, project / path)]
+    linked_skills = [path for path in skills if is_linked(top / path, project / path)]
+    pending_hooks = [path for path in hooks if path not in linked_hooks and ((top / path).is_symlink() or not (top / path).exists())]
+    pending_skills = [path for path in skills if path not in linked_skills and ((top / path).is_symlink() or not (top / path).exists())]
+    wanted = [Path(path) for path in SHARED] + linked_hooks + ignored(project, pending_hooks) + linked_skills + untracked(project, pending_skills)
     excluded(top, [f"/{path}" for path in wanted])
     cleared(top, Path(SHARED[0]))
     for path in wanted:
-        linked_to(top / path, (project / path).resolve())
+        linked_to(top / path, project / path)
     unshared(top, project, set(wanted))
 
 
@@ -278,7 +286,7 @@ def untracked(project: Path, paths: list[Path]) -> list[Path]:
 
 
 def linked_to(place: Path, target: Path) -> None:
-    if not target.exists() or place.is_symlink() and place.resolve() == target:
+    if not target.exists() or is_linked(place, target):
         return
     if place.exists() and not place.is_symlink():
         return
@@ -291,6 +299,13 @@ def linked_to(place: Path, target: Path) -> None:
         return
 
 
+def is_linked(place: Path, target: Path) -> bool:
+    if not place.is_symlink():
+        return False
+    linked = place.readlink()
+    return Path(os.path.abspath(linked if linked.is_absolute() else place.parent / linked)) == target
+
+
 def unshared(top: Path, project: Path, wanted: set[Path]) -> None:
     for folder in SHARED_IN:
         here = top / folder
@@ -298,7 +313,7 @@ def unshared(top: Path, project: Path, wanted: set[Path]) -> None:
             continue
         for entry in here.iterdir():
             path = Path(folder) / entry.name
-            if entry.is_symlink() and path not in wanted and project.resolve() in Path(os.readlink(entry)).parents:
+            if entry.is_symlink() and path not in wanted and project in Path(os.readlink(entry)).parents:
                 entry.unlink()
 
 

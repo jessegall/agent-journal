@@ -143,9 +143,11 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
     for i in range(40):
         Messages(record, actor=USER).create(f"message {i}")
     asked = {"types": "todo,message,question", "events": "50"}
-    hook = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}, "cwd": str(record.root.parent)}
+    hooks = {"claude": {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}, "cwd": str(record.root.parent)},
+             "codex": {"hook_event_name": "PreToolUse", "session_id": "codex-1", "tool_name": "exec_command", "tool_input": {"cmd": "sed -n '1,20p' x.py"}, "cwd": str(record.root.parent)}}
     calls = {"the dashboard": (lambda: dispatch("GET", f"/api/{record.env}/dashboard", record.root, asked, {}), 1, 1),
-             "a PreToolUse hook": (lambda: answer(PROVIDERS["claude"](), record.root, hook, os.getpid()), 25, 0),
+             **{f"a {name} PreToolUse hook": (lambda name=name: answer(PROVIDERS[name](), record.root, hooks[name], os.getpid()), 25, 0)
+                for name in hooks},
              "an agent report through every handler": (lambda: report(record, "working", "PostToolUse"), 10, 0)}
     for name, (call, opened, scanned) in calls.items():
         call()

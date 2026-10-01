@@ -1,13 +1,15 @@
 from features import FEATURES
-from features.parts import Context
-from features.worktrees.interceptors import LinkWorktreeJournal
-from providers.payload import Hook
+from controllers.types import Agents
+from engine.events.agents import SessionStarted
+from features.parts import AgentContext
+from features.worktrees.handlers import LinkWorktreeJournal
 from tests.conftest import fresh
 
 
 def linked(feature, record, cwd: Path) -> None:
-    hook = Hook.read({"hook_event_name": "PreToolUse", "cwd": str(cwd)}, {})
-    LinkWorktreeJournal().intercept(Context.of(feature, record, hook=hook), hook.tool)
+    agents = Agents(record, actor="system")
+    row = agents.update(agents.by_session("claude-1").n, cwd=str(cwd))
+    LinkWorktreeJournal().handle(AgentContext.of(feature, record, row), SessionStarted())
 
 
 def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_seeing_them(tmp_path):

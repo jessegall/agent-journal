@@ -115,6 +115,9 @@ class Worktrees(Controller):
         gained = tuple(listed(project, "log", "--format=%h %s", f"{row.base}..{now}"))
         return Drift(row.working, row.base, now, gained, bool(row.branch) and contains(project, now, row.branch))
 
+    def _has_new_tip(self, row) -> bool:
+        return row.told != tip(self._project(), row.working)
+
     def _touched(self, places: tuple[Path, ...], commands: tuple[str, ...]) -> list:
         return [row for row in self._standing() if row.path and within(Path(row.path), places, commands)]
 

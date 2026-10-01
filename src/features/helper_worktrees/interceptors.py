@@ -16,8 +16,10 @@ class TellDrift(ToolInterceptor):
         places = tuple((here / given).resolve() for given in (str(here), *(call.paths if subagent else ())))
         worktrees = Worktrees(context.record, actor=SYSTEM)
         for row in worktrees._touched(places, tuple(call.commands) if subagent else ()):
+            if not worktrees._has_new_tip(row):
+                continue
             found = worktrees._drift(row)
-            if found.current or row.told == found.tip:
+            if found.current:
                 continue
             worktrees._told(row, found.tip)
             return context.feature.line("drifted", {"working": row.working, "commits": found.told, "path": row.path})[0]
