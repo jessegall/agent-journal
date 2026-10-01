@@ -196,6 +196,9 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     with pytest.raises(OSError, match="holds no journal package"):
         install.refresh(empty, target)
     assert (target / "engine" / "clock.py").is_file(), "a source with no package retires nothing"
+    root = tmp_path.resolve()
+    assert install.installed_here(root, root / "journal-2.1.0-abc.pyz"), "an older build beside the record fetches the release rather than reading itself"
+    assert not install.installed_here(root, moved), "a checkout elsewhere is read as the package"
 
 
 def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):

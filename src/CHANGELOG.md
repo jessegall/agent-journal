@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.221.0 — updates land on the first try
+
+**An automatic update no longer fails with "holds no journal package".** When the update started
+from an older build of the journal kept beside the record, it read that build as if it were the
+new release; now any build there fetches the release, as `journal upgrade` already did.
+
 ## 2.220.0 — a quieter orchestrator
 
 **A ticket agent waiting on its own run no longer nudges the orchestrator.** Only a ticket waiting on
