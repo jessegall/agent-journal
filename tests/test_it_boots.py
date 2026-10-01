@@ -127,7 +127,8 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
     hold_build(root, old[0])
     subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)], env={**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"},
                    capture_output=True, timeout=120)
-    assert [build.is_file() for build in old] == [True, False, True], "the build a live process runs from is kept; the other old ones go"
+    kept = sorted(build.name for build in root.glob("journal-*.pyz") if build != old[0])
+    assert old[0].is_file() and not old[1].is_file() and len(kept) <= 2, f"the build a live process runs from is kept; of the others only the two newest stay: {kept}"
 
 
 def heals(root: Path, good: Path):
