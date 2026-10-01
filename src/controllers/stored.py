@@ -119,7 +119,30 @@ class Stored:
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
             return held[1]
-        return self._summarised(folder, moved, self._indexed(folder))
+        loose = self._loose(folder)
+        if held and held[0][1] == moved[1]:
+            touched = self._differing(held[1], loose)
+            if len(touched) < FLUSH_ROWS:
+                return self._patched(folder, moved, held[1], loose, touched)
+        return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].get(DAMAGED)])
+
+    def _differing(self, held: list[dict], loose: dict[int, dict]) -> set[int]:
+        listed = {row["n"]: row for row in held}
+        packed = self._packed()
+        shown = {n: row for n, row in loose.items() if not (row.get(DAMAGED) or row.get(PART_OF) or row.get(DRAFT_OF))}
+        return {n for n, row in shown.items() if listed.get(n) is not row} | {n for n in listed if n not in shown and n not in packed}
+
+    def _patched(self, folder: Path, moved: tuple, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
+        rows = list(held)
+        for n in sorted(touched):
+            at = bisect_left(rows, n, key=lambda row: row["n"])
+            if at < len(rows) and rows[at]["n"] == n:
+                del rows[at]
+            row = loose.get(n) or self._packed().get(n)
+            if row and not row.get(DAMAGED) and not (row.get(PART_OF) or row.get(DRAFT_OF)):
+                rows.insert(at, row)
+        SUMMARIES[str(folder)] = (moved, rows)
+        return rows
 
     def _moved(self, folder: Path) -> tuple:
         return (folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX))
@@ -214,6 +237,10 @@ class Stored:
         return stamps
 
     def _indexed(self, folder: Path) -> list[dict]:
+        rows = self._loose(folder)
+        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
+
+    def _loose(self, folder: Path) -> dict[int, dict]:
         stamps = self._stamps(folder)
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
         needed = {"files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
@@ -238,7 +265,7 @@ class Stored:
             write_json(folder / INDEX, rows)
             WRITTEN[str(folder)] = time.time()
         INDEXED[str(folder)] = rows
-        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
+        return rows
 
     def _titled(self, title: str, standing: bool = False) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
