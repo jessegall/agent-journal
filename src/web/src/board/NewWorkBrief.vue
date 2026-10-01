@@ -1,19 +1,12 @@
 <script setup>
+import GoalPoints from "./GoalPoints.vue";
+
 defineProps({goal: {type: String, default: ""}, doneWhen: {type: Array, required: true}});
 </script>
 
 <template>
     <div class="brief">
-        <template v-if="goal">
-            <p class="brief-goal">{{ goal }}</p>
-        </template>
-        <template v-if="doneWhen.length">
-            <ol class="brief-done">
-                <template v-for="clause in doneWhen" :key="clause">
-                    <li>{{ clause }}</li>
-                </template>
-            </ol>
-        </template>
+        <GoalPoints :goal="goal" :points="doneWhen" />
     </div>
 </template>
 
@@ -28,13 +21,13 @@ defineProps({goal: {type: String, default: ""}, doneWhen: {type: Array, required
     border-radius: 10px;
 }
 
-.brief-goal {
+.brief :deep(.goal-whole) {
     margin: 0;
     color: var(--text);
     font-weight: 500;
 }
 
-.brief-done {
+.brief :deep(.goal-points) {
     display: flex;
     flex-direction: column;
     gap: 2px;

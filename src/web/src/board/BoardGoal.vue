@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import GoalPoints from "./GoalPoints.vue";
 import {useOutside} from "../composables/outside.js";
 
 const props = defineProps({board: {type: Object, required: true}});
@@ -26,16 +27,7 @@ useOutside(band, () => (open.value = false));
             </template>
             <template v-if="open">
                 <div class="board-goal-panel">
-                    <template v-if="goal">
-                        <p class="board-goal-whole">{{ goal }}</p>
-                    </template>
-                    <template v-if="clauses.length">
-                        <ol class="board-goal-points">
-                            <template v-for="clause in clauses" :key="clause">
-                                <li>{{ clause }}</li>
-                            </template>
-                        </ol>
-                    </template>
+                    <GoalPoints :goal="goal" :points="clauses" />
                 </div>
             </template>
         </section>
@@ -127,14 +119,14 @@ useOutside(band, () => (open.value = false));
     animation: fade-in 0.18s ease-out both;
 }
 
-.board-goal-whole {
+.board-goal-panel :deep(.goal-whole) {
     margin: 0;
     color: var(--text);
     font-size: 13.5px;
     line-height: 1.5;
 }
 
-.board-goal-points {
+.board-goal-panel :deep(.goal-points) {
     display: flex;
     flex-direction: column;
     gap: 7px;
@@ -145,12 +137,12 @@ useOutside(band, () => (open.value = false));
     line-height: 1.45;
 }
 
-.board-goal-whole + .board-goal-points {
+.board-goal-panel :deep(.goal-whole + .goal-points) {
     padding-top: 12px;
     border-top: 1px solid var(--border);
 }
 
-.board-goal-points li::marker {
+.board-goal-panel :deep(.goal-points li::marker) {
     color: var(--text-4);
     font-size: 11px;
 }
