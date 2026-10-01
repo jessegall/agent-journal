@@ -9,10 +9,11 @@ import {ago} from "./ago.js";
 import {announce, tell} from "./announce.js";
 import {tick} from "./haptic.js";
 
-const UNDO_SECONDS = 5;
+const HOLD_SECONDS = 3;
 const card = ref(null);
 const HELD = "No connection right now: this goes as soon as the phone reaches your computer again.";
 const props = defineProps({question: {type: Object, required: true}});
+const seconds = computed(() => Number(props.question.hold ?? HOLD_SECONDS));
 const emit = defineEmits(["done"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
@@ -20,7 +21,11 @@ const choice = ref("");
 const typed = ref(false);
 const OWN = "own-words";
 const rows = computed(() => [
-    ...options.value.map((option) => ({key: `option-${option.title}`, title: option.title, sending: choice.value === option.title && !typed.value})),
+    ...options.value.map((option) => ({
+        key: `option-${option.title}`,
+        title: option.title,
+        sending: choice.value === option.title && !typed.value,
+    })),
     {key: OWN, own: true, sending: Boolean(choice.value) && typed.value},
 ]);
 const left = ref(0);
@@ -107,7 +112,7 @@ function pick(answer) {
     if (choice.value === answer) return send(answer);
     clearInterval(timer);
     choice.value = answer;
-    left.value = UNDO_SECONDS;
+    left.value = seconds.value;
     nextTick(() => card.value?.querySelector(".sending-undo")?.focus({preventScroll: true}));
     timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
@@ -139,12 +144,17 @@ onUnmounted(() => {
             <div class="question-options">
                 <template v-for="row in rows" :key="row.key">
                     <template v-if="row.sending">
-                        <PhoneSending :answer="choice" :left="left" :seconds="UNDO_SECONDS" @now="send(choice)" @undo="stop" />
+                        <PhoneSending :answer="choice" :left="left" :seconds="seconds" @now="send(choice)" @undo="stop" />
                     </template>
                     <template v-else-if="row.own">
                         <form class="question-own" @submit.prevent="pickOwn">
                             <label class="phone-hidden" :for="`own-${question.n}`">Your own answer</label>
-                            <input :id="`own-${question.n}`" v-model="own" class="question-words" placeholder="Or answer in your own words" />
+                            <input
+                                :id="`own-${question.n}`"
+                                v-model="own"
+                                class="question-words"
+                                placeholder="Or answer in your own words"
+                            />
                             <Btn large @click="pickOwn">Answer</Btn>
                         </form>
                     </template>

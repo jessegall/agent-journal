@@ -244,6 +244,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert len(pushed) == 1 and push.verified(public, f"{head}.{claims}".encode(), push.base64.urlsafe_b64decode(signature + "==")), \
         "a new question sends one signed push, and not again while it waits"
     assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
+    asked = next(item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"question:{question.n}")
+    assert asked["hold"] == 3, "the phone holds a picked answer as long as the desktop does, from the same setting"
     assert call(base, "/p/answer", {"n": question.n, "answer": "Yes"}, key).status == 201
     answered = Questions(record, actor=SYSTEM).load(question.n)
     assert answered.outcome == "Yes" and answered.data["answered_by"] == USER, "the answer is the user's"

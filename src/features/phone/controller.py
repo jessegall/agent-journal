@@ -35,6 +35,7 @@ from resources.shapes import level_named
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused, titled
 from features.work_modes.modes import mode_of, pick
 from features.helpers.controller import Helpers
+from features import FEATURES
 
 CODE_SECONDS = 600
 HELPERS_SHOWN = 10
@@ -420,7 +421,10 @@ class Phones(Controller):
     def _said(self, home: Record, kind: str, row) -> dict | None:
         if kind == "message" and row.data.get("window"):
             return None
-        return {**shaped(row, home, VIEWER), "who": row.seen[0] if kind != "question" and row.seen else "agent", "files": dict(row.files)}
+        said = {**shaped(row, home, VIEWER), "who": row.seen[0] if kind != "question" and row.seen else "agent", "files": dict(row.files)}
+        if kind != "question":
+            return said
+        return {**said, "hold": dict(FEATURES["ask_questions"].values(home))["hold"]}
 
     def _waiting(self, phone: Phone) -> list[Waiting]:
         home = self._home(phone)
