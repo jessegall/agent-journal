@@ -22,7 +22,7 @@ from features.boards.resource import DONE, REVIEW, START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
-from features.tickets.resource import Ticket, card_back
+from features.tickets.resource import Bases, Ticket, card_back
 from controllers.types import Agents, Messages, Questions, Todos, Works
 from features.plans.controller import ACTIVE, DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
@@ -222,7 +222,7 @@ class Tickets(Prioritised, Controller):
         if not session:
             self._refuse(f"{self.type} {ticket.n} has no agent running to tell")
         from providers import DRIVERS
-        driver = DRIVERS[ticket.agent](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+        driver = DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
         if not driver.enter(note.strip()):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return self.update(ticket.n, told=time.time())
@@ -233,7 +233,7 @@ class Tickets(Prioritised, Controller):
         session = self.agent_session(ticket.n)
         if not session:
             self._refuse(f"{self.type} {ticket.n} has no agent running to look at")
-        driver = DRIVERS[ticket.agent](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+        driver = DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
         shown = [line.rstrip() for line in driver.last_printed(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
         return "\n".join(shown[-int(lines):])
 
@@ -266,8 +266,8 @@ class Tickets(Prioritised, Controller):
             act(self._plans(ticket), int(ticket.plan))
             return ticket
         if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self._orchestrating():
-            self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board while its "
-                         f"auto mode is on and the board has {PLANS} set; never the agent that wrote it. Here: {self._why_not(ticket)}")
+            self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board when the "
+                         f"board has {PLANS} set; never the agent that wrote it. Here: {self._why_not(ticket)}")
         act(Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM), int(ticket.plan))
         if told and self.agent_session(ticket.n):
             try:
@@ -285,12 +285,15 @@ class Tickets(Prioritised, Controller):
             return ACTIVE
         return plan.status
 
+    def _plan_waits(self, ticket) -> bool:
+        return self._plan_status(ticket) in (READY, WAITING)
+
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
         started = [ticket for ticket in self._standing() if ticket.work_environment and not ticket.halted and (ticket.agent_seen or ticket.launched)
                    and time.time() - ticket.launched > LAUNCHING_FOR and ticket.board and int(ticket.board) in boards]
         looked = [(ticket, self._runtime(ticket, sessions, running)) for ticket in started]
-        return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK] + \
+        return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._plan_waits(ticket)] + \
                [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
 
     def _off_branch(self, ticket) -> str:
@@ -311,8 +314,9 @@ class Tickets(Prioritised, Controller):
         return {name: tip(place, into) if not base or not present(place, f"refs/heads/{branch}") else base
                 for name, place, base in self._repositories(ticket)}
 
-    def _based(self, ticket, bases: dict):
-        return self.update(ticket.n, base=bases.get(".", ""), bases={name: base for name, base in bases.items() if name != "."})
+    def _based(self, ticket, tips: dict[str, str]):
+        bases = Bases.of(tips)
+        return self.update(ticket.n, base=bases.root, bases=bases.nested)
 
     def _revive(self, ticket) -> bool:
         if ticket.restarts >= MOST_RESTARTS or ticket.queued:
@@ -321,10 +325,8 @@ class Tickets(Prioritised, Controller):
         return not self.start(ticket.n).queued
 
     def _why_not(self, ticket) -> str:
-        from features.work_tracking.auto import automatic
         board = Boards(self.record, actor=SYSTEM).load(ticket.board)
         return "; ".join([
-            f"auto mode is {'on' if automatic(self.record) else 'off'} in {self.record.env} (Settings, Work tracking, auto)",
             f"board {board.n} has {PLANS} {'set' if board.data.get(PLANS) else 'unset'}",
             f"{self.record.env} {'orchestrates' if board.n in self._orchestrating() else 'does not orchestrate'} board {board.n}"
             + ("" if board.n in self._orchestrating() else f" (Play marks the environment that runs it; journal board update {board.n} --set orchestrator={self.record.env} takes it)"),
@@ -354,8 +356,7 @@ class Tickets(Prioritised, Controller):
         return f"Review it yourself against the ticket's card: {read}."
 
     def _orchestrator_may(self, ticket, permission: str) -> bool:
-        from features.work_tracking.auto import automatic
-        return bool(ticket.board) and bool(getattr(Boards(self.record, actor=SYSTEM).load(ticket.board), permission)) and automatic(self.record)
+        return bool(ticket.board) and bool(getattr(Boards(self.record, actor=SYSTEM).load(ticket.board), permission))
 
     def _awaiting_decisions(self) -> list:
         boards = self._orchestrating()
@@ -578,7 +579,7 @@ class Tickets(Prioritised, Controller):
 
     def _branch(self, ticket) -> str:
         from providers import DRIVERS
-        return DRIVERS[ticket.agent].branch(ticket.work_environment)
+        return DRIVERS[ticket.provider].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
         branch, into = self._branch(ticket), self._into(ticket)
@@ -679,12 +680,12 @@ class Tickets(Prioritised, Controller):
         if self.actor != AGENT:
             return
         if not (ticket.board and int(ticket.board) in self._orchestrating() and self._orchestrator_may(ticket, permission)):
-            self._refuse(f"only the user {gate}, or the agent orchestrating its board while its auto mode is on and the board has {permission} set")
+            self._refuse(f"only the user {gate}, or the agent orchestrating its board when the board has {permission} set")
         if not why.strip():
             self._refuse("say why, as the board's orchestrator: --why \"<reason>\"")
-        self.comment(ticket.n, f"{done} as the board's orchestrator, under auto mode: {why.strip()}")
+        self.comment(ticket.n, f"{done} as the board's orchestrator: {why.strip()}")
 
-    def start(self, n: int, agent: str | None = None):
+    def start(self, n: int, provider: str | None = None):
         from agents.terminal import detached
         from providers import DRIVERS, PROVIDERS
         self._confirmed(self.load(n))
@@ -694,7 +695,9 @@ class Tickets(Prioritised, Controller):
         if missing:
             where = "" if missing == ["."] else f" in {', '.join(missing)}"
             self._refuse(f"its board works on the branch {into}, which does not exist{where}; make it, or change the board's branch")
-        ticket = self.update(ticket.n, agent=agent or ticket.agent, halted=False)
+        if provider is not None and provider not in DRIVERS:
+            self._refuse(f"no provider {provider!r}; one of {', '.join(DRIVERS)}")
+        ticket = self.update(ticket.n, provider=provider or ticket.provider, halted=False)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
             if self._in_plan_worktree(ticket):
@@ -703,11 +706,11 @@ class Tickets(Prioritised, Controller):
                 return ticket
             if self._waiting_on(ticket) or 0 < self._limit() <= len({r.work_environment for r in self._running()}):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
-            driver, place = DRIVERS[ticket.agent], ticket.work_environment
-            earlier = Sessions(self.record.root).last(place, ticket.agent)
-            if earlier and not PROVIDERS[ticket.agent]().conversation_file(earlier):
+            driver, place = DRIVERS[ticket.provider], ticket.work_environment
+            earlier = Sessions(self.record.root).last(place, ticket.provider)
+            if earlier and not PROVIDERS[ticket.provider]().conversation_file(earlier):
                 earlier = ""
-            args = driver.within([*driver.AUTO_ARGS], place)
+            args = driver.within([], place)
             project = self.record.root.parent
             fresh = not ticket.base
             ticket = self._based(ticket, self._started_at(ticket, into))
@@ -717,7 +720,7 @@ class Tickets(Prioritised, Controller):
                     self._refuse(stuck)
             if fresh and into != "HEAD":
                 ticket = self._based(ticket, {name: tip(place, f"refs/heads/{self._branch(ticket)}") for name, place, _ in self._repositories(ticket)})
-            detached(self.record.root, project, place, ticket.agent,
+            detached(self.record.root, project, place, ticket.provider,
                      driver.prompted(driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
                      else driver.prompted(args, self._kickoff(ticket)))
             return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())

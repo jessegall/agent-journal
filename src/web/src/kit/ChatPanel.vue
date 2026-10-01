@@ -7,7 +7,6 @@ const props = defineProps({
     placeholder: String,
     action: {type: String, default: "Send"},
     locked: Boolean,
-    limit: Number,
 });
 const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
@@ -62,14 +61,10 @@ defineExpose({focus: () => nextTick(() => input.value && input.value.focus())});
                 :placeholder="placeholder"
                 :aria-label="placeholder"
                 :disabled="locked"
-                :maxlength="limit || null"
                 spellcheck="false"
                 @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), send())"
             />
             <span class="tail">
-                <template v-if="limit && words.length > limit * 0.8">
-                    <span class="left">{{ limit - words.length }}</span>
-                </template>
                 <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
             </span>
         </form>
@@ -151,12 +146,6 @@ defineExpose({focus: () => nextTick(() => input.value && input.value.focus())});
     align-items: center;
     gap: 10px;
     height: 32px;
-}
-
-.left {
-    color: var(--text-4);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
 }
 
 .compose textarea {

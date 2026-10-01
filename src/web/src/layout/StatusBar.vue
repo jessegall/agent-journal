@@ -2,7 +2,7 @@
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import PSection from "./PSection.vue";
 
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Dot from "../kit/Dot.vue";
 import Btn from "../kit/Btn.vue";
@@ -16,8 +16,8 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
 import {useHelpers} from "../chat/helpers.js";
 import {helperState} from "../domain/helpers.js";
-import {DEFAULT_MODE, MODES, modeOf} from "../domain/modes.js";
-import {agent, autoOn, steered, store} from "../state/store.js";
+import {MODES, modeOf} from "../domain/modes.js";
+import {agent, autoOn, steered, store, workMode} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
@@ -44,7 +44,7 @@ watch(
     (now) => wanted.value === now && (wanted.value = null)
 );
 
-const mode = ref(DEFAULT_MODE);
+const mode = workMode;
 const {rows: helpers, refresh: refreshHelpers} = useHelpers();
 const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
 const helpersOpen = ref(false);
@@ -59,25 +59,18 @@ function toggleHelpers(e) {
     helpersAnchor.value = e.currentTarget;
     helpersOpen.value = !helpersOpen.value;
 }
-const loadMode = () =>
-    api
-        .mode()
-        .then((got) => (mode.value = got.mode || DEFAULT_MODE))
-        .catch(() => {});
+const keepMode = (key) => (store.settings = {...store.settings, work_modes: {...store.settings.work_modes, mode: key}});
 
 async function pickMode(key) {
     const was = mode.value;
-    mode.value = key;
+    keepMode(key);
     try {
         await api.saveMode(key);
     } catch (e) {
-        mode.value = was;
+        keepMode(was);
         toast.value = {text: e.message};
     }
 }
-
-onMounted(loadMode);
-watch(() => route.value.env, loadMode);
 
 async function pauseOrResume() {
     const next = !paused.value;

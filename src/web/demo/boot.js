@@ -2,6 +2,8 @@ import {transport} from "../src/api/transport.js";
 import {loadDemo} from "./data.js";
 import {StandIn} from "./standIn.js";
 import {QuietStream} from "./stream.js";
+import {Player} from "./player.js";
+import {forgetEarlierBuilds} from "./storage.js";
 
 const CLOSED = ["hub", "plugins", "page", "file", "files", "commit"];
 
@@ -11,7 +13,10 @@ function keepOut() {
 }
 
 export async function install() {
+    forgetEarlierBuilds();
     const standIn = new StandIn(await loadDemo());
+    standIn.player = new Player(standIn);
+    globalThis.demo = standIn;
     transport.reach = async (method, url, body) => standIn.answer(method, url, body);
     globalThis.EventSource = QuietStream;
     keepOut();

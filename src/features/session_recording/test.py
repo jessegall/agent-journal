@@ -1,5 +1,9 @@
 import json
 import subprocess
+import threading
+from contextlib import contextmanager
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -113,3 +117,62 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     assert got["first"] == ["first row"] and got["last"] == ["renamed row", "third row"], "stepping replays the recorded moments in order"
     assert got["stepped"] == [True, True, False]
     assert "rows" in got["dashboard"]
+
+
+PLAY = """
+import {chromium} from "playwright-core";
+const browser = await chromium.launch({channel: "chrome"});
+const page = await browser.newPage();
+const errors = [];
+page.on("pageerror", (error) => errors.push(String(error)));
+await page.goto(process.argv[1]);
+await page.waitForFunction(() => globalThis.demo && document.querySelector(".compose-send"));
+const sent = [];
+const ready = () => demo.player.finished || (!demo.player.playing && document.querySelector(".box-area").value);
+for (;;) {
+    await page.waitForFunction(ready, null, {timeout: 30000});
+    if (await page.evaluate(() => demo.player.finished)) break;
+    sent.push(await page.evaluate(() => demo.state.at));
+    await page.click(".compose-send");
+    await page.waitForFunction((at) => demo.state.at > at, sent.at(-1), {timeout: 30000});
+}
+await page.click('.pane-tab[title="File feed"]');
+await page.waitForTimeout(1500);
+const got = await page.evaluate(() => ({
+    prompts: demo.player.prompts.length,
+    todos: demo.state.rows.todo.map((row) => !!row.completed),
+    text: document.body.innerText,
+    cards: document.querySelectorAll(".diff-card").length,
+}));
+console.log(JSON.stringify({...got, sent, errors}));
+await browser.close();
+"""
+
+
+class Quiet(SimpleHTTPRequestHandler):
+    def log_message(self, *args) -> None:
+        pass
+
+
+@contextmanager
+def served(folder: Path):
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Quiet, directory=str(folder)))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}/"
+    finally:
+        server.shutdown()
+
+
+def test_the_shipped_demo_plays_every_recorded_message_to_the_end_at_a_hundred_times_speed(tmp_path):
+    site = tmp_path / "site"
+    subprocess.run(["npx", "vite", "build", "--mode", "demo", "--outDir", str(site), "--emptyOutDir"], cwd=WEB.parent, check=True, capture_output=True, timeout=180)
+    with served(site) as url:
+        done = subprocess.run(["node", "--input-type=module", "-e", PLAY, f"{url}?speed=100"], cwd=WEB.parent, capture_output=True, text=True, timeout=300)
+    assert done.returncode == 0, done.stderr
+    got = json.loads(done.stdout)
+    assert got["errors"] == []
+    assert len(got["sent"]) == got["prompts"] - 1 > 0, "the first exchange plays by itself, and every later message waits in the field until sent"
+    assert got["todos"] and all(got["todos"]), "the recorded work plays through to its last to-do"
+    assert "sending" not in got["text"], "a sent message lands as the recorded one"
+    assert got["cards"] > 0, "the file feed shows the agent's recorded edits"

@@ -26,6 +26,16 @@ function clear(store) {
         .forEach((name) => store.removeItem(name));
 }
 
+export function forgetEarlierBuilds() {
+    if (readState()) return;
+    try {
+        clear(localStorage);
+        clear(sessionStorage);
+    } catch (e) {
+        return;
+    }
+}
+
 export function restart() {
     try {
         clear(localStorage);

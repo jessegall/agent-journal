@@ -38,7 +38,6 @@ const tab = ref("chat");
 const discarding = ref(false);
 const failed = ref("");
 const openedAt = ref(0);
-const INPUT_LIMIT = 280;
 const resumed = ref(false);
 let resetTimer = 0;
 let inFlight = null;
@@ -178,9 +177,6 @@ const proposed = (ticket) =>
     Object.entries(ticket.data.dependencies || {})
         .filter(([, stance]) => stance === "proposed")
         .map(([ref]) => Number(ref.split(":")[1]));
-const pickedDrafts = computed(() => drafts.value.filter((t) => picked.value.includes(t.n)));
-const served = computed(() => new Set(pickedDrafts.value.flatMap(covers)));
-const missing = computed(() => (picked.value.length ? doneWhen.value.filter((clause) => !served.value.has(clause)) : []));
 const note = computed(() => {
     if (added.value) return `Added to ${first.value}`;
     if (revising.value) return "Redrafting…";
@@ -190,8 +186,6 @@ const note = computed(() => {
         return writing.value
             ? `${drafts.value.length} drafted so far · click a card to pick it`
             : `${drafts.value.length} drafts · click the ones to add`;
-    if (doneWhen.value.length)
-        return `${picked.value.length} picked · covers ${doneWhen.value.length - missing.value.length} of ${doneWhen.value.length} done points`;
     return props.starts
         ? `${picked.value.length} picked · they go to ${first.value}; their agents start as room frees up`
         : `${picked.value.length} picked · they go to ${first.value}`;
@@ -519,7 +513,6 @@ function startAnew() {
                         ref="panel"
                         v-model="words"
                         :locked="adding || added > 0"
-                        :limit="INPUT_LIMIT"
                         :placeholder="placeholder"
                         @send="send"
                     >
@@ -587,7 +580,6 @@ function startAnew() {
                 <section class="pane" aria-label="Drafts">
                     <NewWorkBar
                         :note="note"
-                        :missing="missing"
                         :presets="presets"
                         :preset="preset"
                         :phone="phone"
@@ -611,7 +603,7 @@ function startAnew() {
                         </template>
                         <div class="grid">
                             <template v-if="goal || doneWhen.length">
-                                <NewWorkBrief :goal="goal" :done-when="doneWhen" :missing="missing" />
+                                <NewWorkBrief :goal="goal" :done-when="doneWhen" />
                             </template>
                             <TransitionGroup tag="div" name="pick" class="picks">
                                 <template v-for="card in cards" :key="card.key">

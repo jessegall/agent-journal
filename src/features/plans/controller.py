@@ -5,9 +5,9 @@ from dataclasses import asdict, dataclass
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Docs
+from controllers.types import Docs, Environments
 from features.plans.resource import PHASE, Plan, rows_of
-from resources.base import AGENT, SECTION, Refused, check_title
+from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 
@@ -208,7 +208,14 @@ class Plans(Controller):
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:
-            self._refuse(f"only the user can {word} a plan: they do it in the viewer")
+            self._refuse(f"only the user can {word} a plan: they do it in the viewer{self._orchestrator_route(word)}")
+
+    def _orchestrator_route(self, word: str) -> str:
+        place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
+        if place is None or not place.owner.startswith("ticket:"):
+            return ""
+        n = place.owner.partition(":")[2]
+        return f". This is the plan of ticket {n}: the agent orchestrating its board does it with journal ticket {word}_plan {n}"
 
 
 resources_module.register(Plan)

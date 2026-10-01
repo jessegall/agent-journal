@@ -34,7 +34,7 @@ def skipped(record) -> bool:
 
 
 def prompted(record) -> None:
-    record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": False})
+    record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": automatic(record)})
 
 
 def launch_args(record, provider: str, args: list[str]) -> list[str]:
@@ -43,4 +43,4 @@ def launch_args(record, provider: str, args: list[str]) -> list[str]:
         return args
     if driver.SKIP_ARGS and set(driver.SKIP_ARGS) <= set(args) and not skipped(record):
         record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": True})
-    return driver.launch_args(driver.skipping(args, skipped(record)), automatic(record))
+    return driver.launch_args(driver.skipping(args, skipped(record) or (automatic(record) and not driver.chosen(args))), automatic(record))

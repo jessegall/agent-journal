@@ -59,6 +59,9 @@ class Identity(Loaded):
     project: str = ""
     version: str = ""
 
+    def serves(self, root: Path) -> bool:
+        return Path(self.root).resolve() == root.resolve()
+
 
 def known() -> list[KnownJournal]:
     found = (KnownJournal.from_json(j) for j in read_json(machine(), list, []) if isinstance(j, dict))
@@ -121,7 +124,7 @@ def identity(url: str, timeout: float = 0.05) -> Identity | None:
 
 def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
     reply = identity(url, timeout)
-    return reply is not None and Path(reply.root).resolve() == root.resolve() and reply.version == version()
+    return reply is not None and reply.serves(root) and reply.version == version()
 
 
 def running(root: Path) -> str:
@@ -193,10 +196,11 @@ def elsewhere(root: Path) -> str:
         return ""
     until = time.time() + RESTARTING
     while time.time() < until:
-        if answers(was.url, root, timeout=0.2):
-            return was.url
+        reply = identity(was.url, timeout=0.2)
+        if reply is not None and reply.serves(root):
+            return was.url if reply.version == version() else ""
         time.sleep(0.2)
-    return ""
+    return was.url
 
 
 def start(root: Path, project: Path) -> str:

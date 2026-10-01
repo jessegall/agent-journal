@@ -28,6 +28,7 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     pick(record, "orchestrator", USER)
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
     assert len(told(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
+    assert [e.data["mode"] for e in record.events() if e.type == "settings"] == ["orchestrator"], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
     assert len(told(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
 

@@ -7,7 +7,8 @@ import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
 import DumpWindow from "../chat/DumpWindow.vue";
-import {store} from "../state/store.js";
+import {store, workMode} from "../state/store.js";
+import {ORCHESTRATOR} from "../domain/modes.js";
 import PaneMenu from "./PaneMenu.vue";
 import HintBubble from "../kit/HintBubble.vue";
 import {useMenuHint} from "../composables/menuHint.js";
@@ -294,6 +295,13 @@ const offerText = (id) => {
     if (!offerStands(offer.value) || !pane) return "";
     return `Put ${views.value[offer.value.view].title} beside ${views.value[pane.active].title} in two panes, or add it here as a tab.`;
 };
+
+watch(
+    () => [api.env(), store.settings && workMode.value],
+    ([env, now], [was, before]) => {
+        if (env === was && before && before !== now && now === ORCHESTRATOR) applyPreset(ORCHESTRATOR);
+    }
+);
 
 function applyPreset(key) {
     const preset = everyPreset.value.find((p) => p.key === key);

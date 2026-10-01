@@ -88,8 +88,11 @@ class Driver(ABC):
 
     @classmethod
     def launch_args(cls, args: list[str], automatic: bool = False) -> list[str]:
-        flags = {arg.split("=", 1)[0] for arg in args}
-        return [*cls.AUTO_ARGS, *args] if automatic and flags.isdisjoint(cls.APPROVAL_FLAGS) else args
+        return [*cls.AUTO_ARGS, *args] if automatic and not cls.chosen(args) else args
+
+    @classmethod
+    def chosen(cls, args: list[str]) -> bool:
+        return not {arg.split("=", 1)[0] for arg in args}.isdisjoint(cls.APPROVAL_FLAGS)
 
     @classmethod
     def skipping(cls, args: list[str], skip: bool) -> list[str]:

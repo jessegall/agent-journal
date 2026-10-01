@@ -12,7 +12,7 @@ PROVIDER = "claude"
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str) -> str:
     from providers import DRIVERS
     driver = DRIVERS[PROVIDER]
-    return start_in(record, name, abstract, owner, PROVIDER, driver.prompted(driver.within([*driver.AUTO_ARGS], worktree), prompt), record.root.parent)
+    return start_in(record, name, abstract, owner, PROVIDER, driver.prompted(driver.within([], worktree), prompt), record.root.parent)
 
 
 def start_in(record, name: str, abstract: str, owner: str, provider: str, args: list[str], cwd: Path) -> str:

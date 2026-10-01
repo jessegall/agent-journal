@@ -4,6 +4,38 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.209.0 — tickets run on their provider; a demo that plays; auto mode never asks
+
+**A ticket drafted by a subagent starts again.** A ticket keeps the provider that runs it in a field
+of its own, `provider`, instead of sharing `agent` with the name of the agent that wrote it, so a
+card drafted by the board-filler no longer fails to start with `KeyError: 'board-filler'` or breaks
+the engine's tick. `journal ticket start <n> --provider codex` picks the provider; an unknown one is
+refused. The upgrade carries the provider of every stored ticket over.
+
+**One server per journal.** A journal command that found the viewer's server slow to answer, or on
+another version, started a second server on a new port, and the open tabs kept losing their
+connection. While the recorded server lives, a command now waits for it instead.
+
+**The orchestrator owns its board's decisions.** Play turns on the board's three orchestrator
+switches, and they alone grant approving plans, accepting waits and confirming drafts; auto mode no
+longer gates them, so a plan waiting for approval starts *Reviewing a ticket's plan* instead of
+being taken for a stuck agent. `plan approve` refused inside a ticket names `journal ticket
+approve_plan <n>`. Switching the work mode to Orchestrator, by you or by Play, moves Home to the
+Orchestrator layout.
+
+**Auto mode never stops at a permission prompt.** Agents, helpers and tickets launch without a
+fixed skip flag; the permission feature decides it from auto mode, unless the launch already
+chose a mode.
+
+**New work** takes messages of any length, no longer grades your picks with a "covers 1 of 2 done
+points" line or a yellow Missing note, and centres the Add button's label.
+
+**The phone's At work sheet** spans the full width again; it stopped 32px short of the right edge.
+
+**The demo plays a recorded session end to end**: the first exchange plays by itself, each later
+message waits in the field and Enter sends it, the file feed shows the agent's edits, and a test
+plays the whole demo in a browser at 100× speed.
+
 ## 2.208.0 — auto-update that installs; helpers that keep to their job
 
 **Auto-update installs by itself whenever it is on**; the separate install switch is gone. With it

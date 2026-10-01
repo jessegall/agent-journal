@@ -5,4 +5,5 @@ export const MODES = [
 ];
 
 export const DEFAULT_MODE = "hands-on";
+export const ORCHESTRATOR = "orchestrator";
 export const modeOf = (key) => MODES.find((mode) => mode.key === key) || MODES.find((mode) => mode.key === DEFAULT_MODE);
