@@ -1,8 +1,8 @@
 <script setup>
 import {computed} from "vue";
-import {peek} from "../route.js";
 
 const props = defineProps({tasks: {type: Array, required: true}});
+const emit = defineEmits(["open"]);
 const LABELS = {done: "done", doing: "in hand", waiting: "waiting"};
 const done = computed(() => props.tasks.filter((task) => task.state === "done").length);
 </script>
@@ -12,7 +12,7 @@ const done = computed(() => props.tasks.filter((task) => task.state === "done").
         <template v-if="tasks.length">
             <p class="progress">{{ done }} of {{ tasks.length }} done</p>
             <template v-for="task in tasks" :key="task.n">
-                <button type="button" :class="['task', task.state]" @click="peek('todo', task.n)">
+                <button type="button" :class="['task', task.state]" @click="emit('open', task.n)">
                     <span class="dot" />
                     <span class="task-title">{{ task.title }}</span>
                     <span class="task-state">{{ LABELS[task.state] }}</span>

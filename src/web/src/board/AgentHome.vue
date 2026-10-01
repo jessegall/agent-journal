@@ -17,6 +17,7 @@ import RailTodos from "../pages/RailTodos.vue";
 import PlanPage from "../resource/PlanPage.vue";
 import TaskList from "../resource/TaskList.vue";
 import TranscriptLog from "../resource/TranscriptLog.vue";
+import AgentTodo from "./AgentTodo.vue";
 import AgentPanes from "./AgentPanes.vue";
 import {scopeIn} from "../composables/scope.js";
 import {useTranscript} from "../composables/transcript.js";
@@ -24,7 +25,7 @@ import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {age} from "../format/time.js";
 import {usePoll} from "../poll.js";
-import {PAGE} from "../sync/rows.js";
+import {PAGE, holding, rows} from "../sync/rows.js";
 import {route} from "../route.js";
 
 const props = defineProps({
@@ -56,6 +57,7 @@ if (scope) provide("scope", scope);
 const there = scope ? scope.api : api;
 const state = computed(() => props.band.state);
 const keyed = (what) => `agent-home:${props.env}:${props.session}:${props.band.label}:${what}`;
+const rowsHere = scope ? scope.rows : rows;
 
 const found = ref(null);
 const newest = (list) => [...list].sort((a, b) => b.updated - a.updated)[0] || null;
@@ -109,6 +111,12 @@ const available = computed(() =>
 );
 
 const panes = ref(null);
+const todoN = ref(0);
+const todo = computed(() => rowsHere("todo").find((row) => row.n === todoN.value) || null);
+async function loadTodo(n) {
+    todoN.value = n;
+    await (scope ? scope.holding : holding)("todo", [n]);
+}
 const layoutMenu = ref(false);
 const layoutOpener = ref(null);
 const presets = computed(() =>
@@ -200,9 +208,14 @@ function pickPreset(key) {
                         </div>
                     </template>
                     <template #tasks>
-                        <div class="fill scroll padded">
-                            <TaskList :tasks="tasks" />
-                        </div>
+                        <template v-if="todo">
+                            <AgentTodo :resource="todo" @close="todoN = 0" />
+                        </template>
+                        <template v-else>
+                            <div class="fill scroll padded">
+                                <TaskList :tasks="tasks" @open="loadTodo" />
+                            </div>
+                        </template>
                     </template>
                     <template #feed>
                         <template v-if="agent">
@@ -219,9 +232,14 @@ function pickPreset(key) {
                         </template>
                     </template>
                     <template #todos>
-                        <div class="fill scroll">
-                            <RailTodos />
-                        </div>
+                        <template v-if="todo">
+                            <AgentTodo :resource="todo" @close="todoN = 0" />
+                        </template>
+                        <template v-else>
+                            <div class="fill scroll padded">
+                                <RailTodos @open="loadTodo" />
+                            </div>
+                        </template>
                     </template>
                     <template #plan>
                         <template v-if="planRow">

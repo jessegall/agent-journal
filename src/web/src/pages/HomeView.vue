@@ -13,6 +13,7 @@ import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
 import FamilyTree from "./FamilyTree.vue";
+import {peek} from "../route.js";
 
 defineProps({
     view: {type: String, required: true},
@@ -45,7 +46,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
             <template #terminal><TerminalWindow :key="level" :level="level" /></template>
             <template #question><RailWaiting type="question" /></template>
             <template #suggestion><RailWaiting type="suggestion" /></template>
-            <template #todos><RailTodos /></template>
+            <template #todos><RailTodos @open="peek('todo', $event)" /></template>
             <template #family><FamilyTree /></template>
             <template #agents><AgentGrid /></template>
             <template #default><RailWaiting /></template>
