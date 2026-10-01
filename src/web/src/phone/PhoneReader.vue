@@ -265,7 +265,7 @@ onMounted(async () => {
                         {{ button.label }}
                     </Btn>
                 </template>
-                <template v-if="ready">
+                <template v-if="ready && !finished">
                     <PhoneReaderApprove
                         v-model:confirming="confirming"
                         :title="row.title"
@@ -275,7 +275,7 @@ onMounted(async () => {
                     />
                 </template>
                 <template v-else-if="row.type !== 'question'">
-                    <Btn :kind="buttons.length ? 'ghost' : 'primary'" large @click="commenting = true">Comment</Btn>
+                    <Btn :kind="buttons.length || finished ? 'ghost' : 'primary'" large @click="commenting = true">Comment</Btn>
                 </template>
                 <template v-if="row.type === 'plan' && !reviewing">
                     <Btn kind="plain" large @click="reviewing = true">Ask for a review</Btn>
