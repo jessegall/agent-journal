@@ -48,8 +48,6 @@ resuming the conversation that environment last had, so the same agent reads you
 
 ## The viewer
 
-![The chat with the agent, its work and the rail beside it](docs/screenshots/chat.png)
-
 Home is a conversation with the agent. Messages, replies, reactions and receipts share one thread;
 a question you ask shows that an answer is on its way until the reply lands. The rail keeps
 questions, reports, notifications and to-dos within reach, and a notice can stay pinned above the
@@ -63,11 +61,7 @@ tab arrives without a reload.
 The hub shows every journal running on this machine, the running ones first, each expandable to its
 environments, with Start and Stop for their agents.
 
-![A plan with its phases](docs/screenshots/plan.png)
-
 ## On your phone
-
-<img src="docs/screenshots/phone-chat.png" alt="The chat on the phone" width="260"> <img src="docs/screenshots/phone-agent.png" alt="The agent sheet on the phone" width="260">
 
 The viewer's phone button shows a code: scan it and the phone app opens the same chat, from
 anywhere, over a tunnel whose address never changes. It works as an app on the home screen, keeps

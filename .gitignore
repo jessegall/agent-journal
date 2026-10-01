@@ -55,5 +55,3 @@ __pycache__/
 .venv/
 
 /.env
-# the README's screenshots are part of the project
-!docs/screenshots/*.png
