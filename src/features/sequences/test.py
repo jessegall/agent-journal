@@ -149,6 +149,17 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     closing = [s["title"] for s in sequences._steps(titled("Finishing what you wrote"))]
     assert [s["title"] for s in sequences._steps(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
         "a shipped sequence reuses the closing steps it shares"
+    written = record.root / "written.md"
+    written.write_text("# Routes\nHow routes are planned.\n\n## Stops\nEvery stop has a window.\n\n## Drivers\nOne van each.\n")
+    filed = CONTROLLERS["doc"](record, actor=AGENT).file("Route planning", str(written))
+    assert (filed.brief, [s["title"] for s in filed.sections]) == ("How routes are planned.", ["Stops", "Drivers"]), "a written text is filed whole, a chapter per heading"
+    about = sequences._key(f"doc:{filed.n}")
+    assert about in titled("Filing a written document").runs and about not in titled("Writing a document").runs, \
+        "a document filed whole goes straight to the closing steps"
+    sequences.follow(titled("Filing a written document").n, f"doc:{filed.n}")
+    sequences.abandon(titled("Filing a written document").n, f"doc:{filed.n}", "checked", sure=True)
+    plain = sequences._key(f"doc:{CONTROLLERS['doc'](record, actor=AGENT).create('Depot hours').n}")
+    assert plain in titled("Writing a document").runs and plain not in titled("Filing a written document").runs, "a document begun empty is written chapter by chapter"
     base = sequences.create("Base")
     for step in ("one", "two", "three"):
         sequences.section(base.n, step, f"do {step}")

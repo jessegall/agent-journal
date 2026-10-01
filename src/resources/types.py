@@ -96,6 +96,7 @@ class Doc(Shape, Resource):
         Field(name="status"),
         Field(default=0, name="revisions"),
         Field(default=0, name="open_until"),
+        Field(default=False, name="written"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Document",

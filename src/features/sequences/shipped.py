@@ -203,8 +203,12 @@ WRITING_A_DOCUMENT = ShippedSequence(
     starts_on="doc.created",
     started_by=AGENT,
     only_when_idle=True,
+    unless={"written": True},
     steps=[
-        ("Lay out the chapters", "Put every chapter you plan on the document before writing any of them: journal doc section "
+        ("Lay out the chapters", "If the text is already written, in a file or the conversation, do not copy it in chapter by "
+                                 "chapter: journal sequence abandon <this sequence> --about <ref> --why \"already written\" "
+                                 "--sure, journal doc delete <doc n> \"filed whole instead\", and file it whole with journal "
+                                 "doc file \"<title>\" <file>. Otherwise put every chapter you plan on the document before writing any of them: journal doc section "
                                  "<doc n> \"<chapter>\" \"Being written.\" for each, in order. Put the document's reference "
                                  "on a line of its own in the chat, like doc 41, so the user can open it and watch. Then "
                                  "journal sequence next <this sequence> --about <ref>."),
@@ -214,6 +218,15 @@ WRITING_A_DOCUMENT = ShippedSequence(
                                "--about <ref>."),
         included(FINISHING_WHAT_YOU_WROTE),
     ],
+)
+FILING_A_WRITTEN_DOCUMENT = ShippedSequence(
+    title="Filing a written document",
+    brief="You filed a document whose text was already written. Its chapters are in; file it, link it and answer with it.",
+    starts_on="doc.created",
+    started_by=AGENT,
+    only_when_idle=True,
+    unless={"written": False},
+    steps=[included(FINISHING_WHAT_YOU_WROTE)],
 )
 WRITING_A_REPORT = ShippedSequence(
     title="Writing a report",
@@ -235,7 +248,7 @@ WRITING_A_REPORT = ShippedSequence(
     ],
 )
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
+           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
 
 
 def ship(record) -> list[str]:
