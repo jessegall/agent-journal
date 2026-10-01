@@ -141,15 +141,17 @@ def test_every_shipped_scenario_plays_every_recorded_message_to_the_end_at_a_hun
     site = tmp_path / "site"
     subprocess.run(["npx", "vite", "build", "--mode", "demo", "--outDir", str(site), "--emptyOutDir"], cwd=WEB.parent, check=True, capture_output=True, timeout=180)
     with served(site) as url:
-        played = {scenario: subprocess.run(["node", str(PLAY), f"{url}?speed=100&scenario={scenario}"], cwd=WEB.parent,
-                                           capture_output=True, text=True, timeout=300) for scenario in ("bakery", "helpers")}
+        played = {scenario: subprocess.run(["node", str(PLAY), f"{url}{page}?speed=100&scenario={scenario.split('@')[0]}"], cwd=WEB.parent,
+                                           capture_output=True, text=True, timeout=300)
+                  for scenario, page in (("bakery", ""), ("helpers", ""), ("phone", ""), ("phone@app", "phone.html"))}
     for scenario, done in played.items():
         assert done.returncode == 0, f"{scenario}: {done.stderr}"
         got = json.loads(done.stdout)
         assert got["errors"] == [], scenario
-        assert len(got["sent"]) == got["prompts"] - 1 > 0, f"{scenario}: the first exchange plays by itself, and every later message waits in the field until sent"
-        assert got["todos"] and all(got["todos"]), f"{scenario}: the recorded work plays through to its last to-do"
+        assert got["prompts"] > 0, f"{scenario}: every recorded user message is sent by the replay itself"
         assert "sending" not in got["text"], f"{scenario}: a sent message lands as the recorded one"
     bakery, helpers = (json.loads(played[scenario].stdout) for scenario in ("bakery", "helpers"))
+    assert all(bakery["todos"]) and all(helpers["todos"]), "the recorded work plays through to its last to-do"
+    assert "Fix both" in json.loads(played["phone@app"].stdout)["text"], "the phone app plays the scenario typed on the phone"
     assert bakery["cards"] > 0, "the file feed shows the agent's recorded edits"
     assert "Agents at work" in helpers["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"

@@ -3,6 +3,7 @@ import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch}
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
+import {prefill} from "../state/prefill.js";
 import PhoneHold from "./PhoneHold.vue";
 import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
@@ -82,6 +83,13 @@ function docked() {
 const top = ref(null);
 const compose = ref(null);
 const draft = ref("");
+watch(
+    prefill,
+    (text, was) => {
+        if (text || was) draft.value = text;
+    },
+    {immediate: true}
+);
 const offline = ref(false);
 const homeUnder = ref(false);
 const current = ref(true);

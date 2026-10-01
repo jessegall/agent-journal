@@ -1,5 +1,5 @@
 import {computed, reactive, ref, watch} from "vue";
-import {store} from "../state/store.js";
+import {agent, store} from "../state/store.js";
 
 const WRITING_FOR = 45;
 const TICK = 3000;
@@ -22,6 +22,7 @@ setInterval(() => (now.value = Date.now() / 1000), TICK);
 export function useWriting(key) {
     return computed(() => {
         const write = lastWrite[key()];
-        return write && now.value - write.at < WRITING_FOR ? write : null;
+        const working = agent.value && ["busy", "working"].includes(agent.value.data.status);
+        return write && working && now.value - write.at < WRITING_FOR ? write : null;
     });
 }

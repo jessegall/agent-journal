@@ -1,7 +1,8 @@
 <script setup>
 import Btn from "../src/kit/Btn.vue";
 import Segmented from "../src/kit/Segmented.vue";
-import {SCENARIOS, play, scenario} from "./scenarios.js";
+import {SCENARIOS, SHORT, play, scenario} from "./scenarios.js";
+import {computed, onUnmounted, ref} from "vue";
 import {restart} from "./storage.js";
 import {insideFrame, viewAs} from "./view.js";
 
@@ -11,6 +12,12 @@ const WHOLE = "A replay of a recorded session: the journal is real, the agent's 
 
 const open = (url) => window.open(url, "_blank", "noopener");
 const framed = insideFrame();
+const roomy = matchMedia("(min-width: 1180px)");
+const wide = ref(roomy.matches);
+const fitted = () => (wide.value = roomy.matches);
+roomy.addEventListener("change", fitted);
+onUnmounted(() => roomy.removeEventListener("change", fitted));
+const choices = computed(() => (wide.value ? SCENARIOS : SHORT));
 </script>
 
 <template>
@@ -19,7 +26,7 @@ const framed = insideFrame();
             <span class="demo-band-long">{{ WHOLE }}</span>
             <span class="demo-band-short">A scripted replay. Nothing leaves your browser.</span>
         </span>
-        <Segmented class="demo-band-scenarios" :options="SCENARIOS" :value="scenario.key" title="Which recorded session to watch" @pick="play" />
+        <Segmented class="demo-band-scenarios" :options="choices" :value="scenario.key" title="Which recorded session to watch" @pick="play" />
         <span class="demo-band-acts">
             <template v-if="!framed">
                 <Btn small class="demo-band-phone" title="Watch the demo at the size of a phone" @click="viewAs('phone')">Phone view</Btn>
@@ -52,7 +59,10 @@ const framed = insideFrame();
 }
 
 .demo-band-scenarios {
-    flex: none;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
 
 .demo-band-acts {

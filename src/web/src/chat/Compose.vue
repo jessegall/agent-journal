@@ -3,6 +3,10 @@ import CountBadge from "../kit/CountBadge.vue";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
+import {prefill} from "../state/prefill.js";
+
+const REPLAY = __DEMO__;
+const hinted = () => window.dispatchEvent(new CustomEvent("replay-hint"));
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
@@ -26,8 +30,10 @@ const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
 watch(
-    () => store.prefill,
-    (text) => text && (draft.text = text),
+    prefill,
+    (text, was) => {
+        if (text || was) draft.text = text;
+    },
     {immediate: true}
 );
 const area = ref(null);
@@ -128,6 +134,7 @@ function unpick(i) {
 
 async function go() {
     if (draft.sending || !draft.text.trim()) return;
+    if (REPLAY && draft.text.trim() !== prefill.value.trim()) return hinted();
     const text = draft.text.trim();
     const files = draft.files;
     draft.sending = true;

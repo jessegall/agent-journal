@@ -4,6 +4,7 @@ import mimetypes
 import re
 from urllib.parse import parse_qs, quote, urlsplit
 from dataclasses import asdict, dataclass
+from typing import TypedDict
 from http.cookies import SimpleCookie
 
 from engine.record import Record
@@ -176,6 +177,55 @@ class Approval:
         return cls(n=int(given.get("n", 0)), updated=float(given.get("updated", 0)))
 
 
+class Unasked(ValueError):
+    pass
+
+
+class Places(TypedDict):
+    places: list[dict]
+    at: str
+
+
+class Connection(TypedDict):
+    phone: str
+    n: int
+    environment: str
+    expires: float
+    home: list[str]
+    project: str
+    color: str
+
+
+def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]]) -> dict:
+    asked = {name: values[0] for name, values in query.items()}
+    if rest == ["list"]:
+        return phones._list(phone, asked.get("type", ""))
+    if rest == ["source"]:
+        return phones._source(phone, asked.get("q", ""))
+    if rest == ["push-key"]:
+        return {"key": phones._push_key()}
+    if rest == ["places"]:
+        return Places(places=[asdict(place) for place in phones._picked(phone)], at=str(phones._home(phone).root.resolve()))
+    if rest == ["state"]:
+        known = identity(phones._home(phone).root)
+        return Connection(phone=phone.title, n=phone.n, environment=phone.environment, expires=phone.expires, home=phone.home,
+                          project=known["project"], color=known["color"])
+    if rest == ["feed"]:
+        try:
+            return {**phones._feed(phone, float(asked.get("before", "inf"))), "build": built()}
+        except ValueError as error:
+            raise Unasked("before is a time in seconds") from error
+    if rest == ["helper"]:
+        if not asked.get("n", "").isdigit():
+            raise Unasked("a helper number is required")
+        return phones._helper(phone, int(asked["n"]))
+    if rest == ["bar"]:
+        return phones._bar(phone)
+    if len(rest) == 3:
+        return phones._read(phone, f"{rest[1]}:{rest[2]}")
+    raise Refused("no such page")
+
+
 def built() -> str:
     try:
         found = BUILD.search((APP_DIR / APP_PAGE).read_text())
@@ -228,55 +278,19 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
-        if rest == ["list"]:
-            kind = parse_qs(urlsplit(handler.path).query).get("type", [""])[0]
-            try:
-                return self.json(handler, 200, self.phones(handler)._list(phone, kind))
-            except Refused as refused:
-                return handler.answer(404, str(refused))
-        if rest == ["source"]:
-            asked = parse_qs(urlsplit(handler.path).query).get("q", [""])[0]
-            try:
-                return self.json(handler, 200, self.phones(handler)._source(phone, asked))
-            except Refused as refused:
-                return handler.answer(404, str(refused))
+        phones = self.phones(handler)
         if rest[:1] == ["export"] and len(rest) == 3:
             try:
-                made = self.phones(handler)._export(phone, f"{rest[1]}:{rest[2]}")
+                made = phones._export(phone, f"{rest[1]}:{rest[2]}")
             except Refused as refused:
                 return handler.answer(404, str(refused))
             return handler.send(200, made.body, {"Content-Type": made.kind, "Content-Disposition": f"attachment; filename*=UTF-8''{quote(made.name)}"})
-        if rest == ["push-key"]:
-            return self.json(handler, 200, {"key": self.phones(handler)._push_key()})
-        if rest == ["places"]:
-            return self.json(handler, 200, {"places": [asdict(place) for place in self.phones(handler)._picked(phone)],
-                                            "at": str(self.phones(handler)._home(phone).root.resolve())})
-        if rest == ["state"]:
-            known = identity(self.phones(handler)._home(phone).root)
-            return self.json(handler, 200, {"phone": phone.title, "n": phone.n, "environment": phone.environment, "expires": phone.expires, "home": phone.home,
-                                            "project": known["project"], "color": known["color"]})
-        if rest == ["feed"]:
-            before = parse_qs(urlsplit(handler.path).query).get("before", ["inf"])[0]
-            try:
-                return self.json(handler, 200, {**self.phones(handler)._feed(phone, float(before)), "build": built()})
-            except ValueError:
-                return handler.answer(400, "before is a time in seconds")
-        if rest == ["helper"]:
-            asked = parse_qs(urlsplit(handler.path).query).get("n", [""])[0]
-            if not asked.isdigit():
-                return handler.answer(400, "a helper number is required")
-            try:
-                return self.json(handler, 200, self.phones(handler)._helper(phone, int(asked)))
-            except Refused as refused:
-                return handler.answer(404, str(refused))
-        if rest == ["bar"]:
-            return self.json(handler, 200, self.phones(handler)._bar(phone))
-        if len(rest) == 3:
-            try:
-                return self.json(handler, 200, self.phones(handler)._read(phone, f"{rest[1]}:{rest[2]}"))
-            except Refused as refused:
-                return handler.answer(404, str(refused))
-        return handler.answer(404, "no such page")
+        try:
+            return self.json(handler, 200, read_body(phones, phone, rest, parse_qs(urlsplit(handler.path).query)))
+        except Refused as refused:
+            return handler.answer(404, str(refused))
+        except Unasked as unasked:
+            return handler.answer(400, str(unasked))
 
     def manifest(self, handler) -> None:
         known = identity(handler.shares.record.root)

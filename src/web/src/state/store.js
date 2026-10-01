@@ -5,7 +5,6 @@ import {DEFAULT_MODE} from "../domain/modes.js";
 export const store = reactive({
     spec: null,
     drafting: 0,
-    prefill: "",
     dumping: false,
     dumpShown: 0,
     dumpFiles: [],

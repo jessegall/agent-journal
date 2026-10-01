@@ -4,4 +4,7 @@ import "../tokens.css";
 import "../light.css";
 import "./phone.css";
 
-createApp(PhoneApp).mount("#app");
+const start = () => createApp(PhoneApp).mount("#app");
+
+if (__DEMO__) import("../../demo/phoneBoot.js").then(({install}) => install().then(start));
+else start();
