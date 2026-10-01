@@ -64,6 +64,7 @@ SHOWING = threading.Lock()
 PRIVATE = "_"
 DONE = "_done"
 SENT = "_sent"
+FINALS = "_finals"
 KEPT_DONE = 50
 CATCH_UP = 600.0
 REPLAYING = threading.Lock()
@@ -106,26 +107,37 @@ def display_chunk(root: Path, raw: dict) -> None:
         if message in held.get(DONE, []):
             return
         parts = {**held.get(message, {}), str(chunk.index): chunk.delta}
-        rest = {key: value for key, value in held.items() if key != message}
-        if not chunk.final:
-            write_json(f, {**rest, message: parts})
+        finals = {**held.get(FINALS, {})}
+        if chunk.final:
+            finals[message] = chunk.index
+        rest = {key: value for key, value in held.items() if key not in (message, FINALS)}
+        if message not in finals or any(str(i) not in parts for i in range(finals[message] + 1)):
+            write_json(f, {**rest, message: parts, FINALS: finals})
             return
-        write_json(f, {**rest, DONE: [*rest.get(DONE, []), message][-KEPT_DONE:]})
-    send_to_chat(root, session, "".join(parts[i] for i in sorted(parts, key=int)))
+        last = finals.pop(message)
+        write_json(f, {**rest, FINALS: finals, DONE: [*rest.get(DONE, []), message][-KEPT_DONE:]})
+    send_to_chat(root, session, "".join(parts[str(i)] for i in range(last + 1)))
 
 
 def shown(parts: dict) -> str:
     return "".join(parts[i] for i in sorted(parts, key=int)).strip()
 
 
+def belongs(text: str, parts: dict) -> bool:
+    piece = shown(parts)
+    return bool(piece) and (text.strip().startswith(piece) or ("0" not in parts and text.strip().endswith(piece)))
+
+
 def stopped(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        cut = [message for message, parts in held.items() if not message.startswith(PRIVATE) and shown(parts) and text.strip().startswith(shown(parts))]
+        cut = [message for message, parts in held.items() if not message.startswith(PRIVATE) and belongs(text, parts)]
         if not cut:
             return
-        write_json(f, {**{key: value for key, value in held.items() if key not in cut}, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
+        finals = {key: value for key, value in held.get(FINALS, {}).items() if key not in cut}
+        rest = {key: value for key, value in held.items() if key not in (*cut, FINALS)}
+        write_json(f, {**rest, FINALS: finals, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
     send_to_chat(root, session, text)
 
 

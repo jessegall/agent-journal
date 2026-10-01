@@ -125,6 +125,8 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
 
 
 def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_it():
+    from runner.hooks import handle
+    from providers import PROVIDERS
     record = fresh()
     report(record, "working", "PreToolUse")
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
@@ -134,6 +136,11 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
     displayed(record.root, {**base, "index": 1, "final": True, "delta": "pieces"})
     displayed(record.root, {**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"})
     assert [c.title for c in Comments(record, actor="system").linked_to(message.ref)] == ["shown in two pieces"], "joined, posted once"
+    orphaned = Messages(record, actor="user").create("what if the first piece is missing?")
+    displayed(record.root, {**base, "message_id": "m3", "index": 1, "final": True, "delta": "the body without its tag"})
+    assert not [m for m in Messages(record, actor="system").all() if m.title == "the body without its tag"], "a stream without its first piece is not posted"
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{orphaned.n}]\nthe body without its tag"})
+    assert [c.title for c in Comments(record, actor="system").linked_to(orphaned.ref)] == ["the body without its tag"], "the complete Stop text posts the reply once"
 
 
 def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
