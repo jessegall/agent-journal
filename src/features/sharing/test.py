@@ -131,10 +131,11 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     asked = []
     monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
-    monkeypatch.setattr(Shares, "_answering", lambda self: False)
+    monkeypatch.setattr(Shares, "_answering", lambda self, wait=0: False)
     monkeypatch.setattr(watchdog, "serving", lambda root: True)
     tick(record)
-    assert asked == [], "one missed check is not enough"
+    tick(record)
+    assert asked == [], "two missed checks are not enough: a busy machine can miss one or two"
     tick(record)
     assert asked == [watchdog.TUNNEL], "a link that has not answered for a minute, its server up, gets its tunnel restarted"
     tick(record)
@@ -142,6 +143,7 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     assert asked == [watchdog.TUNNEL], "and not again within five minutes"
     monkeypatch.setattr(watchdog, "serving", lambda root: False)
     watchdog.State(record.root / "runtime" / "sharing-tunnel.json").set("restarted", 0)
+    tick(record)
     tick(record)
     tick(record)
     assert asked[-1] == watchdog.SERVER, "with the phone's server itself down, the server is what is restarted"

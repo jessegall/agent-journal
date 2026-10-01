@@ -57,9 +57,9 @@ def scoped(text: str, scope: set[str]) -> str:
     return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
 
 
-def answers(url: str) -> bool:
+def answers(url: str, wait: float = REACH_SECONDS) -> bool:
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=REACH_SECONDS) as answer:
+        with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=wait) as answer:
             return answer.status < 500
     except urllib.error.HTTPError as error:
         return error.code < 500
@@ -215,8 +215,8 @@ class Shares(Controller):
     def answering(self) -> dict:
         return {"reachable": self._answering()}
 
-    def _answering(self) -> bool:
-        return answers(f"https://{self._address()}/{HEALTH}")
+    def _answering(self, wait: float = REACH_SECONDS) -> bool:
+        return answers(f"https://{self._address()}/{HEALTH}", wait)
 
     def _link(self, token: str) -> str:
         return f"https://{self._address()}/s/{token}"

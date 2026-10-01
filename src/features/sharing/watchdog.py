@@ -11,7 +11,8 @@ from features.sharing.services import SERVER, TUNNEL, wanted
 from features.sharing.tunnel import readdressed, refused_address, tunler
 from resources.base import SYSTEM
 
-MISSES_BEFORE_RESTART = 2
+MISSES_BEFORE_RESTART = 3
+PATIENCE = 10.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
 
@@ -27,7 +28,7 @@ class KeepTunnelAnswering(Handler):
             want(context.record.root, TUNNEL, UP, nonce=time.time())
             return
         state = State(context.record.root / "runtime" / "sharing-tunnel.json")
-        if Shares(context.record, actor=SYSTEM)._answering():
+        if Shares(context.record, actor=SYSTEM)._answering(PATIENCE):
             state.set("misses", 0)
             return
         misses = int(state.get("misses", 0)) + 1
