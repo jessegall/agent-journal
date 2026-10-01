@@ -161,10 +161,17 @@ def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], take
     os.execv(started[0], [*started, json.dumps(spec)])
 
 
+def launch_log(root: Path, env: str) -> Path:
+    return runtime.folder(root) / "launches" / f"{env}.log"
+
+
 def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     started = entry("supervisor")
-    child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args), "headless": True})],
-                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    log = launch_log(root, env)
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("wb") as kept:
+        child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args), "headless": True})],
+                                 stdin=subprocess.DEVNULL, stdout=kept, stderr=kept, start_new_session=True)
     hold_build(root, CODE, child.pid)
     return child.pid
 

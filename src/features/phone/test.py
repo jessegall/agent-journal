@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -291,6 +292,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert call(base, "/p/stop", {}, key).status == 422 and call(base, "/p/pause", {}, key).status == 422, "with no agent running there is nothing to stop or pause"
     running = call(base, "/p/feed", key=key).body["running"]
     assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"
+    from engine.sessions import Sessions
+    from features.phone.places import agent_state
+    Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
+    assert agent_state(record, record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
+    Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \
         "the phone switches auto mode, the same setting the desktop's switch flips"
     assert call(base, "/p/helper/stop", {"n": 7}, key).status == 422, "stopping a helper that is not there is refused in words"

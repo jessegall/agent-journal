@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TypedDict
@@ -15,7 +16,8 @@ from resources.base import SYSTEM, USER
 from resources.types import BUSY, WORKING
 
 MAIN = "main"
-OFFLINE, IDLE_STATE, WORKING_STATE = "offline", "idle", "working"
+OFFLINE, IDLE_STATE, WORKING_STATE, SILENT = "offline", "idle", "working", "silent"
+REPORT_WITHIN = 30.0
 WAITED = ("question", "plan", "report", "doc")
 TEMPORARY = tuple(dict.fromkeys(Path(folder).resolve() for folder in (tempfile.gettempdir(), "/tmp")))
 
@@ -29,11 +31,16 @@ class Detail(TypedDict):
 
 
 def agent_state(record: Record, name: str) -> str:
-    holder = Sessions(record.root).holder(name)
+    sessions = Sessions(record.root)
+    holder = sessions.holder(name)
     if not holder:
         return OFFLINE
     row = Agents(record, actor=SYSTEM)._titled(holder)
-    return WORKING_STATE if row is not None and row.data.get("status") in (BUSY, WORKING) else IDLE_STATE
+    if row is not None and row.data.get("status") in (BUSY, WORKING):
+        return WORKING_STATE
+    if (row is None or not row.data.get("event")) and time.time() - sessions.read(holder).since > REPORT_WITHIN:
+        return SILENT
+    return IDLE_STATE
 
 
 def owed(row) -> bool:
