@@ -11,13 +11,17 @@ import features
 from commands.http import dispatch
 from engine.proc import git
 from features.session_recording.scrub import Scrubber
-from resources.base import Refused
+from resources.base import Event, Refused
 
 EVERYTHING = 100000
 EVENTS = 1000
 APP = {"manifest": "/api/manifest", "identity": "/api/identity", "pages": "/api/pages", "summary": "/api/summary", "agents": "/api/agents"}
 ENVIRONMENT = {"settings": "settings", "bar": "bar", "family": "family"}
 SETUP = ("feature", "record", "sequence", "trigger", "template")
+def shown(event: Event) -> bool:
+    return event.type not in SETUP or "setting" in event.data
+
+
 RESTORED = {"record/environments/": "environments/", "record/project/": "project/"}
 
 
@@ -127,7 +131,8 @@ class Throwaway:
         manifest = self.ask(APP["manifest"])
         yield from ((name, self.ask(path)) for name, path in APP.items())
         yield from ((name, self.ask(f"/api/{env}/{path}")) for name, path in ENVIRONMENT.items())
-        yield "events", [event for event in self.ask(f"/api/{env}/events", {"since": "0", "last": str(EVENTS)}) if event["type"] not in SETUP]
+        events = [Event(**raw) for raw in self.ask(f"/api/{env}/events", {"since": "0", "last": str(EVENTS)})]
+        yield "events", [event.to_json() for event in events if shown(event)]
         rows = {kind: self.ask(f"/api/{env}/{kind}", {"completed": "1", "last": str(EVERYTHING)}) for kind in manifest["types"]}
         yield from ((f"rows.{kind}", listed) for kind, listed in rows.items())
         yield from self.edits(env, [agent["n"] for agent in rows["agent"]["rows"]])

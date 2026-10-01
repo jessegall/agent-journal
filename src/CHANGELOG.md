@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.211.0 — the demo goes live, with a second scenario
+
+**The demo is published at https://jessegall.github.io/agent-journal/** on every push to main,
+after a real browser has played each of its scenarios to the end. The README links to it.
+
+**A second scenario: helpers beside Claude.** Pebble Pantry shows a plan handed out to a Codex
+helper in its own worktree and to Claude helpers, a stopped helper, Orchestrator mode, the Codex
+work brought into main, a review and an accepted suggestion. The band above the demo switches
+between the scenarios.
+
+**The commit gate commits deleted and moved files.** It stages exactly the paths it is given,
+deletions included, and commits only those.
+
 ## 2.210.0 — the viewer fits a phone
 
 **The viewer fits a phone's width.** At 390px nothing scrolls sideways: the status bar wraps onto

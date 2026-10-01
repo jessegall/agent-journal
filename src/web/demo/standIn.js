@@ -27,7 +27,8 @@ export class StandIn {
     fresh(at) {
         const {rows, events, settings} = structuredClone(this.demo.moments[at]);
         const sent = this.state ? this.state.sent : {};
-        return this.stamped(this.unbranded({at, rows, events, settings, shift: this.state ? this.state.shift : 0, sent}));
+        const viewer = this.state ? this.state.settings.viewer : settings.viewer;
+        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, shift: this.state ? this.state.shift : 0, sent}));
     }
 
     unbranded(state) {
