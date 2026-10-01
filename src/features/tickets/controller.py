@@ -23,7 +23,7 @@ from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Bases, Ticket, card_back
-from controllers.types import Agents, Messages, Questions, Todos, Works
+from controllers.types import Agents, Comments, Messages, Questions, Todos, Works
 from features.plans.controller import ACTIVE, DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
 from resources.shapes import LEVELS, rank_before
@@ -461,10 +461,10 @@ class Tickets(Prioritised, Controller):
     def _calls(self, ticket) -> list[tuple[str, str, dict, int]]:
         place = Record(self.record.root, ticket.work_environment)
         settings = TicketsDetails.values(self.record)
-        soon, late = int(settings.remind_every), int(settings.remind_own_wait_every)
+        soon = int(settings.remind_every)
         asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}, soon) for q in Questions(place, actor=SYSTEM)._standing()]
-        awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}, soon if self._waits_on_people(w.awaiting) else late)
-                  for w in Works(place, actor=SYSTEM)._standing() if w.awaiting]
+        awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}, soon)
+                  for w in Works(place, actor=SYSTEM)._standing() if w.awaiting and self._waits_on_people(w.awaiting)]
         messages = Messages(place, actor=SYSTEM)
         written = [messages.load(row["n"]) for row in messages.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
         replies = [("ticket_replied", message.ref, {"text": message.title}, 0) for message in written if message.created > ticket.told]
@@ -622,6 +622,14 @@ class Tickets(Prioritised, Controller):
         if session and not self._in_plan_worktree(ticket):
             ask_session(self.record.root, terminal_of(self.record.root, session))
 
+    def comments(self, n: int) -> list[Resource]:
+        ticket = self.load(n)
+        here = super().comments(n)
+        if not ticket.work_environment or ticket.work_environment == self.record.env:
+            return here
+        there = Comments(Record(self.record.root, ticket.work_environment), actor=self.actor).linked_to(ticket.ref)
+        return sorted([*here, *there], key=lambda comment: comment.created)
+
     def move(self, n: int, stage: str, model: str | None = None):
         ticket = self.load(n)
         starting = bool(ticket.board) and Boards(self.record, actor=self.actor).load(ticket.board).meanings.get(stage.strip()) == START
@@ -743,7 +751,8 @@ class Tickets(Prioritised, Controller):
                    f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. ")
                 + f"When it is complete, mark it ready with journal plan ready; it starts once it is approved, by the user or by the agent "
                 f"orchestrating the board, and you are told when. Hand domain work out with journal todo delegate. "
-                f"Commit your work on your own branch and say when it is done: whoever runs the board merges it into "
+                f"Commit your work on your own branch without releasing it, with no version bump and no tag: the release "
+                f"happens when it is merged. Say when it is done: whoever runs the board merges it into "
                 f"{into if into != 'HEAD' else 'the project branch'} with journal ticket merge. "
                 f"Never merge it yourself, into that branch or any other."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")

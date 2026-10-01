@@ -192,6 +192,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
         "an agent starting a ticket names its model, as every dispatch does"
     Tickets(record, actor=AGENT).move(orchestrated.n, "Building", model="sonnet")
     assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
+    from controllers.types import Comments
+    Comments(Record(record.root, f"ticket-{ticket.n}"), actor=AGENT).create("Measured", brief="parity holds", about=ticket.ref)
+    assert "Measured" in [c.title for c in tickets.comments(ticket.n)], "a ticket agent's comment shows on its ticket from the main environment"
 
 
 def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkeypatch):
@@ -449,8 +452,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     monkeypatch.setattr(time, "time", lambda: started + 120 + 300)
     tick(record)
     assert asked_count() == 2, "while the question still waits, the orchestrator is reminded every five minutes, not every minute"
-    assert nudges(record).count(f"ticket {ticket.n}, Dark mode, is waiting - the parity run over Chronos") == 1, \
-        "an agent waiting on its own run is announced once, not every five minutes"
+    assert nudges(record).count(f"ticket {ticket.n}, Dark mode, is waiting - the parity run over Chronos") == 0, \
+        "an agent waiting on its own run never nudges the orchestrator: it is not waiting on anyone"
     told = []
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: told.append((n, note)))
     Environments(record, actor=SYSTEM).create("ticket-1", owner=ticket.ref)

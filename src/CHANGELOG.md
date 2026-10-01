@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.220.0 — a quieter orchestrator
+
+**A ticket agent waiting on its own run no longer nudges the orchestrator.** Only a ticket waiting on
+a decision or an answer does; the setting for reminding about a ticket's own runs is gone.
+
+**Orchestrating a board stays quiet** once its hand-off step is followed: a ticket's own sequence
+finishing no longer hands that step to the agent again.
+
+**Saying what you wait for opens work when none is open.** `journal work await "<what>"` (and the
+await tag) with nothing in hand opens work for the wait instead of being refused.
+
+**A ticket agent's comments show on its ticket** from the main environment, and ticket agents are
+told to commit without releasing: the release happens at the merge.
+
 ## 2.219.0 — every working agent names its model
 
 **Every card in Agents at work names its agent's model** beside what it is doing, for ticket agents

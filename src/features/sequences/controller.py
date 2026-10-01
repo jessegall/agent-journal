@@ -169,6 +169,8 @@ class Sequences(Controller):
         if not found:
             return
         sequence, key, run = found
+        if sequence.lasting and run.get("followed") == run["step"]:
+            return
         handed = {k: v for k, v in run.items() if k != "followed"}
         self.update_run(sequence, key, {**handed, "stepped": time.time()})
 
