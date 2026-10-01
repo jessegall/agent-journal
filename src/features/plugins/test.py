@@ -233,6 +233,10 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert restarted.wait(timeout=5) is not None, "a restart first stops the old run"
     assert [place(record.root, "fresh.web").exists() for place in (status_file, lock_file, log_file)] == [False, False, False], \
         "and removes what it left, so the new run starts from nothing of the old one's"
+    stray = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    lock_file(record.root, "stray.web").write_text(str(stray.pid))
+    Manager(record.root).remove("stray.web")
+    assert stray.wait(timeout=5) is not None, "a keeper the status no longer names but that still holds the lock is stopped before its lock is removed"
     from engine.keeper import ServiceSpec
     from engine.services import files_for
     kept = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)

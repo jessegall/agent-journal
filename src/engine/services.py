@@ -31,6 +31,14 @@ def status_file(root: Path, sid: str) -> Path:
     return runtime(root, f"service-{sid}.json")
 
 
+def holder(root: Path, sid: str) -> int:
+    try:
+        said = lock_file(root, sid).read_text().strip()
+    except OSError:
+        return 0
+    return int(said) if said.isdigit() else 0
+
+
 def lock_file(root: Path, sid: str) -> Path:
     return runtime(root, f"service-{sid}.lock")
 
@@ -187,10 +195,13 @@ class Manager:
     def remove(self, sid: str) -> None:
         current = status(self.root, sid)
         self.stop(sid, current)
+        stray = holder(self.root, sid)
+        if stray != current.keeper:
+            self.stop(sid, replace(current, keeper=stray))
         if current.pgid and not gone(current.pgid):
             teardown(current.pgid, 1.0)
         until = time.monotonic() + KEEPER_EXIT
-        while self.living(current.keeper) and time.monotonic() < until:
+        while (self.living(current.keeper) or self.living(stray)) and time.monotonic() < until:
             time.sleep(0.05)
         for place in (status_file, spec_file, lock_file, log_file):
             place(self.root, sid).unlink(missing_ok=True)

@@ -138,6 +138,9 @@ def lease(spec: ServiceSpec):
         held.close()
         return None
     os.set_inheritable(held.fileno(), False)
+    os.ftruncate(held.fileno(), 0)
+    held.write(str(os.getpid()))
+    held.flush()
     return held
 
 
