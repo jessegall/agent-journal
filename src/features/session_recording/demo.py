@@ -11,6 +11,7 @@ import features
 from commands.http import dispatch
 from engine.proc import git
 from engine.record import Record
+from engine.stored import apart
 from features.phone.controller import CARDS, Phones
 from features.phone.resource import Phone
 from features.phone.routes import read_body
@@ -180,15 +181,20 @@ class Throwaway:
 
 
 def branched(folder: Path, env: str = "") -> dict:
+    with apart():
+        return grown(folder, env)
+
+
+def grown(folder: Path, env: str) -> dict:
     demo = built(folder, env)
     listed = folder / BRANCHES / "branches.json"
     if not listed.is_file():
         return demo
     branches = {}
     for label, sub in json.loads(listed.read_text()).items():
-        grown = built(folder / BRANCHES / sub, env, folder.resolve().name)
-        demo["answers"].update(grown["answers"])
-        branches[label] = grown["moments"]
+        branch = built(folder / BRANCHES / sub, env, folder.resolve().name)
+        demo["answers"].update(branch["answers"])
+        branches[label] = branch["moments"]
     return {**demo, "branches": branches}
 
 

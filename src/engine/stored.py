@@ -44,6 +44,16 @@ def undoable():
         release()
 
 
+@contextmanager
+def apart():
+    held = getattr(UNDO, "saved", None), getattr(UNDO, "events", None)
+    UNDO.saved, UNDO.events = None, None
+    try:
+        yield
+    finally:
+        UNDO.saved, UNDO.events = held
+
+
 def held_back(release) -> bool:
     events = getattr(UNDO, "events", None)
     if events is None:
