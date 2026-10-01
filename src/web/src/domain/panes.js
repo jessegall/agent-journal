@@ -24,6 +24,36 @@ export const DEFAULT_SHAPE = split("row", 0.7, shaped(["chat"]), shaped(PANEL_VI
 
 export const PRESETS = [
     {key: "default", name: "Default", text: "Chat and side panels", shape: DEFAULT_SHAPE},
+    {
+        key: "jesse",
+        name: "Jesse's setup",
+        text: "Chat, the file feed with questions and to-dos, the terminal",
+        shape: split(
+            "row",
+            0.62,
+            {...shaped(["chat"]), width: FULL, scheme: "journal"},
+            split(
+                "col",
+                0.74,
+                {
+                    ...shaped(["feed", "question", "todos"]),
+                    width: FULL,
+                    feed: {
+                        lines: 5,
+                        flush: true,
+                        headers: false,
+                        collapse: false,
+                        editsOnly: true,
+                        removals: true,
+                        capped: false,
+                        columns: false,
+                        size: 0,
+                    },
+                },
+                {...shaped(["terminal"]), width: FULL}
+            )
+        ),
+    },
     {key: "zen", name: "Zen", text: "Only the chat", shape: {...shaped(["chat"]), width: CONTAINED}},
     {
         key: "hacker",
