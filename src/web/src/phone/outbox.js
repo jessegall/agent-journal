@@ -9,6 +9,7 @@ const RUN = {
     answer: (action) => phone.answer(action.n, action.answer),
     dismiss: (action) => phone.dismiss(action.n),
     approve: (action) => phone.approve(action.n, action.updated),
+    proceed: (action) => phone.proceed(action.n, action.updated),
     react: (action) => phone.react(action.n, action.face, action.type || "message"),
     comment: (action) => phone.comment(action.ref, action.text),
     close: (action) => phone.close(action.n),

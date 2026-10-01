@@ -329,6 +329,7 @@ class PhoneRoutes:
                 "dismiss": lambda phones: phones._dismiss(phone, Chosen.from_payload(body).n),
                 "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
                 "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
+                "continue": lambda phones: phones._continue(phone, Approval.from_payload(body)),
                 "switch": lambda phones: phones._switch(phone, Moving.from_payload(body)),
                 "start": lambda phones: phones._start(phone, Starting.from_payload(body)),
                 "arrange": lambda phones: phones._arrange(phone, Arranging.from_payload(body).cards),
