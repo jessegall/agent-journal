@@ -284,6 +284,14 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert spawned == [] and json.loads(status_file(record.root, "held.web").read_text())["keeper"] == holding.pid, \
         "a live keeper that holds the lock is adopted, never started again beside itself"
     holding.kill()
+    running = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    rebuilt = ServiceSpec(id="moved.web", plugin="moved", service="web", run=["true"], env={"JOURNAL_BUILD": "port 8442"}, **files_for(record.root, "moved.web"))
+    from dataclasses import asdict
+    from engine.services import spec_file
+    spec_file(record.root, "moved.web").write_text(json.dumps(asdict(rebuilt)))
+    status_file(record.root, "moved.web").write_text(json.dumps({"state": "ready", "keeper": running.pid, "build": "port 8440"}))
+    Manager(record.root, start=lambda spec, lifeline: 0).one(rebuilt)
+    assert running.wait(timeout=5) is not None, "a keeper running another build than the one wanted is restarted, even when a failed start rewrote the spec file"
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():

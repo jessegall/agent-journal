@@ -74,6 +74,7 @@ class ServiceState:
     ready_at: float = 0.0
     last_exit: int = 0
     nonce: float = 0.0
+    build: str = ""
 
     @classmethod
     def read(cls, path: Path) -> "ServiceState":
@@ -127,7 +128,7 @@ def teardown(group: int, grace: float) -> None:
 
 def state(spec: ServiceSpec, name: str, child=None, **more) -> None:
     replace(ServiceState.read(spec.status), state=name, at=time.time(), keeper=os.getpid(), pgid=child.pid if child else 0, owner=spec.owner,
-            port=spec.port, url=spec.url, **more).write(spec.status)
+            port=spec.port, url=spec.url, build=spec.build, **more).write(spec.status)
 
 
 def lease(spec: ServiceSpec):

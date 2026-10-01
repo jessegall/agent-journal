@@ -218,7 +218,7 @@ class Manager:
         if not self.living(current.keeper) and self.living(stray):
             current = replace(current, keeper=stray)
             current.write(spec.status)
-        if self.living(current.keeper) and self.stored_build(sid) != spec.build:
+        if self.living(current.keeper) and (current.build or self.stored_build(sid)) != spec.build:
             self.remove(sid)
             current = status(self.root, sid)
         asked = Wanted.read(self.root, sid)
