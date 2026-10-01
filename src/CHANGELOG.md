@@ -4,6 +4,33 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.206.0 — helpers, work modes and critique rounds; a phone that stays reachable
+
+The agent can send a **helper** on Codex or Claude for one bounded job (`journal helper dispatch`):
+it works in an environment of its own, in a worktree cut from the tip of your branch when it changes
+code, and its report comes back to the chat. The viewer and the phone list the helpers out, with
+Stop. A **work mode** per environment (hands-on, orchestrator or solo, picked from the status chip
+or the desktop's status bar) says how the agent works: solo refuses subagents and helpers, and
+orchestrator reminds the agent when it drifts into writing code itself. A **critique round**
+(`journal critique round`) sends one critic per lens through an app and gathers what they find into
+one report for the designer.
+
+The phone keeps working by itself: a watch opens its address from outside and restarts whichever
+part stopped answering; a restarted service stops any old copy holding its lock, keeps its port,
+and is never started twice. An agent that started but never reported in shows as Not responding,
+and a background start keeps its output in a log. With `wake_on_message` on, writing in an
+environment with no agent resumes the conversation it last had. A question you ask shows that an
+answer is on its way until the reply lands, and a reply to a reply reads as a reply.
+
+`journal work await --on <ids>` (and `[!await on=(...)]`) waits until named subagents, background
+runs or helpers are back, with no reminders meanwhile. `journal check touched` runs only the tests
+beside what changed, and `journal check gate` commits exactly the named paths when the whole check
+passes. Commands run their follow-ups once, so `todo start` and friends stay inside their budget.
+
+Fixed: every Stop hook answered 500 once a session had sent a reply twice; `read_all 1 2 3` read
+its numbers per character; the desktop's ticks waited for a reload when a command ran in a worker.
+Nothing to do: journals with automatic updates install this by themselves.
+
 ## 2.205.0 — the phone switches journals, Codex hears you mid-command
 
 The phone switches between every running journal on this machine and their environments, from
