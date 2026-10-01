@@ -81,6 +81,14 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     assert calls[0][0] == Path(cut.path) and cut.helper == "Rhea", "a code-changing helper works in a worktree cut for it"
     from engine.worktree import checkout, environment
     assert environment(checkout(Path(cut.path))) == row.environment, "its worktree is named after its environment, so its session binds there and nowhere else"
+    import os
+    from engine.sessions import Sessions
+    from providers import PROVIDERS
+    from runner.hooks import answer
+    Sessions(repo.record.root).bind("main-agent", repo.record.env, pid=os.getpid(), provider="claude")
+    answer(PROVIDERS["claude"](), repo.record.root, {"hook_event_name": "PreToolUse", "session_id": "main-agent", "tool_name": "Bash",
+                                                     "tool_input": {"command": "git status"}, "cwd": cut.path}, os.getpid())
+    assert Sessions(repo.record.root).environment("main-agent") == repo.record.env, "the main agent working in a helper's worktree stays in its own environment"
     helpers.complete(1)
     assert not Environments(repo.record, actor=SYSTEM)._titled(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"

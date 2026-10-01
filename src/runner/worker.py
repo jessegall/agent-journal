@@ -16,7 +16,7 @@ from agents.terminal import HEAL, RELAUNCH, RELOAD, STOP, Seat, seated, watched 
 from agents.actors import Agent
 from engine.record import Record  # noqa: E402
 from engine.package import CODE  # noqa: E402
-from engine.sessions import hold_build  # noqa: E402
+from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
 from features.auto_update.check import Relaunch, UpdateCheck  # noqa: E402
 from features.work_tracking.auto import CheckIn  # noqa: E402
@@ -39,6 +39,10 @@ def keep_viewer(root: Path, cwd: Path, watching, exits: list) -> object:
     thread = threading.Thread(target=lambda: exits.append(viewer.launch(root, cwd)[1]), daemon=True)
     thread.start()
     return thread
+
+
+def moved(seat: Seat) -> bool:
+    return Sessions(seat.root).environment(seat.session) not in ("", seat.env)
 
 
 def crashing(exits: list) -> bool:
@@ -135,6 +139,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
                 return HEAL
         if now - last_checks >= CHECKS_EVERY:
             last_checks = now
+            if moved(seat):
+                return RELOAD
             if not kept:
                 driver, kept = checks(seat)
             run_checks(seat, driver, kept)
