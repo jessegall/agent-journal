@@ -251,7 +251,7 @@ class Boards(Controller):
         board = self._update_drafting(board, phase=phase, score=rated, turns=turns, reading=read)
         return sequences.follow(handed, about=about) if handed else board
 
-    def ideas(self, n: int, ideas: list):
+    def ideas(self, n: int, ideas: list[str]):
         kept = [" ".join(str(idea).split()) for idea in ideas if str(idea).strip()]
         if not 2 <= len(kept) <= IDEAS:
             raise Refused(f"write 2 to {IDEAS} short ideas, each one thing the user might ask for on this board")

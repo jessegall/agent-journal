@@ -38,7 +38,7 @@ function entryOf(e, now) {
         n: Number(n),
         label: LABELS[kind] ? LABELS[kind](n) : e.owner,
         title,
-        now: tool || (focus.known ? focus.title : ""),
+        now: [tool || (focus.known ? focus.title : ""), e.agent && e.agent.model].filter(Boolean).join(" · "),
         plan,
         at: (e.agent && e.agent.at) || 0,
         waits: Boolean((e.work && e.work.awaiting) || (e.counts || {}).questions || (e.agent && e.agent.asking)),
