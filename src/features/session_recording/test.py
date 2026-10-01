@@ -143,7 +143,7 @@ def test_every_shipped_scenario_plays_every_recorded_message_to_the_end_at_a_hun
     with served(site) as url:
         played = {scenario: subprocess.run(["node", str(PLAY), f"{url}{page}?speed=100&scenario={scenario.split('@')[0]}"], cwd=WEB.parent,
                                            capture_output=True, text=True, timeout=300)
-                  for scenario, page in (("bakery", ""), ("helpers", ""), ("phone", ""), ("phone@app", "phone.html"))}
+                  for scenario, page in (("bakery", ""), ("helpers", ""), ("away", ""), ("away@app", "phone.html"))}
     for scenario, done in played.items():
         assert done.returncode == 0, f"{scenario}: {done.stderr}"
         got = json.loads(done.stdout)
@@ -152,6 +152,6 @@ def test_every_shipped_scenario_plays_every_recorded_message_to_the_end_at_a_hun
         assert "sending" not in got["text"], f"{scenario}: a sent message lands as the recorded one"
     bakery, helpers = (json.loads(played[scenario].stdout) for scenario in ("bakery", "helpers"))
     assert all(bakery["todos"]) and all(helpers["todos"]), "the recorded work plays through to its last to-do"
-    assert "Fix both" in json.loads(played["phone@app"].stdout)["text"], "the phone app plays the scenario typed on the phone"
+    assert "Fix both" in json.loads(played["away@app"].stdout)["text"], "the phone app plays the scenario typed on the phone"
     assert bakery["cards"] > 0, "the file feed shows the agent's recorded edits"
     assert "Agents at work" in helpers["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"
