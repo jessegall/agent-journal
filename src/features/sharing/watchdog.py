@@ -2,15 +2,17 @@ import time
 
 from engine import runtime
 from engine.events.engine import ClockTicked
-from engine.services import UP, log_file, want
+from controllers.types import Nudges
+from engine.services import UP, log_file, status, want
 from engine.state import State
 from features.parts import Context, Handler
-from features.sharing.controller import Shares
-from features.sharing.services import TUNNEL, wanted
+from features.sharing.controller import HEALTH, Shares, answers
+from features.sharing.services import SERVER, TUNNEL, wanted
 from features.sharing.tunnel import readdressed, refused_address, tunler
 from resources.base import SYSTEM
 
 MISSES_BEFORE_RESTART = 2
+PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
 
 
@@ -31,6 +33,13 @@ class KeepTunnelAnswering(Handler):
         misses = int(state.get("misses", 0)) + 1
         state.set("misses", misses)
         if misses >= MISSES_BEFORE_RESTART and time.time() - float(state.get("restarted", 0)) >= RESTART_EVERY:
-            want(context.record.root, TUNNEL, UP, nonce=time.time())
+            down = TUNNEL if serving(context.record.root) else SERVER
+            want(context.record.root, down, UP, nonce=time.time())
             state.set("restarted", time.time())
             state.set("misses", 0)
+            Nudges(context.record, actor=SYSTEM)._to_primary(f"the phone's address did not answer twice, so its {PARTS[down]} was restarted")
+
+
+def serving(root) -> bool:
+    port = status(root, SERVER).port
+    return bool(port) and answers(f"http://127.0.0.1:{port}/{HEALTH}")

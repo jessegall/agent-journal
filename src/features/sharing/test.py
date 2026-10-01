@@ -132,13 +132,21 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     monkeypatch.setattr(Shares, "_answering", lambda self: False)
+    monkeypatch.setattr(watchdog, "serving", lambda root: True)
     tick(record)
     assert asked == [], "one missed check is not enough"
     tick(record)
-    assert asked == [watchdog.TUNNEL], "a link that has not answered for a minute gets its tunnel restarted"
+    assert asked == [watchdog.TUNNEL], "a link that has not answered for a minute, its server up, gets its tunnel restarted"
     tick(record)
     tick(record)
     assert asked == [watchdog.TUNNEL], "and not again within five minutes"
+    monkeypatch.setattr(watchdog, "serving", lambda root: False)
+    watchdog.State(record.root / "runtime" / "sharing-tunnel.json").set("restarted", 0)
+    tick(record)
+    tick(record)
+    assert asked[-1] == watchdog.SERVER, "with the phone's server itself down, the server is what is restarted"
+    from controllers.types import Nudges
+    assert len([n for n in Nudges(record, actor=USER).all() if "phone's address did not answer" in n.title]) == 2, "and the agent is told each time"
 
 
 def test_a_layout_link_hands_the_layout_once_to_any_viewer():
@@ -232,3 +240,4 @@ def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only
     assert asked == ["https://tunler.example/dl/tunler-darwin-amd64"], "the build for this system and processor"
     assert (tunnel.LOCAL_BIN.read_bytes(), stat.S_IMODE(tunnel.LOCAL_BIN.stat().st_mode), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == \
         (b"binary", 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"
+
