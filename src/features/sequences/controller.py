@@ -102,7 +102,7 @@ class Sequences(Controller):
     def _moments(self) -> set[str]:
         return {f"{kind}.{moment}" for kind, resource in resources_module.TYPES.items() if kind != "sequence" for moment in resource.moments}
 
-    def run(self, n: int, about: str = ""):
+    def run(self, n: int, about: str | None = None):
         r = self.load(n)
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
@@ -113,7 +113,7 @@ class Sequences(Controller):
     def _running(self, r, about: str) -> bool:
         return self._key(about) in r.runs
 
-    def next(self, n: int, about: str = ""):
+    def next(self, n: int, about: str | None = None, through: int | None = None):
         r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
@@ -123,7 +123,10 @@ class Sequences(Controller):
             self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up: journal sequence follow {r.n}"
                          f"{' --about ' + about if about else ''}, do what it says, then move on")
         titles = self._titles(r)
-        run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time(), "titles": titles}
+        done = r.runs[key]["step"] if through is None else int(through)
+        if done < r.runs[key]["step"] or done > len(titles):
+            self._refuse(f"--through names a step from {r.runs[key]['step']} to {len(titles)}, the steps still ahead")
+        run = {**r.runs[key], "step": done + 1, "stepped": time.time(), "titles": titles}
         runs = {k: v for k, v in r.runs.items() if k != key}
         going = run["step"] <= len(titles)
         self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0)
@@ -132,7 +135,7 @@ class Sequences(Controller):
             self._resume()
         return self.follow(r.n, about=about) if going and handing else moved
 
-    def follow(self, n: int, about: str = ""):
+    def follow(self, n: int, about: str | None = None):
         r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
@@ -183,7 +186,7 @@ class Sequences(Controller):
         run = r.run(key)
         return (run.titles or self._titles(r))[run.step - 1:]
 
-    def abandon(self, n: int, about: str = "", why: str = "", sure: bool = False):
+    def abandon(self, n: int, about: str | None = None, why: str = "", sure: bool = False):
         r = self.load(n)
         key = self._key(about)
         if key not in r.runs:
@@ -210,14 +213,14 @@ class Sequences(Controller):
             if not row["completed"] and not row["deleted"] and self._key(about) in (row.get("runs") or {}):
                 self.abandon(row["n"], about=about, why=why)
 
-    def _mark(self, r, label: str, step: int, why: str = "", about: str = "") -> None:
+    def _mark(self, r, label: str, step: int, why: str = "", about: str | None = None) -> None:
         if r.dispatch:
             return
         agents = Agents(self.record, actor=SYSTEM)
         row = agents.primary()
         if not row:
             return
-        parts = [r.title, f"step {step}, {self._steps(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
+        parts = [r.title, f"step {step}, {self._steps(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about is not None and about.strip() else "", why]
         depth = max(0, self._open() - (label != "Sequence started"))
         agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref, depth=depth)
 
@@ -225,8 +228,9 @@ class Sequences(Controller):
         return sum(1 for row in self.summaries() if not row["completed"] and not row["deleted"]
                    for key in row.get("runs") or {} if key.split("|", 1)[0] == self.record.env)
 
-    def _key(self, about: str) -> str:
-        return f"{self.record.env}|{about.strip() or BY_HAND}"
+    def _key(self, about: str | None) -> str:
+        named = about.strip() if about is not None else ""
+        return f"{self.record.env}|{named or BY_HAND}"
 
 
 resources_module.register(Sequence)

@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.214.0 — sequences cost fewer calls, and skills come by subject
+
+**Running the command a step names takes the step up.** An agent no longer has to follow a step
+before acting on it: `journal ticket approve_plan` during the step that names it follows the step
+by itself. `journal sequence next <n> --through <k>` moves past several steps done together. Reads
+(`read`, `comments` and the like) never wait while a step is in hand.
+
+**Skills are asked for by subject, not by any word in a tool call.** A skill's keywords bring it in
+when the user names them; running a skill's own journal commands still asks for it first. A file
+path or a search that happens to contain a keyword no longer holds the agent mid-work.
+
 ## 2.213.0 — ticket agents run on a named model, and merge when they are done
 
 **A ticket's agent starts on the model its orchestrator names.** `journal ticket start <n> --model

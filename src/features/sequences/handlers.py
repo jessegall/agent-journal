@@ -30,7 +30,8 @@ WAITING = "waiting"
 MINUTE = 60
 JOURNAL_CALL = re.compile(r"(?:^|[;&|(\n])\s*(journal\s[^;&|\n]*)")
 FREE_WHILE_HELD = re.compile(r"journal\s+(?:--\S+\s+)*(?:sequence\s+(?:follow|next|abandon)|message\s|(?:search|carry|status|user|conversation)\b"
-                             r"|\S+\s+(?:show|all|progress|search|unread|board|screen|paths|find|linked_to|members|tasks|revisions|revision|changes|files|--help)\b)")
+                             r"|\S+\s+(?:show|read|comments|all|progress|search|unread|board|screen|paths|find|linked_to|members|tasks|revisions|revision|changes|files|--help)\b)")
+WORDS = re.compile(r"journal\s+(?:--\S+\s+)*(\S+)\s+(\S+)")
 
 
 @dataclass(frozen=True)
@@ -45,8 +46,8 @@ class TriggerFired(ResourceEvent):
 
 
 def about_flag(key: str) -> str:
-    about = key.split("|", 1)[1]
-    return "" if about == BY_HAND else f" --about {about}"
+    about = about_of(key)
+    return "" if about is None else f" --about {about}"
 
 
 def filled(context: Context, n: int, key: str, body: str) -> str:
@@ -248,8 +249,24 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
             return ""
         sequence, key, run = found
         held = [found for command in call.commands for found in JOURNAL_CALL.findall(command) if not FREE_WHILE_HELD.match(found)]
+        if not held:
+            return ""
+        step = context.journal.sequences._steps(sequence)[run["step"] - 1][SECTION.body]
+        if all(named_in(command, step) for command in held):
+            context.journal.sequences.follow(sequence.n, about=about_of(key))
+            return ""
         return (f"sequence {sequence.n}, {sequence.title}, handed you step {run['step']}: take it up with journal sequence follow "
-                f"{sequence.n}{about_flag(key)} first") if held else ""
+                f"{sequence.n}{about_flag(key)} first, or run the command the step names")
+
+
+def named_in(command: str, step: str) -> bool:
+    words = WORDS.match(command)
+    return bool(words) and f"journal {words.group(1)} {words.group(2)}" in step
+
+
+def about_of(key: str) -> str | None:
+    about = key.split("|", 1)[1]
+    return None if about == BY_HAND else about
 
 
 class DispatchAgainOnAnswer(Handler):
