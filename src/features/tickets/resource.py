@@ -48,6 +48,7 @@ class Ticket(Placed, Resource):
         Field(TEXT, "", name="base"),
         Field(default=dict, name="bases"),
         Field(TEXT, AGENT_CLI, name="provider"),
+        Field(TEXT, "", name="model"),
         Field(NUMBER, 0.0, name="launched"),
         Field(NUMBER, 0.0, name="queued_at"),
         Field(NUMBER, 0, name="plan"),

@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.213.0 — ticket agents run on a named model, and merge when they are done
+
+**A ticket's agent starts on the model its orchestrator names.** `journal ticket start <n> --model
+<model>` and `journal ticket move <n> "<start stage>" --model <model>` store the model on the
+ticket and launch its agent on it; an agent that starts a ticket without one is refused, as for
+any dispatch. The orchestrating sequence says to choose each ticket's model before starting it.
+
+**A ticket is taken for merging only once its agent has stopped working**, its plan is done and
+its worktree is clean; a commit landing while the agent still works no longer starts the merge.
+
 ## 2.212.0 — the demo plays on a phone, in the phone app
 
 **On a phone the demo opens in the phone app**, with a band to switch scenarios, restart, or open

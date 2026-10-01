@@ -186,6 +186,12 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     drafted = Tickets(record, actor=USER, agent="board-filler").create("Light mode", board=board.n)
     tickets.move(drafted.n, "Building")
     assert launched[-1][1] == "claude", "the agent that wrote the ticket is its author, never the provider that runs it"
+    from tests.conftest import refused
+    orchestrated = tickets.create("High contrast", board=board.n)
+    assert "--model <model>" in refused(lambda: Tickets(record, actor=AGENT).move(orchestrated.n, "Building")), \
+        "an agent starting a ticket names its model, as every dispatch does"
+    Tickets(record, actor=AGENT).move(orchestrated.n, "Building", model="sonnet")
+    assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
 
 
 def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkeypatch):
