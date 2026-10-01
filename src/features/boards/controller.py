@@ -6,6 +6,7 @@ from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from engine.worktree import current_branch
 from features.boards.resource import DONE, MEANINGS, Board
+from features.work_modes.modes import ORCHESTRATOR, pick
 from resources.base import COMMISSIONED, PAUSED, REQUESTED, RESUMED, REVISED, Refused, Resource, STARTED, SYSTEM, titled
 
 
@@ -111,6 +112,7 @@ class Boards(Controller):
         if not board.branch and current_branch(self.record.root.parent):
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
         board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env)
+        pick(self.record, ORCHESTRATOR, self.actor)
         self._set_orchestrating(True)
         self.record.emit("board", board.n, STARTED, self.actor)
         return board

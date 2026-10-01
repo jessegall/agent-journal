@@ -1,6 +1,7 @@
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
 from features.boards.controller import START_OVER, Boards
+from features.work_modes.modes import mode_of
 from tests.kit import Plans
 from features.sequences.controller import Sequences
 from features.sequences.shipped import ship
@@ -242,7 +243,8 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
     Boards(record, actor=USER).start(board.n)
     assert any("Orchestrating a board, step 1 of 5 - Tell the user" in line for line in nudges(record)), nudges(record)
-    assert Boards(record, actor=USER).load(board.n).started, "the board remembers when Play was pressed"
+    assert Boards(record, actor=USER).load(board.n).started and mode_of(record) == "orchestrator", \
+        "the board remembers when Play was pressed and the environment switches to orchestrator mode"
     from features.session_briefing.start import start_block
     assert (Tickets(record, actor=SYSTEM)._orchestrating(), "ORCHESTRATING:" in start_block(record)) == ([board.n], True), \
         "Play turns orchestrating on for this environment, and the start block says so"
