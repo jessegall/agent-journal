@@ -115,7 +115,7 @@ class ModelControls(TypedDict):
 class Codex(Provider):
     name = "codex"
     question_tools = frozenset({"request_user_input"})
-    tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "spawn_agent": AgentCall,
+    tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "apply_patch": CodexShell, "spawn_agent": AgentCall,
                   "request_user_input": AskCall}
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"

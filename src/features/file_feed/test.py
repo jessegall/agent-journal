@@ -7,6 +7,9 @@ from engine.files import announce
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
+from features.status_bar.commands import writes
+from providers.codex import Codex
+from providers.payload import Hook
 from tests.conftest import fresh
 
 
@@ -48,6 +51,10 @@ def test_a_changed_file_becomes_a_card_and_the_cursor_reads_only_what_came_after
     project.changed()
     after = edits_since(project.record, project.agent, first.cursor, PAGE)
     assert [(c.path, c.kind, [r.kind for r in c.rows]) for c in after.edits] == [("new.py", "new", ["add", "add"])], "a new file is all added lines"
+    patch = "*** Begin Patch\n*** Add File: new.py\n+one\n*** End Patch"
+    sent = lambda name, given: Hook.read({"hook_event_name": "PostToolUse", "session_id": "codex-1", "tool_name": name, "tool_input": given, "cwd": str(project.root)}, Codex.tool_kinds)
+    assert [writes(sent("apply_patch", {"command": patch})), writes(sent("exec", {"cmd": f"await tools.apply_patch({patch!r})"})), writes(sent("exec_command", {"cmd": "ls"}))] == \
+        [True, True, False], "a Codex patch, direct or through exec, is a write the snapshot follows"
 
 
 def test_a_deleted_file_is_one_line_with_its_removed_count():
