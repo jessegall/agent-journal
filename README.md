@@ -9,8 +9,6 @@ them. Every new session receives the part it needs, while the full record stays 
 plain files, in the browser and on your phone. Claude and Codex use the same record, engine,
 viewer, and command line; `journal version` says which one you have.
 
-![The chat with the agent, its work and the rail beside it](docs/screenshots/chat.png)
-
 ## Install
 
 From the root of your project, with `git` and `python3` available:
@@ -49,6 +47,8 @@ You can also start an agent from the viewer's sidebar or from the phone. With th
 resuming the conversation that environment last had, so the same agent reads your message next.
 
 ## The viewer
+
+![The chat with the agent, its work and the rail beside it](docs/screenshots/chat.png)
 
 Home is a conversation with the agent. Messages, replies, reactions and receipts share one thread;
 a question you ask shows that an answer is on its way until the reply lands. The rail keeps
