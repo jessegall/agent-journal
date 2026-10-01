@@ -4,26 +4,50 @@ import {QuietStream} from "./stream.js";
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
 const LONGEST = 4;
 const SHORTEST = 0.6;
-const OPENING = 1200;
-const TYPED = 2200;
+const TURNS = {
+    send: "Your turn: press Send to send the user's message",
+    approve: "Your turn: approve the plan",
+    answer: "Your turn: pick an answer to the question",
+};
+const MOVES = [
+    ["send", (e) => e.type === "message" && e.action === "created"],
+    ["approve", (e) => e.type === "plan" && e.action === "updated" && e.data.by === "approve"],
+    ["answer", (e) => e.type === "question" && e.action === "completed"],
+];
 
 const newest = (moment) => Math.max(0, ...(moment.events || []).map((e) => e.id));
-const asks = (moment, before) =>
-    (moment.events || []).some((e) => e.id > newest(before) && e.type === "message" && e.action === "created" && e.actor === "user");
+
+function moveIn(moment, before) {
+    const fresh = (moment.events || []).filter((e) => e.id > newest(before) && e.actor === "user");
+    for (const [kind, is] of MOVES) {
+        const event = fresh.find(is);
+        if (event) return {kind, n: event.n};
+    }
+    return null;
+}
+
+function movesOf(moments) {
+    return moments.map((moment, at) => (at > 0 ? moveIn(moment, moments[at - 1]) : null)).map((move, at) => move && {...move, at});
+}
 
 export class Player {
     constructor(standIn) {
         this.standIn = standIn;
-        const moments = standIn.demo.moments;
-        this.prompts = moments.map((moment, at) => (at > 0 && asks(moment, moments[at - 1]) ? at : -1)).filter((at) => at > 0);
         this.timer = null;
         this.stepped = () => {};
-        if (standIn.state.at > 0) return this.offer();
-        this.timer = setTimeout(() => this.send(), OPENING / SPEED);
+        this.mapped();
+        this.play();
+    }
+
+    mapped() {
+        this.moves = movesOf(this.standIn.moments).filter(Boolean);
+        const branches = Object.values(this.standIn.demo.branches || {});
+        const opening = branches.length && !this.standIn.state.branch && movesOf([this.standIn.demo.moments.at(-1), ...branches[0]]).find(Boolean);
+        this.fork = opening ? {...opening, at: this.standIn.moments.length, fork: true} : null;
     }
 
     get waiting() {
-        return this.prompts.find((at) => at > this.standIn.state.at);
+        return this.moves.find((move) => move.at > this.standIn.state.at) || this.fork || undefined;
     }
 
     get playing() {
@@ -31,13 +55,13 @@ export class Player {
     }
 
     get finished() {
-        return this.waiting === undefined && this.standIn.state.at >= this.standIn.demo.moments.length - 1;
+        return this.waiting === undefined && this.standIn.state.at >= this.standIn.moments.length - 1;
     }
 
     offer() {
-        const at = this.waiting;
-        prefill.value = at === undefined ? "" : this.asked(at);
-        if (at !== undefined) this.timer = setTimeout(() => this.send(), TYPED / SPEED);
+        const move = this.waiting;
+        prefill.value = move && move.kind === "send" ? this.asked(move.at) : "";
+        if (move) window.dispatchEvent(new CustomEvent("replay-hint", {detail: TURNS[move.kind]}));
     }
 
     asked(at) {
@@ -46,24 +70,35 @@ export class Player {
     }
 
     message(at) {
-        const before = this.standIn.demo.moments[at - 1];
+        const before = this.standIn.moments[at - 1];
         const known = new Set(((before && before.rows.message) || []).map((r) => r.n));
-        return (this.standIn.demo.moments[at].rows.message || []).find((r) => !known.has(r.n) && (r.seen || [])[0] === "user");
+        return (this.standIn.moments[at].rows.message || []).find((r) => !known.has(r.n) && (r.seen || [])[0] === "user");
     }
 
     send() {
-        const at = this.waiting;
-        if (at === undefined) return null;
+        const move = this.waiting;
+        if (!move || move.kind !== "send") return null;
         prefill.value = "";
-        this.goTo(at);
+        this.goTo(move.at);
         this.play();
-        return this.message(at);
+        return this.message(move.at);
+    }
+
+    moved(kind, n, how) {
+        const move = this.waiting;
+        if (!move || move.kind !== kind || move.n !== n) return false;
+        if (move.fork && !this.standIn.branched(how)) return false;
+        if (move.fork) this.mapped();
+        this.goTo(this.waiting.at);
+        this.play();
+        return true;
     }
 
     goTo(at) {
         const known = new Set(this.standIn.state.events.map((e) => e.id));
         while (this.standIn.state.at < at && this.standIn.step());
         this.standIn.state.events.filter((e) => !known.has(e.id)).forEach((e) => QuietStream.tell(this.standIn.dated(e)));
+        window.dispatchEvent(new Event("replay-moved"));
         this.stepped();
     }
 
@@ -71,8 +106,9 @@ export class Player {
         clearTimeout(this.timer);
         this.timer = null;
         const next = this.standIn.state.at + 1;
-        if (next >= this.standIn.demo.moments.length || this.prompts.includes(next)) return this.offer();
-        const gap = this.standIn.demo.moments[next].at - this.standIn.moment.at;
+        const move = this.waiting;
+        if (next >= this.standIn.moments.length || (move && move.at === next)) return this.offer();
+        const gap = this.standIn.moments[next].at - this.standIn.moment.at;
         this.timer = setTimeout(
             () => {
                 this.goTo(next);

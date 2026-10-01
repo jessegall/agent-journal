@@ -2,6 +2,8 @@ import {readState, writeState} from "./storage.js";
 
 const NOTICE = "Not in the demo";
 const RECORDED = "This is a recording: the next message waits in the field";
+const LATER = "The replay is not there yet";
+const MOVES = {approve: "approve", answer: "answer"};
 const PAGE = 25;
 
 const asked = (url) => new URL(url, location.origin);
@@ -12,7 +14,22 @@ const counts = (rows) => ({all: rows.length, open: rows.filter((r) => !r.complet
 export class StandIn {
     constructor(demo) {
         this.demo = demo;
+        this.moments = demo.moments;
         this.state = readState() || this.fresh(0);
+        this.followed(this.state.branch);
+    }
+
+    followed(branch) {
+        const grown = branch && this.demo.branches[branch];
+        this.moments = grown ? [...this.demo.moments, ...grown] : this.demo.moments;
+        return Boolean(grown);
+    }
+
+    branched(label) {
+        if (!this.followed(label)) return false;
+        this.state.branch = label;
+        this.save();
+        return true;
     }
 
     walled(recorded) {
@@ -38,15 +55,16 @@ export class StandIn {
     }
 
     get moment() {
-        return this.demo.moments[this.state.at];
+        return this.moments[this.state.at];
     }
 
     fresh(at) {
-        const {rows, events, settings} = structuredClone(this.demo.moments[at]);
+        const {rows, events, settings} = structuredClone(this.moments[at]);
         const sent = this.state ? this.state.sent : {};
+        const branch = this.state ? this.state.branch : null;
         const viewer = this.state ? this.state.settings.viewer : settings.viewer;
-        const clock = [...(this.state ? this.state.clock : []), [this.demo.moments[at].at, Date.now() / 1000]];
-        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, clock, sent}));
+        const clock = [...(this.state ? this.state.clock : []), [this.moments[at].at, Date.now() / 1000]];
+        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, clock, sent, branch}));
     }
 
     unbranded(state) {
@@ -62,7 +80,7 @@ export class StandIn {
     }
 
     step() {
-        if (this.state.at + 1 >= this.demo.moments.length) return false;
+        if (this.state.at + 1 >= this.moments.length) return false;
         this.state = this.fresh(this.state.at + 1);
         this.save();
         return true;
@@ -111,8 +129,14 @@ export class StandIn {
     }
 
     phoneWrote([first], body) {
+        if (MOVES[first]) return this.phoneMoved(first, body);
         if (first !== "message") return new Response(JSON.stringify({error: RECORDED}), {status: 422});
         return new Response(this.dated(this.sent(body)), {status: 201});
+    }
+
+    phoneMoved(kind, body) {
+        if (!this.player.moved(kind, Number(body.n), body.answer)) return new Response(JSON.stringify({error: LATER}), {status: 422});
+        return new Response(this.dated({ok: true}), {status: 200});
     }
 
     answer(method, url, body) {
@@ -269,7 +293,13 @@ export class StandIn {
         return stripped(this.held("message").find((row) => row.n === message.n));
     }
 
+    moved(row, action, body) {
+        if (!this.player.moved(action, row.n, body.how)) return {demo: true, notice: LATER};
+        return stripped(this.held(row.type).find((r) => r.n === row.n) || row);
+    }
+
     act(row, action, body) {
+        if (MOVES[action] && this.player) return this.moved(row, action, body);
         const at = Date.now() / 1000;
         const done = {
             complete: () => Object.assign(row, {completed: at, outcome: body.outcome || body.how || ""}),

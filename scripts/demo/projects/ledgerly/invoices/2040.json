@@ -1,0 +1,17 @@
+{
+  "number": "2040",
+  "customer": "Linden Bakery",
+  "date": "2026-05-08",
+  "lines": [
+    {
+      "name": "Paper bags",
+      "price": "6.40",
+      "quantity": 1
+    },
+    {
+      "name": "Labels",
+      "price": "3.15",
+      "quantity": 1
+    }
+  ]
+}

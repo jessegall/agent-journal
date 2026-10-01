@@ -1,0 +1,17 @@
+{
+  "number": "2037",
+  "customer": "Bramble Books",
+  "date": "2026-03-19",
+  "lines": [
+    {
+      "name": "Notebook A5",
+      "price": "4.95",
+      "quantity": 3
+    },
+    {
+      "name": "Bookmark set",
+      "price": "2.49",
+      "quantity": 1
+    }
+  ]
+}

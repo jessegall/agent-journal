@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.222.0 — the demo is yours to play
+
+**In the live demo you play the user.** Each message waits in the box until you press Send, each plan waits
+until you approve it with its own button, and each question waits for your answer. Every scenario has a
+question whose answers lead to different recorded endings: prices on the bakery's menu or not, a fresh
+helper or the same one fixing its work, and VAT rounded on the total or per line.
+
+**A third scenario, a customer's bug report**, replaces Away from the desk: an invoice a cent off is traced
+with a failing test, and the shop's answer decides the fix, the rule or fact kept, and the report.
+
+**The scenarios are scripts that drive the real journal.** `python3 -m scripts.demo.record [bakery helpers ledgerly]`
+plays agent and user through a journal installed from the source, with hooks answered by its server, records
+the shared start once and each answer from a copy of the project taken at the question, and builds the demo
+file. A test plays every branch of every script against the current code, so a change that breaks a scenario
+fails the suite, and another plays every branch in a browser as a visitor.
+
 ## 2.221.0 — updates land on the first try
 
 **An automatic update no longer fails with "holds no journal package".** When the update started

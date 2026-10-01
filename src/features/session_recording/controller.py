@@ -11,7 +11,7 @@ from controllers.base import Controller
 from controllers.types import Agents
 from engine.package import entry
 from engine.record import Record
-from features.session_recording.demo import built, leaks, scrubbed
+from features.session_recording.demo import BRANCHES, branched, leaks, scrubbed
 from features.session_recording.resource import Recording
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
@@ -57,14 +57,16 @@ class Recordings(Controller):
     def scrub(self, folder: str) -> str:
         target = Path(folder)
         scrubber = Scrubber()
-        scrubbed(target, scrubber)
-        still = leaks(target, scrubber)
+        every = [target, *sorted(path for path in (target / BRANCHES).glob("*") if path.is_dir())]
+        for one in every:
+            scrubbed(one, scrubber)
+        still = [leak for one in every for leak in leaks(one, scrubber)]
         if still:
             raise Refused("the recording still holds the machine: " + "; ".join(still[:5]))
         return f"{target} holds nothing about this machine"
 
     def build(self, folder: str, into: str, env: str = "") -> str:
-        demo = built(Path(folder), env)
+        demo = branched(Path(folder), env)
         Path(into).write_text(json.dumps(demo))
         return f"wrote {len(demo['moments'])} moments and {len(demo['answers'])} answers into {into}"
 
