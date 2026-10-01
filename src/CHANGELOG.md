@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.216.0 — answer a permission from the phone
+
+**The phone answers a permission prompt.** When the agent, or one of its helpers, waits on a
+permission, the phone's agent sheet or the helper's page shows what it wants with Allow and Deny,
+which answer the prompt in its terminal.
+
+**Ticket environments stay out of the phone's list of environments**, as helpers' already did; their
+agents still show in Agents at work.
+
+**A designer agent type** (`designer`) designs in Claude Design and never edits the repository, so
+design work goes to a subagent.
+
 ## 2.215.0 — auto mode on everywhere; Hands-on is now Builder
 
 **Auto mode is on by default**, and this upgrade switches it on in every environment that had it

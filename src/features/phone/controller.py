@@ -16,7 +16,7 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
-from agents.control import pause, resume
+from agents.control import pause, permit, resume
 from controllers.types import Agents, Environments, Nudges, Todos
 from engine.sessions import Sessions
 from controllers.notices import Notices
@@ -120,6 +120,10 @@ def helper_state(row, environment: HelperSnapshot, now: float) -> WorkState:
     if now - environment.agent.at <= 300:
         return WorkState.WORKING
     return WorkState.IDLE
+
+
+def asked_permission(environment: HelperSnapshot) -> str:
+    return environment.attention_text if environment.attention_kind == "permission" else ""
 
 
 def helper_reason(environment: HelperSnapshot, now: float) -> str:
@@ -227,6 +231,7 @@ class Waiting(TypedDict):
 
 class Running(TypedDict):
     state: str
+    prompt: str
     paused: bool
     context: int
     usage: list[dict]
@@ -398,6 +403,14 @@ class Phones(Controller):
 
     def _mode(self, phone: Phone, mode: str) -> str:
         return pick(self._home(phone), mode, USER)
+
+    def _permit(self, phone: Phone, helper: int | None, allow: bool) -> dict:
+        home = self._home(phone)
+        place = phone.environment if helper is None else Helpers(home, actor=USER).load(helper).environment
+        holder = Sessions(home.root).holder(place)
+        if not holder:
+            raise Refused(f"No agent is running in {place}, so there is no permission to answer")
+        return permit(home.root, place, holder, allow)
 
     def _stop_helper(self, phone: Phone, n: int) -> None:
         Helpers(self._home(phone), actor=USER).stop(n)
@@ -582,11 +595,15 @@ class Phones(Controller):
         holder = Sessions(home.root).holder(environment)
         row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
         summary = lately_summarized(home.root)
-        shared = dict(state=agent_state(home, environment), auto=bool(home.setting("features", {}).get(AUTO)), mode=mode_of(home),
+        shared = dict(state=agent_state(home, environment), prompt=self._prompt(summary, environment), auto=bool(home.setting("features", {}).get(AUTO)), mode=mode_of(home),
                       helpers=self._helpers_of(home, summary), subagents=self._subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())))
         if row is None:
             return Running(paused=False, context=0, usage=[], **shared)
         return Running(paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), **shared)
+
+    def _prompt(self, summary: JournalSummary, environment: str) -> str:
+        here = next((HelperSnapshot.from_payload(entry) for entry in summary["environments"] if entry.get("name") == environment), HelperSnapshot())
+        return asked_permission(here)
 
     def _helpers_of(self, home: Record, summary: JournalSummary) -> list[dict]:
         environments = list(map(HelperSnapshot.from_payload, summary["helpers"]))
@@ -601,7 +618,7 @@ class Phones(Controller):
             file = Path(agent.file).name if agent.file else ""
             doing = " ".join(part for part in (agent.tool, file) if part)
             found.append({"n": row.n, "title": view["title"], "name": row.name, "provider": row.provider, "model": row.model,
-                          "state": state.value, "reason": formatted(helper_reason(environment, now), home, VIEWER),
+                          "state": state.value, "reason": formatted(helper_reason(environment, now), home, VIEWER), "prompt": asked_permission(environment),
                           "now": doing,
                           "started": agent.started or row.created, "at": agent.at or row.updated, "todo": todo,
                           "completed_at": row.completed, "stopped_by_user": row.stopped_by_user,

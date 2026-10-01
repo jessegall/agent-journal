@@ -1,4 +1,5 @@
 <script setup>
+import PhonePermit from "./PhonePermit.vue";
 import {computed, inject, onMounted, ref, watch} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import AlertDialog from "../kit/AlertDialog.vue";
@@ -82,6 +83,9 @@ watch(() => [props.row.at, props.row.state, props.row.report], load);
                 <div><dt>Last step</dt><dd>{{ lastStep }}</dd></div>
             </template>
         </dl>
+        <template v-if="current.prompt">
+            <PhonePermit :prompt="current.prompt" :helper="props.row.n" @answered="emit('changed')" />
+        </template>
         <template v-if="current.todo?.n">
             <section class="helper-section">
                 <h3>Its job</h3>

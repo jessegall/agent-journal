@@ -72,6 +72,7 @@ export const phone = {
     auto: (on) => sent("./auto", {on}),
     mode: (mode) => sent("./mode", {mode}),
     helper: (n) => got(`./helper?n=${n}`),
+    permit: (helper, allow) => sent("./permit", {helper, allow}),
     helperStop: (n) => sent("./helper/stop", {n}),
     exportUrl: (ref) => `./export/${ref.replace(":", "/")}`,
     exported: async (ref, fallback) => {

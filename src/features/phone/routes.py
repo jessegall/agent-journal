@@ -168,6 +168,17 @@ class Moving:
 
 
 @dataclass(frozen=True)
+class Permitting:
+    helper: int | None
+    allow: bool
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "Permitting":
+        helper = given.get("helper")
+        return cls(helper=int(helper) if helper is not None else None, allow=bool(given.get("allow")))
+
+
+@dataclass(frozen=True)
 class Approval:
     n: int
     updated: float
@@ -328,6 +339,13 @@ class PhoneRoutes:
             except Refused as refused:
                 return handler.answer(422, str(refused))
             return self.json(handler, 201, {"done": "stop"})
+        if rest == ["permit"]:
+            asked = Permitting.from_payload(body)
+            try:
+                phones._permit(phone, asked.helper, asked.allow)
+            except Refused as refused:
+                return handler.answer(422, str(refused))
+            return self.json(handler, 201, {"done": "allow" if asked.allow else "deny"})
         if rest == ["mode"]:
             try:
                 return self.json(handler, 201, {"mode": phones._mode(phone, Choosing.from_payload(body).mode)})

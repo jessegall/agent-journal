@@ -268,6 +268,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
         "the feed carries the plan that runs, with its phases"
     assert call(base, "/p/continue", {"n": held.n, "updated": strip["updated"] - 5}, key).status == 409, "a plan that moved on is not continued"
     assert call(base, "/p/continue", {"n": held.n, "updated": strip["updated"]}, key).status == 201
+    assert call(base, "/p/permit", {"allow": True}, key).status == 422, "with no agent running there is no permission to answer"
     assert plans(record, actor=SYSTEM).load(held.n).current == 2, "Continue passes the checkpoint to the next phase"
     proposal = Docs(record, actor=AGENT).create("Proposal", buttons=[{"label": "Accept", "say": "I accept this proposal", "choice": "answer"},
                                                                      {"label": "Change it", "say": "I want changes", "choice": "answer"}])
@@ -343,7 +344,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert agent_state(record, record.env) == "working", "an older launch record of the same agent never hides the session that reports"
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
-    assert f"{record.env}-rhea" not in shown(record.root), "a helper's own environment stays out of the phone's places"
+    Environments(record, actor=USER).create("ticket-4", owner="ticket:4")
+    assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(shown(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \
         "the phone switches auto mode, the same setting the desktop's switch flips"
