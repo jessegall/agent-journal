@@ -37,6 +37,7 @@ import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
 import {tick} from "./haptic.js";
+import {IN_CHAT} from "../domain/replies.js";
 
 const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
@@ -148,7 +149,7 @@ const items = computed(() => {
     const known = new Set(newest.map(keyOf));
     return [...earlier.value.filter((item) => !known.has(keyOf(item))), ...newest];
 });
-const briefs = computed(() => new Map(items.value.filter((item) => item.type === "message").map((item) => [item.ref, plain(item.brief || item.title)])));
+const briefs = computed(() => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plain(item.brief || item.title)])));
 
 function measure() {
     scrollFrame = 0;
@@ -360,7 +361,6 @@ const made = () => `${Date.now().toString(36)}${Math.random().toString(36).slice
 const entry = (target) => ({id: made(), ref: target});
 const saved = (list) => ({pages: list.map(({id, ref}) => ({id, ref}))});
 const FLASH = 1200;
-const IN_CHAT = /^(message|comment):/;
 let flashing = "";
 
 function flashTo(key) {

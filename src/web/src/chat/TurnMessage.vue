@@ -16,6 +16,7 @@ import {openUpdate} from "./updateView.js";
 import {useTurnLinks} from "./turnLinks.js";
 import {useTurnText} from "./turnText.js";
 import {quoted} from "../format/quote.js";
+import {EARLIER, answered} from "../domain/replies.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
 import {optimistic} from "../sync/rows.js";
@@ -87,11 +88,19 @@ const bubbled = computed(
     () =>
         Boolean(split.value.text) ||
         !split.value.cards.length ||
-        Boolean(words.value.quote || files.value.length || results.value.length || resourceComment.value || props.turn.type !== "message")
+        Boolean(quoteText.value || files.value.length || results.value.length || resourceComment.value || props.turn.type !== "message")
 );
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
-const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: env.value}));
+const answers = computed(() => answered(props.turn));
+const answer = computed(() => {
+    if (words.value.quote || !answers.value) return "";
+    const [type, n] = answers.value.split(":");
+    const row = rowsOf(type).find((r) => r.n === Number(n));
+    return row ? quoted(row.brief || row.title).text : EARLIER;
+});
+const quoteText = computed(() => words.value.quote || answer.value);
+const quoteHtml = computed(() => render(quoteText.value, {types: types.value, env: env.value}));
 const commentParent = computed(() => {
     if (props.turn.type !== "comment") return null;
     const parent = props.turn.refs.find((ref) => {
@@ -112,7 +121,7 @@ function openComment() {
 function toQuoted() {
     const ref = props.turn.refs.find((r) => rowsOf(r.split(":")[0]).length && r !== props.turn.ref);
     if (ref && focusTurn(ref)) return;
-    const head = words.value.quote.slice(0, 40);
+    const head = quoteText.value.slice(0, 40);
     const hit = rowsOf("message").find((m) => m.n !== props.turn.n && quoted(m.brief || m.title).text.startsWith(head));
     if (hit) focusTurn(hit.ref);
 }
@@ -130,7 +139,7 @@ const results = computed(() => {
         .filter((ref) => !named.has(ref) && refOf(ref).type)
         .map((ref) => ({part: "filed while this message was in hand", word: worded(refOf(ref), ref), ref: refOf(ref)}));
     const seen = new Set();
-    const quotedMessage = (b) => words.value.quote && b.ref.type === "message" && props.turn.refs.includes(`message:${b.ref.n}`);
+    const quotedMessage = (b) => quoteText.value && b.ref.type === "message" && props.turn.refs.includes(`message:${b.ref.n}`);
     return [...declared, ...linked]
         .filter((b) => b.ref.type !== "comment")
         .filter((b) => !quotedMessage(b))
@@ -185,7 +194,7 @@ async function drop() {
                 peer: !!between,
                 ask: turn.type === 'question',
                 long,
-                quoting: words.quote,
+                quoting: quoteText,
                 lit: store.focus === turn.ref,
                 'comment-origin': resourceComment,
                 'has-update': updates.length > 0,
@@ -216,7 +225,7 @@ async function drop() {
                     </template>
                 </div>
             </template>
-            <template v-if="words.quote">
+            <template v-if="quoteText">
                 <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
             </template>
             <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">

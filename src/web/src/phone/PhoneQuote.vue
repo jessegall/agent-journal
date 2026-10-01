@@ -9,7 +9,9 @@ defineProps({
 
 <template>
     <template v-if="quoted">
-        <a class="turn-quote" href="#" :data-peek="about" :aria-label="`Reply to: ${quoted}`">{{ quoted }}</a>
+        <a class="turn-quote" href="#" :data-peek="about" :aria-label="`Reply to: ${quoted}`">
+            <span class="quote-text">{{ quoted }}</span>
+        </a>
     </template>
     <template v-else-if="about">
         <a class="turn-about" href="#" :data-peek="about">{{ aboutLabel }}</a>
@@ -32,6 +34,17 @@ defineProps({
     font-size: 0.824rem;
     line-height: 1.3;
     text-decoration: none;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+a.turn-quote {
+    display: block;
+}
+
+.quote-text {
+    display: -webkit-box;
+    overflow: hidden;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }

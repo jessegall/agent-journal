@@ -15,6 +15,7 @@ import PhoneFiles from "./PhoneFiles.vue";
 import PhoneReactions from "./PhoneReactions.vue";
 import PhoneMeta from "./PhoneMeta.vue";
 import PhoneOwed from "./PhoneOwed.vue";
+import {EARLIER, IN_CHAT, answered} from "../domain/replies.js";
 import {clock} from "../format/time.js";
 import {kindWord} from "./kinds.js";
 
@@ -32,11 +33,11 @@ const filedAs = computed(
     () => new Set((props.item.sections || []).flatMap((part) => [...part.body.matchAll(FILED_REF)].map((found) => `${found[1]}:${found[2]}`))),
 );
 const filed = computed(() => (props.item.who === "user" ? (props.item.refs || []).filter((ref) => filedAs.value.has(ref)) : []));
-const IN_CHAT = /^(message|comment):/;
 const parent = computed(() =>
     props.item.type === "comment" && !(props.item.refs || []).some((ref) => IN_CHAT.test(ref)) ? (props.item.refs || []).find((ref) => ref.includes(":")) : undefined,
 );
-const about = computed(() => (props.item.who === "user" && !parent.value ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
+const answers = computed(() => answered(props.item));
+const about = computed(() => (props.item.who === "user" && !parent.value && !answers.value ? (props.item.refs || []).find((ref) => !filedAs.value.has(ref)) : undefined));
 const named = (ref) => `${kindWord(ref.split(":")[0])} ${ref.split(":")[1]}`;
 const aboutLabel = computed(() => (about.value ? `About ${named(about.value)}` : ""));
 const parentLabel = computed(() => (parent.value ? named(parent.value) : ""));
@@ -53,7 +54,7 @@ const arriving = computed(() => props.arrive >= 0);
 const inline = computed(() => splitQuote(props.item.brief || props.item.title));
 const arrival = computed(() => (arriving.value ? {"--arrive-delay": `${props.arrive}ms`} : undefined));
 const onlyFiles = computed(() => files.value.length > 0 && (props.item.brief || props.item.title || "").trim() === `Sent ${files.value.join(", ")}`);
-const quoted = computed(() => (about.value ? props.briefs.get(about.value) || "" : ""));
+const quoted = computed(() => (answers.value ? props.briefs.get(answers.value) || EARLIER : ""));
 const emit = defineEmits(["hold"]);
 function pressed(event) {
     if (!holdable.value) return;
@@ -88,7 +89,7 @@ function pressed(event) {
                         Agent, {{ clock(item.created) }}
                     </span>
                 </template>
-                <PhoneQuote :quoted="quoted" :about="about" :about-label="aboutLabel" :inline-quote="inline.quote" />
+                <PhoneQuote :quoted="quoted" :about="answers || about" :about-label="aboutLabel" :inline-quote="inline.quote" />
                 <template v-if="parent">
                     <PhoneParent :target="parent" :label="parentLabel" />
                 </template>
@@ -155,7 +156,7 @@ function pressed(event) {
     color: #fff;
 }
 
-.turn.user :deep(a) {
+.turn.user :deep(a:not(.turn-quote)) {
     color: #fff;
     text-decoration: underline;
 }
