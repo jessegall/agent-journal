@@ -54,15 +54,26 @@ def tidy_files(root: Path, days: float) -> Tidied:
     return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left)
 
 
-def leftovers(root: Path) -> int:
+def stamp(path: Path) -> float:
+    try:
+        return path.stat().st_mtime
+    except OSError:
+        return 0.0
+
+
+def older(paths, age: float) -> list[Path]:
     now = time.time()
-    staged = [d for d in (root / "plugins").glob(".staging-*") if d.is_dir() and now - d.stat().st_mtime > STAGING_FOR]
-    archived = [f for f in (root / "attic").glob("*.tar.gz") if not f.name.startswith("before-") and now - f.stat().st_mtime > ARCHIVES_FOR]
-    unkept = [f for f in (root / "runtime" / "outputs").glob("output-*") if now - f.stat().st_mtime > OUTPUTS_FOR]
-    profiled = sorted(profiles(root).glob("*.txt"), key=lambda f: f.stat().st_mtime, reverse=True)[PROFILES_KEPT:]
-    folds = [f for f in FOLD_CACHE.glob("*.pickle") if now - f.stat().st_mtime > FOLDS_FOR]
+    return [path for path in paths if stamp(path) and now - stamp(path) > age]
+
+
+def leftovers(root: Path) -> int:
+    staged = [d for d in older((root / "plugins").glob(".staging-*"), STAGING_FOR) if d.is_dir()]
+    archived = [f for f in older((root / "attic").glob("*.tar.gz"), ARCHIVES_FOR) if not f.name.startswith("before-")]
+    unkept = older((root / "runtime" / "outputs").glob("output-*"), OUTPUTS_FOR)
+    profiled = sorted(profiles(root).glob("*.txt"), key=stamp, reverse=True)[PROFILES_KEPT:]
+    folds = older(FOLD_CACHE.glob("*.pickle"), FOLDS_FOR)
     for d in staged:
-        shutil.rmtree(d)
+        shutil.rmtree(d, ignore_errors=True)
     for f in archived + unkept + profiled + folds:
         f.unlink(missing_ok=True)
     return len(staged) + len(archived) + len(unkept) + len(profiled) + len(folds)

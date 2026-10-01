@@ -192,6 +192,13 @@ def test_every_listing_answers_the_same_through_a_worker_and_sees_its_writes():
         assert apart == [], "a listing reads the same from a worker as from the server"
         workers.run(["--env", record.env, "--as", USER, "todo", "create", "made in a worker"], record.root)
         assert "made in a worker" in captured(["--env", record.env, "todo", "all"], record.root)[0], "the server sees a worker's write at once"
+        from controllers.types import Messages
+        asked = Messages(record, actor=USER).create("did it land?")
+        polled = record.last_event()
+        workers.run(["--env", record.env, "--as", "agent", "message", "read", str(asked.n)], record.root)
+        assert any(e.type == "message" and e.n == asked.n for e in record.events(since=polled)), "the viewer's poll for events sees a read a worker made"
+        assert "agent" in next(row for row in Messages(record, actor=SYSTEM).summaries() if row["n"] == asked.n)["seen"], \
+            "and the rows it then refreshes carry the read, so the ticks change without a reload"
     finally:
         workers.stop()
         listening.close()

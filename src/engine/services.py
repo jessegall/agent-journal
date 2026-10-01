@@ -16,6 +16,7 @@ PORTS = range(8440, 8500)
 UP, DOWN = "up", "down"
 BLOCKED, FAILED, NOT_NEEDED = "blocked", "failed", "not needed"
 RESTING = (BLOCKED, FAILED, NOT_NEEDED, "stopped", "exited")
+BROKEN = (FAILED, "exited")
 NEEDED_FOR = 600.0
 ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
@@ -103,7 +104,7 @@ def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     if isinstance(wants, int):
         return (wants, "") if free(wants) or status(root, sid).port == wants else (wants, f"port {wants} is in use")
     held = status(root, sid)
-    if held.port and held.port not in taken and (free(held.port) or held.state in ("ready", "starting")):
+    if held.port and held.port not in taken and (free(held.port) or held.state not in BROKEN):
         return held.port, ""
     for port in PORTS:
         if port not in taken and free(port):

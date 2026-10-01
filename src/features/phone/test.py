@@ -1,9 +1,12 @@
 import json
+import subprocess
+import sys
 import threading
 import time
 import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
+from pathlib import Path
 from typing import NamedTuple
 
 import pytest
@@ -90,6 +93,11 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     call(base, "/p/message", {"brief": "Carry on with the tests", "idempotency": "a1"}, key)
     message = Messages(record, actor=SYSTEM).load(made["n"])
     assert message.seen[:1] == [USER] and message.data["via"] == f"phone:{n}", "it is recorded as the user, naming the phone"
+    script = Path(__file__).resolve().parents[2] / "journal.py"
+    subprocess.run([sys.executable, str(script), "--root", str(record.root), "--env", record.env, "--as", AGENT, "message", "read", str(made["n"])],
+                   capture_output=True, timeout=60, check=True)
+    ticked = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
+    assert ticked and "agent" in ticked[0]["seen"], "a read made in another process shows on the phone's next poll, so its ticks change"
     assert len([m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
     upload = lambda n, kind="application/octet-stream": urllib.request.urlopen(urllib.request.Request(
         f"{base}/p/attach/{n}/photo.jpg", b"\xff\xd8picture", {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"},
