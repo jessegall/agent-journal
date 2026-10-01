@@ -53,6 +53,10 @@ class SessionRecord(Loaded):
     grants: tuple = ()
 
     @property
+    def evicted_since_start(self) -> bool:
+        return "at" in self.evicted and self.evicted["at"] > self.since
+
+    @property
     def last_heard(self) -> float:
         return self.seen if self.seen else self.since
 

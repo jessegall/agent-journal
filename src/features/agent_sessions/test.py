@@ -161,6 +161,12 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     monkeypatch.setattr(typist, "live", lambda root: ["claude-1", "claude-2"])
     assert engines.Children(record.root).wanted() == {"main", "feature-x"}, "one engine process per environment with a live agent"
     assert engines.Engines(record.root, "feature-x").mine() == ["claude-2"], "a process runs only its own environment's live agents"
+    from engine import runtime
+    from engine.stored import write_json
+    write_json(runtime.session_file(record.root, "claude-1", "seat.json"), {"at": 1.0, "agent": "claude", "env": "main"})
+    sessions.write("claude-1", environment="")
+    assert engines.Children(record.root).wanted() == {"main", "feature-x"} and sessions.environment("claude-1") == "main", \
+        "a live agent's terminal that lost its environment gets back the one it was seated in, so its engine keeps running"
 
 
 def test_the_start_question_never_offers_a_busy_environment_on_enter():
