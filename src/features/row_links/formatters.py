@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 
@@ -16,9 +17,24 @@ def named(places: tuple = ()) -> tuple[dict[str, str], re.Pattern]:
     names = {spelling: name for name, type_ in TYPES.items() for spelling in (name, type_.details.title.lower()) if spelling}
     spelled = "|".join(sorted(map(re.escape, names), key=len, reverse=True))
     where = "|".join(sorted(map(re.escape, places), key=len, reverse=True)) or r"(?!)"
-    return names, re.compile(rf"(?:\b({where})\s+)?\b({spelled})s?\s+#?(\d+)\b"
-                             r"((?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)#?\d+\b)*)"
-                             rf"(?:\s+in\s+({where})\b)?", re.IGNORECASE)
+    return names, re.compile(rf"(?:\b(?P<place>{where})\s+)?\b(?P<kind>{spelled})s?\s+#?(?P<n>\d+)\b"
+                             r"(?P<more>(?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)#?\d+\b)*)"
+                             rf"(?:\s+in\s+(?P<within>{where})\b)?", re.IGNORECASE)
+
+
+@dataclass(frozen=True)
+class Mention:
+    name: str
+    spelled: str
+    env: str | None
+    numbers: tuple[str, ...]
+
+    @classmethod
+    def of(cls, m: re.Match, names: dict[str, str]) -> "Mention":
+        return cls(names[m["kind"].lower()], m["kind"], m["place"] or m["within"], (m["n"], *re.findall(r"\d+", m["more"])))
+
+    def ref(self, n: str) -> str:
+        return f"{self.name}:{n}" if self.env is None else f"{self.name}:{n}@{self.env}"
 
 
 def environments(record) -> tuple:
@@ -27,11 +43,11 @@ def environments(record) -> tuple:
     return tuple(row["title"] for row in Environments(record, actor=SYSTEM).summaries() if not row["deleted"] and row["title"] != record.env)
 
 
-def exists(record, env: str, name: str, n: int) -> bool:
+def exists(record, env: str | None, name: str, n: int) -> bool:
     from controllers.types import CONTROLLERS
     from engine.record import Record
     from resources.base import SYSTEM
-    return CONTROLLERS[name](Record(record.root, env) if env else record, actor=SYSTEM)._exists(n)
+    return CONTROLLERS[name](record if env is None else Record(record.root, env), actor=SYSTEM)._exists(n)
 
 
 def chipped(text: str, record=None) -> str:
@@ -39,15 +55,13 @@ def chipped(text: str, record=None) -> str:
     names, found = named(places)
 
     def chip(m) -> str:
-        name, env = names[m.group(2).lower()], m.group(1) or m.group(5) or ""
-        numbers = [m.group(3), *re.findall(r"\d+", m.group(4))]
-        if record is not None and not all(exists(record, env, name, int(n)) for n in numbers):
+        said = Mention.of(m, names)
+        if record is not None and not all(exists(record, said.env, said.name, int(n)) for n in said.numbers):
             return m.group(0)
-        ref = lambda n: f"{name}:{n}@{env}" if env else f"{name}:{n}"
-        if len(numbers) == 1:
-            return marked("chip", ref(numbers[0]), m.group(0))
-        chips = [marked("chip", ref(n), f"{m.group(2)} {n}") for n in numbers]
-        there = f" in {env}" if env else ""
+        if len(said.numbers) == 1:
+            return marked("chip", said.ref(said.numbers[0]), m.group(0))
+        chips = [marked("chip", said.ref(n), f"{said.spelled} {n}") for n in said.numbers]
+        there = "" if said.env is None else f" in {said.env}"
         return f"{', '.join(chips[:-1])} and {chips[-1]}{there}"
 
     return found.sub(chip, text)

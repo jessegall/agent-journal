@@ -243,3 +243,12 @@ def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only
     assert (tunnel.LOCAL_BIN.read_bytes(), stat.S_IMODE(tunnel.LOCAL_BIN.stat().st_mode), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == \
         (b"binary", 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"
 
+
+
+def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
+    from features.sharing.page import Page
+    page = Page("/s/key", {"doc:1", "todo:12"})
+    linked = page.refs("See docs 1 and doc 16, to-do 12, 13 and to-do 12 in elsewhere.")
+    assert '<a href="/s/key/doc/1">docs 1</a>' in linked and '<a href="/s/key/todo/12">to-do 12, 13</a>' in linked, \
+        "a row the page holds is linked, however its mention is spelled"
+    assert "doc 16" in linked and "/doc/16" not in linked, "a row outside the page stays text"

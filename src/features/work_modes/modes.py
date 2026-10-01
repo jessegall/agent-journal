@@ -22,7 +22,6 @@ def pick(record, mode: str, actor: str) -> str:
     if mode_of(record) == mode:
         return mode
     record.set_setting(NAME, {**record.setting(NAME, {}), "mode": mode})
-    record.emit("settings", 0, "updated", actor, quiet=True, key=NAME, mode=mode)
     Nudges(record, actor=actor)._to_primary(f"the user set the work mode to {mode}", f"From now on {MODES[mode]}.")
     return mode
 

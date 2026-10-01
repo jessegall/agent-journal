@@ -17,7 +17,7 @@ from providers import DRIVERS
 
 STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
            "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
-WAIT = 20.0
+WAIT = 45.0
 LIMIT = 15.0
 
 

@@ -195,12 +195,12 @@ def elsewhere(root: Path) -> str:
     if not was.pid or was.pid == os.getpid() or not alive(was.pid):
         return ""
     until = time.time() + RESTARTING
-    while time.time() < until:
+    while time.time() < until and alive(was.pid):
         reply = identity(was.url, timeout=0.2)
         if reply is not None and reply.serves(root):
             return was.url if reply.version == version() else ""
         time.sleep(0.2)
-    return was.url
+    return was.url if alive(was.pid) else ""
 
 
 def start(root: Path, project: Path) -> str:

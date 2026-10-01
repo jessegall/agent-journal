@@ -36,6 +36,7 @@ const emit = defineEmits(["pick"]);
     color: var(--text-3);
     font: inherit;
     font-size: 12px;
+    white-space: nowrap;
     cursor: pointer;
 }
 

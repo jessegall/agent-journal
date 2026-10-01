@@ -58,6 +58,7 @@ function placed() {
 const closed = () => emit("close");
 
 onMounted(() => {
+    window.getSelection()?.removeAllRanges();
     cloned();
     if (props.source) props.source.style.visibility = "hidden";
     window.addEventListener("resize", closed);
@@ -123,6 +124,9 @@ onUnmounted(() => {
     inset: 0;
     z-index: 20;
     max-width: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .hold-backdrop {

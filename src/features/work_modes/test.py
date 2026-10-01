@@ -1,7 +1,7 @@
 import features
 from controllers.types import Agents, Nudges, Works
 from features.session_briefing.start import start_block
-from features.work_modes.modes import mode_of, pick
+from features.work_modes.modes import NAME, mode_of, pick
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from runner.hooks import handle
@@ -28,7 +28,7 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     pick(record, "orchestrator", USER)
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
     assert len(told(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
-    assert [e.data["mode"] for e in record.events() if e.type == "settings"] == ["orchestrator"], "the viewer hears the change and follows it"
+    assert NAME in [e.data.get("setting") for e in record.events()], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
     assert len(told(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
 

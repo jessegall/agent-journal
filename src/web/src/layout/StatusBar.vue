@@ -440,4 +440,22 @@ async function runBar(p) {
     margin: 3px 0;
     background: rgba(255, 255, 255, 0.14);
 }
+
+@media (max-width: 640px) {
+    .statusbar {
+        flex-wrap: wrap;
+        height: auto;
+        row-gap: 8px;
+        padding: 8px 14px;
+    }
+
+    .statusbar-tools {
+        flex: 1 0 100%;
+        justify-content: space-between;
+    }
+
+    .statusbar-tools::before {
+        display: none;
+    }
+}
 </style>

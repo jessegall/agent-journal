@@ -90,5 +90,7 @@ def describe() -> dict:
 
 def passed(event, record) -> None:
     from features.base import rebooted
-    if event.type in CHANGE_SWITCHES:
+    if event.data.get("setting"):
+        record.reread_settings()
+    elif event.type in CHANGE_SWITCHES:
         rebooted(event, record)

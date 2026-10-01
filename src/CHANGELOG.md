@@ -4,6 +4,34 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.210.0 — the viewer fits a phone
+
+**The viewer fits a phone's width.** At 390px nothing scrolls sideways: the status bar wraps onto
+two rows, the crumbs keep only the environment, and the work mode switch never breaks a word.
+
+**The phone's long-press menu never selects text.** Pressing a bubble to react no longer grabs the
+emoji row as text under iOS's Copy and Look Up bar.
+
+**The demo has a Phone view**, which plays it in a phone-sized frame beside the desktop view.
+
+**The top of the Board page is three flush bands, in Home's style.** A tab row with the board tabs,
+the filter, Show done cards and New work; a run bar with the run's state, the agents at work (two
+chips, then +N more), one waiting count, an agent meter that opens the limit, and one control; and
+a quiet goal line that opens its done-when points. On a phone the lanes switch one at a time.
+
+**The phone shows the plan that runs.** A strip under the header names the plan, its phase and how
+many of its to-dos are done, and folds while you type. A plan waiting at a checkpoint turns amber
+with a Continue button, and one tap opens every phase with its to-dos.
+
+**Sharing and exporting a document that names a row works again.** A mention such as "docs 1" or
+"to-do 12, 13" crashed every share page and the phone's download.
+
+**Settings are read once.** A settings change raises one event that every process and the viewer
+hear, so nothing checks the settings file on every call.
+
+**A journal that heals from a broken build starts the good one at once.** It no longer waits on a
+server that has already died.
+
 ## 2.209.0 — tickets run on their provider; a demo that plays; auto mode never asks
 
 **A ticket drafted by a subagent starts again.** A ticket keeps the provider that runs it in a field
