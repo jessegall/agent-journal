@@ -307,10 +307,15 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
             mark.unlink(missing_ok=True)
 
 
+def installed_here(root: Path, package: Path = PACKAGE) -> bool:
+    built = package.suffix == ".pyz" and package.parent == root.resolve()
+    return built or package in (root.resolve(), code(root).resolve())
+
+
 def upgrading(project: Path, root: Path) -> list[str]:
     done = [line for line in [keep_copy(root)] if line]
     source, temporary, newest = PACKAGE, None, ""
-    reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve(), (root / ARCHIVE).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
+    reloaded = installed_here(root) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
     if reloaded:
         newest = released(os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY))
         temporary = Path(tempfile.mkdtemp())
