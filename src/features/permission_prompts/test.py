@@ -37,6 +37,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert launch_args(typed, "claude", []) == ["--dangerously-skip-permissions"], "so the next launch carries it by itself"
     assert launch_args(fresh(), "claude", []) == ["--dangerously-skip-permissions"], "a project that never set the switch runs without prompts"
     off = fresh()
+    off.set_setting("features", {"work_tracking.auto": False})
     off.set_setting("permission_prompts", {"skip": False})
     assert launch_args(off, "claude", ["--model", "opus"]) == ["--model", "opus"], "switched off in Settings, no flag is added"
     codex = DRIVERS["codex"]

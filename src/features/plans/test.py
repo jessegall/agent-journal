@@ -29,6 +29,7 @@ class Env:
 def env(tmp_path_factory):
     root = tmp_path_factory.mktemp("advance") / ".journal"
     record = Record(root, "t")
+    record.features = {"work_tracking.auto": False}
     todos = Todos(record, actor=USER)
     rows = [todos.create(t).n for t in ("one", "two", "three", "four", "five")]
     by_agent = Plans(record, actor=AGENT)
@@ -118,7 +119,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto_todos.complete(a, "done")
     assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.events() if e.type == "plan"][-1].data["passed"]) == \
         ("active", 2, True), "with auto on, a checkpoint phase complete moves straight on, and the event says it was passed"
-    auto.features = {"auto": False}
+    auto.features = {"work_tracking.auto": False}
     quick.phase(run.n, "Late gate", checkpoint=True)
     quick.phase(run.n, "Last")
     c, d = auto_todos.create("third").n, auto_todos.create("fourth").n

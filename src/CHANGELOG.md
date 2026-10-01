@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.215.0 — auto mode on everywhere; Hands-on is now Builder
+
+**Auto mode is on by default**, and this upgrade switches it on in every environment that had it
+off: the agent works through the ready to-dos without stopping to ask. Switch it off per
+environment in the status bar.
+
+**The Hands-on work mode is now called Builder**: the agent builds the work itself and sends
+helpers when a job is better done beside it. Environments set to hands-on move over by themselves.
+
 ## 2.214.0 — sequences cost fewer calls, and skills come by subject
 
 **Running the command a step names takes the step up.** An agent no longer has to follow a step

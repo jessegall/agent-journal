@@ -1,6 +1,6 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
-from features.work_modes.modes import HANDS_ON, NAME
+from features.work_modes.modes import BUILDER, NAME
 
 
 class WorkModesDetails(FeatureDetails):
@@ -10,12 +10,12 @@ class WorkModesDetails(FeatureDetails):
     title = "Work modes"
 
     abstract = """
-        How the agent works in this environment: hands-on, as orchestrator sending helpers, or solo
+        How the agent works in this environment: as builder, as orchestrator sending helpers, or solo
         with no helpers at all
     """
 
     help = """
-        Pick the mode from the status chip on the phone or the agent bar on the desktop. Hands-on,
+        Pick the mode from the status chip on the phone or the agent bar on the desktop. Builder,
         the default: the agent does the work and sends helpers when a job is better done beside it.
         Orchestrator: the agent plans, sends helpers and subagents, reviews and merges, and writes
         code itself only for reviews and small fixes; it is reminded when it drifts into writing a
@@ -26,8 +26,8 @@ class WorkModesDetails(FeatureDetails):
     settings = [
         Setting(
             name="mode",
-            default=HANDS_ON,
-            title="How the agent works: hands-on, orchestrator or solo",
+            default=BUILDER,
+            title="How the agent works: builder, orchestrator or solo",
         ),
         Setting(
             name="drift_after",
