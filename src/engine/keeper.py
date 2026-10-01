@@ -155,7 +155,9 @@ def watch(spec: ServiceSpec, child, lifeline: int, stopping) -> str:
 
 def main(argv: list[str]) -> int:
     lifeline, spec_path = int(argv[0]), Path(argv[1])
-    spec = read_json(spec_path, ServiceSpec.from_json, ServiceSpec.from_json({}))
+    spec = read_json(spec_path, ServiceSpec.from_json, None)
+    if spec is None:
+        sys.exit(f"no service spec at {spec_path}")
     held = lease(spec)
     if not held:
         return TAKEN
