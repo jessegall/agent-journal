@@ -54,7 +54,7 @@ function dismiss() {
 async function upgrade(always = false) {
     running.value = true;
     try {
-        if (always) await api.saveSettings({features: {"auto_update.install": true}});
+        if (always) await api.saveSettings({features: {auto_update: true}});
         await api.update();
         lines.value = [`Installing ${upstream.value.latest}; this page reloads once it runs`];
     } catch (e) {

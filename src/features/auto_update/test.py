@@ -7,14 +7,16 @@ from types import SimpleNamespace
 import features.auto_update.check as updates
 from engine.heal import ledger
 from engine.stored import write_json
+from controllers.types import Features
 from features import load
+from resources.base import SYSTEM
 from tests.conftest import fresh
 
 
 def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
     load()
     record = fresh()
-    record.set_setting("features", {**record.setting("features", {}), "auto_update.install": False})
+    Features(record, actor=SYSTEM).switch("auto_update", False)
     record.set_setting("triggers", {"auto_update": {"every": 0, "unit": "minutes"}})
     sent = []
     check = updates.UpdateCheck(SimpleNamespace(record=record, driver=SimpleNamespace(send=sent.append)))
@@ -137,11 +139,12 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.parent.mkdir(parents=True, exist_ok=True) or cache.write_text("99.0.0"))
     monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or ["package refreshed"])
     monkeypatch.setattr(launch.os, "execv", lambda python, argv: ran.append("started again"))
+    Features(record, actor=SYSTEM).switch("auto_update", False)
     launch.latest_first(record)
-    assert ran == [], "installing is off by default: the launch leaves the newer version to the banner"
-    record.set_setting("features", {**record.features, "auto_update.install": True})
+    assert ran == [], "with auto-update off, the launch leaves the newer version to the banner"
+    Features(record, actor=SYSTEM).switch("auto_update", True)
     launch.latest_first(record)
-    assert ran == ["upgrade", "started again"], "with install on, a newer published version is installed, then the launch starts again on it"
+    assert ran == ["upgrade", "started again"], "with auto-update on, a newer published version is installed, then the launch starts again on it"
     ran.clear()
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"

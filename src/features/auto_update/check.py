@@ -88,7 +88,7 @@ class UpdateCheck:
         root = Path(record.root)
         self.checked_at = time.time() - (every - REFETCH_WAIT if stale(root) else 0)
         installed, latest = version(), upstream(root)
-        if not feature.on(record) or not newer(latest, installed):
+        if not newer(latest, installed):
             return ""
         if refused(root, latest):
             if first_refusal(root, latest):
@@ -96,7 +96,7 @@ class UpdateCheck:
             return ""
         if not claimed(root, latest):
             return ""
-        if feature.on(record, "install") and not journal_repository(root.parent):
+        if feature.on(record) and not journal_repository(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
             return f"installing {latest}"
         self.tell(feature, "newer", latest=latest, installed=installed)

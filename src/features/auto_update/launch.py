@@ -48,7 +48,7 @@ def latest_first(record) -> str:
         return ""
     try:
         notice = repaired(record)
-        if not feature or not feature.on(record, "install"):
+        if not feature or not feature.on(record):
             return notice
         cache = root / "runtime" / "upstream.cache"
         fetched(cache)

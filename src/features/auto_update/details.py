@@ -1,5 +1,5 @@
 from features.trigger import MINUTES, Trigger
-from features.base import Behaviour, FeatureDetails, Line
+from features.base import FeatureDetails, Line
 
 
 class UpdatesDetails(FeatureDetails):
@@ -18,11 +18,11 @@ class UpdatesDetails(FeatureDetails):
         the one installed, and a launch checks once before the agent starts, so updates keep
         coming while the server is down.
 
-        Install is off by default: Home then shows a banner when a newer release is out, with
-        Update and Update and turn on auto-update. With install on, the newest release is installed in the background, one install per
+        With auto-update on, the newest release is installed in the background, one install per
         journal at a time, and the session reloads itself. A failed install is filed as a notice
-        and tried again after 30 minutes, then 2 hours, then 6; with install off you are told to
-        run journal upgrade. The journal's own repository never installs itself.
+        and tried again after 30 minutes, then 2 hours, then 6. With it off, Home shows a banner
+        when a newer release is out, with Update and Update and turn on auto-update, and the agent
+        is told to run journal upgrade. The journal's own repository never installs itself.
 
         A build that cannot start its worker or its server is set aside: the journal goes
         back to the last build that worked.
@@ -35,14 +35,6 @@ class UpdatesDetails(FeatureDetails):
 
     trigger = Trigger(every=5, unit=MINUTES)
 
-    behaviours = [
-        Behaviour(
-            name="install",
-            title="Install a newer version by itself",
-            abstract="Off, Home shows a banner when a newer version is out, and the agent is told to run journal upgrade",
-            default=False,
-        ),
-    ]
 
     lines = [
         Line(
