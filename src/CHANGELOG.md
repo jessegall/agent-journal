@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.219.0 — every working agent names its model
+
+**Every card in Agents at work names its agent's model** beside what it is doing, for ticket agents
+and helpers as for subagents.
+
+**`journal board ideas` takes its ideas as words**; it read them as numbers before.
+
 ## 2.218.0 — New work ends in cards
 
 **The board's agent writes cards, never anything else.** The subagent filling a board may write
