@@ -162,11 +162,25 @@ def alias(project: Path, root: Path) -> Path:
     f.write_text(launcher(sys.executable, root / "journal.py", root))
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
-    if bin_.is_dir():
-        shim = bin_ / "journal"
-        shim.write_text(SHIM.replace("__ASKS__", asks()))
-        shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
+    bin_.mkdir(parents=True, exist_ok=True)
+    shim = bin_ / "journal"
+    shim.write_text(SHIM.replace("__ASKS__", asks()))
+    shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
+
+
+ON_PATH = "# agent-journal: the journal command"
+
+
+def put_on_path(bin_: Path) -> str:
+    if str(bin_) in os.environ.get("PATH", "").split(os.pathsep):
+        return ""
+    shell = Path(os.environ.get("SHELL", "")).name
+    profile = Path.home() / {"zsh": ".zshrc", "bash": ".bash_profile"}.get(shell, ".profile")
+    if ON_PATH not in (profile.read_text() if profile.is_file() else ""):
+        with profile.open("a") as written:
+            written.write(f'\n{ON_PATH}\nexport PATH="$HOME/.local/bin:$PATH"\n')
+    return f"{bin_} added to your PATH in {profile}: open a new terminal, then type journal"
 
 
 def install(project: Path, root: Path | None = None) -> list[str]:
@@ -205,6 +219,9 @@ def configure(project: Path, root: Path) -> list[str]:
     if written:
         done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
+    told = put_on_path(Path.home() / ".local" / "bin")
+    if told:
+        done.append(told)
     return done
 
 

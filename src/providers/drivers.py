@@ -1,12 +1,13 @@
 import os
 import re
+import shutil
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
 from engine import typist
-from resources.base import SYSTEM
+from resources.base import SYSTEM, Refused
 from engine.wording import counted
 from engine import runtime
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
@@ -47,6 +48,8 @@ class Driver(ABC):
     WORKTREES: tuple = ()
     EXIT = ""
     MOVE_TO_BACKGROUND = b""
+    HOMES: tuple = ("~/.local/bin", "/opt/homebrew/bin", "/usr/local/bin", "~/.npm-global/bin", "~/.bun/bin")
+    PRODUCT = ""
     QUEUED = b""
     RUNNING = b""
     SEND_NOW = b""
@@ -74,6 +77,14 @@ class Driver(ABC):
 
     @abstractmethod
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]: ...
+
+    @classmethod
+    def binary(cls, path: str) -> str:
+        homes = (Path(home).expanduser() / cls.name for home in cls.HOMES)
+        found = shutil.which(cls.name, path=path) or next((str(home) for home in homes if home.is_file() and os.access(home, os.X_OK)), "")
+        if not found:
+            raise Refused(f"the {cls.name} command was not found on this computer: install {cls.PRODUCT}, or put {cls.name} on your PATH")
+        return found
 
     @classmethod
     def launch_args(cls, args: list[str], automatic: bool = False) -> list[str]:

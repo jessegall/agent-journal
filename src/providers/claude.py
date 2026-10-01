@@ -572,6 +572,8 @@ def claude_state() -> Path:
 
 
 class ClaudeDriver(Driver):
+    HOMES = ("~/.claude/local", *Driver.HOMES)
+    PRODUCT = "Claude Code"
     DISPLAY_HOOK = True
     SHELL = "!"
     INPUT_MARK = "❯".encode()

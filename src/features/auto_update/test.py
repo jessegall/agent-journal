@@ -58,7 +58,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert stubborn.poll() is not None and time.time() - began < 5, "an agent that ignores the polite signals is still stopped, so a restart never hangs"
 
 
-def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path):
+def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path, monkeypatch):
     import subprocess
     import sys
     from install import launcher
@@ -73,6 +73,16 @@ def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_pa
     (tmp_path / ".journal" / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:9/\n")
     ran = subprocess.run(["sh", str(shim), "todo", "all"], capture_output=True, text=True, timeout=20)
     assert (ran.stdout.strip(), ran.stderr) == ("ran", ""), "a fresh heartbeat but no server answering, as during a restart: it falls through too"
+    from install import ON_PATH, put_on_path
+    home = tmp_path / "home"
+    (home / ".local" / "bin").mkdir(parents=True)
+    for name, value in (("HOME", str(home)), ("SHELL", "/bin/bash"), ("PATH", "/usr/bin:/bin")):
+        monkeypatch.setenv(name, value)
+    told = put_on_path(home / ".local" / "bin")
+    put_on_path(home / ".local" / "bin")
+    profile = (home / ".bash_profile").read_text()
+    assert "open a new terminal" in told and profile.count(ON_PATH) == 1 and 'export PATH="$HOME/.local/bin:$PATH"' in profile, \
+        "a journal command off the PATH puts its folder on the PATH once, in the shell's own profile, and says so"
 
 
 def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_passes_nothing(tmp_path):

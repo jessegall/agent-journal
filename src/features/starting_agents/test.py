@@ -23,3 +23,18 @@ def test_a_message_wakes_the_environments_last_conversation_when_no_agent_runs(m
     assert started == [(record.env, "codex", "bea86f27-last")], "the user's message resumes the environment's last conversation on its provider"
     Messages(record, actor=USER).create("hello again")
     assert len(started) == 1, "a second message while that start is under way starts nothing more"
+
+
+def test_the_agents_command_is_found_where_it_installs_itself_or_refused_in_words(tmp_path, monkeypatch):
+    from providers import DRIVERS
+    from tests.conftest import refused
+    claude = DRIVERS["claude"]
+    home = tmp_path / "local"
+    home.mkdir()
+    monkeypatch.setattr(claude, "HOMES", (str(home),))
+    assert "install Claude Code, or put claude on your PATH" in refused(lambda: claude.binary(str(tmp_path / "empty"))), \
+        "with no claude anywhere, the start is refused in words instead of a traceback"
+    found = home / "claude"
+    found.write_text("#!/bin/sh\n")
+    found.chmod(0o755)
+    assert claude.binary(str(tmp_path / "empty")) == str(found), "a claude off the PATH, where Claude Code installs itself, is found"

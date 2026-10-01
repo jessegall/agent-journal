@@ -82,7 +82,8 @@ def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conv
     from providers import DRIVERS, PROVIDERS
     from engine.record import Record
     driver = DRIVERS[agent]
-    command = driver.command(driver, driver.resumed(shaped_args(Record(root, env), agent, args), conversation), cwd)
+    named = driver.command(driver, driver.resumed(shaped_args(Record(root, env), agent, args), conversation), cwd)
+    command = [driver.binary(os.environ.get("PATH", "")), *named[1:]]
     provider = PROVIDERS[agent]()
     inherited = {name: value for name, value in os.environ.items() if name not in provider.session_markers}
     return {"command": command, "args": args, "launch": LAUNCH, "exit": "" if driver.worktree(args) else driver.EXIT,

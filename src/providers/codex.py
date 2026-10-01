@@ -369,6 +369,7 @@ class Codex(Provider):
 
 
 class CodexDriver(Driver):
+    PRODUCT = "the Codex CLI"
     AUTO_ARGS = ("--approve-for-me",)
     SKIP_ARGS = ("--dangerously-bypass-approvals-and-sandbox",)
     APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
