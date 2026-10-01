@@ -76,6 +76,7 @@ REVISING_THE_DRAFTS = ShippedSequence(
                             "answered, or clear from the start: journal sequence next <this sequence> --about <ref>."),
         ("Change the drafts", "Change only the cards they named: journal ticket update <n> with a new title, --abstract or "
                               "--brief, or delete a card they dropped (journal ticket delete <n> --why \"<their words>\"). "
+                              "Anything new they ask for becomes cards of its own, one per part, never a to-do. "
                               "For a card they asked to add, first raise the count to the total the panel should show: journal "
                               "board expect <board n> <count>, then journal ticket create as in drafting. When they ask you to choose cards for them, check the ones you would keep: journal board pick <board n> \"<ticket>, <ticket>\". When every change is "
                               "made: journal sequence next <this sequence> --about <ref>."),

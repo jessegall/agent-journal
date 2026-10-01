@@ -12,13 +12,9 @@ defineProps({
     stalled: {type: String, default: ""},
     retrying: {type: Boolean, default: false},
     thinking: {type: Array, required: true},
+    ideas: {type: Array, required: true},
 });
 const emit = defineEmits(["example", "unhand", "hand", "retry", "ask-again", "keep", "discard"]);
-const EXAMPLES = [
-    "People sign in before they can change anything",
-    "The board gets slow with many cards",
-    "Show who changed a card and when",
-];
 </script>
 
 <template>
@@ -26,7 +22,7 @@ const EXAMPLES = [
         <SwitchCase :key="row" :value="row">
             <template #chips>
                 <div key="chips" class="row-layer chips">
-                    <template v-for="text in EXAMPLES" :key="text">
+                    <template v-for="text in ideas" :key="text">
                         <Btn small @click="emit('example', text)">{{ text }}</Btn>
                     </template>
                 </div>

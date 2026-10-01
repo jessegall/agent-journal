@@ -53,6 +53,12 @@ class BoardsDetails(FeatureDetails):
             title="Model of the agents that review plans, tickets and the board's goal",
         ),
         Setting(
+            name="ideas_every",
+            default=12,
+            title="Hours between new ideas for New work",
+            abstract="How often the agent thinks up what you might ask for on each board, shown as chips under New work",
+        ),
+        Setting(
             name="orchestrating",
             default=False,
             title="This environment's agent orchestrates its boards",
@@ -61,6 +67,15 @@ class BoardsDetails(FeatureDetails):
     ]
 
     lines = [
+        Line(
+            name="ideas",
+            title="think up what the user might ask for on board {{n}}, {{title}}",
+            brief="""
+                read its goal and cards (journal board show {{n}}), then write 3 to 5 short things the user might ask for
+                next, each one chip of at most 60 characters, in the user's words: journal board ideas {{n}} "<idea>" "<idea>"
+                "<idea>". They replace the board's ideas under New work.
+            """,
+        ),
         Line(
             name="added",
             title="the user added {{count}} cards to board {{n}}, {{title}}",

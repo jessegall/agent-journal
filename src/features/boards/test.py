@@ -53,6 +53,12 @@ def test_a_request_opens_a_session_that_cancel_closes():
         "Retry puts the board back where it stalled and asks for the filler again"
     filler_board = Boards(record, actor=AGENT, agent="board-filler")
     assert "not drafting" in refused(lambda: filler_board.wait(board.n)), "only a board being drafted can wait for the user"
+    from controllers.types import Todos
+    assert "writes cards, never a todo" in refused(lambda: Todos(record, actor=AGENT, agent="board-filler").create("Node cloud editor")), \
+        "the board's agent turns a request into cards, never a to-do"
+    assert "2 to 5" in refused(lambda: filler_board.ideas(board.n, ["Only one"])), "ideas come as a handful of chips"
+    filler_board.ideas(board.n, ["Share by link", "Invite by mail", "Take a share back"])
+    assert boards.load(board.n).ideas == ["Share by link", "Invite by mail", "Take a share back"], "the agent's ideas replace the board's chips"
     filler_board._update_drafting(boards.load(board.n), phase="drafting")
     filler_board.wait(board.n)
     assert boards.load(board.n).drafting["phase"] == "waiting", "the filler says it waits for the user's picks, and no stall is called"

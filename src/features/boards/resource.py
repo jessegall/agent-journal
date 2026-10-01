@@ -32,6 +32,8 @@ class Board(Shape, Resource):
         Field(FLAG, False, name="orchestrator_accepts_waits"),
         Field(FLAG, False, name="orchestrator_confirms_drafts"),
         Field(TEXT, "orchestrator", name="plan_reviewer"),
+        Field(LIST, list, name="ideas"),
+        Field(NUMBER, 0.0, name="ideas_at"),
     ]
     type = "board"
     icon = "board"

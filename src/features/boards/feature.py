@@ -1,7 +1,7 @@
 from features.base import Feature
 from features.boards.controller import Boards
 from features.boards.details import BoardsDetails
-from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards
+from features.boards.handlers import AskForFreshIdeas, MarkQuietFillingStalled, OfferToPlaceAddedCards
 from features.boards.limits import BoardWorkStaysOnTheBoard
 from features.journal import Journal
 from features.sequences.exploration import FILLER
@@ -21,6 +21,7 @@ class BoardsFeature(Feature):
         journal.commands.intercept("create", BoardWorkStaysOnTheBoard())
         journal.events.handler(OfferToPlaceAddedCards())
         journal.events.handler(MarkQuietFillingStalled())
+        journal.events.handler(AskForFreshIdeas())
 
 
 def filler_model(record) -> str:

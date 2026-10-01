@@ -19,6 +19,7 @@ CANCEL_HOLDS = 600
 BUILD_LOG = 40
 SECTION_STATES = ("now", "read", "out", "asked")
 EXPLORING, DRAFTING_PHASE, LOST, WAITING = "exploring", "drafting", "lost", "waiting"
+IDEAS, IDEA = 5, 60
 KNOWS_AT, READY_AT, MOST_TURNS = 4, 5, 5
 
 
@@ -249,6 +250,14 @@ class Boards(Controller):
         board = self._goal_set(board, goal, done)
         board = self._update_drafting(board, phase=phase, score=rated, turns=turns, reading=read)
         return sequences.follow(handed, about=about) if handed else board
+
+    def ideas(self, n: int, ideas: list):
+        kept = [" ".join(str(idea).split()) for idea in ideas if str(idea).strip()]
+        if not 2 <= len(kept) <= IDEAS:
+            raise Refused(f"write 2 to {IDEAS} short ideas, each one thing the user might ask for on this board")
+        if any(len(idea) > IDEA for idea in kept):
+            raise Refused(f"each idea fits one chip: at most {IDEA} characters")
+        return self.update(int(n), ideas=kept, ideas_at=time.time())
 
     def wait(self, n: int):
         board = self._drafting(n)
