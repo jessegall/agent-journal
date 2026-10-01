@@ -25,7 +25,10 @@ class Collections(Controller):
 
     def members(self, n: int) -> list[str]:
         found = []
-        for ref in self.load(n).refs:
+        collection = self.load(n)
+        for ref in collection.refs:
+            if ref == collection.source:
+                continue
             try:
                 row = self._member(ref)
             except Refused:

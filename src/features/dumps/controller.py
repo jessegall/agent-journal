@@ -50,7 +50,7 @@ class Dumps(Controller):
     def _collect(self, dump, refs: list[str]):
         collections = self._collections()
         found = self._collection(dump)
-        collection = collections.load(found) if found else collections.create(dump.title, abstract=f"Everything dump {dump.n} was filed into")
+        collection = collections.load(found) if found else collections.create(dump.title, abstract=f"Everything dump {dump.n} was filed into", source=dump.ref)
         collections.add(collection.n, refs)
         if not found:
             self.link(dump.n, collection.ref)

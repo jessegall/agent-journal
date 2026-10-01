@@ -30,7 +30,7 @@ async function load(ref) {
     }
 }
 
-const refs = computed(() => props.resource.refs || []);
+const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
 watchEffect(() => !props.readOnly && refs.value.filter((ref) => !byRef(ref)).forEach(load));
 
 const members = computed(() =>

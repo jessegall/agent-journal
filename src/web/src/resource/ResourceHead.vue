@@ -8,6 +8,7 @@ import DownloadLink from "./DownloadLink.vue";
 import {isUpdate, updateLabel} from "../domain/updates.js";
 import {age} from "../format/time.js";
 import {peek} from "../route.js";
+import {meta} from "../state/store.js";
 
 const props = defineProps({
     resource: {type: Object, required: true},
@@ -22,6 +23,7 @@ const title = defineModel("title", {type: String, default: ""});
 const emit = defineEmits(["close", "follow", "cancel"]);
 const data = computed(() => props.resource.data || {});
 const template = computed(() => data.value.template || "");
+const source = computed(() => (data.value.source || "").split(":"));
 const chaptered = computed(
     () => props.kind.view === "document" && !["message", "sequence"].includes(props.resource.type) && props.resource.sections.length >= 2
 );
@@ -80,6 +82,12 @@ const chaptered = computed(
             <button type="button" class="from" @click="peek('template', Number(template))">
                 <Icon name="docs" :size="11" />
                 Made from template {{ template }}
+            </button>
+        </template>
+        <template v-if="data.source && !readOnly">
+            <button type="button" class="from" @click="peek(source[0], Number(source[1]))">
+                <Icon :name="meta(source[0]).icon" :size="11" />
+                Came from {{ meta(source[0]).title.toLowerCase() }} {{ source[1] }}
             </button>
         </template>
         <template v-if="editing">

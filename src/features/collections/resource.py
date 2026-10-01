@@ -1,10 +1,13 @@
 from typing import ClassVar
 
-from resources.base import SIDEBAR, Resource, ResourceDetails
+from resources.base import SIDEBAR, Field, Resource, ResourceDetails
 from resources.shapes import Shape
 
 
 class Collection(Shape, Resource):
+    data_fields: ClassVar[list[Field]] = [
+        Field(name="source"),
+    ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Collection",
         abstract="A named collection of any resources that belong together",

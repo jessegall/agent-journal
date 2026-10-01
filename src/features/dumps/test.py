@@ -59,8 +59,9 @@ def test_what_a_dump_files_is_in_the_journal_at_once_and_removing_it_takes_out_o
     doc, task = Docs(record, actor=AGENT).create("The launch"), Todos(record, actor=AGENT).create("book the room")
     agent.filed(dump.n, "text", "a doc and a to-do, and the older doc extended", f"{doc.ref}, {task.ref}, {earlier.ref}", added=task.ref)
     made = collections.load(agent._collection(agent.load(dump.n)))
-    assert collections.members(made.n) == [f"dump {dump.n}  Dump {dump.n}", "doc 2  The launch", "todo 1  book the room", "doc 1  An older doc"], \
+    assert collections.members(made.n) == ["doc 2  The launch", "todo 1  book the room", "doc 1  An older doc"], \
         "the dump's collection holds everything it filed"
+    assert made.source == dump.ref, "the collection names the dump it came from, which is not one of its members"
     assert ([c.n for c in collections.all()], sorted(d.n for d in docs.all()), [t.n for t in todos.all()]) == ([made.n], [earlier.n, doc.n], [task.n]), \
         "what it files is listed at once, with nothing to confirm"
     assert agent.load(dump.n).data["items"]["text"]["added"] == [task.ref], "the agent marks what it wrote without being asked"
