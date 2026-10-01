@@ -89,7 +89,7 @@ class CloseHandled(Handler):
             return
         for message in read_and_open(context.journal):
             results = [*message.refs, *(s[SECTION.body] for s in message.sections)]
-            if results and answered(context.journal, message):
+            if results and answered(context.journal, message) and not context.journal.messages.load(message.n).completed:
                 context.journal.messages.complete(message.n, how=f"handled: {', '.join(dict.fromkeys(results))}")
 
 
