@@ -453,6 +453,11 @@ class Tickets(Prioritised, Controller):
         owner = str(place.owner) if place else ""
         return int(owner.split(":")[1]) if owner.startswith(f"{kind}:") else 0
 
+    def _handed_in(self, ticket) -> bool:
+        from surfaces.agent_state import WORKING_STATE, agent_state
+        working = agent_state(self.record, ticket.work_environment) == WORKING_STATE
+        return self._plan_status(ticket) == "done" and self._clean(ticket) and not working
+
     def _calls(self, ticket) -> list[tuple[str, str, dict, int]]:
         place = Record(self.record.root, ticket.work_environment)
         settings = TicketsDetails.values(self.record)
@@ -463,7 +468,7 @@ class Tickets(Prioritised, Controller):
         messages = Messages(place, actor=SYSTEM)
         written = [messages.load(row["n"]) for row in messages.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
         replies = [("ticket_replied", message.ref, {"text": message.title}, 0) for message in written if message.created > ticket.told]
-        done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)}, soon)] if self._plan_status(ticket) == "done" and self._clean(ticket) else []
+        done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)}, soon)] if self._handed_in(ticket) else []
         return asks + awaits + replies + done
 
     def _waits_on_people(self, text: str) -> bool:
@@ -617,13 +622,18 @@ class Tickets(Prioritised, Controller):
         if session and not self._in_plan_worktree(ticket):
             ask_session(self.record.root, terminal_of(self.record.root, session))
 
-    def move(self, n: int, stage: str):
+    def move(self, n: int, stage: str, model: str | None = None):
         ticket = self.load(n)
         starting = bool(ticket.board) and Boards(self.record, actor=self.actor).load(ticket.board).meanings.get(stage.strip()) == START
         if starting:
             self._confirmed(ticket)
+            self._modelled(ticket, model, f"journal ticket move {ticket.n} \"{stage.strip()}\" --model <model>")
         moved = self.update(ticket.n, stage=stage.strip())
-        return self.start(moved.n) if starting else moved
+        return self.start(moved.n, model=model) if starting else moved
+
+    def _modelled(self, ticket, model: str | None, how: str) -> None:
+        if self.actor == AGENT and model is None and not ticket.model:
+            self._refuse(f"name the model {ticket.ref}'s agent runs on, as every dispatch does: {how}")
 
     def depend(self, n: int, on: int):
         ticket, other = self.load(n), self.load(on)
@@ -685,7 +695,7 @@ class Tickets(Prioritised, Controller):
             self._refuse("say why, as the board's orchestrator: --why \"<reason>\"")
         self.comment(ticket.n, f"{done} as the board's orchestrator: {why.strip()}")
 
-    def start(self, n: int, provider: str | None = None):
+    def start(self, n: int, provider: str | None = None, model: str | None = None):
         from agents.terminal import detached
         from providers import DRIVERS, PROVIDERS
         self._confirmed(self.load(n))
@@ -697,7 +707,8 @@ class Tickets(Prioritised, Controller):
             self._refuse(f"its board works on the branch {into}, which does not exist{where}; make it, or change the board's branch")
         if provider is not None and provider not in DRIVERS:
             self._refuse(f"no provider {provider!r}; one of {', '.join(DRIVERS)}")
-        ticket = self.update(ticket.n, provider=provider or ticket.provider, halted=False)
+        self._modelled(ticket, model, f"journal ticket start {ticket.n} --model <model>")
+        ticket = self.update(ticket.n, provider=provider or ticket.provider, model=model or ticket.model, halted=False)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
             if self._in_plan_worktree(ticket):
@@ -710,7 +721,7 @@ class Tickets(Prioritised, Controller):
             earlier = Sessions(self.record.root).last(place, ticket.provider)
             if earlier and not PROVIDERS[ticket.provider]().conversation_file(earlier):
                 earlier = ""
-            args = driver.within([], place)
+            args = driver.within(["--model", ticket.model] if ticket.model else [], place)
             project = self.record.root.parent
             fresh = not ticket.base
             ticket = self._based(ticket, self._started_at(ticket, into))

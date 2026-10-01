@@ -21,9 +21,11 @@ ORCHESTRATION = ShippedSequence(
                                   "decline_dependencies <n> --why \"<reason>\"; confirm drafts with journal ticket confirm <n> --why "
                                   "\"<reason>\". Accept the waits between the cards now. The user keeps the checkpoints and any change "
                                   "to the board's goal; say so in one line."),
-        ("Start the tickets", "Move every ticket into the board's start stage, in the order they must run: journal ticket move "
-                              "<n> \"<start stage>\". Each agent starts in its own worktree; beyond the running limit, and behind "
-                              "the tickets they wait on, they queue and start as slots free."),
+        ("Start the tickets", "Choose each ticket's model as you would for any dispatch, the least expensive one that does the job "
+                              "well, then move every ticket into the board's start stage in the order they must run: journal ticket "
+                              "move <n> \"<start stage>\" --model <model>. A ticket started without a model is refused. Each agent "
+                              "starts in its own worktree; beyond the running limit, and behind the tickets they wait on, they queue "
+                              "and start as slots free."),
         ("Hand off", "From here this sequence only waits: each moment of a ticket (a plan to review, a checkpoint, finished work, a "
                      "conflict, a ticket sent back twice, a stuck agent) and the board being paused or finished comes as a short "
                      "sequence of its own. When two arrive together, merges go first, since a merge frees a slot. Never start the "
