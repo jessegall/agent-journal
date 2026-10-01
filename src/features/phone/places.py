@@ -65,7 +65,7 @@ class Place:
 
 
 def shown(root: Path) -> tuple[str, ...]:
-    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM)._standing() if not env.helping)
+    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM)._standing() if not env.owner)
 
 
 def running(root: Path) -> bool:

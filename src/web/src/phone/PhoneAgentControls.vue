@@ -1,4 +1,5 @@
 <script setup>
+import PhonePermit from "./PhonePermit.vue";
 import {computed, inject, ref, watch} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import {resetLabel as resets, usedPercent as used} from "../format/usage.js";
@@ -94,6 +95,9 @@ async function act(what) {
 
 <template>
     <div class="controls">
+        <template v-if="running.prompt">
+            <PhonePermit :prompt="running.prompt" />
+        </template>
         <div class="controls-mode">
             <span id="work-mode" class="controls-name">Work mode</span>
             <Segmented class="controls-segments" :options="MODES" :value="mode.key" fill aria-labelledby="work-mode" @pick="pickMode" />
