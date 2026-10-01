@@ -8,15 +8,19 @@ import {useOutside} from "../composables/outside.js";
 import {peek} from "../route.js";
 
 defineProps({board: {type: Object, default: null}, archived: {type: Array, required: true}, anchor: {type: Object, default: null}});
-const emit = defineEmits(["close", "archive", "restore"]);
+const emit = defineEmits(["close", "archive", "restore", "new"]);
 const menu = ref(null);
 useOutside(menu, () => emit("close"));
 </script>
 
 <template>
     <MenuPanel ref="menu" :anchor="anchor" :min-width="210" :max-width="280" @click.stop @close="emit('close')">
+        <MenuItem class="new-board" @click="emit('new')">
+            <Icon name="plus" />
+            New board
+        </MenuItem>
         <template v-if="board">
-            <SectionHeading class="heading">{{ board.title }}</SectionHeading>
+            <SectionHeading class="heading apart">{{ board.title }}</SectionHeading>
             <MenuItem @click="(emit('close'), peek('board', board.n))">Board settings</MenuItem>
             <MenuItem @click="emit('archive', board)">Archive this board</MenuItem>
         </template>
@@ -39,6 +43,22 @@ useOutside(menu, () => emit("close"));
 .heading {
     margin: 6px 8px 2px;
     font-size: 11px;
+}
+
+.new-board {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .new-board {
+        display: flex;
+    }
+
+    .heading.apart {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border-2);
+    }
 }
 
 .archived.apart {

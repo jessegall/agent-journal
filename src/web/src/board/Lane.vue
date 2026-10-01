@@ -9,17 +9,15 @@ import {store} from "../state/store.js";
 import Card from "./Card.vue";
 import {moveEffect, refused} from "./moves.js";
 
-const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, offers: Boolean, adds: Boolean});
-const MEANING_LABELS = {start: "work starts", review: "waits for review"};
+const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, adds: Boolean});
+const MEANING_LABELS = {start: "A card dropped here starts its agent", review: "A card here waits for review"};
 const board = inject("board");
 const drag = useCardDrag();
 const over = ref(false);
 const dragged = computed(() => drag.dragged.value);
 const takes = computed(() => drag.takes(props.lane.key) && !refused(dragged.value, props.meaning));
 const meaningLabel = computed(
-    () =>
-        (dragged.value && dragged.value.lane !== props.lane.key && moveEffect(dragged.value, props.meaning, store.board.slots)) ||
-        MEANING_LABELS[props.meaning]
+    () => (dragged.value && dragged.value.lane !== props.lane.key && moveEffect(dragged.value, props.meaning, store.board.slots)) || ""
 );
 const refuses = computed(() => !!dragged.value && dragged.value.lane !== props.lane.key && !takes.value);
 const proposing = computed(() => props.lane.cards.filter((card) => (card.actions || []).some((a) => a.action === "accept_dependencies")));
@@ -48,7 +46,7 @@ function drop() {
         @dragleave="over = false"
         @drop.prevent="drop"
     >
-        <header class="head">
+        <header class="head" :title="MEANING_LABELS[meaning]">
             <StageDot :meaning="meaning" />
             <span class="title">{{ lane.title }}</span>
             <span class="meaning">{{ meaningLabel }}</span>
@@ -72,10 +70,8 @@ function drop() {
                 <template v-for="card in lane.cards" :key="card.n">
                     <Card :card="card" />
                 </template>
-                <template v-if="adds || offers">
-                    <PlaceholderCard :title="`New work in ${lane.title}`" @click="board.newWork(adds ? lane.key : '')">
-                        + New work
-                    </PlaceholderCard>
+                <template v-if="adds">
+                    <PlaceholderCard :title="`New work in ${lane.title}`" @click="board.newWork(lane.key)">+ New work</PlaceholderCard>
                 </template>
                 <template v-else-if="!lane.cards.length">
                     <p class="none">No cards</p>
