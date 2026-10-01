@@ -236,7 +236,7 @@ function pickPreset(key) {
                             <AgentTodo :resource="todo" @close="todoN = 0" />
                         </template>
                         <template v-else>
-                            <div class="fill scroll padded">
+                            <div class="fill scroll rail-gutter">
                                 <RailTodos @open="loadTodo" />
                             </div>
                         </template>
@@ -365,6 +365,10 @@ function pickPreset(key) {
 
 .padded {
     padding: 12px 16px;
+}
+
+.rail-gutter {
+    --rail-gutter: 16px;
 }
 
 .pane-note {
