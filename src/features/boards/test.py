@@ -2,6 +2,7 @@ import features
 from controllers.types import CONTROLLERS, Messages, Questions
 from features.boards.controller import START_OVER, Boards
 from features.work_modes.modes import mode_of
+from engine.wording import counted
 from tests.kit import Plans
 from features.sequences.controller import Sequences
 from features.sequences.shipped import ship
@@ -170,6 +171,10 @@ def test_the_agent_answers_in_the_new_work_panel_with_board_say():
     boards = Boards(record, actor=USER)
     board = boards.create("Shared Journal")
     made = boards.request(board.n, "I want to share")
+    plain = Messages(record, actor=USER).create("Hello there")
+    arrived = counted({("message", "created"): {made.n: None, plain.n: None}}, record)[0]
+    assert f'answer message {made.n} with journal board say {board.n}' in arrived and f"[!reply:{plain.n}]" in arrived, \
+        "a message from the New work panel says on arrival that it is answered in the panel; a chat message keeps its reply tag"
     agent = Boards(record, actor=AGENT)
     agent.say(board.n, "Three tickets drafted. Pick the ones to keep.")
     assert [c.brief for c in Messages(record, actor=USER).comments(made.n)] == ["Three tickets drafted. Pick the ones to keep."], \

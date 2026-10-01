@@ -126,7 +126,7 @@ def test_a_command_runs_as_the_session_its_own_shell_names_for_every_provider(mo
 
 def values_for(feature, key: str, line) -> dict:
     appended = [p for append in APPENDS.get(f"{feature.name}.{key}", []) for p in inspect.signature(append).parameters.values()
-                if p.default is p.empty and p.kind is p.POSITIONAL_OR_KEYWORD]
+                if p.default is p.empty and p.kind is p.POSITIONAL_OR_KEYWORD and p.name != "record"]
     return {**{p.name: [1] if p.annotation is list else "1" for p in appended}, **{name: "1" for name in line.placeholders()}}
 
 
