@@ -13,5 +13,14 @@
             "typescript",
             "csharp"
         ]
+    },
+    "configure": {
+        "frontend/ComponentBudgetDetector": [
+            {
+                "elements": [
+                    50
+                ]
+            }
+        ]
     }
 }
