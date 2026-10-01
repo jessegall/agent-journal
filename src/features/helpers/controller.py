@@ -32,6 +32,10 @@ class Helpers(Controller):
     resource = Helper
 
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False) -> str:
+        row = self._dispatched(name, job, provider, model, brief, worktree)
+        return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
+
+    def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False):
         from providers import DRIVERS
         if provider not in DRIVERS:
             raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
@@ -52,7 +56,7 @@ class Helpers(Controller):
         driver = DRIVERS[provider]
         start_in(self.record, place, f"Where helper {row.name} works on {job}", row.ref, provider,
                  driver.prompted([*driver.AUTO_ARGS, "--model", model], kickoff(row, folder)), folder)
-        return f"helper {row.n}, {name}, started on {provider} {model} in {folder}; you are told when it reports"
+        return row
 
     def say(self, n: int, text: str) -> str:
         from providers import DRIVERS
