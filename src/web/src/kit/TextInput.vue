@@ -72,15 +72,27 @@ defineExpose({focus: () => input.value && input.value.focus()});
 }
 
 .text-field.ended {
-    height: 36px;
-    padding-right: 4px;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    height: auto;
+    min-height: 36px;
+    padding: 4px 4px 4px 9px;
+}
+
+.text-field.ended .text-field-input {
+    flex: 1 1 140px;
+    height: 26px;
 }
 
 .text-field-end {
-    flex: none;
+    flex: 0 1 auto;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
     gap: 4px;
+    max-width: 100%;
+    margin-left: auto;
 }
 
 .text-field-end :deep(.btn) {
