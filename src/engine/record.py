@@ -10,7 +10,7 @@ from pathlib import Path
 from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
 from engine.state import State
-from engine.stored import held_back, read_json, write_json, write_text
+from engine.stored import append_text, held_back, read_json, write_json, write_text
 
 RESOURCES = "project"
 KEPT_EVENTS = 2000
@@ -101,8 +101,7 @@ class Record:
         def release() -> Event:
             with self.locked():
                 e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=quiet or bus.listening())
-                with (self.home / "events.jsonl").open("a") as fh:
-                    fh.write(json.dumps(asdict(e)) + "\n")
+                append_text(self.home / "events.jsonl", json.dumps(asdict(e)) + "\n")
             if self.memo is not None:
                 self.memo.clear()
             if quiet:

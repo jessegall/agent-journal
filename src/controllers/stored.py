@@ -5,7 +5,7 @@ from bisect import bisect_left
 from dataclasses import dataclass
 from pathlib import Path
 from resources.base import LAZY, MEMORY, OWNER, PART_OF, Refused, Resource
-from engine.stored import read_json, write_json, write_text
+from engine.stored import append_text, read_json, write_json, write_text
 from controllers.marks import internal
 
 DAMAGED = "damaged"
@@ -80,8 +80,7 @@ class Stored:
             os.utime(self._folder())
 
     def _note(self, n: int) -> None:
-        with (self._folder() / CHANGES).open("a") as changes:
-            changes.write(f"{n}\n")
+        append_text(self._folder() / CHANGES, f"{n}\n")
 
     @staticmethod
     def _noted_end(folder: Path) -> int:

@@ -205,11 +205,12 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
     import threading
     import types
     import migrations
-    from engine.stored import write_text
+    from engine.stored import append_text, write_text
     root = tmp_path / ".journal"
     (root / "environments" / "main" / "todo").mkdir(parents=True)
     kept = root / "environments" / "main" / "todo" / "001.md"
     added = root / "environments" / "main" / "todo" / "002.md"
+    events = root / "environments" / "main" / "events.jsonl"
     started = threading.Event()
     writers = []
     kept.write_text("the user's row")
@@ -219,6 +220,7 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
     def breaking(r):
         def writing():
             started.set()
+            append_text(events, "an event emitted while migrating\n")
             write_text(added, "written while migrating")
         writer = threading.Thread(target=writing)
         writers.append(writer)
@@ -236,7 +238,8 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
         pass
     writers[0].join(timeout=1)
     left = lambda: list(root.glob(f".{migrations.BACKUP}-*"))
-    assert (kept.read_text(), added.read_text(), migrations.applied(root), left()) == ("the user's row", "written while migrating", {}, []), \
+    assert (kept.read_text(), added.read_text(), events.read_text(), migrations.applied(root), left()) == \
+           ("the user's row", "written while migrating", "an event emitted while migrating\n", {}, []), \
         "a failed migration restores its backup before a waiting record write lands"
     monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch"])
     assert migrations.run(root) == ["m9998_touch"] and not left(), "a run that succeeds deletes its backup"

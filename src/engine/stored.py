@@ -12,6 +12,7 @@ UNDO = threading.local()
 MIGRATIONS = ContextVar("migrations", default=())
 MIGRATION_LOCK = ".migrations.lock"
 LOCK_WAIT = 30.0
+RUNTIME = "runtime"
 T = TypeVar("T")
 
 
@@ -55,45 +56,73 @@ def journal_roots(path: Path) -> tuple[Path, ...]:
     return tuple(parent for parent in path.parents if parent.name == ".journal")
 
 
-@contextmanager
-def record_lock(root: Path, operation: int):
-    root.mkdir(parents=True, exist_ok=True)
-    lock = root / MIGRATION_LOCK
+SHARED: dict[Path, tuple] = {}
+SHARING = threading.Lock()
+
+
+def shared_lock(root: Path) -> tuple:
+    with SHARING:
+        if root not in SHARED:
+            root.mkdir(parents=True, exist_ok=True)
+            SHARED[root] = ((root / MIGRATION_LOCK).open("a"), threading.Lock())
+        return SHARED[root]
+
+
+def waited(held, operation: int) -> None:
     deadline = time.monotonic() + LOCK_WAIT
-    with lock.open("a") as held:
-        while True:
-            try:
-                fcntl.flock(held, operation | fcntl.LOCK_NB)
-                break
-            except BlockingIOError as error:
-                if time.monotonic() >= deadline:
-                    raise TimeoutError(lock) from error
-                time.sleep(0.05)
+    while True:
+        try:
+            fcntl.flock(held, operation | fcntl.LOCK_NB)
+            return
+        except BlockingIOError as error:
+            if time.monotonic() >= deadline:
+                raise TimeoutError(held.name) from error
+            time.sleep(0.05)
+
+
+@contextmanager
+def hold_record_writes(root: Path):
+    root = Path(root)
+    root.mkdir(parents=True, exist_ok=True)
+    with (root / MIGRATION_LOCK).open("a") as held:
+        waited(held, fcntl.LOCK_EX)
+        token = MIGRATIONS.set((*MIGRATIONS.get(), root))
+        try:
+            yield
+        finally:
+            MIGRATIONS.reset(token)
+            fcntl.flock(held, fcntl.LOCK_UN)
+
+
+def guarded(path: Path, roots: tuple[Path, ...]) -> bool:
+    return bool(roots) and roots[0] not in MIGRATIONS.get() and path.relative_to(roots[0]).parts[0] != RUNTIME
+
+
+@contextmanager
+def writing(path: Path):
+    roots = journal_roots(path)
+    if not guarded(path, roots):
+        yield
+        return
+    held, guard = shared_lock(roots[0])
+    with guard:
+        waited(held, fcntl.LOCK_SH)
         try:
             yield
         finally:
             fcntl.flock(held, fcntl.LOCK_UN)
 
 
-@contextmanager
-def hold_record_writes(root: Path):
-    root = Path(root)
-    with record_lock(root, fcntl.LOCK_EX):
-        token = MIGRATIONS.set((*MIGRATIONS.get(), root))
-        try:
-            yield
-        finally:
-            MIGRATIONS.reset(token)
-
-
 def write_text(path: Path, text: str) -> None:
     path = Path(path)
-    roots = journal_roots(path)
-    if not roots or roots[0] in MIGRATIONS.get():
+    with writing(path):
         write_unlocked(path, text)
-        return
-    with record_lock(roots[0], fcntl.LOCK_SH):
-        write_unlocked(path, text)
+
+
+def append_text(path: Path, text: str) -> None:
+    path = Path(path)
+    with writing(path), path.open("a") as appended:
+        appended.write(text)
 
 
 def write_unlocked(path: Path, text: str) -> None:
