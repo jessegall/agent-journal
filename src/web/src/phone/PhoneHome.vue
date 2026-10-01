@@ -28,6 +28,7 @@ import {useBubbles} from "./bubbles.js";
 import PhoneHomeBar from "./PhoneHomeBar.vue";
 import PhoneHomeOlder from "./PhoneHomeOlder.vue";
 import PhoneHomeSending from "./PhoneHomeSending.vue";
+import PhoneAtWork from "./PhoneAtWork.vue";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
@@ -55,6 +56,7 @@ const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const listing = ref(false);
 const agentOpen = ref(false);
+const atWorkOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
 const pages = ref([]);
 const direction = ref("push");
@@ -560,7 +562,7 @@ function pick(key) {
         ref="stack"
         :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]"
         :style="stackStyle"
-        :inert="Boolean(picking || held || listing || agentOpen)"
+        :inert="Boolean(picking || held || listing || agentOpen || atWorkOpen)"
     >
         <div
             :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']"
@@ -577,6 +579,7 @@ function pick(key) {
                 :actions-here="actionsHere"
                 @places="picking = true"
                 @agent="agentOpen = true"
+                @at-work="atWorkOpen = true"
                 @reload="reload"
                 @open="open"
                 @list="listing = true"
@@ -717,6 +720,15 @@ function pick(key) {
             @changed="refresh()"
             @close="agentOpen = false"
             @started="((agentOpen = false), refresh())"
+        />
+    </template>
+    <template v-if="atWorkOpen">
+        <PhoneAtWork
+            :environment="connection.environment"
+            :live="feed.running || {}"
+            @changed="refresh()"
+            @read="open"
+            @close="atWorkOpen = false"
         />
     </template>
     <template v-if="listing">

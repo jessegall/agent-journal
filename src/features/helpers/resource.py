@@ -18,6 +18,7 @@ class Helper(Shape, Resource):
         Field(default="", name="environment"),
         Field(default="", name="worktree"),
         Field(default="", name="report"),
+        Field(default=False, name="stopped_by_user"),
     ]
     type = HELPER
     icon = "bot"

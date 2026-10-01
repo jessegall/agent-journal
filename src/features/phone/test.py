@@ -16,6 +16,7 @@ from controllers.base import Controller
 from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
 from features.phone.controller import SAID, Phones
+from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
 from features.sharing.server import ShareHandler
 from features.sharing.services import wanted
@@ -283,17 +284,43 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
+    now = time.time()
+    CONTROLLERS["agent"](record, actor=SYSTEM).create(
+        "codex-1",
+        status="working",
+        at=now,
+        thoughts=[{"at": now, "text": "Weighing it"}],
+        cards=[{"at": now, "label": "Agent committed abc1234", "icon": "commit"}],
+        subagent_rows=[{"id": "sub-1", "session": "session-1", "task": "Check the phone feed", "type": "Explore", "model": "haiku",
+                        "at": now, "running": True, "tool": "Read", "file": "src/features/phone/controller.py"}],
+    )
+    helper = Helpers(record, actor=SYSTEM).create("Split the phone view", name="Rhea", provider="codex", model="gpt-5-codex",
+                                                  environment=f"{record.env}-rhea")
+    from controllers.types import Environments
+    Environments(record, actor=SYSTEM).create(helper.environment, owner=helper.ref, launched_from=record.env)
+    helper_record = Record(record.root, helper.environment)
+    todo = Todos(helper_record, actor=SYSTEM).create(helper.title)
+    CONTROLLERS["work"](helper_record, actor=SYSTEM).create(helper.title, todo=todo.n)
+    CONTROLLERS["agent"](helper_record, actor=SYSTEM).create("codex-rhea", status="working", at=now, started=now - 60,
+                                                             tool="Edit", file="src/web/src/phone/PhoneHome.vue")
+    from surfaces.summary import summarize
+    monkeypatch.setattr(controller, "lately_summarized", summarize)
     fed = call(base, "/p/feed", key=key).body
     assert fed["agent"] == "offline", "the phone sees no agent running"
     assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"
-    now = time.time()
-    CONTROLLERS["agent"](record, actor=SYSTEM).create("codex-1", thoughts=[{"at": now, "text": "Weighing it"}],
-                                                       cards=[{"at": now, "label": "Agent committed abc1234", "icon": "commit"}])
-    shown = {item["type"]: item.get("label") for item in call(base, "/p/feed", key=key).body["items"] if item["type"] in ("thought", "card")}
-    assert shown.get("thought") == "Weighing it" and shown.get("card", "").startswith("Agent committed"), "the agent's thoughts and chat marks reach the phone"
+    shown = [(item["type"], item.get("label", "")) for item in fed["items"]]
+    assert ("thought", "Weighing it") in shown and any(kind == "card" and label.startswith("Agent committed") for kind, label in shown), \
+        "the agent's thoughts and chat marks reach the phone"
     assert call(base, "/p/stop", {}, key).status == 422 and call(base, "/p/pause", {}, key).status == 422, "with no agent running there is nothing to stop or pause"
     running = call(base, "/p/feed", key=key).body["running"]
     assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"
+    assert running["helpers"][0]["state"] == "working" and running["helpers"][0]["todo"]["n"] == todo.n, \
+        "the feed gives the phone a helper's state, current work and to-do"
+    assert running["subagents"][0]["id"] == "sub-1" and running["subagents"][0]["state"] == "working", \
+        "the feed gives the phone the current environment's subagents"
+    detail = call(base, f"/p/helper?n={helper.n}", key=key)
+    assert detail.status == 200 and detail.body["todo"]["title"] == helper.title and detail.body["running"], \
+        "the phone can open a helper from the environment that launched it"
     from engine.sessions import Sessions
     from surfaces.agent_state import agent_state
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
@@ -302,9 +329,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     Sessions(record.root).write("d2c1c997-real", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
     assert agent_state(record, record.env) == "working", "an older launch record of the same agent never hides the session that reports"
     Sessions(record.root).write("d2c1c997-real", environment="")
-    from controllers.types import Environments
     from features.phone.places import shown
-    Environments(record, actor=SYSTEM).create(f"{record.env}-rhea", owner="helper:1", launched_from=record.env)
     assert f"{record.env}-rhea" not in shown(record.root), "a helper's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \

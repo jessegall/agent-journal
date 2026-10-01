@@ -197,7 +197,7 @@ class PhoneRoutes:
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/", **APP_HEADERS})
-        if rest[:1] in (["state"], ["feed"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"], ["export"]):
+        if rest[:1] in (["state"], ["feed"], ["helper"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"], ["export"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)
@@ -261,6 +261,14 @@ class PhoneRoutes:
                 return self.json(handler, 200, {**self.phones(handler)._feed(phone, float(before)), "build": built()})
             except ValueError:
                 return handler.answer(400, "before is a time in seconds")
+        if rest == ["helper"]:
+            asked = parse_qs(urlsplit(handler.path).query).get("n", [""])[0]
+            if not asked.isdigit():
+                return handler.answer(400, "a helper number is required")
+            try:
+                return self.json(handler, 200, self.phones(handler)._helper(phone, int(asked)))
+            except Refused as refused:
+                return handler.answer(404, str(refused))
         if rest == ["bar"]:
             return self.json(handler, 200, self.phones(handler)._bar(phone))
         if len(rest) == 3:

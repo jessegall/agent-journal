@@ -5,8 +5,6 @@ import {resetLabel as resets, usedPercent as used} from "../format/usage.js";
 import Spinner from "../kit/Spinner.vue";
 import Segmented from "../kit/Segmented.vue";
 import {MODES, modeOf} from "../domain/modes.js";
-import {helperState} from "../domain/helpers.js";
-import PhoneHelpers from "./PhoneHelpers.vue";
 import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
 
@@ -17,25 +15,7 @@ const props = defineProps({
     environment: {type: String, required: true},
 });
 const helpers = computed(() => props.running.helpers || []);
-const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
-const stopping = ref(0);
-const helpersTold = ref("");
-
-async function stopHelper(row) {
-    stopping.value = row.n;
-    helpersTold.value = "";
-    try {
-        await phone.helperStop(row.n);
-        announce(`Stopping ${row.data?.name || "the helper"}`);
-        emit("changed");
-    } catch (error) {
-        if (ended(error)) return failed(error);
-        const words = !(error instanceof PhoneError) ? "You need a connection to stop a helper." : error.status === 404 ? "This phone can't stop helpers yet." : `Couldn't stop ${row.data?.name || "the helper"}. Try again.`;
-        tell(helpersTold, words);
-    } finally {
-        stopping.value = 0;
-    }
-}
+const helpersOut = computed(() => helpers.value.filter((row) => !["finished", "stopped", "ended"].includes(row.state)).length);
 const emit = defineEmits(["changed"]);
 const failed = inject("phoneFailed");
 const busy = ref("");
@@ -137,10 +117,6 @@ async function act(what) {
                 <span class="controls-failed">{{ autoTold }}</span>
             </template>
         </div>
-        <PhoneHelpers :helpers="helpers" :stopping="stopping" @stop="stopHelper" />
-        <template v-if="helpersTold">
-            <p class="controls-told">{{ helpersTold }}</p>
-        </template>
         <template v-if="alive && contextUsed !== null">
             <div class="controls-meter">
                 <span class="controls-name">Context · {{ contextUsed }}% used</span>

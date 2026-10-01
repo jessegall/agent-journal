@@ -87,6 +87,8 @@ class Helpers(Controller):
     @lasting
     def stop(self, n: int):
         row = self._unfinished(n, "finished")
+        if self.actor == USER:
+            row = self.update(n, stopped_by_user=True)
         places = Environments(self.record, actor=SYSTEM)
         place = places._titled(row.environment)
         if not place:

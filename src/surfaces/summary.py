@@ -16,7 +16,7 @@ from typing import TypedDict
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
 RECENT = 600.0
-SUBAGENT_FIELDS = ("session", "task", "type", "model", "at", "ended", "status", "running")
+SUBAGENT_FIELDS = ("id", "session", "task", "type", "model", "at", "ended", "status", "running", "refusal", "tool", "file", "outcome")
 
 
 def last_written(agent, session: str) -> float:
@@ -37,7 +37,8 @@ def subagents(agent) -> list[dict]:
         active = max(float(sub.get("at", 0.0)), last_written(agent, sub["session"]))
         running = bool(sub.get("running")) and live and now - active < RECENT
         if running or now - float(sub.get("ended", 0.0)) < RECENT:
-            shown.append({**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": running, "active": active, "parent": agent.n})
+            shown.append({**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": running, "active": active, "parent": agent.n,
+                          "report": agent.subagent_reports.get(sub.get("id"), 0)})
     return shown
 
 KEPT_FOR = 1.0
@@ -68,6 +69,14 @@ def plan(p, todos: dict) -> PlanSummary:
             "phases": len(p.phases), "rows": len(rows), "done": sum(bool(todos.get(n)) for n in rows)}
 
 
+def attention_of(questions: list, prompts: list) -> dict:
+    if prompts:
+        return {"kind": "permission", "text": prompts[-1].title}
+    if questions:
+        return {"kind": "question", "text": questions[-1].title}
+    return {}
+
+
 def environment(record: Record) -> dict:
     agent = Agents(record, actor=SYSTEM).primary()
     shelf = Works(record, actor=SYSTEM)
@@ -79,6 +88,9 @@ def environment(record: Record) -> dict:
     todos = {row["n"]: bool(row["completed"]) for row in Todos(record, actor=SYSTEM).summaries() if not row["deleted"]}
     work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo, "parked": bool(w.parked), "awaiting": w.awaiting,
                       "completed": w.completed} if w else None
+    questions = Questions(record, actor=SYSTEM)._standing()
+    prompts = [n for n in Notices(record, actor=SYSTEM)._standing() if n.data.get("action") == "permission"]
+    attention = attention_of(questions, prompts)
     return {
         "name": record.env,
         "agent": {"status": agent.status or "stopped", "provider": agent.provider, "model": agent.model, "context": agent.context,
@@ -90,17 +102,18 @@ def environment(record: Record) -> dict:
         "subagents": subagents(agent),
         "auto": automatic(record),
         "silent": agent_state(record, record.env) == SILENT,
+        "attention": attention,
         "counts": {
             "messages": sum(USER not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()),
-            "questions": len(Questions(record, actor=SYSTEM)._standing()),
+            "questions": len(questions),
             "todos": len([n for n, done in todos.items() if not done]),
             "suggestions": len(Suggestions(record, actor=SYSTEM)._standing()),
-            "prompts": sum(n.data.get("action") == "permission" for n in Notices(record, actor=SYSTEM)._standing()),
+            "prompts": len(prompts),
         },
     }
 
 
-def lately_summarized(root: Path) -> dict:
+def lately_summarized(root: Path) -> "JournalSummary":
     with BUILDING:
         if root not in KEPT:
             KEPT[root] = (time.monotonic(), summarize(root))

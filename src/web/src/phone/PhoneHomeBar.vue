@@ -1,10 +1,9 @@
 <script setup>
-import {computed} from "vue";
 import PhoneAgent from "./PhoneAgent.vue";
+import PhoneAtWorkChip from "./PhoneAtWorkChip.vue";
 import PhoneChevron from "./PhoneChevron.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
-import {helperState} from "../domain/helpers.js";
 
 const props = defineProps({
     connection: {type: Object, required: true},
@@ -16,8 +15,7 @@ const props = defineProps({
     notice: {type: String, default: ""},
     actionsHere: {type: Number, default: 0},
 });
-const emit = defineEmits(["places", "agent", "reload", "open", "list"]);
-const reportedHelpers = computed(() => (props.feed.running?.helpers || []).filter((row) => helperState(row) === "reported").length);
+const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list"]);
 </script>
 
 <template>
@@ -36,9 +34,10 @@ const reportedHelpers = computed(() => (props.feed.running?.helpers || []).filte
                     {{ connection.environment }}{{ offline ? " · Offline, waiting to reconnect" : current ? "" : " · Updating…" }}
                 </span>
             </button>
+            <PhoneAtWorkChip :live="feed.running || {}" @open="emit('at-work')" />
             <button type="button" class="home-agent" aria-haspopup="dialog" @click="emit('agent')">
                 <span class="phone-hidden">Agent:</span>
-                <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" :reported="reportedHelpers" />
+                <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" />
             </button>
         </header>
         <template v-if="newer">

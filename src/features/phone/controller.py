@@ -8,6 +8,7 @@ import secrets
 import tempfile
 import time
 from pathlib import Path
+from enum import StrEnum
 from typing import TypedDict
 
 import controllers.types as types_module
@@ -16,11 +17,11 @@ from controllers.base import CONTROLLERS, Controller
 from controllers.marks import internal
 from controllers.messages import Messages
 from agents.control import pause, resume
-from controllers.types import Agents, Environments, Nudges
+from controllers.types import Agents, Environments, Nudges, Todos
 from engine.sessions import Sessions
 from controllers.notices import Notices
 from engine.record import Record
-from features.format import VIEWER
+from features.format import VIEWER, formatted
 from features.message_buttons.shaping import Button, spent
 from engine.project_files import matching
 from features.phone.export import Export, export
@@ -36,6 +37,7 @@ from resources.base import AGENT, PROJECT, SYSTEM, USER, Refused, titled
 from features.work_modes.modes import mode_of, pick
 from features.helpers.controller import Helpers
 from features import FEATURES
+from surfaces.summary import JournalSummary, lately_summarized, subagents
 
 CODE_SECONDS = 600
 HELPERS_SHOWN = 10
@@ -59,6 +61,74 @@ HIDDEN = ("phone", "share", "plugin")
 WAITING = ("question", "plan", "report", "doc")
 
 
+class WorkState(StrEnum):
+    NEEDS = "needs"
+    WORKING = "working"
+    IDLE = "idle"
+    REPORTED = "reported"
+    FINISHED = "finished"
+    STOPPED = "stopped"
+    ENDED = "ended"
+
+
+@dataclass(frozen=True)
+class HelperAgent:
+    status: str = ""
+    at: float = 0.0
+    started: float = 0.0
+    tool: str = ""
+    file: str = ""
+
+    @classmethod
+    def from_payload(cls, payload: dict) -> "HelperAgent":
+        return cls(status=payload.get("status", ""), at=float(payload.get("at", 0.0)),
+                   started=float(payload.get("started", 0.0)), tool=payload.get("tool", ""), file=payload.get("file", ""))
+
+
+@dataclass(frozen=True)
+class HelperSnapshot:
+    name: str = ""
+    owner: str = ""
+    attention_kind: str = ""
+    attention_text: str = ""
+    silent: bool = False
+    agent: HelperAgent = HelperAgent()
+    todo: int = 0
+
+    @classmethod
+    def from_payload(cls, payload: dict) -> "HelperSnapshot":
+        attention = payload.get("attention") or {}
+        agent = payload.get("agent") or {}
+        work = payload.get("work") or payload.get("last") or {}
+        return cls(name=payload.get("name", ""), owner=payload.get("owner", ""),
+                   attention_kind=attention.get("kind", ""), attention_text=attention.get("text", ""),
+                   silent=bool(payload.get("silent")), agent=HelperAgent.from_payload(agent), todo=int(work.get("todo", 0)))
+
+
+def helper_state(row, environment: HelperSnapshot, now: float) -> WorkState:
+    if row.completed:
+        return WorkState.FINISHED
+    if row.report:
+        return WorkState.REPORTED
+    if environment.attention_kind or environment.silent:
+        return WorkState.NEEDS
+    if not environment.agent.status or environment.agent.status == "stopped":
+        return WorkState.STOPPED if row.stopped_by_user else WorkState.ENDED
+    if now - environment.agent.at <= 300:
+        return WorkState.WORKING
+    return WorkState.IDLE
+
+
+def helper_reason(environment: HelperSnapshot, now: float) -> str:
+    if environment.attention_kind == "question":
+        return f"Asks a question: {environment.attention_text}"
+    if environment.attention_kind == "permission":
+        return f"Wants a permission: {environment.attention_text}"
+    if environment.silent:
+        return f"Silent for {max(5, int((now - environment.agent.at) / 60))} min"
+    return ""
+
+
 def readable(kind: str) -> bool:
     return kind in CONTROLLERS and kind not in HIDDEN
 
@@ -80,6 +150,12 @@ class Mark(Marked, total=False):
     color: str
     state: str
     command: str
+
+
+class HelperTodo(TypedDict, total=False):
+    n: int
+    title: str
+    completed: float
 
 
 @dataclass(frozen=True)
@@ -154,6 +230,7 @@ class Running(TypedDict):
     auto: bool
     mode: str
     helpers: list[dict]
+    subagents: list[dict]
 
 
 class Feed(TypedDict):
@@ -447,7 +524,11 @@ class Phones(Controller):
         return USER not in row.seen or any(not spent(button, buttons, pressed) for button in buttons)
 
     def _reaches(self, phone: Phone, row) -> bool:
-        return row.data.get("environment") in (phone.environment, None, "")
+        environment = row.data.get("environment")
+        if environment in (phone.environment, None, ""):
+            return True
+        place = Environments(self._home(phone), actor=SYSTEM)._titled(environment)
+        return bool(place and place.helping and place.launched_from == phone.environment)
 
     def _file(self, phone: Phone, ref: str, name: str) -> Path:
         kind, _, n = ref.partition(":")
@@ -464,15 +545,71 @@ class Phones(Controller):
     def _running(self, home: Record, environment: str) -> Running:
         holder = Sessions(home.root).holder(environment)
         row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
-        shared = dict(state=agent_state(home, environment), auto=bool(home.setting("features", {}).get(AUTO)), mode=mode_of(home), helpers=self._helpers_of(home))
+        summary = lately_summarized(home.root)
+        shared = dict(state=agent_state(home, environment), auto=bool(home.setting("features", {}).get(AUTO)), mode=mode_of(home),
+                      helpers=self._helpers_of(home, summary), subagents=self._subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())))
         if row is None:
             return Running(paused=False, context=0, usage=[], **shared)
         return Running(paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), **shared)
 
-    def _helpers_of(self, home: Record) -> list[dict]:
-        return [{"n": row.n, "title": row.title, "completed": row.completed,
-                 "data": {"name": row.name, "provider": row.provider, "model": row.model, "report": row.report}}
-                for row in Helpers(home, actor=SYSTEM).all(completed=True, last=HELPERS_SHOWN)]
+    def _helpers_of(self, home: Record, summary: JournalSummary) -> list[dict]:
+        environments = list(map(HelperSnapshot.from_payload, summary["helpers"]))
+        now = time.time()
+        found = []
+        for row in Helpers(home, actor=SYSTEM).all(completed=True, last=HELPERS_SHOWN):
+            environment = next((entry for entry in environments if entry.owner == row.ref), HelperSnapshot())
+            agent = environment.agent
+            todo = self._helper_todo(home, environment)
+            state = helper_state(row, environment, now)
+            view = shaped(row, home, VIEWER)
+            file = Path(agent.file).name if agent.file else ""
+            doing = " ".join(part for part in (agent.tool, file) if part)
+            found.append({"n": row.n, "title": view["title"], "name": row.name, "provider": row.provider, "model": row.model,
+                          "state": state.value, "reason": formatted(helper_reason(environment, now), home, VIEWER),
+                          "now": doing,
+                          "started": agent.started or row.created, "at": agent.at or row.updated, "todo": todo,
+                          "completed_at": row.completed, "stopped_by_user": row.stopped_by_user,
+                          "report": formatted(row.report, home, VIEWER) if row.report else ""})
+        return found
+
+    def _helper_todo(self, home: Record, environment: HelperSnapshot) -> HelperTodo:
+        if not environment.todo:
+            return {}
+        record = Record(home.root, environment.name)
+        row = Todos(record, actor=SYSTEM).load(environment.todo)
+        view = shaped(row, record, VIEWER)
+        return {"n": row.n, "title": view["title"], "completed": row.completed}
+
+    def _subagents_of(self, home: Record, rows: list[dict]) -> list[dict]:
+        found = []
+        for row in rows:
+            match row:
+                case {"running": True}:
+                    state = "working"
+                case {"refusal": refusal} if refusal:
+                    state = "refused"
+                case {"status": "stopped"}:
+                    state = "stopped"
+                case _:
+                    state = "finished"
+            found.append({**row, "state": state, "task": formatted(row.get("task", ""), home, VIEWER),
+                          "outcome": formatted(row.get("outcome", ""), home, VIEWER),
+                          "refusal": formatted(row.get("refusal", ""), home, VIEWER)})
+        return found
+
+    def _helper(self, phone: Phone, n: int) -> dict:
+        home = self._home(phone)
+        row = Helpers(home, actor=SYSTEM).load(n)
+        if not self._reaches(phone, row):
+            raise Refused(f"helper {n} is not in this phone's environment")
+        summary = lately_summarized(home.root)
+        payload = next((entry for entry in summary["helpers"] if entry["owner"] == row.ref), {})
+        environment = HelperSnapshot.from_payload(payload)
+        helper = next(entry for entry in self._helpers_of(home, summary) if entry["n"] == n)
+        record = Record(home.root, row.environment)
+        agent = Agents(record, actor=SYSTEM).primary()
+        activity = [] if agent is None else Session.from_view(shaped(agent, record, VIEWER)).marks()[-5:][::-1]
+        return {**helper, "activity": activity, "running": bool(environment.agent.status and environment.agent.status != "stopped")}
 
     def _holder(self, phone: Phone) -> str:
         holder = Sessions(self._home(phone).root).holder(phone.environment)

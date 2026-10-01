@@ -79,6 +79,22 @@ class Crew:
     errors: dict = field(default_factory=dict)
     moved_to_background: set = field(default_factory=set)
 
+
+@dataclass(frozen=True)
+class SubagentFacts:
+    tool: str
+    file: str
+    outcome: str
+
+
+def subagent_facts(rows: list[Row]) -> SubagentFacts:
+    calls = [(block.name, block.input) for row in rows if row.type == "assistant" for block in row.of_type("tool_use")]
+    tool, given = calls[-1] if calls else ("", {})
+    file = next((given.get(key) for key in ("file_path", "notebook_path", "path") if given.get(key)), "")
+    answers = [block.text for row in rows if row.type == "assistant" for block in row.of_type("text") if block.text.strip()]
+    return SubagentFacts(tool, file, answers[-1][:2000] if answers else "")
+
+
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
 
@@ -480,10 +496,11 @@ class Claude(Provider):
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
             writing = now - written <= QUIET_SUBAGENT
             running = not status or writing and (status == "returned" or written > done)
+            facts = asdict(subagent_facts(self.recent(session))) if session else {}
             subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
                               "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
                               "status": "" if running else status, "refusal": held.errors.get(use.id),
-                              "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session)})
+                              "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session), **facts})
         shells = []
         for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):
             status, done = ended.get(use.id, ("", 0.0))

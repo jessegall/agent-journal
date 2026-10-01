@@ -1,7 +1,7 @@
 <script setup>
 import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
 
-defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}, reported: {type: Number, default: 0}});
+defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}});
 const WORDS = {offline: "Not running", idle: "Idle", working: "Working", [SILENT]: SILENT_WORD};
 </script>
 
@@ -11,10 +11,6 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working", [SILENT
         {{ WORDS[state] }}
         <template v-if="auto">
             <span class="agent-auto">auto</span>
-        </template>
-        <template v-if="reported">
-            <span class="agent-reported" aria-hidden="true">{{ reported }}</span>
-            <span class="phone-hidden">, {{ reported === 1 ? "1 helper reported" : `${reported} helpers reported` }}</span>
         </template>
     </span>
 </template>
@@ -40,18 +36,6 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working", [SILENT
     font-size: 0.647rem;
     font-weight: 700;
     line-height: 1.3;
-}
-
-.agent-reported {
-    min-width: 18px;
-    padding: 1px 5px;
-    border-radius: 9px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-    text-align: center;
 }
 
 .agent-dot {
