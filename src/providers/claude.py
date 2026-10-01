@@ -594,6 +594,7 @@ class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
     INPUT_MARK = "❯".encode()
+    SUGGESTED = re.compile("(❯\u00a0)\x1b\\[2m([^\x1b\r\n]*)\x1b\\[22m".encode())
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)

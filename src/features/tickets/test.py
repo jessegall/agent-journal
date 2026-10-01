@@ -137,8 +137,10 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     from engine.seats import terminal_of
     printed = runtime.session_file(record.root, terminal_of(record.root, "claude-9"), "printed")
     printed.parent.mkdir(parents=True, exist_ok=True)
-    printed.write_bytes("\x1b[2KReading the tree contract\r\n\x1b[1m❯ \x1b[0m\r\n".encode())
-    assert "Reading the tree contract" in tickets.screen(ticket.n), "journal ticket screen shows what the ticket agent's terminal says"
+    printed.write_bytes("\x1b[2KReading the tree contract\r\n\x1b[1m❯\u00a0\x1b[2mapproved, go ahead\x1b[22m\r\n".encode())
+    shown = tickets.screen(ticket.n)
+    assert "Reading the tree contract" in shown, "journal ticket screen shows what the ticket agent's terminal says"
+    assert "[a suggestion, not sent: approved, go ahead]" in shown, "Claude Code's dimmed next-prompt suggestion is marked, never read as typed"
     tickets.start(ticket.n)
     assert len(launched) == 1, "a ticket whose agent runs is not started twice"
     from tests.kit import report
