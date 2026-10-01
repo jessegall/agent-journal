@@ -8,6 +8,7 @@ from controllers.base import Controller
 from engine.worktree import WORKTREES, contains, current_branch, git, included, present, share_journal, tip
 from features.helper_worktrees.resource import Worktree
 from resources.base import Refused
+from controllers.marks import lasting
 
 NAMED = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
 BRANCH = "helper-"
@@ -41,6 +42,7 @@ def within(folder: Path, places: tuple[Path, ...], commands: tuple[str, ...]) ->
 class Worktrees(Controller):
     resource = Worktree
 
+    @lasting
     def cut(self, name: str, helper: str = "") -> str:
         if not NAMED.match(name):
             raise Refused(f"a worktree name is lowercase letters, digits and dashes, not {name!r}")
@@ -65,6 +67,7 @@ class Worktrees(Controller):
         moved = f"{found.working} gained {found.told} since the cut" if found.gained else f"{found.working} has not moved since the cut"
         return f"{moved}; {row.branch} {'contains' if found.current else 'does not contain'} its tip {found.tip[:10]}"
 
+    @lasting
     def take(self, n: int) -> str:
         row = self._unfinished(n, "dropped")
         project = self._project()
@@ -90,6 +93,7 @@ class Worktrees(Controller):
         self.update(row.n, taken=tip(project, row.branch))
         return f"took {len(commits)} commit{'s' if len(commits) != 1 else ''} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
 
+    @lasting
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "dropped")
         project = self._project()

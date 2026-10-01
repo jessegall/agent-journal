@@ -12,6 +12,7 @@ from features.agent_sessions.launch import launched, prepared
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
 from resources.base import AGENT, SYSTEM, Refused, titled
+from controllers.marks import lasting
 
 SLUG = re.compile(r"[^a-z0-9]+")
 
@@ -33,6 +34,7 @@ def kickoff(row, folder: Path, todo: int) -> str:
 class Helpers(Controller):
     resource = Helper
 
+    @lasting
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False) -> str:
         row = self._dispatched(name, job, provider, model, brief, worktree)
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
@@ -61,6 +63,7 @@ class Helpers(Controller):
         launched(self.record, place, provider, driver.prompted([*driver.AUTO_ARGS, "--model", model], kickoff(row, folder, todo.n)), folder)
         return row
 
+    @lasting
     def say(self, n: int, text: str) -> str:
         from providers import DRIVERS
         row = self._unfinished(n, "finished")
@@ -81,6 +84,7 @@ class Helpers(Controller):
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped")
         return "reported; the agent that dispatched you has it"
 
+    @lasting
     def stop(self, n: int):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
@@ -89,6 +93,7 @@ class Helpers(Controller):
             raise Refused(f"helper {n}, {row.name}, has no environment left to stop")
         return places.stop(place.n)
 
+    @lasting
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
