@@ -23,6 +23,7 @@ import {rows} from "../sync/rows.js";
 import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
 import {silentIn} from "../sync/hub.js";
 import {SILENT} from "../domain/agentStates.js";
+import AgentStopButton from "../chat/AgentStopButton.vue";
 import {usePoll} from "../poll.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
@@ -156,6 +157,12 @@ async function runBar(p) {
                     <Icon :name="paused ? 'resume' : 'pause'" />
                 </template>
             </Btn>
+            <AgentStopButton
+                class="statusbar-stop"
+                :environment="route.env"
+                :work="state === 'working' && current ? current.title : ''"
+                :stop="() => api.stopAgentNamed(route.env)"
+            />
         </template>
         <span class="statusbar-tools">
             <template v-if="!steered">
@@ -381,6 +388,10 @@ async function runBar(p) {
     position: relative;
     flex: none;
     margin-right: 8px;
+}
+
+.statusbar-stop {
+    margin: 0 8px 0 -4px;
 }
 
 .statusbar-pause.paused {

@@ -1,12 +1,12 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import IconCount from "../kit/IconCount.vue";
 import Meter from "../kit/Meter.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import Switch from "../kit/Switch.vue";
-import AgentStopConfirm from "../chat/AgentStopConfirm.vue";
+import AgentStopButton from "../chat/AgentStopButton.vue";
 import {planButton} from "./statusline.js";
 import {STATE_WORDS, agentLine, countsOf, envState, focusOf, planMeter} from "../sync/hub.js";
 
@@ -14,23 +14,6 @@ const props = defineProps({env: {type: Object, required: true}, server: {type: O
 const emit = defineEmits(["auto", "step", "changed"]);
 const running = computed(() => envState(props.env) !== "stopped");
 const wordFor = (p) => (planButton({data: p}) || [])[1];
-const confirming = ref(false);
-const busy = ref(false);
-const error = ref("");
-
-async function stop() {
-    busy.value = true;
-    error.value = "";
-    try {
-        await props.server.in(props.env.name).stopAgentNamed(props.env.name);
-        confirming.value = false;
-        emit("changed");
-    } catch (e) {
-        error.value = e.message;
-    } finally {
-        busy.value = false;
-    }
-}
 </script>
 
 <template>
@@ -65,20 +48,15 @@ async function stop() {
                 />
             </template>
             <template v-if="running">
-                <Btn
-                    small
-                    class="jt-env-stop"
-                    :aria-expanded="confirming"
-                    title="Stop the agent; it ends its session"
-                    @click="confirming = !confirming"
-                >
-                    Stop
-                </Btn>
+                <AgentStopButton
+                    quiet
+                    :environment="env.name"
+                    :work="envState(env) === 'working' && env.work ? env.work.title : ''"
+                    :stop="() => server.in(env.name).stopAgentNamed(env.name)"
+                    @stopped="emit('changed')"
+                />
             </template>
         </div>
-        <template v-if="confirming">
-            <AgentStopConfirm :environment="env.name" :busy="busy" :error="error" @cancel="confirming = false" @stop="stop" />
-        </template>
         <template v-for="p in env.plans" :key="p.n">
             <Meter class="jt-env-plan" v-bind="planMeter(p)">
                 <template v-if="wordFor(p)">
@@ -197,9 +175,5 @@ async function stop() {
     .jt-env-plan {
         padding-left: 0;
     }
-}
-
-.jt-env-stop {
-    flex: none;
 }
 </style>

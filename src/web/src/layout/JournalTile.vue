@@ -14,6 +14,7 @@ import {SILENT} from "../domain/agentStates.js";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Tile from "../kit/Tile.vue";
 import JournalTileEnv from "./JournalTileEnv.vue";
+import AgentStopButton from "../chat/AgentStopButton.vue";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});
 const emit = defineEmits(["toggle", "changed"]);
@@ -29,6 +30,7 @@ const focus = computed(() => focusOf(lead.value));
 const plan = computed(() => lead.value.plans[0] || null);
 const note = computed(() => (state.value === "idle" && lead.value.agent.at ? `last active ${ago(lead.value.agent.at)}` : ""));
 const wordFor = (p) => (planButton({data: p}) || [])[1];
+const soleRunning = computed(() => environments.value.length === 1 && state.value !== "stopped");
 
 async function manage(fn) {
     error.value = "";
@@ -83,6 +85,15 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
             </template>
             <template v-if="lead.auto">
                 <Chip>auto</Chip>
+            </template>
+            <template v-if="soleRunning">
+                <AgentStopButton
+                    quiet
+                    :environment="lead.name"
+                    :work="state === 'working' && lead.work ? lead.work.title : ''"
+                    :stop="() => server.in(lead.name).stopAgentNamed(lead.name)"
+                    @stopped="emit('changed')"
+                />
             </template>
             <button type="button" :class="['jt-fold', {open}]" :aria-expanded="open" @click="emit('toggle')">
                 {{ counted(environments.length, "environment", "environments") }}

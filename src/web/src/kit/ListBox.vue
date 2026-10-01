@@ -26,6 +26,7 @@ const emit = defineEmits(["toggle"]);
             <template v-if="folds">
                 <span :class="['list-box-mark', {shut: !open}]" />
             </template>
+            <slot name="aside" />
         </component>
         <template v-if="open">
             <div class="list-box-rows">

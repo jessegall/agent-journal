@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {useAnchoredAction} from "../actions/anchored.js";
 import {api} from "../api/client.js";
 import {PROVIDER_CHOICES} from "../agents.js";
 import Icon from "../kit/Icon.vue";
@@ -7,23 +7,7 @@ import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 
 const props = defineProps({env: {type: Object, required: true}, live: Boolean});
-const anchor = ref(null);
-const error = ref("");
-
-function toggle(e) {
-    error.value = "";
-    anchor.value = anchor.value ? null : e.currentTarget;
-}
-
-async function acted(call) {
-    error.value = "";
-    try {
-        await call();
-        anchor.value = null;
-    } catch (e) {
-        error.value = e.message;
-    }
-}
+const {anchor, error, toggle, run: acted} = useAnchoredAction();
 
 const start = (provider) => acted(() => api.launchAgent(props.env.n, provider));
 const stop = () => acted(() => api.stopAgentIn(props.env.n));

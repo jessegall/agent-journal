@@ -1,18 +1,31 @@
 <script setup>
+import {nextTick, onMounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 
-defineProps({environment: {type: String, required: true}, busy: {type: Boolean, default: false}, error: {type: String, default: ""}});
+defineProps({
+    environment: {type: String, required: true},
+    work: {type: String, default: ""},
+    busy: {type: Boolean, default: false},
+    error: {type: String, default: ""},
+});
 const emit = defineEmits(["cancel", "stop"]);
+const cancel = ref(null);
+onMounted(() => nextTick(() => cancel.value?.$el.focus()));
 </script>
 
 <template>
     <div class="stop-confirm" role="group" :aria-label="`Stop the agent in ${environment}`">
-        <p class="stop-ask">Stop the agent in {{ environment }}? It ends its session.</p>
+        <template v-if="work">
+            <p class="stop-ask">{{ environment }} is working on “{{ work }}”. Stop it anyway? It ends its session.</p>
+        </template>
+        <template v-else>
+            <p class="stop-ask">Stop the agent in {{ environment }}? It ends its session.</p>
+        </template>
         <template v-if="error">
             <p class="stop-error" role="alert">{{ error }}</p>
         </template>
         <div class="stop-row">
-            <Btn small @click="emit('cancel')">Cancel</Btn>
+            <Btn ref="cancel" small @click="emit('cancel')">Cancel</Btn>
             <Btn kind="danger" small :busy="busy" @click="emit('stop')">Stop</Btn>
         </div>
     </div>
@@ -43,5 +56,16 @@ const emit = defineEmits(["cancel", "stop"]);
     display: flex;
     justify-content: flex-end;
     gap: 6px;
+}
+
+.stop-row .btn.danger {
+    border-color: var(--danger);
+    background: var(--danger);
+    color: #fff;
+}
+
+.stop-row .btn.danger:hover {
+    background: color-mix(in srgb, var(--danger) 85%, #000);
+    color: #fff;
 }
 </style>

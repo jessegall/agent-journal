@@ -150,10 +150,14 @@ export const stoppedNote = (j) => (j.running ? "its viewer stopped answering" : 
 const journals = ref([]);
 const loaded = ref(false);
 const running = computed(() => journals.value.filter((j) => j.running));
+const waitsOnYou = (j) => Number(countsOf(totalsOf(j)).some((c) => c.hot));
+
 const online = computed(() =>
     journals.value
         .filter((j) => j.running && !j.gone && (j.summary || j.unreadable))
-        .sort((a, b) => RANK[journalState(a)] - RANK[journalState(b)] || a.project.localeCompare(b.project))
+        .sort(
+            (a, b) => RANK[journalState(a)] - RANK[journalState(b)] || waitsOnYou(b) - waitsOnYou(a) || a.project.localeCompare(b.project)
+        )
 );
 const stopped = computed(() => journals.value.filter((j) => !j.running || j.gone));
 const needs = computed(() =>
