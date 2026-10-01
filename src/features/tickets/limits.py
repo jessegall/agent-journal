@@ -1,4 +1,5 @@
 from features.parts import ActionInterceptor, Context
+from features.sequences.exploration import FILLER
 from resources.base import AGENT, Refused
 
 CARD_LINE = 140
@@ -38,3 +39,14 @@ class PanelRepliesStayShort(ActionInterceptor):
             raise Refused(f"your reply to the board is {len(text)} characters, and the New work panel shows one short line of at most "
                           f"{PANEL_REPLY}: say it again, shorter, about the tickets only")
         return None
+
+
+FILLER_WRITES = ("board", "ticket", "sequence", "question", "comment", "message")
+
+
+class FillerKeepsToTheBoard(ActionInterceptor):
+    def intercept(self, feature_context: Context, controller, **args):
+        if controller.agent != FILLER or controller.type in FILLER_WRITES:
+            return None
+        raise Refused(f"the board's agent writes cards, never a {controller.type}: draft the request as a card with journal ticket create "
+                      f'"<title>" --abstract "<one line>" --set board=<n> --set draft=true, or revise one with journal ticket update <n>')

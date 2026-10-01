@@ -559,6 +559,7 @@ function startAnew() {
                                 :stalled="drafting.stalled || ''"
                                 :retrying="retrying"
                                 :thinking="thinking"
+                                :ideas="board.data.ideas || []"
                                 @example="example"
                                 @unhand="handed = null"
                                 @hand="hand"

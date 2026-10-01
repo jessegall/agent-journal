@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.218.0 — New work ends in cards
+
+**The board's agent writes cards, never anything else.** The subagent filling a board may write
+only board and ticket rows and its panel lines; a to-do, a fact or a doc is refused with the line
+to draft or revise a card instead. Revising says anything new in your words becomes cards of its
+own, one per part.
+
+**New work's suggestions are the agent's own.** The fixed examples are gone: every 12 hours (Settings,
+Boards) the agent is asked to think up a handful of things you might ask for on each board, and
+`journal board ideas <n> "<idea>" ...` puts them under New work.
+
 ## 2.217.0 — New work waits for you without calling a stall
 
 **The board's agent says it waits for you.** `journal board wait <n>` ends a drafting or revising

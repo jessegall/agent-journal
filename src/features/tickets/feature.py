@@ -4,7 +4,7 @@ from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
 from features.tickets.details import TicketsDetails
 from features.tickets.handlers import FinishTheBoardWithItsLastTicket, HoldTicketKnowledge, LookAfterTicketBranches, WakeTheTicketAgent
-from features.tickets.limits import DraftsCarryOneLine, PanelRepliesStayShort
+from features.tickets.limits import DraftsCarryOneLine, FillerKeepsToTheBoard, PanelRepliesStayShort
 from features.boards.controller import CARD_ROWS
 from features.plans.progress import PHASE_ROWS
 from features.plans.resource import PHASE
@@ -30,3 +30,6 @@ class TicketsFeature(Feature):
         journal.commands.intercept("create", DraftsCarryOneLine())
         journal.commands.intercept("update", DraftsCarryOneLine())
         journal.commands.intercept("create", PanelRepliesStayShort())
+        journal.commands.intercept("create", FillerKeepsToTheBoard())
+        journal.commands.intercept("update", FillerKeepsToTheBoard())
+        journal.commands.intercept("complete", FillerKeepsToTheBoard())
