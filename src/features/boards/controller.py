@@ -111,7 +111,8 @@ class Boards(Controller):
         board = self.load(n)
         if not board.branch and current_branch(self.record.root.parent):
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
-        board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env)
+        board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env, orchestrator_approves_plans=True,
+                            orchestrator_accepts_waits=True, orchestrator_confirms_drafts=True)
         pick(self.record, ORCHESTRATOR, self.actor)
         self._set_orchestrating(True)
         self.record.emit("board", board.n, STARTED, self.actor)

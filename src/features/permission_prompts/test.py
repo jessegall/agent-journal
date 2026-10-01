@@ -114,10 +114,10 @@ def test_auto_mode_launches_each_agent_in_its_own_approval_mode():
     record = fresh()
     record.features = {**record.features, "work_tracking.auto": True}
     record.set_setting("permission_prompts", {"skip": False})
-    assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--permission-mode", "auto", "--model", "sonnet"], \
-        "auto launches Claude with its automatic approval mode"
-    assert launch_args(record, "codex", ["--model", "gpt-5"]) == ["--approve-for-me", "--model", "gpt-5"], \
-        "auto launches Codex with its automatic approval mode"
+    assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--dangerously-skip-permissions", "--model", "sonnet"], \
+        "in auto mode Claude never stops at a permission prompt"
+    assert launch_args(record, "codex", ["--model", "gpt-5"]) == ["--dangerously-bypass-approvals-and-sandbox", "--model", "gpt-5"], \
+        "in auto mode Codex never stops for an approval"
     assert launch_args(record, "claude", ["--permission-mode=dontAsk"]) == ["--permission-mode=dontAsk"], \
         "an explicit Claude permission choice wins"
     assert launch_args(record, "codex", ["--ask-for-approval", "never"]) == ["--ask-for-approval", "never"], \

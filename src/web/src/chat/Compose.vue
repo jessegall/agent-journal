@@ -25,6 +25,11 @@ const draft = reactive({text: "", files: [], sending: false, error: ""});
 const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
+watch(
+    () => store.prefill,
+    (text) => text && (draft.text = text),
+    {immediate: true}
+);
 const area = ref(null);
 const kept = ref(0);
 const resting = computed(() => Boolean(props.idle) && !draft.text.trim() && !draft.files.length);

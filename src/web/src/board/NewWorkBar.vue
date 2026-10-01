@@ -4,7 +4,6 @@ import Segmented from "../kit/Segmented.vue";
 
 defineProps({
     note: {type: String, default: ""},
-    missing: {type: Array, required: true},
     presets: {type: Array, required: true},
     preset: {default: ""},
     phone: {type: Boolean, default: false},
@@ -20,9 +19,6 @@ const emit = defineEmits(["choose", "again", "add"]);
     <div class="bar">
         <div class="note">
             <span class="note-main">{{ note }}</span>
-            <template v-if="missing.length">
-                <span class="note-sub" :title="missing.join('; ')">Missing: {{ missing.join("; ") }}</span>
-            </template>
         </div>
         <template v-if="presets.length > 1 && !phone">
             <Segmented class="presets" :options="presets" :value="preset" @pick="(key) => emit('choose', key)" />
@@ -73,8 +69,7 @@ const emit = defineEmits(["choose", "again", "add"]);
     align-items: center;
 }
 
-.note-main,
-.note-sub {
+.note-main {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -90,11 +85,6 @@ const emit = defineEmits(["choose", "again", "add"]);
     font-size: 12.5px;
 }
 
-.note-sub {
-    color: var(--warn, var(--blocking));
-    font-size: 11.5px;
-}
-
 .presets {
     flex: 0 1 auto;
     min-width: 0;
@@ -107,6 +97,7 @@ const emit = defineEmits(["choose", "again", "add"]);
 }
 
 .add {
+    justify-content: center;
     min-width: 140px;
     font-variant-numeric: tabular-nums;
 }

@@ -1,10 +1,22 @@
 import re
+from dataclasses import dataclass
 from typing import ClassVar
 
 from resources.base import CHECKPOINT, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed, Shape
 
 AGENT_CLI = "claude"
+ROOT = "."
+
+
+@dataclass(frozen=True)
+class Bases:
+    root: str
+    nested: dict[str, str]
+
+    @classmethod
+    def of(cls, tips: dict[str, str]) -> "Bases":
+        return cls(tips.get(ROOT, ""), {name: base for name, base in tips.items() if name != ROOT})
 
 
 CARD_PARTS = re.compile(r"(?:\*\*)?\b(What|Why|Touches|Done when|Risk):(?:\*\*)?\s*")
@@ -35,7 +47,7 @@ class Ticket(Placed, Resource):
         Field(TEXT, name="work_environment"),
         Field(TEXT, "", name="base"),
         Field(default=dict, name="bases"),
-        Field(TEXT, AGENT_CLI, name="agent"),
+        Field(TEXT, AGENT_CLI, name="provider"),
         Field(NUMBER, 0.0, name="launched"),
         Field(NUMBER, 0.0, name="queued_at"),
         Field(NUMBER, 0, name="plan"),
@@ -66,4 +78,4 @@ class Ticket(Placed, Resource):
     fixed_fields = ("source", "work_environment", "plan")
 
     def base_of(self, repository: str) -> str:
-        return self.base if repository == "." else self.bases.get(repository, "")
+        return self.base if repository == ROOT else self.bases.get(repository, "")

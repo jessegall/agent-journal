@@ -108,6 +108,7 @@ function read(target) {
     position: relative;
     min-height: calc(92dvh - 44px);
     margin: -4px calc(-1 * var(--side)) -14px;
+    max-width: none;
     overflow: hidden;
 }
 

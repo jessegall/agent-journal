@@ -3,7 +3,7 @@ import re
 import socket
 from pathlib import Path
 
-EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z]{2,}\b")
 SESSION = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")
 TUNNEL = re.compile(r"[\w.-]*(?:tunler|trycloudflare|ngrok)[\w.-]*\.[a-z]{2,}", re.IGNORECASE)
 KEPT_EMAIL = "demo@example.com"

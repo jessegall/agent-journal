@@ -9,13 +9,15 @@ from pathlib import Path
 
 import features
 from commands.http import dispatch
+from engine.proc import git
 from features.session_recording.scrub import Scrubber
 from resources.base import Refused
 
 EVERYTHING = 100000
 EVENTS = 1000
 APP = {"manifest": "/api/manifest", "identity": "/api/identity", "pages": "/api/pages", "summary": "/api/summary", "agents": "/api/agents"}
-ENVIRONMENT = {"settings": "settings", "mode": "mode", "bar": "bar", "family": "family"}
+ENVIRONMENT = {"settings": "settings", "bar": "bar", "family": "family"}
+SETUP = ("feature", "record", "sequence", "trigger", "template")
 RESTORED = {"record/environments/": "environments/", "record/project/": "project/"}
 
 
@@ -69,18 +71,22 @@ def scrubbed(folder: Path, scrubber: Scrubber) -> None:
 
 
 class Throwaway:
-    def __init__(self, blobs: Path):
+    def __init__(self, blobs: Path, name: str):
         self.blobs = blobs
+        self.name = name
         self.lived: list[Path] = []
         self.project = self._cut(None)
+        git(["init", "-q"], self.project)
+        git(["hash-object", "-w", "--stdin-paths"], self.project, timeout=60, stdin="\n".join(str(blob) for blob in blobs.iterdir()))
 
     @property
     def root(self) -> Path:
         return self.project / ".journal"
 
     def _cut(self, old: Path | None) -> Path:
-        project = Path(tempfile.mkdtemp())
-        self.lived.append(project)
+        project = Path(tempfile.mkdtemp()) / self.name
+        project.mkdir()
+        self.lived.append(project.parent)
         if old:
             shutil.copytree(old, project, copy_function=os.link, dirs_exist_ok=True)
         return project
@@ -121,8 +127,16 @@ class Throwaway:
         manifest = self.ask(APP["manifest"])
         yield from ((name, self.ask(path)) for name, path in APP.items())
         yield from ((name, self.ask(f"/api/{env}/{path}")) for name, path in ENVIRONMENT.items())
-        yield "events", self.ask(f"/api/{env}/events", {"since": "0", "last": str(EVENTS)})
-        yield from ((f"rows.{kind}", self.ask(f"/api/{env}/{kind}", {"completed": "1", "last": str(EVERYTHING)})) for kind in manifest["types"])
+        yield "events", [event for event in self.ask(f"/api/{env}/events", {"since": "0", "last": str(EVENTS)}) if event["type"] not in SETUP]
+        rows = {kind: self.ask(f"/api/{env}/{kind}", {"completed": "1", "last": str(EVERYTHING)}) for kind in manifest["types"]}
+        yield from ((f"rows.{kind}", listed) for kind, listed in rows.items())
+        yield from self.edits(env, [agent["n"] for agent in rows["agent"]["rows"]])
+
+    def edits(self, env: str, agents: list[int]) -> Iterator[tuple[str, object]]:
+        for n in agents:
+            feed = self.ask(f"/api/{env}/agent/{n}/edits", {"since": "0", "last": str(EVERYTHING)})
+            yield f"edits.{n}", feed
+            yield f"edited.{n}", {card["id"]: self.ask(f"/api/{env}/agent/{n}/edits/file", {"id": card["id"], "side": "after"}) for card in feed["edits"]}
 
 
 def built(folder: Path, env: str = "") -> dict:
@@ -131,7 +145,7 @@ def built(folder: Path, env: str = "") -> dict:
     if found:
         raise Refused("the recording still holds the machine, run journal record scrub first: " + "; ".join(found[:5]))
     features.load()
-    world = Throwaway(folder / "blobs")
+    world = Throwaway(folder / "blobs", folder.resolve().name)
     stored: dict[str, object] = {}
     moments = []
     try:

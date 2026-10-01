@@ -10,7 +10,7 @@ const open = (url) => window.open(url, "_blank", "noopener");
 
 <template>
     <div class="demo-band">
-        <span class="demo-band-text">A recording of a real session. Nothing leaves your browser.</span>
+        <span class="demo-band-text">A replay of a recorded session: the journal is real, the agent's moves are scripted. Nothing leaves your browser.</span>
         <span class="demo-band-acts">
             <Btn small title="Clear what this demo kept in your browser and start again" @click="restart">Restart</Btn>
             <Btn small @click="open(INSTALL)">Install</Btn>

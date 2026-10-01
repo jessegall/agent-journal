@@ -21,7 +21,7 @@ def service_of(ticket) -> str:
 
 def worktree_of(project: Path, ticket) -> Path:
     from providers import DRIVERS
-    return project.joinpath(*DRIVERS[ticket.agent].WORKTREES, ticket.work_environment)
+    return project.joinpath(*DRIVERS[ticket.provider].WORKTREES, ticket.work_environment)
 
 
 def hosted(root: Path) -> list:

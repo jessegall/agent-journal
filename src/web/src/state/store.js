@@ -1,9 +1,11 @@
 import {computed, reactive} from "vue";
 import {kept, remembered} from "../composables/remembered.js";
+import {DEFAULT_MODE} from "../domain/modes.js";
 
 export const store = reactive({
     spec: null,
     drafting: 0,
+    prefill: "",
     dumping: false,
     dumpShown: 0,
     dumpFiles: [],
@@ -66,4 +68,5 @@ export const feedOn = computed(() => !store.settings || store.settings.features.
 export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
 export const steered = computed(() => (store.settings && store.settings.work_tracking && store.settings.work_tracking.steered) || "");
 export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]) || !!steered.value);
+export const workMode = computed(() => (store.settings && store.settings.work_modes && store.settings.work_modes.mode) || DEFAULT_MODE);
 export const sharingOn = computed(() => !store.settings || store.settings.features.sharing !== false);

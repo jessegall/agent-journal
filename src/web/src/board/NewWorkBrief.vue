@@ -1,5 +1,5 @@
 <script setup>
-defineProps({goal: {type: String, default: ""}, doneWhen: {type: Array, required: true}, missing: {type: Array, required: true}});
+defineProps({goal: {type: String, default: ""}, doneWhen: {type: Array, required: true}});
 </script>
 
 <template>
@@ -10,7 +10,7 @@ defineProps({goal: {type: String, default: ""}, doneWhen: {type: Array, required
         <template v-if="doneWhen.length">
             <ol class="brief-done">
                 <template v-for="clause in doneWhen" :key="clause">
-                    <li :class="{missing: missing.includes(clause)}">{{ clause }}</li>
+                    <li>{{ clause }}</li>
                 </template>
             </ol>
         </template>
@@ -42,9 +42,5 @@ defineProps({goal: {type: String, default: ""}, doneWhen: {type: Array, required
     padding-left: 18px;
     color: var(--text-2);
     font-size: 12.5px;
-}
-
-.brief-done li.missing {
-    color: var(--warn, var(--blocking));
 }
 </style>

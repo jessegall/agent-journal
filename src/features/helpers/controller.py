@@ -60,7 +60,7 @@ class Helpers(Controller):
         driver = DRIVERS[provider]
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
-        launched(self.record, place, provider, driver.prompted([*driver.AUTO_ARGS, "--model", model], kickoff(row, folder, todo.n)), folder)
+        launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n)), folder)
         return row
 
     @lasting

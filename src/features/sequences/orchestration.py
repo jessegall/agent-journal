@@ -14,11 +14,13 @@ ORCHESTRATION = ShippedSequence(
                           "else.\" (journal board show <board n> gives the board, its branch and its goal)."),
         ("Read the board", "Read the board and its cards: journal board show <board n> and journal ticket board <board n>. Note the "
                            "order the tickets must run in, the waits between them, and which are queued, running or done."),
-        ("Take on the decisions", "Take on what the user lets you decide while your auto mode is on: journal board update <board n> "
-                                  "--set orchestrator_approves_plans=true --set orchestrator_accepts_waits=true --set "
-                                  "orchestrator_confirms_drafts=true. Accept the waits between the cards (journal ticket "
-                                  "accept_dependencies <n>); when auto mode is off, ask the user to confirm them first with journal "
-                                  "board ask. Say in one line which decisions stay with the user."),
+        ("Take on the decisions", "The board's decisions are yours: Play gave you plan approvals, the waits between cards and the "
+                                  "drafts (journal board show <board n> shows the three switches). Review and approve each ticket's "
+                                  "plan with journal ticket approve_plan <n>, or send it back with journal ticket send_back <n> "
+                                  "\"<the change>\"; accept or decline proposed waits with journal ticket accept_dependencies <n> or "
+                                  "decline_dependencies <n> --why \"<reason>\"; confirm drafts with journal ticket confirm <n> --why "
+                                  "\"<reason>\". Accept the waits between the cards now. The user keeps the checkpoints and any change "
+                                  "to the board's goal; say so in one line."),
         ("Start the tickets", "Move every ticket into the board's start stage, in the order they must run: journal ticket move "
                               "<n> \"<start stage>\". Each agent starts in its own worktree; beyond the running limit, and behind "
                               "the tickets they wait on, they queue and start as slots free."),
