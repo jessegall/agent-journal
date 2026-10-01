@@ -39,6 +39,7 @@ DRAFTING = ShippedSequence(
                          "\"<name>\" \"<ticket>, <ticket>\". Then journal sequence next <this sequence> --about <ref>."),
         ("Say one line", "Say it in the panel with journal board say <board n> \"<line>\", at most 200 characters about the "
                          "cards, like \"Five tickets drafted. Pick the ones to keep.\" No numbers such as #12, rows, chips, "
-                         "commands or the journal. Finish with journal sequence next <this sequence> --about <ref>."),
+                         "commands or the journal. Then say you wait for the user's picks with journal board wait <board n>, "
+                         "and finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )

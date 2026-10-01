@@ -18,7 +18,7 @@ START_OVER = "Start over"
 CANCEL_HOLDS = 600
 BUILD_LOG = 40
 SECTION_STATES = ("now", "read", "out", "asked")
-EXPLORING, DRAFTING_PHASE, LOST = "exploring", "drafting", "lost"
+EXPLORING, DRAFTING_PHASE, LOST, WAITING = "exploring", "drafting", "lost", "waiting"
 KNOWS_AT, READY_AT, MOST_TURNS = 4, 5, 5
 
 
@@ -250,6 +250,12 @@ class Boards(Controller):
         board = self._update_drafting(board, phase=phase, score=rated, turns=turns, reading=read)
         return sequences.follow(handed, about=about) if handed else board
 
+    def wait(self, n: int):
+        board = self._drafting(n)
+        if board.drafting.get("phase") != DRAFTING_PHASE:
+            raise Refused(f"board {board.n} is not drafting, so there is nothing to wait for: it is {board.drafting.get('phase', EXPLORING)}")
+        return self._update_drafting(board, phase=WAITING)
+
     def stall(self, n: int, why: str):
         board = self._drafting(n)
         if not why.strip():
@@ -306,7 +312,8 @@ class Boards(Controller):
         board = self.load(n)
         made = self._filed(board, text, idempotency)
         if board.drafting.get("since"):
-            self._update_drafting(board, asked=[*board.asked, made.ref])
+            was = board.drafting.get("phase", EXPLORING)
+            self._update_drafting(board, asked=[*board.asked, made.ref], phase=DRAFTING_PHASE if was == WAITING else was)
         return made
 
     def _filed(self, board, text: str, idempotency: str, **data):
