@@ -11,7 +11,7 @@ from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
-from resources.base import AGENT, SYSTEM, Refused, titled
+from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from controllers.marks import lasting
 
 SLUG = re.compile(r"[^a-z0-9]+")

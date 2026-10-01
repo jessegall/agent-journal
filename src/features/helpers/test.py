@@ -89,6 +89,9 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     answer(PROVIDERS["claude"](), repo.record.root, {"hook_event_name": "PreToolUse", "session_id": "main-agent", "tool_name": "Bash",
                                                      "tool_input": {"command": "git status"}, "cwd": cut.path}, os.getpid())
     assert Sessions(repo.record.root).environment("main-agent") == repo.record.env, "the main agent working in a helper's worktree stays in its own environment"
+    from controllers.types import Environments as Places
+    monkeypatch.setattr(Places, "stop", lambda self, n: "stopped")
+    assert helpers.stop(1) == "stopped", "the agent stops a running helper"
     helpers.complete(1)
     assert not Environments(repo.record, actor=SYSTEM)._titled(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
