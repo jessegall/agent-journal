@@ -1,15 +1,11 @@
 <script setup>
-import ReadingLine from "./ReadingLine.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import ChatLine from "../kit/ChatLine.vue";
 import ChatPanel from "../kit/ChatPanel.vue";
-import FileSlip from "../kit/FileSlip.vue";
 import FocusStage from "../kit/FocusStage.vue";
 import Icon from "../kit/Icon.vue";
-import Segmented from "../kit/Segmented.vue";
 import {quoted} from "../format/quote.js";
 import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
@@ -20,6 +16,10 @@ import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
 import DraftDetail from "./DraftDetail.vue";
 import ReadingRail from "./ReadingRail.vue";
+import NewWorkBar from "./NewWorkBar.vue";
+import NewWorkBrief from "./NewWorkBrief.vue";
+import NewWorkHead from "./NewWorkHead.vue";
+import NewWorkRow from "./NewWorkRow.vue";
 
 const props = defineProps({open: Boolean, board: Object, stage: {type: String, default: ""}, starts: Boolean});
 const emit = defineEmits(["close", "added"]);
@@ -48,12 +48,6 @@ const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
 const HELD = 400;
-const EXAMPLES = [
-    "People sign in before they can change anything",
-    "The board gets slow with many cards",
-    "Show who changed a card and when",
-];
-
 const WIDE = window.matchMedia("(min-width: 1160px)");
 const SMALL = window.matchMedia("(max-width: 760px)");
 const tabs = ref(!WIDE.matches);
@@ -530,28 +524,15 @@ function startAnew() {
                         @send="send"
                     >
                         <template #head>
-                            <div class="head">
-                                <span class="head-title">
-                                    New work
-                                    <span class="head-board">{{ board.title }}</span>
-                                </span>
-                                <Btn small @click="cancel">Cancel</Btn>
-                            </div>
-                            <div class="sub">
-                                <Transition name="layer">
-                                    <template v-if="tabs && docked">
-                                        <div key="tabs" class="sub-layer">
-                                            <Segmented fill :options="tabOptions" :value="tab" @pick="(key) => (tab = key)" />
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <div key="reading" class="sub-layer">
-                                            <ReadingLine :summary="summary" />
-                                        </div>
-                                    </template>
-                                </Transition>
-                            </div>
-                            <p class="announce" aria-live="polite">{{ summary.text }}</p>
+                            <NewWorkHead
+                                :title="board.title"
+                                :tabbed="tabs && docked"
+                                :tab-options="tabOptions"
+                                :tab="tab"
+                                :summary="summary"
+                                @cancel="cancel"
+                                @tab="(key) => (tab = key)"
+                            />
                         </template>
                         <template v-for="line in spoken" :key="line.id">
                             <template v-if="line.question">
@@ -576,58 +557,22 @@ function startAnew() {
                             </div>
                         </template>
                         <template #row>
-                            <Transition name="layer">
-                                <SwitchCase :key="row" :value="row">
-                                    <template #chips>
-                                        <div key="chips" class="row-layer chips">
-                                            <template v-for="text in EXAMPLES" :key="text">
-                                                <Btn small @click="example(text)">{{ text }}</Btn>
-                                            </template>
-                                        </div>
-                                    </template>
-                                    <template #upload>
-                                        <div key="upload" class="row-layer">
-                                            <FileSlip class="slip" :file="handed" removable @remove="handed = null" />
-                                            <Btn kind="primary" small @click="hand">Read it and draft tickets</Btn>
-                                        </div>
-                                    </template>
-                                    <template #failed>
-                                        <div key="failed" class="row-layer">
-                                            <span class="row-text bad">Couldn't upload {{ failed }}.</span>
-                                            <Btn small @click="hand">Try again</Btn>
-                                        </div>
-                                    </template>
-                                    <template #stalled>
-                                        <div key="stalled" class="row-layer">
-                                            <span class="row-text">
-                                                {{
-                                                    halted
-                                                        ? drafting.stalled || "The drafting stopped."
-                                                        : "No answer yet. The agent may be busy with other work."
-                                                }}
-                                            </span>
-                                            <template v-if="halted">
-                                                <Btn small :busy="retrying" @click="retry">Retry</Btn>
-                                            </template>
-                                            <template v-else>
-                                                <Btn small @click="askAgain">Ask again</Btn>
-                                            </template>
-                                        </div>
-                                    </template>
-                                    <template #status>
-                                        <div key="status" class="row-layer">
-                                            <ChatLine bare shuffled :notes="thinking" />
-                                        </div>
-                                    </template>
-                                    <template #discard>
-                                        <div key="discard" class="row-layer">
-                                            <span class="row-text">Discard this conversation?</span>
-                                            <Btn small @click="discarding = false">Keep</Btn>
-                                            <Btn kind="danger" small @click="finish">Discard</Btn>
-                                        </div>
-                                    </template>
-                                </SwitchCase>
-                            </Transition>
+                            <NewWorkRow
+                                :row="row"
+                                :handed="handed"
+                                :failed="failed"
+                                :halted="halted"
+                                :stalled="drafting.stalled || ''"
+                                :retrying="retrying"
+                                :thinking="thinking"
+                                @example="example"
+                                @unhand="handed = null"
+                                @hand="hand"
+                                @retry="retry"
+                                @ask-again="askAgain"
+                                @keep="discarding = false"
+                                @discard="finish"
+                            />
                         </template>
                         <template #tool>
                             <template v-if="!since">
@@ -640,21 +585,20 @@ function startAnew() {
                     </ChatPanel>
                 </div>
                 <section class="pane" aria-label="Drafts">
-                    <div class="bar">
-                        <div class="note">
-                            <span class="note-main">{{ note }}</span>
-                            <template v-if="missing.length">
-                                <span class="note-sub" :title="missing.join('; ')">Missing: {{ missing.join("; ") }}</span>
-                            </template>
-                        </div>
-                        <template v-if="presets.length > 1 && !phone">
-                            <Segmented class="presets" :options="presets" :value="preset" @pick="choose" />
-                        </template>
-                        <Btn small :disabled="!shownDrafts.length || writing || added > 0" @click="again">Ask for a different set</Btn>
-                        <Btn kind="primary" small class="add" :busy="adding" :disabled="!picked.length || added > 0" @click="add">
-                            {{ addLabel }}
-                        </Btn>
-                    </div>
+                    <NewWorkBar
+                        :note="note"
+                        :missing="missing"
+                        :presets="presets"
+                        :preset="preset"
+                        :phone="phone"
+                        :redraftable="Boolean(shownDrafts.length) && !writing && !(added > 0)"
+                        :addable="Boolean(picked.length) && !(added > 0)"
+                        :adding="adding"
+                        :add-label="addLabel"
+                        @choose="choose"
+                        @again="again"
+                        @add="add"
+                    />
                     <div class="pane-body">
                         <template v-if="reading">
                             <ReadingRail
@@ -667,18 +611,7 @@ function startAnew() {
                         </template>
                         <div class="grid">
                             <template v-if="goal || doneWhen.length">
-                                <div class="brief">
-                                    <template v-if="goal">
-                                        <p class="brief-goal">{{ goal }}</p>
-                                    </template>
-                                    <template v-if="doneWhen.length">
-                                        <ol class="brief-done">
-                                            <template v-for="clause in doneWhen" :key="clause">
-                                                <li :class="{missing: missing.includes(clause)}">{{ clause }}</li>
-                                            </template>
-                                        </ol>
-                                    </template>
-                                </div>
+                                <NewWorkBrief :goal="goal" :done-when="doneWhen" :missing="missing" />
                             </template>
                             <TransitionGroup tag="div" name="pick" class="picks">
                                 <template v-for="card in cards" :key="card.key">
@@ -790,131 +723,11 @@ function startAnew() {
         transform 0.32s var(--ease);
 }
 
-.head {
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 10px;
-    height: 52px;
-    padding: 0 8px 0 16px;
-    border-bottom: 1px solid var(--border);
-    box-sizing: border-box;
-}
-
-.head-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    font-weight: 500;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.head-board {
-    margin-left: 6px;
-    color: var(--text-4);
-    font-weight: 400;
-}
-
-.sub {
-    position: relative;
-    flex: none;
-    height: 49px;
-    border-bottom: 1px solid var(--border);
-    box-sizing: border-box;
-}
-
-.sub-layer {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-}
-
-.tabs .sub-layer:has(.segmented) {
-    padding: 0 6px;
-}
-
-.announce {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-}
-
-.row-layer {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 8px;
-}
-
-.chips {
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-.chips > :deep(*) {
-    flex: none;
-}
-
-.row-text {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: 12.5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.phone .row-text {
-    line-height: 16px;
-    white-space: normal;
-}
-
-.row-text.bad {
-    color: var(--danger);
-}
-
-.slip {
-    flex: 1;
-    min-width: 0;
-}
-
 .lost {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-}
-
-/* The fixed rows swap by crossfade: out 120ms, in 180ms starting 60ms later, 3px of travel. */
-.layer-enter-active {
-    transition:
-        opacity 0.18s ease-out 0.06s,
-        transform 0.18s var(--ease) 0.06s;
-}
-
-.layer-leave-active {
-    transition:
-        opacity 0.12s ease-in,
-        transform 0.12s ease-in;
-}
-
-.layer-enter-from {
-    opacity: 0;
-    transform: translateY(3px);
-}
-
-.layer-leave-to {
-    opacity: 0;
-    transform: translateY(-3px);
 }
 
 .pane {
@@ -977,96 +790,6 @@ function startAnew() {
         transform 0.32s var(--ease);
 }
 
-.bar {
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 8px;
-    height: 52px;
-    padding: 0 8px 0 16px;
-    border-bottom: 1px solid var(--border);
-}
-
-.tabs .bar {
-    order: 2;
-    flex-wrap: wrap;
-    align-content: center;
-    row-gap: 6px;
-    height: 88px;
-    padding: 0 8px;
-    border-top: 1px solid var(--border);
-    border-bottom: 0;
-}
-
-.note {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 0;
-    line-height: 16px;
-}
-
-.tabs .note {
-    flex: 1 0 100%;
-    flex-direction: row;
-    gap: 8px;
-    height: 20px;
-    align-items: center;
-}
-
-.note-main,
-.note-sub {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.note-main {
-    color: var(--text-3);
-    font-size: 13px;
-}
-
-.tabs .note-main {
-    flex: none;
-    font-size: 12.5px;
-}
-
-.note-sub {
-    color: var(--warn, var(--blocking));
-    font-size: 11.5px;
-}
-
-.presets {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-.presets :deep(.segmented-option) {
-    white-space: nowrap;
-}
-
-.add {
-    min-width: 140px;
-    font-variant-numeric: tabular-nums;
-}
-
-.tabs .bar > :deep(.btn) {
-    flex: 1;
-}
-
-.tabs .note {
-    justify-content: flex-start;
-}
-
-.phone .head > :deep(.btn),
-.phone .bar > :deep(.btn),
-.phone .row-layer > :deep(.btn) {
-    min-height: 40px;
-}
-
 .pane-body {
     display: flex;
     flex: 1;
@@ -1103,36 +826,6 @@ function startAnew() {
 
 .tabs .grid {
     padding: 12px;
-}
-
-.brief {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 14px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-}
-
-.brief-goal {
-    margin: 0;
-    color: var(--text);
-    font-weight: 500;
-}
-
-.brief-done {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 0;
-    padding-left: 18px;
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.brief-done li.missing {
-    color: var(--warn, var(--blocking));
 }
 
 .picks {
@@ -1209,9 +902,7 @@ function startAnew() {
     .tabs.drafted .pane,
     .talk :deep(.log),
     .talk :deep(.row),
-    .talk :deep(.compose),
-    .layer-enter-active,
-    .layer-leave-active {
+    .talk :deep(.compose) {
         transition-duration: 0.12s;
         transition-delay: 0s;
     }

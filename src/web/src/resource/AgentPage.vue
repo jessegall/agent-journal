@@ -1,4 +1,6 @@
 <script setup>
+import AgentPageFacts from "./AgentPageFacts.vue";
+import AgentPageWork from "./AgentPageWork.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import TabBar from "../kit/TabBar.vue";
 import {useTranscript} from "../composables/transcript.js";
@@ -9,9 +11,7 @@ import DropList from "../kit/DropList.vue";
 import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
-import {span} from "../format/time.js";
 import {useScope} from "../composables/scope.js";
-import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import TranscriptLog from "./TranscriptLog.vue";
 import AgentHome from "../board/AgentHome.vue";
@@ -126,60 +126,9 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
                     <CommentToggle :resource="resource" />
                     <CloseButton @click="emit('close')" />
                 </header>
-                <template v-if="picked">
-                    <h2 class="title">{{ picked.task }}</h2>
-                    <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
-                    <div class="facts">
-                        <span class="fact">
-                            <Icon name="agents" />
-                            {{ picked.type || "general" }} · {{ picked.model || "inherited model" }}
-                        </span>
-                        <span class="fact">
-                            <Icon name="reminders" />
-                            {{
-                                picked.running
-                                    ? `up ${span(Date.now() / 1000 - picked.at)}`
-                                    : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
-                            }}
-                        </span>
-                        <span class="fact">
-                            <Icon name="book" />
-                            {{ skills.length }} skills
-                        </span>
-                    </div>
-                </template>
-                <template v-else>
-                    <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
-                    <p class="session">session {{ resource.title }}</p>
-                    <div class="facts">
-                        <template v-if="data.branch">
-                            <span class="fact">
-                                <Icon name="branch" />
-                                {{ data.branch }}
-                            </span>
-                        </template>
-                        <span class="fact">
-                            <Icon name="reminders" />
-                            {{ data.started ? `up ${span(Date.now() / 1000 - data.started)}` : "just started" }}
-                        </span>
-                        <span class="fact">
-                            <Icon name="activity" />
-                            context {{ Math.round(Number(data.context || 0)) }}%
-                        </span>
-                        <span class="fact">
-                            <Icon name="terminal" />
-                            {{ data.shells || 0 }} shells
-                        </span>
-                        <span class="fact">
-                            <Icon name="agents" />
-                            {{ data.subagents || 0 }} subagents
-                        </span>
-                        <span class="fact">
-                            <Icon name="book" />
-                            {{ (data.skills || []).length }} skills
-                        </span>
-                    </div>
-                </template>
+                <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
+                <p class="session">session {{ resource.title }}</p>
+                <AgentPageFacts :data="data" />
                 <div class="pickers">
                     <DropList
                         icon="agents"
@@ -207,19 +156,7 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
                 </TabBar>
             </div>
             <template v-if="tab === 'work'">
-                <section class="block">
-                    <template v-for="w in works" :key="w.n">
-                        <div class="work">
-                            <span :class="['dot', {open: !w.completed}]" />
-                            <span class="work-title">{{ w.title }}</span>
-                            <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
-                        </div>
-                        <Trace :resource="w" />
-                    </template>
-                    <template v-if="!works.length">
-                        <p class="none">{{ picked ? "No work filed by this subagent." : "No work on this agent yet." }}</p>
-                    </template>
-                </section>
+                <AgentPageWork :works="works" :subagent="Boolean(picked)" />
             </template>
             <template v-if="tab === 'chat' && picked">
                 <section class="block chat-block">
@@ -326,26 +263,6 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
     color: var(--text-3);
 }
 
-.facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    font-size: 12px;
-    color: var(--text-2);
-}
-
-.fact {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.fact .ico {
-    width: 12px;
-    height: 12px;
-    opacity: 0.65;
-}
-
 .block {
     margin-top: 12px;
 }
@@ -373,51 +290,15 @@ const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.re
     color: var(--text-4);
 }
 
-.work {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-}
-
 .session-pick .dot {
     width: 6px;
     height: 6px;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--text-3);
-}
-
-.dot.open {
-    background: var(--progress);
-}
-
-.work-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.work-when {
-    font-size: 11.5px;
-    color: var(--text-3);
 }
 
 .transcript {
     max-height: 70vh;
     overflow-y: auto;
     font-size: 12.5px;
-}
-
-.none {
-    margin: 0;
-    color: var(--text-3);
 }
 
 .read-error {

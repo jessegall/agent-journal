@@ -3,17 +3,19 @@ import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
-import Dialog from "../kit/Dialog.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
-import PlaceholderCard from "../kit/PlaceholderCard.vue";
 import TextInput from "../kit/TextInput.vue";
 import PluginCard from "./PluginCard.vue";
 import PluginDashboard from "./PluginDashboard.vue";
 import PluginGuide from "./PluginGuide.vue";
 import PluginSettings from "./PluginSettings.vue";
 import ServicesPanel from "./ServicesPanel.vue";
+import PluginInstallDialog from "./PluginInstallDialog.vue";
+import PluginLogDialog from "./PluginLogDialog.vue";
+import PluginMakeCard from "./PluginMakeCard.vue";
+import PluginMakeDialog from "./PluginMakeDialog.vue";
+import PluginRemoveDialog from "./PluginRemoveDialog.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
@@ -37,7 +39,6 @@ const outcome = ref(null);
 const configuring = ref(0);
 const viewing = ref(null);
 const configured = computed(() => plugins.value.find((p) => p.n === configuring.value));
-const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 const busy = ref("");
 const plugins = computed(() =>
     rows("plugin")
@@ -272,11 +273,7 @@ async function askAgent() {
                         @services="servicesFor = p.name"
                     />
                 </template>
-                <PlaceholderCard class="make" @click="((making = true), (asked = false))">
-                    <span class="make-mark"><Icon name="plus" :size="16" /></span>
-                    <span class="make-title">Make a new plugin</span>
-                    <span class="make-text">Ask the agent to build one for you, or read how plugins are made.</span>
-                </PlaceholderCard>
+                <PluginMakeCard @click="((making = true), (asked = false))" />
             </div>
         </div>
 
@@ -284,87 +281,24 @@ async function askAgent() {
             <ServicesPanel :plugin="servicesFor" @close="servicesFor = ''" />
         </template>
         <template v-if="making">
-            <Dialog title="Make a new plugin" small @close="making = false">
-                <div class="ask">
-                    <p class="ask-lead">The agent builds it for you and answers in the chat.</p>
-                    <TextInput
-                        :value="repository"
-                        placeholder="A GitHub repository to build it in (optional)"
-                        @input="repository = $event.target.value"
-                    />
-                    <textarea v-model="wish" class="wish" rows="4" placeholder="What should the plugin do?" />
-                </div>
-                <template #foot>
-                    <Btn @click="readGuide">Read how to make one</Btn>
-                    <Btn kind="primary" :disabled="!repository.trim() && !wish.trim()" @click="askAgent">Send to the agent</Btn>
-                </template>
-            </Dialog>
+            <PluginMakeDialog
+                v-model:repository="repository"
+                v-model:wish="wish"
+                @close="making = false"
+                @guide="readGuide"
+                @ask="askAgent"
+            />
         </template>
         <template v-if="shown">
-            <Dialog :title="shown.title" fixed @close="closeShown">
-                <template v-if="outcome">
-                    <p :class="['shown-result', {failed: !outcome.ok}]">
-                        {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}
-                    </p>
-                    <Console fill :text="live || outcome.text" />
-                </template>
-                <template v-else-if="busy === 'install'">
-                    <p class="shown-result">{{ shown.upgrading ? "Upgrading" : "Installing" }}…</p>
-                    <Console fill :text="live || 'Starting…'" />
-                </template>
-                <template v-else>
-                    <p class="shown-from">
-                        from {{ shown.source }}
-                        <template v-if="shown.commit">at {{ shown.commit.slice(0, 12) }}</template>
-                    </p>
-                    <template v-if="shown.description">
-                        <p class="shown-what">{{ shown.description }}</p>
-                    </template>
-                    <template v-if="shown.upgrading">
-                        <p class="shown-lead">
-                            {{
-                                shown.current
-                                    ? "It is already at this commit. Run goes through its install steps again."
-                                    : shown.changes.length
-                                      ? "What it runs changes:"
-                                      : "It runs the same commands as the version you have."
-                            }}
-                        </p>
-                        <template v-if="shown.changes && shown.changes.length">
-                            <div class="shown-rows changes">
-                                <template v-for="(c, i) in shown.changes" :key="i">
-                                    <div class="shown-row">
-                                        <span :class="['shown-kind', c.kind]">{{ c.kind === "new" ? "Now also" : "No longer" }}</span>
-                                        <code class="shown-command">{{ c.line }}</code>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                    </template>
-                    <p class="shown-lead">It runs as you, with your files and your network. This is everything it does:</p>
-                    <div class="shown-rows">
-                        <template v-for="(row, i) in shown.rows" :key="i">
-                            <div class="shown-row">
-                                <span :class="['shown-kind', row.kind]">{{ KINDS[row.kind] || row.kind }}</span>
-                                <span class="shown-label">{{ row.label }}</span>
-                                <code class="shown-command">{{ row.command }}</code>
-                            </div>
-                        </template>
-                    </div>
-                </template>
-                <template #foot>
-                    <template v-if="outcome">
-                        <template v-if="!outcome.ok">
-                            <Btn @click="outcome = null">Back</Btn>
-                        </template>
-                        <Btn kind="primary" @click="closeShown">Close</Btn>
-                    </template>
-                    <template v-else>
-                        <Btn :disabled="busy === 'install'" @click="closeShown">Cancel</Btn>
-                        <Btn kind="primary" :busy="busy === 'install'" :disabled="busy === 'install'" @click="install">Run</Btn>
-                    </template>
-                </template>
-            </Dialog>
+            <PluginInstallDialog
+                :shown="shown"
+                :outcome="outcome"
+                :live="live"
+                :busy="busy"
+                @close="closeShown"
+                @back="outcome = null"
+                @install="install"
+            />
         </template>
         <template v-if="viewing">
             <PluginDashboard :plugin="viewing.plugin" :board="viewing.board" @close="viewing = null" />
@@ -373,25 +307,10 @@ async function askAgent() {
             <PluginSettings :plugin="configured" @close="configuring = 0" @change="(key, value) => configure(configured, key, value)" />
         </template>
         <template v-if="removing">
-            <Dialog :title="`Remove ${removing.title}`" @close="removing = null">
-                <p class="shown-lead">
-                    Its services stop, its hooks and refusals no longer run, and its folder is taken away. What it kept of its own —
-                    settings, caches, anything it wrote in its data folder — can stay, in case you install it again, or go with it.
-                </p>
-                <template #foot>
-                    <Btn @click="removing = null">Cancel</Btn>
-                    <Btn @click="remove(false)">Remove, keep what it kept</Btn>
-                    <Btn kind="danger" @click="remove(true)">Remove everything</Btn>
-                </template>
-            </Dialog>
+            <PluginRemoveDialog :title="removing.title" @close="removing = null" @remove="remove" />
         </template>
         <template v-if="reading">
-            <Dialog :title="`${reading} log`" follow fixed @close="reading = ''">
-                <Console fill :text="logged || (busy ? 'Starting…' : 'Nothing is logged yet.')" />
-                <template #foot>
-                    <Btn small :disabled="!logged" @click="clearLog">Clear</Btn>
-                </template>
-            </Dialog>
+            <PluginLogDialog :name="reading" :logged="logged" :busy="Boolean(busy)" @close="reading = ''" @clear="clearLog" />
         </template>
         <template v-if="guide">
             <PluginGuide @close="guide = false" />
@@ -440,146 +359,6 @@ async function askAgent() {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 16px;
-}
-
-.make {
-    flex-direction: column;
-    gap: 4px;
-    min-height: 160px;
-    border-radius: 14px;
-}
-
-.make-mark {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 50%;
-    transition:
-        border-color 0.2s,
-        color 0.2s;
-}
-
-.make:hover .make-mark {
-    border-color: var(--accent);
-    color: var(--accent-text);
-}
-
-.make-title {
-    color: var(--text-2);
-    font-weight: 500;
-}
-
-.make-text {
-    max-width: 240px;
-    color: var(--text-4);
-    font-size: 12px;
-    line-height: 1.45;
-    text-align: center;
-}
-
-.ask {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.ask-lead {
-    margin: 0 0 4px;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.wish {
-    padding: 7px 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-    resize: vertical;
-}
-
-.wish:focus {
-    outline: none;
-    border-color: var(--accent);
-}
-
-.shown-result {
-    margin: 0 0 10px;
-    color: var(--tone-good);
-    font-size: 13px;
-}
-
-.shown-result.failed {
-    color: var(--danger);
-}
-
-.shown-from,
-.shown-what,
-.shown-lead {
-    margin: 0 0 8px;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.shown-what {
-    color: var(--text-2);
-}
-
-.shown-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.shown-rows.changes {
-    margin-bottom: 14px;
-}
-
-.shown-row {
-    display: grid;
-    grid-template-columns: 92px 1fr;
-    gap: 4px 10px;
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--raised);
-    font-size: 12.5px;
-}
-
-.shown-kind {
-    color: var(--text-3);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.shown-kind.new {
-    color: var(--tone-good);
-}
-
-.shown-kind.gone {
-    color: var(--danger);
-}
-
-.shown-kind.refuse {
-    color: var(--tone-warn);
-}
-
-.shown-label {
-    color: var(--text);
-}
-
-.shown-command {
-    grid-column: 2;
-    color: var(--text-2);
-    font-family: var(--mono);
-    font-size: 11.5px;
-    word-break: break-all;
 }
 
 @media (max-width: 640px) {

@@ -245,4 +245,11 @@ const chaptered = computed(
     font-size: 17px;
     font-weight: 600;
 }
+
+@keyframes writing-pulse {
+    50% {
+        opacity: 0.35;
+        transform: scale(0.7);
+    }
+}
 </style>

@@ -2,37 +2,32 @@
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
-import PhoneAgent from "./PhoneAgent.vue";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
 import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
-import PhoneNotify from "./PhoneNotify.vue";
 import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
 import PhoneTabs from "./PhoneTabs.vue";
 import PhoneNeeds from "./PhoneNeeds.vue";
 import PhoneAgentSheet from "./PhoneAgentSheet.vue";
 import Icon from "../kit/Icon.vue";
-import PhoneChevron from "./PhoneChevron.vue";
 import {chipOpener} from "./peeked.js";
 import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
-import PhoneWaiting from "./PhoneWaiting.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
 import PhoneNotices from "./PhoneNotices.vue";
-import Spinner from "../kit/Spinner.vue";
 import {useFades} from "./fades.js";
 import {reveal} from "./reveal.js";
 import {wanted} from "./wanted.js";
 import {lastLooked, looked} from "./looked.js";
-import {clock} from "../format/time.js";
-import PhoneTicks from "./PhoneTicks.vue";
 import {useBubbles} from "./bubbles.js";
-import {helperState} from "../domain/helpers.js";
+import PhoneHomeBar from "./PhoneHomeBar.vue";
+import PhoneHomeOlder from "./PhoneHomeOlder.vue";
+import PhoneHomeSending from "./PhoneHomeSending.vue";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
@@ -42,7 +37,6 @@ import {IN_CHAT} from "../domain/replies.js";
 const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
 const MOVING = 800;
-const SENDING = {completed: 0, seen: [], data: {}};
 const LABELS = {chat: "Chat", home: "Home"};
 const props = defineProps({connection: {type: Object, required: true}});
 const here = () => `${props.connection.project}/${props.connection.environment}`;
@@ -60,7 +54,6 @@ const feed = ref({items: [], waiting: [], agent: "offline"});
 const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const listing = ref(false);
-const reportedHelpers = computed(() => (feed.value.running?.helpers || []).filter((row) => helperState(row) === "reported").length);
 const agentOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
 const pages = ref([]);
@@ -550,41 +543,21 @@ function pick(key) {
 <template>
     <div ref="stack" :class="['stack', {dragging: edge.dragging.value, settling: edge.settle.value > 0}]" :style="stackStyle" :inert="Boolean(picking || held || listing || agentOpen)">
         <div :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']" :inert="pages.length > (edge.leaving.value ? 1 : 0)">
-            <div :class="['home-top', {under}]">
-                <header class="home-bar">
-                    <button type="button" class="home-names" aria-label="Switch journal or environment" @click="picking = true">
-                        <span class="home-title">
-                            <span class="home-dot" :style="{background: connection.color}" />
-                            <span class="home-project">{{ connection.project }}</span>
-                            <PhoneChevron facing="down" :size="12" class="home-chevron" />
-                        </span>
-                        <span :class="['home-note', {offline}]">
-                            <template v-if="offline">
-                                <span class="home-offline-dot" aria-hidden="true" />
-                            </template>
-                            {{ connection.environment }}{{ offline ? " · Offline, waiting to reconnect" : current ? "" : " · Updating…" }}
-                        </span>
-                    </button>
-                    <button type="button" class="home-agent" aria-haspopup="dialog" @click="agentOpen = true">
-                        <span class="phone-hidden">Agent:</span>
-                        <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" :reported="reportedHelpers" />
-                    </button>
-                </header>
-                <template v-if="newer">
-                    <p class="home-newer">
-                        A newer version of this app is ready.
-                        <button type="button" @click="reload">Reload now</button>
-                    </p>
-                </template>
-                <template v-if="notice">
-                    <p class="home-offline" role="status">{{ notice }}</p>
-                </template>
-                <template v-if="actionsHere">
-                    <p class="home-pending" role="status">{{ actionsHere === 1 ? "1 of your actions waits" : `${actionsHere} of your actions wait` }} to send</p>
-                </template>
-                <PhoneNotify />
-                <PhoneWaiting :waiting="feed.waiting" @open="open" @list="listing = true" />
-            </div>
+            <PhoneHomeBar
+                :connection="connection"
+                :feed="feed"
+                :under="under"
+                :offline="offline"
+                :current="current"
+                :newer="newer"
+                :notice="notice"
+                :actions-here="actionsHere"
+                @places="picking = true"
+                @agent="agentOpen = true"
+                @reload="reload"
+                @open="open"
+                @list="listing = true"
+            />
             <div class="panes">
                 <section id="pane-chat" role="tabpanel" aria-label="Chat" :class="['pane', {away: screen !== 'chat'}]" :inert="screen !== 'chat'" :style="{'--dock': `${dockHeight}px`}">
                     <template v-if="switching || !ready">
@@ -594,18 +567,7 @@ function pick(key) {
                         <div class="home-feed-box">
                             <div ref="list" :class="['home-feed', {spaced: far}]" data-scroller @click.capture="chipped" @scroll.passive="moved" @touchstart.passive="freshGesture" @wheel.passive="freshGesture" @load.capture="loaded">
                                 <span ref="top" class="home-edge" />
-                                <div class="home-older">
-                                    <template v-if="olderBusy">
-                                        <Spinner />
-                                    </template>
-                                    <template v-else-if="olderFailed">
-                                        <span>Couldn't load earlier messages.</span>
-                                        <button type="button" class="home-retry" @click="retryOlder">Try again</button>
-                                    </template>
-                                    <template v-else-if="beginning">
-                                        <span>Start of the conversation</span>
-                                    </template>
-                                </div>
+                                <PhoneHomeOlder :busy="olderBusy" :failed="olderFailed" :beginning="beginning" @retry="retryOlder" />
                                 <template v-for="(item, i) in items" :key="keyOf(item)">
                                     <template v-if="keyOf(item) === newFrom">
                                         <p class="home-new" role="separator">New since you last looked</p>
@@ -615,27 +577,7 @@ function pick(key) {
                                     </template>
                                     <PhoneTurn :item="item" :arrive="arriveAt(item)" :briefs="briefs" :joined="joined[i]" :continues="joined[i + 1] === true" @hold="(it, rect, el) => (held = {item: it, rect, el})" />
                                 </template>
-                                <template v-for="line in sentHere" :key="line.idempotency">
-                                    <p class="home-sent">
-                                        {{ line.brief }}
-                                        <span>
-                                            {{ clock(line.at / 1000) }}
-                                            <PhoneTicks :message="SENDING" />
-                                        </span>
-                                    </p>
-                                </template>
-                                <template v-for="line in heldHere" :key="line.idempotency">
-                                    <template v-if="line.lost">
-                                        <p class="home-held">
-                                            {{ line.brief }}
-                                            <span>The attached file was lost, so this was not sent. Attach it again in a new message.</span>
-                                            <button type="button" class="home-drop" @click="discard(line.idempotency)">Remove</button>
-                                        </p>
-                                    </template>
-                                    <template v-else>
-                                        <p class="home-held">{{ line.brief }}<span>{{ offline ? "Waiting to send" : "Sending…" }}</span></p>
-                                    </template>
-                                </template>
+                                <PhoneHomeSending :sent="sentHere" :held="heldHere" :offline="offline" @discard="discard" />
                             </div>
                             <template v-if="far">
                                 <button type="button" class="home-newest" :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'" @click="newest">
@@ -807,147 +749,6 @@ function pick(key) {
     transition: none;
 }
 
-.home-top {
-    flex: none;
-    max-width: none;
-    margin: 0 calc(-1 * var(--side));
-    padding: 0 var(--side);
-    border-bottom: 1px solid transparent;
-    transition: border-color 200ms linear;
-}
-
-.home-top.under {
-    border-bottom-color: var(--line);
-}
-
-.home-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    min-height: 52px;
-}
-
-.home-names {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: 44px;
-    justify-content: center;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-}
-
-.home-chevron {
-    flex: none;
-    color: var(--text-3);
-}
-
-.home-dot {
-    flex: none;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-}
-
-.home-title {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.home-project {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.home-note {
-    max-width: 100%;
-    overflow: hidden;
-    padding-left: 16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-3);
-    font-size: 0.765rem;
-}
-
-.home-agent {
-    flex: none;
-    min-height: 44px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-}
-
-.home-newer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin: 0 0 8px;
-    padding: 6px 6px 6px 14px;
-    border-radius: 18px;
-    background: var(--accent-dim);
-    color: var(--text);
-    font-size: 0.765rem;
-    line-height: 1.3;
-}
-
-.home-newer button {
-    flex: none;
-    min-height: 30px;
-    padding: 0 12px;
-    border: 0;
-    border-radius: 15px;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
-}
-
-.home-note.offline {
-    color: var(--text-2);
-}
-
-.home-offline-dot {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 4px;
-    border-radius: 50%;
-    background: var(--tone-warn);
-    vertical-align: middle;
-}
-
-.home-pending {
-    margin: 0 0 6px;
-    padding: 6px 12px;
-    border-radius: 14px;
-    background: var(--raised);
-    color: var(--text-2);
-    font-size: 0.824rem;
-}
-
-.home-offline {
-    max-width: none;
-    margin: 0 calc(-1 * var(--side));
-    padding: 8px var(--side);
-    background: color-mix(in oklab, var(--tone-warn) 16%, transparent);
-    color: var(--text);
-    font-size: 0.824rem;
-    line-height: 1.35;
-}
-
 .panes {
     position: relative;
     flex: 1;
@@ -965,17 +766,6 @@ function pick(key) {
 
 .pane.away {
     visibility: hidden;
-}
-
-.home-older {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    min-height: 36px;
-    color: var(--text-3);
-    font-size: 0.765rem;
 }
 
 .home-status-space {
@@ -1014,57 +804,6 @@ function pick(key) {
     color: var(--text-3);
     font-size: 0.706rem;
     font-weight: 600;
-}
-
-.home-sent {
-    align-self: flex-end;
-    max-width: 78%;
-    margin: 0;
-    padding: 8px 12px;
-    border-radius: 18px;
-    background: var(--accent);
-    color: #fff;
-    line-height: 1.35;
-    white-space: pre-wrap;
-}
-
-.home-sent span {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    margin-top: 4px;
-    color: #fff;
-    font-size: 0.676rem;
-    text-align: right;
-}
-
-.home-held {
-    align-self: flex-end;
-    max-width: 78%;
-    margin: 0;
-    padding: 8px 12px;
-    border: 1px dashed var(--border-3);
-    border-radius: 18px;
-    line-height: 1.35;
-}
-
-.home-drop {
-    min-height: 32px;
-    margin-top: 6px;
-    padding: 0 12px;
-    border: 0;
-    border-radius: 16px;
-    background: var(--hover);
-    color: var(--text);
-    font: inherit;
-    font-size: 0.882rem;
-}
-
-.home-held span {
-    display: block;
-    color: var(--text-3);
-    font-size: 0.735rem;
 }
 
 .home-feed-box {
@@ -1111,18 +850,6 @@ function pick(key) {
     font-size: 11px;
     font-weight: 600;
     line-height: 1;
-}
-
-.home-retry {
-    min-height: 32px;
-    margin-left: 8px;
-    padding: 0 12px;
-    border: 0;
-    border-radius: 16px;
-    background: color-mix(in oklab, var(--accent) 14%, transparent);
-    color: var(--accent-text);
-    font: inherit;
-    font-weight: 600;
 }
 
 @keyframes newest-in {

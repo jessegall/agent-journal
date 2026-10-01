@@ -231,13 +231,6 @@ async function follow() {
     overflow-wrap: anywhere;
 }
 
-@keyframes writing-pulse {
-    50% {
-        opacity: 0.35;
-        transform: scale(0.7);
-    }
-}
-
 .abstract {
     margin: 12px 0 8px;
     color: var(--text-2);
