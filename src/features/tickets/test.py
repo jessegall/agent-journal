@@ -1,4 +1,5 @@
 import time
+from controllers.types import Comments
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
@@ -194,7 +195,6 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
         "an agent starting a ticket names its model, as every dispatch does"
     Tickets(record, actor=AGENT).move(orchestrated.n, "Building", model="sonnet")
     assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
-    from controllers.types import Comments
     Comments(Record(record.root, f"ticket-{ticket.n}"), actor=AGENT).create("Measured", brief="parity holds", about=ticket.ref)
     assert "Measured" in [c.title for c in tickets.comments(ticket.n)], "a ticket agent's comment shows on its ticket from the main environment"
 
@@ -259,7 +259,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     git("switch", "-q", "rewrite")
     git("commit", "-q", "--allow-empty", "-m", "the contract")
     git("switch", "-q", home)
-    rewrite = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Shipped"], meanings={"Doing": "start", "Shipped": "done"}, branch="rewrite")
+    rewrite = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Shipped"], meanings={"Doing": "start", "Shipped": "done"}, branch="rewrite",
+                                                after_merge="echo released > released.txt")
     part = tickets.create("Tree contract", board=rewrite.n)
     tickets.move(part.n, "Doing")
     part = tickets.load(part.n)
@@ -278,6 +279,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert tickets.load(later.n).queued, "a ticket that waits on another queues"
     assert tickets.merge(part.n).completed and git("branch", "--show-current").stdout.strip() == home, \
         "journal ticket merge lands it on its board's branch without touching the checkout, and it closes"
+    assert (record.root.parent / "released.txt").is_file() and "After the merge, echo released > released.txt ran" in \
+        [c.brief for c in Comments(record, actor=USER).linked_to(part.ref)][-1], "the board's after-merge command runs once the ticket lands, and the ticket says how it went"
     tickets.start_queued()
     later = tickets.load(later.n)
     assert later.base == git("rev-parse", "rewrite").stdout.strip() and not later.queued, \

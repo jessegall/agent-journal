@@ -22,6 +22,7 @@ class Board(Shape, Resource):
         Field(default=dict, name="building"),
         Field(default=dict, name="added"),
         Field(TEXT, "", name="branch"),
+        Field(TEXT, "", name="after_merge"),
         Field(TEXT, "", name="goal"),
         Field(LIST, list, name="done_when"),
         Field(NUMBER, 0.0, name="started"),
@@ -44,7 +45,8 @@ class Board(Shape, Resource):
     created_in_viewer = True
     notified = (USER,)
     labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean",
-              "branch": "Branch its tickets land on", "orchestrator_approves_plans": "The orchestrating agent approves ticket plans",
+              "branch": "Branch its tickets land on", "after_merge": "A command run in the project after each ticket is merged, such as a release",
+              "orchestrator_approves_plans": "The orchestrating agent approves ticket plans",
               "orchestrator_accepts_waits": "The orchestrating agent accepts or declines the waits agents propose between tickets",
               "orchestrator_confirms_drafts": "The orchestrating agent confirms drafted tickets",
               "plan_reviewer": "Who reviews a ticket's plan: orchestrator, or subagent"}

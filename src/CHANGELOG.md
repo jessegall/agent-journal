@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.225.0 — merge and release in one step
+
+**A board can run a command after each merge.** Set it in the board's settings, or with
+`journal board update <n> --set after_merge="<command>"`, such as a version bump, a tag and a push. When
+`journal ticket merge` lands a ticket of that board, the command runs in the project and the ticket gets a comment
+saying whether it ran or failed, with the last lines it printed. Nothing can slip in between the merge and the release.
+
 ## 2.224.0 — first messages that arrive and replies that go to the right place
 
 **Codex gets the journal's first message without waiting for you.** The opening line is typed the way every

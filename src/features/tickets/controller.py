@@ -19,6 +19,8 @@ from controllers.prioritised import Prioritised
 from engine.given import given
 from features.boards.controller import Boards
 from features.boards.resource import DONE, REVIEW, START
+from features.checks.controller import tail
+from engine.proc import streamed
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
@@ -33,6 +35,7 @@ PROPOSED, CONFIRMED = "proposed", "confirmed"
 LAUNCHING_FOR = 60.0
 SILENT_AFTER = 300.0
 RETURNS_BEFORE_ESCALATING = 2
+RELEASE_TIMEOUT = 600
 CARD_EXTRAS: list = []
 REPOSITORY_STATES: dict = {}
 PEOPLE: dict = {}
@@ -605,8 +608,18 @@ class Tickets(Prioritised, Controller):
                 where = "" if name == "." else f" in {name}"
                 self._refuse(f"{self.type} {ticket.n}'s branch {branch}{where} was not merged into {into}: {failed}")
         ticket = self.load(ticket.n)
-        self._closed([ticket] if self._merged(ticket) else [])
+        landed = self._merged(ticket)
+        self._closed([ticket] if landed else [])
+        if landed:
+            self._released(ticket)
         return self.load(ticket.n)
+
+    def _released(self, ticket) -> None:
+        board = Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None
+        if not board or not board.after_merge.strip():
+            return
+        code, output = streamed(["/bin/sh", "-c", board.after_merge], self.record.root.parent, RELEASE_TIMEOUT, lambda _: None)
+        self.comment(ticket.n, f"After the merge, {board.after_merge} {'ran' if code == 0 else 'failed'}:\n{tail(output)}")
 
     def _into(self, ticket) -> str:
         board = Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None

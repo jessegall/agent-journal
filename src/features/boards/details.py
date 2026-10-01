@@ -38,6 +38,9 @@ class BoardsDetails(FeatureDetails):
 
         Everything you write goes to the chat; the New work panel gets words only through its command. journal board say <n>
         "<line>" puts one short line in the panel, at most 200 characters, answering what was asked there.
+
+        journal board update <n> --set after_merge="<command>" runs that command in the project after every ticket of the
+        board that journal ticket merge lands, such as a version bump, tag and push; how it went is a comment on the ticket.
     """
 
     settings = [
