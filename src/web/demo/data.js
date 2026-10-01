@@ -7,11 +7,10 @@ const OPENING = "jesse";
 export async function loadDemo() {
     const preset = PRESETS.find((p) => p.key === OPENING);
     const layout = arranged(fresh(), preset.shape).layout;
-    const moments = expand((await scenario.load()).default);
+    const laid = (moment) => ({...moment, settings: {...moment.settings, viewer: {...moment.settings.viewer, layout, tour_seen: true}}});
+    const {moments, branches} = expand((await scenario.load()).default);
     return {
-        moments: moments.map((moment) => ({
-            ...moment,
-            settings: {...moment.settings, viewer: {...moment.settings.viewer, layout, tour_seen: true}},
-        })),
+        moments: moments.map(laid),
+        branches: Object.fromEntries(Object.entries(branches).map(([label, grown]) => [label, grown.map(laid)])),
     };
 }

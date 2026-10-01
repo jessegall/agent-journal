@@ -1,7 +1,7 @@
 export const SCENARIOS = [
     {key: "bakery", label: "A bakery website", short: "Bakery", load: () => import("./scenarios/bakery.json")},
     {key: "helpers", label: "Helpers beside Claude", short: "Helpers", load: () => import("./scenarios/helpers.json")},
-    {key: "away", label: "Away from the desk", short: "Away", load: () => import("./scenarios/away.json")},
+    {key: "ledgerly", label: "A customer's bug report", short: "Bug report", load: () => import("./scenarios/ledgerly.json")},
 ];
 
 const asked = new URLSearchParams(location.search).get("scenario");

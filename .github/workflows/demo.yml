@@ -32,8 +32,10 @@ jobs:
               run: |
                   python3 -m http.server 8650 --directory dist-demo &
                   sleep 1
-                  for scenario in bakery helpers away; do
-                      node demo/play.mjs "http://127.0.0.1:8650/?speed=100&scenario=$scenario" > /dev/null
+                  for scenario in bakery helpers ledgerly; do
+                      for answer in 0 1; do
+                          node demo/play.mjs "http://127.0.0.1:8650/?speed=100&scenario=$scenario" $answer > /dev/null
+                      done
                   done
             - uses: actions/configure-pages@v5
             - uses: actions/upload-pages-artifact@v3

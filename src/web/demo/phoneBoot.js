@@ -1,7 +1,7 @@
 import {loadDemo} from "./data.js";
 import {Player} from "./player.js";
 import {StandIn} from "./standIn.js";
-import {hintOnTyping} from "./hint.js";
+import {showHints} from "./hint.js";
 import {forgetEarlierBuilds, keep} from "./storage.js";
 import {insideFrame} from "./view.js";
 import {createApp} from "vue";
@@ -18,7 +18,7 @@ export async function install() {
     standIn.player = new Player(standIn);
     standIn.player.stepped = () => document.dispatchEvent(new Event("visibilitychange"));
     globalThis.demo = standIn;
-    hintOnTyping();
+    showHints();
     if (!insideFrame()) {
         const band = document.createElement("div");
         document.body.prepend(band);

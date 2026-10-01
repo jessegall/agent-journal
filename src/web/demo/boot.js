@@ -3,7 +3,7 @@ import {loadDemo} from "./data.js";
 import {StandIn} from "./standIn.js";
 import {QuietStream} from "./stream.js";
 import {Player} from "./player.js";
-import {hintOnTyping} from "./hint.js";
+import {showHints} from "./hint.js";
 import {forgetEarlierBuilds} from "./storage.js";
 import {framedAsPhone, onAPhone, phoneAddress} from "./view.js";
 import PhoneFrame from "./PhoneFrame.vue";
@@ -25,7 +25,7 @@ export async function install() {
     const standIn = new StandIn(await loadDemo());
     standIn.player = new Player(standIn);
     globalThis.demo = standIn;
-    hintOnTyping();
+    showHints();
     transport.reach = async (method, url, body) => standIn.answer(method, url, body);
     globalThis.EventSource = QuietStream;
     keepOut();

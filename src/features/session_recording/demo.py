@@ -21,6 +21,7 @@ EVERYTHING = 100000
 EVENTS = 1000
 NEVER = 4e9
 PHONE = "phone."
+BRANCHES = "branches"
 APP = {"manifest": "/api/manifest", "identity": "/api/identity", "pages": "/api/pages", "summary": "/api/summary", "agents": "/api/agents"}
 ENVIRONMENT = {"settings": "settings", "bar": "bar", "family": "family"}
 SETUP = ("feature", "record", "sequence", "trigger", "template")
@@ -178,13 +179,26 @@ class Throwaway:
                 continue
 
 
-def built(folder: Path, env: str = "") -> dict:
+def branched(folder: Path, env: str = "") -> dict:
+    demo = built(folder, env)
+    listed = folder / BRANCHES / "branches.json"
+    if not listed.is_file():
+        return demo
+    branches = {}
+    for label, sub in json.loads(listed.read_text()).items():
+        grown = built(folder / BRANCHES / sub, env, folder.resolve().name)
+        demo["answers"].update(grown["answers"])
+        branches[label] = grown["moments"]
+    return {**demo, "branches": branches}
+
+
+def built(folder: Path, env: str = "", name: str | None = None) -> dict:
     scrubber = Scrubber()
     found = leaks(folder, scrubber)
     if found:
         raise Refused("the recording still holds the machine, run journal record scrub first: " + "; ".join(found[:5]))
     features.load()
-    world = Throwaway(folder / "blobs", folder.resolve().name)
+    world = Throwaway(folder / "blobs", name or folder.resolve().name)
     stored: dict[str, object] = {}
     phoned: dict[str, str] = {}
     moments = []

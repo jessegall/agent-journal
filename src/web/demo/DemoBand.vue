@@ -8,7 +8,7 @@ import {insideFrame, viewAs} from "./view.js";
 
 const REPOSITORY = "https://github.com/jessegall/agent-journal";
 const INSTALL = `${REPOSITORY}#install`;
-const WHOLE = "A replay of a recorded session: the journal is real, the agent's moves are scripted. Nothing leaves your browser.";
+const WHOLE = "A recorded session where you play the user: send, answer and approve when it is your turn. Nothing leaves your browser.";
 
 const open = (url) => window.open(url, "_blank", "noopener");
 const framed = insideFrame();
@@ -24,7 +24,7 @@ const choices = computed(() => (wide.value ? SCENARIOS : SHORT));
     <div class="demo-band">
         <span class="demo-band-text" :title="WHOLE">
             <span class="demo-band-long">{{ WHOLE }}</span>
-            <span class="demo-band-short">A scripted replay. Nothing leaves your browser.</span>
+            <span class="demo-band-short">A recorded session. You play the user.</span>
         </span>
         <Segmented class="demo-band-scenarios" :options="choices" :value="scenario.key" title="Which recorded session to watch" @pick="play" />
         <span class="demo-band-acts">

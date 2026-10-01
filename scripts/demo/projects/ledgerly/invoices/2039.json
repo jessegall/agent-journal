@@ -1,0 +1,22 @@
+{
+  "number": "2039",
+  "customer": "Corner Caf\u00e9",
+  "date": "2026-04-23",
+  "lines": [
+    {
+      "name": "Coffee cups",
+      "price": "0.35",
+      "quantity": 200
+    },
+    {
+      "name": "Lids",
+      "price": "0.12",
+      "quantity": 200
+    },
+    {
+      "name": "Stirrers",
+      "price": "0.03",
+      "quantity": 150
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 import threading
 from contextlib import contextmanager
 from functools import partial
@@ -58,20 +59,28 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     assert recordings.load(row.n).completed, "the recording is closed"
 
 
-WEB = Path(__file__).resolve().parents[2] / "web" / "demo"
+REPOSITORY = Path(__file__).resolve().parents[3]
+WEB = REPOSITORY / "src" / "web" / "demo"
 BOOT = """
 import {readFileSync} from "node:fs";
 globalThis.__DEMO_BUILD__ = "test";
 globalThis.location = {origin: "http://demo"};
 const {expand} = await import(process.argv[1] + "/moments.js");
 const {StandIn} = await import(process.argv[1] + "/standIn.js");
-const standIn = new StandIn({moments: expand(JSON.parse(readFileSync(process.argv[2], "utf8")))});
+const standIn = new StandIn(expand(JSON.parse(readFileSync(process.argv[2], "utf8"))));
 const todos = async () => (await standIn.answer("GET", "/api/t/todo?completed=1").json()).rows.map((row) => row.title);
 const first = await todos();
 const dashboard = await standIn.answer("GET", "/api/t/dashboard?types=todo&completed=1&last=25&events=100").json();
 const stepped = [standIn.step(), standIn.step(), standIn.step()];
 console.log(JSON.stringify({project: standIn.moment.manifest.project, first, last: await todos(), stepped, dashboard: Object.keys(dashboard)}));
 """
+
+
+def test_every_scenario_script_plays_every_branch_through_this_journal_without_a_hold(tmp_path):
+    sys.path.insert(0, str(REPOSITORY))
+    from scripts.demo.record import SCENARIOS, played
+    for key in SCENARIOS:
+        played(key, tmp_path / key, 0)
 
 
 def recorded_session(tmp_path):
@@ -137,21 +146,24 @@ def served(folder: Path):
         server.shutdown()
 
 
-def test_every_shipped_scenario_plays_every_recorded_message_to_the_end_at_a_hundred_times_speed(tmp_path):
+def test_a_visitor_plays_every_branch_of_every_shipped_scenario_to_the_end_at_a_hundred_times_speed(tmp_path):
+    sys.path.insert(0, str(REPOSITORY))
+    from scripts.demo.record import SCENARIOS
     site = tmp_path / "site"
     subprocess.run(["npx", "vite", "build", "--mode", "demo", "--outDir", str(site), "--emptyOutDir"], cwd=WEB.parent, check=True, capture_output=True, timeout=180)
+    runs = [(key, page, branch) for key in SCENARIOS for page, branch in (("", "0"), ("", "1"))] + [("bakery", "phone.html", "1")]
     with served(site) as url:
-        played = {scenario: subprocess.run(["node", str(PLAY), f"{url}{page}?speed=100&scenario={scenario.split('@')[0]}"], cwd=WEB.parent,
-                                           capture_output=True, text=True, timeout=300)
-                  for scenario, page in (("bakery", ""), ("helpers", ""), ("away", ""), ("away@app", "phone.html"))}
-    for scenario, done in played.items():
-        assert done.returncode == 0, f"{scenario}: {done.stderr}"
-        got = json.loads(done.stdout)
-        assert got["errors"] == [], scenario
-        assert got["prompts"] > 0, f"{scenario}: every recorded user message is sent by the replay itself"
-        assert "sending" not in got["text"], f"{scenario}: a sent message lands as the recorded one"
-    bakery, helpers = (json.loads(played[scenario].stdout) for scenario in ("bakery", "helpers"))
-    assert all(bakery["todos"]) and all(helpers["todos"]), "the recorded work plays through to its last to-do"
-    assert "Fix both" in json.loads(played["away@app"].stdout)["text"], "the phone app plays the scenario typed on the phone"
-    assert bakery["cards"] > 0, "the file feed shows the agent's recorded edits"
-    assert "Agents at work" in helpers["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"
+        played = {run: subprocess.run(["node", str(PLAY), f"{url}{run[1]}?speed=100&scenario={run[0]}", run[2]], cwd=WEB.parent,
+                                      capture_output=True, text=True, timeout=300) for run in runs}
+    for run, done in played.items():
+        assert done.returncode == 0, f"{run}: {done.stdout[-400:]} {done.stderr[-400:]}"
+    got = {run: json.loads(done.stdout) for run, done in played.items()}
+    for run, one in got.items():
+        assert one["errors"] == [], run
+        assert {"send", "answer"} <= set(one["moves"]), f"{run}: the visitor sends the messages and picks the answer"
+        assert one["branch"] and all(one["todos"]), f"{run}: the chosen branch plays through to its last to-do"
+        assert "sending" not in one["text"], f"{run}: a sent message lands as the recorded one"
+    assert all(got[(key, "", "0")]["branch"] != got[(key, "", "1")]["branch"] for key in SCENARIOS), "each answer plays its own ending"
+    assert "approve" in got[("bakery", "", "0")]["moves"], "the visitor approves the plan with its button"
+    assert got[("bakery", "", "0")]["cards"] > 0, "the file feed shows the agent's recorded edits"
+    assert "Agents at work" in got[("helpers", "", "0")]["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"

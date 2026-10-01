@@ -1,0 +1,12 @@
+{
+  "number": "2038",
+  "customer": "Hilltop Florist",
+  "date": "2026-04-02",
+  "lines": [
+    {
+      "name": "Gift cards",
+      "price": "1.99",
+      "quantity": 10
+    }
+  ]
+}
