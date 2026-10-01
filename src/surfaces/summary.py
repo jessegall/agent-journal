@@ -7,6 +7,7 @@ from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
 from surfaces.manifest import manifest
 from engine.record import Record
+from surfaces.agent_state import SILENT, agent_state
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
 from providers import PROVIDERS
@@ -88,6 +89,7 @@ def environment(record: Record) -> dict:
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM)._standing() if p.status in SHOWN],
         "subagents": subagents(agent),
         "auto": automatic(record),
+        "silent": agent_state(record, record.env) == SILENT,
         "counts": {
             "messages": sum(USER not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()),
             "questions": len(Questions(record, actor=SYSTEM)._standing()),

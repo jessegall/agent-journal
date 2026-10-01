@@ -1,6 +1,8 @@
 <script setup>
+import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
+
 defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}, reported: {type: Number, default: 0}});
-const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
+const WORDS = {offline: "Not running", idle: "Idle", working: "Working", [SILENT]: SILENT_WORD};
 </script>
 
 <template>
@@ -59,29 +61,7 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     background: var(--text-4);
 }
 
-.idle .agent-auto {
-    padding: 1px 6px;
-    border-radius: 8px;
-    background: color-mix(in oklab, var(--accent) 24%, transparent);
-    color: var(--accent-text);
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.agent-reported {
-    min-width: 18px;
-    padding: 1px 5px;
-    border-radius: 9px;
-    background: var(--tone-good);
-    color: #fff;
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.agent-dot {
+.idle .agent-dot {
     background: var(--tone-good);
 }
 
@@ -89,31 +69,18 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
     color: var(--text);
 }
 
-.working .agent-auto {
-    padding: 1px 6px;
-    border-radius: 8px;
-    background: color-mix(in oklab, var(--accent) 24%, transparent);
-    color: var(--accent-text);
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.agent-reported {
-    min-width: 18px;
-    padding: 1px 5px;
-    border-radius: 9px;
-    background: var(--tone-good);
-    color: #fff;
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.agent-dot {
+.working .agent-dot {
     background: var(--accent);
     animation: pulse 1.4s ease-in-out infinite;
+}
+
+.silent {
+    border-color: color-mix(in oklab, var(--tone-warn) 55%, transparent);
+    color: var(--tone-warn);
+}
+
+.silent .agent-dot {
+    background: var(--tone-warn);
 }
 
 @keyframes pulse {
@@ -123,29 +90,7 @@ const WORDS = {offline: "Not running", idle: "Idle", working: "Working"};
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .working .agent-auto {
-    padding: 1px 6px;
-    border-radius: 8px;
-    background: color-mix(in oklab, var(--accent) 24%, transparent);
-    color: var(--accent-text);
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.agent-reported {
-    min-width: 18px;
-    padding: 1px 5px;
-    border-radius: 9px;
-    background: var(--tone-good);
-    color: #fff;
-    font-size: 0.647rem;
-    font-weight: 700;
-    line-height: 1.3;
-    text-align: center;
-}
-
-.agent-dot {
+    .working .agent-dot {
         animation: none;
     }
 }

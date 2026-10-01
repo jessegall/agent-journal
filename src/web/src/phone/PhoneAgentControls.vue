@@ -10,7 +10,12 @@ import PhoneHelpers from "./PhoneHelpers.vue";
 import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
 
-const props = defineProps({running: {type: Object, default: () => ({})}, alive: {type: Boolean, default: false}, environment: {type: String, required: true}});
+const props = defineProps({
+    running: {type: Object, default: () => ({})},
+    alive: {type: Boolean, default: false},
+    silent: {type: Boolean, default: false},
+    environment: {type: String, required: true},
+});
 const helpers = computed(() => props.running.helpers || []);
 const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
 const stopping = ref(0);
@@ -164,6 +169,12 @@ async function act(what) {
                 </button>
             </div>
         </template>
+        <template v-else-if="silent">
+            <p class="controls-silent" role="status">The agent was started but never reported in, so it is not working. Stop it, then start it again.</p>
+            <div class="controls-row">
+                <button type="button" class="controls-button danger" :disabled="Boolean(busy)" @click="confirming = true">Stop</button>
+            </div>
+        </template>
         <template v-else-if="alive">
             <div class="controls-row">
                 <button type="button" class="controls-button" :disabled="Boolean(busy)" @click="act(running.paused ? 'resume' : 'pause')">
@@ -179,6 +190,16 @@ async function act(what) {
 </template>
 
 <style scoped>
+.controls-silent {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--tone-warn) 14%, transparent);
+    color: var(--text);
+    font-size: 0.882rem;
+    line-height: 1.4;
+}
+
 .controls {
     display: flex;
     flex-direction: column;
@@ -238,15 +259,19 @@ async function act(what) {
     padding: 3px;
     border-radius: 12px;
     background: var(--bg);
+    container-type: inline-size;
 }
 
 .controls-segments :deep(.segmented-option) {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     height: 44px;
+    padding: 0 6px;
     border-radius: 9px;
     color: var(--text-2);
-    font-size: 0.882rem;
+    font-size: min(0.882rem, 4.9cqi);
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .controls-segments :deep(.segmented-option.on) {

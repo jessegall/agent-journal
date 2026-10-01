@@ -293,7 +293,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     running = call(base, "/p/feed", key=key).body["running"]
     assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"
     from engine.sessions import Sessions
-    from features.phone.places import agent_state
+    from surfaces.agent_state import agent_state
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
     assert agent_state(record, record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
     from controllers.types import Environments

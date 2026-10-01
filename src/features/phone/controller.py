@@ -24,7 +24,8 @@ from features.format import VIEWER
 from features.message_buttons.shaping import Button, spent
 from engine.project_files import matching
 from features.phone.export import Export, export
-from features.phone.places import MAIN, Place, agent_state, places
+from features.phone.places import MAIN, Place, places
+from surfaces.agent_state import agent_state
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
 from features.shaping import shaped

@@ -1,7 +1,9 @@
 <script setup>
 import PhoneChevron from "./PhoneChevron.vue";
+import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
 
 defineProps({places: {type: Array, required: true}, here: {type: Function, required: true}});
+const silent = (place, name) => place.details?.[name]?.agent === SILENT;
 const emit = defineEmits(["pick"]);
 </script>
 
@@ -20,8 +22,11 @@ const emit = defineEmits(["pick"]);
                     <template v-for="name in place.environments" :key="name">
                         <li>
                             <button type="button" class="place-row" :data-place="`${place.root}:${name}`" :aria-current="here(place, name) ? 'true' : undefined" @click="emit('pick', place, name)">
-                                <span :class="['place-state', {working: place.working.includes(name)}]" />
+                                <span :class="['place-state', {working: place.working.includes(name), silent: silent(place, name)}]" />
                                 <span class="place-env">{{ name }}</span>
+                                <template v-if="silent(place, name)">
+                                    <span class="place-silent">{{ SILENT_WORD }}</span>
+                                </template>
                                 <template v-if="here(place, name)">
                                     <span class="place-here">Current</span>
                                 </template>
@@ -106,6 +111,17 @@ const emit = defineEmits(["pick"]);
 
 .place-state.working {
     background: var(--tone-good);
+}
+
+.place-state.silent {
+    background: var(--tone-warn);
+}
+
+.place-silent {
+    flex: none;
+    color: var(--tone-warn);
+    font-size: 0.765rem;
+    font-weight: 600;
 }
 
 .place-env {

@@ -81,7 +81,7 @@ async function start(agent) {
                 </div>
             </template>
         </dl>
-        <PhoneAgentControls :running="live" :alive="running" :environment="environment" @changed="emit('changed')" />
+        <PhoneAgentControls :running="live" :alive="running" :silent="state === 'silent'" :environment="environment" @changed="emit('changed')" />
         <template v-if="told">
             <p class="agent-told" role="status">{{ told }}</p>
         </template>
