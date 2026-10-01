@@ -155,3 +155,30 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
             call()
         assert (len(work.opened) <= opened, len(work.scanned) <= scanned) == (True, True), \
             f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"
+
+
+def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_its_event(monkeypatch):
+    from pathlib import Path
+    from engine.record import Record, SETTINGS
+    from engine.stored import write_json
+    from features.dev_faults.counting import counted
+    record = fresh()
+    record.set_setting("delivery", {"mode": "one"})
+    stats = []
+    original = Path.stat
+    monkeypatch.setattr(Path, "stat", lambda self, *a, **k: (stats.append(str(self)), original(self, *a, **k))[1])
+    with counted() as work:
+        for _ in range(20):
+            assert record.setting("delivery") == {"mode": "one"}
+    assert (work.opened, [s for s in stats if s.endswith("settings.json")]) == ([], []), "a held setting costs no open and no stat"
+    write_json(record.home / "settings.json", {"delivery": {"mode": "two"}})
+    assert record.setting("delivery") == {"mode": "one"}, "the file changing under a process is not noticed without the event"
+    SETTINGS.clear()
+    seen = Record(record.root, record.env)
+    seen.setting("delivery")
+    write_json(record.home / "settings.json", {"delivery": {"mode": "three"}})
+    other = Record(record.root, record.env)
+    event = other.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting="delivery")
+    assert seen.setting("delivery") == {"mode": "two"}, "the view of another process holds until the event reaches it"
+    features.passed(event, seen)
+    assert seen.setting("delivery") == {"mode": "three"}, "the event makes it read the file again"

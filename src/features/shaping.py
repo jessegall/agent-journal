@@ -12,11 +12,7 @@ SHAPED: dict = {}
 KEEP_SHAPED = 5000
 
 def settled(record) -> tuple:
-    try:
-        stamp = (record.home / "settings.json").stat().st_mtime_ns
-    except OSError:
-        stamp = 0
-    return stamp, generation()
+    return record.settings_version(), generation()
 
 
 def shaped(r, record=None, surface: str = "") -> dict:

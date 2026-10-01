@@ -49,14 +49,14 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             </template>
             <a class="crumb-link crumb-project" :href="demo ? `#/${route.env}` : `#/${route.env}/hub`" :title="demo ? '' : 'The journals running on this machine'">
                 <span class="crumb-tint" :style="{background: tint}" />
-                {{ project }}
+                <span class="crumb-name">{{ project }}</span>
             </a>
-            <span class="sep">/</span>
+            <span class="sep crumb-wide">/</span>
             <a class="crumb-link" :href="envLink" :title="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
                 {{ route.env }}
             </a>
-            <span class="sep">/</span>
-            <b>{{ title }}</b>
+            <span class="sep crumb-wide">/</span>
+            <b class="crumb-wide">{{ title }}</b>
             <template v-if="route.page && meta(route.page)">
                 <span class="icon-btn help-btn" :title="meta(route.page).help"><Icon name="info" /></span>
             </template>
@@ -176,6 +176,13 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
 
 .crumb-link:hover {
     color: var(--text);
+}
+
+@media (max-width: 640px) {
+    .crumb-name,
+    .crumb-wide {
+        display: none;
+    }
 }
 .help-btn {
     width: 22px;

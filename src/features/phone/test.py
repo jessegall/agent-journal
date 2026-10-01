@@ -263,11 +263,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     for title in ("One", "Two"):
         plans(record, actor=AGENT).phase(held.n, title, "done", checkpoint=title == "One")
     Controller.update(plans(record, actor=SYSTEM), held.n, status="waiting", current=1)
-    shown = call(base, "/p/feed", key=key).body["plan"]
-    assert (shown["n"], shown["status"], [phase["title"] for phase in shown["phases"]]) == (held.n, "waiting", ["One", "Two"]), \
+    strip = call(base, "/p/feed", key=key).body["plan"]
+    assert (strip["n"], strip["status"], [phase["title"] for phase in strip["phases"]]) == (held.n, "waiting", ["One", "Two"]), \
         "the feed carries the plan that runs, with its phases"
-    assert call(base, "/p/continue", {"n": held.n, "updated": shown["updated"] - 5}, key).status == 409, "a plan that moved on is not continued"
-    assert call(base, "/p/continue", {"n": held.n, "updated": shown["updated"]}, key).status == 201
+    assert call(base, "/p/continue", {"n": held.n, "updated": strip["updated"] - 5}, key).status == 409, "a plan that moved on is not continued"
+    assert call(base, "/p/continue", {"n": held.n, "updated": strip["updated"]}, key).status == 201
     assert plans(record, actor=SYSTEM).load(held.n).current == 2, "Continue passes the checkpoint to the next phase"
     proposal = Docs(record, actor=AGENT).create("Proposal", buttons=[{"label": "Accept", "say": "I accept this proposal", "choice": "answer"},
                                                                      {"label": "Change it", "say": "I want changes", "choice": "answer"}])

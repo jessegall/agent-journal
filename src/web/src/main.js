@@ -5,7 +5,7 @@ import "./tokens.css";
 
 watchConsole();
 
-const start = () => createApp(App).mount("#app");
+const start = (root = App) => createApp(root).mount("#app");
 
 if (__DEMO__) import("../demo/boot.js").then(({install}) => install().then(start));
 else start();

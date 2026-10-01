@@ -4,7 +4,7 @@ import time
 from itertools import takewhile
 from urllib.parse import quote
 
-from features.row_links.formatters import named
+from features.row_links.formatters import Mention, named
 
 CODE_SPAN = re.compile(r"`([^`]+)`")
 BOLD = re.compile(r"\*\*(.+?)\*\*")
@@ -34,8 +34,9 @@ class Page:
         names, pattern = named()
 
         def linked(m) -> str:
-            ref = f"{names[m.group(1).lower()]}:{m.group(2)}"
-            return f'<a href="{self.href(ref)}">{m.group(0)}</a>' if ref in self.scope and not m.group(3) else m.group(0)
+            said = Mention.of(m, names)
+            ref = said.ref(said.numbers[0])
+            return f'<a href="{self.href(ref)}">{m.group(0)}</a>' if ref in self.scope else m.group(0)
 
         return pattern.sub(linked, text)
 

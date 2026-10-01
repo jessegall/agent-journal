@@ -8,7 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from engine import bus
-from resources.base import ACTIONS, ACTORS, PROJECT, Event
+from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.stored import append_text, held_back, read_json, write_json, write_text
 
@@ -18,6 +18,7 @@ RECENT: dict[str, tuple[int, list[Event]]] = {}
 
 
 SETTINGS: dict[str, tuple] = {}
+SETTINGS_VERSION = [0]
 
 
 class Setting:
@@ -224,24 +225,33 @@ class Record:
     def settings(self) -> dict:
         if self.memo is not None and "settings" in self.memo:
             return self.memo["settings"]
-        f = self.home / "settings.json"
-        try:
-            stamp = f.stat().st_mtime_ns
-        except OSError:
-            return {}
-        held = SETTINGS.get(str(f))
-        if not held or held[0] != stamp:
-            held = SETTINGS[str(f)] = (stamp, read_json(f, dict, {}))
+        found = self.settings_held()[1]
         if self.memo is not None:
-            self.memo["settings"] = held[1]
-        return held[1]
+            self.memo["settings"] = found
+        return found
+
+    def settings_held(self) -> tuple:
+        key = str(self.home / "settings.json")
+        if key not in SETTINGS:
+            self.reread_settings()
+        return SETTINGS[key]
+
+    def settings_version(self) -> int:
+        return self.settings_held()[0]
+
+    def reread_settings(self) -> None:
+        f = self.home / "settings.json"
+        SETTINGS_VERSION[0] += 1
+        SETTINGS[str(f)] = (SETTINGS_VERSION[0], read_json(f, dict, {}))
+        if self.memo is not None:
+            self.memo.pop("settings", None)
 
     def set_setting(self, key: str, value) -> None:
         f = self.home / "settings.json"
         with self.locked():
             write_json(f, {**read_json(f, dict, {}), key: value}, indent=2)
-        if self.memo is not None:
-            self.memo.pop("settings", None)
+        self.reread_settings()
+        self.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting=key)
 
 
 def parsed(lines: list[bytes]) -> list[Event]:
