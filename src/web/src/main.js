@@ -4,4 +4,8 @@ import {watchConsole} from "./faults.js";
 import "./tokens.css";
 
 watchConsole();
-createApp(App).mount("#app");
+
+const start = () => createApp(App).mount("#app");
+
+if (__DEMO__) import("../demo/boot.js").then(({install}) => install().then(start));
+else start();

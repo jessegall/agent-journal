@@ -1,5 +1,6 @@
 import {computed} from "vue";
 import {PAGES, RESOURCE_GROUPS, SIDEBAR} from "../domain/navigation.js";
+import {demo} from "../platform/demo.js";
 import {boardOn, counted, types} from "../state/store.js";
 
 const countOf = (t) => counted(t.name, t.needs_attention ? "unread" : "open");
@@ -35,7 +36,7 @@ export function useNavigation() {
             links: [
                 ...(boardOn.value ? [{...pageLink("kanban"), count: counted("todo")}] : []),
                 ...daily("project"),
-                pageLink("plugins"),
+                ...(demo ? [] : [pageLink("plugins")]),
                 pageLink("resources"),
                 pageLink("settings"),
             ],

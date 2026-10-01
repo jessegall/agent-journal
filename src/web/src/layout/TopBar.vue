@@ -1,4 +1,5 @@
 <script setup>
+import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
@@ -46,7 +47,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             <template v-if="full">
                 <a class="icon-btn back" :href="`#/${route.env}`" title="Back to Home"><Icon name="back" /></a>
             </template>
-            <a class="crumb-link crumb-project" :href="`#/${route.env}/hub`" title="The journals running on this machine">
+            <a class="crumb-link crumb-project" :href="demo ? `#/${route.env}` : `#/${route.env}/hub`" :title="demo ? '' : 'The journals running on this machine'">
                 <span class="crumb-tint" :style="{background: tint}" />
                 {{ project }}
             </a>

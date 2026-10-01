@@ -4,7 +4,7 @@ import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
 import {activityShown, closeOverlays} from "./actions/panels.js";
 
-import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
+import {computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
 import {project} from "./identity.js";
 import {away} from "./platform/visibility.js";
@@ -44,6 +44,8 @@ import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import {usePoll} from "./poll.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
+
+const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
 usePoll(...polled.events);
 
@@ -177,6 +179,9 @@ watch(
     </template>
     <template v-else-if="store.spec">
         <div class="viewer">
+            <template v-if="DemoBand">
+                <DemoBand />
+            </template>
             <WindowBar />
             <div :class="['app', {wide: drawnWide, mini: store.sideMini, full, switching, narrow, 'side-open': narrow && store.sideOpen}]">
                 <div class="rail"><Sidebar /></div>

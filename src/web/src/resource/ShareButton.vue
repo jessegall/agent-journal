@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import {demo, unlessDemo} from "../platform/demo.js";
 import {sharesOf, waitingOf} from "../composables/shares.js";
 import ShareDialog from "./ShareDialog.vue";
 
@@ -15,7 +16,8 @@ const waiting = computed(() => waitingOf(`${props.resource.type}:${props.resourc
     <Btn
         small
         :class="['share-toggle', {live: open.length}]"
-        :title="open.length ? `${open.length} open link` : 'Share a link to this'"
+        :disabled="demo"
+        :title="unlessDemo(open.length ? `${open.length} open link` : 'Share a link to this')"
         @click="shown = true"
     >
         <Icon name="share" :size="12" />

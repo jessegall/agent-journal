@@ -2,6 +2,7 @@
 import {computed, reactive, ref} from "vue";
 import EnvStart from "./EnvStart.vue";
 import NewEnvironment from "./NewEnvironment.vue";
+import {demo, unlessDemo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import FoldGroup from "../kit/FoldGroup.vue";
 import Icon from "../kit/Icon.vue";
@@ -48,10 +49,12 @@ function point(e) {
                 <span class="logo" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
                 <span class="project-name label">{{ project }}</span>
             </a>
-            <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="`#/${route.env}/hub`">
-                <Icon name="panel" />
-                <span class="label">Hub</span>
-            </a>
+            <template v-if="!demo">
+                <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="`#/${route.env}/hub`">
+                    <Icon name="panel" />
+                    <span class="label">Hub</span>
+                </a>
+            </template>
             <template v-for="g in groups" :key="g.key">
                 <FoldGroup class="group" :label="g.label" :open="!folded[g.key]" @toggle="fold(g.key)">
                     <template v-for="link in g.links" :key="link.key">
@@ -102,7 +105,7 @@ function point(e) {
                         <EnvStart :env="e" :live="live(e.title)" />
                     </div>
                 </template>
-                <button type="button" class="item item-new" @click="creating = true">
+                <button type="button" class="item item-new" :disabled="demo" :title="unlessDemo('')" @click="creating = true">
                     <Icon name="plus" />
                     <span class="label">New environment</span>
                 </button>

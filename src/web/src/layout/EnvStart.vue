@@ -2,6 +2,7 @@
 import {useAnchoredAction} from "../actions/anchored.js";
 import {api} from "../api/client.js";
 import {PROVIDER_CHOICES} from "../agents.js";
+import {demo, unlessDemo} from "../platform/demo.js";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
@@ -17,7 +18,8 @@ const stop = () => acted(() => api.stopAgentIn(props.env.n));
     <button
         type="button"
         :class="['env-start', {open: anchor}]"
-        :title="live ? `Stop the agent in ${env.title}` : `Start an agent in ${env.title}`"
+        :disabled="demo"
+        :title="unlessDemo(live ? `Stop the agent in ${env.title}` : `Start an agent in ${env.title}`)"
         @click.stop.prevent="toggle"
     >
         <Icon :name="live ? 'stop' : 'play'" :size="12" />

@@ -1,4 +1,5 @@
 <script setup>
+import {demo} from "../platform/demo.js";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -291,7 +292,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                     </ListBox>
                 </template>
 
-                <template v-if="sections.stop.length">
+                <template v-if="sections.stop.length && !demo">
                     <ListBox sticky title="Shut down">
                         <SettingRow :title="stopRow.title" :text="stopRow.text">
                             <template #control>
