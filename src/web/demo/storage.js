@@ -1,8 +1,10 @@
+import {scenario} from "./scenarios.js";
+
 const PREFIX = "demo:";
 const OWNED = [PREFIX, "journal.", "events:"];
 
 export const BUILD = __DEMO_BUILD__;
-const key = `${PREFIX}${BUILD}:state`;
+const key = `${PREFIX}${BUILD}:${scenario.key}:state`;
 
 export function readState() {
     try {

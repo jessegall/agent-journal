@@ -27,6 +27,14 @@ jobs:
               working-directory: src/web
             - run: npx vite build --mode demo
               working-directory: src/web
+            - name: Play every scenario in a browser before publishing
+              working-directory: src/web
+              run: |
+                  python3 -m http.server 8650 --directory dist-demo &
+                  sleep 1
+                  for scenario in bakery helpers; do
+                      node demo/play.mjs "http://127.0.0.1:8650/?speed=100&scenario=$scenario" > /dev/null
+                  done
             - uses: actions/configure-pages@v5
             - uses: actions/upload-pages-artifact@v3
               with:

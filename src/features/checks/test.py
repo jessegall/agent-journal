@@ -87,6 +87,7 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     (repo.project / "hooks").mkdir()
     commit(repo.project, "hooks/test.py", "def test(): pass\n")
     commit(repo.project, "hooks/code.py", "one\n")
+    commit(repo.project, "old.txt", "gone soon\n")
     Agents(repo.record, actor=SYSTEM).create("claude-1")
     checks = Checks(repo.record, actor=USER)
     suite = checks.create("the suites pass", command="true", touched="echo ran {tests}")
@@ -102,9 +103,11 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
         "a gate runs in a process of its own, so a server restarted by another gate's install cannot cut it off"
     monkeypatch.undo()
     git(repo.project, "add", "notes.txt")
-    checks.gate(suite.n, "change the hook", paths="hooks/code.py", wait=True)
+    git(repo.project, "rm", "-q", "old.txt")
+    checks.gate(suite.n, "change the hook", paths="hooks/code.py,old.txt", wait=True)
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook" and "notes.txt" in git(repo.project, "status", "--short"), \
         "a pass commits exactly the named paths, never what else was staged"
+    assert "old.txt" not in git(repo.project, "ls-files"), "a deleted path is committed as deleted, even when its removal was staged"
     assert any("passed and" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "the agent is told it landed"
     checks.update(suite.n, command="false")
     (repo.project / "hooks" / "code.py").write_text("three\n")
