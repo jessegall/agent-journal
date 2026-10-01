@@ -469,7 +469,7 @@ class Environment(Shape, Resource):
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
         help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
     )
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from")]
+    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched")]
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment removed"}
     status_labels = {"create": "preparing", "complete": "removing"}

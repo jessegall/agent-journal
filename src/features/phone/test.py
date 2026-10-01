@@ -296,6 +296,10 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     from features.phone.places import agent_state
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
     assert agent_state(record, record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
+    from controllers.types import Environments
+    from features.phone.places import shown
+    Environments(record, actor=SYSTEM).create(f"{record.env}-rhea", owner="helper:1", launched_from=record.env)
+    assert f"{record.env}-rhea" not in shown(record.root), "a helper's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \
         "the phone switches auto mode, the same setting the desktop's switch flips"

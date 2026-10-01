@@ -61,6 +61,7 @@ def start(root: Path, env: str, compacted: bool) -> str:
 
 
 SHOWING = threading.Lock()
+PRIVATE = "_"
 DONE = "_done"
 SENT = "_sent"
 KEPT_DONE = 50
@@ -121,7 +122,7 @@ def stopped(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        cut = [message for message, parts in held.items() if message not in (DONE, SENT) and shown(parts) and text.strip().startswith(shown(parts))]
+        cut = [message for message, parts in held.items() if not message.startswith(PRIVATE) and shown(parts) and text.strip().startswith(shown(parts))]
         if not cut:
             return
         write_json(f, {**{key: value for key, value in held.items() if key not in cut}, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
