@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.224.0 — first messages that arrive and replies that go to the right place
+
+**Codex gets the journal's first message without waiting for you.** The opening line is typed the way every
+other journal line is: the journal waits for Codex to report the prompt, sends it at once if Codex queued it,
+and presses Enter again if the first one became a new line. Before, a lost Enter left the opening in the box
+until your own message carried it out.
+
+**A message from a board's New work panel says so when it arrives**: answer it with `journal board say`, one
+line of at most 200 characters, never in the chat. Chat messages keep their reply tag.
+
+**`journal ticket screen` marks Claude Code's suggested next prompt** as a suggestion that was not sent, so a
+greyed "approved, go ahead" never reads as your approval.
+
 ## 2.223.0 — tidier phone screens and a demo build that finishes
 
 **The phone's chat marks look like the desktop's:** small, at the left, the icon beside the text, with a gap

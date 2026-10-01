@@ -204,8 +204,8 @@ class Driver(ABC):
         return self.fd >= 0 or typist.reachable(typist.path(self.record.root, self.session))
 
     @classmethod
-    def confirm(cls, printed: bytes) -> bytes:
-        return b""
+    def opening(cls, printed: bytes) -> str:
+        return ""
 
     @classmethod
     def consent(cls, printed: bytes) -> bytes:
