@@ -85,6 +85,14 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     handle(PROVIDERS["claude"](), record.root, record.env, call)
     assert [run["step"] for run in sequences.load(deploying.n).runs.values()] == [1], "firing again while it runs starts it over"
     assert CONTROLLERS["agent"](record).primary().data["cards"][-1]["label"] == "Sequence restarted", "and the chat says so"
+    agent = CONTROLLERS["sequence"](record, actor=AGENT)
+    sequences.section(deploying.n, "Note it", "journal todo create \"Deployed\"")
+    agent.follow(deploying.n, about=about)
+    agent.next(deploying.n, about=about, through=2)
+    assert [run["step"] for run in sequences.load(deploying.n).runs.values()] == [3], "next --through moves past the steps done together"
+    tool = {**call, "tool_input": {"command": 'journal todo create "Deployed"'}}
+    assert "reason" not in str(handle(PROVIDERS["claude"](), record.root, record.env, tool)), "running the command a step names takes it up"
+    assert [run.get("followed") for run in sequences.load(deploying.n).runs.values()] == [3], "and marks it followed"
 
 
 def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():

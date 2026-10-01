@@ -28,16 +28,6 @@ class RequireCommandSkill(ToolInterceptor):
         return ""
 
 
-class RequireKeywordSkill(ToolInterceptor):
-    reach = Reach.MAIN
-    behaviour = "keywords"
-    refuses = False
-
-    def intercept(self, context: AgentContext, call) -> str:
-        require_named(context.record, context.agent.row, call.text)
-        return ""
-
-
 def require_named(record, row, text: str) -> None:
     loaded = {**loaded_before_compaction(row), **loaded_at(row)}
     named = {name: time.time() for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}

@@ -40,7 +40,7 @@ class SkillsDetails(FeatureDetails):
         Behaviour(
             name="keywords",
             title="Load a skill when one of its keywords comes up",
-            abstract="A skill's keywords, from its frontmatter or the Skills page, in what the user writes or the agent runs",
+            abstract="A skill's keywords, from its frontmatter or the Skills page, in what the user writes",
         ),
         Behaviour(
             name="stale",
