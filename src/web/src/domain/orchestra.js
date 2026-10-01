@@ -3,8 +3,8 @@ import {rows} from "../sync/rows.js";
 import {agentState} from "./ticketAgents.js";
 
 const SILENT_AFTER = 300;
-const OWNED = /^(ticket|plan):(\d+)$/;
-const LABELS = {ticket: (n) => `#${n}`, plan: (n) => `Plan ${n}`};
+const OWNED = /^(ticket|plan|helper):(\d+)$/;
+const LABELS = {ticket: (n) => `#${n}`, plan: (n) => `Plan ${n}`, helper: (n) => `Helper ${n}`};
 const PLAN_WAITS = {ready: "its plan waits for your approval", waiting: "its plan is at a checkpoint"};
 
 const fileName = (path) => (path || "").split("/").pop();
@@ -17,7 +17,8 @@ function standing(e, plan, now) {
     if (e.agent.asking || counts.questions) return {state: "you", reason: "a question waits for you"};
     if (plan && PLAN_WAITS[plan.status]) return {state: "you", reason: PLAN_WAITS[plan.status]};
     if (!isActive(state)) return {state: "idle", reason: "idle"};
-    if (state === "waiting") return {state: "running", reason: e.agent.background_run ? `waiting on its run: ${e.agent.background_run}` : "waiting"};
+    if (state === "waiting")
+        return {state: "running", reason: e.agent.background_run ? `waiting on its run: ${e.agent.background_run}` : "waiting"};
     if (now - (e.agent.at || now) > SILENT_AFTER) return {state: "you", reason: `silent for ${Math.floor((now - e.agent.at) / 60)}m`};
     return {state: "running", reason: ""};
 }
@@ -74,8 +75,8 @@ function subagentsOf(e) {
     }));
 }
 
-export const orchestraOf = (environments, now) =>
-    (environments || []).flatMap((e) => [...(e.owner ? [entryOf(e, now)] : []), ...subagentsOf(e)]);
+export const orchestraOf = (environments, helpers, now) =>
+    [...(environments || []), ...(helpers || [])].flatMap((e) => [...(e.owner ? [entryOf(e, now)] : []), ...subagentsOf(e)]);
 
 const AMBER_AFTER = 300;
 const RED_AFTER = 900;
@@ -91,7 +92,7 @@ export function quietOf(at, now) {
 
 export const AGENT_VIEW = {
     states: {working: true, waiting: true, idle: true, stopped: true},
-    kinds: {ticket: true, plan: true, subagent: true},
+    kinds: {ticket: true, plan: true, helper: true, subagent: true},
     unfinished: false,
     order: "state",
 };
@@ -106,6 +107,7 @@ export const STATE_SWITCHES = [
 export const KIND_SWITCHES = [
     {key: "ticket", label: "Ticket agents", icon: "ticket", hidden: (n) => `${n} ${n === 1 ? "ticket agent" : "ticket agents"}`},
     {key: "plan", label: "Plan agents", icon: "flag", hidden: (n) => `${n} ${n === 1 ? "plan agent" : "plan agents"}`},
+    {key: "helper", label: "Helpers", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "helper" : "helpers"}`},
     {key: "subagent", label: "Subagents", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "subagent" : "subagents"}`},
 ];
 

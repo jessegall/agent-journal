@@ -19,7 +19,7 @@ const ticket = computed(() => (props.env ? null : ticketOf(props.card.n)));
 const env = computed(() => props.env || (ticket.value && ticket.value.data.work_environment) || "");
 const plan = computed(() => props.plan || (ticket.value && ticket.value.data.plan) || 0);
 const band = computed(() => ({
-    kicker: props.kind === "plan" ? "Plan agent" : "Ticket agent",
+    kicker: {plan: "Plan agent", helper: "Helper"}[props.kind] || "Ticket agent",
     label: props.label || `#${props.card.n}`,
     title: props.card.title,
     state: agentState(props.card),

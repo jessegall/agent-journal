@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import TicketAgent from "../board/TicketAgent.vue";
 import {HELPER_WORDS, helperLine, helperState, helpersInOrder} from "../domain/helpers.js";
 
 const props = defineProps({rows: {type: Array, default: () => []}});
@@ -10,6 +11,15 @@ const emit = defineEmits(["changed"]);
 const listed = computed(() => helpersInOrder(props.rows));
 const busy = ref(0);
 const told = ref("");
+const inspected = ref(null);
+const cardOf = (row) => ({
+    type: "helper",
+    n: row.n,
+    title: row.title,
+    session: "",
+    state: helperState(row) === "running" ? "running" : "idle",
+    reason: "",
+});
 
 async function act(row, action) {
     busy.value = row.n;
@@ -37,11 +47,11 @@ async function act(row, action) {
         <div :class="['helper', helperState(row)]">
             <div class="helper-head">
                 <span :class="['helper-dot', helperState(row)]" />
-                <span class="helper-what">
+                <button type="button" class="helper-what" title="Open this helper's inspector" @click="inspected = row">
                     <strong>{{ row.data?.name || `Helper ${row.n}` }}</strong>
                     {{ row.title }}
                     <small>{{ helperLine(row) }}</small>
-                </span>
+                </button>
                 <span :class="['helper-state', helperState(row)]">{{ HELPER_WORDS[helperState(row)] }}</span>
                 <template v-if="helperState(row) === 'running'">
                     <Btn small :busy="busy === row.n" @click="act(row, 'stop')">Stop</Btn>
@@ -54,6 +64,15 @@ async function act(row, action) {
                 <TextDisplay class="helper-report" :text="row.data.report" />
             </template>
         </div>
+    </template>
+    <template v-if="inspected">
+        <TicketAgent
+            :card="cardOf(inspected)"
+            :env="inspected.data?.environment"
+            kind="helper"
+            :label="inspected.data?.name || `Helper ${inspected.n}`"
+            @close="inspected = null"
+        />
     </template>
 </template>
 
@@ -115,8 +134,18 @@ async function act(row, action) {
 .helper-what {
     flex: 1;
     min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
     color: var(--text);
+    font: inherit;
     font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.helper-what:hover strong {
+    text-decoration: underline;
 }
 
 .helper-what small {

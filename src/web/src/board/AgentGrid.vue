@@ -14,7 +14,9 @@ import {agentView} from "../composables/agentsShown.js";
 
 usePoll(...polled.summary);
 const summary = computed(() => store.summary);
-const every = computed(() => orchestraOf(summary.value && summary.value.environments, Date.now() / 1000));
+const every = computed(() =>
+    orchestraOf(summary.value && summary.value.environments, summary.value && summary.value.helpers, Date.now() / 1000)
+);
 const entries = computed(() =>
     ordered(
         every.value.filter((entry) => !hiddenBy(entry, agentView)),
