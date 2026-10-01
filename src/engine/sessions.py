@@ -152,7 +152,8 @@ class Sessions:
         return next(name for name in (env, *(f"{env}-{i}" for i in range(2, 100))) if not self.holder(name))
 
     def holders(self, env: str) -> list[str]:
-        return [session for session, s in self.all().items() if s.environment == env and live(s)]
+        held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and live(s)]
+        return [session for _, session in sorted(held, reverse=True)]
 
     def evict(self, session: str, by: str, env: str, why: str) -> None:
         self.write(session, environment="", evicted={"by": by, "environment": env, "why": why, "at": time.time()})

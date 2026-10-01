@@ -296,6 +296,10 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     from surfaces.agent_state import agent_state
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
     assert agent_state(record, record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
+    CONTROLLERS["agent"](record, actor=SYSTEM).create("d2c1c997-real", event="PostToolUse", status="working")
+    Sessions(record.root).write("d2c1c997-real", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
+    assert agent_state(record, record.env) == "working", "an older launch record of the same agent never hides the session that reports"
+    Sessions(record.root).write("d2c1c997-real", environment="")
     from controllers.types import Environments
     from features.phone.places import shown
     Environments(record, actor=SYSTEM).create(f"{record.env}-rhea", owner="helper:1", launched_from=record.env)
