@@ -49,8 +49,7 @@ defineProps({state: {type: String, default: ""}});
 }
 
 .state-dot.blocked {
-    border-color: var(--danger-soft);
-    background: var(--danger-soft);
+    border-color: var(--text-3);
 }
 
 .state-dot.queued {

@@ -6,9 +6,8 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import StateDot from "../kit/StateDot.vue";
 import {agentState} from "../domain/ticketAgents.js";
 
-const props = defineProps({cards: {type: Array, required: true}});
+const props = defineProps({cards: {type: Array, required: true}, visible: {type: Number, default: 2}});
 const emit = defineEmits(["open"]);
-const SHOWN = 3;
 const menu = ref(false);
 const more = ref(null);
 
@@ -20,7 +19,7 @@ function open(card) {
 
 <template>
     <div class="working" aria-label="Agents working on this board's tickets">
-        <template v-for="card in props.cards.slice(0, SHOWN)" :key="card.n">
+        <template v-for="card in props.cards.slice(0, props.visible)" :key="card.n">
             <Btn
                 small
                 :class="['agent', agentState(card).key]"
@@ -35,16 +34,16 @@ function open(card) {
                 </template>
             </Btn>
         </template>
-        <template v-if="props.cards.length > SHOWN">
+        <template v-if="props.cards.length > props.visible">
             <span ref="more" class="more-agents">
                 <Btn small title="The other agents working on this board" @click.stop="menu = !menu">
-                    {{ props.cards.length - SHOWN }} more
+                    +{{ props.cards.length - props.visible }} more
                 </Btn>
             </span>
         </template>
         <template v-if="menu">
             <MenuPanel :anchor="more" align="end" :min-width="260" :max-width="360" @click.stop @close="menu = false">
-                <template v-for="card in props.cards.slice(SHOWN)" :key="card.n">
+                <template v-for="card in props.cards.slice(props.visible)" :key="card.n">
                     <MenuItem @click="open(card)">
                         <StateDot :state="agentState(card).dot" />
                         <span class="n">#{{ card.n }}</span>
@@ -60,10 +59,10 @@ function open(card) {
 <style scoped>
 .working {
     display: flex;
-    flex: 1 1 0;
+    flex: 0 1 auto;
     align-items: center;
     gap: 6px;
-    min-width: 180px;
+    min-width: 0;
 }
 
 .agent {
@@ -116,12 +115,5 @@ function open(card) {
 
 .menu-item .word {
     font-size: 11px;
-}
-
-@media (max-width: 640px) {
-    .working {
-        flex-basis: 100%;
-        flex-wrap: wrap;
-    }
 }
 </style>

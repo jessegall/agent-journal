@@ -6,17 +6,16 @@ import Icon from "../kit/Icon.vue";
 import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
 import TicketAgent from "../board/TicketAgent.vue";
-import WorkingAgents from "../board/WorkingAgents.vue";
 import {workingCards} from "../domain/ticketAgents.js";
-import AgentSlots from "../board/AgentSlots.vue";
 import RolesTree from "../board/RolesTree.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
+import Segmented from "../kit/Segmented.vue";
 import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
 import NewBoard from "../board/NewBoard.vue";
 import NewWork from "../board/NewWork.vue";
-import PlayStrip from "../board/PlayStrip.vue";
+import RunBar from "../board/RunBar.vue";
 import BoardGoal from "../board/BoardGoal.vue";
 import BoardMenu from "../board/BoardMenu.vue";
 import BuildStrip from "../board/BuildStrip.vue";
@@ -46,7 +45,11 @@ const slots = computed(() => store.board.slots);
 const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
 const building = computed(() => tickets.value && current.value && (current.value.data.building || {}).since);
-const waitingCount = computed(() => (tickets.value ? ((store.board.lanes || [])[0] || {cards: []}).cards.length : 0));
+const firstLane = computed(() => (store.board.lanes || [])[0] || {key: "", cards: []});
+const waitingCount = computed(() => (tickets.value ? firstLane.value.cards.length + ((slots.value && slots.value.queued) || 0) : 0));
+const waits = (card) => card.lane === firstLane.value.key || card.state === "queued";
+const searching = ref(false);
+const picked = ref("");
 const ticketCount = computed(() => (store.board.lanes || []).reduce((sum, lane) => sum + lane.cards.length, 0));
 const removed = (n) => settle(boards.value.filter((board) => board.n !== n));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
@@ -126,14 +129,14 @@ const showingDone = computed(() => store.board.lens.done !== false);
 const planHold = computed(() => store.board.planHold);
 const loading = computed(() => !store.board.loaded);
 const tabs = computed(() => [{key: "0", title: "To-dos"}, ...boards.value.map((board) => ({key: String(board.n), title: board.title}))]);
-const shown = computed({get: () => String(store.board.lens.board || 0), set: (key) => lens({board: Number(key)})});
+const chosenTab = computed({get: () => String(store.board.lens.board || 0), set: (key) => lens({board: Number(key)})});
 const only = ref("");
 watch(
     () => store.board.lens.board,
     () => (only.value = "")
 );
 const matches = (card) =>
-    (!only.value || card.state === only.value) &&
+    (!only.value || (only.value === "waiting" ? waits(card) : card.state === only.value)) &&
     (!text.value.trim() || `#${card.n} ${card.title}`.toLowerCase().includes(text.value.trim().toLowerCase()));
 const lanes = computed(() =>
     store.board.loaded
@@ -142,6 +145,11 @@ const lanes = computed(() =>
               .map((lane) => ({...lane, cards: lane.cards.filter(matches)}))
         : SKELETON
 );
+const pickedLane = computed(
+    () =>
+        (lanes.value.find((lane) => lane.key === picked.value) || lanes.value.find((lane) => lane.cards.length) || lanes.value[0] || {}).key
+);
+const lanePicks = computed(() => lanes.value.map((lane) => ({key: lane.key, label: `${lane.title} ${lane.cards.length}`})));
 const empty = computed(() => store.board.loaded && lanes.value.every((lane) => !lane.cards.length));
 
 const ASKS = {held: true, done: true};
@@ -300,15 +308,19 @@ const ask = usePoll(
 <template>
     <section class="board">
         <header class="bar">
-            <h2>Board</h2>
-            <TabBar v-model="shown" :tabs="tabs">
-                <button type="button" class="tool" title="New board" @click="newBoard = true"><Icon name="plus" /></button>
-            </TabBar>
-            <template v-if="current || archived.length">
-                <Btn ref="boardMenuOpener" kind="icon" title="Board settings" @click.stop="boardMenu = !boardMenu">
-                    <Icon name="settings" />
-                </Btn>
-            </template>
+            <TabBar v-model="chosenTab" :tabs="tabs" class="board-tabs" />
+            <Btn kind="icon" class="new-board" title="New board" @click="newBoard = true">
+                <Icon name="plus" />
+            </Btn>
+            <Btn
+                ref="boardMenuOpener"
+                kind="icon"
+                :class="['board-settings', {spare: !current && !archived.length}]"
+                title="Board settings"
+                @click.stop="boardMenu = !boardMenu"
+            >
+                <Icon name="settings" />
+            </Btn>
             <template v-if="boardMenu">
                 <BoardMenu
                     :board="current"
@@ -317,36 +329,24 @@ const ask = usePoll(
                     @close="boardMenu = false"
                     @archive="archive"
                     @restore="restore"
+                    @new="((boardMenu = false), (newBoard = true))"
                 />
             </template>
-            <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
-            <template v-if="!tickets">
-                <div class="plans">
-                    <button type="button" :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</button>
-                    <template v-for="plan in plans" :key="plan.n">
-                        <button type="button" :class="['plan', {on: chosenPlan === plan.n}]" @click="lens({plan: plan.n})">
-                            Plan {{ plan.n }}
-                        </button>
-                    </template>
-                </div>
-            </template>
-            <template v-if="working.length">
-                <WorkingAgents :cards="working" @open="openAgent" />
-            </template>
-            <template v-else>
-                <span class="grow" />
-            </template>
-            <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
-            <template v-if="tickets && current && !current.data.started">
-                <Btn small :busy="starting" title="Hands this board to the main agent, which runs its tickets in order" @click="startBoard">
-                    <Icon name="start" />
-                    Play
-                </Btn>
-            </template>
-            <Btn kind="primary" small title="New work (N)" @click="newWork('')">New work</Btn>
-            <template v-if="refusal">
-                <p class="refusal">{{ refusal }}</p>
-            </template>
+            <span class="grow" />
+            <Btn kind="icon" :class="['search', {on: searching}]" title="Filter cards" @click="searching = !searching">
+                <Icon name="search" />
+                <template v-if="text.trim()">
+                    <span class="search-dot" />
+                </template>
+            </Btn>
+            <div :class="['tools', {searching}]">
+                <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
+                <Switch :on="showingDone" word="Show done cards" @change="(on) => lens({done: on})" />
+            </div>
+            <Btn kind="primary" small title="New work (N)" @click="newWork('')">
+                <Icon name="plus" />
+                New work
+            </Btn>
         </header>
         <template v-if="!boardOn">
             <p class="off">
@@ -361,39 +361,62 @@ const ask = usePoll(
             </div>
         </template>
         <template v-else>
-            <AgentStrip />
-            <template v-if="building">
-                <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
-            </template>
             <template v-if="tickets && current && !building">
-                <PlayStrip
+                <RunBar
                     :board="current"
-                    :running="working.length"
+                    :cards="working"
+                    :slots="slots"
                     :waiting="waitingCount"
+                    :only="only"
                     :busy="starting"
                     @play="startBoard"
                     @pause="boardAction('pause')"
                     @resume="boardAction('resume')"
+                    @open="openAgent"
+                    @only="(state) => (only = only === state ? '' : state)"
+                    @limit="setLimit"
                 />
                 <BoardGoal :board="current" />
             </template>
-            <template v-if="tickets && slots">
-                <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" @limit="setLimit" />
+            <template v-if="!tickets">
+                <div class="plans">
+                    <button type="button" :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</button>
+                    <template v-for="plan in plans" :key="plan.n">
+                        <button type="button" :class="['plan', {on: chosenPlan === plan.n}]" @click="lens({plan: plan.n})">
+                            Plan {{ plan.n }}
+                        </button>
+                    </template>
+                    <span class="grow" />
+                    <AgentStrip />
+                </div>
             </template>
-            <template v-if="tickets && store.board.roles.length">
-                <RolesTree :roles="store.board.roles" />
+            <template v-if="building || refusal || planHold || (tickets && store.board.roles.length)">
+                <div class="strips">
+                    <template v-if="building">
+                        <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
+                    </template>
+                    <template v-if="refusal">
+                        <p class="refusal">{{ refusal }}</p>
+                    </template>
+                    <template v-if="tickets && store.board.roles.length">
+                        <RolesTree :roles="store.board.roles" />
+                    </template>
+                    <template v-if="planHold">
+                        <p class="hold">{{ planHold }}</p>
+                    </template>
+                </div>
             </template>
-            <template v-if="planHold">
-                <p class="hold">{{ planHold }}</p>
-            </template>
+            <div class="lane-pick">
+                <Segmented fill :options="lanePicks" :value="pickedLane" @pick="(key) => (picked = key)" />
+            </div>
             <div :key="chosenBoard || 0" class="lanes">
                 <template v-for="(lane, i) in lanes" :key="lane.key">
                     <Lane
+                        :class="{away: lane.key !== pickedLane}"
                         :lane="lane"
                         :loading="loading"
                         :meaning="meaningOf(lane.key)"
-                        :offers="tickets && !i && !lane.cards.length"
-                        :adds="tickets"
+                        :adds="tickets && !i"
                         :style="{'--order': i}"
                     />
                 </template>
@@ -436,46 +459,80 @@ const ask = usePoll(
 .board {
     display: flex;
     flex-direction: column;
-    gap: 12px;
     height: 100%;
     min-height: 0;
-    padding: 18px 20px;
 }
 
 .bar {
     display: flex;
-    flex-wrap: wrap;
+    flex: none;
     align-items: center;
-    gap: 14px;
+    gap: 4px;
+    height: 44px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.board-tabs {
+    flex: 0 1 auto;
+    align-self: stretch;
+    min-width: 0;
+    padding: 0 8px;
 }
 
 .grow {
     flex: 1;
+    min-width: 8px;
 }
 
-.tool {
-    display: grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    border: 0;
-    border-radius: 7px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
+.new-board {
+    flex: none;
 }
 
-.tool:hover {
-    background: var(--hover);
+.board-settings {
+    flex: none;
+}
+
+.bar .board-settings.spare {
+    display: none;
+}
+
+.bar .search {
+    position: relative;
+    display: none;
+}
+
+.search.on {
+    background: var(--sel);
     color: var(--text);
+}
+
+.search-dot {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-text);
+    box-shadow: 0 0 0 2px var(--bg);
+}
+
+.tools {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 12px;
+    margin-right: 8px;
 }
 
 .find {
     width: 200px;
-    padding: 5px 10px;
+    height: 28px;
+    padding: 0 10px;
     border: 1px solid var(--border-2);
     border-radius: 7px;
-    background: var(--raised);
+    background: var(--side);
     color: var(--text);
     font: inherit;
     font-size: 12.5px;
@@ -488,8 +545,13 @@ const ask = usePoll(
 
 .plans {
     display: flex;
+    flex: none;
     flex-wrap: wrap;
+    align-items: center;
     gap: 4px;
+    min-height: 44px;
+    padding: 6px 12px 6px 20px;
+    border-bottom: 1px solid var(--border);
 }
 
 .plan {
@@ -508,16 +570,18 @@ const ask = usePoll(
     color: var(--text);
 }
 
+.strips {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 20px 0;
+}
+
 .refusal {
     margin: 0;
     color: var(--danger);
     font-size: 12.5px;
-}
-
-.bar h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
 }
 
 .hold {
@@ -530,13 +594,22 @@ const ask = usePoll(
     font-size: 12.5px;
 }
 
+.lane-pick {
+    display: none;
+}
+
 .lanes {
     display: flex;
     flex: 1;
     gap: 12px;
     min-height: 0;
+    padding: 14px 20px 20px;
     overflow-x: auto;
-    padding-bottom: 6px;
+}
+
+.off,
+.empty {
+    padding: 18px 20px;
 }
 
 .off,
@@ -551,5 +624,90 @@ const ask = usePoll(
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+}
+
+@media (max-width: 900px) {
+    .find {
+        width: 150px;
+    }
+}
+
+@media (max-width: 640px) {
+    .bar {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 44px;
+        padding: 0 6px 0 4px;
+        row-gap: 0;
+    }
+
+    .board-tabs {
+        flex: 1 1 0;
+        height: 44px;
+    }
+
+    .bar .new-board {
+        display: none;
+    }
+
+    .bar .board-settings.spare {
+        display: grid;
+    }
+
+    .bar .search {
+        display: grid;
+    }
+
+    .bar .search,
+    .bar .board-settings {
+        width: 40px;
+        height: 40px;
+    }
+
+    .grow {
+        display: none;
+    }
+
+    .tools {
+        display: none;
+        order: 10;
+        flex-basis: 100%;
+        height: 52px;
+        margin: 0 -6px 0 -4px;
+        padding: 0 14px;
+        border-top: 1px solid var(--border);
+    }
+
+    .tools.searching {
+        display: flex;
+    }
+
+    .find {
+        flex: 1;
+        width: auto;
+        height: 36px;
+    }
+
+    .plans {
+        padding: 6px 14px;
+    }
+
+    .lane-pick {
+        display: block;
+        flex: none;
+        margin: 12px 14px 0;
+    }
+
+    .lanes {
+        padding: 12px 14px 16px;
+    }
+
+    .lanes > .away {
+        display: none;
+    }
+
+    .lanes > :deep(.lane) {
+        max-width: none;
+    }
 }
 </style>
