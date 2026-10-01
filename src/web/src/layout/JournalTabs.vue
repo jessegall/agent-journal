@@ -1,19 +1,21 @@
 <script setup>
 import {computed} from "vue";
 import {api} from "../api/client.js";
-import {STATE_WORDS, isActive, journalState, useHub} from "../sync/hub.js";
+import {STATE_WORDS, isActive, journalState, silentIn, useHub} from "../sync/hub.js";
+import {SILENT} from "../domain/agentStates.js";
 import {stateOf} from "./statusline.js";
 import {agent} from "../state/store.js";
+import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 
 const {running} = useHub();
-const LOOK = {waiting: "waiting", idle: "idle", stopped: "idle"};
+const LOOK = {waiting: "waiting", idle: "idle", stopped: "idle", [SILENT]: "silent"};
 const tabs = computed(() =>
     running.value
         .filter((j) => !j.gone)
         .sort((a, b) => a.project.localeCompare(b.project))
         .map((j) => {
-            const state = j.current ? stateOf(agent.value, rows("work")) : journalState(j);
+            const state = !j.current ? journalState(j) : silentIn(j.summary, route.value.env) ? SILENT : stateOf(agent.value, rows("work"));
             return {
                 key: j.root,
                 project: j.project,
@@ -103,5 +105,10 @@ const tabs = computed(() =>
 
 .journal-tab-dot.waiting {
     border-color: var(--text-2);
+}
+
+.journal-tab-dot.silent {
+    border-color: var(--tone-warn);
+    background: var(--tone-warn);
 }
 </style>

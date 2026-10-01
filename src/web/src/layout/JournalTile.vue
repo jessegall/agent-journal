@@ -23,6 +23,7 @@ import Icon from "../kit/Icon.vue";
 import IconCount from "../kit/IconCount.vue";
 import Meter from "../kit/Meter.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
+import {SILENT} from "../domain/agentStates.js";
 import Switch from "../kit/Switch.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Tile from "../kit/Tile.vue";
@@ -71,7 +72,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
         <SwitchCase :value="shape">
             <template #live>
                 <div class="jt-now">
-                    <StatusLabel :state="state" :note="note">{{ STATE_WORDS[state] }}</StatusLabel>
+                    <StatusLabel :class="{silent: state === SILENT}" :state="state" :note="note">{{ STATE_WORDS[state] }}</StatusLabel>
                     <p :class="['jt-focus', {past: !focus.current}]">{{ focus.title }}</p>
                     <template v-if="focus.caption">
                         <span class="jt-caption">{{ focus.caption }}</span>
@@ -114,7 +115,9 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
             <template v-for="e in environments" :key="e.name">
                 <div :class="['jt-env', envState(e)]">
                     <div class="jt-env-line">
-                        <StatusLabel class="jt-env-state" :state="envState(e)">{{ STATE_WORDS[envState(e)] }}</StatusLabel>
+                        <StatusLabel :class="['jt-env-state', {silent: e.silent}]" :state="envState(e)">
+                            {{ STATE_WORDS[envState(e)] }}
+                        </StatusLabel>
                         <a class="jt-env-name" :href="server.page(e.name)">{{ e.name }}</a>
                         <span class="jt-env-work">{{ focusOf(e).known ? focusOf(e).title : "" }}</span>
                         <span class="jt-env-counts">
@@ -155,6 +158,14 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 </template>
 
 <style scoped>
+.status-label.silent {
+    --tone: var(--tone-warn);
+}
+
+.status-label.silent :deep(.status-word) {
+    color: var(--tone-warn);
+}
+
 .jt-project {
     min-width: 0;
     margin: 0;

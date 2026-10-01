@@ -21,11 +21,14 @@ import {agent, autoOn, steered, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
+import {silentIn} from "../sync/hub.js";
+import {SILENT} from "../domain/agentStates.js";
 import {usePoll} from "../poll.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
 usePoll(...polled.bar);
 usePoll(...polled.agents);
+usePoll(...polled.summary);
 
 const current = computed(() => currentWork(rows("work")));
 const reported = computed(() => stateOf(agent.value, rows("work")));
@@ -33,7 +36,8 @@ const toast = ref(null);
 
 const wanted = ref(null);
 const paused = computed(() => wanted.value ?? reported.value === "paused");
-const state = computed(() => (paused.value ? "paused" : reported.value === "paused" ? "idle" : reported.value));
+const silent = computed(() => silentIn(store.summary, route.value.env));
+const state = computed(() => (paused.value ? "paused" : silent.value ? SILENT : reported.value === "paused" ? "idle" : reported.value));
 watch(
     () => reported.value === "paused",
     (now) => wanted.value === now && (wanted.value = null)
@@ -45,7 +49,9 @@ const helpersOut = computed(() => helpers.value.filter((row) => helperState(row)
 const helpersOpen = ref(false);
 const helpersAnchor = ref(null);
 const modeTitle = computed(() =>
-    mode.value === "solo" && helpersOut.value ? `${modeOf(mode.value).note} Helpers already out keep going until they finish.` : modeOf(mode.value).note,
+    mode.value === "solo" && helpersOut.value
+        ? `${modeOf(mode.value).note} Helpers already out keep going until they finish.`
+        : modeOf(mode.value).note
 );
 
 function toggleHelpers(e) {
@@ -83,7 +89,13 @@ async function pauseOrResume() {
     }
 }
 const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
-const line = computed(() => (paused.value ? "held until you resume it" : lineOf(agent.value, rows("work"), waiting.value)));
+const line = computed(() =>
+    paused.value
+        ? "held until you resume it"
+        : silent.value
+          ? "started, but it never reported in"
+          : lineOf(agent.value, rows("work"), waiting.value)
+);
 const inspect = () => peek("work", current.value.n);
 const was = ref("");
 const sentence = computed(() => {
@@ -110,9 +122,9 @@ async function runBar(p) {
 
 <template>
     <div class="statusbar">
-        <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused}]" kind="started" solid :size="8" />
+        <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused, silent: state === SILENT}]" kind="started" solid :size="8" />
         <span class="statusbar-text">
-            <b>{{ wordOf(state) }}</b>
+            <b :class="{silent: state === SILENT}">{{ wordOf(state) }}</b>
             <component
                 :is="current ? 'button' : 'span'"
                 :type="current ? 'button' : null"
@@ -153,7 +165,9 @@ async function runBar(p) {
                         word="auto"
                         labelled
                         :title="
-                            autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
+                            autoOn
+                                ? 'The agent works through the to-do list without asking'
+                                : 'The agent asks before picking up the next to-do'
                         "
                         @change="setAuto"
                     />
@@ -161,7 +175,11 @@ async function runBar(p) {
                     <button
                         type="button"
                         :class="['statusbar-helpers', {none: !helpers.length}]"
-                        :title="helpersOut ? `${helpersOut} helper(s) out: see what they do` : 'Helpers: agents on other providers this environment dispatched'"
+                        :title="
+                            helpersOut
+                                ? `${helpersOut} helper(s) out: see what they do`
+                                : 'Helpers: agents on other providers this environment dispatched'
+                        "
                         :aria-expanded="helpersOpen"
                         @click.stop="toggleHelpers"
                     >
@@ -170,7 +188,14 @@ async function runBar(p) {
                     </button>
                 </span>
                 <template v-if="helpersOpen">
-                    <MenuPanel :anchor="helpersAnchor" :min-width="320" :max-width="380" :max-height="480" @click.stop @close="helpersOpen = false">
+                    <MenuPanel
+                        :anchor="helpersAnchor"
+                        :min-width="320"
+                        :max-width="380"
+                        :max-height="480"
+                        @click.stop
+                        @close="helpersOpen = false"
+                    >
                         <HelperList :rows="helpers" @changed="refreshHelpers" />
                     </MenuPanel>
                 </template>
@@ -229,6 +254,14 @@ async function runBar(p) {
 
 .statusbar-dot.paused {
     --tone: var(--danger);
+}
+
+.statusbar-dot.silent {
+    --tone: var(--tone-warn);
+}
+
+.statusbar-text b.silent {
+    color: var(--tone-warn);
 }
 
 .statusbar-text {

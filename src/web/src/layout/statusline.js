@@ -1,3 +1,5 @@
+import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
+
 const REPORTED = ["stopped", "idle", "compacting"];
 
 export function currentWork(works) {
@@ -41,7 +43,7 @@ export function queued(todos, auto, questions = []) {
     return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
 }
 
-const WORDS = {working: "Working", busy: "Busy", compacting: "Busy", paused: "Paused"};
+const WORDS = {working: "Working", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
 
 export function wordOf(state) {
     return WORDS[state] || "Idle";

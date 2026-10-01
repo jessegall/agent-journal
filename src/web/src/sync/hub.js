@@ -5,6 +5,7 @@ import {usePoll} from "../poll.js";
 import {age} from "../format/time.js";
 import {stateOf} from "../layout/statusline.js";
 import {readSummary} from "./summary.js";
+import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
 
 const LINGER = 60000;
 const SCAN_EVERY = 2000;
@@ -12,7 +13,7 @@ const REFRESH_EVERY = 1000;
 const STALE_AFTER = 10000;
 const STREAMS_PER_JOURNAL = 3;
 const THROWAWAY = [/\/pytest-of-[^/]+\//, /\/var\/folders\/.+\/T\/tmp[^/]*\/\.journal$/];
-const RANK = {working: 0, busy: 1, waiting: 1, compacting: 1, paused: 2, idle: 2, stopped: 3};
+const RANK = {working: 0, busy: 1, waiting: 1, compacting: 1, [SILENT]: 1, paused: 2, idle: 2, stopped: 3};
 const ACTIVE = ["working", "busy", "waiting", "compacting"];
 
 export const STATE_WORDS = {
@@ -22,6 +23,7 @@ export const STATE_WORDS = {
     compacting: "Compacting",
     paused: "Paused",
     idle: "Idle",
+    [SILENT]: SILENT_WORD,
     stopped: "No agent",
 };
 
@@ -55,7 +57,9 @@ export function worksOf(e) {
     return works;
 }
 
-export const envState = (e) => stateOf(e.agent ? {data: e.agent} : null, worksOf(e));
+export const envState = (e) => (e.silent ? SILENT : stateOf(e.agent ? {data: e.agent} : null, worksOf(e)));
+
+export const silentIn = (summary, name) => Boolean(((summary && summary.environments) || []).find((e) => e.name === name)?.silent);
 
 export const isActive = (state) => ACTIVE.includes(state);
 
