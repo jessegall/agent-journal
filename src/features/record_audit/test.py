@@ -8,7 +8,10 @@ from tests.kit import nudges, tick
 from tests.conftest import fresh
 
 
-def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
+def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    (tmp_path / ".codex").mkdir()
+    (tmp_path / ".codex" / "config.toml").write_text('model = "gpt-6-sol"')
     record = fresh()
     project = record.root.parent
     (project / "src" / "v2").mkdir(parents=True)
@@ -35,6 +38,10 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
         "top-level commands and ordinary journal prose are not evidence"
     assert [e["evidence"] for e in found if e["ref"] == "reminder:1"] == ["names tests/old.py, which is gone"], \
         "a reminder naming a missing file"
+    pins.create("Codex runs on gpt-6-sol", keywords="word", brief="~/.codex/config.toml names it; ~/.codex/old.toml did once")
+    assert [e["evidence"] for e in evidence(record) if e["ref"] == "fact:4"] == ["names ~/.codex/old.toml, which is gone"], \
+        "a path under ~ is looked for in the home folder, not in the project"
+    pins.complete(4, "struck")
     pins.complete(2, "struck")
     assert [e for e in evidence(record) if e["ref"] == "fact:2"] == [], "a struck claim has no evidence"
 

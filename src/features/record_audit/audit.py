@@ -1,5 +1,6 @@
 import re
 import time
+from pathlib import Path
 from argparse import _SubParsersAction
 
 from features.command_line import command_line
@@ -8,7 +9,7 @@ from engine.project_files import matching
 from resources.base import SYSTEM
 
 CLAIMS = (Rules, Facts, Reminders)
-PATH = re.compile(r"(?<![\w/])((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")
+PATH = re.compile(r"(?<![\w/.~])(~/)?((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")
 COMMAND = re.compile(r"`journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?[^`]*`|^\s*journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?", re.MULTILINE)
 WAITING_DAYS = 7
 
@@ -23,7 +24,13 @@ def command_words() -> dict[str, set[str]]:
 
 
 def missing_paths(project, text: str) -> list[str]:
-    return sorted({p for p in PATH.findall(text) if not (project / p).exists() and not matching(project, p)})
+    return sorted({home + path for home, path in PATH.findall(text) if not present(project, home, path)})
+
+
+def present(project, home: str, path: str) -> bool:
+    if home:
+        return (Path.home() / path).exists()
+    return (project / path).exists() or bool(matching(project, path))
 
 
 def unknown_verbs(text: str, words: dict[str, set[str]]) -> list[str]:
