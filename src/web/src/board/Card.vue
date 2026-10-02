@@ -354,10 +354,16 @@ function begin(event) {
 
 .card-roles {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 7px;
     color: var(--text-2);
     font-size: 11.5px;
+    line-height: 1.4;
+}
+
+.card-roles .spinner {
+    flex: none;
+    margin-top: 4px;
 }
 
 .card.done {

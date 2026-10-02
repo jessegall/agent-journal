@@ -25,10 +25,14 @@ const domains = computed(() => {
     return grouped.map((domain) => ({...domain, working: domain.roles.filter((role) => role.busy).length}));
 });
 const organization = computed(() => `#/${route.value.env}/organization/${props.roles[0].domain}`);
+const MORE = 140;
 const cards = computed(() => [...new Set(working.value.map((chip) => `#${chip.n}`))].join(", "));
+const summary = computed(() => (working.value.length ? `${working.value.length} working on ${cards.value}` : `None working; all ${props.roles.length} roles`));
 const box = ref(null);
-const fits = useFitCount(box, chips);
-const hidden = computed(() => Math.max(0, chips.value.length - fits.value));
+const measure = ref(null);
+const fits = useFitCount(box, measure, chips, MORE);
+const shown = computed(() => chips.value.slice(0, fits.value));
+const hidden = computed(() => chips.value.length - shown.value.length);
 const anchor = ref(null);
 const show = (e) => {
     anchor.value = anchor.value === e.currentTarget ? null : e.currentTarget;
@@ -38,21 +42,31 @@ const show = (e) => {
 <template>
     <section class="board-roles" aria-label="Roles at work">
         <span class="board-roles-label">Roles</span>
-        <template v-if="!chips.length">
-            <span class="board-roles-quiet">No role is working right now</span>
+        <template v-if="working.length">
+            <Spinner class="board-roles-busy" />
         </template>
         <div ref="box" class="board-roles-chips">
-            <template v-for="(chip, i) in chips" :key="chip.key">
-                <BoardRoleChip :title="chip.title" :n="chip.n" :task="chip.task" :env="chip.env" :class="{out: i >= fits}" />
+            <div ref="measure" class="board-roles-measure" aria-hidden="true" inert>
+                <template v-for="chip in chips" :key="chip.key">
+                    <BoardRoleChip :title="chip.title" :n="chip.n" />
+                </template>
+            </div>
+            <template v-if="!chips.length">
+                <span class="board-roles-quiet">No role is working right now</span>
+            </template>
+            <template v-for="chip in shown" :key="chip.key">
+                <BoardRoleChip :title="chip.title" :n="chip.n" :task="chip.task" :env="chip.env" />
+            </template>
+            <template v-if="hidden">
+                <button type="button" class="board-roles-button" @click.stop="show">+{{ hidden }} more working</button>
             </template>
         </div>
-        <template v-if="hidden">
-            <button type="button" class="board-roles-button board-roles-more" @click.stop="show">+{{ hidden }} more working</button>
-        </template>
-        <template v-if="working.length">
+        <template v-if="!small || working.length">
             <button type="button" class="board-roles-button board-roles-summary" @click.stop="show">
-                <Spinner />
-                {{ working.length }} working on {{ cards }}
+                <template v-if="working.length">
+                    <Spinner />
+                </template>
+                {{ summary }}
             </button>
         </template>
         <template v-if="small">
@@ -92,6 +106,7 @@ const show = (e) => {
 }
 
 .board-roles-chips {
+    position: relative;
     display: flex;
     flex: 1;
     align-items: center;
@@ -100,8 +115,14 @@ const show = (e) => {
     overflow: hidden;
 }
 
-.out {
+.board-roles-measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    gap: 6px;
     visibility: hidden;
+    pointer-events: none;
 }
 
 .board-roles-quiet {
@@ -145,7 +166,7 @@ const show = (e) => {
 
 @media (max-width: 640px) {
     .board-roles-chips,
-    .board-roles-more {
+    .board-roles-busy {
         display: none;
     }
 
