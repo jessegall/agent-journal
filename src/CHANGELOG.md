@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.227.2 — a Codex turn that ends in an error is said, not shown as busy
+
+**When Codex ends a turn with an error, such as a workspace out of credits, the agent shows as idle and the chat
+says why.** Before, Codex sent no word that the turn was over, so the agent showed as busy for hours while
+nothing ran. A helper whose turn fails reports the error to the agent that dispatched it, once, as its report.
+
 ## 2.227.1 — a Codex environment starts when Codex offers an update
 
 **A new Codex environment no longer sits at an empty prompt when Codex asks to update itself.** The journal

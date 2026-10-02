@@ -7,6 +7,7 @@ from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on
 from features.helpers.controller import Helpers
 from resources.base import AGENT, SYSTEM
+from resources.types import FAILED, IDLE
 from surfaces.summary import summarize
 from tests.conftest import fresh, refused
 
@@ -68,6 +69,22 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     told = Messages(record, actor=SYSTEM).all()[-1]
     assert (told.brief, told.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
     assert any("helper 1, Rhea, reported" in n.title for n in Nudges(record, actor=SYSTEM).all()), "the dispatcher is told"
+
+
+def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):
+    features.load()
+    started(monkeypatch)
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-6-sol")
+    place = Record(record.root, f"{record.env}-rhea")
+    agents = Agents(place, actor=SYSTEM)
+    row = agents.create("codex-2")
+    for _ in range(2):
+        agents.update(row.n, status=IDLE, event=FAILED, failure="Your workspace is out of credits.")
+    told = [m for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
+    assert [m.brief for m in told] == ["My turn ended in an error, so I stopped: Your workspace is out of credits."], \
+        "the dispatcher hears the error once, as the helper's report"
 
 
 def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeypatch):

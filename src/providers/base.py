@@ -9,7 +9,7 @@ from typing import Any, Callable, ClassVar, TypeVar
 
 from engine.fields import Loaded
 from engine.transcript import Turn
-from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, FetchCall, Hook, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -187,6 +187,9 @@ class Provider(ABC):
 
     def typed_runs(self, path: Path) -> list[TypedRun]:
         return []
+
+    def failure(self, path: Path) -> Failure | None:
+        return None
 
     def work_links(self, path: Path) -> list[str]:
         return []
