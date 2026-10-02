@@ -136,7 +136,13 @@ button.mark:hover {
 }
 
 .mark .head :deep(code) {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
     padding: 0 6px;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+    white-space: nowrap;
     border: 1px solid color-mix(in srgb, var(--mark, var(--border-3)) 45%, transparent);
     border-radius: 999px;
     background: color-mix(in srgb, var(--mark, var(--border-3)) 14%, transparent);
