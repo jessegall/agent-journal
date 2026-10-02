@@ -7,7 +7,7 @@ from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notificati
 import features
 from engine import bus, chat, clock, ran, runtime
 from agents.actors import Actor, Agent, System, User, spoken_data
-from resources.types import BUSY, IDLE, STOPPED, WORKING
+from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.drivers import AGENT_COMMAND
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
 from engine.record import Record
@@ -84,6 +84,7 @@ class Engine(Seat):
         self.subagents_ended: dict | None = None
         self.relayed = None
         self.peer_size = -1
+        self.failure_size = -1
         self.typed_at = 0.0
         self.ticked_at = 0.0
         self.probed_at = 0.0
@@ -112,7 +113,7 @@ class Engine(Seat):
         self.echoed()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
-        self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled()
+        self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.seat()
         self.clock()
@@ -178,6 +179,25 @@ class Engine(Seat):
     def elsewhere(self, e) -> bool:
         meant = spoken_data(self.record, e).get("session")
         return bool(meant) and meant not in self.names()
+
+    def failed(self) -> str:
+        row = self.agent.driver.last_report()
+        provider = PROVIDERS.get(row.provider) if row else None
+        if not provider or not row.transcript or self.agent.state() not in (BUSY, WORKING):
+            return ""
+        try:
+            size = Path(row.transcript).stat().st_size
+        except OSError:
+            return ""
+        if size == self.failure_size:
+            return ""
+        self.failure_size = size
+        failure = provider().failure(Path(row.transcript))
+        if failure is None or failure.at < float(row.at):
+            return ""
+        self.agent.mark(IDLE, FAILED, failure=failure.message)
+        self.noted(f"The turn ended in an error: {failure.message}")
+        return f"the turn failed: {failure.message}"
 
     def probe(self) -> str:
         driver = self.agent.driver

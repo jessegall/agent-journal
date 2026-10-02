@@ -73,16 +73,31 @@ class Helpers(Controller):
         return f"sent to {row.name}"
 
     def report(self, text: str) -> str:
-        place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
-        if not place or not place.helping:
+        place = self._helping()
+        if not place:
             raise Refused("only a helper reports, from the environment it was dispatched into")
+        self._told(place, text)
+        return "reported; the agent that dispatched you has it"
+
+    def _failed(self, failure: str) -> None:
+        place = self._helping()
+        text = f"My turn ended in an error, so I stopped: {failure}"
+        if place and self._helper(place).report != text:
+            self._told(place, text)
+
+    def _helping(self):
+        place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
+        return place if place and place.helping else None
+
+    def _helper(self, place) -> Helper:
+        return Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).load(int(place.owner.partition(":")[2]))
+
+    def _told(self, place, text: str) -> None:
         home = Record(self.record.root, place.launched_from)
-        helpers = Helpers(home, actor=SYSTEM)
-        row = helpers.update(int(place.owner.partition(":")[2]), report=text)
+        row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text)
         told = Messages(home, actor=AGENT).create(titled(text), brief=text, peer=row.name)
         Nudges(home, actor=SYSTEM)._to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped")
-        return "reported; the agent that dispatched you has it"
 
     @lasting
     def stop(self, n: int):

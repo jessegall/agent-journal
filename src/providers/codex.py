@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
-from providers.payload import AgentCall, AskCall, BashCall, EVENTS, PERMISSION, SKILL_READ, UsageWindow
+from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
 from providers.base import Provider, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
@@ -288,6 +288,10 @@ class Codex(Provider):
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         return next(Path(path).parent.parent.glob(f"*/rollout-*-{session}.jsonl"), None)
+
+    def failure(self, path: Path) -> Failure | None:
+        ends = [line for line in tail(path, TAIL_BYTES) if TASK_EVENTS.search(line)]
+        return parsed(ends[-1], Failure.from_turn_end) if ends else None
 
     def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
         found = self.subagent_transcript(path, session)

@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 from typing import ClassVar
 from pathlib import Path
 
@@ -54,6 +55,16 @@ class Asking(Loaded):
     @classmethod
     def of(cls, raw) -> "Asking | None":
         return cls.from_json(raw) if isinstance(raw, dict) and raw else None
+
+
+@dataclass(frozen=True)
+class Failure:
+    message: str
+    at: float
+
+    @classmethod
+    def from_turn_end(cls, raw: dict) -> "Failure":
+        return cls(raw["payload"]["error"]["message"], datetime.fromisoformat(raw["timestamp"]).timestamp())
 
 
 @dataclass(frozen=True)
