@@ -84,6 +84,7 @@ class Confirm:
         self.printed = runtime.session_file(root, session, "printed")
         self.at = self.printed.stat().st_size if self.printed.is_file() else 0
         self.started = self.consented = time.time()
+        self.ready = 0.0
         self.answered = False
 
     def tick(self) -> None:
@@ -96,9 +97,9 @@ class Confirm:
             self.consent(early)
             return
         opening = DRIVERS[self.agent].opening(early)
-        if opening:
+        self.ready = (self.ready or time.time()) if opening else 0.0
+        if opening and time.time() - self.ready >= DRIVERS[self.agent].CONFIRM_AFTER:
             self.answered = True
-            time.sleep(DRIVERS[self.agent].CONFIRM_AFTER)
             self.driver.type_in(opening)
 
     def consent(self, early: bytes) -> None:

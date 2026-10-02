@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.227.1 — a Codex environment starts when Codex offers an update
+
+**A new Codex environment no longer sits at an empty prompt when Codex asks to update itself.** The journal
+answers Skip, as it answers Yes to Codex's trust question, and types its opening line only once the prompt has
+stayed on screen for a moment, so the line no longer lands in the update question. An environment started on
+2.227.0 that is stuck at an empty prompt starts properly once it is restarted.
+
 ## 2.227.0 — lessons at a real agent's pace, with every journal command seen
 
 **The agent in each lesson runs its journal commands through its shell, as a real agent does**, so the journal
