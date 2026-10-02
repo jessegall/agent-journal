@@ -34,6 +34,7 @@ CHANNEL = "notifications/claude/channel"
 SECOND = 1.0
 SKILL_ROUNDS = 4
 SERVER_STARTS = 30.0
+NO_BROWSER = {"BROWSER": "true"}
 THINKING, BURST, WRITING, RESTING = 1.5, 0.15, 1.2, 1.0
 OPENING = {("todo", "start"), ("work", "start"), ("work", "resume")}
 WRITING_A_REPORT = "Writing a report"
@@ -227,6 +228,7 @@ class Session:
         self.url = self.served()
 
     def served(self) -> str:
+        os.environ.update(NO_BROWSER)
         url, failed = launch(self.root, self.project)
         until = time.time() + SERVER_STARTS
         while not url and failed is None and time.time() < until:
