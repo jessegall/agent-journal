@@ -37,8 +37,11 @@ class Recordings(Controller):
         if self._running():
             raise Refused(f"already recording into {self._running().folder}: journal record stop")
         target.mkdir(parents=True, exist_ok=True)
-        child = subprocess.Popen([*entry("features.session_recording.recorder"), str(self.record.root.resolve()), str(target)],
-                                 start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        log = self.record.root / "runtime" / "recorder.log"
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with log.open("a") as written:
+            child = subprocess.Popen([*entry("features.session_recording.recorder"), str(self.record.root.resolve()), str(target)],
+                                     start_new_session=True, stdin=subprocess.DEVNULL, stdout=written, stderr=written)
         row = self.create(titled(f"Recording into {target.name}"), folder=str(target), pid=child.pid)
         return f"recording into {target} as record {row.n}; journal record stop ends it"
 
@@ -65,8 +68,8 @@ class Recordings(Controller):
             raise Refused("the recording still holds the machine: " + "; ".join(still[:5]))
         return f"{target} holds nothing about this machine"
 
-    def build(self, folder: str, into: str, env: str = "") -> str:
-        demo = branched(Path(folder), env)
+    def build(self, folder: str, into: str, env: str = "", name: str = "") -> str:
+        demo = branched(Path(folder), env, name or Path(folder).resolve().name)
         Path(into).write_text(json.dumps(demo))
         return f"wrote {len(demo['moments'])} moments and {len(demo['answers'])} answers into {into}"
 

@@ -23,7 +23,8 @@ class Recorder:
         self.frames = folder / "frames.jsonl"
         self.blobs = folder / "blobs"
         self.blobs.mkdir(parents=True, exist_ok=True)
-        self.read: dict[Path, int] = {}
+        self.read: dict[Path, tuple[int, int]] = {}
+        self.newest: dict[Path, int] = {}
         self.stamps: dict[Path, tuple[int, int, str]] = {}
         self.last: dict[str, str] = {}
 
@@ -43,17 +44,26 @@ class Recorder:
     def _events(self) -> list[dict]:
         events = []
         for log in sorted((self.root / "environments").glob("*/events.jsonl")):
-            size = log.stat().st_size
-            start = self.read.get(log, 0)
-            if size <= start:
-                continue
             with log.open("rb") as handle:
+                inode = os.fstat(handle.fileno()).st_ino
+                start = self._resumed(log, inode, handle)
                 handle.seek(start)
-                fresh = handle.read(size - start)
+                fresh = handle.read()
             whole = fresh[:fresh.rfind(b"\n") + 1]
-            self.read[log] = start + len(whole)
-            events += [json.loads(line) for line in whole.splitlines() if line.strip()]
+            self.read[log] = (inode, start + len(whole))
+            newest = self.newest.get(log, 0)
+            arrived = [event for event in map(json.loads, filter(bytes.strip, whole.splitlines())) if event["id"] > newest]
+            if arrived:
+                self.newest[log] = arrived[-1]["id"]
+            events += arrived
         return events
+
+    def _resumed(self, log: Path, inode: int, handle) -> int:
+        was, start = self.read.get(log, (0, 0))
+        if start == 0 or inode != was or os.fstat(handle.fileno()).st_size < start:
+            return 0
+        handle.seek(start - 1)
+        return start if handle.read(1) == b"\n" else 0
 
     def _snapshot(self) -> dict[str, str]:
         now = {}

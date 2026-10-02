@@ -180,19 +180,19 @@ class Throwaway:
                 continue
 
 
-def branched(folder: Path, env: str = "") -> dict:
+def branched(folder: Path, env: str, name: str) -> dict:
     with apart():
-        return grown(folder, env)
+        return grown(folder, env, name)
 
 
-def grown(folder: Path, env: str) -> dict:
-    demo = built(folder, env)
+def grown(folder: Path, env: str, name: str) -> dict:
+    demo = built(folder, env, name)
     listed = folder / BRANCHES / "branches.json"
     if not listed.is_file():
         return demo
     branches = {}
     for label, sub in json.loads(listed.read_text()).items():
-        branch = built(folder / BRANCHES / sub, env, folder.resolve().name)
+        branch = built(folder / BRANCHES / sub, env, name)
         demo["answers"].update(branch["answers"])
         branches[label] = branch["moments"]
     return {**demo, "branches": branches}

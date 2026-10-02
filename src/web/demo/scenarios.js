@@ -1,17 +1,45 @@
-export const SCENARIOS = [
-    {key: "bakery", label: "A bakery website", short: "Bakery", load: () => import("./scenarios/bakery.json")},
-    {key: "helpers", label: "Helpers beside Claude", short: "Helpers", load: () => import("./scenarios/helpers.json")},
-    {key: "ledgerly", label: "A customer's bug report", short: "Bug report", load: () => import("./scenarios/ledgerly.json")},
+export const LESSONS = [
+    {
+        key: "bakery",
+        title: "How to ask for a plan",
+        teaches: "Ask for a website and watch the journal walk the agent through writing a plan, phase by phase. You read the plan, approve it with its button and see it run; one question changes what gets built.",
+        load: () => import("./scenarios/bakery.json"),
+    },
+    {
+        key: "ledgerly",
+        title: "How to ask for a report",
+        teaches: "Ask why an invoice is a cent off. The agent reproduces it, asks you how VAT should round, and writes the report part by part before handing it to you as a card.",
+        load: () => import("./scenarios/ledgerly.json"),
+    },
+    {
+        key: "subagents",
+        title: "How to start subagents",
+        teaches: "Ask for a review before a release. The agent sends two read-only subagents, each named and on its own model; what they find comes back as to-dos, and you decide whether to fix it now.",
+        load: () => import("./scenarios/subagents.json"),
+    },
+    {
+        key: "helpers",
+        title: "How to work with helpers",
+        teaches: "Hand writing jobs to helpers on Codex and Claude, each in a place of its own. Follow them while they work, set one straight when it goes off track, and bring the work back.",
+        load: () => import("./scenarios/helpers.json"),
+    },
 ];
 
-const asked = new URLSearchParams(location.search).get("scenario");
+const LESSON = "scenario";
+const asked = new URLSearchParams(location.search).get(LESSON);
 
-export const SHORT = SCENARIOS.map(({key, short}) => ({key, label: short}));
+export const picked = LESSONS.find((one) => one.key === asked);
 
-export const scenario = SCENARIOS.find((one) => one.key === asked) || SCENARIOS[0];
+export const scenario = picked || LESSONS[0];
 
-export function play(key) {
+function opened(key) {
     const url = new URL(location.href);
-    url.searchParams.set("scenario", key);
+    if (key) url.searchParams.set(LESSON, key);
+    else url.searchParams.delete(LESSON);
+    url.hash = "";
     location.assign(url.toString());
 }
+
+export const play = (key) => opened(key);
+
+export const lessons = () => opened("");

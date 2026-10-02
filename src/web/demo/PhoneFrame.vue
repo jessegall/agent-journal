@@ -1,7 +1,6 @@
 <script setup>
 import Btn from "../src/kit/Btn.vue";
-import Segmented from "../src/kit/Segmented.vue";
-import {SCENARIOS, play, scenario} from "./scenarios.js";
+import {lessons} from "./scenarios.js";
 import {phoneAddress, viewAs} from "./view.js";
 import {restart} from "./storage.js";
 
@@ -12,7 +11,7 @@ const address = phoneAddress();
     <div class="phone-frame-page">
         <header class="phone-frame-bar">
             <span class="phone-frame-title">The phone app</span>
-            <Segmented :options="SCENARIOS" :value="scenario.key" @pick="play" />
+            <Btn small @click="lessons">All lessons</Btn>
             <Btn small title="Start the replay again" @click="restart">Restart</Btn>
             <Btn small @click="viewAs('desktop')">Desktop view</Btn>
         </header>

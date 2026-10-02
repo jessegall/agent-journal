@@ -1,4 +1,4 @@
-from scripts.demo.session import Fork, Session
+from scripts.demo.session import Fork, Phase, Session
 
 NAME = "crumb-and-co"
 FIRST_COMMIT = "Start the bakery website"
@@ -38,25 +38,17 @@ def page(title: str, body: str) -> str:
 
 
 def trunk(s: Session) -> Fork:
-    s.journal("feature", "switch", "sequences", actor="user")
     s.started()
     s.stop()
     asked = s.user("Hi! Can you build a simple website for Crumb & Co., our neighbourhood bakery? A home page, our menu and a contact page.")
-    plan = s.made("plan", "create", "The Crumb & Co. website", "--set", "goal=A home page, a menu and a contact page that read well on any phone")
-    s.journal("plan", "phase", str(plan), "The pages", "--when", "Home and menu exist and share one stylesheet")
-    s.journal("plan", "phase", str(plan), "Visiting", "--when", "The contact page has the address and opening hours")
-    s.journal("plan", "phase", str(plan), "Phones", "--when", "Every page reads well at phone width")
-    s.journal("plan", "stage", str(plan), "todos")
-    titles = (("Write the home page", "index.html with a short welcome"),
-              ("One stylesheet for every page", "style.css with the bakery's colours"),
-              ("Write the menu page", "menu.html listing the bakes"),
-              ("Write the contact page", "contact.html with the address and opening hours"),
-              ("Check every page on a phone", "Each page at 390px wide"))
-    rows = [s.made("todo", "create", title, "--brief", brief) for title, brief in titles]
-    s.journal("plan", "todos", str(plan), "1", *map(str, rows[:3]))
-    s.journal("plan", "todos", str(plan), "2", str(rows[3]))
-    s.journal("plan", "todos", str(plan), "3", str(rows[4]))
-    s.journal("plan", "ready", str(plan))
+    planned = s.planned("The Crumb & Co. website", "A home page, a menu and a contact page that read well on any phone", [
+        Phase("The pages", "Home and menu exist and share one stylesheet", (("Write the home page", "index.html with a short welcome"),
+                                                                            ("One stylesheet for every page", "style.css with the bakery's colours"),
+                                                                            ("Write the menu page", "menu.html listing the bakes"))),
+        Phase("Visiting", "The contact page has the address and opening hours", (("Write the contact page", "contact.html with the address and opening hours"),)),
+        Phase("Phones", "Every page reads well at phone width", (("Check every page on a phone", "Each page at 390px wide"),)),
+    ])
+    plan, rows = planned.n, planned.rows
     s.reply(asked, f"Gladly. Plan {plan} has three phases: the pages first, then the contact page with your opening hours, then a check on phones. "
                    "Approve it and I'll start.")
     s.stop()
@@ -99,13 +91,16 @@ def priced(s: Session, fork: Fork) -> None:
     s.journal("todo", "start", str(phones))
     s.shell("grep -n '<td>' menu.html | head -3")
     s.journal("work", "log", "At 390px the price column squeezes the names onto three lines; stacking the price under each name below 600px")
-    report = s.made("report", "create", "Why the menu was cramped on phones", "--brief",
-                    "The price column took a fixed share of a 390px screen, so the names wrapped onto three lines.")
-    s.journal("report", "section", str(report), "What I found", "The table kept two columns at every width; at 390px the names had 150px.")
-    s.journal("report", "section", str(report), "The fix", "Below 600px each row stacks: the name, then its price in a smaller line.")
     s.write("style.css", STYLE + "table { width: 100%; border-collapse: collapse; }\ntd { padding: 10px 4px; border-bottom: 1px solid #ead7bd; }\n"
                                  "@media (max-width: 600px) { main { padding: 16px; } tr, td { display: block; } td + td { font-size: 14px; border: 0; padding-top: 0; } }\n")
     s.journal("todo", "done", str(phones), "--how", "Below 600px the price sits under each name; every page reads well at 390px")
+    report = s.reported("Why the menu was cramped on phones",
+                        "The price column took a fixed share of a 390px screen, so the names wrapped onto three lines; below 600px the price now sits under each name.",
+                        {"What I found": "The table kept two columns at every width; at 390px the names had 150px and wrapped onto three lines.",
+                         "What was already sound": "The home and contact pages read well at 390px; only the menu's table squeezed.",
+                         "The fix": "Below 600px each row stacks: the name, then its price in a smaller line.",
+                         "What remains uncertain": "Very long bake names may still wrap on the smallest phones."},
+                        [f"todo:{phones}"], "The menu was cramped because the price column kept its share of a narrow screen; on phones the price now sits under each name.")
     s.stop()
     summary(s, f"Crumb & Co. has a home page, a menu with prices and a contact page that says you're closed on Mondays. "
                f"On phones the prices squeezed the names, so they now sit under each bake (report {report}). The plan is finished.")

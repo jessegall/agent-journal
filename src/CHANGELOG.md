@@ -4,6 +4,26 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.226.0 — lessons recorded through the journal's real flow
+
+**The demo opens on a grid of lessons**: how to ask for a plan, how to ask for a report, how to start subagents
+and how to work with helpers. Each card says what it teaches; inside a lesson the top bar names it and goes back
+to the grid. The turn hints are gone.
+
+**Every lesson is the journal's real flow.** Nothing is switched off while recording: when you ask for a plan,
+the sequence Building a plan walks the agent through it; a report is laid out, written part by part, filed and
+handed over through Writing a report. The scripted session runs the journal's own channel and terminal, so the
+server runs its real engine for it, and each lesson pauses like a real agent. A step a script skips fails it.
+
+**Fixed along the way:**
+- After the hourly tidy rewrote an events log, a long-running process could read stale events and give a new
+  event an id already used. The recent-events cache now notices the file changed.
+- A recording died at the first tidy: the recorder read on from a position the rewrite had moved. It now starts
+  the log over and keeps only the events it has not recorded.
+- A subagent that had returned its answer showed as running for ten minutes; only one sent to the background
+  keeps running until it goes quiet.
+- The recorder writes its errors to runtime/recorder.log instead of losing them.
+
 ## 2.225.0 — merge and release in one step
 
 **A board can run a command after each merge.** Set it in the board's settings, or with

@@ -68,7 +68,6 @@ def test_every_line_shows_its_vat():
 
 
 def trunk(s: Session) -> Fork:
-    s.journal("feature", "switch", "sequences", actor="user")
     s.started()
     s.stop()
     asked = s.user("A customer says invoice 2041 is a cent off: three lines at €9.99 with 21% VAT. Can you find out why?")
@@ -97,13 +96,15 @@ def on_the_total(s: Session, fork: Fork) -> None:
     s.write("ledgerly/audit.py", AUDIT)
     found = s.shell("python3 -m ledgerly.audit invoices")
     count = len(found.splitlines())
-    report = s.made("report", "create", "Why invoice 2041 was a cent off", "--brief",
-                    f"Ledgerly rounded the VAT per line; the shop rounds it on the total now. {count} invoices since March printed a different VAT.")
-    s.journal("report", "section", str(report), "What went wrong", "Each line's VAT was rounded before adding them up, so three lines at €9.99 gave €6.30 instead of €6.29.")
-    s.journal("report", "section", str(report), "Invoices affected", found.strip() or "None")
-    s.journal("report", "section", str(report), "The fix", "totals() adds the lines first and rounds the VAT once; tests/test_vat.py holds invoice 2041 to €6.29.")
     s.shell(f"git add -A && git commit -qm 'VAT is rounded once, on the invoice total' -m 'Journal: todos done {fork.rows['todo']}'")
-    s.say(f"Fixed: the VAT is now rounded once, on the total, and invoice 2041 comes to €6.29. Report {report} lists the {count} invoices since March that printed a different VAT.")
+    s.reported("Why invoice 2041 was a cent off",
+               f"Ledgerly rounded the VAT per line; the shop rounds it on the total now. {count} invoices since March printed a different VAT.",
+               {"What went wrong": "Each line's VAT was rounded before adding them up, so three lines at €9.99 gave €6.30 instead of €6.29.",
+                "Invoices affected": found.strip(),
+                "What was already sound": "The net amounts and totals before VAT were right on every invoice.",
+                "The fix": "totals() adds the lines first and rounds the VAT once; tests/test_vat.py holds invoice 2041 to €6.29.",
+                "What remains uncertain": "Whether the customers of the other invoices should get a corrected copy is the shop's call."},
+               [f"todo:{fork.rows['todo']}"], f"Fixed: the VAT is now rounded once, on the total, and invoice 2041 comes to €6.29. {count} invoices since March printed a different VAT.")
     s.stop()
     guarded(s)
 
@@ -116,12 +117,14 @@ def per_line(s: Session, fork: Fork) -> None:
     s.journal("fact", "create", "Ledgerly rounds VAT per line, and the invoice shows it", "--brief",
               "The tax office allows either; the shop keeps per line, so every printed line carries its own VAT and the sum adds up.",
               "--set", "keywords=vat,rounding,invoice")
-    report = s.made("report", "create", "Why invoice 2041 looked a cent off", "--brief",
-                    "No amount was wrong: Ledgerly rounds VAT per line. The invoice now prints each line's VAT, so the €6.30 adds up.")
-    s.journal("report", "section", str(report), "What the customer saw", "Only the total VAT was printed; 21% of €29.97 is €6.29, so €6.30 looked wrong.")
-    s.journal("report", "section", str(report), "What changed", "Each line now prints its own VAT (€2.10 three times), and the VAT row says it is the sum of the lines.")
     s.shell(f"git add -A && git commit -qm 'Print the VAT of every line on the invoice' -m 'Journal: todos done {fork.rows['todo']}'")
-    s.say(f"Kept per line: no amount was wrong. The invoice now prints each line's VAT, so €2.10 three times adds up to €6.30 on paper. Report {report} has the details for the customer.")
+    s.reported("Why invoice 2041 looked a cent off",
+               "No amount was wrong: Ledgerly rounds VAT per line. The invoice now prints each line's VAT, so the €6.30 adds up.",
+               {"What the customer saw": "Only the total VAT was printed; 21% of €29.97 is €6.29, so €6.30 looked wrong.",
+                "What was already sound": "Every amount was right under per-line rounding, which the tax office allows.",
+                "What changed": "Each line now prints its own VAT (€2.10 three times), and the VAT row says it is the sum of the lines.",
+                "What remains uncertain": "The customer's accountant may still prefer rounding on the total; that is a choice for the shop."},
+               [f"todo:{fork.rows['todo']}"], "Kept per line: no amount was wrong. The invoice now prints each line's VAT, so €2.10 three times adds up to €6.30 on paper.")
     s.stop()
     guarded(s)
 

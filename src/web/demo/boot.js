@@ -3,10 +3,12 @@ import {loadDemo} from "./data.js";
 import {StandIn} from "./standIn.js";
 import {QuietStream} from "./stream.js";
 import {Player} from "./player.js";
-import {showHints} from "./hint.js";
+import {noticeOwnWords} from "./hint.js";
 import {forgetEarlierBuilds} from "./storage.js";
 import {framedAsPhone, onAPhone, phoneAddress} from "./view.js";
+import LessonGrid from "./LessonGrid.vue";
 import PhoneFrame from "./PhoneFrame.vue";
+import {picked} from "./scenarios.js";
 
 const CLOSED = ["hub", "plugins", "page", "file", "files", "commit"];
 
@@ -16,6 +18,7 @@ function keepOut() {
 }
 
 export async function install() {
+    if (!picked) return LessonGrid;
     if (onAPhone()) {
         location.replace(phoneAddress());
         return new Promise(() => {});
@@ -25,7 +28,7 @@ export async function install() {
     const standIn = new StandIn(await loadDemo());
     standIn.player = new Player(standIn);
     globalThis.demo = standIn;
-    showHints();
+    noticeOwnWords();
     transport.reach = async (method, url, body) => standIn.answer(method, url, body);
     globalThis.EventSource = QuietStream;
     keepOut();

@@ -18,7 +18,7 @@ sys.path.insert(0, str(SRC))
 from features.session_recording.demo import BRANCHES  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
-SCENARIOS = ("bakery", "helpers", "ledgerly")
+SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers")
 SHIPPED = SRC / "web" / "demo" / "scenarios"
 SETTLE = 3.0
 SERVED = ("heartbeat", "viewer.json")
@@ -114,7 +114,7 @@ def played(key: str, project: Path, pace: float, folder: Path | None = None) -> 
 
 def shipped(key: str, project: Path, folder: Path) -> Path:
     into = SHIPPED / f"{key}.json"
-    for step in (["scrub", str(folder)], ["build", str(folder), str(into)]):
+    for step in (["scrub", str(folder)], ["build", str(folder), str(into), "--name", scenario(key).NAME]):
         subprocess.run([str(project / ".journal" / "journal"), "record", *step], check=True, capture_output=True, timeout=600)
     return into
 
@@ -128,7 +128,7 @@ def main() -> None:
     for key in given.keys:
         story = scenario(key)
         project = given.projects / f"demo-{key}"
-        folder = given.projects / "demo-recordings" / story.NAME
+        folder = given.projects / "demo-recordings" / key
         shutil.rmtree(folder, ignore_errors=True)
         played(key, project, given.pace, folder)
         print(f"{key}: {shipped(key, project, folder).relative_to(SRC.parent)}")

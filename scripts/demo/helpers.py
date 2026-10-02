@@ -1,4 +1,4 @@
-from scripts.demo.session import Fork, Session
+from scripts.demo.session import Fork, Phase, Session
 
 NAME = "pebble-pantry"
 FIRST_COMMIT = "Pebble Pantry scales recipes"
@@ -53,23 +53,16 @@ USAGE = README + "```\npython3 -m pantry recipes/pancakes.json --guests 5\n```\n
 
 
 def trunk(s: Session) -> Fork:
-    s.journal("feature", "switch", "sequences", actor="user")
     s.started()
     s.stop()
     asked = s.user("Pebble Pantry scales recipes badly: 2.5 guests gives 3 eggs and 0.33333 cups. Plan the fix, and tell me which parts could go to helpers.")
     s.shell("ls pantry && python3 -m pytest -q 2>&1 | tail -1")
-    plan = s.made("plan", "create", "Recipes that scale sensibly", "--set", "goal=Scaled recipes give whole eggs and kitchen-sized fractions, with tests and a README")
-    s.journal("plan", "phase", str(plan), "Round amounts sensibly", "--when", "Eggs come out whole and cups in quarters")
-    s.journal("plan", "phase", str(plan), "Cover units with tests", "--when", "Every unit conversion has a test")
-    s.journal("plan", "phase", str(plan), "Write usage in the README", "--when", "The README shows how to scale a recipe")
-    s.journal("plan", "stage", str(plan), "todos")
-    rounding = s.made("todo", "create", "Round scaled amounts sensibly", "--brief", "Whole eggs, quarters for cups, in pantry/scale.py")
-    tests = s.made("todo", "create", "Unit tests for every conversion", "--brief", "Cups, spoons and grams in pantry/units.py")
-    readme = s.made("todo", "create", "Usage in the README", "--brief", "One example of scaling pancakes")
-    s.journal("plan", "todos", str(plan), "1", str(rounding))
-    s.journal("plan", "todos", str(plan), "2", str(tests))
-    s.journal("plan", "todos", str(plan), "3", str(readme))
-    s.journal("plan", "ready", str(plan))
+    planned = s.planned("Recipes that scale sensibly", "Scaled recipes give whole eggs and kitchen-sized fractions, with tests and a README", [
+        Phase("Round amounts sensibly", "Eggs come out whole and cups in quarters", (("Round scaled amounts sensibly", "Whole eggs, quarters for cups, in pantry/scale.py"),)),
+        Phase("Cover units with tests", "Every unit conversion has a test", (("Unit tests for every conversion", "Cups, spoons and grams in pantry/units.py"),)),
+        Phase("Write usage in the README", "The README shows how to scale a recipe", (("Usage in the README", "One example of scaling pancakes"),)),
+    ])
+    plan, (rounding, tests, readme) = planned.n, planned.rows
     s.reply(asked, f"Plan {plan} is ready: round the amounts, cover the units with tests, and write the usage in the README. "
                    f"The tests (to-do {tests}) and the README (to-do {readme}) are bounded jobs that suit helpers; the rounding is mine.")
     s.stop()
@@ -164,10 +157,12 @@ def together(s: Session, fork: Fork, readme: str) -> None:
     s.reply(bring, "Quill's tests are in main and pass beside the rounding.")
     s.stop()
     looked = s.user("Did the helpers' work and yours fit together? Review it, then sum up.")
-    report = s.made("report", "create", "Do the rounding and the tests agree", "--brief",
-                    "They agree for cups and eggs. One gap: grams are not rounded, so 1.25 cups of butter gives 283.75 g.")
-    s.journal("report", "section", str(report), "What fits", "Eggs come out whole and cups round to quarters; the unit tests cover every conversion.")
-    s.journal("report", "section", str(report), "One finding", "grams() returns unrounded values such as 283.75 g; a kitchen scale reads whole grams.")
+    report = s.reported("Do the rounding and the tests agree",
+                        "They agree for cups and eggs. One gap: grams are not rounded, so 1.25 cups of butter gives 283.75 g.",
+                        {"The evidence": "The rounding and Quill's unit tests pass together; the README's example scales pancakes from 2 to 5 guests correctly.",
+                         "What was already sound": "Eggs come out whole and cups round to quarters; the unit tests cover every conversion.",
+                         "What remains uncertain": "grams() returns unrounded values such as 283.75 g; a kitchen scale reads whole grams."},
+                        [f"todo:{fork.rows['tests']}", f"todo:{fork.rows['readme']}"], "The helpers' work and mine fit, with one gap: grams aren't rounded.")
     s.journal("suggestion", "suggest", "Round grams to whole numbers", "--brief", "grams() returns 283.75 for 1.25 cups of butter; a scale reads whole grams.")
     s.reply(looked, f"They fit, with one gap: grams aren't rounded (report {report}), and I've suggested the fix. "
                     f"Quill (Codex) wrote the unit tests in its worktree and they're in main; {readme}. I rounded the amounts and reviewed the rest.")

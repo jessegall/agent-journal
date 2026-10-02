@@ -43,6 +43,16 @@ def test_a_write_makes_a_frame_with_the_changed_row_and_file_and_a_quiet_poll_ma
     assert (tmp_path / "blobs" / second["changed"][row]).read_text().count("second row"), "the changed row is stored by content"
     assert (tmp_path / "blobs" / second["changed"]["files/page.txt"]).read_text() == "two"
     assert second["events"] and not second["gone"]
+    log = record.root / "environments" / "t" / "events.jsonl"
+    lines = log.read_text().splitlines()
+    trimmed = log.with_name("trimmed.jsonl")
+    trimmed.write_text("".join(line + "\n" for line in lines[1:]))
+    trimmed.replace(log)
+    Todos(record, actor=AGENT).create("third row")
+    ids = [e.id for e in record.events()]
+    assert len(ids) == len(set(ids)), "after the tidy rewrites the events log, a new event never reuses an id"
+    assert recorder.poll(), "an events log rewritten by the tidy is read again from its start"
+    assert [e["action"] for e in frames(tmp_path)[-1]["events"]] == ["created"], "and only the events after the last one recorded are kept"
 
 
 def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
@@ -164,9 +174,10 @@ def test_a_visitor_plays_every_branch_of_every_shipped_scenario_to_the_end_at_a_
     for run, one in got.items():
         assert one["errors"] == [], run
         assert {"send", "answer"} <= set(one["moves"]), f"{run}: the visitor sends the messages and picks the answer"
-        assert one["branch"] and all(one["todos"]), f"{run}: the chosen branch plays through to its last to-do"
+        assert one["branch"] and one["finished"], f"{run}: the chosen answer's recording plays through to its end"
         assert "sending" not in one["text"], f"{run}: a sent message lands as the recorded one"
     assert all(got[(key, "", "0")]["branch"] != got[(key, "", "1")]["branch"] for key in SCENARIOS), "each answer plays its own ending"
+    assert all(got[("bakery", "", "0")]["todos"]), "the plan's work plays through to its last to-do"
     assert "approve" in got[("bakery", "", "0")]["moves"], "the visitor approves the plan with its button"
     assert got[("bakery", "", "0")]["cards"] > 0, "the file feed shows the agent's recorded edits"
     assert "Agents at work" in got[("helpers", "", "0")]["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"

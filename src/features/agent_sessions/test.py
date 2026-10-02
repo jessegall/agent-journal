@@ -217,6 +217,23 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
         Seat.subagents_moved(seat, last, subagents)
     heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
     assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
+    import json
+    from providers.claude import Claude
+    transcript = record.root / "main.jsonl"
+    rows = [{"type": "assistant", "uuid": "a", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "id": "fg", "name": "Agent", "input": {"description": "Ada: review", "subagent_type": "reviewer", "model": "sonnet"}},
+                {"type": "tool_use", "id": "bg", "name": "Agent", "input": {"description": "Rex: research", "subagent_type": "Explore", "model": "haiku", "run_in_background": True}}]}},
+            {"type": "user", "uuid": "b", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "fg", "content": "One finding"},
+                                                                                   {"type": "tool_result", "tool_use_id": "bg", "content": "Async agent launched"}]}}]
+    for agent, use in (("fg1", "fg"), ("bg1", "bg")):
+        folder = transcript.with_suffix("") / "subagents"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / f"agent-{agent}.meta.json").write_text(json.dumps({"toolUseId": use}))
+        (folder / f"agent-{agent}.jsonl").write_text("{}\n")
+    answered = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 2))
+    transcript.write_text("".join(json.dumps({**row, "timestamp": answered}) + "\n" for row in rows))
+    crew = {sub["task"]: sub["running"] for sub in Claude().crew(transcript)["subagent_rows"]}
+    assert crew == {"Ada: review": False, "Rex: research": True}, "a subagent that returned its answer is done; one sent to the background works on until it goes quiet"
 
 
 def test_a_report_filed_after_a_subagent_ended_is_linked_to_it():
