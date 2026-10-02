@@ -1,18 +1,18 @@
 const SHOWN_FOR = 3200;
 const SAID = "This is a replay, so your own words are not sent: press Send to send the recorded message.";
 
-export function showHints() {
+export function noticeOwnWords() {
     let shown = null;
     let gone = null;
     const cleared = () => {
         if (shown) shown.remove();
         shown = null;
     };
-    window.addEventListener("replay-hint", (event) => {
+    window.addEventListener("replay-hint", () => {
         if (shown) shown.remove();
         clearTimeout(gone);
         shown = document.createElement("div");
-        shown.textContent = event.detail || SAID;
+        shown.textContent = SAID;
         shown.setAttribute("role", "status");
         Object.assign(shown.style, {
             position: "fixed",
@@ -30,7 +30,6 @@ export function showHints() {
             boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
         });
         document.body.append(shown);
-        if (!event.detail) gone = setTimeout(cleared, SHOWN_FOR);
+        gone = setTimeout(cleared, SHOWN_FOR);
     });
-    window.addEventListener("replay-moved", cleared);
 }

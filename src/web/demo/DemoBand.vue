@@ -1,33 +1,25 @@
 <script setup>
 import Btn from "../src/kit/Btn.vue";
-import Segmented from "../src/kit/Segmented.vue";
-import {SCENARIOS, SHORT, play, scenario} from "./scenarios.js";
-import {computed, onUnmounted, ref} from "vue";
+import {lessons, scenario} from "./scenarios.js";
 import {restart} from "./storage.js";
 import {insideFrame, viewAs} from "./view.js";
 
 const REPOSITORY = "https://github.com/jessegall/agent-journal";
 const INSTALL = `${REPOSITORY}#install`;
-const WHOLE = "A recorded session where you play the user: send, answer and approve when it is your turn. Nothing leaves your browser.";
+const WHOLE = "A recorded session where you play the user. Nothing leaves your browser.";
 
 const open = (url) => window.open(url, "_blank", "noopener");
 const framed = insideFrame();
-const roomy = matchMedia("(min-width: 1180px)");
-const wide = ref(roomy.matches);
-const fitted = () => (wide.value = roomy.matches);
-roomy.addEventListener("change", fitted);
-onUnmounted(() => roomy.removeEventListener("change", fitted));
-const choices = computed(() => (wide.value ? SCENARIOS : SHORT));
 </script>
 
 <template>
     <div class="demo-band">
         <span class="demo-band-text" :title="WHOLE">
-            <span class="demo-band-long">{{ WHOLE }}</span>
-            <span class="demo-band-short">A recorded session. You play the user.</span>
+            <span class="demo-band-lesson">{{ scenario.title }}</span>
+            <span class="demo-band-long">&nbsp;· {{ WHOLE }}</span>
         </span>
-        <Segmented class="demo-band-scenarios" :options="choices" :value="scenario.key" title="Which recorded session to watch" @pick="play" />
         <span class="demo-band-acts">
+            <Btn small title="Pick another lesson" @click="lessons">All lessons</Btn>
             <template v-if="!framed">
                 <Btn small class="demo-band-phone" title="Watch the demo at the size of a phone" @click="viewAs('phone')">Phone view</Btn>
             </template>
@@ -58,21 +50,14 @@ const choices = computed(() => (wide.value ? SCENARIOS : SHORT));
     white-space: nowrap;
 }
 
-.demo-band-scenarios {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
+.demo-band-lesson {
+    font-weight: 600;
 }
 
 .demo-band-acts {
     flex: none;
     display: flex;
     gap: 6px;
-}
-
-.demo-band-short {
-    display: none;
 }
 
 @media (max-width: 640px) {
@@ -85,10 +70,6 @@ const choices = computed(() => (wide.value ? SCENARIOS : SHORT));
     .demo-band-long,
     .demo-band-phone {
         display: none;
-    }
-
-    .demo-band-short {
-        display: inline;
     }
 }
 </style>

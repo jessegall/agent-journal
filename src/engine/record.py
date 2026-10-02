@@ -4,7 +4,7 @@ import os
 import threading
 import time
 from contextlib import contextmanager
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from engine import bus
@@ -14,7 +14,16 @@ from engine.stored import append_text, held_back, read_json, write_json, write_t
 
 RESOURCES = "project"
 KEPT_EVENTS = 2000
-RECENT: dict[str, tuple[int, list[Event]]] = {}
+
+
+@dataclass(frozen=True)
+class Recent:
+    file: int
+    read: int
+    events: list
+
+
+RECENT: dict[str, Recent] = {}
 
 
 SETTINGS: dict[str, tuple] = {}
@@ -126,22 +135,24 @@ class Record:
     def recent_events(self) -> list[Event]:
         log = self.home / "events.jsonl"
         try:
-            size = log.stat().st_size
+            stat = log.stat()
         except OSError:
             return []
+        size = stat.st_size
         held = RECENT.get(str(log))
-        if held and held[0] == size:
-            return held[1]
-        if held and held[0] < size:
+        same = held is not None and held.file == stat.st_ino
+        if same and held.read == size:
+            return held.events
+        if same and held.read < size:
             with log.open("rb") as fh:
-                fh.seek(held[0])
-                added = fh.read(size - held[0])
+                fh.seek(held.read)
+                added = fh.read(size - held.read)
             whole = added[:added.rfind(b"\n") + 1]
-            kept = (held[1] + parsed(whole.split(b"\n")))[-KEPT_EVENTS:]
-            RECENT[str(log)] = (held[0] + len(whole), kept)
+            kept = (held.events + parsed(whole.split(b"\n")))[-KEPT_EVENTS:]
+            RECENT[str(log)] = Recent(stat.st_ino, held.read + len(whole), kept)
             return kept
         kept = self.events_back(0, KEPT_EVENTS)
-        RECENT[str(log)] = (size, kept)
+        RECENT[str(log)] = Recent(stat.st_ino, size, kept)
         return kept
 
     def events_back(self, since: int = 0, last: int = 0) -> list[Event]:

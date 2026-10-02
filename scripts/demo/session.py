@@ -2,9 +2,11 @@ import json
 import os
 import re
 import subprocess
+import sys
+import threading
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError
@@ -13,8 +15,10 @@ from urllib.request import Request, urlopen
 
 import features
 import features.helpers.controller as helping
+from engine import typist
 from engine.record import Record
-from engine.viewer import launch
+from engine.sessions import ACTIVE_ENV
+from engine.viewer import launch, running
 from features.helper_worktrees.controller import Worktrees
 from features.work_modes.modes import pick
 from providers import DRIVERS, PROVIDERS
@@ -23,8 +27,13 @@ from resources.base import AGENT, SYSTEM, USER
 NUMBER = re.compile(r'"n": (\d+)')
 SKILLS = re.compile(r"Skill: ([\w-]+)|skills/([\w-]+)/SKILL\.md")
 MAIN = "main"
+CHANNEL = "notifications/claude/channel"
 SECOND = 1.0
+SERVER_STARTS = 30.0
+THINKING, EDITING, REPLYING = 2.0, 2.5, 4.0
 OPENING = {("todo", "start"), ("work", "start"), ("work", "resume")}
+WRITING_A_REPORT = "Writing a report"
+BUILDING_A_PLAN = "Building a plan"
 STARTING_SKILLS = ("journal", "journal-chat-etiquette", "journal-todos")
 
 
@@ -44,12 +53,33 @@ class Seat:
     provider: str = "claude"
     env: str = ""
     cwd: Path | None = None
+    agent: str = ""
+
+
+@dataclass(frozen=True)
+class Phase:
+    title: str
+    when: str
+    rows: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True)
+class Planned:
+    n: int
+    rows: list[int]
 
 
 @dataclass(frozen=True)
 class Call:
     name: str
     given: dict
+    id: str = field(default_factory=lambda: f"toolu_{uuid.uuid4().hex[:24]}")
+
+
+@dataclass(frozen=True)
+class Subagent:
+    seat: Seat
+    dispatch: Call
 
 
 def stamp() -> str:
@@ -78,15 +108,22 @@ class Claude:
 
     def kept(self, kind: str, content) -> None:
         made = str(uuid.uuid4())
-        self.appended({"type": kind, "uuid": made, "parentUuid": self.last, "sessionId": self.seat.session, "isSidechain": False,
+        self.appended({"type": kind, "uuid": made, "parentUuid": self.last, "sessionId": self.seat.session, "isSidechain": bool(self.seat.agent),
+                       **({"agentId": self.seat.agent} if self.seat.agent else {}),
                        "userType": "external", "cwd": str(self.seat.cwd or ""), "timestamp": stamp(), "message": {"role": kind, "content": content}})
         self.last = made
 
     def prompted(self, text: str) -> None:
         self.kept("user", text)
 
+    def channeled(self, text: str) -> None:
+        self.kept("user", f'<channel source="journal" from="journal">\n{text}\n</channel>')
+
     def used(self, call: Call) -> None:
-        self.kept("assistant", [{"type": "tool_use", "id": f"toolu_{uuid.uuid4().hex[:24]}", "name": call.name, "input": call.given}])
+        self.kept("assistant", [{"type": "tool_use", "id": call.id, "name": call.name, "input": call.given}])
+
+    def returned(self, call: Call, text: str) -> None:
+        self.kept("user", [{"type": "tool_result", "tool_use_id": call.id, "content": text}])
 
 
 class Codex(Claude):
@@ -129,19 +166,50 @@ class Session:
         self.root = self.project / ".journal"
         self.main = Seat(f"{self.name}-main")
         self.revived(self.alive)
+        self.terminal = typist.listen(self.root, self.main.session)
+        self.channel = subprocess.Popen([sys.executable, str(self.root / "src" / "channel.py"), str(self.root)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        text=True, env={**os.environ, ACTIVE_ENV: "1"})
+        self.channel.stdin.write(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}) + "\n")
+        self.channel.stdin.flush()
+        threading.Thread(target=self.listened, daemon=True).start()
+        threading.Thread(target=self.drained, daemon=True).start()
         features.load(self.root)
         helping.launched = lambda record, name, provider, args, cwd: name
         for driver in DRIVERS.values():
             driver.enter = lambda self, text: True
-        self.url, failed = launch(self.root, self.project)
-        if not self.url:
+        self.url = self.served()
+
+    def served(self) -> str:
+        url, failed = launch(self.root, self.project)
+        until = time.time() + SERVER_STARTS
+        while not url and failed is None and time.time() < until:
+            time.sleep(0.5)
+            url = running(self.root)
+        if not url:
             raise Refusal(f"the journal server did not start ({failed}): see {self.root / 'runtime' / 'viewer.log'}")
+        return url
+
+    def listened(self) -> None:
+        for line in self.channel.stdout:
+            told = json.loads(line)
+            if told.get("method") == CHANNEL:
+                self.hand(self.main).channeled(told["params"]["content"])
+
+    def drained(self) -> None:
+        while self.channel.poll() is None:
+            try:
+                typist.receive(self.terminal)
+            except OSError:
+                return
+            time.sleep(0.2)
 
     def wait(self, seconds: float) -> None:
         time.sleep(seconds * self.pace)
 
     def journal(self, *args: str, actor: str = AGENT, seat: Seat | None = None) -> str:
         seat = seat or self.main
+        if actor == AGENT:
+            self.wait(THINKING)
         place = ["--env", seat.env] if seat.env else []
         done = subprocess.run([str(self.root / "journal"), *place, *args], cwd=seat.cwd or self.project, capture_output=True, text=True, timeout=60,
                               env={**os.environ, "JOURNAL_ACTOR": actor, "JOURNAL_SESSION": seat.session, "JOURNAL_ENV": seat.env})
@@ -152,6 +220,69 @@ class Session:
             time.sleep(SECOND)
         return out
 
+    def sequence(self, title: str) -> int:
+        return next(int(line.split()[0]) for line in self.journal("sequence", "all").splitlines() if line.split(None, 1)[1:] == [title])
+
+    def follow(self, title: str, about: str, seat: Seat | None = None) -> None:
+        self.journal("sequence", "follow", str(self.sequence(title)), "--about", about, seat=seat)
+        self.wait(0.5)
+
+    def onward(self, title: str, about: str, seat: Seat | None = None) -> None:
+        self.journal("sequence", "next", str(self.sequence(title)), "--about", about, seat=seat)
+        self.wait(0.5)
+
+    def planned(self, title: str, goal: str, phases: list[Phase]) -> Planned:
+        n = self.made("plan", "create", title, "--set", f"goal={goal}")
+        about = f"plan:{n}"
+        self.follow(BUILDING_A_PLAN, about)
+        self.onward(BUILDING_A_PLAN, about)
+        self.follow(BUILDING_A_PLAN, about)
+        for phase in phases:
+            self.journal("plan", "phase", str(n), phase.title, "--when", phase.when)
+        self.onward(BUILDING_A_PLAN, about)
+        self.follow(BUILDING_A_PLAN, about)
+        self.journal("plan", "stage", str(n), "todos")
+        rows = []
+        for at, phase in enumerate(phases, start=1):
+            filed = [self.made("todo", "create", row, "--brief", brief) for row, brief in phase.rows]
+            self.journal("plan", "todos", str(n), str(at), *map(str, filed))
+            rows += filed
+        self.onward(BUILDING_A_PLAN, about)
+        self.follow(BUILDING_A_PLAN, about)
+        self.journal("plan", "ready", str(n))
+        self.onward(BUILDING_A_PLAN, about)
+        return Planned(n, rows)
+
+    def reported(self, title: str, brief: str, parts: dict[str, str], links: list[str], conclusion: str) -> int:
+        n = self.made("report", "create", title, "--brief", brief)
+        about = f"report:{n}"
+        self.follow(WRITING_A_REPORT, about)
+        for part in parts:
+            self.journal("report", "section", str(n), part, "Being written.")
+        self.onward(WRITING_A_REPORT, about)
+        self.follow(WRITING_A_REPORT, about)
+        for part, body in parts.items():
+            self.journal("report", "section", str(n), part, body)
+            self.wait(1.5)
+        self.onward(WRITING_A_REPORT, about)
+        self.finished(WRITING_A_REPORT, "report", n, links, conclusion)
+        return n
+
+    def finished(self, sequence: str, kind: str, n: int, links: list[str], conclusion: str) -> None:
+        about = f"{kind}:{n}"
+        self.follow(sequence, about)
+        self.journal("collection", "all")
+        self.onward(sequence, about)
+        self.follow(sequence, about)
+        for row in links:
+            self.journal(kind, "link", str(n), row)
+        self.onward(sequence, about)
+        self.follow(sequence, about)
+        self.onward(sequence, about)
+        self.follow(sequence, about)
+        self.say(f"{conclusion}\n\n{kind} {n}")
+        self.onward(sequence, about)
+
     def made(self, *args: str, actor: str = AGENT, seat: Seat | None = None) -> int:
         return int(NUMBER.search(self.journal(*args, actor=actor, seat=seat)).group(1))
 
@@ -159,7 +290,7 @@ class Session:
         return Record(self.root, env)
 
     def pid(self, seat: Seat) -> int:
-        if seat == self.main:
+        if seat.session == self.main.session:
             return os.getpid()
         if seat.session not in self.sleepers:
             self.sleepers[seat.session] = subprocess.Popen(["sleep", "3600"])
@@ -167,7 +298,28 @@ class Session:
 
     def hand(self, seat: Seat) -> Claude:
         kind, folder = HANDS[seat.provider]
-        return self.hands.setdefault(seat.session, kind(self.project / folder / f"{seat.session}.jsonl", seat))
+        main = self.project / folder / f"{seat.session}.jsonl"
+        path = main.with_suffix("") / "subagents" / f"agent-{seat.agent}.jsonl" if seat.agent else main
+        return self.hands.setdefault(f"{seat.session}:{seat.agent}", kind(path, seat))
+
+    def dispatched(self, name: str, task: str, kind: str, model: str, prompt: str) -> Subagent:
+        call = Call("Agent", {"description": f"{name}: {task}", "subagent_type": kind, "model": model, "prompt": prompt})
+        self.wait(THINKING)
+        self.hook("PreToolUse", self.main, call)
+        seat = replace(self.main, agent=uuid.uuid4().hex[:17])
+        meta = self.hand(seat).path.with_name(f"agent-{seat.agent}.meta.json")
+        meta.parent.mkdir(parents=True, exist_ok=True)
+        meta.write_text(json.dumps({"toolUseId": call.id, "agentType": kind, "description": call.given["description"]}))
+        self.hook("SubagentStart", seat, agent_type=kind)
+        self.hand(seat).prompted(prompt)
+        self.wait(1.0)
+        return Subagent(seat, call)
+
+    def came_back(self, subagent: Subagent, text: str) -> None:
+        self.hook("SubagentStop", subagent.seat, agent_type=subagent.dispatch.given["subagent_type"], last_assistant_message=text)
+        self.hand(self.main).returned(subagent.dispatch, text)
+        self.hook("PostToolUse", self.main, subagent.dispatch, tool_response={"content": text})
+        self.wait(1.0)
 
     def hook(self, event: str, seat: Seat | None = None, call: Call | None = None, **extra) -> None:
         seat = seat or self.main
@@ -186,7 +338,9 @@ class Session:
         if event == "PreToolUse":
             hand.used(call)
         tool = {"tool_name": call.name, "tool_input": call.given} if call else {}
-        payload = {"hook_event_name": event, "session_id": seat.session, "cwd": str(seat.cwd or self.project), "transcript_path": str(hand.path), **tool, **extra}
+        transcript = self.hand(replace(seat, agent="")).path
+        named = {"agent_id": seat.agent} if seat.agent else {}
+        payload = {"hook_event_name": event, "session_id": seat.session, "cwd": str(seat.cwd or self.project), "transcript_path": str(transcript), **named, **tool, **extra}
         query = urlencode({"root": str(self.root), "pid": self.pid(seat), "env": seat.env})
         asked = Request(f"{self.url}api/hook/{seat.provider}?{query}", json.dumps(payload).encode(), {"Content-Type": "application/json"})
         try:
@@ -224,6 +378,7 @@ class Session:
         seat = seat or self.main
         target = (seat.cwd or self.project) / path
         call = self.hand(seat).wrote(target, text)
+        self.wait(EDITING)
         self.hook("PreToolUse", seat, call)
         self.wait(1.0)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -234,6 +389,7 @@ class Session:
     def shell(self, command: str, seat: Seat | None = None) -> str:
         seat = seat or self.main
         call = self.hand(seat).ran(command)
+        self.wait(EDITING)
         self.hook("PreToolUse", seat, call)
         done = subprocess.run(command, shell=True, cwd=seat.cwd or self.project, capture_output=True, text=True, timeout=120)
         if done.returncode:
@@ -251,10 +407,12 @@ class Session:
         return n
 
     def reply(self, to: int, text: str) -> None:
+        self.wait(REPLYING)
         self.journal("message", "reply", str(to), text)
         self.wait(1.0)
 
     def say(self, text: str) -> None:
+        self.wait(REPLYING)
         self.journal("message", "create", text.split(".")[0][:70].replace(":", ","), "--brief", text)
         self.wait(1.0)
 
@@ -299,6 +457,10 @@ class Session:
         return Worktrees(self.record(), actor=SYSTEM)._titled(seat.env, standing=True).n
 
     def finish(self) -> None:
+        self.channel.kill()
+        self.channel.wait()
+        self.terminal.close()
+        typist.path(self.root, self.main.session).unlink(missing_ok=True)
         for sleeper in self.sleepers.values():
             sleeper.kill()
             sleeper.wait()

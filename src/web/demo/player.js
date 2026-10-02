@@ -2,13 +2,8 @@ import {prefill} from "../src/state/prefill.js";
 import {QuietStream} from "./stream.js";
 
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
-const LONGEST = 4;
-const SHORTEST = 0.6;
-const TURNS = {
-    send: "Your turn: press Send to send the user's message",
-    approve: "Your turn: approve the plan",
-    answer: "Your turn: pick an answer to the question",
-};
+const LONGEST = 8;
+const SHORTEST = 1;
 const MOVES = [
     ["send", (e) => e.type === "message" && e.action === "created"],
     ["approve", (e) => e.type === "plan" && e.action === "updated" && e.data.by === "approve"],
@@ -36,6 +31,8 @@ export class Player {
         this.timer = null;
         this.stepped = () => {};
         this.mapped();
+        const first = this.waiting;
+        if (first && this.standIn.state.at === 0) this.goTo(first.at - 1);
         this.play();
     }
 
@@ -61,7 +58,6 @@ export class Player {
     offer() {
         const move = this.waiting;
         prefill.value = move && move.kind === "send" ? this.asked(move.at) : "";
-        if (move) window.dispatchEvent(new CustomEvent("replay-hint", {detail: TURNS[move.kind]}));
     }
 
     asked(at) {
@@ -98,7 +94,6 @@ export class Player {
         const known = new Set(this.standIn.state.events.map((e) => e.id));
         while (this.standIn.state.at < at && this.standIn.step());
         this.standIn.state.events.filter((e) => !known.has(e.id)).forEach((e) => QuietStream.tell(this.standIn.dated(e)));
-        window.dispatchEvent(new Event("replay-moved"));
         this.stepped();
     }
 

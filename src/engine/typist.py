@@ -30,7 +30,7 @@ def receive(inbox: socket.socket) -> list[bytes]:
     packets = []
     while True:
         try:
-            packets.append(inbox.recv(LONGEST))
+            packets.append(inbox.recv(PACKET))
         except (BlockingIOError, InterruptedError):
             return packets
 

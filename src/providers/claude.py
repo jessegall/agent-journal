@@ -495,7 +495,8 @@ class Claude(Provider):
             status, done = ("refused", ended[use.id][1]) if use.id in held.errors else ended.get(use.id, ("", 0.0))
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
             writing = now - written <= QUIET_SUBAGENT
-            running = not status or writing and (status == "returned" or written > done)
+            behind = use.background or use.id in held.moved_to_background
+            running = not status or writing and (status == "returned" and behind or written > done)
             facts = asdict(subagent_facts(self.recent(session))) if session else {}
             subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
                               "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
