@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.230.0 — a running plan tells a still agent to carry on
+
+**When a plan is running and the agent has done nothing for five minutes while the plan has rows it can do,
+it is told to carry on**, with the rows named: the work it has open and the rows ready to take. If a row is
+stuck or waits on something, it leaves that row and works the ones it can. A plan whose every row waits on the
+user stays quiet. The minutes are a setting of the plans feature, Minutes a running plan may stand still.
+
 ## 2.229.0 — the journal hears Dutch as well as English
 
 **Every phrase the journal listens for now matches in Dutch and English at once, with nothing to choose.**

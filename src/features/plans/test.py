@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 
 import pytest
@@ -8,7 +9,7 @@ from features.plans.controller import Plans  # noqa: E402
 from features.boards.controller import Boards
 from features.plans.progress import catch_up
 from tests.kit import Tickets
-from controllers.types import Agents, Todos, Works
+from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from features.work_tracking.next import next, ready
 from resources.base import AGENT, SYSTEM, USER
@@ -211,6 +212,25 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     assert (status(first), status(second)) == (("active", 2), ("parked", 1)), "a parked plan picks up at the phase it stopped at"
     assert (nudges(record)[-1], [t.n for t in ready(record)]) == (f"the user started plan {first}, first - it is active now", [2]), \
         "and the agent is told to work it"
+    from tests.kit import tick
+    agents = Agents(record, actor=SYSTEM)
+
+    def quiet(minutes):
+        report(record, "idle", "Stop")
+        row = agents.by_session("claude-1")
+        agents.update(row.n, **{**row.data, "at": time.time() - minutes * 60})
+        tick(record)
+
+    quiet(4)
+    assert not any("is running and nothing has moved" in n for n in nudges(record)), "four quiet minutes are not yet standing still"
+    quiet(6)
+    assert f"plan {first}, first, is running and nothing has moved for 6 minutes" in nudges(record), \
+        "six quiet minutes with a row it can do tell the agent to carry on with the plan"
+    told = [n.brief for n in Nudges(record).all() if "nothing has moved" in n.title][0]
+    assert "take to-do 2" in told and "leave it and work the rows you can do" in told, \
+        "it names the row to take and says to leave what is stuck and work what it can"
+    tick(record)
+    assert sum("is running and nothing has moved" in n for n in nudges(record)) == 1, "once per stretch of standing still"
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():
