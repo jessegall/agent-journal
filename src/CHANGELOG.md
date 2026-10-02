@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.227.0 — lessons at a real agent's pace, with every journal command seen
+
+**The agent in each lesson runs its journal commands through its shell, as a real agent does**, so the journal
+sees it working: a report or document shows Being written while its parts fill in, with the sequence's steps
+beside it, and the live line names what the agent is doing.
+
+**It thinks when something new arrives, then acts.** After your message, a command's result or a subagent's
+report it pauses a moment; the commands that follow run back to back, and the replay keeps short gaps short.
+
+**A chip in a chat mark never breaks across lines**: it moves whole to the next line.
+
 ## 2.226.2 — the record audit knows your home folder
 
 **A rule or fact naming a file under `~` is checked in your home folder.** The audit used to drop the `~` and

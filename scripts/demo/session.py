@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import shlex
 import signal
 import subprocess
 import sys
@@ -31,8 +32,9 @@ MAIN = "main"
 BRIDGE = "import subprocess, sys; sys.exit(subprocess.call(sys.argv[1:]))"
 CHANNEL = "notifications/claude/channel"
 SECOND = 1.0
+SKILL_ROUNDS = 4
 SERVER_STARTS = 30.0
-THINKING, EDITING, REPLYING = 2.0, 2.5, 4.0
+THINKING, BURST, WRITING, RESTING = 1.5, 0.15, 1.2, 1.0
 OPENING = {("todo", "start"), ("work", "start"), ("work", "resume")}
 WRITING_A_REPORT = "Writing a report"
 BUILDING_A_PLAN = "Building a plan"
@@ -211,6 +213,7 @@ class Session:
     alive: list[Seat] = field(default_factory=list)
     hands: dict[str, Claude] = field(default_factory=dict)
     present: dict[str, Presence] = field(default_factory=dict)
+    news: bool = True
 
     def __post_init__(self):
         self.root = self.project / ".journal"
@@ -238,8 +241,20 @@ class Session:
 
     def journal(self, *args: str, actor: str = AGENT, seat: Seat | None = None) -> str:
         seat = seat or self.main
-        if actor == AGENT:
-            self.wait(THINKING)
+        if actor != AGENT:
+            return self.ran(args, actor, seat)
+        call = self.hand(seat).ran(shlex.join(["journal", *args]))
+        self.decided()
+        self.hook("PreToolUse", seat, call)
+        out = self.ran(args, actor, seat)
+        self.hook("PostToolUse", seat, call, tool_response={"stdout": out[-400:]})
+        return out
+
+    def decided(self) -> None:
+        self.wait(THINKING if self.news else BURST)
+        self.news = False
+
+    def ran(self, args: tuple, actor: str, seat: Seat) -> str:
         place = ["--env", seat.env] if seat.env else []
         done = subprocess.run([str(self.root / "journal"), *place, *args], cwd=seat.cwd or self.project, capture_output=True, text=True, timeout=60,
                               env={**os.environ, "JOURNAL_ACTOR": actor, "JOURNAL_SESSION": seat.session, "JOURNAL_ENV": seat.env})
@@ -251,15 +266,14 @@ class Session:
         return out
 
     def sequence(self, title: str) -> int:
-        return next(int(line.split()[0]) for line in self.journal("sequence", "all").splitlines() if line.split(None, 1)[1:] == [title])
+        listed = self.ran(("sequence", "all"), AGENT, self.main)
+        return next(int(line.split()[0]) for line in listed.splitlines() if line.split(None, 1)[1:] == [title])
 
     def follow(self, title: str, about: str, seat: Seat | None = None) -> None:
         self.journal("sequence", "follow", str(self.sequence(title)), "--about", about, seat=seat)
-        self.wait(0.5)
 
     def onward(self, title: str, about: str, seat: Seat | None = None) -> None:
         self.journal("sequence", "next", str(self.sequence(title)), "--about", about, seat=seat)
-        self.wait(0.5)
 
     def planned(self, title: str, goal: str, phases: list[Phase]) -> Planned:
         n = self.made("plan", "create", title, "--set", f"goal={goal}")
@@ -292,8 +306,8 @@ class Session:
         self.onward(WRITING_A_REPORT, about)
         self.follow(WRITING_A_REPORT, about)
         for part, body in parts.items():
+            self.wait(WRITING)
             self.journal("report", "section", str(n), part, body)
-            self.wait(1.5)
         self.onward(WRITING_A_REPORT, about)
         self.finished(WRITING_A_REPORT, "report", n, links, conclusion)
         return n
@@ -336,7 +350,7 @@ class Session:
 
     def dispatched(self, name: str, task: str, kind: str, model: str, prompt: str) -> Subagent:
         call = Call("Agent", {"description": f"{name}: {task}", "subagent_type": kind, "model": model, "prompt": prompt})
-        self.wait(THINKING)
+        self.decided()
         self.hook("PreToolUse", self.main, call)
         seat = replace(self.main, agent=uuid.uuid4().hex[:17])
         meta = self.hand(seat).path.with_name(f"agent-{seat.agent}.meta.json")
@@ -344,20 +358,21 @@ class Session:
         meta.write_text(json.dumps({"toolUseId": call.id, "agentType": kind, "description": call.given["description"]}))
         self.hook("SubagentStart", seat, agent_type=kind)
         self.hand(seat).prompted(prompt)
-        self.wait(1.0)
         return Subagent(seat, call)
 
     def came_back(self, subagent: Subagent, text: str) -> None:
         self.hook("SubagentStop", subagent.seat, agent_type=subagent.dispatch.given["subagent_type"], last_assistant_message=text)
         self.hand(self.main).returned(subagent.dispatch, text)
         self.hook("PostToolUse", self.main, subagent.dispatch, tool_response={"content": text})
-        self.wait(1.0)
+        self.news = True
 
     def hook(self, event: str, seat: Seat | None = None, call: Call | None = None, **extra) -> None:
         seat = seat or self.main
         reason = self.held(event, seat, call, extra)
-        wanted = [first or second for first, second in SKILLS.findall(reason)]
-        if wanted and event == "PreToolUse":
+        for _ in range(SKILL_ROUNDS):
+            wanted = [first or second for first, second in SKILLS.findall(reason)]
+            if not wanted or event != "PreToolUse":
+                break
             self.loaded(seat, wanted)
             reason = self.held(event, seat, call, extra)
         if reason:
@@ -391,12 +406,10 @@ class Session:
     def started(self, seat: Seat | None = None) -> None:
         self.hook("SessionStart", seat, source="startup")
         self.loaded(seat or self.main, list(STARTING_SKILLS))
-        self.wait(1)
 
     def ended(self, seat: Seat) -> None:
         self.hook("SessionEnd", seat, reason="exit")
         self.present.pop(seat.session).end()
-        self.wait(0.5)
 
     def revived(self, alive: list[Seat]) -> None:
         for seat in alive:
@@ -410,43 +423,38 @@ class Session:
         seat = seat or self.main
         target = (seat.cwd or self.project) / path
         call = self.hand(seat).wrote(target, text)
-        self.wait(EDITING)
+        self.decided()
         self.hook("PreToolUse", seat, call)
-        self.wait(1.0)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text)
         self.hook("PostToolUse", seat, call, tool_response={"success": True})
-        self.wait(0.6)
 
     def shell(self, command: str, seat: Seat | None = None) -> str:
         seat = seat or self.main
         call = self.hand(seat).ran(command)
-        self.wait(EDITING)
+        self.decided()
         self.hook("PreToolUse", seat, call)
         done = subprocess.run(command, shell=True, cwd=seat.cwd or self.project, capture_output=True, text=True, timeout=120)
         if done.returncode:
             raise Refusal(f"{command} failed: {(done.stdout + done.stderr)[-400:]}")
-        self.wait(1.0)
         self.hook("PostToolUse", seat, call, tool_response={"stdout": done.stdout[-400:]})
-        self.wait(0.4)
+        self.news = True
         return done.stdout
 
     def user(self, text: str) -> int:
         n = self.made("message", "create", text[:70].rstrip(".,!?").replace(":", ","), "--brief", text, actor=USER)
-        self.wait(1.5)
+        self.news = True
         self.journal("message", "read", str(n))
         self.hook("UserPromptSubmit", prompt=text)
         return n
 
     def reply(self, to: int, text: str) -> None:
-        self.wait(REPLYING)
+        self.wait(WRITING)
         self.journal("message", "reply", str(to), text)
-        self.wait(1.0)
 
     def say(self, text: str) -> None:
-        self.wait(REPLYING)
+        self.wait(WRITING)
         self.journal("message", "create", text.split(".")[0][:70].replace(":", ","), "--brief", text)
-        self.wait(1.0)
 
     def ask(self, title: str, about: str, options: dict[str, str]) -> int:
         listed = json.dumps([{"title": label, "description": text} for label, text in options.items()])
@@ -457,20 +465,20 @@ class Session:
     def answered(self, question: int, how: str) -> None:
         self.journal("question", "answer", str(question), "--how", how, actor=USER)
         self.hook("UserPromptSubmit", prompt=how)
-        self.wait(1.0)
+        self.news = True
 
     def approve(self, plan: int) -> None:
         self.journal("plan", "approve", str(plan), actor=USER)
         self.hook("UserPromptSubmit", prompt="approved")
-        self.wait(1.0)
+        self.news = True
 
     def mode(self, mode: str) -> None:
         pick(self.record(), mode, USER)
-        self.wait(1.0)
+        self.news = True
 
     def stop(self) -> None:
         self.hook("Stop")
-        self.wait(2.5)
+        self.wait(RESTING)
 
     def helpers(self, actor: str = AGENT) -> helping.Helpers:
         return helping.Helpers(self.record(), actor=actor, session=self.main.session)
