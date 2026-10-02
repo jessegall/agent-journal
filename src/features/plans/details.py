@@ -1,4 +1,5 @@
 from features.base import FeatureDetails, Line
+from features.settings import Setting
 
 
 class PlansDetails(FeatureDetails):
@@ -36,7 +37,25 @@ class PlansDetails(FeatureDetails):
         <n> sets a plan aside; a parked plan's rows wait until it is started again.
     """
 
+    settings = [
+        Setting(
+            name="still_minutes",
+            default=5,
+            title="Minutes a running plan may stand still",
+            abstract="When a plan runs and the agent has done nothing this long while the plan has rows it can do, it is told to carry on",
+        ),
+    ]
+
     lines = [
+        Line(
+            name="still",
+            title="plan {{n}}, {{title}}, is running and nothing has moved for {{minutes}} minutes",
+            brief="""
+                carry on with it now: {{rows}}. If a row is stuck or waits on something, leave it and work
+                the rows you can do; put a question on a row with journal todo ask only for what you cannot
+                decide yourself, and keep going with the rest.
+            """,
+        ),
         Line(
             name="started",
             title="the user started plan {{n}}, {{title}} - build it with them",

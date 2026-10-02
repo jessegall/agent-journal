@@ -1,14 +1,20 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
+from controllers.types import Works
 from engine.events.agents import AgentReported
+from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
-from features.plans.progress import catch_up
+from features.plans.details import PlansDetails
+from features.plans.progress import catch_up, current_phase
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import passes_checkpoints
+from features.work_tracking.next import ready
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
+from resources.types import IDLE
 
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
@@ -113,3 +119,36 @@ class ReopenPlansWithTheirRows(Handler):
                 plan = plans.reopen(plan.n, why=f"{event.type} {event.n} of phase {found} was reopened")
             plan.status, plan.current = ACTIVE, found
             plans.save(plan, "updated", phase=found, status=ACTIVE)
+
+
+class NudgeAStillPlan(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        agent = context.journal.agents.primary()
+        if not agent or agent.status != IDLE:
+            return
+        still = float(PlansDetails.values(context.record).still_minutes) * 60
+        quiet = time.time() - float(agent.at)
+        if quiet < still:
+            return
+        speaking = context.speaking_to(agent)
+        for plan in Plans(context.record, actor=SYSTEM)._every():
+            if plan.status != ACTIVE:
+                continue
+            rows = doable(context.record, plan)
+            if rows and speaking.once("still", f"{plan.n}:{int(float(agent.at))}:{int(quiet // still)}"):
+                speaking.agent.whisper("still", n=plan.n, title=plan.title, minutes=int(quiet // 60), rows=rows)
+
+
+def doable(record, plan) -> str:
+    phase = current_phase(plan)
+    if phase is None:
+        return ""
+    mine = set(phase[PHASE.todos])
+    going = [f"to-do {w.todo}" for w in Works(record, actor=SYSTEM)._standing() if int(w.todo) in mine and not w.parked and not w.awaiting]
+    taking = [f"to-do {t.n}" for t in ready(record) if t.n in mine]
+    parts = []
+    if going:
+        parts.append(f"go on with {', '.join(going)}")
+    if taking:
+        parts.append(f"take {', '.join(taking)}")
+    return ", then ".join(parts)

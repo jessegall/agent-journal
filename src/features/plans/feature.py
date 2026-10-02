@@ -4,6 +4,7 @@ from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
     GuideBuilding,
+    NudgeAStillPlan,
     PassCheckpointsInAuto,
     ReopenPlansWithTheirRows,
     StartApproved,
@@ -28,6 +29,7 @@ class PlansFeature(Feature):
         journal.events.handler(GuideBuilding())
         journal.events.handler(PassCheckpointsInAuto())
         journal.events.handler(AdvancePlans())
+        journal.events.handler(NudgeAStillPlan())
         journal.events.handler(ReopenPlansWithTheirRows())
         journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans())
         journal.agent.interceptor(RefusePlanMode())
