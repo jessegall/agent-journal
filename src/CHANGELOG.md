@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.227.3 — a board asks for fresh ideas only in its own environment
+
+**The agent asked to think up ideas for a board is the one in the environment the board was made in.** Before,
+every environment's agent was asked about every board, so an agent busy with other work, even a new one,
+was sent off to rewrite another environment's ideas.
+
 ## 2.227.2 — a Codex turn that ends in an error is said, not shown as busy
 
 **When Codex ends a turn with an error, such as a workspace out of credits, the agent shows as idle and the chat

@@ -35,6 +35,7 @@ class Board(Shape, Resource):
         Field(TEXT, "orchestrator", name="plan_reviewer"),
         Field(LIST, list, name="ideas"),
         Field(NUMBER, 0.0, name="ideas_at"),
+        Field(TEXT, "", name="environment"),
     ]
     type = "board"
     icon = "board"
