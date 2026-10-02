@@ -2,8 +2,9 @@
 
 A project journal, live viewer and phone app for Claude Code and Codex.
 
-**[Try it in your browser](https://jessegall.github.io/agent-journal/)**: a recorded session plays in the real viewer, and the
-next message waits for you to press Enter. Nothing leaves your browser.
+**[Try it in your browser](https://jessegall.github.io/agent-journal/)**: pick a lesson, such as how to ask for a plan, how to
+ask for a report, how to start subagents or how to work with helpers. Each is a real session recorded through the journal, played
+in the real viewer: you send each message, answer each question and approve each plan yourself. Nothing leaves your browser.
 
 Long agent sessions lose decisions when context is compacted, a terminal closes, or another
 session takes over. Agent Journal keeps the durable state beside your project: current work,
