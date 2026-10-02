@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.226.2 — the record audit knows your home folder
+
+**A rule or fact naming a file under `~` is checked in your home folder.** The audit used to drop the `~` and
+look for the file in the project, so a true rule naming `~/.codex/config.toml` was reported as naming a file
+that is gone, with a request to strike it.
+
 ## 2.226.1 — helpers in the lesson hear the journal too
 
 **The helpers lesson gives each helper what a launched helper has**: a terminal the journal types into, and for
