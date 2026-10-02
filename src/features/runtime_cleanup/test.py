@@ -119,6 +119,23 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
     assert (gone.exists(), snapshot.exists(), recent.exists()) == (False, True, True), "an old environment archive goes; upgrade snapshots are kept by their own count"
     assert (root / "runtime" / "channels" / "4242.jsonl").stat().st_size == 1024 * 1024, "an agent's channel log is cut to its tail"
+    import shutil
+    from engine import attic
+    packed = root / "environments" / "late-writer"
+    (packed / "runtime").mkdir(parents=True)
+    (packed / "runtime" / "state.json").write_text("{}")
+    removing, tries = shutil.rmtree, []
+    def busy(folder, **given):
+        tries.append(folder)
+        if len(tries) == 1:
+            raise OSError(66, "Directory not empty")
+        removing(folder, **given)
+    shutil.rmtree = busy
+    try:
+        attic.pack(packed, "late-writer")
+    finally:
+        shutil.rmtree = removing
+    assert not packed.exists() and len(tries) == 2, "a folder a late write kept busy is removed on the next try, so packing never fails over it"
 
 
 def test_an_installed_update_tidies_at_once():

@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -27,6 +28,7 @@ from resources.base import AGENT, SYSTEM, USER
 NUMBER = re.compile(r'"n": (\d+)')
 SKILLS = re.compile(r"Skill: ([\w-]+)|skills/([\w-]+)/SKILL\.md")
 MAIN = "main"
+BRIDGE = "import subprocess, sys; sys.exit(subprocess.call(sys.argv[1:]))"
 CHANNEL = "notifications/claude/channel"
 SECOND = 1.0
 SERVER_STARTS = 30.0
@@ -153,26 +155,68 @@ class Codex(Claude):
 HANDS = {"claude": (Claude, ".claude/transcripts"), "codex": (Codex, ".codex/sessions")}
 
 
+class Presence:
+    def __init__(self, root: Path, seat: Seat, hand: Claude, main: bool):
+        self.seat = seat
+        self.open = True
+        self.where = typist.path(root, seat.session)
+        self.terminal = typist.listen(root, seat.session)
+        channel = [sys.executable, str(root / "src" / "channel.py"), str(root)]
+        spawned = {"stdin": subprocess.PIPE, "stdout": subprocess.PIPE, "text": True, "env": {**os.environ, ACTIVE_ENV: "1"}, "start_new_session": True}
+        if main:
+            self.process, self.channel = None, subprocess.Popen(channel, **spawned)
+        elif seat.provider == "claude":
+            self.process = self.channel = subprocess.Popen([sys.executable, "-c", BRIDGE, *channel], **spawned)
+        else:
+            self.process, self.channel = subprocess.Popen(["sleep", "3600"], start_new_session=True), None
+        if self.channel:
+            self.channel.stdin.write(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}) + "\n")
+            self.channel.stdin.flush()
+            threading.Thread(target=self.listened, args=(hand,), daemon=True).start()
+        threading.Thread(target=self.drained, daemon=True).start()
+
+    @property
+    def pid(self) -> int:
+        return self.process.pid if self.process else os.getpid()
+
+    def listened(self, hand: Claude) -> None:
+        for line in self.channel.stdout:
+            told = json.loads(line)
+            if told.get("method") == CHANNEL:
+                hand.channeled(told["params"]["content"])
+
+    def drained(self) -> None:
+        while self.open:
+            try:
+                typist.receive(self.terminal)
+            except OSError:
+                return
+            time.sleep(0.2)
+
+    def end(self) -> None:
+        self.open = False
+        for running in {self.channel, self.process} - {None}:
+            if running.poll() is None:
+                os.killpg(running.pid, signal.SIGKILL)
+            running.wait()
+        self.terminal.close()
+        self.where.unlink(missing_ok=True)
+
+
 @dataclass
 class Session:
     project: Path
     pace: float = 1.0
     name: str = "demo"
-    sleepers: dict[str, subprocess.Popen] = field(default_factory=dict)
+    alive: list[Seat] = field(default_factory=list)
     hands: dict[str, Claude] = field(default_factory=dict)
-    alive: list[str] = field(default_factory=list)
+    present: dict[str, Presence] = field(default_factory=dict)
 
     def __post_init__(self):
         self.root = self.project / ".journal"
         self.main = Seat(f"{self.name}-main")
+        self.present[self.main.session] = Presence(self.root, self.main, self.hand(self.main), main=True)
         self.revived(self.alive)
-        self.terminal = typist.listen(self.root, self.main.session)
-        self.channel = subprocess.Popen([sys.executable, str(self.root / "src" / "channel.py"), str(self.root)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        text=True, env={**os.environ, ACTIVE_ENV: "1"})
-        self.channel.stdin.write(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}) + "\n")
-        self.channel.stdin.flush()
-        threading.Thread(target=self.listened, daemon=True).start()
-        threading.Thread(target=self.drained, daemon=True).start()
         features.load(self.root)
         helping.launched = lambda record, name, provider, args, cwd: name
         for driver in DRIVERS.values():
@@ -188,20 +232,6 @@ class Session:
         if not url:
             raise Refusal(f"the journal server did not start ({failed}): see {self.root / 'runtime' / 'viewer.log'}")
         return url
-
-    def listened(self) -> None:
-        for line in self.channel.stdout:
-            told = json.loads(line)
-            if told.get("method") == CHANNEL:
-                self.hand(self.main).channeled(told["params"]["content"])
-
-    def drained(self) -> None:
-        while self.channel.poll() is None:
-            try:
-                typist.receive(self.terminal)
-            except OSError:
-                return
-            time.sleep(0.2)
 
     def wait(self, seconds: float) -> None:
         time.sleep(seconds * self.pace)
@@ -290,11 +320,13 @@ class Session:
         return Record(self.root, env)
 
     def pid(self, seat: Seat) -> int:
-        if seat.session == self.main.session:
-            return os.getpid()
-        if seat.session not in self.sleepers:
-            self.sleepers[seat.session] = subprocess.Popen(["sleep", "3600"])
-        return self.sleepers[seat.session].pid
+        if seat.session not in self.present:
+            self.arrived(replace(seat, agent=""))
+        return self.present[seat.session].pid
+
+    def arrived(self, seat: Seat) -> Presence:
+        self.present[seat.session] = Presence(self.root, seat, self.hand(seat), main=False)
+        return self.present[seat.session]
 
     def hand(self, seat: Seat) -> Claude:
         kind, folder = HANDS[seat.provider]
@@ -363,16 +395,16 @@ class Session:
 
     def ended(self, seat: Seat) -> None:
         self.hook("SessionEnd", seat, reason="exit")
-        gone = self.sleepers.pop(seat.session)
-        gone.kill()
-        gone.wait()
+        self.present.pop(seat.session).end()
         self.wait(0.5)
 
-    def revived(self, alive: list[str]) -> None:
-        for session in alive:
-            kept = self.root / "runtime" / "sessions" / session / "session.json"
-            self.sleepers[session] = subprocess.Popen(["sleep", "3600"])
-            kept.write_text(json.dumps({**json.loads(kept.read_text()), "pid": self.sleepers[session].pid}))
+    def revived(self, alive: list[Seat]) -> None:
+        for seat in alive:
+            kept = self.root / "runtime" / "sessions" / seat.session / "session.json"
+            kept.write_text(json.dumps({**json.loads(kept.read_text()), "pid": self.arrived(seat).pid}))
+
+    def helping(self) -> list[Seat]:
+        return [presence.seat for session, presence in self.present.items() if session != self.main.session]
 
     def write(self, path: str, text: str, seat: Seat | None = None) -> None:
         seat = seat or self.main
@@ -457,11 +489,6 @@ class Session:
         return Worktrees(self.record(), actor=SYSTEM)._titled(seat.env, standing=True).n
 
     def finish(self) -> None:
-        self.channel.kill()
-        self.channel.wait()
-        self.terminal.close()
-        typist.path(self.root, self.main.session).unlink(missing_ok=True)
-        for sleeper in self.sleepers.values():
-            sleeper.kill()
-            sleeper.wait()
-        self.sleepers.clear()
+        for presence in self.present.values():
+            presence.end()
+        self.present.clear()

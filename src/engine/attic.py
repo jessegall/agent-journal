@@ -1,9 +1,11 @@
 import shutil
 import tarfile
 import tempfile
+import time
 from pathlib import Path
 
 SUFFIX = ".tar.gz"
+REMOVE_TRIES, REMOVE_AGAIN = 10, 0.2
 
 
 def folder(root: Path) -> Path:
@@ -24,8 +26,20 @@ def pack(source: Path, name: str) -> Path:
         partial.unlink()
         raise OSError(f"{source.name} did not pack whole; it is left where it was")
     partial.rename(target)
-    shutil.rmtree(source)
+    removed(source)
     return target
+
+
+def removed(source: Path) -> None:
+    for _ in range(REMOVE_TRIES):
+        try:
+            shutil.rmtree(source)
+            return
+        except FileNotFoundError:
+            return
+        except OSError:
+            time.sleep(REMOVE_AGAIN)
+    shutil.rmtree(source)
 
 
 def compress(root: Path) -> list[str]:

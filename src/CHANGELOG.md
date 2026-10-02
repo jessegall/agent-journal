@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.226.1 — helpers in the lesson hear the journal too
+
+**The helpers lesson gives each helper what a launched helper has**: a terminal the journal types into, and for
+Claude helpers the journal's own channel. Lines the journal sends a helper now reach it and show in its
+conversation, as they would for a real one.
+
+**Finishing a helper no longer fails with "Directory not empty"** when its environment's engine writes one last
+file while the folder is packed away; the removal waits a moment and tries again.
+
 ## 2.226.0 — lessons recorded through the journal's real flow
 
 **The demo opens on a grid of lessons**: how to ask for a plan, how to ask for a report, how to start subagents
