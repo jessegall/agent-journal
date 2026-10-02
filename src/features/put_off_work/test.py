@@ -29,3 +29,9 @@ def test_work_deferred_in_words_with_nothing_parked_is_named_back(tmp_path):
     text("[!reply] all done.")
     idle(plain, provider="claude", transcript=str(transcript))
     assert [n for n in nudges(plain) if "deferred" in n] == [], "nothing deferred: nothing said"
+
+
+def test_putting_work_off_is_heard_in_dutch_as_well_as_english():
+    from features.put_off_work.handlers import DEFERS
+    assert [bool(DEFERS.search(text)) for text in ("I'll do that after this.", "Dat doe ik straks.", "Daar kom ik later op terug.", "Ik heb het gedaan.")] == \
+        [True, True, True, False], "both languages put work off in words, and saying it is done does not"

@@ -28,6 +28,8 @@ def test_chat_that_talks_about_the_journal_is_named_back_and_the_skill_is_always
         "the state of the user's rows is not news either"
     assert SHOP_TALK.search("To-do 1013 trims the log; the reply hint is in the brief.") is None, "naming a row and its work is fine"
     assert SHOP_TALK.search("plus journal-todos once to-do 1024 is done") is None, "and so is naming what happens once a row is done"
+    assert [bool(SHOP_TALK.search(text)) for text in ("Ik lees je bericht eerst.", "Bericht 12 is al beantwoord.", "De pagina is klaar.")] == [True, True, False], \
+        "talk about the journal is caught in Dutch too, and plain Dutch about the work is not"
     assert "journal-chat-etiquette" in primary(), "its skill is loaded at every start, like the journal's own"
 
 

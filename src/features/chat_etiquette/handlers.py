@@ -16,7 +16,11 @@ SHOP_TALK = re.compile(r"\b(?:(?:your|the|this) message (?:is|was) (?:answered|p
                        r"|(?:^|(?<=[.!?]\s))(?:still waiting|nothing new yet|nothing to report yet|nothing yet)|I'?m still waiting|I am still waiting"
                        r"|(?<!once )(?<!when )(?<!until )(?<!after )(?<!before )(?:message|to-do|todo|question|comment)s? \d+(?:(?:,| and|, and) \d+)* (?:is|was|are|were) (?:already )?(?:answered|processed|read|filed|closed|done|replied to)"
                        r"|repl(?:y|ies) (?:to [^.]{0,40})?went out|(?:still )?listed as (?:waiting|unread|unanswered|open)"
-                       r"|closing (?:both|them|it) explicitly|still (?:unread|unanswered))\b",
+                       r"|closing (?:both|them|it) explicitly|still (?:unread|unanswered)"
+                       r"|(?:je|jouw|het|dit) bericht is (?:beantwoord|verwerkt|gelezen)|ik heb (?:gereageerd|geantwoord|je bericht verwerkt)|(?:het|de) journal (?:zei|herinnerde|vroeg|hield) me"
+                       r"|(?:een |één |twee |\d+ )?nieuwe? berichte?n? (?:is |zijn )?(?:binnengekomen|binnen)|ik lees (?:het|ze|je bericht) (?:eerst|nu)"
+                       r"|(?:de )?\S+ skill (?:geladen|laden)|je reageerde|niets (?:meer )?(?:staat )?open|er wacht niets|ik wacht nog|nog niets te melden"
+                       r"|(?:bericht|to-do|vraag|opmerking)(?:en)? \d+ (?:is|zijn) (?:al )?(?:beantwoord|verwerkt|gelezen|gesloten|afgerond)|staat nog (?:als )?(?:open|ongelezen|onbeantwoord))\b",
                        re.IGNORECASE | re.MULTILINE)
 
 
