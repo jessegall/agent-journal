@@ -2,8 +2,8 @@ import {prefill} from "../src/state/prefill.js";
 import {QuietStream} from "./stream.js";
 
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
-const LONGEST = 8;
-const SHORTEST = 1;
+const LONGEST = 5;
+const SHORTEST = 0.3;
 const MOVES = [
     ["send", (e) => e.type === "message" && e.action === "created"],
     ["approve", (e) => e.type === "plan" && e.action === "updated" && e.data.by === "approve"],
