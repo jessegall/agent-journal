@@ -94,7 +94,7 @@ def played(key: str, project: Path, pace: float, folder: Path | None = None) -> 
         with recorded(session, folder):
             fork = story.trunk(session)
         copy = kept(project)
-        alive = list(session.sleepers)
+        alive = session.helping()
         for at, (label, branch) in enumerate(story.BRANCHES.items()):
             session.finish()
             restored(copy, project)
