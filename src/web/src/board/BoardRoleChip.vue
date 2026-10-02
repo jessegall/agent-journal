@@ -1,5 +1,4 @@
 <script setup>
-import Spinner from "../kit/Spinner.vue";
 import {litCard} from "../composables/litCard.js";
 import {go} from "../route.js";
 
@@ -17,9 +16,6 @@ const light = (n) => (litCard.value = n);
         @mouseleave="light(0)"
         @click="go(env)"
     >
-        <template v-if="n">
-            <Spinner />
-        </template>
         {{ title }}
         <span class="board-role-card">{{ n ? `#${n}` : "idle" }}</span>
     </button>

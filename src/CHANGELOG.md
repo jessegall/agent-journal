@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.230.1 — the Roles row after its critique round
+
+**+N more working follows the last role that fits**, instead of standing apart at the far end of the row. One
+spinner sits after Roles while any role works, in place of one on every role and in the panel; a card keeps its
+one, on the first line when the role names wrap. With nothing working, a phone shows None working; all N roles.
+
 ## 2.230.0 — a running plan tells a still agent to carry on
 
 **When a plan is running and the agent has done nothing for five minutes while the plan has rows it can do,

@@ -1,16 +1,16 @@
 import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 
-export function useFitCount(box, source) {
+export function useFitCount(box, measure, source, reserve) {
     const fits = ref(Infinity);
-    const measure = () => {
-        const node = box.value;
-        if (!node) return;
-        const edge = node.clientWidth;
-        fits.value = [...node.children].filter((child) => child.offsetLeft + child.offsetWidth <= edge).length;
+    const counted = (room) => [...measure.value.children].filter((child) => child.offsetLeft + child.offsetWidth <= room).length;
+    const count = () => {
+        if (!box.value || !measure.value) return;
+        const all = counted(box.value.clientWidth);
+        fits.value = all < measure.value.children.length ? counted(box.value.clientWidth - reserve) : all;
     };
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver(count);
     onMounted(() => box.value && observer.observe(box.value));
     onUnmounted(() => observer.disconnect());
-    watch(source, () => nextTick(measure), {immediate: true});
+    watch(source, () => nextTick(count), {immediate: true});
     return fits;
 }

@@ -1,6 +1,5 @@
 <script setup>
 import FoldGroup from "../kit/FoldGroup.vue";
-import Spinner from "../kit/Spinner.vue";
 import {litCard} from "../composables/litCard.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 
@@ -16,7 +15,6 @@ const light = (n) => (litCard.value = n);
             <span class="board-roles-heading">Working now</span>
             <template v-for="chip in working" :key="chip.key">
                 <div class="board-roles-work" @mouseenter="light(chip.n)" @mouseleave="light(0)">
-                    <Spinner />
                     <span class="board-roles-work-title">{{ chip.title }}</span>
                     <span class="board-roles-cards">#{{ chip.n }}</span>
                     <template v-if="chip.env">
