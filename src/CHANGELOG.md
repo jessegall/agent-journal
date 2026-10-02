@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.228.0 — the board shows its roles in one row, and the lanes are the page again
+
+**A ticket board shows the organization as one Roles row under its goal, instead of every domain and role
+above the lanes.** The row names each role working now with its card, such as Feature Implementation #14;
+pointing at one lights its card, and clicking it opens that agent's chat. What does not fit goes behind
++N more working, and All N roles opens a panel with the roles at work and every domain, folded, with a link
+to the Organization page. A card in a lane names the roles working on it. An organization of six roles or
+fewer shows every role in the row, idle ones dimmed; on a phone the row is one button, such as 6 working on
+#14, #15, that opens the same panel.
+
 ## 2.227.3 — a board asks for fresh ideas only in its own environment
 
 **The agent asked to think up ideas for a board is the one in the environment the board was made in.** Before,

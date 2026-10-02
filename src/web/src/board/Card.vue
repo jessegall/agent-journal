@@ -4,8 +4,10 @@ import Chip from "../kit/Chip.vue";
 import {computed, inject, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
+import Spinner from "../kit/Spinner.vue";
 import StateDot from "../kit/StateDot.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
+import {litCard} from "../composables/litCard.js";
 import {api} from "../api/client.js";
 import {peek, peekThere} from "../route.js";
 import {ticketOf} from "../domain/ticketAgents.js";
@@ -70,6 +72,11 @@ const ticketPlan = computed(() => {
 const opener = ref(null);
 const titleOf = (name) => ([...store.board.agents, ...store.board.roles].find((who) => who.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
+const ticketed = computed(() => props.card.type === "ticket");
+const lit = computed(() => ticketed.value && litCard.value === props.card.n);
+const working = computed(() =>
+    ticketed.value ? store.board.roles.filter((role) => !people().includes(role.name) && role.tickets.some((ticket) => ticket.n === props.card.n)) : [],
+);
 
 async function act(action) {
     if (action.note) return board.askNote({card: props.card, action});
@@ -87,7 +94,7 @@ function begin(event) {
     <div
         :class="[
             'card',
-            {done, moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n, before: over},
+            {done, lit, moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n, before: over},
         ]"
         ref="self"
         role="button"
@@ -129,6 +136,12 @@ function begin(event) {
                 <template v-else-if="card.link_label">
                     <span class="app">{{ card.link_label }}</span>
                 </template>
+            </span>
+        </template>
+        <template v-if="working.length">
+            <span class="card-roles">
+                <Spinner />
+                {{ working.map((role) => role.title).join(", ") }}
             </span>
         </template>
         <span class="chips">
@@ -332,6 +345,19 @@ function begin(event) {
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     line-height: 20px;
+}
+
+.card.lit {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.card-roles {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-2);
+    font-size: 11.5px;
 }
 
 .card.done {

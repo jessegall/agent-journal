@@ -7,7 +7,7 @@ import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
 import TicketAgent from "../board/TicketAgent.vue";
 import {workingCards} from "../domain/ticketAgents.js";
-import RolesTree from "../board/RolesTree.vue";
+import BoardRoles from "../board/BoardRoles.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Segmented from "../kit/Segmented.vue";
@@ -377,6 +377,9 @@ const ask = usePoll(
                     @limit="setLimit"
                 />
                 <BoardGoal :board="current" />
+                <template v-if="store.board.roles.length">
+                    <BoardRoles :roles="store.board.roles" />
+                </template>
             </template>
             <template v-if="!tickets">
                 <div class="plans">
@@ -390,16 +393,13 @@ const ask = usePoll(
                     <AgentStrip />
                 </div>
             </template>
-            <template v-if="building || refusal || planHold || (tickets && store.board.roles.length)">
+            <template v-if="building || refusal || planHold">
                 <div class="strips">
                     <template v-if="building">
                         <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
                     </template>
                     <template v-if="refusal">
                         <p class="refusal">{{ refusal }}</p>
-                    </template>
-                    <template v-if="tickets && store.board.roles.length">
-                        <RolesTree :roles="store.board.roles" />
                     </template>
                     <template v-if="planHold">
                         <p class="hold">{{ planHold }}</p>
