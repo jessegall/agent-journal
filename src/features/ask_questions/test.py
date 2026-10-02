@@ -17,6 +17,7 @@ def test_offers_choices_recognizes_numbered_and_lettered_options_but_not_prose()
     assert offers_choices("Should I:\nA) merge now\nB) wait for CI") is True, "lettered options too"
     assert offers_choices("Done:\n- built\n- tested") is False, "a list that asks nothing is a list"
     assert offers_choices("Shall I merge it?") is False, "a question without options is fine"
+    assert offers_choices("Wil je liever:\n1. één lange gids\n2. een pagina per onderwerp") is True, "options under a Dutch question are choices too"
     assert offers_choices("Done:\n- built the route\n- tested it\n\nQuestion 15 is still open: should the server answer first?") is False, \
         "a summary that points at an open question by number is not offering choices"
     assert offers_choices("Done:\n- the engine can see which step is running\n- the band is taller") is False, \

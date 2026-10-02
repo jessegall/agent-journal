@@ -158,7 +158,8 @@ WRITING_AN_UPDATE = ShippedSequence(
     brief="The user asked for an update or a TLDR. Write an update report on what happened since they last opened "
              "one, and answer with it. You talk about the work, never about rows, commands or the journal.",
     words=("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up",
-              "what happened since"),
+              "what happened since", "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken",
+              "praat me bij", "bijpraten", "wat is er gebeurd"),
     steps=[
         ("See what changed", "journal report changes lists what happened since the user last opened an update, under need, "
                              "done, doing, plans, commits and also. Read any row you do not remember before you sum it "

@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.229.0 — the journal hears Dutch as well as English
+
+**Every phrase the journal listens for now matches in Dutch and English at once, with nothing to choose.**
+Asking for an update ("praat me bij", "geef me een update") starts Writing an update; a message that asks
+something ("wat vind je", "laat me weten") is marked as needing a written answer. What the agent writes is read
+in both languages too: choices offered in prose instead of a question ("zal ik", "wil je liever"), work put off
+in words ("dat doe ik straks"), talk about the journal's own workings ("ik lees je bericht eerst"), and a ticket
+waiting on a person ("wacht op goedkeuring").
+
 ## 2.228.0 — the board shows its roles in one row, and the lanes are the page again
 
 **A ticket board shows the organization as one Roles row under its goal, instead of every domain and role

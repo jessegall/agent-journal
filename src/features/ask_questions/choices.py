@@ -3,8 +3,10 @@ import re
 
 LISTED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|\(?[A-Za-z][.)]|\d+[.)]|[-*•])\s+\S", re.MULTILINE)
 ASKING = re.compile(r"\?|\b(should I|shall I|do you want|would you like|would you prefer|which would you rather|let me know|your call|you decide|up to you"
-                    r"|one thing I need from you|one question for you|the one decision|I would want your call|your pick)\b", re.IGNORECASE)
-NAMED = re.compile(r"\bquestions? (\d+)(?:\s*(?:-|–|to)\s*(\d+))?", re.IGNORECASE)
+                    r"|one thing I need from you|one question for you|the one decision|I would want your call|your pick"
+                    r"|zal ik|moet ik|wil je|wilt u|zou je (?:willen|liever)|heb je liever|wat heb je liever|laat (?:het )?(?:me|mij) weten|jouw keuze"
+                    r"|jij beslist|aan jou|kies jij|jouw beslissing|één vraag voor je|een vraag voor je)\b", re.IGNORECASE)
+NAMED = re.compile(r"\b(?:questions?|vra(?:a)?g(?:en)?) (\d+)(?:\s*(?:-|–|to|tot)\s*(\d+))?", re.IGNORECASE)
 LEADING = re.compile(r"^\s*(?:[-*•]\s*)?\**(\d+)\b")
 QUOTED = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”")
 OPTION = 80
@@ -35,7 +37,7 @@ def offers_choices(text: str) -> bool:
     return False
 
 
-RESTATED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|[A-Za-z][.):]|\d+[.):]|option \w+[.):]?)\s+\S", re.MULTILINE | re.IGNORECASE)
+RESTATED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|[A-Za-z][.):]|\d+[.):]|(?:option|optie) \w+[.):]?)\s+\S", re.MULTILINE | re.IGNORECASE)
 
 
 BULLET = re.compile(r"^\s*(?:[-*•]\s+|\*\*)?")

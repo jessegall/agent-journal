@@ -39,7 +39,8 @@ RELEASE_TIMEOUT = 600
 CARD_EXTRAS: list = []
 REPOSITORY_STATES: dict = {}
 PEOPLE: dict = {}
-WAITS_ON_PEOPLE = re.compile(r"\b(?:orchestrator|user|you|your|approv\w*|decision|decide\w*|answer\w*|review\w*)\b", re.IGNORECASE)
+WAITS_ON_PEOPLE = re.compile(r"\b(?:orchestrator|user|you|your|approv\w*|decision|decide\w*|answer\w*|review\w*"
+                             r"|gebruiker|jij|jouw|goedkeur\w*|goedgekeurd|beslissing|beslis\w*|antwoord\w*|beoordel\w*)\b", re.IGNORECASE)
 LOOK_AGAIN_AFTER = 30
 STATES_KEPT = 500
 HELD = ("rule", "doc", "tool")

@@ -217,6 +217,10 @@ def test_a_step_reaches_an_agent_whose_work_waits_on_something():
     works.create("Ship it")
     works.action("await")("the CI run on main")
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    from features.recital import mentioned
+    from features.sequences.shipped import WRITING_AN_UPDATE
+    assert [mentioned(WRITING_AN_UPDATE.words, text) for text in ("Can you catch me up?", "Kun je me even bijpraten?", "Geef me een update", "Ga door")] == \
+        [True, True, True, False], "asking for an update starts it in Dutch as well as English"
     made = sequences.create("Writing an update")
     sequences.section(made.n, "Gather", "list what changed")
     sequences.run(made.n)

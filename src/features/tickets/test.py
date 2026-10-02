@@ -161,6 +161,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert (card["state"], card["reason"].startswith(f"under review ({merging.title})")) == ("running", True), \
         "a ticket the orchestrator is reviewing waits on that review; it is never stuck"
+    from features.tickets.controller import WAITS_ON_PEOPLE
+    assert [bool(WAITS_ON_PEOPLE.search(text)) for text in ("waits for your approval", "wacht op goedkeuring", "de build draait")] == [True, True, False], \
+        "a wait on a person is read in Dutch as well as English"
     Sequences(record, actor=SYSTEM).abandon(merging.n, about=ticket.ref, why="only a check", sure=True)
     record.set_setting("tickets", {"running": 1})
     second = tickets.create("Search", board=board.n)

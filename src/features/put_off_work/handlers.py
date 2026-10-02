@@ -5,7 +5,9 @@ from providers.turns import last_text
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from resources.base import AGENT
 
-DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back)\b", re.IGNORECASE)
+DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back"
+                    r"|(?:dat|dit|het) doe ik (?:straks|later|daarna)|ik doe (?:dat|dit|het) (?:straks|later|daarna)|(?:daar|hier|er) kom ik (?:straks |later )?op terug"
+                    r"|ik kom (?:er|hier|daar) (?:straks |later )?op terug|hierna|na dit|zodra (?:de|het|dit|dat) \w+ (?:klaar|binnen|er) is|daarna doe ik)\b", re.IGNORECASE)
 RECENT = 200
 SINCE = 600
 
