@@ -66,6 +66,8 @@ class AskForFreshIdeas(Handler):
         every = float(BoardsDetails.values(context.record).ideas_every) * 3600
         speaking = context.speaking_to(agent)
         for board in context.journal.boards._standing():
+            if board.environment != context.record.env:
+                continue
             due = time.time() - float(board.ideas_at) >= every
             if due and not board.finished and speaking.once(IDEAS_LINE, f"{board.n}:{int(time.time() // every)}"):
                 speaking.agent.whisper(IDEAS_LINE, n=board.n, title=board.title)
