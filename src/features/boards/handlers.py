@@ -5,7 +5,7 @@ from typing import ClassVar
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from features.boards.controller import DRAFTING_PHASE, Boards
-from features.boards.details import BoardsDetails
+from features.nudges import HOUR, Sent
 from features.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
 
@@ -44,7 +44,6 @@ def uncovered(context: Context, board) -> str:
 
 
 QUIET_FILL = 90
-IDEAS_LINE = "ideas"
 
 
 class MarkQuietFillingStalled(Handler):
@@ -58,16 +57,7 @@ class MarkQuietFillingStalled(Handler):
                 boards.stall(board.n, f"nothing was written to the board for {int(quiet)} seconds")
 
 
-class AskForFreshIdeas(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        agent = context.journal.agents.primary()
-        if not agent:
-            return
-        every = float(BoardsDetails.values(context.record).ideas_every) * 3600
-        speaking = context.speaking_to(agent)
-        for board in context.journal.boards._standing():
-            if board.environment != context.record.env:
-                continue
-            due = time.time() - float(board.ideas_at) >= every
-            if due and not board.finished and speaking.once(IDEAS_LINE, f"{board.n}:{int(time.time() // every)}"):
-                speaking.agent.whisper(IDEAS_LINE, n=board.n, title=board.title)
+def boards_wanting_ideas(context, agent) -> list[Sent]:
+    every = float(context.settings["ideas_every"]) * HOUR
+    return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.boards._standing()
+            if board.environment == context.record.env and not board.finished and time.time() - float(board.ideas_at) >= every]

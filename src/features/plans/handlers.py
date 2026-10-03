@@ -4,10 +4,9 @@ from typing import ClassVar
 
 from controllers.types import Todos, Works
 from engine.events.agents import AgentReported
-from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
-from features.plans.details import PlansDetails
+from features.nudges import MINUTE, Sent
 from features.plans.progress import catch_up, current_phase
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import passes_checkpoints
@@ -16,7 +15,6 @@ from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import IDLE
 
-BLOCKED_ASKED = "plans.blocked_asked"
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
 
@@ -122,22 +120,12 @@ class ReopenPlansWithTheirRows(Handler):
             plans.save(plan, "updated", phase=found, status=ACTIVE)
 
 
-class NudgeAStillPlan(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        agent = context.journal.agents.primary()
-        if not agent or agent.status != IDLE:
-            return
-        still = float(PlansDetails.values(context.record).still_minutes) * 60
-        quiet = time.time() - float(agent.at)
-        if quiet < still:
-            return
-        speaking = context.speaking_to(agent)
-        for plan in Plans(context.record, actor=SYSTEM)._every():
-            if plan.status != ACTIVE:
-                continue
-            rows = doable(context.record, plan)
-            if rows and speaking.once("still", f"{plan.n}:{int(float(agent.at))}:{int(quiet // still)}"):
-                speaking.agent.whisper("still", n=plan.n, title=plan.title, minutes=int(quiet // 60), rows=rows)
+def still_plans(context, agent) -> list[Sent]:
+    quiet = time.time() - float(agent.at)
+    if agent.status != IDLE or quiet < float(context.settings["still_minutes"]) * MINUTE:
+        return []
+    found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._every() if plan.status == ACTIVE]
+    return [Sent(str(plan.n), {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]
 
 
 def doable(record, plan) -> str:
@@ -155,28 +143,14 @@ def doable(record, plan) -> str:
     return ", then ".join(parts)
 
 
-class AskAboutBlockedRows(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        ask_about_blocked_rows(context)
-
-
-class AskAboutBlockedRowsOnToolUse(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        ask_about_blocked_rows(context)
-
-
-def ask_about_blocked_rows(context) -> None:
-    agent = context.journal.agents.primary()
-    if not agent:
-        return
-    every, now = float(PlansDetails.values(context.record).blocked_minutes) * 60, time.time()
-    state = context.record.state(BLOCKED_ASKED)
+def blocked_plans(context, agent) -> list[Sent]:
     todos = Todos(context.record, actor=SYSTEM)
+    found = []
     for plan in Plans(context.record, actor=SYSTEM)._every():
-        if plan.status != ACTIVE or now - float(state.get(str(plan.n), 0)) < every:
+        if plan.status != ACTIVE:
             continue
         mine = {n for phase in plan.phases for n in phase[PHASE.todos]}
         held = [t for t in todos._standing() if t.n in mine and (t.blocked or todos.waits(t))]
         if held:
-            state.set(str(plan.n), now)
-            context.speaking_to(agent).agent.whisper("blocked", n=plan.n, title=plan.title, rows="; ".join(f"to-do {t.n}, {t.title}" for t in held))
+            found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": "; ".join(f"to-do {t.n}, {t.title}" for t in held)}))
+    return found

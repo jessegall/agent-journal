@@ -60,6 +60,13 @@ def test_a_request_opens_a_session_that_cancel_closes():
     assert "2 to 5" in refused(lambda: filler_board.ideas(board.n, ["Only one"])), "ideas come as a handful of chips"
     filler_board.ideas(board.n, ["Share by link", "Invite by mail", "Take a share back"])
     assert boards.load(board.n).ideas == ["Share by link", "Invite by mail", "Take a share back"], "the agent's ideas replace the board's chips"
+    from tests.kit import nudges as said, tick
+    tick(record)
+    assert not any("think up what the user might ask for" in line for line in said(record)), "fresh ideas wait for the hours to pass"
+    boards.update(board.n, ideas_at=0)
+    tick(record)
+    tick(record)
+    assert sum(f"on board {board.n}" in line and "think up" in line for line in said(record)) == 1, "stale ideas ask for new ones once"
     filler_board._update_drafting(boards.load(board.n), phase="drafting")
     filler_board.wait(board.n)
     assert boards.load(board.n).drafting["phase"] == "waiting", "the filler says it waits for the user's picks, and no stall is called"

@@ -3,17 +3,17 @@ from features.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
-    AskAboutBlockedRows,
-    AskAboutBlockedRowsOnToolUse,
     GuideBuilding,
-    NudgeAStillPlan,
     PassCheckpointsInAuto,
     ReopenPlansWithTheirRows,
     StartApproved,
     StartBuilding,
     TakeStruckRowsOutOfUnapprovedPlans,
     TellParkedAndPickedUp,
+    blocked_plans,
+    still_plans,
 )
+from features.nudges import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from features.plans.progress import held
 from features.work_tracking.next import ROW_HOLDS
@@ -21,6 +21,7 @@ from features.work_tracking.next import ROW_HOLDS
 
 class PlansFeature(Feature):
     details = PlansDetails
+    nudges = (Nudge("still", every="still_minutes", about=still_plans), Nudge("blocked", every="blocked_minutes", about=blocked_plans))
 
     def register(self, journal: Journal) -> None:
         if held not in ROW_HOLDS:
@@ -31,9 +32,6 @@ class PlansFeature(Feature):
         journal.events.handler(GuideBuilding())
         journal.events.handler(PassCheckpointsInAuto())
         journal.events.handler(AdvancePlans())
-        journal.events.handler(NudgeAStillPlan())
-        journal.events.handler(AskAboutBlockedRows())
-        journal.events.handler(AskAboutBlockedRowsOnToolUse())
         journal.events.handler(ReopenPlansWithTheirRows())
         journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans())
         journal.agent.interceptor(RefusePlanMode())
