@@ -7,7 +7,8 @@ import JournalTile from "../layout/JournalTile.vue";
 import ListBox from "../kit/ListBox.vue";
 import ListRow from "../kit/ListRow.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
-import {counted, projectPath, stoppedNote, useHub} from "../sync/hub.js";
+import {projectPath, stoppedNote, useHub} from "../sync/hub.js";
+import {counted} from "../format/number.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {stopsOpen} from "../chat/agentStop.js";
 

@@ -2,7 +2,8 @@
 import {computed, onUnmounted, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
-import {TICK, line, visibleQueue} from "../layout/bar.js";
+import {line} from "../layout/bar.js";
+import {useBarLine} from "../composables/barLine.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.bar);
@@ -10,27 +11,10 @@ usePoll(...polled.bar);
 defineProps({idle: {type: String, default: "working"}});
 
 const COUNT_UP = 360;
-const state = ref({at: 0, since: 0});
-const message = ref(null);
-const elapsed = ref(0);
+const {state, message, elapsed} = useBarLine(() => store.bar && store.bar.queue);
 const counted = ref({});
 const frames = {};
-
-function step() {
-    const queue = (store.bar && store.bar.queue) || [];
-    const now = Date.now() / 1000;
-    const got = visibleQueue(queue, state.value, now);
-    state.value = {at: got.at, since: got.since};
-    message.value = got.message;
-    elapsed.value = got.message ? Math.max(0, now - got.since) : 0;
-}
-
-const ticking = setInterval(step, TICK);
-watch(() => store.bar && store.bar.queue, step, {immediate: true});
-onUnmounted(() => {
-    clearInterval(ticking);
-    Object.values(frames).forEach(cancelAnimationFrame);
-});
+onUnmounted(() => Object.values(frames).forEach(cancelAnimationFrame));
 
 const shownLine = computed(() => line(message.value, elapsed.value));
 

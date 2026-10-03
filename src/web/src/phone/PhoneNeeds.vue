@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 import {kindWaiting} from "./kinds.js";
 import {ordered} from "./waiting.js";
 import PhoneChevron from "./PhoneChevron.vue";

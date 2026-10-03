@@ -1,4 +1,5 @@
 <script setup>
+import {copyText} from "./copy.js";
 import {nextTick, ref} from "vue";
 import Btn from "./Btn.vue";
 import Icon from "./Icon.vue";
@@ -59,7 +60,7 @@ async function copyLink(key) {
     try {
         const once = lasting.value === "once";
         const url = await props.linkFor(key, once ? {expires: "7d", once} : {expires: lasting.value, once});
-        await navigator.clipboard.writeText(url).catch(() => {});
+        await copyText(url);
         const label = LASTS.find((l) => l.key === lasting.value).label;
         copied.value = {key, url, note: once ? "It opens once, then stops working." : `It works for ${label}.`};
     } catch (error) {

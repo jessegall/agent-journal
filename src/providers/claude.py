@@ -484,10 +484,7 @@ class Claude(Provider):
         ended = self.stopped(dict(held.ended), uses, ids)
         sessions = {}
         for meta in Path(path).with_suffix("").joinpath("subagents").glob("*.meta.json"):
-            try:
-                sessions[json.loads(meta.read_text()).get("toolUseId")] = meta.with_name(meta.name.replace(".meta.json", ".jsonl"))
-            except (OSError, ValueError):
-                continue
+            sessions[read_json(meta, dict, {}).get("toolUseId")] = meta.with_name(meta.name.replace(".meta.json", ".jsonl"))
         now = time.time()
         subagents = []
         for use in (u for u in uses if u.name in DISPATCHES):

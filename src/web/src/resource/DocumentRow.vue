@@ -1,4 +1,5 @@
 <script setup>
+import {counted} from "../format/number.js";
 import {computed} from "vue";
 import PageThumb from "../kit/PageThumb.vue";
 import {age} from "../format/time.js";
@@ -19,13 +20,12 @@ const files = computed(() => Object.keys(props.doc.data.files || {}).length);
 const links = computed(() => new Set([...props.doc.refs, ...linkedTo(props.doc.ref).map((r) => r.ref)]).size);
 const changed = computed(() => props.doc.updated || props.doc.created);
 const fresh = computed(() => Date.now() / 1000 - changed.value < DAY);
-const plural = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
 const facts = computed(() =>
     [
         `Doc ${props.doc.n}`,
-        props.doc.sections.length ? plural(props.doc.sections.length, "part") : "",
-        files.value ? plural(files.value, "file") : "",
-        links.value ? plural(links.value, "link") : "",
+        props.doc.sections.length ? counted(props.doc.sections.length, "part") : "",
+        files.value ? counted(files.value, "file") : "",
+        links.value ? counted(links.value, "link") : "",
         props.shelf ? `in ${props.shelf}` : "",
     ].filter(Boolean)
 );

@@ -1,49 +1,34 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed, ref} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
-import {TICK, line, visibleQueue} from "../layout/bar.js";
+import {line} from "../layout/bar.js";
+import {useBarLine} from "../composables/barLine.js";
 
 const BUSY_EVERY = 1000;
 const CALM_EVERY = 3000;
 const props = defineProps({working: {type: Boolean, default: false}});
 const queue = ref([]);
-const state = ref({at: 0, since: 0});
-const message = ref(null);
-const elapsed = ref(0);
 
 usePoll(
     "phone-bar",
     () => phone.bar().catch(() => null),
     () => (props.working ? BUSY_EVERY : CALM_EVERY),
-    (got) => got && Array.isArray(got.queue) && (queue.value = got.queue),
+    (got) => got && Array.isArray(got.queue) && (queue.value = got.queue)
 );
 
-function step() {
-    const now = Date.now() / 1000;
-    const got = visibleQueue(queue.value, state.value, now);
-    if (got.at !== state.value.at || got.since !== state.value.since) state.value = {at: got.at, since: got.since};
-    if (got.message !== message.value) message.value = got.message;
-    const seconds = got.message ? Math.floor(Math.max(0, now - got.since)) : 0;
-    if (seconds !== elapsed.value) elapsed.value = seconds;
-}
-
-let ticking = 0;
-const ticked = () => {
-    clearInterval(ticking);
-    ticking = document.hidden ? 0 : setInterval(step, TICK);
-};
-ticked();
-document.addEventListener("visibilitychange", ticked);
-onUnmounted(() => {
-    clearInterval(ticking);
-    document.removeEventListener("visibilitychange", ticked);
-});
+const {message, elapsed} = useBarLine(() => queue.value);
 
 const shown = computed(() => line(message.value, elapsed.value));
 const RECENT = 5;
 const open = ref(false);
-const recent = computed(() => queue.value.slice(-RECENT).map((one) => line(one, 0)).filter(Boolean).reverse());
+const recent = computed(() =>
+    queue.value
+        .slice(-RECENT)
+        .map((one) => line(one, 0))
+        .filter(Boolean)
+        .reverse()
+);
 </script>
 
 <template>

@@ -7,5 +7,3 @@ export function fileKind(name) {
     const ext = name.split(".").pop().toUpperCase();
     return ext.length <= 4 ? ext : "FILE";
 }
-
-export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;

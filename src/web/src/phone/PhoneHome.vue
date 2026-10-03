@@ -1,4 +1,5 @@
 <script setup>
+import {copyText} from "../kit/copy.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
@@ -350,7 +351,11 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     else took(got);
 });
 provide("phoneRefresh", refresh);
-const go = usePlanGo(computed(() => feed.value.plan), refresh, failed);
+const go = usePlanGo(
+    computed(() => feed.value.plan),
+    refresh,
+    failed
+);
 
 watch(offline, (now, before) => {
     if (now !== before) announce(now ? "Offline, waiting to reconnect" : "Back online");
@@ -539,7 +544,7 @@ function quoteIt(item) {
 }
 
 function copy() {
-    navigator.clipboard?.writeText(plain(held.value.item.brief || held.value.item.title)).catch(() => {});
+    copyText(plain(held.value.item.brief || held.value.item.title));
     held.value = null;
     setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }

@@ -1,6 +1,6 @@
 <script setup>
 import TextDisplay from "../kit/TextDisplay.vue";
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 
 defineProps({comments: {type: Array, required: true}});
 </script>

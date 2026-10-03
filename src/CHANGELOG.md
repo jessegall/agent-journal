@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.238.0 — one way to do each thing, inside
+
+**Twelve places that did the same work in two or more ways now each have one way**, found by a review of the
+whole codebase. One check whether a process is alive; one reader for the viewer's marker and for a session's
+seat; one lookup of an agent by its session; one way to say a thing may fire again, through its trigger; one way
+to count a noun, shorten text and make a slug; every JSON file read and written through the same two helpers.
+In the viewer: one way to say how long ago, one live clock, one status line on desktop and phone, one way to
+count and one way to copy to the clipboard. Nothing you use changes, except that a copy that fails now says so
+on the phone, and the running time on a command shows its seconds the same way everywhere.
+
 ## 2.237.0 — one way to send a message to an agent
 
 **Every message that reaches an agent now goes through one send on its provider, and the provider decides how it

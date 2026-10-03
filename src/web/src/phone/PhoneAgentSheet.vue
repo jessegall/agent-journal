@@ -5,7 +5,7 @@ import {line} from "../layout/bar.js";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
 import {plainDoing} from "./doing.js";
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 import {announce} from "./announce.js";
 import {ended} from "./outbox.js";
 import PhoneAgent from "./PhoneAgent.vue";
@@ -81,7 +81,13 @@ async function start(agent) {
                 </div>
             </template>
         </dl>
-        <PhoneAgentControls :running="live" :alive="running" :silent="state === 'silent'" :environment="environment" @changed="emit('changed')" />
+        <PhoneAgentControls
+            :running="live"
+            :alive="running"
+            :silent="state === 'silent'"
+            :environment="environment"
+            @changed="emit('changed')"
+        />
         <template v-if="told">
             <p class="agent-told" role="status">{{ told }}</p>
         </template>

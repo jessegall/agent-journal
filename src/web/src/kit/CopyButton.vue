@@ -1,4 +1,5 @@
 <script setup>
+import {copyText} from "./copy.js";
 import {onUnmounted, ref} from "vue";
 import Icon from "./Icon.vue";
 
@@ -13,7 +14,7 @@ const copied = ref(false);
 let timer = 0;
 
 async function copy() {
-    await navigator.clipboard.writeText(props.text);
+    if (!(await copyText(props.text))) return;
     copied.value = true;
     clearTimeout(timer);
     timer = setTimeout(() => (copied.value = false), FLASH);

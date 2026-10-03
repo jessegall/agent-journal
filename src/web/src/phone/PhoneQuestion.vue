@@ -5,7 +5,7 @@ import {phone} from "../api/phone.js";
 import PhoneSending from "./PhoneSending.vue";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 import {announce, tell} from "./announce.js";
 import {tick} from "./haptic.js";
 

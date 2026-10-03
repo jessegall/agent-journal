@@ -11,7 +11,7 @@ from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
 from engine.fields import Loaded
 from resources.types import AgentRow
-from engine.stored import tail, write_text
+from engine.stored import read_json, tail, write_text
 from providers.drivers import ANSI, Driver
 from typing import TypedDict
 
@@ -166,11 +166,7 @@ class Codex(Provider):
     @classmethod
     def catalog(cls, path: Path | None = None) -> list[CodexModel]:
         path = path if path else Path.home() / ".codex" / "models_cache.json"
-        try:
-            data = json.loads(path.read_text())
-        except (OSError, TypeError, ValueError):
-            return []
-        listed = data.get("models") if isinstance(data, dict) else None
+        listed = read_json(path, dict, {}).get("models")
         return [CodexModel.from_json(model) for model in listed if CodexModel.listed(model)] if isinstance(listed, list) else []
 
     @classmethod

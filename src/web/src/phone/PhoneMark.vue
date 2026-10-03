@@ -1,4 +1,5 @@
 <script setup>
+import {copyText} from "../kit/copy.js";
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import Icon from "../kit/Icon.vue";
@@ -12,13 +13,9 @@ const mark = computed(() => {
 });
 
 async function copied() {
-    try {
-        await navigator.clipboard.writeText(props.item.command);
-        tick();
-        announce("Command copied");
-    } catch (error) {
-        announce("The command could not be copied");
-    }
+    if (!(await copyText(props.item.command))) return announce("The command could not be copied");
+    tick();
+    announce("Command copied");
 }
 </script>
 

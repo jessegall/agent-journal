@@ -2,7 +2,7 @@
 import {computed, nextTick, onMounted, ref} from "vue";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 import {kindCard, kindWord} from "./kinds.js";
 import {counted, plainDoing} from "./doing.js";
 import PhoneAgent from "./PhoneAgent.vue";
@@ -22,7 +22,7 @@ const waits = computed(() =>
     Object.entries(detail.value.waiting || {})
         .filter(([, count]) => count > 0)
         .map(([kind, count]) => counted(count, kindWord(kind), kindCard(kind).toLowerCase()))
-        .join(", "),
+        .join(", ")
 );
 const heading = ref(null);
 
