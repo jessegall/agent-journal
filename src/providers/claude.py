@@ -134,6 +134,7 @@ class Claude(Provider):
                        "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
     sleeping_tools = ("ScheduleWakeup",)
     echoes_typed = True
+    background_wakes = True
     tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall, "CronCreate": LoopCall, "CronDelete": LoopEndCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"

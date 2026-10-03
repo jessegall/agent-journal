@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.240.0 — each agent is told what really wakes it
+
+**When an agent runs the same check over and over, the journal's advice now fits its provider.** Claude is told to
+wait with `journal work await` and that a background command tells it when it ends. Codex is told the same way to
+wait, and that the journal checks in on it every five minutes, because a command ending does not wake Codex. Until
+now Codex was told the Claude version and could wait for a wake that never came.
+
 ## 2.239.0 — the journal's block leads AGENTS.md and CLAUDE.md
 
 **The journal now keeps one block in AGENTS.md and CLAUDE.md, at the head of each file**, under its title,
