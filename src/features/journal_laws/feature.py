@@ -3,7 +3,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs
 from features.journal_laws.details import LawDetails
-from features.journal_laws.handlers import TOO_LONG, NoticeLargestResult, long_briefings
+from features.journal_laws.handlers import TOO_LONG, CheckChangedInstructions, NoticeLargestResult, long_briefings
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword
 from features.journal_laws.policy import carry
 from features.nudges import Nudge
@@ -25,6 +25,7 @@ class Law(Feature):
         journal.agent.interceptor(RefuseWholeLongReads())
         journal.events.handler(WhisperLawInChat())
         journal.events.handler(NoticeLargestResult())
+        journal.events.handler(CheckChangedInstructions())
 
 
 def output_lines(record) -> int:

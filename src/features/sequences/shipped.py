@@ -249,8 +249,28 @@ WRITING_A_REPORT = ShippedSequence(
         included(FINISHING_WHAT_YOU_WROTE),
     ],
 )
+CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
+    title="Checking the instruction files",
+    brief="AGENTS.md and CLAUDE.md changed, or the user asked for a check. Find where they and the journal's block at "
+             "their head tell an agent opposite things, report it, and propose each fix as a suggestion. Never edit the files.",
+    words=("check the instruction files", "check agents.md", "check claude.md", "contradictions in the instructions",
+              "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies"),
+    steps=[
+        ("Read the files", "Read AGENTS.md and CLAUDE.md at the project root and the journal's block at the head of each, "
+                           "narrowly: grep for the headings, then sed the sections you need. Note every place where two of "
+                           "them tell an agent opposite things, with the file and line on both sides. Then journal sequence "
+                           "next <this sequence> --about <ref>."),
+        ("Report what you found", "With nothing found, say so in one plain line and move on. Otherwise journal report create "
+                                  "\"Contradictions in the instruction files\" --brief \"<each one: both sides with file and "
+                                  "line, which should win and why>\". Then journal sequence next <this sequence> --about <ref>."),
+        ("Propose each fix", "File each fix as a suggestion whose brief holds the exact change, as a diff: journal suggestion "
+                             "suggest \"<the change>\" --brief \"<why, and the diff>\". Never edit the files yourself; the "
+                             "user accepts a suggestion first, and the journal's block is only ever written by the journal. "
+                             "Finish with journal sequence next <this sequence> --about <ref>."),
+    ],
+)
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
+           WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
 
 
 def ship(record) -> list[str]:

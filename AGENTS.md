@@ -2,6 +2,10 @@
 
 <!-- BEGIN: agent-journal, form 2 (auto-generated, run `journal upgrade`) -->
 
+## Where the journal comes first
+
+The journal's lines come first on how you report, how you carry on and what you say in the chat. This file's own safety and deploy rules still stand. The user's own word comes before both.
+
 ## The journal's law
 
 These rules ship with the journal and cannot be switched off.
