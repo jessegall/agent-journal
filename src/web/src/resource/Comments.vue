@@ -105,7 +105,7 @@ function reply(c) {
 async function post(made) {
     change(made, {failed: false});
     try {
-        const written = await scope.api.act(made.target.type, made.target.n, "comment", {text: made.brief});
+        const written = await scope.api.act(made.target.type, made.target.n, made.target.action, {text: made.brief});
         link(`comment:${written.n}`, made.ref);
         change(made, {written: `comment:${written.n}`});
     } catch (e) {
@@ -122,12 +122,12 @@ function comment(target, refs, brief) {
 function answer() {
     const text = replying.text.trim();
     if (!text) return;
-    comment({type: "comment", n: replying.n}, [`comment:${replying.n}`], text);
+    comment({type: "comment", n: replying.n, action: "reply"}, [`comment:${replying.n}`], text);
     Object.assign(replying, {n: 0, text: ""});
 }
 
 async function send(text) {
-    const made = comment({type: props.resource.type, n: props.resource.n}, [props.resource.ref], withQuote(props.quote, text));
+    const made = comment({type: props.resource.type, n: props.resource.n, action: "comment"}, [props.resource.ref], withQuote(props.quote, text));
     emit("sent");
     await nextTick();
     const row = list.value?.querySelector(`[data-comment="${made.ref}"]`);

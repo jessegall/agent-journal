@@ -5,13 +5,14 @@ import sys
 from base64 import b64decode
 import threading
 import time
+from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
-from features.sharing.controller import HEALTH, LAYOUT_FILE  # noqa: E402
+from features.sharing.controller import HEALTH, LAYOUT_FILE, SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from features.sharing.preview import card, tags  # noqa: E402
 from features.sharing.routes import ROUTES, TICKS  # noqa: E402
@@ -124,7 +125,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.answer(400, "a comment needs about, name and text")
         except Refused as refused:
             return self.answer(422, str(refused))
-        body = json.dumps({"n": made.n, "about": given["about"], "name": made.data["visitor"], "text": made.brief, "created": made.created}).encode()
+        body = json.dumps(asdict(SharedComment.of(made, str(given["about"])))).encode()
         self.send(201, body, {"Content-Type": "application/json", **APP_HEADERS})
 
     def answer(self, code: int, text: str) -> None:

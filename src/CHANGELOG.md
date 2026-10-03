@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.231.0 — the agent's comments show on a shared page, and it replies under visitors' comments
+
+**A link that takes comments now shows the agent's comments on what it opens, and the agent's replies under the
+comment they answer**, so a visitor sees the answer to what they wrote. The agent answers a comment with
+journal comment reply <n> "<text>". Each link has a switch, The agent replies to comments, on whenever
+comments are on and every link that already takes comments has it on; turned off, the page shows only
+visitors' comments. Your own comments in the journal stay off the shared page.
+
 ## 2.230.1 — the Roles row after its critique round
 
 **+N more working follows the last role that fits**, instead of standing apart at the far end of the row. One

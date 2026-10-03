@@ -268,7 +268,7 @@ class Comment(Shape, Resource):
     event_labels = {"created": "Comment", "completed": "Comment done"}
     nested = True
     icon = "bubble"
-    command_names = {"complete": "done"}
+    command_names = {"complete": "done", "comment": "reply"}
     in_sidebar = False
 
 
