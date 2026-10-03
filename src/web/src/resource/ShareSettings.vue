@@ -12,6 +12,12 @@ const EXPIRES = [
 const expires = defineModel("expires", {type: String, default: "7d"});
 const password = defineModel("password", {type: String, default: ""});
 const comments = defineModel("comments", {type: Boolean, default: false});
+const agentReplies = defineModel("agentReplies", {type: Boolean, default: true});
+
+function allowComments(on) {
+    comments.value = on;
+    if (on) agentReplies.value = true;
+}
 </script>
 
 <template>
@@ -37,8 +43,14 @@ const comments = defineModel("comments", {type: Boolean, default: false});
         </template>
         <div class="row">
             <span class="label">Visitors can comment</span>
-            <Switch :on="comments" title="Let visitors comment under a name of their own" @change="comments = $event" />
+            <Switch :on="comments" title="Let visitors comment under a name of their own" @change="allowComments" />
         </div>
+        <template v-if="comments">
+            <div class="row">
+                <span class="label">The agent replies to comments</span>
+                <Switch :on="agentReplies" title="Show the agent's comments and its replies to visitors on the shared page" @change="agentReplies = $event" />
+            </div>
+        </template>
     </div>
 </template>
 

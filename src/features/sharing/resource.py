@@ -21,6 +21,7 @@ class Share(Shape, Resource):
         Field(FLAG, False, name="approved"),
         Field(TEXT, name="password"),
         Field(FLAG, False, name="comments"),
+        Field(FLAG, True, name="agent_replies"),
         Field(default=dict, name="layout"),
         Field(FLAG, False, name="once"),
     ]

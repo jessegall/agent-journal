@@ -37,7 +37,7 @@ async function send() {
     if (!text || !name.value.trim() || sending.value) return;
     error.value = "";
     sending.value = true;
-    const waiting = {n: -Date.now(), about: props.about, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true};
+    const waiting = {n: -Date.now(), about: props.about, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true, replies: []};
     emit("update:sent", [...props.sent, waiting]);
     draft.value = "";
     try {

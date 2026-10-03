@@ -19,6 +19,7 @@ const ref_ = computed(() => `${props.resource.type}:${props.resource.n}`);
 const expires = ref("7d");
 const password = ref("");
 const comments = ref(false);
+const agentReplies = ref(true);
 const waiting = waitingOf(ref_.value);
 const kind = computed(() => KINDS[props.resource.type] || props.resource.type);
 const opens = ref(null);
@@ -75,6 +76,7 @@ async function create() {
             expires: expires.value,
             password: password.value,
             comments: comments.value,
+            agent_replies: agentReplies.value,
         });
         password.value = "";
         awaitLink(made.value);
@@ -136,7 +138,7 @@ async function stop(share) {
                             </template>
                             <template v-else>
                                 <ShareOpens :opens="opens" />
-                                <ShareSettings v-model:expires="expires" v-model:password="password" v-model:comments="comments" />
+                                <ShareSettings v-model:expires="expires" v-model:password="password" v-model:comments="comments" v-model:agent-replies="agentReplies" />
                             </template>
                         </template>
                         <template #open>

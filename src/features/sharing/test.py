@@ -4,7 +4,7 @@ import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
 
-from controllers.types import Agents, Docs
+from controllers.types import Agents, Comments, Docs
 from runner.hooks import handle
 from engine.ran import announce
 from features.sharing.controller import Shares
@@ -45,6 +45,14 @@ def test_a_visitor_comment_is_named_never_quoted_and_only_lands_where_the_link_a
         raise AssertionError("a link made without comments takes none")
     except Refused:
         pass
+    Docs(record, actor=AGENT).comment(doc.n, "The costs section is in")
+    Comments(record, actor=AGENT).comment(made.n, "Thanks Robin, I left the repository alone")
+    Docs(record, actor=USER).comment(doc.n, "A note for myself")
+    shown = shares._shared_data(shares.load(share.n))["comments"]
+    assert [(c["name"], [r["text"] for r in c["replies"]]) for c in shown] == [("Robin", ["Thanks Robin, I left the repository alone"]), ("Agent", [])], \
+        "the agent's comment and its reply under the visitor's show on the page; the user's own comment stays in the journal"
+    shares.update(share.n, agent_replies=False)
+    assert [c["name"] for c in shares._shared_data(shares.load(share.n))["comments"]] == ["Robin"], "switched off, only visitors' comments show"
 
 
 def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees():

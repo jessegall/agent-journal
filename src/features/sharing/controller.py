@@ -7,6 +7,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import controllers.types as types_module
@@ -51,6 +52,21 @@ def hashed(password: str) -> str:
 def matches(password: str, kept: str) -> bool:
     salt, _, digest = kept.partition("$")
     return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex(), digest)
+
+
+@dataclass(frozen=True)
+class SharedComment:
+    n: int
+    about: str
+    name: str
+    text: str
+    created: float
+    replies: tuple = ()
+
+    @classmethod
+    def of(cls, comment, about: str, replies: tuple = ()) -> "SharedComment":
+        name = "Agent" if comment.seen[:1] == [AGENT] else comment.data["visitor"]
+        return cls(comment.n, about, name, comment.brief, comment.created, replies)
 
 
 def scoped(text: str, scope: set[str]) -> str:
@@ -138,12 +154,23 @@ class Shares(Controller):
         about.save(about.load(n), "commented", comment=made.n)
         return made
 
-    def _visitor_comments(self, share, scope: set[str]) -> list[dict]:
+    def _shared_comments(self, share, scope: set[str]) -> list[dict]:
         from controllers.types import Comments
         comments = Comments(self._home(share), actor=SYSTEM)
-        made = [comments.load(row["n"]) for row in comments.summaries() if not row["deleted"] and scope.intersection(row["refs"])]
-        return [{"n": c.n, "about": next(ref for ref in c.refs if ref in scope), "name": c.data["visitor"], "text": c.brief, "created": c.created}
-                for c in made if c.data.get("share") == share.n]
+        rows = [row for row in comments.summaries() if not row["deleted"]]
+
+        def about(refs: set[str]) -> list:
+            return [comments.load(row["n"]) for row in rows if refs.intersection(row["refs"])]
+
+        visitors = [c for c in about(scope) if c.data.get("share") == share.n]
+        asked = {c.ref for c in visitors}
+        agents = [c for c in about(scope | asked) if share.agent_replies and c.seen[:1] == [AGENT]]
+        said = sorted([*visitors, *(c for c in agents if scope.intersection(c.refs))], key=lambda c: c.created)
+        shown = []
+        for c in said:
+            on = next(ref for ref in c.refs if ref in scope)
+            shown.append(SharedComment.of(c, on, tuple(SharedComment.of(r, on) for r in agents if c.ref in r.refs)))
+        return [asdict(c) for c in shown]
 
     def _ask_to_open(self, share, target) -> None:
         opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
@@ -303,7 +330,7 @@ class Shares(Controller):
         described = described_types()
         kinds = {ref.partition(":")[0] for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
-                "comments": self._visitor_comments(share, scope) if share.comments else [],
+                "comments": self._shared_comments(share, scope) if share.comments else [],
                 "timeline": self._timeline(share, scope),
                 "types": {kind: described[kind] for kind in kinds if kind in described}}
 
