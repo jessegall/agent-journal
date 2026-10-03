@@ -4,7 +4,8 @@ from resources.base import AGENT, USER
 from engine.gates import held
 from tests.kit import idle, nudges, report
 from tests.conftest import fresh, refused
-from controllers.types import Nudges, Questions, Todos, Works
+from controllers.types import Agents, Nudges, Questions, Todos, Works
+from resources.base import SYSTEM
 from features.work_tracking.auto import QUIET_FOR, still_there
 from features.work_tracking.next import next, ready
 from resources.base import AGENT, USER
@@ -77,6 +78,26 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
         "not while it is answering, not while it is idle, and not before the time is up"
     quiet_record.features = {**quiet_record.features, "work_tracking.auto": False}
     assert still_there(quiet_record, QUIET_FOR + 60, "busy") == "", "and never with auto off"
+
+    from tests.kit import tick
+    stopped = fresh()
+    works = Works(stopped, actor=AGENT)
+    works.create("the release")
+    agents = Agents(stopped, actor=SYSTEM)
+
+    def idle_for(minutes):
+        report(stopped, "idle", "Stop")
+        row = agents.by_session("claude-1")
+        agents.update(row.n, **{**row.data, "at": time.time() - minutes * 60})
+        tick(stopped)
+        return [n for n in nudges(stopped) if n.startswith("you stopped")]
+
+    assert idle_for(4) == [], "four minutes after it stopped is not yet standing still"
+    assert idle_for(6) == ["you stopped 6 minutes ago with work 1, the release, in hand"], "five minutes after it stopped with work in hand it is told to carry on"
+    assert (len(idle_for(8)), len(idle_for(16)), len(idle_for(50))) == (1, 2, 2), "again after ten minutes, and not past three rounds in one idle spell"
+    report(stopped, "working", "PreToolUse")
+    works.action("await")("the CI run on main")
+    assert len(idle_for(6)) == 2, "work it declared a wait on is left to the wait"
 
 
 def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_ready():

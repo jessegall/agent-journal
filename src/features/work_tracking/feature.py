@@ -4,7 +4,7 @@ from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
 from features.nudges import Nudge
-from features.work_tracking.handlers import (next_row, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
+from features.work_tracking.handlers import (next_row, stopped_with_work, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites
 
@@ -12,7 +12,8 @@ from features.work_tracking.interceptors import RefuseHeldWrites
 class WorkFeature(Feature):
     details = WorkDetails
     nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False),
-              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False))
+              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False),
+              Nudge("carry on", behaviour="carry on", about=stopped_with_work))
 
     def chosen(self, record, key: str) -> bool:
         return super().chosen(record, key) or (key == "auto" and bool(steered(record)))

@@ -421,7 +421,7 @@ class Tickets(Prioritised, Controller):
             return CardState("you", "waiting for you")
         if not float(row.at):
             return CardState("running", "starting")
-        quiet = time.time() - float(row.at)
+        quiet = row.quiet_for
         if row.status != IDLE and quiet > SILENT_AFTER:
             return CardState("you", f"silent for {int(quiet // 60)}m")
         if row.status == IDLE and quiet > SILENT_AFTER and not row.background_run:
