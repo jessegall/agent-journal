@@ -2,7 +2,8 @@ import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {usePoll} from "../poll.js";
-import {age} from "../format/time.js";
+import {ago} from "../format/time.js";
+import {counted} from "../format/number.js";
 import {stateOf} from "../layout/statusline.js";
 import {readSummary} from "./summary.js";
 import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
@@ -40,10 +41,6 @@ const PLAN_ASKS = {
     waiting: "waits for you to continue",
     done: "is finished and waits for you to close it",
 };
-
-export const counted = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-
-export const ago = (at) => (age(at) === "now" ? "just now" : `${age(at)} ago`);
 
 export const isThrowaway = (j) => THROWAWAY.some((pattern) => pattern.test(j.root));
 

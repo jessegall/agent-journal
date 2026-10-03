@@ -6,7 +6,8 @@ import DumpAddFiles from "./DumpAddFiles.vue";
 import DumpAnswer from "./DumpAnswer.vue";
 import DumpEyebrow from "./DumpEyebrow.vue";
 import DumpNarration from "./DumpNarration.vue";
-import {fileKind, plural} from "./dumpPile.js";
+import {fileKind} from "./dumpPile.js";
+import {counted} from "../format/number.js";
 
 defineProps({
     items: {type: Array, required: true},
@@ -29,7 +30,7 @@ const emit = defineEmits(["more", "paste-more"]);
 const READ = {waiting: -1, read: 0.6, filed: 1, failed: 1};
 
 function slipMeta(item) {
-    if (item.state === "filed") return `→ ${plural(item.refs.filter((r) => !r.startsWith("collection:")).length, "thing", "things")}`;
+    if (item.state === "filed") return `→ ${counted(item.refs.filter((r) => !r.startsWith("collection:")).length, "thing", "things")}`;
     return item.state === "failed" ? "not filed" : item.state;
 }
 </script>

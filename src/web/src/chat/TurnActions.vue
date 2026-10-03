@@ -1,4 +1,5 @@
 <script setup>
+import {copyText} from "../kit/copy.js";
 import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ReplyTool from "./ReplyTool.vue";
@@ -15,7 +16,7 @@ const emit = defineEmits(["reply", "pin", "delete", "react", "update:picking"]);
 const copied = ref(false);
 
 async function copy() {
-    await navigator.clipboard.writeText(plain(props.text));
+    if (!(await copyText(plain(props.text)))) return;
     copied.value = true;
     setTimeout(() => (copied.value = false), 1500);
 }

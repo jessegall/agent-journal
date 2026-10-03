@@ -13,7 +13,8 @@ import DumpHead from "./DumpHead.vue";
 import DumpLane from "./DumpLane.vue";
 import DumpRail from "./DumpRail.vue";
 import DumpStart from "./DumpStart.vue";
-import {TEXT_ITEM, itemLabel, plural} from "./dumpPile.js";
+import {TEXT_ITEM, itemLabel} from "./dumpPile.js";
+import {counted} from "../format/number.js";
 
 const QUIET_AFTER = 180;
 const SUMMING_FOR = 120;
@@ -157,12 +158,12 @@ const lines = computed(() => {
     return Object.entries(by).map(([type, list]) => {
         const word = typeTitle(type).toLowerCase();
         const own = list.filter((m) => m.added).length;
-        return `${plural(list.length, word, `${word}s`)}${own ? `, ${own} of them written by the agent without being asked` : ""}`;
+        return `${counted(list.length, word, `${word}s`)}${own ? `, ${own} of them written by the agent without being asked` : ""}`;
     });
 });
 const reportTitle = computed(() =>
     filedRows.value.length
-        ? `Done. Filed ${plural(filedRows.value.length, "thing", "things")}${collection.value ? ` in “${collection.value}”` : ""}:`
+        ? `Done. Filed ${counted(filedRows.value.length, "thing", "things")}${collection.value ? ` in “${collection.value}”` : ""}:`
         : "Done. Nothing was filed."
 );
 const summary = computed(() => dump.value?.data?.summary || "");
@@ -214,13 +215,13 @@ const note = computed(() => {
     const n = filedRows.value.length;
     switch (phase.value) {
         case "removed":
-            return `Removed. The collection and the ${plural(dump.value.data.removed_refs?.length || 0, "thing", "things")} it held are gone. What you dropped is still on dump ${dump.value.n}.`;
+            return `Removed. The collection and the ${counted(dump.value.data.removed_refs?.length || 0, "thing", "things")} it held are gone. What you dropped is still on dump ${dump.value.n}.`;
         case "stopped":
-            return `Stopped. ${plural(n, "thing was", "things were")} filed and stay in the collection; the rest of the pile was not read.`;
+            return `Stopped. ${counted(n, "thing was", "things were")} filed and stay in the collection; the rest of the pile was not read.`;
         case "done":
-            return `${plural(n, "thing", "things")} filed. Rename or merge anything; it changes in the journal right away.`;
+            return `${counted(n, "thing", "things")} filed. Rename or merge anything; it changes in the journal right away.`;
         default:
-            return `${plural(n, "thing", "things")} filed so far. Each goes into the collection as soon as it is written.`;
+            return `${counted(n, "thing", "things")} filed so far. Each goes into the collection as soon as it is written.`;
     }
 });
 

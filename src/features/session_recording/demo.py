@@ -11,7 +11,7 @@ import features
 from commands.http import dispatch
 from engine.proc import git
 from engine.record import Record
-from engine.stored import apart
+from engine.stored import apart, read_json
 from features.phone.controller import CARDS, Phones
 from features.phone.resource import Phone
 from features.phone.routes import read_body
@@ -191,7 +191,7 @@ def grown(folder: Path, env: str, name: str) -> dict:
     if not listed.is_file():
         return demo
     branches = {}
-    for label, sub in json.loads(listed.read_text()).items():
+    for label, sub in read_json(listed, dict, {}).items():
         branch = built(folder / BRANCHES / sub, env, name)
         demo["answers"].update(branch["answers"])
         branches[label] = branch["moments"]

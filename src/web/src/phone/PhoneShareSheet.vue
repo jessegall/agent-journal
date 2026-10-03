@@ -1,4 +1,5 @@
 <script setup>
+import {copyText} from "../kit/copy.js";
 import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import {announce, tell} from "./announce.js";
@@ -45,13 +46,9 @@ async function shareLink(url, close) {
 }
 
 async function copyLink(url, close) {
-    try {
-        await navigator.clipboard.writeText(url);
-        announce("Link copied");
-        close();
-    } catch (error) {
-        missed(error, "Copying the link");
-    }
+    if (!(await copyText(url))) return announce("The link could not be copied");
+    announce("Link copied");
+    close();
 }
 
 async function makeLink(close) {
@@ -90,7 +87,13 @@ async function sendDocument(close) {
                     <PhoneShareRow icon="share" name="Share link" note="The link is ready" @press="shareLink(link, close)" />
                 </template>
                 <template v-else>
-                    <PhoneShareRow icon="webpage" name="Share a link" note="Anyone with the link can read it" :busy="busy === 'link'" @press="makeLink(close)" />
+                    <PhoneShareRow
+                        icon="webpage"
+                        name="Share a link"
+                        note="Anyone with the link can read it"
+                        :busy="busy === 'link'"
+                        @press="makeLink(close)"
+                    />
                 </template>
             </li>
             <li>
@@ -98,7 +101,13 @@ async function sendDocument(close) {
                     <PhoneShareRow icon="docs" name="Send as a document" :note="file.name" @press="sendDocument(close)" />
                 </template>
                 <template v-else-if="file || fileFailed">
-                    <PhoneShareRow icon="download" name="Download the document" :note="fileFailed || file.name" :href="exportUrl" :download="file ? file.name : ''" />
+                    <PhoneShareRow
+                        icon="download"
+                        name="Download the document"
+                        :note="fileFailed || file.name"
+                        :href="exportUrl"
+                        :download="file ? file.name : ''"
+                    />
                 </template>
                 <template v-else>
                     <PhoneShareRow icon="docs" name="Send as a document" note="Preparing the document…" waiting />

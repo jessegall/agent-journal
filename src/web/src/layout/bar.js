@@ -1,4 +1,4 @@
-import {stopwatch} from "../format/time.js";
+import {span} from "../format/time.js";
 export const TICK = 250;
 export const MINUTE = 60;
 const BEHIND = 3;
@@ -39,7 +39,7 @@ export function frames(message, elapsed) {
 }
 
 export function clock(message) {
-    return message && message.clock ? stopwatch(message.for) : "";
+    return message && message.clock ? span(message.for, true) : "";
 }
 
 export function line(message, elapsed) {

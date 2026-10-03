@@ -7,6 +7,11 @@ export function age(at) {
     return `${Math.floor(s / 86400)}d`;
 }
 
+export function ago(at) {
+    const elapsed = age(at);
+    return elapsed === "now" ? "just now" : elapsed && `${elapsed} ago`;
+}
+
 export function fresh(at, now) {
     const s = Math.max(0, now - at);
     if (s < 5) return "now";
@@ -22,10 +27,10 @@ export function clock(at) {
     return today ? time : `${d.toLocaleDateString([], {day: "numeric", month: "short"})} ${time}`;
 }
 
-export function span(seconds) {
-    const s = Math.max(0, Math.floor(seconds));
+export function span(seconds, exact = false) {
+    const s = Math.max(0, Math.floor(seconds || 0));
     if (s < 60) return `${s}s`;
-    if (s < 3600) return `${Math.floor(s / 60)}m`;
+    if (s < 3600) return exact ? `${Math.floor(s / 60)}m ${s % 60}s` : `${Math.floor(s / 60)}m`;
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     return h < 24 ? `${h}h ${m}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
@@ -35,11 +40,6 @@ export function stamp(at) {
     return at
         ? new Date(at * 1000).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"})
         : "";
-}
-
-export function stopwatch(seconds) {
-    const secs = Math.max(0, Math.round(seconds || 0));
-    return secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
 }
 
 const DAY = 86400;

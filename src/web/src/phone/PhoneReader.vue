@@ -5,7 +5,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 import {atThisPlace, ended, flush, hold, perform, waitingActions} from "./outbox.js";
 import PhoneComments from "./PhoneComments.vue";
 import PhoneCommentSheet from "./PhoneCommentSheet.vue";

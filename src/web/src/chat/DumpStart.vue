@@ -5,7 +5,7 @@ import DumpEyebrow from "./DumpEyebrow.vue";
 import DumpFiles from "./DumpFiles.vue";
 import DumpLane from "./DumpLane.vue";
 import DumpPill from "./DumpPill.vue";
-import {plural} from "./dumpPile.js";
+import {counted} from "../format/number.js";
 import {store} from "../state/store.js";
 
 defineProps({
@@ -24,7 +24,7 @@ const emit = defineEmits(["send", "files", "paste", "remove"]);
             <p class="dump-prompt">Throw it all in.</p>
             <div :class="['dump-compose', {lit: files.length}]" @paste="emit('paste', $event)">
                 <template v-if="files.length">
-                    <DumpEyebrow>The pile · {{ plural(files.length, "file", "files") }}</DumpEyebrow>
+                    <DumpEyebrow>The pile · {{ counted(files.length, "file", "files") }}</DumpEyebrow>
                     <DumpFiles :files="files" @remove="(i) => emit('remove', i)" />
                 </template>
                 <textarea

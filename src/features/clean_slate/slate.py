@@ -68,7 +68,7 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
             to = folder / f"hooks-{i}-{f.name}"
             shutil.copy2(f, to)
             entries.append({"from": str(f), "to": str(to), "copy": True})
-            f.write_text(json.dumps(kept(read_json(f, dict, {})), indent=2) + "\n")
+            write_json(f, kept(read_json(f, dict, {})), indent=2)
     except Exception as error:
         keep_moved(record, entries)
         put_back(record)

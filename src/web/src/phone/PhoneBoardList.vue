@@ -1,5 +1,5 @@
 <script setup>
-import {ago} from "./ago.js";
+import {ago} from "../format/time.js";
 import PhoneChevron from "./PhoneChevron.vue";
 import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
 
@@ -35,7 +35,9 @@ const emit = defineEmits(["open", "more"]);
                 </template>
             </ul>
             <template v-if="rows.length > shown.length">
-                <button type="button" class="board-more" @click="emit('more')">{{ total > rows.length ? `Show ${rows.length} of ${total}` : `Show all ${rows.length}` }}</button>
+                <button type="button" class="board-more" @click="emit('more')">
+                    {{ total > rows.length ? `Show ${rows.length} of ${total}` : `Show all ${rows.length}` }}
+                </button>
             </template>
             <template v-else-if="total > rows.length">
                 <p class="board-part">Showing {{ rows.length }} of {{ total }}</p>
@@ -63,7 +65,9 @@ const emit = defineEmits(["open", "more"]);
 }
 
 .board-rows li + li .board-row {
-    box-shadow: inset 16px 1px 0 var(--raised), inset 0 1px 0 var(--line);
+    box-shadow:
+        inset 16px 1px 0 var(--raised),
+        inset 0 1px 0 var(--line);
 }
 
 .board-row {

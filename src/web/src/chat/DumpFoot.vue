@@ -2,7 +2,7 @@
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {plural} from "./dumpPile.js";
+import {counted} from "../format/number.js";
 
 defineProps({
     collection: {type: String, default: ""},
@@ -20,7 +20,7 @@ const emit = defineEmits(["confirmed"]);
         <SwitchCase :value="confirming">
             <template #remove>
                 <span class="dump-confirm">
-                    Remove the collection and the {{ plural(filed, "thing", "things") }} in it? What you dropped is not touched.
+                    Remove the collection and the {{ counted(filed, "thing", "things") }} in it? What you dropped is not touched.
                 </span>
                 <Btn small @click="confirming = ''">Keep it</Btn>
                 <Btn kind="danger" small @click="emit('confirmed')">Remove</Btn>
@@ -34,7 +34,7 @@ const emit = defineEmits(["confirmed"]);
                 <Icon name="inbox" :size="13" />
                 <span class="dump-foot-label">Collection</span>
                 <span class="dump-foot-name">{{ collection || (removed ? "Removed" : "Not named yet") }}</span>
-                <span class="dump-foot-label">· {{ plural(filed, "thing", "things") }}</span>
+                <span class="dump-foot-label">· {{ counted(filed, "thing", "things") }}</span>
                 <span class="grow" />
                 <template v-if="working">
                     <Btn small @click="confirming = 'stop'">Stop filing</Btn>

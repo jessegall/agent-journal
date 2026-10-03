@@ -1,26 +1,17 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed} from "vue";
+import {useNow} from "../composables/now.js";
 import StateDot from "./StateDot.vue";
-import {stopwatch} from "../format/time.js";
+import {span} from "../format/time.js";
 
 const props = defineProps({mark: {type: Object, required: true}});
 const STATE_WORDS = {done: "Ended", failed: "Failed"};
-const now = ref(Date.now() / 1000);
-let ticking = 0;
 const running = computed(() => Boolean(props.mark.started) && !props.mark.ended);
-watch(
-    running,
-    (on) => {
-        clearInterval(ticking);
-        if (on) ticking = setInterval(() => (now.value = Date.now() / 1000), 1000);
-    },
-    {immediate: true}
-);
-onUnmounted(() => clearInterval(ticking));
+const now = useNow(1000, running);
 const took = computed(() => {
     const {started, ended} = props.mark;
     if (!started) return "";
-    return ended ? `ran ${stopwatch(ended - started)}` : stopwatch(now.value - started);
+    return ended ? `ran ${span(ended - started, true)}` : span(now.value - started, true);
 });
 </script>
 
