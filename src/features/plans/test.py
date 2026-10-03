@@ -236,7 +236,7 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     tick(record)
     report(record, "working", "PreToolUse")
     assert asked() == 1, "a running plan with a blocked to-do asks whether it still is, and a tool use right after does not ask again"
-    record.state("plans.blocked_asked").set(str(first), time.time() - 31 * 60)
+    record.state("nudges").set(f"plans.blocked.{first}", time.time() - 31 * 60)
     report(record, "working", "PreToolUse")
     tick(record)
     assert asked() == 2, "once the minutes are up, a tool use asks again, and the clock right after does not"

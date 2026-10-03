@@ -128,6 +128,7 @@ class Feature(ABC):
     speaks_while_waiting: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
+    nudges: ClassVar[tuple] = ()
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
@@ -151,6 +152,10 @@ class Feature(ABC):
 
     def wire(self) -> None:
         self.register(self.journal)
+        if self.nudges:
+            from features.nudges import SendOnTheClock, SendOnToolUse
+            self.journal.events.handler(SendOnTheClock(self.nudges))
+            self.journal.events.handler(SendOnToolUse(self.nudges))
 
     @classmethod
     def default_for(cls, root) -> bool:
