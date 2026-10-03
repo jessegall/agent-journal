@@ -5,7 +5,7 @@ import sys
 from base64 import b64decode
 import threading
 import time
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote, unquote
@@ -44,6 +44,41 @@ HEADERS = {
 
 def routed(parts: list[str]):
     return ROUTES.get(parts[0]) if parts else None
+
+
+@dataclass(frozen=True)
+class VisitorComment:
+    about: str
+    name: str
+    text: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "VisitorComment":
+        return cls(str(given["about"]), str(given["name"]), str(given["text"]))
+
+
+@dataclass(frozen=True)
+class VisitorAnswer:
+    comment: int
+    name: str
+    choice: str
+
+    @classmethod
+    def from_payload(cls, given: dict) -> "VisitorAnswer":
+        return cls(int(given["comment"]), str(given["name"]), str(given["choice"]))
+
+
+def posted_comment(shares, share, given: dict) -> dict:
+    sent = VisitorComment.from_payload(given)
+    return asdict(SharedComment.of(shares._visitor_comment(share, sent.about, sent.name, sent.text), sent.about))
+
+
+def posted_answer(shares, share, given: dict) -> dict:
+    sent = VisitorAnswer.from_payload(given)
+    return asdict(replace(sent, choice=shares._visitor_answer(share, sent.comment, sent.name, sent.choice).data["answer"]))
+
+
+VISITOR_POSTS = {"comment": posted_comment, "answer": posted_answer}
 
 
 class ShareHandler(BaseHTTPRequestHandler):
@@ -105,7 +140,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if (route := routed(parts)) is not None:
             return route.post(self, parts[1:])
-        if len(parts) != 3 or parts[0] != "s" or parts[2] != "comment":
+        if len(parts) != 3 or parts[0] != "s" or parts[2] not in VISITOR_POSTS:
             return self.refused()
         share = self.shares._by_token(parts[1])
         if share is None or not share.approved or share.ended:
@@ -120,13 +155,12 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.answer(413, "too large")
         try:
             given = json.loads(self.rfile.read(size))
-            made = self.shares._visitor_comment(share, str(given["about"]), str(given["name"]), str(given["text"]))
+            body = VISITOR_POSTS[parts[2]](self.shares, share, given)
         except (ValueError, KeyError, TypeError):
-            return self.answer(400, "a comment needs about, name and text")
+            return self.answer(400, "a comment needs about, name and text; an answer needs comment, name and choice")
         except Refused as refused:
             return self.answer(422, str(refused))
-        body = json.dumps(asdict(SharedComment.of(made, str(given["about"])))).encode()
-        self.send(201, body, {"Content-Type": "application/json", **APP_HEADERS})
+        self.send(201, json.dumps(body).encode(), {"Content-Type": "application/json", **APP_HEADERS})
 
     def answer(self, code: int, text: str) -> None:
         self.send(code, json.dumps({"error": text}).encode(), {"Content-Type": "application/json", **APP_HEADERS})

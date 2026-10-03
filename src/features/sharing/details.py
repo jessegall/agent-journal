@@ -31,7 +31,10 @@ class SharingDetails(FeatureDetails):
 
         Your comments on what a link opens show on its shared page, and journal comment reply <n>
         "<text>" answers a comment under it, a visitor's included, while the link's The agent replies
-        to comments switch is on; it is on with comments unless the user turned it off.
+        to comments switch is on; it is on with comments unless the user turned it off. To ask the
+        visitor something they can answer with a click, journal share ask <comment n> "<question>"
+        --options "<option>|<option>": the page shows the options under your question, and their pick
+        comes back to you.
     """
 
     lines = [
