@@ -11,7 +11,7 @@ from features.nudges import MINUTE, Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
-from features.work_tracking.next import next
+from features.work_tracking.next import asked, next
 from providers import PROVIDERS
 from resources.types import Work
 from features.status_bar.runs import command_runs
@@ -134,11 +134,12 @@ class AskStillBlocked(Handler):
         agent = context.journal.agents.primary()
         if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
             return
-        asked, now = state.get("asked", {}), time.time()
-        for row in [r for r in context.journal.todos._standing() if r.blocked and now - float(asked.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]:
+        told, now = state.get("asked", {}), time.time()
+        due = [r for r in context.journal.todos._standing() if r.blocked and now - float(told.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
+        for row in [r for r in due if not asked(context.record, r)]:
             context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked.rstrip("."))
-            asked[str(row.n)] = now
-        state.set("asked", asked)
+            told[str(row.n)] = now
+        state.set("asked", told)
 
 
 class EndWorkWithTodo(Handler):
