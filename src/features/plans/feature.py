@@ -3,6 +3,8 @@ from features.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
+    AskAboutBlockedRows,
+    AskAboutBlockedRowsOnToolUse,
     GuideBuilding,
     NudgeAStillPlan,
     PassCheckpointsInAuto,
@@ -30,6 +32,8 @@ class PlansFeature(Feature):
         journal.events.handler(PassCheckpointsInAuto())
         journal.events.handler(AdvancePlans())
         journal.events.handler(NudgeAStillPlan())
+        journal.events.handler(AskAboutBlockedRows())
+        journal.events.handler(AskAboutBlockedRowsOnToolUse())
         journal.events.handler(ReopenPlansWithTheirRows())
         journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans())
         journal.agent.interceptor(RefusePlanMode())
