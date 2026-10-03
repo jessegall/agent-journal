@@ -5,20 +5,17 @@ from typing import ClassVar
 from resources.types import IDLE
 from engine.events.engine import ClockTicked
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
+from features.nudges import MINUTE, Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING
 from features.boards.controller import Boards
 from features.tickets.controller import HELD, Tickets
-from features.tickets.details import TicketsDetails
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
 
-CHECK_AFTER = 300
+CHECK_AFTER = 5
+NUDGED = ("ticket_asks", "ticket_awaits")
 LOOK_AGAIN = 900
-
-
-def reminder(context) -> int:
-    return int(time.time() // (max(1, int(TicketsDetails.values(context.record).remind_every)) * 60))
 
 
 def all_parked(works: list) -> bool:
@@ -47,19 +44,14 @@ class LookAfterTicketBranches(Handler):
             plan = tickets._plans(ticket).load(ticket.plan)
             if context.once("plan_waits", f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
                 context.record.emit("ticket", ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS, SYSTEM)
-        for ticket, permission in tickets._awaiting_decisions():
-            if context.once("proposal_waits", f"{ticket.ref}|{permission}|{reminder(context)}"):
-                context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
-        boards = tickets._orchestrating()
-        for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards and int(t.board) not in paused]:
+        for ticket in watched(tickets):
             for kind, key, values, every in tickets._calls(ticket):
-                if not (called_again(context, f"{kind}|{ticket.ref}|{key}", every) if every else context.once(kind, f"{ticket.ref}|{key}")):
+                if kind in NUDGED or not (called_again(context, f"{kind}|{ticket.ref}|{key}", every) if every else context.once(kind, f"{ticket.ref}|{key}")):
                     continue
                 if kind == "ticket_plan_done":
                     context.record.emit("ticket", ticket.n, FINISHED, SYSTEM)
                 else:
                     context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
-        self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)
 
     def look_at_tickets(self, context: AgentContext, tickets: Tickets) -> None:
@@ -68,15 +60,6 @@ class LookAfterTicketBranches(Handler):
                 context.agent.whisper("ticket_restarted", ticket=ticket.n, title=ticket.title)
             elif context.once("ticket_attention", f"{ticket.ref}|{state.kind}|{int(time.time() // LOOK_AGAIN)}"):
                 context.record.emit("ticket", ticket.n, STUCK, SYSTEM, reason=state.text)
-
-    def check_on_board(self, context: AgentContext, tickets: Tickets) -> None:
-        row = context.agent.row
-        boards = tickets._orchestrating()
-        if not boards or row.status != IDLE or all_parked(Works(context.record, actor=SYSTEM)._standing()):
-            return
-        quiet = time.time() - float(row.at)
-        if quiet >= CHECK_AFTER and context.once("check_board", f"{boards}|{int(row.at)}|{int(quiet // CHECK_AFTER)}"):
-            context.agent.whisper("check_board", about=", ".join(f"board {n}" for n in boards))
 
 
 class HoldTicketKnowledge(Handler):
@@ -115,3 +98,33 @@ class FinishTheBoardWithItsLastTicket(Handler):
             return
         boards.update(board.n, finished=time.time())
         context.record.emit("board", board.n, FINISHED, SYSTEM)
+
+
+def watched(tickets: Tickets) -> list:
+    boards = tickets._orchestrating()
+    paused = {board.n for board in Boards(tickets.record, actor=SYSTEM)._standing() if board.paused}
+    return [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards and int(t.board) not in paused]
+
+
+def ticket_calls(kind: str):
+    def about(context, agent) -> list[Sent]:
+        tickets = Tickets(context.record, actor=SYSTEM)
+        return [Sent(f"{ticket.ref}|{key}", {"ticket": ticket.n, "title": ticket.title, **values})
+                for ticket in watched(tickets) for called, key, values, _ in tickets._calls(ticket) if called == kind]
+    return about
+
+
+def decisions(permission: str):
+    def about(context, agent) -> list[Sent]:
+        return [Sent(ticket.ref, {"ticket": ticket.n, "title": ticket.title})
+                for ticket, waiting in Tickets(context.record, actor=SYSTEM)._awaiting_decisions() if waiting == permission]
+    return about
+
+
+def boards_to_check(context, agent) -> list[Sent]:
+    boards = Tickets(context.record, actor=SYSTEM)._orchestrating()
+    if not boards or agent.status != IDLE or all_parked(Works(context.record, actor=SYSTEM)._standing()):
+        return []
+    if time.time() - float(agent.at) < CHECK_AFTER * MINUTE:
+        return []
+    return [Sent(",".join(map(str, boards)), {"about": ", ".join(f"board {n}" for n in boards)})]
