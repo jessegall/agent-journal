@@ -18,7 +18,7 @@ from features import FEATURES
 from features.shaping import shaping
 from controllers.described import described_types
 from engine.markers import MARKER
-from features.format import VIEWER, formatted
+from features.format import SHARED, formatted
 from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
@@ -318,7 +318,7 @@ class Shares(Controller):
         rows = {}
         for ref in scope:
             row = self._shared_row(share, ref)
-            shaped = shaping(row, record, VIEWER)
+            shaped = shaping(row, record, SHARED)
             rows[ref] = {
                 "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
                 "title": row.title, "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
@@ -339,7 +339,7 @@ class Shares(Controller):
         if kind != "plan":
             return []
         record = self._home(share)
-        return [{**moment, "text": scoped(formatted(moment["text"], record, VIEWER), scope)}
+        return [{**moment, "text": scoped(formatted(moment["text"], record, SHARED), scope)}
                 for moment in CONTROLLERS["plan"](record, actor=SYSTEM).timeline(int(n)) if f"todo:{moment['todo']}" in scope]
 
     def _count_view(self, n: int) -> None:

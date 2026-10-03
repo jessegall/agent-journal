@@ -4,6 +4,7 @@ from resources.base import SECTION
 FORMATTERS: list = []
 DOWNLOAD = "download"
 VIEWER = "viewer"
+SHARED = "shared"
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
