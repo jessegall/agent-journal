@@ -23,6 +23,7 @@ from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
+from engine.wording import plural
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": 3600, "d": 86400}
@@ -140,7 +141,7 @@ class Shares(Controller):
 
     def _visitor_answer(self, share, n: int, name: str, choice: str):
         from controllers.types import Comments, Nudges
-        asked = next((said for c in self._shared_comments(share, self._scope(share)) for said in (c, *c.replies) if said.n == n), None)
+        asked = next((comment for c in self._shared_comments(share, self._scope(share)) for comment in (c, *c.replies) if comment.n == n), None)
         if asked is None or not asked.options:
             raise Refused("that question is not on this link")
         if asked.answer:
@@ -192,12 +193,12 @@ class Shares(Controller):
         visitors = [c for c in about(scope) if c.data.get("share") == share.n]
         asked = {c.ref for c in visitors}
         agents = [c for c in about(scope | asked) if share.agent_replies and c.seen[:1] == [AGENT]]
-        said = sorted([*visitors, *(c for c in agents if scope.intersection(c.refs))], key=lambda c: c.created)
-        shown = []
-        for c in said:
+        top = sorted([*visitors, *(c for c in agents if scope.intersection(c.refs))], key=lambda c: c.created)
+        threads = []
+        for c in top:
             on = next(ref for ref in c.refs if ref in scope)
-            shown.append(SharedComment.of(c, on, tuple(SharedComment.of(r, on) for r in agents if c.ref in r.refs)))
-        return shown
+            threads.append(SharedComment.of(c, on, tuple(SharedComment.of(r, on) for r in agents if c.ref in r.refs)))
+        return threads
 
     def _ask_to_open(self, share, target) -> None:
         opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
@@ -213,7 +214,7 @@ class Shares(Controller):
         target = self._target(ref)
         lines = [f"{target.title} ({target.type} {target.n})"]
         if target.files:
-            lines.append(f"its {len(target.files)} attached {'file' if len(target.files) == 1 else 'files'}")
+            lines.append(f"its {plural(len(target.files), 'attached file')}")
         lines += [f"{m.title} ({m.type} {m.n})" for m in self._loaded_members(self.record, target)]
         return lines
 

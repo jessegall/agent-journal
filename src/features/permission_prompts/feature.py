@@ -1,6 +1,6 @@
 from agents.terminal import LAUNCH_ARGS
 from controllers.types import Agents
-from engine.seats import live
+from engine.seats import live_session
 from engine.sessions import Sessions
 from features.base import Feature
 from features.journal import Journal
@@ -21,7 +21,8 @@ class Permissions(Feature):
 
     def settings_view(self, record) -> dict:
         primary = Agents(record, actor=SYSTEM).primary()
-        seat = next((found for _, found in live(record.root) if primary and found.session == primary.title), None)
+        pair = live_session(record.root, primary.title) if primary else None
+        seat = pair[1] if pair else None
         driver = DRIVERS.get(seat.provider) if seat else None
         args = list(Sessions(record.root).read(seat.terminal).args) if seat else []
         return {"skip": skipped(record), "session": seat.session if seat else "",

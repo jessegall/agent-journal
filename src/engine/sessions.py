@@ -17,12 +17,25 @@ ACTIVE_ENV = "AGENT_JOURNAL_ACTIVE"
 SHELLS = {"sh", "bash", "zsh", "dash", "fish"}
 
 
-def alive(pid: int) -> bool:
+def alive(pid) -> bool:
     try:
-        os.kill(int(pid), 0)
-        return True
-    except (OSError, ValueError, TypeError):
+        pid = int(pid)
+    except (ValueError, TypeError):
         return False
+    if pid <= 0:
+        return False
+    try:
+        if os.waitpid(pid, os.WNOHANG)[0]:
+            return False
+    except ChildProcessError:
+        pass
+    try:
+        os.kill(pid, 0)
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
 
 
 def hold_build(root: Path, build: Path, pid: int | None = None) -> None:

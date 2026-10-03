@@ -29,6 +29,7 @@ from controllers.types import Agents, Comments, Messages, Questions, Todos, Work
 from features.plans.controller import ACTIVE, DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
 from resources.shapes import LEVELS, rank_before
+from engine.wording import clipped
 
 
 PROPOSED, CONFIRMED = "proposed", "confirmed"
@@ -396,7 +397,7 @@ class Tickets(Prioritised, Controller):
     def _waited_run(self, row, place: str) -> str:
         awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM)._standing() if w.awaiting), "")
         text = awaited or row.background_run
-        return text if len(text) <= RUN_TEXT else text[:RUN_TEXT - 1].rstrip() + "…"
+        return clipped(text, RUN_TEXT)
 
     def _reporting(self, place: str, sessions: dict):
         agents = Agents(Record(self.record.root, place), actor=SYSTEM)

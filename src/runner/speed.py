@@ -11,6 +11,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 
 from controllers.types import CONTROLLERS
+from engine.viewer import last
 from providers.drivers import Driver
 from runner.engine import Engine
 from engine.record import Record
@@ -86,10 +87,7 @@ def ticking(root: Path, env: str, runs: int) -> float:
 
 
 def viewer(root: Path) -> str:
-    try:
-        return json.loads((root / "runtime" / "viewer.json").read_text())["url"].rstrip("/")
-    except (OSError, ValueError, KeyError):
-        return ""
+    return last(root).url.rstrip("/")
 
 
 def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -> str:

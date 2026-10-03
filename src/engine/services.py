@@ -10,6 +10,7 @@ from engine.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
 from engine.package import entry
+from engine.sessions import alive
 from typing import TypedDict
 
 PORTS = range(8440, 8500)
@@ -131,20 +132,6 @@ def specs(root: Path, sources) -> list[ServiceSpec]:
     return [spec for source in (*sources, *SOURCES) for spec in source(root, taken)]
 
 
-def alive(pid: int) -> bool:
-    if not pid:
-        return False
-    try:
-        if os.waitpid(int(pid), os.WNOHANG)[0]:
-            return False
-    except ChildProcessError:
-        pass
-    try:
-        os.kill(int(pid), 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
     return True
 
 

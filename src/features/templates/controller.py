@@ -1,10 +1,10 @@
-import re
 
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from features.templates.resource import Template, TemplateField
 from resources.base import Refused
+from engine.wording import slugged
 
 
 KINDS = ("text", "number", "choice")
@@ -27,7 +27,7 @@ class Templates(Controller):
         choices = [option.strip() for option in options.split(",") if option.strip()]
         if kind == "choice" and not choices:
             self._refuse("a choice field needs --options \"one, two, three\"")
-        name = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+        name = slugged(label, "_")
         if not name:
             self._refuse("a field needs a label with a letter or a number in it")
         r = self.load(n)

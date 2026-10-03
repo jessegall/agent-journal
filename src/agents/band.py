@@ -1,4 +1,3 @@
-import json
 import re
 import unicodedata
 import time
@@ -8,10 +7,9 @@ from pathlib import Path
 from controllers.types import Agents
 from engine.record import Record
 from engine.version import version
-from engine.seats import Seat
+from engine.seats import Seat, read_seat
 from engine.viewer import marked, running
 from resources.base import SYSTEM
-from engine import runtime
 
 ROWS = 2
 SHOWN = False
@@ -203,11 +201,7 @@ class Band:
         self.asked_at = 0.0
 
     def seat(self) -> Seat:
-        try:
-            raw = json.loads(runtime.session_file(self.root, self.session, "seat.json").read_text())
-        except (OSError, ValueError):
-            raw = {}
-        return Seat.of(raw, self.session)
+        return read_seat(self.root, self.session)
 
     def context(self, seat: Seat) -> float:
         if seat.report:

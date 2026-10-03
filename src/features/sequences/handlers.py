@@ -20,6 +20,7 @@ from controllers.types import CONTROLLERS
 from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 from engine.reach import Reach
+from engine.wording import clipped
 
 STEP = "step"
 STEP_HELD = "step held"
@@ -159,7 +160,7 @@ def request_of(context: Context, about: str) -> str:
         return ""
     message = context.journal.messages.load(n)
     text = " ".join((message.brief or message.title).split())
-    return text if len(text) <= REQUEST_TEXT else text[:REQUEST_TEXT - 1].rstrip() + "…"
+    return clipped(text, REQUEST_TEXT)
 
 
 class HandStepToAgent(Handler):
