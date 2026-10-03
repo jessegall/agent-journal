@@ -14,6 +14,7 @@ from controllers.files import Files
 from controllers.links import Links
 from controllers.marks import internal
 from controllers.stored import Stored
+from engine.wording import noun
 
 WORDS = ("title", "abstract", "brief")
 LAST = 25
@@ -361,7 +362,7 @@ class Controller(Stored, Files, Links):
             return self.load(name)
         hits = [row["n"] for row in self.summaries() if not row["deleted"] and name.lower() in row["title"].lower()]
         if len(hits) != 1:
-            raise Refused(f"{'no' if not hits else len(hits)} {self.type}{'' if len(hits) == 1 else 's'} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
+            raise Refused(f"{'no' if not hits else len(hits)} {noun(len(hits), self.type)} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
         return self.load(hits[0])
 
 

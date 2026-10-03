@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import controllers.types as types_module
@@ -13,12 +12,8 @@ from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from controllers.marks import lasting
+from engine.wording import slugged
 
-SLUG = re.compile(r"[^a-z0-9]+")
-
-
-def slugged(name: str) -> str:
-    return SLUG.sub("-", name.lower()).strip("-")[:30]
 
 
 def kickoff(row, folder: Path, todo: int) -> str:
@@ -45,10 +40,10 @@ class Helpers(Controller):
             raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
         if not model.strip():
             raise Refused("a helper's model is always named: --model <model>")
-        slug = slugged(name)
+        slug = slugged(name, limit=30)
         if not slug:
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")
-        place = Environments(self.record, actor=SYSTEM).unused(slugged(f"{self.record.env}-{slug}"), ": finish that helper first, or choose another name")
+        place = Environments(self.record, actor=SYSTEM).unused(slugged(f"{self.record.env}-{slug}", limit=30), ": finish that helper first, or choose another name")
         row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place)
         folder = self.record.root.resolve().parent
         if worktree:

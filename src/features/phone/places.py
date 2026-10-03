@@ -1,4 +1,3 @@
-import os
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,9 +6,8 @@ from typing import TypedDict
 from controllers.types import CONTROLLERS, Agents, Environments, Works
 from engine.color import identity
 from engine.record import Record
-from engine.sessions import Sessions
-from engine.stored import read_json
-from engine.viewer import known
+from engine.sessions import Sessions, alive
+from engine.viewer import known, last
 from features.status_bar.bar import current
 from resources.base import SYSTEM, USER
 from surfaces.agent_state import agent_state
@@ -69,14 +67,7 @@ def shown(root: Path) -> tuple[str, ...]:
 
 
 def running(root: Path) -> bool:
-    pid = read_json(root / "runtime" / "viewer.json", dict, {}).get("pid")
-    if not isinstance(pid, int):
-        return False
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    return True
+    return alive(last(root).pid)
 
 
 def throwaway(root: Path) -> bool:

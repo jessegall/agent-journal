@@ -46,8 +46,7 @@ def held(root: Path, env: str, session: str, plugin: str, why: str) -> None:
 
 
 def nudged(record, journal, plugin: str, session: str, text: str, private: bool) -> None:
-    rows = Agents(record, actor=SYSTEM)
-    row = next((r for r in rows._every() if r.title == session), None) if session else rows.primary()
+    row = Agents(record, actor=SYSTEM)._session_or_primary(session)
     if row:
         journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=text, plugin=plugin)
 
@@ -69,7 +68,7 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
 
 def carded(record, session: str, plugin: str, look: Look, brief: str, page: str = "") -> None:
     agents = Agents(record, actor=SYSTEM)
-    agent = next((r for r in agents._every() if r.title == session), None) if session else agents.primary()
+    agent = agents._session_or_primary(session)
     if not agent:
         return
     agents.card(agent.n, plugin=plugin, label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,

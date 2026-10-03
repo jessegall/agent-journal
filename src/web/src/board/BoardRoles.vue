@@ -31,8 +31,8 @@ const summary = computed(() => (working.value.length ? `${working.value.length} 
 const box = ref(null);
 const measure = ref(null);
 const fits = useFitCount(box, measure, chips, MORE);
-const shown = computed(() => chips.value.slice(0, fits.value));
-const hidden = computed(() => chips.value.length - shown.value.length);
+const fitting = computed(() => chips.value.slice(0, fits.value));
+const hidden = computed(() => chips.value.length - fitting.value.length);
 const anchor = ref(null);
 const show = (e) => {
     anchor.value = anchor.value === e.currentTarget ? null : e.currentTarget;
@@ -54,7 +54,7 @@ const show = (e) => {
             <template v-if="!chips.length">
                 <span class="board-roles-quiet">No role is working right now</span>
             </template>
-            <template v-for="chip in shown" :key="chip.key">
+            <template v-for="chip in fitting" :key="chip.key">
                 <BoardRoleChip :title="chip.title" :n="chip.n" :task="chip.task" :env="chip.env" />
             </template>
             <template v-if="hidden">

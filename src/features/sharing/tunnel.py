@@ -1,7 +1,6 @@
 import json
 import os
 import platform
-import re
 import secrets
 import shutil
 import subprocess
@@ -12,6 +11,7 @@ from pathlib import Path
 from engine.stored import read_json, write_json
 from typing import TypedDict
 from engine.given import given
+from engine.wording import slugged
 
 TUNNEL_FILE = "sharing.json"
 OWNED = "domain is owned by another user"
@@ -25,7 +25,7 @@ def subdomain(root: Path) -> str:
     kept = read_json(Path(root) / TUNNEL_FILE, dict, {})
     if kept.get("subdomain"):
         return kept["subdomain"]
-    prefix = re.sub(r"[^a-z0-9]+", "-", Path(root).resolve().parent.name.lower())[:20].strip("-") or "journal"
+    prefix = slugged(Path(root).resolve().parent.name, limit=20) or "journal"
     name = f"{prefix}-{secrets.token_hex(NAME_BYTES)}"
     write_json(Path(root) / TUNNEL_FILE, {**kept, "subdomain": name})
     return name

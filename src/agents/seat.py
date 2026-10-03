@@ -4,7 +4,7 @@ from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS
 from engine.stored import write_json
 from engine.proc import git
-from engine import runtime
+from engine.seats import seat_file
 from controllers.types import Agents
 from resources.base import SYSTEM
 from resources.types import AgentRow
@@ -103,6 +103,6 @@ class Seat:
         self.branch()
         self.crew()
         last = self.agent.driver.last_report()
-        write_json(runtime.session_file(self.record.root, self.agent.driver.session, "seat.json"), {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
+        write_json(seat_file(self.record.root, self.agent.driver.session), {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": self.why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})

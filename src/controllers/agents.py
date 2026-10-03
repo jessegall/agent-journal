@@ -48,6 +48,9 @@ class Agents(Controller):
             self._refuse("name the task to stop")
         return self._stopping(int(n), task=task.strip(), description=description.strip() or task.strip())
 
+    def _session_or_primary(self, session: str):
+        return self._titled(session) if session else self.primary()
+
     def primary(self):
         standing = [self.load(row["n"]) for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
         return max(standing, key=lambda agent: float(agent.at), default=None)

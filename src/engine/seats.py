@@ -7,6 +7,8 @@ from engine.stored import read_json
 from engine import runtime
 from engine.fields import Loaded
 
+SEAT = "seat.json"
+
 ONLINE_FOR = 5.0
 
 
@@ -69,6 +71,10 @@ class LiveAgent:
         return asdict(self)
 
 
+def live_session(root: Path, session: str, within: float = ONLINE_FOR) -> tuple[Seat, LiveAgent] | None:
+    return next((pair for pair in live(root, within) if pair[1].session == session), None)
+
+
 def live(root: Path, within: float = ONLINE_FOR) -> list[tuple[Seat, LiveAgent]]:
     now = time.time()
     sessions = Sessions(root)
@@ -86,9 +92,17 @@ def terminal_of(root: Path, session: str) -> str:
     return max(matching, key=lambda seat: seat.at).terminal if matching else ""
 
 
+def seat_file(root: Path, session: str) -> Path:
+    return runtime.session_file(root, session, SEAT)
+
+
+def read_seat(root: Path, session: str) -> Seat:
+    return Seat.of(read_json(seat_file(root, session), dict, {}), session)
+
+
 def seats(root: Path, within: float | None = None) -> list[Seat]:
     found, now = [], time.time()
-    for path in runtime.sessions(root).glob("*/seat.json"):
+    for path in runtime.sessions(root).glob(f"*/{SEAT}"):
         try:
             if within is not None and now - path.stat().st_mtime > within:
                 continue

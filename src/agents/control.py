@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, Notices
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUME, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
-from engine.seats import live
+from engine.seats import live_session
 from providers.drivers import AGENT_COMMAND
 from agents.terminal import relaunch as restart
 from providers import DRIVERS, PROVIDERS
@@ -53,9 +53,10 @@ def choice(provider: str, action: str, value: str, current_model: str) -> dict:
 
 
 def online(root: Path, env: str, session: str) -> dict:
-    found = next((agent for _, agent in live(Path(root), within=RELOAD_GRACE) if agent.session == session), None)
-    if not found:
+    pair = live_session(Path(root), session, within=RELOAD_GRACE)
+    if not pair:
         raise Refused(f"session {session!r} is not online")
+    found = pair[1]
     if found.environment != env:
         raise Refused(f"session {session!r} belongs to environment {found.environment!r}")
     return found

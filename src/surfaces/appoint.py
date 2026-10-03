@@ -4,7 +4,7 @@ from pathlib import Path
 from controllers.types import Agents, Environments
 from resources.types import STOPPED
 from engine.record import Record
-from engine.seats import live
+from engine.seats import live, live_session
 from engine.sessions import Sessions
 from resources.base import Refused, SYSTEM
 
@@ -15,7 +15,7 @@ def online(root: Path) -> list[dict]:
 
 def appoint(root: Path, env: str, session: str) -> dict:
     root = Path(root)
-    found = next((pair for pair in live(root) if pair[1].session == session), None)
+    found = live_session(root, session)
     if not found:
         raise Refused(f"session {session!r} is not online")
     seat, candidate = found

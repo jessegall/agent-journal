@@ -13,18 +13,9 @@ from engine.package import entry
 from engine.record import Record
 from features.session_recording.demo import BRANCHES, branched, leaks, scrubbed
 from features.session_recording.resource import Recording
+from engine.sessions import alive
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
-
-
-def alive(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    return True
 
 
 class Recordings(Controller):
