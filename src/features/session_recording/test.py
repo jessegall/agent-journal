@@ -87,6 +87,7 @@ console.log(JSON.stringify({project: standIn.moment.manifest.project, first, las
 """
 
 
+@pytest.mark.lessons
 def test_every_scenario_script_plays_every_branch_through_this_journal_without_a_hold(tmp_path):
     sys.path.insert(0, str(REPOSITORY))
     from scripts.demo.record import SCENARIOS, played
@@ -159,6 +160,7 @@ def served(folder: Path):
         server.shutdown()
 
 
+@pytest.mark.lessons
 def test_a_visitor_plays_every_branch_of_every_shipped_scenario_to_the_end_at_a_hundred_times_speed(tmp_path):
     sys.path.insert(0, str(REPOSITORY))
     from scripts.demo.record import SCENARIOS
