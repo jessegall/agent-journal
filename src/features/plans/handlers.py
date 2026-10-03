@@ -9,7 +9,7 @@ from features.nudges import MINUTE, Sent
 from features.plans.progress import catch_up, current_phase
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import passes_checkpoints
-from features.work_tracking.next import ready
+from features.work_tracking.next import asked, ready
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 
@@ -148,7 +148,7 @@ def blocked_plans(context, agent) -> list[Sent]:
         if plan.status != ACTIVE:
             continue
         mine = {n for phase in plan.phases for n in phase[PHASE.todos]}
-        held = [t for t in todos._standing() if t.n in mine and (t.blocked or todos.waits(t))]
+        held = [t for t in todos._standing() if t.n in mine and (t.blocked or todos.waits(t)) and not asked(context.record, t)]
         if held:
             found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": "; ".join(f"to-do {t.n}, {t.title}" for t in held)}))
     return found

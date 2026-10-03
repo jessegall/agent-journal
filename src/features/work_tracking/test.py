@@ -210,6 +210,9 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     todos.after(waiting.n, str(extra.n))
     stuck = todos.create("the migration")
     todos.block(stuck.n, "the user decides the schema")
+    decided = todos.create("the pricing")
+    todos.block(decided.n, "the user picks a price")
+    todos.ask(decided.n, "Which price, 5 or 7?")
     todos.complete(base.n, how="done")
     assert (todos.waits(todos.load(waiting.n)), any("is unblocked" in n for n in nudges(record))) == ([f"todo:{extra.n}"], False), \
         "one of two rows closed: it still waits on the other, and nothing is said"
@@ -221,6 +224,7 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     todos.complete(extra.n, how="done")
     blocked = f"todo {stuck.n}, the migration, is still blocked - is it still?"
     assert nudges(record).count(blocked) == 1, "a row blocked from outside is asked about every second closed to-do, not in between"
+    assert not any(f"todo {decided.n}," in n for n in nudges(record)), "a row that already waits on a question is not asked about again"
     todos.complete(todos.create("one more").n, how="done")
     assert nudges(record).count(blocked) == 1, "a row just asked about is not asked again within the minute, however many close"
     record.state("work_tracking").set("asked", {})
