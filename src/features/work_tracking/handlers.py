@@ -12,6 +12,7 @@ from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
 from features.work_tracking.next import next
+from providers import PROVIDERS
 from resources.types import Work
 from features.status_bar.runs import command_runs
 
@@ -155,6 +156,8 @@ class TrackFiles(Handler):
 
 
 POLLED = 3
+POLLING = "polling"
+POLLING_NO_WAKE = "polling, no wake"
 
 
 class NameRepeatedChecks(Handler):
@@ -163,7 +166,8 @@ class NameRepeatedChecks(Handler):
         if len(shell) < POLLED or len(set(shell)) > 1 or any(w.awaiting for w in working(context)):
             return
         if context.once("polled", shell[-1]):
-            context.agent.whisper("polling", times=POLLED, command=shell[-1][:80])
+            provider = PROVIDERS.get(context.agent.row.provider)
+            context.agent.whisper(POLLING if provider and provider.background_wakes else POLLING_NO_WAKE, times=POLLED, command=shell[-1][:80])
 
 
 class ClearWaitOnActivity(Handler):

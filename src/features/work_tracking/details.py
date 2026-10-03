@@ -159,6 +159,15 @@ class WorkDetails(FeatureDetails):
             """,
         ),
         Line(
+            name="polling, no wake",
+            title="you ran the same check {{times}} times in a row - {{command}}",
+            brief="""
+                if you are waiting for something to change, say journal work await "<what you wait for>" and end
+                your turn: the journal types to you every five minutes to look again. A background command ending
+                does not wake you, so that look is when you see whether it is done.
+            """,
+        ),
+        Line(
             name="wait cleared",
             title="your wait for {{awaiting}} is over, because you are working again",
             brief='say journal work await "<what you wait for>" again if you are still only waiting',

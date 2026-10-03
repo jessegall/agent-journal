@@ -1,11 +1,10 @@
 import time
 
-from controllers.types import Todos, Works
 from resources.base import AGENT, USER
 from engine.gates import held
 from tests.kit import idle, nudges, report
 from tests.conftest import fresh, refused
-from controllers.types import Questions, Todos, Works
+from controllers.types import Nudges, Questions, Todos, Works
 from features.work_tracking.auto import QUIET_FOR, still_there
 from features.work_tracking.next import next, ready
 from resources.base import AGENT, USER
@@ -224,6 +223,14 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
         report(record, "working", "PostToolUse", commands=[check] * i)
     polling = [n for n in nudges(record) if "same check" in n]
     assert polling == ["you ran the same check 3 times in a row - tail -3 build.log"], "the third identical check in a row is named once, pointing at await"
+    wakes = {}
+    for provider in ("claude", "codex"):
+        place = fresh()
+        Works(place, actor=AGENT).create("the release")
+        for i in range(1, 4):
+            report(place, "working", "PostToolUse", commands=[check] * i, provider=provider)
+        wakes[provider] = [("tells you itself when it ends" in n.brief, "does not wake you" in n.brief) for n in Nudges(place).all() if "same check" in n.title]
+    assert wakes == {"claude": [(True, False)], "codex": [(False, True)]}, "each provider is told what wakes it"
     works.action("await")("the CI run on main")
     Todos(record, actor=USER).create("next up")
     record.features = {**record.features, "work_tracking.auto": True}
