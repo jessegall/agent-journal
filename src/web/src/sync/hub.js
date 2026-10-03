@@ -2,7 +2,7 @@ import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {usePoll} from "../poll.js";
-import {ago} from "../format/time.js";
+import {ago, span} from "../format/time.js";
 import {counted} from "../format/number.js";
 import {stateOf} from "../layout/statusline.js";
 import {readSummary} from "./summary.js";
@@ -101,6 +101,16 @@ export const planMeter = (p) => ({
     busy: building(p),
     tone: "muted",
 });
+
+export function idleSince(e) {
+    if (envState(e) !== "idle" || !e.agent || !e.agent.at || (e.work && e.work.awaiting)) return 0;
+    return e.agent.at;
+}
+
+export function idleNote(e, now) {
+    const since = idleSince(e);
+    return since ? `for ${span(now - since)}` : "";
+}
 
 export function agentLine(e) {
     if (!e.agent || envState(e) === "stopped") return "";
