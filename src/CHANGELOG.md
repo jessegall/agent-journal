@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.243.0 — [!internal] is retired
+
+**Agents are no longer taught `[!internal]`, and the journal no longer obeys it.** Since 2.242.0 the journal keeps
+a bare acknowledgement of its own lines out of the chat by itself, so the tag has nothing left to do. An agent that
+still writes it out of habit has the tag taken off like the other retired tags, and its words show as a plain
+message. The etiquette reminder now says a turn for a journal line needs no words: act on it, or say once what you
+wait on, and carry on.
+
 ## 2.242.0 — the chat without bare acknowledgements
 
 **A turn that only acknowledges a journal line no longer fills the chat.** When the journal hands the agent a line

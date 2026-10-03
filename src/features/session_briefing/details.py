@@ -23,11 +23,6 @@ class StartDetails(FeatureDetails):
         Line(
             name="ready",
             title="the journal is ready on {{env}}",
-            brief="say hello in the chat in plain words, never [!internal], so the journal's messages reach you",
-        ),
-        Line(
-            name="ready, untagged",
-            title="the journal is ready on {{env}}",
             brief="say hello in the chat in plain words, so the journal's messages reach you",
         ),
     ]

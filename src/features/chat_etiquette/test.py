@@ -45,12 +45,5 @@ def test_every_twentieth_journal_line_reminds_the_agent_of_chat_etiquette():
     assert not reminded(), "nineteen journal lines pass without a reminder"
     ran.announce(record, agent.n, ran.DELIVERED, "todo 5 next")
     assert len(reminded()) == 1, "the twentieth reminds the agent that a journal line is acted on or noted, never answered in the chat"
-    briefs = {}
-    for provider in ("claude", "codex"):
-        place = fresh()
-        report(place, "working", "PreToolUse", provider=provider)
-        row = Agents(place, actor="system").by_session("claude-1")
-        for _ in range(20):
-            ran.announce(place, row.n, ran.DELIVERED, "todo 5 next")
-        briefs[provider] = [("[!internal]" in n.brief, "write nothing" in n.brief) for n in Nudges(place).all() if n.title.startswith("chat etiquette")]
-    assert briefs == {"claude": [(True, False)], "codex": [(False, True)]}, "Codex, whose message ends its turn, is never taught [!internal]"
+    told = [n.brief for n in Nudges(record).all() if n.title.startswith("chat etiquette")][0]
+    assert ("needs no words" in told, "[!internal]" in told) == (True, False), "it says a turn for a journal line needs no words, and teaches no tag"
