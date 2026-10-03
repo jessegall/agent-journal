@@ -461,6 +461,7 @@ class Hook(Loaded):
     inbox: str = ""
     last_message: str = ""
     agent: str = ""
+    prompt: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod

@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
+from providers.base import JOURNAL, MARK
 from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted
@@ -13,7 +14,6 @@ from engine import runtime
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
 
 ENTER_AFTER = 0.3
-MARK = "[journal]"
 AGENT_COMMAND = "/"
 RECHECK, RESUBMITS = 1.0, 3
 SCREEN_TAIL, LINE_START = 16384, 40
@@ -27,7 +27,6 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 BETWEEN, FLOOD = 5.0, 20
 REPORT_FOR = 0.5
-JOURNAL = "journal"
 
 
 def joined(text: str) -> str:

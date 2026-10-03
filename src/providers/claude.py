@@ -210,6 +210,9 @@ class Claude(Provider):
         servers[SERVER] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
+    def journal_typed(self, prompt: str) -> bool:
+        return CHANNEL_MARK in prompt or super().journal_typed(prompt)
+
     def wire(self, project: Path, command: str) -> Path:
         self.shared(project)
         wired = super().wire(project, command)

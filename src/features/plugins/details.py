@@ -78,6 +78,7 @@ class PluginsDetails(FeatureDetails):
         ),
         Line(
             name="failing",
+            reply_kept=True,
             title="Plugin {{name}} is failing",
             brief="{{why}}\nIts log is {{log}}.",
         ),

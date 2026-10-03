@@ -55,6 +55,7 @@ class PlansDetails(FeatureDetails):
     lines = [
         Line(
             name="still",
+            reply_kept=True,
             title="plan {{n}}, {{title}}, is running and nothing has moved for {{minutes}} minutes",
             brief="""
                 carry on with it now: {{rows}}. If a row is stuck or waits on something, leave it and work
@@ -64,6 +65,7 @@ class PlansDetails(FeatureDetails):
         ),
         Line(
             name="blocked",
+            reply_kept=True,
             title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",
             brief="""
                 {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock

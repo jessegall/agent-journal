@@ -108,6 +108,7 @@ class WorkDetails(FeatureDetails):
         ),
         Line(
             name="still blocked",
+            reply_kept=True,
             title="todo {{n}}, {{title}}, is still blocked - is it still?",
             brief="""
                 it is blocked because: {{why}}. If it is not any more, journal todo unblock {{n}}. If it waits
@@ -159,6 +160,7 @@ class WorkDetails(FeatureDetails):
         ),
         Line(
             name="carry on",
+            reply_kept=True,
             title="you stopped {{minutes}} minutes ago with work {{n}}, {{title}}, in hand",
             brief="""
                 carry on with it now. If it waits on something outside your hands, say journal work await
@@ -191,6 +193,7 @@ class WorkDetails(FeatureDetails):
         ),
         Line(
             name="still awaiting",
+            reply_kept=True,
             title="check {{awaiting}} now - you have waited {{minutes}} min",
             brief="""
                 look at the thing itself: the background shell's output, the process, the run's

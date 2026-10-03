@@ -59,11 +59,13 @@ class LongCommandsDetails(FeatureDetails):
         ),
         Line(
             name=RUN_ENDED,
+            reply_kept=True,
             title="the command you left running {{outcome}} - {{command}}",
             brief="look at what it printed and carry on with the work it was for",
         ),
         Line(
             name=RUN_OPEN,
+            reply_kept=True,
             title="you stopped while a command you started still runs - {{command}}",
             brief="""
                 you are told when it ends. Say journal work await "<what you wait for>" to wait for it, or stop it if
@@ -72,6 +74,7 @@ class LongCommandsDetails(FeatureDetails):
         ),
         Line(
             name=RUN_STALLED,
+            reply_kept=True,
             title="a command you left running has run for {{minutes}} minutes - {{command}}",
             brief="check that it still moves; stop it if it hangs, and carry on with what you can do meanwhile",
         ),

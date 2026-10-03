@@ -45,6 +45,7 @@ class TicketsDetails(FeatureDetails):
     lines = [
         Line(
             name="plan_checkpoint",
+            reply_kept=True,
             while_waiting=True,
             title="the plan of ticket {{ticket}}, {{title}}, stopped at a checkpoint",
             brief="read where it stands with journal --env {{env}} plan progress {{plan}}; when the phase before it is done as it should be, "
@@ -67,6 +68,7 @@ class TicketsDetails(FeatureDetails):
         ),
         Line(
             name="ticket_asks",
+            reply_kept=True,
             while_waiting=True,
             title="ticket {{ticket}}, {{title}}, asks question {{question}} - {{text}}",
             brief="answer it when it is yours to decide with journal --env {{env}} question answer {{question}} --how \"<choice>\" "
@@ -74,6 +76,7 @@ class TicketsDetails(FeatureDetails):
         ),
         Line(
             name="ticket_awaits",
+            reply_kept=True,
             while_waiting=True,
             title="ticket {{ticket}}, {{title}}, is waiting - {{text}}",
             brief="if it waits on you, give it what it needs with journal ticket tell {{ticket}} \"<what>\"; if it waits on the user, ask them",
@@ -92,6 +95,7 @@ class TicketsDetails(FeatureDetails):
         ),
         Line(
             name="orchestrator_accepts_waits",
+            reply_kept=True,
             while_waiting=True,
             title="ticket {{ticket}}, {{title}}, proposes waits on other tickets for you to decide",
             brief="read them with journal ticket show {{ticket}}; keep the ones that hold with journal ticket accept_dependencies {{ticket}} "
@@ -99,6 +103,7 @@ class TicketsDetails(FeatureDetails):
         ),
         Line(
             name="orchestrator_confirms_drafts",
+            reply_kept=True,
             while_waiting=True,
             title="ticket {{ticket}}, {{title}}, is a draft waiting for you to confirm it",
             brief="when it is work the board should do, confirm it with journal ticket confirm {{ticket}} --why \"<reason>\"; otherwise "

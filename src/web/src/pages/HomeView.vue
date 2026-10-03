@@ -1,4 +1,5 @@
 <script setup>
+import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
 import AgentGrid from "../board/AgentGrid.vue";
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -19,7 +20,7 @@ defineProps({
     view: {type: String, required: true},
     flush: Boolean,
     feed: {type: Object, default: null},
-    hidden: {type: Array, default: () => []},
+    hidden: {type: Array, default: () => DEFAULT_HIDDEN},
     level: {type: String, default: DEFAULT_LEVEL},
     floating: Boolean,
 });
