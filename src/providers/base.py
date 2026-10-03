@@ -113,6 +113,7 @@ class BackgroundTasks:
     started: dict[str, float] = field(default_factory=dict)
     ended: dict[str, float] = field(default_factory=dict)
     failed: set[str] = field(default_factory=set)
+    commands: dict[str, str] = field(default_factory=dict)
 
 
 class Provider(ABC):

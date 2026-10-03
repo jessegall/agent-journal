@@ -22,6 +22,7 @@ class Nudge:
     about: Callable
     private: bool = True
     pace: Callable | None = None
+    once: bool = False
 
     def cadence(self, context) -> trigger.Trigger:
         spec = context.feature.cadence(context.record, self.behaviour)
@@ -30,6 +31,8 @@ class Nudge:
     def due(self, context, agent) -> list[Sent]:
         if not context.feature.on(context.record, self.behaviour):
             return []
+        if self.once:
+            return [found for found in self.about(context, agent) if context.once(self.line, found.key)]
         spec = self.cadence(context)
         return [found for found in self.about(context, agent) if context.every(self.behaviour, found.key, spec)]
 
