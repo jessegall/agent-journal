@@ -1,12 +1,16 @@
 <script setup>
 import {age} from "../format/time.js";
+import ShareQuestion from "./ShareQuestion.vue";
 
 defineProps({
+    n: {type: Number, required: true},
     name: {type: String, required: true},
     text: {type: String, required: true},
     created: {type: Number, required: true},
     waiting: {type: Boolean, default: false},
     replies: {type: Array, default: () => []},
+    options: {type: Array, default: () => []},
+    answer: {type: String, default: ""},
 });
 
 const hue = (name) => [...name].reduce((sum, ch) => (sum * 31 + ch.charCodeAt(0)) % 360, 7);
@@ -21,10 +25,13 @@ const hue = (name) => [...name].reduce((sum, ch) => (sum * 31 + ch.charCodeAt(0)
                 <span class="when">{{ waiting ? "sending" : age(created) }}</span>
             </header>
             <p class="text">{{ text }}</p>
+            <template v-if="options.length">
+                <ShareQuestion :n="n" :options="options" :answer="answer" />
+            </template>
             <template v-if="replies.length">
                 <div class="replies">
                     <template v-for="reply in replies" :key="reply.n">
-                        <ShareComment :name="reply.name" :text="reply.text" :created="reply.created" />
+                        <ShareComment :n="reply.n" :name="reply.name" :text="reply.text" :created="reply.created" :options="reply.options" :answer="reply.answer" />
                     </template>
                 </div>
             </template>

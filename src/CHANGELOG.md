@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.234.0 — the agent asks a visitor a question they answer with a click
+
+**Under a visitor's comment on a shared page, the agent can ask a question with options**: journal share ask
+<comment n> "<question>" --options "<option>|<option>". The page shows the options as buttons under the question;
+the visitor picks one, the page shows it as answered, and the agent hears the pick. A question is answered
+once, and only with one of its options.
+
 ## 2.233.0 — a running plan's blocked to-dos are looked at again on a timer
 
 **While a plan runs with blocked to-dos, the agent is asked to check whether each is still blocked**, both on a

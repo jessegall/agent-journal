@@ -5,9 +5,9 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import TextInput from "../kit/TextInput.vue";
 import {remember, remembered} from "../composables/remembered.js";
+import {NAME_KEY} from "./visitor.js";
 import {counted} from "../format/number.js";
 
-const NAME_KEY = "shared-comment-name";
 const props = defineProps({about: {type: String, required: true}, sent: {type: Array, required: true}, count: {type: Number, default: 0}});
 const emit = defineEmits(["update:sent", "show"]);
 const name = ref(remembered(NAME_KEY, ""));
@@ -37,7 +37,7 @@ async function send() {
     if (!text || !name.value.trim() || sending.value) return;
     error.value = "";
     sending.value = true;
-    const waiting = {n: -Date.now(), about: props.about, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true, replies: []};
+    const waiting = {n: -Date.now(), about: props.about, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true, replies: [], options: [], answer: ""};
     emit("update:sent", [...props.sent, waiting]);
     draft.value = "";
     try {

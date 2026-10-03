@@ -22,7 +22,7 @@ from features.format import SHARED, formatted
 from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
-from resources.base import AGENT, SYSTEM, USER, Refused
+from resources.base import AGENT, SYSTEM, USER, Refused, titled
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": 3600, "d": 86400}
@@ -62,11 +62,13 @@ class SharedComment:
     text: str
     created: float
     replies: tuple = ()
+    options: tuple = ()
+    answer: str = ""
 
     @classmethod
     def of(cls, comment, about: str, replies: tuple = ()) -> "SharedComment":
         name = "Agent" if comment.seen[:1] == [AGENT] else comment.data["visitor"]
-        return cls(comment.n, about, name, comment.brief, comment.created, replies)
+        return cls(comment.n, about, name, comment.brief, comment.created, replies, tuple(comment.data.get("options", ())), comment.data.get("answer", ""))
 
 
 def scoped(text: str, scope: set[str]) -> str:
@@ -128,6 +130,30 @@ class Shares(Controller):
             raise Refused("only the user opens a share: it waits for their Accept in the chat")
         return self.update(int(n), approved=True)
 
+    def ask(self, n: int, question: str, options: str):
+        from controllers.types import Comments
+        chosen = [option.strip() for option in options.split("|") if option.strip()]
+        if len(chosen) < 2:
+            raise Refused('a question offers two or more options: --options "Yes, both shifts|Only the day shift"')
+        comments = Comments(self.record, actor=self.actor)
+        return comments.create(titled(question), brief=question, about=comments.load(n).ref, options=chosen)
+
+    def _visitor_answer(self, share, n: int, name: str, choice: str):
+        from controllers.types import Comments, Nudges
+        asked = next((said for c in self._shared_comments(share, self._scope(share)) for said in (c, *c.replies) if said.n == n), None)
+        if asked is None or not asked.options:
+            raise Refused("that question is not on this link")
+        if asked.answer:
+            raise Refused("that question is answered")
+        if choice not in asked.options:
+            raise Refused("pick one of the question's options")
+        name = visitor_name(name)
+        record = self._home(share)
+        made = Comments(record, actor=SYSTEM).update(n, answer=choice, answered_by=name)
+        Nudges(record, actor=SYSTEM)._to_primary(titled(f"{name} answered your question in comment {n}: {choice}"),
+                                                 "they picked it on the shared page; carry on with that answer")
+        return made
+
     def agree(self, n: int, words: str) -> str:
         if " ".join(str(words).split()) != AGREEMENT:
             raise Refused(f'the words must be exactly: "{AGREEMENT}"')
@@ -155,7 +181,7 @@ class Shares(Controller):
         about.save(about.load(n), "commented", comment=made.n)
         return made
 
-    def _shared_comments(self, share, scope: set[str]) -> list[dict]:
+    def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
         from controllers.types import Comments
         comments = Comments(self._home(share), actor=SYSTEM)
         rows = [row for row in comments.summaries() if not row["deleted"]]
@@ -171,7 +197,7 @@ class Shares(Controller):
         for c in said:
             on = next(ref for ref in c.refs if ref in scope)
             shown.append(SharedComment.of(c, on, tuple(SharedComment.of(r, on) for r in agents if c.ref in r.refs)))
-        return [asdict(c) for c in shown]
+        return shown
 
     def _ask_to_open(self, share, target) -> None:
         opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
@@ -331,7 +357,7 @@ class Shares(Controller):
         described = described_types()
         kinds = {ref.partition(":")[0] for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
-                "comments": self._shared_comments(share, scope) if share.comments else [],
+                "comments": [asdict(c) for c in self._shared_comments(share, scope)] if share.comments else [],
                 "timeline": self._timeline(share, scope),
                 "types": {kind: described[kind] for kind in kinds if kind in described}}
 

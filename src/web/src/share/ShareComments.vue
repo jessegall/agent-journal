@@ -15,7 +15,7 @@ defineProps({comments: {type: Array, default: () => []}});
                 <p class="empty">No comments yet. Leave the first one with the bar at the bottom.</p>
             </template>
             <template v-for="c in comments" :key="c.n">
-                <ShareComment :name="c.name" :text="c.text" :created="c.created" :waiting="c.waiting" :replies="c.replies" />
+                <ShareComment :n="c.n" :name="c.name" :text="c.text" :created="c.created" :waiting="c.waiting" :replies="c.replies" :options="c.options" :answer="c.answer" />
             </template>
         </section>
     </div>

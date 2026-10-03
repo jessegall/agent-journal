@@ -4,13 +4,21 @@ export async function sharedData() {
     return got.json();
 }
 
-export async function sendComment(about, name, text) {
-    const got = await fetch("./comment", {
+async function posted(path, given, failed) {
+    const got = await fetch(path, {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-Shared-Comment": "1"},
-        body: JSON.stringify({about, name, text}),
+        body: JSON.stringify(given),
     });
     const body = await got.json().catch(() => ({}));
-    if (!got.ok) throw new Error(body.error || "The comment did not go through");
+    if (!got.ok) throw new Error(body.error || failed);
     return body;
+}
+
+export function sendComment(about, name, text) {
+    return posted("./comment", {about, name, text}, "The comment did not go through");
+}
+
+export function sendAnswer(comment, name, choice) {
+    return posted("./answer", {comment, name, choice}, "The answer did not go through");
 }
