@@ -133,6 +133,10 @@ class Provider(ABC):
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
+    def briefing_limit(cls) -> int:
+        return 0
+
+    @classmethod
     def control_options(cls, current_model: str) -> dict:
         return cls.controls
 

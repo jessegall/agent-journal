@@ -8,6 +8,7 @@ from features.session_briefing.start import start_block
 from features.journal_laws.policy import BEGIN, brief
 from providers import PROVIDERS
 from tests.conftest import fresh
+from tests.kit import nudges, report
 
 
 def test_the_law_is_fixed_on_and_carried_by_every_start():
@@ -23,15 +24,15 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     record = fresh()
     project = record.root.parent
     (project / "CLAUDE.md").write_text("# Kept\n")
-    assert [f.name for f in brief(project)] == ["AGENTS.md", "CLAUDE.md"], "the briefing writes both agent files"
+    assert [f.name for f in brief(project, record).written] == ["AGENTS.md", "CLAUDE.md"], "the briefing writes both agent files"
     assert (project / "CLAUDE.md").read_text().startswith("# Kept\n") is True, "the briefing preserves project text"
     (project / "relative").mkdir()
     with chdir(project / "relative"):
-        brief(Path("."))
+        brief(Path("."), record)
     assert (project / "relative" / "AGENTS.md").read_text().splitlines()[0] == f"# {(project / 'relative').name}", \
         "a relative project path still names its briefing"
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text().replace("least expensive", "edited"))
-    brief(project)
+    brief(project, record)
     assert ((project / "CLAUDE.md").read_text().count(BEGIN), "edited" in (project / "CLAUDE.md").read_text()) == (1, False), \
         "the managed block is restored once"
 
@@ -179,3 +180,16 @@ def test_the_naming_law_follows_the_chosen_style():
     record.set_setting("journal_laws", {"cartoon_names": True})
     assert "a cartoon character" in start_block(record) and "Dora the Explorer" in dict((law.name, law.reason) for law in laws(record))["L5"], \
         "with cartoon names on, the law every session is handed asks for a cartoon character"
+
+
+def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band():
+    record = fresh()
+    agents_md = record.root.parent / "AGENTS.md"
+    agents_md.write_text("x" * 200_000)
+    report(record, "working", "PostToolUse")
+    report(record, "working", "PostToolUse")
+    assert [n for n in nudges(record) if n.startswith("AGENTS.md is")] == [f"AGENTS.md is 200,000 bytes and Codex reads only its first {PROVIDERS['codex'].briefing_limit():,}"], \
+        "the file past Codex's limit is told once"
+    agents_md.write_text("x" * 210_000)
+    report(record, "working", "PostToolUse")
+    assert len([n for n in nudges(record) if n.startswith("AGENTS.md is")]) == 2, "growing by another band tells it again"

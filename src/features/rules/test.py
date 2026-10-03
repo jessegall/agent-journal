@@ -1,5 +1,5 @@
 from controllers.types import Facts, Nudges, Rules
-from features.journal_laws.policy import brief
+from features.journal_laws.policy import BEGIN, END, brief
 from runner.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER
@@ -68,7 +68,7 @@ def test_standing_rules_are_repeated_at_every_quarter_and_a_struck_rule_drops_ou
     assert [n for n in nudges(record) if "in force" in n][-1] == "1 rule in force, read them", "a struck rule is not said"
 
 
-def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_notices_the_rule():
+def test_inject_and_uninject_change_the_rules_in_the_one_block_and_pin_notices_the_rule():
     record = fresh()
     rules = Rules(record, actor=USER)
     rules.create("name the model on every dispatch", keywords="word")
@@ -76,40 +76,50 @@ def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_noti
     claude_md = record.root.parent / "CLAUDE.md"
     agents_md = record.root.parent / "AGENTS.md"
     claude_md.write_text("# My project\n\nkeep this.\n")
-    agents_md.write_text("# Agents\n\nkeep this too.\n")
+    agents_md.write_text("keep this too.\n")
     rules.inject(1)
-    assert (rules.load(1).injected, claude_md.read_text(), agents_md.read_text()) == \
-        (True, "# My project\n\nkeep this.\n\n<!-- journal rules -->\n# Rules\n\n- name the model on every dispatch\n<!-- /journal rules -->\n",
-         "# Agents\n\nkeep this too.\n\n<!-- journal rules -->\n# Rules\n\n- name the model on every dispatch\n<!-- /journal rules -->\n"), \
-        "inject marks the rule and writes the block under both files"
+    assert (rules.load(1).injected, claude_md.read_text().startswith(f"# My project\n\n{BEGIN}\n"), agents_md.read_text().startswith(f"{BEGIN}\n"),
+            all(path.read_text().endswith(f"## Rules\n\n- name the model on every dispatch\n\n{END}\n\n{kept}\n")
+                for path, kept in ((claude_md, "keep this."), (agents_md, "keep this too.")))) == (True, True, True, True), \
+        "inject puts the rule in the one block, which leads both files under their title"
     rules.update(1, title="name the model on every subagent dispatch")
-    assert all("- name the model on every subagent dispatch\n" in path.read_text() and path.read_text().count("journal rules") == 2 for path in (claude_md, agents_md)) is True, \
-        "a change rewrites both instruction blocks"
+    assert all("- name the model on every subagent dispatch\n" in path.read_text() and path.read_text().count(BEGIN) == 1 for path in (claude_md, agents_md)) is True, \
+        "a change rewrites the one block in both files"
     rules.uninject(1)
-    assert (rules.load(1).injected, claude_md.read_text(), agents_md.read_text()) == \
-        (False, "# My project\n\nkeep this.\n", "# Agents\n\nkeep this too.\n"), "uninject restores both instruction files"
+    assert (rules.load(1).injected, "## Rules" in claude_md.read_text(), claude_md.read_text().endswith(f"{END}\n\nkeep this.\n")) == (False, False, True), \
+        "uninject takes the rule out and keeps the law and the project's text"
     notice = rules.pin(1)
     assert (notice.title, notice.refs, notice.data["link"], notice.data["label"]) == \
         ("name the model on every subagent dispatch", ["rule:1"], "#/t/rule/1", "Open rule"), \
         "pin puts the rule over chat and links it"
     assert rules.pin(1).n == notice.n, "pin keeps one standing notice per rule"
 
-    rules.inject(1)
-    for turn in range(6):
-        brief(record.root.parent)
-        rules.update(1, title=f"name the model on every dispatch, turn {turn % 2}")
-    settled = claude_md.read_text()
-    brief(record.root.parent)
-    rules.update(1, title="name the model on every dispatch, turn 0")
-    rules.update(1, title="name the model on every dispatch, turn 1")
-    assert claude_md.read_text() == settled and "\n\n\n" not in settled and settled.count("<!-- journal rules -->") == 1, \
-        "the rules block and the law block take turns without adding blank lines or a second block"
+
+def test_the_briefing_retires_the_old_blocks_and_leaves_a_file_it_cannot_read_safely():
+    record = fresh()
+    project = record.root.parent
+    Rules(record, actor=USER).inject(Rules(record, actor=USER).create("only rule", keywords="word").n)
+    old = ("# Notes\n\nfirst part.\n\n<!-- BEGIN: agent-journal (auto-generated, run `journal update`) -->\nB1\n<!-- END: agent-journal -->\n\n"
+           "<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->\nL1\n<!-- END: agent-journal law -->\n\nmiddle.\n\n"
+           "<!-- journal rules -->\n# Rules\n\n- old rule\n<!-- /journal rules -->\n\nlast part.\n")
+    (project / "AGENTS.md").write_text(old)
+    (project / "CLAUDE.md").write_text(old)
+    first = brief(project, record)
+    text = (project / "AGENTS.md").read_text()
+    assert (len(first.written), text.startswith(f"# Notes\n\n{BEGIN}\n"), text.endswith(f"- only rule\n\n{END}\n\nfirst part.\n\nmiddle.\n\nlast part.\n"),
+            "B1" in text or "old rule" in text) == (2, True, True, False), "the three old blocks become one block at the head, the project's text kept in order"
+    assert brief(project, record).written == (), "a file already right is not written again"
+
+    left = {"lone": "a\n<!-- journal rules -->\nb\n", "conflicted": "a\n<<<<<<< ours\nb\n=======\nc\n>>>>>>> theirs\n",
+            "newer": "<!-- BEGIN: agent-journal, form 9 (auto-generated, run `journal upgrade`) -->\nx\n<!-- END: agent-journal, form 9 -->\n"}
+    for name, had in left.items():
+        (project / "AGENTS.md").write_text(had)
+        assert ((project / "AGENTS.md").read_text(), len(brief(project, record).left)) == (had, 1), f"a {name} file is left as it is and named"
 
     empty = fresh()
     Rules(empty, actor=USER).inject(Rules(empty, actor=USER).create("only rule", keywords="word").n)
-    assert [(empty.root.parent / name).read_text() for name in ("AGENTS.md", "CLAUDE.md")] == \
-        ["<!-- journal rules -->\n# Rules\n\n- only rule\n<!-- /journal rules -->\n"] * 2, \
-        "no instruction files yet: both get the block"
+    assert [(empty.root.parent / name).read_text().startswith(f"# {empty.root.parent.name}\n\n{BEGIN}\n") for name in ("AGENTS.md", "CLAUDE.md")] == [True] * 2, \
+        "no instruction files yet: both are made with the block under the project's name"
 
 
 def test_a_rule_the_agent_makes_is_sent_back_to_be_read_as_a_ruling_for_the_whole_project():

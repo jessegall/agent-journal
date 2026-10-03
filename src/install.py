@@ -6,7 +6,6 @@ import tarfile
 import subprocess
 import sys
 import hashlib
-import importlib
 import marshal
 import tempfile
 import time
@@ -213,9 +212,11 @@ def configure(project: Path, root: Path) -> list[str]:
         return ["no agent found here: neither Claude nor Codex"]
     written, linked = publish(project, tuple(present))
     done.append(f"{len(written)} skills in {LIBRARY}" + (f", linked from {', '.join(LINKED[a] for a in present if a in LINKED)}" if linked else ""))
-    written = brief(project)
-    done.append(f"the journal's law in {', '.join(f.name for f in written) or 'AGENTS.md and CLAUDE.md'}")
-    written = agent_types(project, Record(root, default_env(root)))
+    record = Record(root, default_env(root))
+    briefing = brief(project, record)
+    done.append(f"the journal's block in {', '.join(f.name for f in briefing.written) or 'AGENTS.md and CLAUDE.md'}")
+    done.extend(briefing.left)
+    written = agent_types(project, record)
     if written:
         done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
@@ -339,14 +340,19 @@ def upgrading(project: Path, root: Path) -> list[str]:
     if newest and installed != newest:
         return done + [f"package refreshed but failed to reach the release: installed {installed or 'nothing'}, not {newest}"]
     if reloaded:
-        finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
-        return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
+        return done + handed_over(project, root)
     done += finish(project, root)
     return done
 
 
 def complete(folder: Path) -> bool:
     return all((folder / name).is_file() for name in PACKAGE_FILES) and all((folder / name).is_dir() for name in PACKED_DIRS)
+
+
+def handed_over(project: Path, root: Path) -> list[str]:
+    finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120,
+                              env={**os.environ, "AGENT_JOURNAL_BOOTSTRAPPED": "1"})
+    return finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"]
 
 
 def release_of(folder: Path) -> str:
@@ -368,6 +374,8 @@ def finish(project: Path, root: Path) -> list[str]:
             failed = str(error)
         shutil.rmtree(temporary, ignore_errors=True)
         done.append(f"package files an older installer did not know: {failed or 'fetched'}")
+        if not failed:
+            return done + handed_over(project, root)
     done += configure(project, root)
     ran = migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
@@ -456,6 +464,7 @@ def heal() -> None:
         refresh(temporary / "package", PACKAGE)
     finally:
         shutil.rmtree(temporary, ignore_errors=True)
+    os.execve(sys.executable, [sys.executable, str(PACKAGE / "install.py"), *sys.argv[1:]], {**os.environ, "AGENT_JOURNAL_HEALED": "1"})
 
 
 class Package(TypedDict):
@@ -496,13 +505,9 @@ def package() -> Package:
 try:
     globals().update(package())
 except ImportError:
-    if __name__ != "__main__":
+    if __name__ != "__main__" or os.environ.get("AGENT_JOURNAL_HEALED"):
         raise
     heal()
-    for name in [name for name in sys.modules if name.split(".")[0] in (*PACKAGE_DIRS, "skills")]:
-        del sys.modules[name]
-    importlib.invalidate_caches()
-    globals().update(package())
 
 if __name__ == "__main__":
     for line in main(sys.argv[1:]):

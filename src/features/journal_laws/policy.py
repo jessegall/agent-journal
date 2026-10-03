@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from providers import PROVIDERS
-from engine.stored import placed, write_text
+from engine.stored import write_text
 
 
 
@@ -47,10 +47,39 @@ def laws(record=None) -> tuple[Law, ...]:
 def cartoon_names(record) -> bool:
     from features.journal_laws.details import LawDetails
     return bool(LawDetails.values(record).cartoon_names)
-BEGIN = "<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->"
-END = "<!-- END: agent-journal law -->"
-BLOCK = re.compile(rf"\n?{re.escape(BEGIN)}.*?{re.escape(END)}\n?", re.DOTALL)
+FORM = 2
+BEGIN = f"<!-- BEGIN: agent-journal, form {FORM} (auto-generated, run `journal upgrade`) -->"
+END = f"<!-- END: agent-journal, form {FORM} -->"
+CURRENT = re.compile(r"\n?<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->\n?", re.DOTALL)
+CONFLICTED = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
+
+
+@dataclass(frozen=True)
+class Retired:
+    begin: str
+    end: str
+
+    @property
+    def pattern(self) -> re.Pattern:
+        return re.compile(rf"\n?{re.escape(self.begin)}.*?{re.escape(self.end)}\n?", re.DOTALL)
+
+    def lone(self, text: str) -> str:
+        found = [marker for marker in (self.begin, self.end) if marker in text]
+        return found[0] if len(found) == 1 else ""
+
+
+RETIRED = (
+    Retired("<!-- BEGIN: agent-journal (auto-generated, run `journal update`) -->", "<!-- END: agent-journal -->"),
+    Retired("<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->", "<!-- END: agent-journal law -->"),
+    Retired("<!-- journal rules -->", "<!-- /journal rules -->"),
+)
+
+
+@dataclass(frozen=True)
+class Briefing:
+    written: tuple[Path, ...] = ()
+    left: tuple[str, ...] = ()
 
 
 def carry(record=None) -> str:
@@ -58,26 +87,56 @@ def carry(record=None) -> str:
     return f"LAWS THE JOURNAL SHIPS, always in force:\n{rows}"
 
 
-def block() -> str:
+def block(record=None, rules: tuple[str, ...] = ()) -> str:
     out = [BEGIN, "", "## The journal's law", "", "These rules ship with the journal and cannot be switched off.", ""]
-    for law in LAWS:
+    for law in laws(record):
         out.extend((f"**{law.name} — {law.text}**", "", law.reason, ""))
+    if rules:
+        out.extend(("## Rules", "", *(f"- {rule}" for rule in rules), ""))
     return "\n".join((*out, END))
 
 
-def brief(project: Path) -> list[Path]:
-    written = []
-    managed = block()
+def injected(record) -> tuple[str, ...]:
+    from controllers.types import Rules
+    from resources.base import SYSTEM
+    return tuple(rule.title for rule in Rules(record, actor=SYSTEM)._standing() if rule.injected)
+
+
+def brief(project: Path, record) -> Briefing:
+    managed = block(record, injected(record))
     title = project.resolve().name
-    names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
-    for name in names:
+    written, left = [], []
+    for name in sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file}):
         target = project / name
         had = target.read_text() if target.is_file() else ""
-        want = placed(had, BLOCK, managed) if had.strip() else f"# {title}\n\n{managed}\n"
+        why = untouchable(had)
+        if why:
+            left.append(f"{name} left as it is: {why}")
+            continue
+        want = leading(had, managed) if had.strip() else f"# {title}\n\n{managed}\n"
         if want != had:
             write_text(target, want)
             written.append(target)
-    return written
+    return Briefing(tuple(written), tuple(left))
+
+
+def untouchable(text: str) -> str:
+    if CONFLICTED.search(text):
+        return "it has merge conflict markers"
+    newer = [int(found.group(1)) for found in CURRENT.finditer(text) if int(found.group(1)) > FORM]
+    if newer:
+        return f"its journal block is form {max(newer)}, newer than this journal's form {FORM}"
+    lone = next((marker for marker in (retired.lone(text) for retired in RETIRED) if marker), "")
+    return f"it has {lone} without its other marker" if lone else ""
+
+
+def leading(had: str, managed: str) -> str:
+    rest = CURRENT.sub("", had)
+    for retired in RETIRED:
+        rest = retired.pattern.sub("", rest)
+    head, _, body = rest.partition("\n") if rest.startswith("# ") else ("", "", rest)
+    parts = (head, managed, body.lstrip("\n"))
+    return "\n\n".join(part for part in parts if part).rstrip("\n") + "\n"
 
 
 NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")
