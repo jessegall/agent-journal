@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.244.0 — clear instructions
+
+**The journal's block now opens with where its lines come first:** how the agent reports, carries on and talks in
+the chat follows the journal; the project's own safety and deploy rules stand; and your own word comes before
+both. A real Codex run followed it on all three counts. **The instruction files are checked for contradictions:** say
+"check the instruction files", or start a session after AGENTS.md or CLAUDE.md changed, and the agent compares them
+with the journal's block, reports where they disagree, and proposes each fix as a suggestion for you to accept. It never
+edits the files itself.
+
 ## 2.243.0 — [!internal] is retired
 
 **Agents are no longer taught `[!internal]`, and the journal no longer obeys it.** Since 2.242.0 the journal keeps

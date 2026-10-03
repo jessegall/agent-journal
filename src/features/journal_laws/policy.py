@@ -1,3 +1,4 @@
+import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -123,6 +124,12 @@ def brief(project: Path, record) -> Briefing:
             write_text(target, want)
             written.append(target)
     return Briefing(tuple(written), tuple(left))
+
+
+def project_text(project: Path) -> str:
+    names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
+    texts = [CURRENT.sub("", (project / name).read_text()) for name in names if (project / name).is_file()]
+    return hashlib.sha1("\0".join(texts).encode()).hexdigest() if texts else ""
 
 
 def untouchable(text: str) -> str:

@@ -35,6 +35,20 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     brief(project, record)
     assert ((project / "CLAUDE.md").read_text().count(BEGIN), "edited" in (project / "CLAUDE.md").read_text()) == (1, False), \
         "the managed block is restored once"
+    from features.sequences.controller import Sequences
+    from features.sequences.shipped import ship
+    ship(record)
+    started = lambda: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-check"})
+    checking = lambda: next(r for r in Sequences(record).all() if r.title == "Checking the instruction files")
+    started()
+    first = record.state("journal_laws").get("instructions")
+    assert (bool(first), len(checking().runs)) == (True, 1), "a start that finds the instruction files new or changed starts the check"
+    brief(project, record)
+    started()
+    assert record.state("journal_laws").get("instructions") == first, "the journal's own block changing is not a change to check"
+    (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Fridays.\n")
+    started()
+    assert record.state("journal_laws").get("instructions") != first, "the project's own text changing is checked again at the next start"
 
 
 def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
