@@ -43,9 +43,9 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     text("[!info] an old habit")
     assert chat()[-1] == "an old habit", "a retired label tag is taken off and the message shown"
     text("[!internal] checking the build next")
-    assert chat()[-1] == "an old habit", "a message marked internal stays out of the chat"
+    assert chat()[-1] == "checking the build next", "the retired internal tag is taken off like the others, and its words shown"
     text(f"[!reply:{asked.n}] yes, here")
-    assert chat()[-1] == "an old habit", "a reply is shown as the reply, not copied into the chat"
+    assert chat()[-1] == "checking the build next", "a reply is shown as the reply, not copied into the chat"
     assert [c.title for c in Comments(record, actor="system").linked_to(asked.ref)] == ["yes, here"], "the reply is posted"
     assert not [n for n in nudges(record) if "has no tag" in n], "nothing asks for a tag"
     assert visible("[!reply:n] plus the command tags") == "[!reply:n] plus the command tags", "only a real number or name makes a tag"

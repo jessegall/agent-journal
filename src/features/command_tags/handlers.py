@@ -2,7 +2,7 @@ import io
 
 from engine.events.engine import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
-from features.command_tags.reading import CARRIED, OPTIONS, internal, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
+from features.command_tags.reading import CARRIED, OPTIONS, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
 from resources.base import AGENT
 from features.command_line import command_line
 
@@ -12,7 +12,7 @@ class RunTagCommands(Handler):
         message = event.text
         if CARRIED.search(message) and context.once("tagged", message):
             self.run(context, message)
-        if replies(message) or internal(message) or waits(message):
+        if replies(message) or waits(message):
             event.stop()
         else:
             event.change(stripped(message, context.settings).strip())

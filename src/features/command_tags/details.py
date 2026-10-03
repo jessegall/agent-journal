@@ -23,11 +23,6 @@ class TagsDetails(FeatureDetails):
     help = """
         A message without a tag is a plain message in the chat.
 
-        [!internal] at the start of a message keeps it out of the chat. Use it only for a
-        message that narrates what you do next, like "Checking the build next";
-        anything the user should read goes out without it. Codex never writes it: a message
-        ends Codex's turn, so it acts instead, or says once in the chat what it waits on.
-
         [!await] <what you wait for> runs journal work await with the rest of the turn and keeps
         it out of the chat, which already shows what the work waits on: use it instead of a
         work await command followed by a note. [!await on=("<id>", "helper:<n>")] <what> names

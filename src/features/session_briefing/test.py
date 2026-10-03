@@ -81,7 +81,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     sent = []
     engine.agent.driver.send = lambda text="", **rest: sent.extend([text, rest.get("yielding", "")]) or True
     engine.deliver()
-    assert any(f"the journal is ready on {record.env} — say hello in the chat in plain words, never [!internal], so the journal's messages reach you" in text for text in sent), \
+    assert any(f"the journal is ready on {record.env} — say hello in the chat in plain words, so the journal's messages reach you" in text for text in sent), \
         "the greeting goes out through the one send, never marked read as history"
     from controllers.types import Environments
     from engine.record import Record

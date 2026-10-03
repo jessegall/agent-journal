@@ -32,14 +32,13 @@ TAGS = (
 )
 RUNS = {tag.name: tag.runs for tag in TAGS}
 OPTIONS = {tag.name: tag.options for tag in TAGS}
-RETIRED = ("discovery", "correction", "blocked", "info")
+RETIRED = ("discovery", "correction", "blocked", "info", "internal")
 VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
 EXTRA = r'(?:\s*,\s*|\s+)[a-z_]+=' + VALUE
 ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
-INTERNAL = re.compile(r"^[ \t]*(?:\*\*)?\[!internal\]", re.M)
 
 
 def pattern(names) -> re.Pattern:
@@ -65,10 +64,6 @@ def reader(settings: dict) -> re.Pattern:
 
 def stripped(text: str, settings: dict) -> str:
     return reader(settings).sub(lambda found: found.expand(r"\1"), text)
-
-
-def internal(text: str) -> bool:
-    return bool(INTERNAL.search(text))
 
 
 def waits(text: str) -> bool:

@@ -1,7 +1,7 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import NOTICES, Trigger
 
-SHOP, REMIND, REMIND_UNTAGGED = "shop", "remind", "remind, untagged"
+SHOP, REMIND = "shop", "remind"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
@@ -37,8 +37,8 @@ class ChatEtiquetteDetails(FeatureDetails):
 
         A line from the journal is an instruction to you, never a message to answer: act on it,
         or note it and carry on, and never answer it or mention it in the chat. When a turn only
-        handles a journal line, keep its text out of the chat with [!internal]; on Codex, where a
-        message ends the turn, write nothing for it and carry on instead. Use judgement:
+        handles a journal line, it needs no words: act on it, or say once what you wait on, and
+        carry on; a bare acknowledgement is kept out of the chat by the journal. Use judgement:
         anything the user needs to know, such as a failure, a finished piece of work or a
         decision that waits on them, still goes to the chat in plain words, so nothing that
         matters is hidden.
@@ -63,15 +63,9 @@ class ChatEtiquetteDetails(FeatureDetails):
         Line(
             name=REMIND,
             title="chat etiquette - a line from the journal is an instruction, not a message: act on it or note it, never answer or mention it in the chat",
-            brief="keep a turn that only handles a journal line out of the chat with [!internal]; what the user needs to know still goes to the chat",
-        ),
-        Line(
-            name=REMIND_UNTAGGED,
-            title="chat etiquette - a line from the journal is an instruction, not a message: act on it or note it, never answer or mention it in the chat",
             brief="""
-                write nothing for a turn that only handles a journal line: act on it, or say once in the chat what you
-                wait on, then carry on, and stop only when nothing is ready; what the user needs to know still goes to
-                the chat
+                a turn that only handles a journal line needs no words: act on it, or say once in the chat what you
+                wait on, then carry on; what the user needs to know still goes to the chat
             """,
         ),
         Line(
