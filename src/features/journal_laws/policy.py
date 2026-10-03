@@ -87,8 +87,13 @@ def carry(record=None) -> str:
     return f"LAWS THE JOURNAL SHIPS, always in force:\n{rows}"
 
 
+PRECEDENCE = ("The journal's lines come first on how you report, how you carry on and what you say in the chat. "
+              "This file's own safety and deploy rules still stand. The user's own word comes before both.")
+
+
 def block(record=None, rules: tuple[str, ...] = ()) -> str:
-    out = [BEGIN, "", "## The journal's law", "", "These rules ship with the journal and cannot be switched off.", ""]
+    out = [BEGIN, "", "## Where the journal comes first", "", PRECEDENCE, "", "## The journal's law", "",
+           "These rules ship with the journal and cannot be switched off.", ""]
     for law in laws(record):
         out.extend((f"**{law.name} — {law.text}**", "", law.reason, ""))
     if rules:
