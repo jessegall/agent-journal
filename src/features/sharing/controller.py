@@ -21,7 +21,7 @@ from engine.markers import MARKER
 from features.format import SHARED, formatted
 from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
-from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
+from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
 
@@ -177,10 +177,35 @@ class Shares(Controller):
         made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n, trusted=bool(share.password))
         if not made.data["trusted"]:
             index_comment(record, made, comments.path(made.n))
+            self._show_visitor_comment(record, made, ref)
         kind, _, n = ref.partition(":")
         about = CONTROLLERS[kind](record, actor=SYSTEM)
         about.save(about.load(n), "commented", comment=made.n)
         return made
+
+    def _show_visitor_comment(self, record, comment, ref: str) -> None:
+        CONTROLLERS["message"](record, actor=AGENT).create(
+            titled(f"{comment.data['visitor']} commented on {ref.replace(':', ' ')} through a shared link"),
+            brief=f"{comment.brief}\n\nThe link has no password, so the agent does not act on this unless you let it.",
+            buttons=[{"label": "Let the agent act on it", "type": "share", "n": comment.n, "action": "allow"}],
+        )
+
+    def allow(self, n: int):
+        if self.actor != USER:
+            raise Refused("only the user lets the agent act on a visitor's comment: it waits for their button in the chat")
+        from controllers.types import Agents, Comments, Nudges
+        comments = Comments(self.record, actor=SYSTEM)
+        comment = comments.load(int(n))
+        if not comment.data.get("visitor"):
+            raise Refused(f"comment {comment.n} is not a visitor's")
+        unindex_comment(self.record, comment.n)
+        agents = Agents(self.record, actor=SYSTEM)
+        agent = agents.primary()
+        if agent:
+            agents.update(agent.n, **{UNAGREED: [held for held in agent.data.get(UNAGREED, []) if held != comment.n]})
+        Nudges(self.record, actor=SYSTEM)._to_primary(titled(f"the user let you act on comment {comment.n} from {comment.data['visitor']}"),
+                                                       f"read it with journal comment show {comment.n} and act on it as the user's own request")
+        return comments.update(comment.n, allowed=True)
 
     def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
         from controllers.types import Comments

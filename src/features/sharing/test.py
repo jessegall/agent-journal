@@ -4,7 +4,7 @@ import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
 
-from controllers.types import Agents, Comments, Docs
+from controllers.types import Agents, Comments, Docs, Messages
 from runner.hooks import handle
 from engine.ran import announce
 from features.sharing.controller import Shares
@@ -94,6 +94,18 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
             pass
         agreeing.agree(made.n, AGREEMENT)
         assert hook("ls").get("decision") != "block", "agreed: the tools run again, until the next read"
+    card = [m for m in Messages(record).all() if m.title == f"Robin commented on doc {doc.n} through a shared link"]
+    assert [b["action"] for m in card for b in m.data["buttons"]] == ["allow"], "the comment reaches the user in the chat, with a button to let the agent act"
+    try:
+        Shares(record, actor=AGENT, session="claude-share").allow(made.n)
+        raise AssertionError("only the user lets the agent act on it")
+    except Refused:
+        pass
+    announce(record, agent.n, "Bash", "journal search delete", f"comment {made.n}: {WORDS}")
+    Shares(record, actor=USER).allow(made.n)
+    announce(record, agent.n, "Bash", "journal search delete", f"comment {made.n}: {WORDS}")
+    assert (hook("ls").get("decision") != "block", any(f"the user let you act on comment {made.n} from Robin" in line for line in nudges(record))) == (True, True), \
+        "the user's button lifts the hold for that comment and tells the agent"
     locked = Shares(record, actor=USER).create(f"doc:{doc.n}", comments=True, password="tulip")
     trusted = Shares(record, actor=USER)._visitor_comment(locked, f"doc:{doc.n}", "Sam", "Please add the night shift")
     announce(record, agent.n, "Bash", "journal search night", f"comment {trusted.n}: Please add the night shift")

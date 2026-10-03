@@ -48,6 +48,11 @@ def index_comment(record, comment, path) -> None:
     state.set(INDEX, [*kept, {"n": comment.n, "snippet": first[:SNIPPET], "path": f"{path.parent.name}/{path.name}"}])
 
 
+def unindex_comment(record, n: int) -> None:
+    state = record.state("sharing")
+    state.set(INDEX, [entry for entry in state.get(INDEX, []) if entry["n"] != int(n)])
+
+
 class Visit(TypedDict):
     n: int
     snippet: str
