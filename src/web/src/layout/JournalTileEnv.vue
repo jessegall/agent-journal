@@ -8,18 +8,20 @@ import StatusLabel from "../kit/StatusLabel.vue";
 import Switch from "../kit/Switch.vue";
 import AgentStopButton from "../chat/AgentStopButton.vue";
 import {planButton} from "./statusline.js";
-import {STATE_WORDS, agentLine, countsOf, envState, focusOf, planMeter} from "../sync/hub.js";
+import {STATE_WORDS, agentLine, countsOf, envState, focusOf, idleNote, planMeter} from "../sync/hub.js";
+import {useNow} from "../composables/now.js";
 
 const props = defineProps({env: {type: Object, required: true}, server: {type: Object, required: true}});
 const emit = defineEmits(["auto", "step", "changed"]);
 const running = computed(() => envState(props.env) !== "stopped");
 const wordFor = (p) => (planButton({data: p}) || [])[1];
+const now = useNow(30000);
 </script>
 
 <template>
     <div :class="['jt-env', envState(env)]">
         <div class="jt-env-line">
-            <StatusLabel :class="['jt-env-state', {silent: env.silent}]" :state="envState(env)">
+            <StatusLabel :class="['jt-env-state', {silent: env.silent}]" :state="envState(env)" :note="idleNote(env, now)">
                 {{ STATE_WORDS[envState(env)] }}
             </StatusLabel>
             <a class="jt-env-name" :href="server.page(env.name)">{{ env.name }}</a>
