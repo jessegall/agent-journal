@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.markers import MARKER, marked
 from engine.project_files import matching
-from features.format import VIEWER
+from features.format import SHARED, VIEWER
 from features.parts import Context, TextFormatter
 from resources.types import TYPES
 
@@ -83,7 +83,7 @@ def spanned(kept: str, record) -> str:
 
 
 class MarkRows(TextFormatter):
-    surfaces = (VIEWER,)
+    surfaces = (VIEWER, SHARED)
 
     def format(self, context: Context, text: str) -> str:
         return outside(KEPT, text, lambda part: chipped(part, context.record), lambda kept: spanned(kept, context.record))
@@ -176,7 +176,7 @@ WRAPPED = re.compile(rf"\((\s*{ONE}(?:\s*(?:,|and|,\s*and)\s*{ONE})*\s*)\)")
 
 
 class UnwrapChips(TextFormatter):
-    surfaces = (VIEWER,)
+    surfaces = (VIEWER, SHARED)
 
     def format(self, context: Context, text: str) -> str:
         return WRAPPED.sub(lambda m: m.group(1).strip(), text)

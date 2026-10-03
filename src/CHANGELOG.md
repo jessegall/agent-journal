@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.231.1 — a shared page opens at once on a big project
+
+**A shared page no longer waits on a walk of the whole project.** Its text was formatted as in the viewer, which
+links file names to the project's files and so walked every file first: on a large project that took over a
+minute and the page stayed empty. The shared page now has its own formatting, with row links and without file
+links, which a visitor could not open anyway.
+
 ## 2.231.0 — the agent's comments show on a shared page, and it replies under visitors' comments
 
 **A link that takes comments now shows the agent's comments on what it opens, and the agent's replies under the
