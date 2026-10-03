@@ -142,16 +142,6 @@ def write_unlocked(path: Path, text: str) -> None:
     replace(path, text.encode())
 
 
-def placed(had: str, block: "re.Pattern", new: str) -> str:
-    found = block.search(had)
-    if not found:
-        body = had.strip("\n")
-        return "\n\n".join(part for part in (body, new) if part) + "\n" if new else had
-    parts = (had[:found.start()].rstrip("\n"), new, had[found.end():].strip("\n"))
-    kept = "\n\n".join(part for part in parts if part)
-    return kept + "\n" if kept else ""
-
-
 def replace(path: Path, raw: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     spare = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}")

@@ -1,7 +1,8 @@
 from features.base import Behaviour, FeatureDetails, Line
-from features.journal_laws.handlers import LARGEST_RESULT
+from features.journal_laws.handlers import LARGEST_RESULT, TOO_LONG
 from features.recital import BEHAVIOURS, LINES, WHISPER
 from features.settings import Setting
+from features.trigger import MINUTES, Trigger
 
 
 class LawDetails(FeatureDetails):
@@ -43,6 +44,14 @@ class LawDetails(FeatureDetails):
                 next read can be narrower: grep for the line, sed a range, head the file.
             """,
         ),
+        Line(
+            name=TOO_LONG,
+            title="{{file}} is {{size}} bytes and {{provider}} reads only its first {{limit}}",
+            brief="""
+                The journal's block leads the file, so the laws and rules are read; the project's own
+                text past that point is not. Tell the user, who can shorten the file or raise the limit.
+            """,
+        ),
     ]
 
     behaviours = [
@@ -51,6 +60,12 @@ class LawDetails(FeatureDetails):
             name=LARGEST_RESULT,
             title="Tell the agent when a tool result is the largest this session",
             abstract="Only above the floor, and only when it is larger than every earlier result",
+        ),
+        Behaviour(
+            name=TOO_LONG,
+            title="Tell the agent when an instruction file is longer than its provider reads",
+            abstract="Once a day for each file, and again when it grows by another 4 KB",
+            trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]
 

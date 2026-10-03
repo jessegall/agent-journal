@@ -3,9 +3,10 @@ from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs
 from features.journal_laws.details import LawDetails
-from features.journal_laws.handlers import NoticeLargestResult
+from features.journal_laws.handlers import TOO_LONG, NoticeLargestResult, long_briefings
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword
 from features.journal_laws.policy import carry
+from features.nudges import Nudge
 from features.session_briefing.start import LAW, START_PARTS
 
 __all__ = ["Outputs"]
@@ -13,6 +14,7 @@ __all__ = ["Outputs"]
 
 class Law(Feature):
     details = LawDetails
+    nudges = (Nudge(TOO_LONG, behaviour=TOO_LONG, about=long_briefings),)
 
     def register(self, journal: Journal) -> None:
         START_PARTS[LAW] = carry

@@ -1,4 +1,5 @@
 import json
+from functools import cache
 from dataclasses import dataclass
 import re
 import shutil
@@ -85,6 +86,7 @@ class CodexModel:
 class CodexConfig:
     model: str = ""
     effort: str = ""
+    doc_limit: int = 32768
 
 
 def effort_choice(effort: str) -> dict:
@@ -181,7 +183,15 @@ class Codex(Provider):
             match = re.match(r"\s*(model|model_reasoning_effort)\s*=\s*\"([^\"]+)\"", line)
             if match:
                 found["model" if match.group(1) == "model" else "effort"] = match.group(2)
+            limit = re.match(r"\s*project_doc_max_bytes\s*=\s*(\d+)\s*$", line)
+            if limit:
+                found["doc_limit"] = int(limit.group(1))
         return CodexConfig(**found)
+
+    @classmethod
+    @cache
+    def briefing_limit(cls) -> int:
+        return cls.configuration().doc_limit
 
     @classmethod
     def commands(cls, models: list[CodexModel], action: str, value: str, current_model: str, current_effort: str) -> list[str]:

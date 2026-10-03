@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.239.0 — the journal's block leads AGENTS.md and CLAUDE.md
+
+**The journal now keeps one block in AGENTS.md and CLAUDE.md, at the head of each file**, under its title,
+holding the journal's law and every rule you injected. Codex reads AGENTS.md only up to 32 KB, and the
+journal's lines sat at the end of files longer than that, so Codex never saw them; now they come first. The three
+older blocks (the old shipped rules, the law block and the injected rules block) are folded into the new one on
+upgrade, and the rest of each file is kept as it was. A file with merge conflict markers, a block written by a
+newer journal, or an old block missing one of its markers is left alone, and the upgrade names it. When AGENTS.md
+is longer than Codex reads (32 KB, or `project_doc_max_bytes` in ~/.codex/config.toml), the agent is told once a
+day, and again as it grows, so it can tell you. Run `journal upgrade` in each project; the change to the two
+files is the only change it makes there. An installer that fetches the package for itself now hands the rest
+of the install to the installer it fetched, so the two always match.
+
 ## 2.238.0 — one way to do each thing, inside
 
 **Twelve places that did the same work in two or more ways now each have one way**, found by a review of the
