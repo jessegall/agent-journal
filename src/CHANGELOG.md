@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.235.0 — nudges are declared in one place and sent by one runner
+
+**A feature now declares each nudge it sends: the line, how often it may go out, and what it is about**, and
+one runner sends them all, on the clock and when the agent uses a tool, with one record of when each last went
+out. The running-plan and blocked-rows nudges, the board ideas, the ticket reminders, the check on an
+orchestrated board and the reminder of an unfinished sequence step run on it. A reminder that waited for the
+agent's next tool use can now also come on the clock, never more often than its setting allows.
+
 ## 2.234.0 — the agent asks a visitor a question they answer with a click
 
 **Under a visitor's comment on a shared page, the agent can ask a question with options**: journal share ask
