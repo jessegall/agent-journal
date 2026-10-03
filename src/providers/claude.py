@@ -630,9 +630,10 @@ class ClaudeDriver(Driver):
         return max(folder.glob("*.jsonl"), key=lambda path: path.stat().st_mtime, default=Path()).stem
 
     @classmethod
-    def confirm(cls, printed: bytes) -> bytes:
+    def consent(cls, printed: bytes) -> bytes:
         plain = b"".join(ANSI.sub(b"", printed).split())
-        return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
+        asking = cls.CHANNEL[0].encode() in plain and CHOICE.search(plain)
+        return b"\r" if asking and plain.rfind(cls.INPUT_MARK) == plain.rfind(cls.INPUT_MARK + b"1.") else b""
 
     def run_command(self, command: str) -> bool:
         screen = runtime.session_file(self.record.root, self.session, "screen")

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.236.1 — Claude starts past its development channels warning again
+
+**A Claude session started under the journal answers Claude's development channels warning by itself again.**
+Since 2.224.0 nothing pressed Enter on it, so every start stopped there until you did. The journal now answers
+it only while that menu is the last thing on screen, so it never presses Enter into your own typing.
+
 ## 2.236.0 — every nudge's timing is a switch and a cadence in Settings
 
 **Each nudge is now a behaviour of its feature, with an on switch and a cadence on the Settings page**, the same
