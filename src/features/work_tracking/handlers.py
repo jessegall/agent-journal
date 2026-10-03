@@ -186,8 +186,7 @@ class AskStillAwaiting(Handler):
             if not w.is_self_clearing or not every:
                 continue
             minutes = int((time.time() - (w.awaiting_since or time.time())) // 60)
-            if minutes >= every and context.state.get("awaiting asked") != f"{w.n}:{minutes // every}":
-                context.state.set("awaiting asked", f"{w.n}:{minutes // every}")
+            if minutes >= every and context.once("awaiting asked", f"{w.n}:{minutes // every}"):
                 context.agent.say("still awaiting", awaiting=w.awaiting, minutes=minutes)
 
 

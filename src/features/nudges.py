@@ -1,4 +1,3 @@
-import hashlib
 from dataclasses import dataclass, replace
 from typing import Callable
 
@@ -32,13 +31,7 @@ class Nudge:
         if not context.feature.on(context.record, self.behaviour):
             return []
         spec = self.cadence(context)
-        due = [found for found in self.about(context, agent) if trigger.due(context.record, agent, self.named(context, found), spec)]
-        for found in due:
-            trigger.fired(context.record, agent, self.named(context, found))
-        return due
-
-    def named(self, context, found: Sent) -> str:
-        return f"{context.feature.keyed(self.behaviour)}.{hashlib.sha1(found.key.encode()).hexdigest()[:12]}"
+        return [found for found in self.about(context, agent) if context.every(self.behaviour, found.key, spec)]
 
 
 def send(context, nudges: tuple) -> None:
@@ -47,7 +40,7 @@ def send(context, nudges: tuple) -> None:
         return
     speaking = context.speaking_to(agent)
     for nudge in nudges:
-        for found in nudge.due(context, agent):
+        for found in nudge.due(speaking, agent):
             speaking.agent.say(nudge.line, private=nudge.private, **found.values)
 
 

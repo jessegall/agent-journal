@@ -83,6 +83,10 @@ class Context:
     def release(self, behaviour: str = "") -> None:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
+    def every(self, kind: str, key: str, spec) -> bool:
+        from features import trigger
+        return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()[:12]}", spec)
+
     def once(self, kind: str, key: str, then=None) -> bool:
         store, name = self.record.state("once", self.agent.session), f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}"
         if then and (store.get(name) is not None or not then()):

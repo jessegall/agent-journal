@@ -86,12 +86,7 @@ class WhisperOnKeywordInChat(Handler):
 
 
 def whisper_due(context: Context, ref: str) -> bool:
-    last_uses, uses = context.state.get("touched", {}), int(context.agent.row.uses)
-    every = context.feature.cadence(context.record, WHISPER).every
-    if ref in last_uses and uses - int(last_uses[ref]) < float(every):
-        return False
-    context.state.set("touched", {**last_uses, ref: uses})
-    return True
+    return context.every(WHISPER, ref, context.feature.cadence(context.record, WHISPER))
 
 
 class RepeatStanding(Handler):

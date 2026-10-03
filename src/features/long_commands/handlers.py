@@ -25,9 +25,8 @@ class MoveLongCommands(Handler):
         provider = row.provider
         driver = DRIVERS.get(provider)
         seconds = int(time.time() - float(started))
-        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or context.state.get("asked") == started:
+        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or not context.once("asked", started):
             return
-        context.state.set("asked", started)
         reason = cancelled(LONG_COMMAND, PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row.title,
                            {"command": last.command, "seconds": seconds}, row.subagent)
         if reason:
