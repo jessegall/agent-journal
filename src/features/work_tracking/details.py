@@ -110,8 +110,10 @@ class WorkDetails(FeatureDetails):
             name="still blocked",
             title="todo {{n}}, {{title}}, is still blocked - is it still?",
             brief="""
-                it is blocked because: {{why}}. If it is not any more, journal todo unblock {{n}}. If it
-                is, tell the user in the chat what it waits on, in their terms, and propose how to clear it.
+                it is blocked because: {{why}}. If it is not any more, journal todo unblock {{n}}. If it waits
+                on a person or a decision, make it a question to them: journal todo ask {{n}} "<who decides
+                what>", and the row waits on their answer. Otherwise tell the user in the chat what it waits
+                on, in their terms, and propose how to clear it.
             """,
         ),
         Line(

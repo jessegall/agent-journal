@@ -67,7 +67,8 @@ class PlansDetails(FeatureDetails):
             title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",
             brief="""
                 {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock
-                <n>) and work it, and leave the rest blocked with their reason up to date.
+                <n>) and work it; make one that waits on a person or a decision a question to them with
+                journal todo ask <n> "<who decides what>"; keep the reason of the rest up to date.
             """,
         ),
         Line(
