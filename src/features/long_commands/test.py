@@ -159,6 +159,6 @@ def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_onc
         return True
     monkeypatch.setattr(driver, "_wrote", wrote)
     monkeypatch.setattr(drivers.time, "sleep", lambda seconds: None)
-    assert driver.type_in("1 new message 6") is True, "a message Codex queues counts as delivered, so it is never typed again"
+    assert driver.send("1 new message 6", now=True) is True, "a message Codex queues counts as delivered, so it is never typed again"
     assert (typed[-1], typed.count(b"\r"), driver.sent_now > 0) == (b"\x1b", 1, True), \
         "Esc sends it now, while the command runs on in its background terminal, and the engine can say so in the chat"

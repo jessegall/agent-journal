@@ -595,6 +595,7 @@ class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
     INPUT_MARK = "❯".encode()
+    TAKES_CHANNEL = True
     SUGGESTED = re.compile("(❯\u00a0)\x1b\\[2m([^\x1b\r\n]*)\x1b\\[22m".encode())
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
@@ -654,14 +655,14 @@ class ClaudeDriver(Driver):
                 self._entered()
                 return
 
-    def _post(self, line: str) -> bool:
-        return self._handed(line)
+    def _post(self, line: str, by: str) -> bool:
+        return self._handed(line, by)
 
     def owns(self, row) -> bool:
         pid = Sessions(self.record.root).read(self.session).pid
         return bool(pid) and Path(row.inbox).stem == str(pid)
 
-    def _handed(self, line: str) -> bool:
+    def _handed(self, line: str, by: str) -> bool:
         root = self.record.root
         pid = Sessions(root).read(self.session).pid
         try:
@@ -670,7 +671,7 @@ class ClaudeDriver(Driver):
             if not self._delivering():
                 return False
             with runtime.channel_queue(root, pid).open("a") as queue:
-                queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
+                queue.write(json.dumps({"content": line, "meta": {"from": by}}) + "\n")
             handed = runtime.session_file(root, self.session, HANDED)
             held = read_json(handed, Handed.from_json, Handed.from_json({}))
             write_json(handed, replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())

@@ -68,7 +68,7 @@ class Helpers(Controller):
         from providers import DRIVERS
         row = self._unfinished(n, "finished")
         session = Sessions(self.record.root).holder(row.environment)
-        if not session or not DRIVERS[row.provider](Record(self.record.root, row.environment), terminal_of(self.record.root, session)).enter(text):
+        if not session or not DRIVERS[row.provider](Record(self.record.root, row.environment), terminal_of(self.record.root, session)).send(text, now=True, by=self.record.env):
             raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
         return f"sent to {row.name}"
 

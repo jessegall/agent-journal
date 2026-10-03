@@ -204,7 +204,7 @@ def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_mes
     report(record, "working", "PreToolUse")
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
     driver, delivered = engine.agent.driver, []
-    monkeypatch.setattr(driver, "deliver", delivered.append)
+    monkeypatch.setattr(driver, "_deliver", lambda line, by: delivered.append(line))
     m = Messages(record, actor=USER).create("how is it going?")
     Messages(record, actor=AGENT).read(m.n)
     report(record, "working", "PreToolUse")

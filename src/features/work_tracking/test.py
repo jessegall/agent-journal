@@ -267,7 +267,7 @@ def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkey
     report(record, "working", "PreToolUse")
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
     driver, delivered = engine.agent.driver, []
-    monkeypatch.setattr(driver, "deliver", delivered.append)
+    monkeypatch.setattr(driver, "_deliver", lambda line, by: delivered.append(line))
     driver.sent_at = time.time()
     driver.send("a message from the user", yielding="work 1 in hand")
     works = Works(record, actor=AGENT)

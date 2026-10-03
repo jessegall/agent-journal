@@ -227,7 +227,7 @@ class Tickets(Prioritised, Controller):
             self._refuse(f"{self.type} {ticket.n} has no agent running to tell")
         from providers import DRIVERS
         driver = DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
-        if not driver.enter(note.strip()):
+        if not driver.send(note.strip(), now=True, by=self.record.env):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return self.update(ticket.n, told=time.time())
 
