@@ -44,6 +44,7 @@ class UpdatesDetails(FeatureDetails):
         ),
         Line(
             name="failed",
+            reply_kept=True,
             title="installing journal {{latest}} failed",
             brief="{{why}} - run journal upgrade to try again",
         ),

@@ -47,6 +47,8 @@ RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
 LEGACY = ".journal/hook.py"
 LIBRARY = ".agents/skills"
+MARK = "[journal]"
+JOURNAL, PERSON = "journal", "person"
 
 
 def journal_hook(text: str) -> bool:
@@ -352,7 +354,15 @@ class Provider(ABC):
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
                 "context": row.context or 0 if context is None else context, "asking": self.asking(hook),
-                "last_message": hook.last_message or row.last_message or "", "loops": self.loops(row, hook)}
+                "last_message": hook.last_message or row.last_message or "", "loops": self.loops(row, hook), "prompted": self.prompted(row, hook)}
+
+    def prompted(self, row, hook) -> str:
+        if hook.event != "UserPromptSubmit":
+            return row.prompted
+        return JOURNAL if self.journal_typed(hook.prompt) else PERSON
+
+    def journal_typed(self, prompt: str) -> bool:
+        return prompt.lstrip().startswith(MARK)
 
     def loops(self, row, hook) -> dict:
         kept, call = dict(row.loops or {}), hook.tool

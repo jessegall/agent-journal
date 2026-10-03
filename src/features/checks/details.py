@@ -35,11 +35,13 @@ class ChecksDetails(FeatureDetails):
     lines = [
         Line(
             name="failed",
+            reply_kept=True,
             title="{{title}}",
             brief="journal check show {{n}} says why; fix it, then journal check run {{n}}",
         ),
         Line(
             name="failing",
+            reply_kept=True,
             title="{{title}}",
             brief="{{output}}",
             label="Check failed",

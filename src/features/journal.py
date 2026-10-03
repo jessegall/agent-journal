@@ -81,7 +81,7 @@ class Journal:
         if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
         lead, yields = spec.lead, not spec.while_waiting
-        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, yields=yields)
+        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, yields=yields, reply_kept=spec.reply_kept)
         added = appended(f"{self.feature.name}.{line}", {**values, "record": record}, "").removeprefix(" - ")
         return self.send(record, replace(message, brief=". ".join(part for part in (added, message.brief) if part)))
 

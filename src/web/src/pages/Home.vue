@@ -1,4 +1,5 @@
 <script setup>
+import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
 import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -433,7 +434,7 @@ watch(
                                     :level="levelOf(pane)"
                                     :flush="!!pane.flush"
                                     :feed="pane.feed || null"
-                                    :hidden="pane.hide || []"
+                                    :hidden="pane.hide || DEFAULT_HIDDEN"
                                     @feed="(feed) => replace(tuned(layout, id, {feed}))"
                                 />
                             </template>
@@ -478,7 +479,7 @@ watch(
                     :levels="menuPane && menuPane.active === 'terminal' ? levelChoices(menuPane) : []"
                     :chat="!!menuPane && menuPane.active === 'chat'"
                     :agents="!!menuPane && menuPane.active === 'agents'"
-                    :hidden="(menuPane && menuPane.hide) || []"
+                    :hidden="(menuPane && menuPane.hide) || DEFAULT_HIDDEN"
                     :flushable="!!(menuPane && menuPane.active && views[menuPane.active].canFlush)"
                     :flush="!!(menuPane && menuPane.flush)"
                     :others="menuOthers"

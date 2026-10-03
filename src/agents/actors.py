@@ -94,6 +94,12 @@ class Agent(Actor):
     def delivered_until(self) -> int:
         return self.pending[-1].id if self.pending else self.cursor()
 
+    def handed(self, done: list[Event]) -> None:
+        reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)
+        row = agents._titled(reported.title) if reported is not None else None
+        if row is not None:
+            agents.update(row.n, handed=[f"{e.type}:{e.n}" for e in done])
+
     def flush(self) -> str:
         if not self.pending or not self.driver.ready():
             return ""
@@ -111,6 +117,7 @@ class Agent(Actor):
         self.pending = [e for e in self.pending if e not in done]
         if not sent:
             return ""
+        self.handed(done)
         return "; ".join([line, *counted(groups, self.record)] if line else counted(groups, self.record))
 
     def state(self) -> str:

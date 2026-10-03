@@ -545,7 +545,7 @@ class Phones(Controller):
         return list(islice((row for row in loaded if row.created < before), FEED))[::-1]
 
     def _said(self, home: Record, kind: str, row) -> dict | None:
-        if kind == "message" and row.data.get("window"):
+        if kind == "message" and (row.data.get("window") or row.data.get("acknowledgement")):
             return None
         said = {**shaped(row, home, VIEWER), "who": row.seen[0] if kind != "question" and row.seen else "agent", "files": dict(row.files)}
         if kind != "question":

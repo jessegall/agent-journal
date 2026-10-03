@@ -9,6 +9,7 @@ class Message(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="idempotency"),
         Field(name="delivered"),
+        Field(FLAG, False, name="acknowledgement"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Message",
@@ -300,6 +301,8 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="paused"),
         Field(default=dict, name="asking"),
         Field(default="", name="last_message"),
+        Field(default="", name="prompted"),
+        Field(default=list, name="handed"),
         Field(default="", name="failure"),
         Field(name="started"),
         Field(default=0, name="context"),

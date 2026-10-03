@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.242.0 — the chat without bare acknowledgements
+
+**A turn that only acknowledges a journal line no longer fills the chat.** When the journal hands the agent a line
+and its whole answer is Noted, Carrying on or the like, the answer is kept but left out of the chat; turn on
+Acknowledgements of journal lines under the chat's Shown menu to see them. An answer to your message, a question, a
+failure, or a line about a stall, a block or a decision always reaches the chat. Codex is no longer taught
+`[!internal]`, since a message ends its turn: it acts, or says once what it waits on, and carries on. A blocked to-do
+that already waits on a question to you is no longer asked about again.
+
 ## 2.241.0 — no stall goes unseen
 
 **An agent that stands still is noticed, and so is what it waits on.** An agent that stops with work in hand is

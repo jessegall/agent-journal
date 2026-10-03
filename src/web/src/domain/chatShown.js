@@ -7,6 +7,7 @@ export const SHOWN_GROUPS = [
             {key: "subagents", label: "Subagents", icon: "agents"},
             {key: "compactions", label: "Context compacted", icon: "gauge"},
             {key: "made", label: "Documents it made", icon: "docs"},
+            {key: "acknowledgements", label: "Acknowledgements of journal lines", icon: "check"},
         ],
     },
     {
@@ -34,7 +35,10 @@ export const SHOWN_GROUPS = [
 
 const RECALLED = {rule: "rules", fact: "facts", reminder: "reminders"};
 const MARKED = {terminal: "commands", branch: "commits", list: "sequences", bolt: "triggers"};
+export const DEFAULT_HIDDEN = ["acknowledgements"];
+
 const KINDS = {
+    message: (t) => (t.data.acknowledgement ? "acknowledgements" : ""),
     thought: () => "thoughts",
     skill: () => "skills",
     subagent: () => "subagents",

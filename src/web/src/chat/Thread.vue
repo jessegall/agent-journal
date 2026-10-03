@@ -1,4 +1,5 @@
 <script setup>
+import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
@@ -38,7 +39,7 @@ usePoll(...polled.agents);
 
 const IDLE = 30000;
 const scroller = ref(null);
-const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => []}});
+const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
 const pane = computed(() => props.view || store.pane);
 const scope = useScope();
 const here = !scope.env;
