@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from controllers.types import Works
+from controllers.types import Todos, Works
 from engine.events.agents import AgentReported
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent
@@ -16,6 +16,7 @@ from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import IDLE
 
+BLOCKED_ASKED = "plans.blocked_asked"
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
 
@@ -152,3 +153,30 @@ def doable(record, plan) -> str:
     if taking:
         parts.append(f"take {', '.join(taking)}")
     return ", then ".join(parts)
+
+
+class AskAboutBlockedRows(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        ask_about_blocked_rows(context)
+
+
+class AskAboutBlockedRowsOnToolUse(Handler):
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
+        ask_about_blocked_rows(context)
+
+
+def ask_about_blocked_rows(context) -> None:
+    agent = context.journal.agents.primary()
+    if not agent:
+        return
+    every, now = float(PlansDetails.values(context.record).blocked_minutes) * 60, time.time()
+    state = context.record.state(BLOCKED_ASKED)
+    todos = Todos(context.record, actor=SYSTEM)
+    for plan in Plans(context.record, actor=SYSTEM)._every():
+        if plan.status != ACTIVE or now - float(state.get(str(plan.n), 0)) < every:
+            continue
+        mine = {n for phase in plan.phases for n in phase[PHASE.todos]}
+        held = [t for t in todos._standing() if t.n in mine and (t.blocked or todos.waits(t))]
+        if held:
+            state.set(str(plan.n), now)
+            context.speaking_to(agent).agent.whisper("blocked", n=plan.n, title=plan.title, rows="; ".join(f"to-do {t.n}, {t.title}" for t in held))

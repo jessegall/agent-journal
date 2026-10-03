@@ -44,6 +44,12 @@ class PlansDetails(FeatureDetails):
             title="Minutes a running plan may stand still",
             abstract="When a plan runs and the agent has done nothing this long while the plan has rows it can do, it is told to carry on",
         ),
+        Setting(
+            name="blocked_minutes",
+            default=30,
+            title="Minutes between asks about a running plan's blocked to-dos",
+            abstract="While a plan runs with blocked to-dos, the agent is asked this often to check whether each is still blocked",
+        ),
     ]
 
     lines = [
@@ -54,6 +60,14 @@ class PlansDetails(FeatureDetails):
                 carry on with it now: {{rows}}. If a row is stuck or waits on something, leave it and work
                 the rows you can do; put a question on a row with journal todo ask only for what you cannot
                 decide yourself, and keep going with the rest.
+            """,
+        ),
+        Line(
+            name="blocked",
+            title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",
+            brief="""
+                {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock
+                <n>) and work it, and leave the rest blocked with their reason up to date.
             """,
         ),
         Line(

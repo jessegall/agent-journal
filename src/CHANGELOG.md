@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.233.0 — a running plan's blocked to-dos are looked at again on a timer
+
+**While a plan runs with blocked to-dos, the agent is asked to check whether each is still blocked**, both on a
+timer and when it uses a tool: whichever asks first restarts the clock for the other, so it is never asked twice
+in a row. It lists the blocked to-dos and says to unblock and work one that can go on now. The minutes are a
+setting of the plans feature, 30 by default.
+
 ## 2.232.0 — comments through a link with a password are trusted
 
 **A link with a password is open only to people you gave it to, so their comments are trusted.** The agent is
