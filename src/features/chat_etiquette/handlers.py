@@ -3,8 +3,14 @@ import re
 from engine.events.engine import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from features import trigger
-from features.chat_etiquette.details import REMIND, SHOP
+from features.chat_etiquette.details import REMIND, REMIND_UNTAGGED, SHOP
 from features.parts import AgentContext, Handler
+from providers import PROVIDERS
+
+def takes_internal(row) -> bool:
+    provider = PROVIDERS.get(row.provider)
+    return not (provider and provider.message_ends_turn)
+
 
 QUOTES = ('"', "“", "'")
 
@@ -37,4 +43,4 @@ class RemindOfEtiquette(Handler):
             return
         trigger.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
         if context.due(REMIND):
-            context.agent.whisper(REMIND)
+            context.agent.whisper(REMIND if takes_internal(context.agent.row) else REMIND_UNTAGGED)

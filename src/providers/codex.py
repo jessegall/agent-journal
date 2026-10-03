@@ -127,6 +127,7 @@ class Codex(Provider):
     tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "apply_patch": CodexShell, "spawn_agent": AgentCall,
                   "request_user_input": AskCall}
     briefing_file = "AGENTS.md"
+    message_ends_turn = True
     skill_home = ".agents/skills"
     retired_skill_homes = (".codex/skills",)
 
