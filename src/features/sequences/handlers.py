@@ -9,6 +9,7 @@ from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.journal import waiting
+from features.nudges import Sent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.work_tracking.details import WorkDetails
 from features.sequences.controller import BY_HAND
@@ -124,17 +125,15 @@ class EndWithItsRow(Handler):
                 sequences.update(sequence.n, runs={k: v for k, v in sequence.runs.items() if k != key})
 
 
-class RemindUnfinished(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        found = context.journal.sequences._in_hand() if context.agent.row.status == IDLE else None
-        if not found or found[0].lasting:
-            return
-        sequence, key, _ = found
-        run = sequence.run(key)
-        left = context.journal.sequences._left(sequence, key)
-        context.once(UNFINISHED, f"{sequence.n}|{key}|{run.step}|{int(time.time() // (pace(context) * MINUTE))}", lambda: context.agent.say(
-            UNFINISHED, n=sequence.n, title=sequence.title, step=run.step, count=len(context.journal.sequences._steps(sequence)),
-            about=about_flag(key), left="; ".join(left)))
+def unfinished_steps(context, agent) -> list[Sent]:
+    found = context.journal.sequences._in_hand() if agent.status == IDLE else None
+    if not found or found[0].lasting:
+        return []
+    sequence, key, _ = found
+    run = sequence.run(key)
+    left = context.journal.sequences._left(sequence, key)
+    return [Sent(f"{sequence.n}|{key}|{run.step}", {"n": sequence.n, "title": sequence.title, "step": run.step,
+                                                     "count": len(context.journal.sequences._steps(sequence)), "about": about_flag(key), "left": "; ".join(left)})]
 
 
 def working_agent(context: Context):

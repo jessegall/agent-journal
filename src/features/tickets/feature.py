@@ -3,7 +3,18 @@ from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
 from features.tickets.details import TicketsDetails
-from features.tickets.handlers import FinishTheBoardWithItsLastTicket, HoldTicketKnowledge, LookAfterTicketBranches, WakeTheTicketAgent
+from features.nudges import Nudge, fixed
+from features.tickets.controller import DRAFTS, WAITS
+from features.tickets.handlers import (
+    CHECK_AFTER,
+    FinishTheBoardWithItsLastTicket,
+    HoldTicketKnowledge,
+    LookAfterTicketBranches,
+    WakeTheTicketAgent,
+    boards_to_check,
+    decisions,
+    ticket_calls,
+)
 from features.tickets.limits import DraftsCarryOneLine, FillerKeepsToTheBoard, PanelRepliesStayShort
 from features.boards.controller import CARD_ROWS
 from features.plans.progress import PHASE_ROWS
@@ -16,6 +27,13 @@ __all__ = ["Tickets"]
 
 class TicketsFeature(Feature):
     details = TicketsDetails
+    nudges = (
+        Nudge("ticket_asks", every="remind_every", about=ticket_calls("ticket_asks")),
+        Nudge("ticket_awaits", every="remind_every", about=ticket_calls("ticket_awaits")),
+        Nudge(WAITS, every="remind_every", about=decisions(WAITS)),
+        Nudge(DRAFTS, every="remind_every", about=decisions(DRAFTS)),
+        Nudge("check_board", every=fixed(CHECK_AFTER), about=boards_to_check),
+    )
 
     def register(self, journal: Journal) -> None:
         PHASE_ROWS[PHASE.tickets] = Tickets

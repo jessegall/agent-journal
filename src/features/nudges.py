@@ -19,12 +19,16 @@ class Sent:
 @dataclass(frozen=True)
 class Nudge:
     line: str
-    every: str
+    every: str | Callable
     about: Callable
     unit: float = MINUTE
+    private: bool = True
+
+    def seconds(self, context) -> float:
+        return float(self.every(context) if callable(self.every) else context.settings[self.every]) * self.unit
 
     def due(self, context, agent) -> list[Sent]:
-        every, now = float(context.settings[self.every]) * self.unit, time.time()
+        every, now = self.seconds(context), time.time()
         sent = context.record.state(SENT)
         due = [found for found in self.about(context, agent) if now - float(sent.get(self.named(context, found), 0)) >= every]
         for found in due:
@@ -35,6 +39,10 @@ class Nudge:
         return f"{context.feature.name}.{self.line}.{found.key}"
 
 
+def fixed(minutes: float) -> Callable:
+    return lambda context: minutes
+
+
 def send(context, nudges: tuple) -> None:
     agent = context.journal.agents.primary()
     if not agent:
@@ -42,7 +50,7 @@ def send(context, nudges: tuple) -> None:
     speaking = context.speaking_to(agent)
     for nudge in nudges:
         for found in nudge.due(context, agent):
-            speaking.agent.whisper(nudge.line, **found.values)
+            speaking.agent.say(nudge.line, private=nudge.private, **found.values)
 
 
 @dataclass
