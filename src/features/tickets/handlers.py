@@ -6,6 +6,7 @@ from resources.types import IDLE
 from engine.events.engine import ClockTicked
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
 from features.nudges import MINUTE, Sent
+from features.trigger import MINUTES, Trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING
@@ -14,19 +15,11 @@ from features.tickets.controller import HELD, Tickets
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
 
 NUDGED = ("ticket_asks", "ticket_awaits")
-LOOK_AGAIN = 900
+LOOK_AGAIN = 15
 
 
 def all_parked(works: list) -> bool:
     return bool(works) and all(work.parked for work in works)
-
-
-def called_again(context: AgentContext, name: str, every: int) -> bool:
-    last = float(context.state.get(name, 0.0))
-    if time.time() - last < max(1, every) * 60:
-        return False
-    context.state.set(name, time.time())
-    return True
 
 
 class LookAfterTicketBranches(Handler):
@@ -45,7 +38,7 @@ class LookAfterTicketBranches(Handler):
                 context.record.emit("ticket", ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS, SYSTEM)
         for ticket in watched(tickets):
             for kind, key, values, every in tickets._calls(ticket):
-                if kind in NUDGED or not (called_again(context, f"{kind}|{ticket.ref}|{key}", every) if every else context.once(kind, f"{ticket.ref}|{key}")):
+                if kind in NUDGED or not (context.every(kind, f"{ticket.ref}|{key}", Trigger(every=every, unit=MINUTES)) if every else context.once(kind, f"{ticket.ref}|{key}")):
                     continue
                 if kind == "ticket_plan_done":
                     context.record.emit("ticket", ticket.n, FINISHED, SYSTEM)
@@ -57,7 +50,7 @@ class LookAfterTicketBranches(Handler):
         for ticket, state in tickets._needing_a_look(tickets._orchestrating()):
             if state.kind == "stopped" and tickets._revive(ticket):
                 context.agent.whisper("ticket_restarted", ticket=ticket.n, title=ticket.title)
-            elif context.once("ticket_attention", f"{ticket.ref}|{state.kind}|{int(time.time() // LOOK_AGAIN)}"):
+            elif context.every("ticket_attention", f"{ticket.ref}|{state.kind}", Trigger(every=LOOK_AGAIN, unit=MINUTES)):
                 context.record.emit("ticket", ticket.n, STUCK, SYSTEM, reason=state.text)
 
 

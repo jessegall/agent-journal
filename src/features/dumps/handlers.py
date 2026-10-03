@@ -77,6 +77,5 @@ class CarryOnFiling(Handler):
         items = dump.data.get("items") or {}
         left = [name for name in dumps._names(dump) if not ((items.get(name) or {}).get(ITEM.outcome) or (items.get(name) or {}).get(ITEM.failed))]
         stretch = f"{dump.n}:{context.agent.row.at}"
-        if left and context.state.get("carried") != stretch:
-            context.state.set("carried", stretch)
+        if left and context.once("carried", stretch):
             context.agent.say("carry on", n=dump.n, count=context.feature.plural(len(left), "item"))

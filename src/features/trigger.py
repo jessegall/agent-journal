@@ -99,6 +99,14 @@ def due(record, agent, name: str, default: Trigger) -> bool:
     return False
 
 
+def claimed(record, agent, name: str, spec: Trigger) -> bool:
+    first = spec.unit == USES and not last(record, agent.title, name).at
+    if not first and not due(record, agent, name, spec):
+        return False
+    fired(record, agent, name)
+    return True
+
+
 def write(record, agent, name: str, **fields) -> None:
     was = last(record, agent.title, name)
     now = replace(was, **fields)
