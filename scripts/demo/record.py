@@ -15,6 +15,7 @@ HERE = Path(__file__).resolve().parent
 SRC = HERE.parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
+from engine.attic import removed  # noqa: E402
 from features.session_recording.demo import BRANCHES  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
@@ -64,7 +65,7 @@ def kept(project: Path) -> Path:
 
 def restored(copy: Path, project: Path) -> None:
     stopped(project)
-    shutil.rmtree(project)
+    removed(project)
     shutil.copytree(copy, project, symlinks=True, copy_function=copied)
     for left in SERVED:
         (project / ".journal" / "runtime" / left).unlink(missing_ok=True)
