@@ -79,6 +79,12 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
             pass
         agreeing.agree(made.n, AGREEMENT)
         assert hook("ls").get("decision") != "block", "agreed: the tools run again, until the next read"
+    locked = Shares(record, actor=USER).create(f"doc:{doc.n}", comments=True, password="tulip")
+    trusted = Shares(record, actor=USER)._visitor_comment(locked, f"doc:{doc.n}", "Sam", "Please add the night shift")
+    announce(record, agent.n, "Bash", "journal search night", f"comment {trusted.n}: Please add the night shift")
+    assert hook("ls").get("decision") != "block", "a comment through a link with a password is trusted: reading it holds nothing"
+    assert any(f"Sam commented on doc {doc.n} through a shared link with a password" in line for line in nudges(record)), \
+        "and the agent is told it came from someone the user gave the password to"
 
 
 def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
