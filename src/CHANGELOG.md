@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.241.0 — no stall goes unseen
+
+**An agent that stands still is noticed, and so is what it waits on.** An agent that stops with work in hand is
+told to carry on five minutes later, then every ten minutes, three times at most while it stays idle. A Codex
+agent is told when a command it left running ends, when it has run for ten minutes, and when it stops while the
+command still runs; Claude already hears this from its own terminal. A visitor's comment on a link without a
+password now reaches you in the chat with the visitor's name and a button to let the agent act on it; until you
+press it, the agent carries on without it. Each environment on the hub shows how long its agent has been idle,
+beside Idle. And a blocked to-do that waits on a person or a decision is put to them as a question instead of
+staying blocked.
+
 ## 2.240.0 — each agent is told what really wakes it
 
 **When an agent runs the same check over and over, the journal's advice now fits its provider.** Claude is told to
