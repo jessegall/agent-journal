@@ -208,6 +208,12 @@ class KeepOutOfTheChat(Handler):
             context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
+def unfinished_pace(context: AgentContext) -> float:
+    if waiting(context.record, context.agent.row):
+        return minutes(WorkDetails.values(context.record).ask_awaiting_every)
+    return float(context.feature.cadence(context.record, "unfinished").every)
+
+
 def pace(context: AgentContext) -> int:
     if waiting(context.record, context.agent.row):
         return minutes(WorkDetails.values(context.record).ask_awaiting_every)

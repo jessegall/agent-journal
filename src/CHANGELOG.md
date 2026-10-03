@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.236.0 — every nudge's timing is a switch and a cadence in Settings
+
+**Each nudge is now a behaviour of its feature, with an on switch and a cadence on the Settings page**, the same
+kind as the journal's older ones: every N minutes, every N tool uses, or when the agent goes idle. The running
+plan and its blocked to-dos, the board ideas (every 12 hours), the four ticket reminders and the board check, the
+unfinished sequence step, the weekly reread of rules and facts and auto mode's offer of the next to-do all send
+through the one runner. The minute settings added for the plan nudges and the hours setting for board ideas
+are replaced by these cadences.
+
 ## 2.235.0 — nudges are declared in one place and sent by one runner
 
 **A feature now declares each nudge it sends: the line, how often it may go out, and what it is about**, and

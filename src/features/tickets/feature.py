@@ -3,10 +3,9 @@ from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
 from features.tickets.details import TicketsDetails
-from features.nudges import Nudge, fixed
+from features.nudges import Nudge
 from features.tickets.controller import DRAFTS, WAITS
 from features.tickets.handlers import (
-    CHECK_AFTER,
     FinishTheBoardWithItsLastTicket,
     HoldTicketKnowledge,
     LookAfterTicketBranches,
@@ -28,11 +27,11 @@ __all__ = ["Tickets"]
 class TicketsFeature(Feature):
     details = TicketsDetails
     nudges = (
-        Nudge("ticket_asks", every="remind_every", about=ticket_calls("ticket_asks")),
-        Nudge("ticket_awaits", every="remind_every", about=ticket_calls("ticket_awaits")),
-        Nudge(WAITS, every="remind_every", about=decisions(WAITS)),
-        Nudge(DRAFTS, every="remind_every", about=decisions(DRAFTS)),
-        Nudge("check_board", every=fixed(CHECK_AFTER), about=boards_to_check),
+        Nudge("ticket_asks", behaviour="asks", about=ticket_calls("ticket_asks")),
+        Nudge("ticket_awaits", behaviour="awaits", about=ticket_calls("ticket_awaits")),
+        Nudge(WAITS, behaviour="decisions", about=decisions(WAITS)),
+        Nudge(DRAFTS, behaviour="decisions", about=decisions(DRAFTS)),
+        Nudge("check_board", behaviour="board check", about=boards_to_check),
     )
 
     def register(self, journal: Journal) -> None:

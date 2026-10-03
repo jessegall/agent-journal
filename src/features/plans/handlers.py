@@ -122,7 +122,7 @@ class ReopenPlansWithTheirRows(Handler):
 
 def still_plans(context, agent) -> list[Sent]:
     quiet = time.time() - float(agent.at)
-    if agent.status != IDLE or quiet < float(context.settings["still_minutes"]) * MINUTE:
+    if agent.status != IDLE or quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE:
         return []
     found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._every() if plan.status == ACTIVE]
     return [Sent(str(plan.n), {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]

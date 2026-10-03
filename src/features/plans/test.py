@@ -181,7 +181,7 @@ def test_an_agent_building_a_plan_is_told_each_next_step():
     assert (Plans(record, actor="user").create("a digest").status, nudges(record)[-1]) == ("building", f"the user started plan {n + 1}, a digest - build it with them")
 
 
-def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_where_it_stopped():
+def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_where_it_stopped(monkeypatch):
     from tests.kit import nudges, report
     record = fresh()
     report(record, "working", "PreToolUse")
@@ -236,7 +236,8 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     tick(record)
     report(record, "working", "PreToolUse")
     assert asked() == 1, "a running plan with a blocked to-do asks whether it still is, and a tool use right after does not ask again"
-    record.state("nudges").set(f"plans.blocked.{first}", time.time() - 31 * 60)
+    later = time.time() + 31 * 60
+    monkeypatch.setattr(time, "time", lambda: later)
     report(record, "working", "PreToolUse")
     tick(record)
     assert asked() == 2, "once the minutes are up, a tool use asks again, and the clock right after does not"

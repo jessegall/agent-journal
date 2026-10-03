@@ -1,4 +1,5 @@
-from features.base import FeatureDetails, Line
+from features.base import Behaviour, FeatureDetails, Line
+from features.trigger import MINUTES, Trigger
 from features.settings import Setting
 from features.boards.resource import MEANINGS
 
@@ -43,6 +44,15 @@ class BoardsDetails(FeatureDetails):
         board that journal ticket merge lands, such as a version bump, tag and push; how it went is a comment on the ticket.
     """
 
+    behaviours = [
+        Behaviour(
+            name="ideas",
+            title="Think up new ideas for New work",
+            abstract="How often the agent thinks up what you might ask for on each board, shown as chips under New work",
+            trigger=Trigger(every=720, unit=MINUTES),
+        ),
+    ]
+
     settings = [
         Setting(
             name="filler_model",
@@ -54,12 +64,6 @@ class BoardsDetails(FeatureDetails):
             name="reviewer_model",
             default="sonnet",
             title="Model of the agents that review plans, tickets and the board's goal",
-        ),
-        Setting(
-            name="ideas_every",
-            default=12,
-            title="Hours between new ideas for New work",
-            abstract="How often the agent thinks up what you might ask for on each board, shown as chips under New work",
         ),
         Setting(
             name="orchestrating",

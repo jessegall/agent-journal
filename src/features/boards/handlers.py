@@ -5,7 +5,7 @@ from typing import ClassVar
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from features.boards.controller import DRAFTING_PHASE, Boards
-from features.nudges import HOUR, Sent
+from features.nudges import MINUTE, Sent
 from features.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
 
@@ -58,6 +58,6 @@ class MarkQuietFillingStalled(Handler):
 
 
 def boards_wanting_ideas(context, agent) -> list[Sent]:
-    every = float(context.settings["ideas_every"]) * HOUR
+    every = float(context.feature.cadence(context.record, "ideas").every) * MINUTE
     return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.boards._standing()
             if board.environment == context.record.env and not board.finished and time.time() - float(board.ideas_at) >= every]

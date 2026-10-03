@@ -4,7 +4,7 @@ from features.nudges import Nudge
 from features.sequences.controller import Sequences
 from features.sequences.details import SequencesDetails
 from features.sequences.handlers import (DispatchAgainOnAnswer, EndWithItsRow, HandStepToAgent, HoldJournalWritesForTheStep, KeepOutOfTheChat,
-                                         NudgeWaitingStep, StartOnMoment, StartOnTrigger, UNFINISHED, pace,
+                                         NudgeWaitingStep, StartOnMoment, StartOnTrigger, UNFINISHED, unfinished_pace,
                                          unfinished_steps)
 
 __all__ = ["Sequences"]
@@ -12,7 +12,7 @@ __all__ = ["Sequences"]
 
 class SequencesFeature(Feature):
     details = SequencesDetails
-    nudges = (Nudge(UNFINISHED, every=pace, about=unfinished_steps, private=False),)
+    nudges = (Nudge(UNFINISHED, behaviour="unfinished", about=unfinished_steps, private=False, pace=unfinished_pace),)
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(StartOnMoment())

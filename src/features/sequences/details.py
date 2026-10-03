@@ -1,4 +1,5 @@
-from features.base import FeatureDetails, Line
+from features.base import Behaviour, FeatureDetails, Line
+from features.trigger import MINUTES, Trigger
 from features.settings import Setting
 from features.sequences.handlers import DISPATCH, IN_CHAT, STEP, STEP_HELD, UNFINISHED, WAITING
 
@@ -47,6 +48,15 @@ class SequencesDetails(FeatureDetails):
         and takes --sure once you have read them. Some sequences ship
         with the journal; they are system sequences and cannot be changed or removed.
     """
+
+    behaviours = [
+        Behaviour(
+            name="unfinished",
+            title="Remind the agent of a sequence step left unfinished",
+            abstract="Said when the agent stops with a step in hand, then this often while it stays there; while the agent waits on something, as often as work tracking asks about a wait",
+            trigger=Trigger(every=1, unit=MINUTES),
+        ),
+    ]
 
     settings = [
         Setting(

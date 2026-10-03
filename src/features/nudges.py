@@ -1,13 +1,13 @@
-import time
-from dataclasses import dataclass
+import hashlib
+from dataclasses import dataclass, replace
 from typing import Callable
 
 from engine.events.agents import AgentReported
 from engine.events.engine import ClockTicked
+from features import trigger
 from features.parts import AgentContext, Handler
 
-MINUTE, HOUR = 60.0, 3600.0
-SENT = "nudges"
+MINUTE = 60.0
 
 
 @dataclass(frozen=True)
@@ -19,28 +19,26 @@ class Sent:
 @dataclass(frozen=True)
 class Nudge:
     line: str
-    every: str | Callable
+    behaviour: str
     about: Callable
-    unit: float = MINUTE
     private: bool = True
+    pace: Callable | None = None
 
-    def seconds(self, context) -> float:
-        return float(self.every(context) if callable(self.every) else context.settings[self.every]) * self.unit
+    def cadence(self, context) -> trigger.Trigger:
+        spec = context.feature.cadence(context.record, self.behaviour)
+        return spec if self.pace is None else replace(spec, every=self.pace(context))
 
     def due(self, context, agent) -> list[Sent]:
-        every, now = self.seconds(context), time.time()
-        sent = context.record.state(SENT)
-        due = [found for found in self.about(context, agent) if now - float(sent.get(self.named(context, found), 0)) >= every]
+        if not context.feature.on(context.record, self.behaviour):
+            return []
+        spec = self.cadence(context)
+        due = [found for found in self.about(context, agent) if trigger.due(context.record, agent, self.named(context, found), spec)]
         for found in due:
-            sent.set(self.named(context, found), now)
+            trigger.fired(context.record, agent, self.named(context, found))
         return due
 
     def named(self, context, found: Sent) -> str:
-        return f"{context.feature.name}.{self.line}.{found.key}"
-
-
-def fixed(minutes: float) -> Callable:
-    return lambda context: minutes
+        return f"{context.feature.keyed(self.behaviour)}.{hashlib.sha1(found.key.encode()).hexdigest()[:12]}"
 
 
 def send(context, nudges: tuple) -> None:
