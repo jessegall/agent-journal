@@ -80,6 +80,13 @@ class Source(Loaded):
 
 
 @dataclass(frozen=True)
+class Item(Loaded):
+    type: str = ""
+    process_id: str = ""
+    status: str = ""
+
+
+@dataclass(frozen=True)
 class Payload(Loaded):
     aliases = {"call": ("name",), "key": ("call_id", "id"), "arguments": ("arguments", "input"), "output_parts": ("output",),
                "rate_limits": ("rate_limits", "rateLimits")}
@@ -95,6 +102,8 @@ class Payload(Loaded):
     info: TokenInfo = TokenInfo()
     rate_limits: RateLimits | None = None
     source: Source = Source()
+    item: Item = Item()
+    completed_at_ms: float = 0.0
 
     @property
     def name(self) -> str:

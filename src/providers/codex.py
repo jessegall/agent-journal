@@ -1,13 +1,13 @@
 import json
 from functools import cache
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import re
 import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
-from providers.base import Provider, parsed, recent
+from providers.base import BackgroundTasks, Provider, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
 from engine.fields import Loaded
@@ -26,6 +26,8 @@ SPAWNED = re.compile(r'"agent_id":"([^"]+)"(?:,"nickname":"([^"]*)")?')
 CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"},
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
 FAST_CONTROLS = {"key": "fast", "label": "Fast mode", "choices": [{"value": "switch", "label": "Turn fast mode on or off", "command": "/fast"}]}
+SESSION_OPEN = re.compile(r'"session_id":\s*(\d+)')
+EXEC_COMMAND = re.compile(r'exec_command\(\{\s*cmd:\s*"((?:[^"\\]|\\.)*)"')
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
 
@@ -80,6 +82,11 @@ class CodexModel:
     @property
     def choice(self) -> dict:
         return {"value": self.slug, "label": self.display_name}
+
+
+@dataclass
+class CodexTasks(BackgroundTasks):
+    scripts: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -298,6 +305,26 @@ class Codex(Provider):
     def failure(self, path: Path) -> Failure | None:
         ends = [line for line in tail(path, TAIL_BYTES) if TASK_EVENTS.search(line)]
         return parsed(ends[-1], Failure.from_turn_end) if ends else None
+
+    def background_tasks(self, path: Path) -> BackgroundTasks:
+        return self.folded(path, self.task_rows, CodexTasks)
+
+    def task_rows(self, tasks: CodexTasks, row: Row) -> CodexTasks:
+        found = row.payload
+        if found.type == "custom_tool_call" and found.call == "exec":
+            command = EXEC_COMMAND.search(found.argument_text)
+            if command:
+                tasks.scripts[found.key] = command[1]
+        if found.type == "custom_tool_call_output":
+            script = tasks.scripts.pop(found.key, "")
+            for session in [s for s in SESSION_OPEN.findall(found.output_text) if s not in tasks.started]:
+                tasks.started[session] = row.at
+                tasks.commands[session] = script
+        if found.type == "item_completed" and found.item.type == "CommandExecution" and found.item.process_id in tasks.started:
+            tasks.ended.setdefault(found.item.process_id, found.completed_at_ms / 1000 if found.completed_at_ms else row.at)
+            if found.item.status == "failed":
+                tasks.failed.add(found.item.process_id)
+        return tasks
 
     def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
         found = self.subagent_transcript(path, session)

@@ -162,3 +162,31 @@ def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_onc
     assert driver.send("1 new message 6", now=True) is True, "a message Codex queues counts as delivered, so it is never typed again"
     assert (typed[-1], typed.count(b"\r"), driver.sent_now > 0) == (b"\x1b", 1, True), \
         "Esc sends it now, while the command runs on in its background terminal, and the engine can say so in the chat"
+
+
+def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time():
+    import json
+    from datetime import datetime, timezone
+    record = fresh()
+    transcript = record.root / "codex.jsonl"
+    stamp = lambda at: datetime.fromtimestamp(at, timezone.utc).isoformat().replace("+00:00", "Z")
+    started = time.time() - 700
+    transcript.write_text("".join(json.dumps(line) + "\n" for line in (
+        {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c1", "name": "exec",
+                                                                             "input": 'const r=await tools.exec_command({cmd:"make test",yield_time_ms:1000});text(r);'}},
+        {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c1",
+                                                                             "output": [{"type": "input_text", "text": '{"chunk_id":"a","session_id":42,"output":""}'}]}})))
+    told = lambda: [n for n in nudges(record) if "make test" in n]
+    report(record, "idle", "Stop", provider="codex", transcript=str(transcript))
+    tick(record)
+    tick(record)
+    assert told() == ["a command you left running has run for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
+        "a run open past ten minutes and an agent stopped while it runs are each told once"
+    with transcript.open("a") as more:
+        more.write(json.dumps({"timestamp": stamp(time.time()), "type": "event_msg", "payload": {
+            "type": "item_completed", "item": {"type": "CommandExecution", "process_id": "42", "status": "failed"}, "completed_at_ms": time.time() * 1000}}) + "\n")
+    tick(record)
+    tick(record)
+    assert told()[2:] == ["the command you left running failed - make test"], "its end is told once"
+    report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
+    assert len(told()) == 3, "a provider that wakes its agent itself is left to do so"
