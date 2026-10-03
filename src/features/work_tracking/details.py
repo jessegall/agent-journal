@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
-from features.trigger import IDLE, Trigger, WORKED
+from features.trigger import IDLE, MINUTES, Trigger, WORKED
 
 
 class WorkDetails(FeatureDetails):
@@ -59,6 +59,12 @@ class WorkDetails(FeatureDetails):
             abstract="The next ready row is offered on idle, and blocking questions are refused",
             default=True,
             trigger=Trigger(on=IDLE),
+        ),
+        Behaviour(
+            name="carry on",
+            title="Tell an agent that stopped with work in hand to carry on",
+            abstract="Five minutes after it stops with unparked work it is not waiting on, then this often, three times at most",
+            trigger=Trigger(every=10, unit=MINUTES),
         ),
     ]
 
@@ -147,6 +153,15 @@ class WorkDetails(FeatureDetails):
                 if work {{work}} waits on the user, decide it yourself when you can; otherwise put the question on
                 its row with journal todo ask, end or park the work, and start todo {{n}}. Stop only when nothing
                 ready is left.
+            """,
+        ),
+        Line(
+            name="carry on",
+            title="you stopped {{minutes}} minutes ago with work {{n}}, {{title}}, in hand",
+            brief="""
+                carry on with it now. If it waits on something outside your hands, say journal work await
+                "<what you wait for>"; if it waits on the user, put the question on its row with journal todo ask
+                and take the next ready row; if something else goes first, journal work park {{n}} "<why>".
             """,
         ),
         Line(

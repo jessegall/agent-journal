@@ -2,7 +2,6 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from resources.types import IDLE
 from engine.events.engine import ClockTicked
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
 from features.nudges import MINUTE, Sent
@@ -115,8 +114,8 @@ def decisions(permission: str):
 
 def boards_to_check(context, agent) -> list[Sent]:
     boards = Tickets(context.record, actor=SYSTEM)._orchestrating()
-    if not boards or agent.status != IDLE or all_parked(Works(context.record, actor=SYSTEM)._standing()):
+    if not boards or all_parked(Works(context.record, actor=SYSTEM)._standing()):
         return []
-    if time.time() - float(agent.at) < float(context.feature.cadence(context.record, "board check").every) * MINUTE:
+    if agent.idle_for < float(context.feature.cadence(context.record, "board check").every) * MINUTE:
         return []
     return [Sent(",".join(map(str, boards)), {"about": ", ".join(f"board {n}" for n in boards)})]

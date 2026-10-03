@@ -1,4 +1,3 @@
-import time
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -13,7 +12,6 @@ from features.work_tracking.auto import passes_checkpoints
 from features.work_tracking.next import ready
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
-from resources.types import IDLE
 
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
@@ -121,8 +119,8 @@ class ReopenPlansWithTheirRows(Handler):
 
 
 def still_plans(context, agent) -> list[Sent]:
-    quiet = time.time() - float(agent.at)
-    if agent.status != IDLE or quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE:
+    quiet = agent.idle_for
+    if quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE:
         return []
     found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._every() if plan.status == ACTIVE]
     return [Sent(str(plan.n), {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]

@@ -7,7 +7,7 @@ from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features import trigger
-from features.nudges import Sent
+from features.nudges import MINUTE, Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
@@ -156,6 +156,8 @@ class TrackFiles(Handler):
 
 
 POLLED = 3
+FIRST_AFTER = 5
+CARRY_ON_TIMES = 3
 POLLING = "polling"
 POLLING_NO_WAKE = "polling, no wake"
 
@@ -236,3 +238,13 @@ def next_row(standing: bool):
     return about
 
 
+
+
+def stopped_with_work(context, agent) -> list[Sent]:
+    every = float(context.feature.cadence(context.record, "carry on").every) * MINUTE
+    unwaited = [w for w in working(context) if not w.awaiting][:1]
+    late = agent.idle_for - FIRST_AFTER * MINUTE
+    if not unwaited or late < 0 or late // every >= CARRY_ON_TIMES:
+        return []
+    work = unwaited[0]
+    return [Sent(f"{work.n}:{agent.uses}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]

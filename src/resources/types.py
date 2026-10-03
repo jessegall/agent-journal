@@ -1,3 +1,4 @@
+import time
 from typing import ClassVar
 
 from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Resource, ResourceDetails
@@ -340,6 +341,14 @@ class AgentRow(Shape, Resource):
     icon = "bot"
     in_sidebar = False
     notified = ()
+
+    @property
+    def quiet_for(self) -> float:
+        return time.time() - float(self.at)
+
+    @property
+    def idle_for(self) -> float:
+        return self.quiet_for if self.status == IDLE else 0.0
 
     @property
     def subagent(self) -> bool:
