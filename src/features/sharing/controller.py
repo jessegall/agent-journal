@@ -147,8 +147,9 @@ class Shares(Controller):
         from controllers.types import Comments
         record = self._home(share)
         comments = Comments(record, actor=SYSTEM)
-        made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n)
-        index_comment(record, made, comments.path(made.n))
+        made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n, trusted=bool(share.password))
+        if not made.data["trusted"]:
+            index_comment(record, made, comments.path(made.n))
         kind, _, n = ref.partition(":")
         about = CONTROLLERS[kind](record, actor=SYSTEM)
         about.save(about.load(n), "commented", comment=made.n)

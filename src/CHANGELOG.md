@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.232.0 — comments through a link with a password are trusted
+
+**A link with a password is open only to people you gave it to, so their comments are trusted.** The agent is
+told who commented and acts on it as on your own words: reading the comment holds nothing, and there is no
+agreement to type first. A link without a password keeps the guard as before. Anyone with the password counts
+as trusted, so stopping the link or giving it a new password is how someone is shut out.
+
 ## 2.231.1 — a shared page opens at once on a big project
 
 **A shared page no longer waits on a walk of the whole project.** Its text was formatted as in the viewer, which
