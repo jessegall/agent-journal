@@ -48,6 +48,11 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert (codex.consent(asked), codex.opening(asked)) == (b"1\r", ""), "Codex's trust question is answered Yes by number, before the opening"
     assert codex.opening(b"\x1b[2m> Ask Codex to do anything\x1b[0m") == codex.OPENING, "at its empty prompt Codex is given the journal's opening line"
     assert codex.consent(asked + b"\r\n> Ask Codex to do anything") == b"", "once Codex is at its prompt, nothing more is typed into the question"
+    claude = DRIVERS["claude"]
+    warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
+              "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
+    assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \
+        "Claude's development channels warning is answered with Enter while its menu is the last thing on screen, never once the prompt is back"
     update = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nUpdate available 0.159.3 \xe2\x86\x92 0.160.0\r\n\xe2\x80\xba 1. Update now\r\n  2. Skip\r\n  3. Skip until next version"
     assert (codex.consent(update), codex.opening(update)) == (b"2\r", ""), "Codex's update question is skipped, and the opening waits until it is gone"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \
