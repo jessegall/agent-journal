@@ -6,9 +6,7 @@ from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event, Refused
 from resources.types import AgentRow, BUSY, COMPACTING, IDLE, STATES, STOPPED, TYPES, WORKING
 from engine.wording import counted
-from providers.drivers import TERMINAL
 
-TYPED_TRIES = 2
 
 
 def settled(record: Record, event: Event) -> bool:
@@ -89,7 +87,6 @@ class Agent(Actor):
         super().__init__(record)
         self.driver = driver
         self.pending: list[Event] = []
-        self.tries: dict[int, int] = {}
 
     def notify(self, event: Event) -> None:
         self.pending.append(event)
@@ -97,28 +94,20 @@ class Agent(Actor):
     def delivered_until(self) -> int:
         return self.pending[-1].id if self.pending else self.cursor()
 
-    def typed(self, event: Event) -> bool:
-        return spoken_data(self.record, event).get("delivery") == TERMINAL
-
     def flush(self) -> str:
         if not self.pending or not self.driver.ready():
             return ""
         for e in [e for e in self.pending if settled(self.record, e)]:
             self.notified(e)
             self.pending.remove(e)
-        typed = [e for e in self.pending if self.typed(e)]
-        yielding = [e for e in self.pending if e not in typed and spoken_data(self.record, e).get("yields")]
-        line, groups = render([e for e in self.pending if e not in typed and e not in yielding], self.record)
+        yielding = [e for e in self.pending if spoken_data(self.record, e).get("yields")]
+        line, groups = render([e for e in self.pending if e not in yielding], self.record)
         sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
-        entered = self.driver.type_in(render(typed, self.record)[0]) if typed else True
-        for e in typed:
-            self.tries[e.id] = self.tries.get(e.id, 0) + 1
-        done = [e for e in typed if entered or self.tries[e.id] >= TYPED_TRIES] + ([e for e in self.pending if e not in typed] if sent else [])
+        done = list(self.pending) if sent else []
         for e in done:
             if TYPES[e.type].stamped_when_notified:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
-            self.tries.pop(e.id, None)
         self.pending = [e for e in self.pending if e not in done]
         if not sent:
             return ""

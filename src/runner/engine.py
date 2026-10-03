@@ -327,7 +327,7 @@ class Engine(Seat):
             self.paused = False
             self.agent.mark("", "", paused=0)
             self.noted("Continued")
-            self.agent.driver.deliver(RESUMED)
+            self.agent.driver.send(RESUMED, now=True)
             return "resumed"
         if not self.paused:
             return ""
@@ -368,7 +368,7 @@ class Engine(Seat):
         self.controlled_at = time.time()
         if self.carry_on:
             self.carry_on = False
-            self.agent.driver.deliver(CARRY_ON)
+            self.agent.driver.send(CARRY_ON, now=True)
         if queued.action and queued.label:
             delivered(self.record, self.names(), queued.action, queued.label)
         row = Agents(self.record, actor=SYSTEM).by_session(last.title if last else self.agent.driver.session)

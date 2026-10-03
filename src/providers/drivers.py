@@ -27,7 +27,7 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 BETWEEN, FLOOD = 5.0, 20
 REPORT_FOR = 0.5
-CHANNEL, TERMINAL = "channel", "terminal"
+JOURNAL = "journal"
 
 
 def joined(text: str) -> str:
@@ -43,6 +43,7 @@ class Driver(ABC):
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
+    TAKES_CHANNEL = False
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
     WORKTREE: tuple = ()
@@ -211,7 +212,9 @@ class Driver(ABC):
     def consent(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str = "", groups: dict | None = None, yielding: str = "") -> bool:
+    def send(self, text: str = "", groups: dict | None = None, yielding: str = "", now: bool = False, by: str = JOURNAL) -> bool:
+        if now:
+            return self._deliver(joined(text), by)
         line = joined(text)
         if line:
             self.held.append(line)
@@ -235,24 +238,19 @@ class Driver(ABC):
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.groups, self.record))))
         self.held, self.groups, self.sent_at = [], {}, time.time()
-        self.failed = not self.deliver(line)
+        self.failed = not self._deliver(line, JOURNAL)
         return "" if self.failed else line
 
-    def deliver(self, text: str) -> bool:
-        line = joined(text)
-        return self._post(line) or self.type_in(line)
+    def _deliver(self, line: str, by: str) -> bool:
+        if self.TAKES_CHANNEL and self._post(line, by):
+            return True
+        return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=False)
 
-    def _post(self, line: str) -> bool:
-        return False
-
-    def type_in(self, text: str) -> bool:
-        return self._typed(f"{MARK} {joined(text)}", confirmed=True)
+    def _post(self, line: str, by: str) -> bool:
+        raise NotImplementedError(f"{self.PRODUCT} takes no channel")
 
     def run_shell(self, command: str) -> bool:
         return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)
-
-    def enter(self, text: str) -> bool:
-        return self._typed(joined(text), confirmed=False)
 
     def run_command(self, command: str) -> bool:
         return self._typed(command.strip(), confirmed=False)

@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.237.0 — one way to send a message to an agent
+
+**Every message that reaches an agent now goes through one send on its provider, and the provider decides how it
+arrives.** A provider declares whether it takes the journal's channel: Claude does and gets its lines there while
+the channel listens; any other provider, Codex among them, has them typed into its terminal. The journal's own
+lines carry the [journal] mark; a dispatcher's words to its helper, the orchestrator's note to a ticket's agent
+and a role agent's message arrive bare, as a person's. The four doors this replaces are gone, and the start
+greeting no longer takes a separate typed path.
+
 ## 2.236.1 — Claude starts past its development channels warning again
 
 **A Claude session started under the journal answers Claude's development channels warning by itself again.**

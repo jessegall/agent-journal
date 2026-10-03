@@ -100,7 +100,7 @@ class Confirm:
         self.ready = (self.ready or time.time()) if opening else 0.0
         if opening and time.time() - self.ready >= DRIVERS[self.agent].CONFIRM_AFTER:
             self.answered = True
-            self.driver.type_in(opening)
+            self.driver.send(opening, now=True)
 
     def consent(self, early: bytes) -> None:
         if time.time() - self.consented < CONSENT_EVERY:

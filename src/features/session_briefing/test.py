@@ -78,19 +78,11 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     time.sleep(0.01)
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time())
-    typed = []
-    engine.agent.driver.send = lambda text="", **rest: typed.append((text, False)) or True
-    engine.agent.driver.type_in = lambda text: typed.append((text, True)) or True
+    sent = []
+    engine.agent.driver.send = lambda text="", **rest: sent.extend([text, rest.get("yielding", "")]) or True
     engine.deliver()
-    assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat in plain words, never [!internal], so the journal's messages reach you", True)], \
-        "the greeting is typed into the terminal at once, never marked read as history"
-    from agents.actors import TYPED_TRIES
-    tried = []
-    engine.agent.pending = [event for event in record.events(0) if event.type == "nudge"][-1:]
-    engine.agent.driver.type_in = lambda text: tried.append(text) and False
-    for _ in range(4):
-        engine.agent.flush()
-    assert (len(tried), engine.agent.pending) == (TYPED_TRIES, []), "a typed line whose landing is never confirmed is tried twice at most, never after every turn"
+    assert any(f"the journal is ready on {record.env} — say hello in the chat in plain words, never [!internal], so the journal's messages reach you" in text for text in sent), \
+        "the greeting goes out through the one send, never marked read as history"
     from controllers.types import Environments
     from engine.record import Record
     Environments(record, actor="system").create("ticket-5", owner="ticket:5")
@@ -101,7 +93,6 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-5", at=time.time())
     quiet = []
     engine.agent.driver.send = lambda text="", **rest: quiet.append(text) or True
-    engine.agent.driver.type_in = lambda text: quiet.append(text) or True
     engine.deliver()
     assert not [text for text in quiet if "say hello" in text], "an agent working in the background, such as a ticket's, is never asked to say hello"
 
@@ -145,7 +136,7 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-99")
     sent = []
-    driver.deliver = lambda line: sent.append(line) or True
+    driver._deliver = lambda line, by: sent.append(line) or True
     driver.send("first")
     driver.send("second")
     assert (sent, driver.held) == (["first"], ["second"]), "nothing queued: sent at once; inside the five seconds: queued"
@@ -165,7 +156,7 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     written = []
     driver._wrote = lambda raw: written.append(raw) or True
     driver._report = lambda: SimpleNamespace(at=time.time()) if written.count(b"\r") >= 2 else None
-    assert (driver.type_in("hello"), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
+    assert (driver.send("hello", now=True), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
 
 
@@ -188,24 +179,24 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     driver.last_report = lambda: SimpleNamespace(transcript=str(transcript))
     stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
-    assert driver._handed("todo 5 next") is True, "a live channel takes the line"
+    assert driver._handed("todo 5 next", "journal") is True, "a live channel takes the line"
     time.sleep(0.01)
     written({"type": "attachment", "timestamp": stamp(), "attachment": {"type": "queued_command", "prompt": '<channel source="journal" from="journal">\ntodo 5 next'}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("2 new messages 7, 8") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
+    assert driver._handed("2 new messages 7, 8", "journal") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
     time.sleep(0.01)
     tucked = 'done\nA message arrived from journal while you were working:\n<channel source="journal" from="journal">\n2 new messages 7, 8\n</channel>'
     written({"type": "user", "timestamp": stamp(), "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": tucked}]}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("todo 7 next") is True, "a line that reached the agent inside a tool result keeps the channel in use"
+    assert driver._handed("todo 7 next", "journal") is True, "a line that reached the agent inside a tool result keeps the channel in use"
     time.sleep(0.01)
     written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\ntodo 7 next\n</channel>'},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("todo 9 next") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
+    assert driver._handed("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
     time.sleep(0.01)
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("work 1 open") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
-    assert driver._handed("todo 6 next") is False, "and keeps typing them for a while rather than losing more"
+    assert driver._handed("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
+    assert driver._handed("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
@@ -256,11 +247,11 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     monkeypatch.setattr(driver, "_wrote", wrote)
     monkeypatch.setattr(driver, "clear_input", lambda: None)
     monkeypatch.setattr(driver, "_submitted", lambda since: True)
-    assert driver.type_in("the plan waits") and pressed.count(b"\r") == 2, "Enter is pressed again while the line still sits in the input box"
+    assert driver.send("the plan waits", now=True) and pressed.count(b"\r") == 2, "Enter is pressed again while the line still sits in the input box"
     pressed.clear()
     screen.write_bytes("❯ [journal] stuck for good\n".encode())
     monkeypatch.setattr(driver, "_wrote", lambda raw: pressed.append(raw) or True)
-    assert not driver.type_in("stuck for good") and pressed.count(b"\r") == 1 + providers.drivers.RESUBMITS, \
+    assert not driver.send("stuck for good", now=True) and pressed.count(b"\r") == 1 + providers.drivers.RESUBMITS, \
         "a line that never leaves the input box is pressed a few times at most and reported as not sent"
     import json
     from datetime import datetime, timezone
@@ -271,12 +262,12 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     transcript = record.root / "t.jsonl"
     transcript.write_text(json.dumps({"type": "user", "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "message": {"content": note}}) + "\n")
     monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(transcript=str(transcript)))
-    assert driver.enter(note) and pressed.count(b"\r") == 1, \
+    assert driver.send(note, now=True, by="ticket-8") and pressed.count(b"\r") == 1, \
         "a note already in the agent's transcript has landed, though a freshly started agent's screen still shows it last"
     pressed.clear()
     screen.write_bytes("❯ [Pasted text #1 +2 lines]\n".encode())
     monkeypatch.setattr(providers.drivers, "TYPED_PER_SECOND", 10 ** 9)
-    assert driver.enter("a long review note " * 30) and pressed[0].startswith(providers.drivers.PASTE_START) and pressed.count(b"\r") == 1, \
+    assert driver.send("a long review note " * 30, now=True, by="ticket-8") and pressed[0].startswith(providers.drivers.PASTE_START) and pressed.count(b"\r") == 1, \
         "a long line goes in as one paste and is sent once: a busy agent keeps a queued paste's placeholder in view, which is no sign it is stuck"
     claude = DRIVERS["claude"](record, "claude-8")
     monkeypatch.setattr(claude, "last_printed", lambda: "done\n❯ ")

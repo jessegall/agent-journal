@@ -3,7 +3,6 @@ from functools import cached_property
 
 from controllers.base import NAMED, Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
-from providers.drivers import CHANNEL, TERMINAL
 from engine.wording import appended
 from features.parts import AgentHooks, Client, Commands, Events
 from resources.base import SYSTEM, titled
@@ -77,17 +76,14 @@ class Journal:
     def agent(self) -> AgentHooks:
         return AgentHooks(self.feature)
 
-    def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, delivery: str = CHANNEL, **values):
+    def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, **values):
         spec = self.feature.lines[line]
         if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
         lead, yields = spec.lead, not spec.while_waiting
-        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery, yields=yields)
+        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, yields=yields)
         added = appended(f"{self.feature.name}.{line}", {**values, "record": record}, "").removeprefix(" - ")
         return self.send(record, replace(message, brief=". ".join(part for part in (added, message.brief) if part)))
-
-    def type(self, record, agent, line: str, **values):
-        return self.say(record, agent, line, private=True, delivery=TERMINAL, **values)
 
     def whisper(self, record, agent, line: str, actor: str = SYSTEM, **values):
         return self.say(record, agent, line, private=True, actor=actor, **values)

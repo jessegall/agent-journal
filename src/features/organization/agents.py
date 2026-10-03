@@ -30,7 +30,7 @@ def start_role_agent(record, role: Role, n: int, brief: str) -> str:
 def enter_into(record, name: str, text: str) -> bool:
     from providers import DRIVERS
     session = Sessions(record.root).holder(name)
-    return bool(session) and DRIVERS[PROVIDER](Record(record.root, name), terminal_of(record.root, session)).enter(text)
+    return bool(session) and DRIVERS[PROVIDER](Record(record.root, name), terminal_of(record.root, session)).send(text, now=True, by=record.env)
 
 
 def stop_role_agent(record, name: str) -> None:

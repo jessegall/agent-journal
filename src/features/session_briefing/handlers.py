@@ -11,7 +11,7 @@ SHAPING = ("feature", "plugin", "environment")
 class GreetOnce(Handler):
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         if not in_background(context.record) and context.once("greeted", "ready"):
-            context.agent.type("ready", env=context.record.env)
+            context.agent.whisper("ready", env=context.record.env)
 
 
 class RebuildStartBlock(Handler):
