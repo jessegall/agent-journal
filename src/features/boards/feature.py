@@ -4,7 +4,7 @@ from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards, boards_wanting_ideas
 from features.boards.limits import BoardWorkStaysOnTheBoard
 from features.journal import Journal
-from features.nudges import HOUR, Nudge
+from features.nudges import Nudge
 from features.sequences.exploration import FILLER
 from features.sequences.handlers import DISPATCH_MODELS
 from features.boards.orchestration import orchestration
@@ -15,7 +15,7 @@ __all__ = ["Boards"]
 
 class BoardsFeature(Feature):
     details = BoardsDetails
-    nudges = (Nudge("ideas", every="ideas_every", about=boards_wanting_ideas, unit=HOUR),)
+    nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas),)
 
     def register(self, journal: Journal) -> None:
         START_PARTS[ORCHESTRATION] = orchestration

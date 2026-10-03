@@ -21,7 +21,7 @@ from features.work_tracking.next import ROW_HOLDS
 
 class PlansFeature(Feature):
     details = PlansDetails
-    nudges = (Nudge("still", every="still_minutes", about=still_plans), Nudge("blocked", every="blocked_minutes", about=blocked_plans))
+    nudges = (Nudge("still", behaviour="still", about=still_plans), Nudge("blocked", behaviour="blocked", about=blocked_plans))
 
     def register(self, journal: Journal) -> None:
         if held not in ROW_HOLDS:

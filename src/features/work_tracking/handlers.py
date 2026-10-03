@@ -7,6 +7,7 @@ from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features import trigger
+from features.nudges import Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
@@ -222,29 +223,13 @@ class ResetEditsOnLog(Handler):
         context.release()
 
 
-class OfferNextRow(Handler):
-    behaviour = "auto"
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        offer(context)
-
-
-class OfferNextRowOnTheClock(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        if context.on("auto") and context.agent.row.status == IDLE:
-            offer(context)
+def next_row(standing: bool):
+    def about(context, agent) -> list[Sent]:
+        open_work = working(context)
+        row = next(context.record)
+        if not row or bool(open_work) != standing or (open_work and open_work[0].awaiting):
+            return []
+        return [Sent(str(row.n), {"n": row.n, "work": open_work[0].n} if standing else {"n": row.n})]
+    return about
 
 
-def offer(context: AgentContext) -> None:
-    open_work = working(context)
-    if open_work and (context.agent.row.status != IDLE or open_work[0].awaiting):
-        return
-    row = next(context.record)
-    stretch = f"{row.n}:{context.agent.row.at}" if row else ""
-    if not row or context.state.get("offered") == stretch:
-        return
-    context.state.set("offered", stretch)
-    if open_work:
-        context.agent.say("next while waiting", n=row.n, work=open_work[0].n)
-        return
-    context.agent.say("next", n=row.n)

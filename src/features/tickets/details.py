@@ -1,4 +1,4 @@
-from features.base import FeatureDetails, Line, Setting
+from features.base import Behaviour, FeatureDetails, Line, Setting
 from features.trigger import MINUTES, Trigger
 
 
@@ -113,11 +113,18 @@ class TicketsDetails(FeatureDetails):
         ),
     ]
 
+    behaviours = [
+        Behaviour(name="asks", title="Remind the orchestrator of a ticket agent's open question", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="awaits", title="Remind the orchestrator of a ticket agent waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="decisions", title="Remind the orchestrator of waits and drafts it may decide", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="board check", title="Ask an idle orchestrator to check on its boards", trigger=Trigger(every=5, unit=MINUTES)),
+    ]
+
     settings = [
         Setting(
             name="remind_every",
             default=5,
-            title="Remind the orchestrator of a ticket agent still waiting every",
+            title="Tell the orchestrator again that a ticket's plan is done every",
             unit="minutes",
         ),
         Setting(

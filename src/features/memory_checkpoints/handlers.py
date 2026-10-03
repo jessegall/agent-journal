@@ -2,6 +2,7 @@ from controllers.types import CONTROLLERS
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceCreated
 from features.memory_checkpoints.reread import owed
+from features.nudges import Sent
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from resources.base import AGENT, SYSTEM
 from resources.types import TYPES
@@ -36,12 +37,8 @@ class MarkWhatWasKept(Handler):
             agents.card(row.n, label=MARKED[event.type], icon=TYPES[event.type].icon, detail=kept.title, ref=kept.ref)
 
 
-class NameOwedReading(Handler):
-    behaviour = "rereading"
-
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if owed(context.record):
-            context.agent.say("reread")
+def owed_reading(context, agent) -> list[Sent]:
+    return [Sent("reread", {})] if owed(context.record) else []
 
 
 class DecideAtMarksOnChange(OnAgentUpdated, DecideAtMarks):

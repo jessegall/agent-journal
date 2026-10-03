@@ -1,5 +1,5 @@
-from features.base import FeatureDetails, Line
-from features.settings import Setting
+from features.base import Behaviour, FeatureDetails, Line
+from features.trigger import MINUTES, Trigger
 
 
 class PlansDetails(FeatureDetails):
@@ -37,18 +37,18 @@ class PlansDetails(FeatureDetails):
         <n> sets a plan aside; a parked plan's rows wait until it is started again.
     """
 
-    settings = [
-        Setting(
-            name="still_minutes",
-            default=5,
-            title="Minutes a running plan may stand still",
-            abstract="When a plan runs and the agent has done nothing this long while the plan has rows it can do, it is told to carry on",
+    behaviours = [
+        Behaviour(
+            name="still",
+            title="Tell an agent standing still to carry on with the running plan",
+            abstract="When a plan runs with rows the agent can do and it has done nothing this long, it is told to carry on",
+            trigger=Trigger(every=5, unit=MINUTES),
         ),
-        Setting(
-            name="blocked_minutes",
-            default=30,
-            title="Minutes between asks about a running plan's blocked to-dos",
-            abstract="While a plan runs with blocked to-dos, the agent is asked this often to check whether each is still blocked",
+        Behaviour(
+            name="blocked",
+            title="Ask whether a running plan's blocked to-dos still are",
+            abstract="While a plan runs with blocked to-dos, the agent is asked this often to check each, on the clock and on tool use",
+            trigger=Trigger(every=30, unit=MINUTES),
         ),
     ]
 

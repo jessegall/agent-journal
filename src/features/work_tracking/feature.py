@@ -3,13 +3,16 @@ from features.journal import Journal
 from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
-from features.work_tracking.handlers import (AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OfferNextRow, OfferNextRowOnTheClock, OpenWork, RemindOpenWork, ResetEditsOnLog,
+from features.nudges import Nudge
+from features.work_tracking.handlers import (next_row, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites
 
 
 class WorkFeature(Feature):
     details = WorkDetails
+    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False),
+              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False))
 
     def chosen(self, record, key: str) -> bool:
         return super().chosen(record, key) or (key == "auto" and bool(steered(record)))
@@ -37,6 +40,4 @@ class WorkFeature(Feature):
         journal.events.handler(RemindOpenWork())
         journal.events.handler(CountEdits())
         journal.events.handler(ResetEditsOnLog())
-        journal.events.handler(OfferNextRow())
-        journal.events.handler(OfferNextRowOnTheClock())
         journal.agent.interceptor(RefuseHeldWrites())

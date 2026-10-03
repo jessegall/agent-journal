@@ -13,7 +13,6 @@ from features.boards.controller import Boards
 from features.tickets.controller import HELD, Tickets
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
 
-CHECK_AFTER = 5
 NUDGED = ("ticket_asks", "ticket_awaits")
 LOOK_AGAIN = 900
 
@@ -125,6 +124,6 @@ def boards_to_check(context, agent) -> list[Sent]:
     boards = Tickets(context.record, actor=SYSTEM)._orchestrating()
     if not boards or agent.status != IDLE or all_parked(Works(context.record, actor=SYSTEM)._standing()):
         return []
-    if time.time() - float(agent.at) < CHECK_AFTER * MINUTE:
+    if time.time() - float(agent.at) < float(context.feature.cadence(context.record, "board check").every) * MINUTE:
         return []
     return [Sent(",".join(map(str, boards)), {"about": ", ".join(f"board {n}" for n in boards)})]
