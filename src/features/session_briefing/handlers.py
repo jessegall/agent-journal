@@ -1,6 +1,7 @@
 from engine import bus
 from engine.events.agents import SessionStarted
 from engine.events.resources import AnyEvent
+from features.chat_etiquette.handlers import takes_internal
 from features.parts import AgentContext, Context, Handler, in_background
 from features.session_briefing.block import rebuild
 from resources.types import TYPES
@@ -11,7 +12,7 @@ SHAPING = ("feature", "plugin", "environment")
 class GreetOnce(Handler):
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         if not in_background(context.record) and context.once("greeted", "ready"):
-            context.agent.whisper("ready", env=context.record.env)
+            context.agent.whisper("ready" if takes_internal(context.agent.row) else "ready, untagged", env=context.record.env)
 
 
 class RebuildStartBlock(Handler):
