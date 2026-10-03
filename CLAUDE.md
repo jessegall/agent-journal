@@ -1,27 +1,6 @@
 # agent-journal
 
-## Dispatching subagents
-
-Every Agent dispatch names its model: `haiku` for mechanical known-answer work, `sonnet`
-for careful work without invention, `opus` only for judgement. Unset means the
-orchestrator's own model, which is the wrong default. The journal carries this as a rule
-(`journal rules`); this file carries it so it is read before the first dispatch.
-
-## Controllers by reference
-
-A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` from `controllers.types` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only.
-
-## Skills
-
-A skill is read by the agent, so it exists only when it tells the agent what to do: a command to run or a decision to make at a moment it would otherwise get wrong. A feature that runs by itself gets no skill; its help lives on the Settings page, and anything the agent must act on travels in the nudge the feature sends. Before adding a skill, fold it into the skill of the subject it belongs to (memory, reports, to-dos, messages, tickets) rather than starting another.
-
-## Tests
-
-The default commands carry no hand-written tests. `tests/test_every_action.py` loops over every registered resource type and every action on its controller, and `tests/test_the_gate.py` loops over every provider; between them they cover create, read, update, complete and the rest for every type.
-
-A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
-
-<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->
+<!-- BEGIN: agent-journal, form 2 (auto-generated, run `journal upgrade`) -->
 
 ## The journal's law
 
@@ -47,4 +26,25 @@ A subagent that drew a design, wrote the code or ran the research keeps what it 
 
 A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as "Dr. Einstein: profile the slow hooks" or "Coco Rams: draw the plan card". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.
 
-<!-- END: agent-journal law -->
+<!-- END: agent-journal, form 2 -->
+
+## Dispatching subagents
+
+Every Agent dispatch names its model: `haiku` for mechanical known-answer work, `sonnet`
+for careful work without invention, `opus` only for judgement. Unset means the
+orchestrator's own model, which is the wrong default. The journal carries this as a rule
+(`journal rules`); this file carries it so it is read before the first dispatch.
+
+## Controllers by reference
+
+A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` from `controllers.types` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only.
+
+## Skills
+
+A skill is read by the agent, so it exists only when it tells the agent what to do: a command to run or a decision to make at a moment it would otherwise get wrong. A feature that runs by itself gets no skill; its help lives on the Settings page, and anything the agent must act on travels in the nudge the feature sends. Before adding a skill, fold it into the skill of the subject it belongs to (memory, reports, to-dos, messages, tickets) rather than starting another.
+
+## Tests
+
+The default commands carry no hand-written tests. `tests/test_every_action.py` loops over every registered resource type and every action on its controller, and `tests/test_the_gate.py` loops over every provider; between them they cover create, read, update, complete and the rest for every type.
+
+A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
