@@ -52,5 +52,6 @@ class Agents(Controller):
         return self._titled(session) if session else self.primary()
 
     def primary(self):
-        standing = [self.load(row["n"]) for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
-        return max(standing, key=lambda agent: float(agent.at), default=None)
+        standing = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
+        latest = max(standing, key=lambda row: 0.0 if row["at"] is None else float(row["at"]), default=None)
+        return self.load(latest["n"]) if latest is not None else None

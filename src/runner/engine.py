@@ -250,10 +250,10 @@ class Engine(Seat):
         row = driver.last_report() if driver.ASKS_ON_SCREEN else None
         if row is None:
             return
-        asked = driver.asked()
-        if (asked is not None) == bool(row.asking):
+        asked = asking_row(driver.asked())
+        if asked.get("call") == row.asking.get("call"):
             return
-        Agents(self.record, actor=SYSTEM).update(row.n, asking=asking_row(asked))
+        Agents(self.record, actor=SYSTEM).update(row.n, asking=asked)
 
     def permitted(self) -> str:
         queued = take(self.record.root, self.names(), PERMIT)

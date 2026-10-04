@@ -51,13 +51,13 @@ def cartoon_names(record) -> bool:
 FORM = 2
 BEGIN = f"<!-- BEGIN: agent-journal, form {FORM} (auto-generated, run `journal upgrade`) -->"
 END = f"<!-- END: agent-journal, form {FORM} -->"
-CURRENT = re.compile(r"\n?<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->\n?", re.DOTALL)
+CURRENT = re.compile(r"<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->", re.DOTALL)
 CONFLICTED = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
 
 
 @dataclass(frozen=True)
-class Retired:
+class Markers:
     begin: str
     end: str
 
@@ -70,10 +70,11 @@ class Retired:
         return found[0] if len(found) == 1 else ""
 
 
+CURRENT_MARKERS = Markers("<!-- BEGIN: agent-journal, form", "<!-- END: agent-journal, form")
 RETIRED = (
-    Retired("<!-- BEGIN: agent-journal (auto-generated, run `journal update`) -->", "<!-- END: agent-journal -->"),
-    Retired("<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->", "<!-- END: agent-journal law -->"),
-    Retired("<!-- journal rules -->", "<!-- /journal rules -->"),
+    Markers("<!-- BEGIN: agent-journal (auto-generated, run `journal update`) -->", "<!-- END: agent-journal -->"),
+    Markers("<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->", "<!-- END: agent-journal law -->"),
+    Markers("<!-- journal rules -->", "<!-- /journal rules -->"),
 )
 
 
@@ -138,17 +139,21 @@ def untouchable(text: str) -> str:
     newer = [int(found.group(1)) for found in CURRENT.finditer(text) if int(found.group(1)) > FORM]
     if newer:
         return f"its journal block is form {max(newer)}, newer than this journal's form {FORM}"
-    lone = next((marker for marker in (retired.lone(text) for retired in RETIRED) if marker), "")
+    lone = next((marker for marker in (markers.lone(text) for markers in (CURRENT_MARKERS, *RETIRED)) if marker), "")
     return f"it has {lone} without its other marker" if lone else ""
 
 
 def leading(had: str, managed: str) -> str:
-    rest = CURRENT.sub("", had)
+    rest = had
     for retired in RETIRED:
         rest = retired.pattern.sub("", rest)
-    head, _, body = rest.partition("\n") if rest.startswith("# ") else ("", "", rest)
-    parts = (head, managed, body.lstrip("\n"))
-    return "\n\n".join(part for part in parts if part).rstrip("\n") + "\n"
+    found = CURRENT.search(rest)
+    if found:
+        return rest[:found.start()] + managed + rest[found.end():]
+    if not rest.startswith("# "):
+        return f"{managed}\n\n{rest}"
+    head, _, after = rest.partition("\n")
+    return f"{head}\n\n{managed}\n{after if after.startswith(chr(10)) else chr(10) + after}"
 
 
 NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")

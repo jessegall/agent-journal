@@ -26,3 +26,5 @@ def test_an_acknowledgement_of_a_delivered_line_is_kept_out_of_the_chat_unless_i
     assert answered("Done.", failure="the turn failed") == [False], "a failed turn is never hidden"
     assert answered("Fixed the build and pushed it to main.") == [False], "a turn that says something is never hidden"
     assert answered("Got it, but which branch should I use?") == [False], "a question is never hidden"
+    assert answered("Done, the release shipped.") == [False], "an answer that starts with an acknowledgement but says more is never hidden"
+    assert answered("Carrying on, Sir Jesse.") == [True], "a bare acknowledgement with a greeting is hidden"

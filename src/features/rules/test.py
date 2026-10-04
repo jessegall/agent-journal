@@ -109,8 +109,14 @@ def test_the_briefing_retires_the_old_blocks_and_leaves_a_file_it_cannot_read_sa
     assert (len(first.written), text.startswith(f"# Notes\n\n{BEGIN}\n"), text.endswith(f"- only rule\n\n{END}\n\nfirst part.\n\nmiddle.\n\nlast part.\n"),
             "B1" in text or "old rule" in text) == (2, True, True, False), "the three old blocks become one block at the head, the project's text kept in order"
     assert brief(project, record).written == (), "a file already right is not written again"
+    spaced = "# Notes\n\n\n  indented, with trailing spaces   \n\n\n\nend without a newline"
+    (project / "AGENTS.md").write_text(spaced)
+    brief(project, record)
+    written = (project / "AGENTS.md").read_text()
+    assert (written.endswith(f"{END}\n" + spaced.removeprefix("# Notes\n")), brief(project, record).written) == (True, ()), \
+        "the project's own text is kept byte for byte, and a second write changes nothing"
 
-    left = {"lone": "a\n<!-- journal rules -->\nb\n", "conflicted": "a\n<<<<<<< ours\nb\n=======\nc\n>>>>>>> theirs\n",
+    left = {"lone": "a\n<!-- journal rules -->\nb\n", "lone current": "a\n<!-- BEGIN: agent-journal, form 2 (auto-generated, run `journal upgrade`) -->\nb\n", "conflicted": "a\n<<<<<<< ours\nb\n=======\nc\n>>>>>>> theirs\n",
             "newer": "<!-- BEGIN: agent-journal, form 9 (auto-generated, run `journal upgrade`) -->\nx\n<!-- END: agent-journal, form 9 -->\n"}
     for name, had in left.items():
         (project / "AGENTS.md").write_text(had)

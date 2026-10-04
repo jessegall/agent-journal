@@ -7,14 +7,13 @@ from features.parts import AgentContext, Handler
 from providers.base import JOURNAL
 from resources.base import AGENT, SYSTEM, Refused, titled
 
-BARE = re.compile(r"^\W*(?:ok(?:ay)?|noted|understood|got it|acknowledged|will do|on it|done|carrying on|continuing|still waiting|waiting)\b", re.I)
-MOST_WORDS = 12
+NOD = r"(?:ok(?:ay)?|noted|understood|got it|acknowledged|will do|on it|done|carrying on|continuing|still waiting|waiting|sir(?: jesse)?|thanks|thank you)"
+BARE = re.compile(rf"^\W*{NOD}(?:[\s,.;:!-]+{NOD})*\W*$", re.I)
 ALWAYS_KEPT = ("message", "question", "comment")
 
 
 def bare(text: str) -> bool:
-    words = text.split()
-    return not words or (len(words) <= MOST_WORDS and "?" not in text and bool(BARE.match(text)))
+    return not text.split() or bool(BARE.match(text))
 
 
 def reply_kept(record, delivered: list[str]) -> bool:

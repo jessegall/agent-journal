@@ -175,7 +175,11 @@ def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time(
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c1", "name": "exec",
                                                                              "input": 'const r=await tools.exec_command({cmd:"make test",yield_time_ms:1000});text(r);'}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c1",
-                                                                             "output": [{"type": "input_text", "text": '{"chunk_id":"a","session_id":42,"output":""}'}]}})))
+                                                                             "output": [{"type": "input_text", "text": '{"chunk_id":"a","session_id":42,"output":""}'}]}},
+        {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c2", "name": "exec",
+                                                                             "input": 'const r=await tools.list_files({path:"."});text(r);'}},
+        {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c2",
+                                                                             "output": [{"type": "input_text", "text": '{"session_id":77}'}]}})))
     told = lambda: [n for n in nudges(record) if "make test" in n]
     report(record, "idle", "Stop", provider="codex", transcript=str(transcript))
     tick(record)
