@@ -157,6 +157,8 @@ class TrackFiles(Handler):
 
 
 POLLED = 3
+OPEN_REMINDERS = 3
+OPEN_TOLD = "open told"
 FIRST_AFTER = 5
 CARRY_ON_TIMES = 3
 POLLING = "polling"
@@ -202,6 +204,10 @@ class RemindOpenWork(Handler):
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         for w in working(context)[:1]:
+            key, told = f"{w.n}:{w.updated}", context.state.get(OPEN_TOLD, {})
+            if told.get(key, 0) >= OPEN_REMINDERS:
+                return
+            context.state.set(OPEN_TOLD, {key: told.get(key, 0) + 1})
             context.agent.say("open" if w.sections else "unlogged", n=w.n)
 
 

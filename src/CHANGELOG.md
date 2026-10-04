@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.247.1 — the open-work reminder stops repeating
+
+**"Work N is still open" is said three times at most while nothing about the work changes**, instead of at every
+stop. A Codex agent answers every line it is handed, so the reminder and the answer went back and forth after each
+stop. A log entry counts as a change, and a stall is still woken by the carry-on line after five minutes.
+
 ## 2.247.0 — questions that settle themselves
 
 **A question about a to-do, a plan or a ticket is dismissed by itself when that row closes**, with the row named as

@@ -66,6 +66,13 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     idle(record, shells=1, subagents=1, monitors=1)
     assert nudges(record)[-2:] == ["work 1 is still open, with nothing logged", "auto mode is on and work 1 stands still while todo 2 is ready"], \
         "background tasks are no wait: the open work is named, and under auto the next ready row with it"
+    for _ in range(4):
+        idle(record)
+    unlogged = "work 1 is still open, with nothing logged"
+    assert nudges(record).count(unlogged) == 3, "the open work is named three times at most while nothing about it changes"
+    Works(record, actor=AGENT).action("log")("picked the approach")
+    idle(record)
+    assert "work 1 is still open" in nudges(record)[-2:], "a log entry is a change: it is named again"
     Works(record, actor=AGENT).complete(work.n, "done", todo=True)
     idle(record)
     assert nudges(record)[-1] == "todo 2 next", "the row closed with the work: the next row is offered"
