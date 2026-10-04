@@ -82,6 +82,23 @@ class Asking(Loaded):
 
 
 @dataclass(frozen=True)
+class HookFacts:
+    event: str
+    tool: str
+    file: str
+    cwd: str
+    transcript: str
+    inbox: str
+    model: str
+    effort: str
+    context: float | None
+    asking: Asking | None
+    last_message: str
+    prompted: str | None
+    transcript_facts: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class Failure:
     message: str
     at: float

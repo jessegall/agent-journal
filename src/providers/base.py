@@ -8,7 +8,7 @@ from typing import ClassVar
 from engine.fields import Loaded
 from engine.transcript import Turn
 from providers.jsonl import last_lines, parsed_row
-from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
 from resources.base import Refused
 from resources.types import IDLE
@@ -295,31 +295,19 @@ class Provider(ABC):
     def status(self, hook) -> str:
         return IDLE if hook.tool.name in self.sleeping_tools else STATUS[hook.event]
 
-    def facts(self, row, hook, root: Path) -> dict:
-        context = self.context(hook)
-        return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.path,
-                "cwd": hook.cwd or row.cwd or "", "at": time.time(),
-                "provider": self.name, "uses": int(row.uses) + (hook.event == HookEvent.PRE_TOOL_USE), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
-                "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
-                "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
-                "context": row.context or 0 if context is None else context, "asking": asking_row(self.asking(hook)),
-                "last_message": hook.last_message or row.last_message or "", "loops": self.loops(row, hook), "prompted": self.prompted(row, hook)}
+    def facts(self, hook, root: Path) -> HookFacts:
+        return HookFacts(event=hook.event, tool=hook.tool.name, file=hook.tool.path, cwd=hook.cwd, transcript=str(hook.transcript) if hook.transcript else "",
+                         inbox=self.inbox(hook), model=self.model(hook), effort=self.effort(Path(hook.cwd or root.parent), hook.transcript),
+                         context=self.context(hook), asking=self.asking(hook), last_message=hook.last_message, prompted=self.prompted(hook),
+                         transcript_facts=self.session(hook.transcript))
 
-    def prompted(self, row, hook) -> str:
+    def prompted(self, hook) -> str | None:
         if hook.event != HookEvent.USER_PROMPT_SUBMIT:
-            return row.prompted
+            return None
         return JOURNAL if self.journal_typed(hook.prompt) else PERSON
 
     def journal_typed(self, prompt: str) -> bool:
         return prompt.lstrip().startswith(MARK)
-
-    def loops(self, row, hook) -> dict:
-        kept, call = dict(row.loops or {}), hook.tool
-        if hook.event == HookEvent.POST_TOOL_USE and isinstance(call, LoopCall) and call.loop:
-            kept[call.loop] = {"schedule": call.schedule, "prompt": call.prompt, "at": time.time()}
-        if hook.event == HookEvent.POST_TOOL_USE and isinstance(call, LoopEndCall):
-            kept.pop(call.loop, None)
-        return kept
 
     def dispatch_model(self, chosen: str) -> str:
         return chosen

@@ -72,7 +72,7 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
     report(record, "working", "PreToolUse")
 
     for name, provider_cls in PROVIDERS.items():
-        def crash(self, row, hook, root):
+        def crash(self, hook, root):
             raise TypeError(f"{name} crashed")
         monkeypatch.setattr(provider_cls, "facts", crash)
         body = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}}
