@@ -37,6 +37,12 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
+    log = record.root / "runtime" / "diagnostics.log"
+    assert not log.exists(), "the diagnostic log is off by default"
+    record.features = {**record.features, "dev_faults.log": True}
+    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+        busy(0.08)
+    assert "slow request GET /api/main/message" in log.read_text(), "switched on, a slow request is written to the diagnostic log"
 
 
 def test_a_fast_request_is_never_reported():
