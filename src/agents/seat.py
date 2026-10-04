@@ -2,7 +2,7 @@ import time
 from functools import cached_property
 from pathlib import Path
 from resources.types import COMPACTING, WORKING
-from providers import PROVIDERS
+from providers import PROVIDERS, workspace_folders
 from engine import runtime
 from engine.record import Record
 from engine.sessions import SessionsSnapshot, agent_pid, alive
@@ -133,7 +133,7 @@ class HookBinding:
     def environment(self, hook, prefer: str) -> str:
         session = hook.session
         held = self.sessions.read(session)
-        worked = "" if self.provider.is_subagent(hook) else environment(checkout(Path(hook.cwd)) if hook.cwd else None)
+        worked = "" if self.provider.is_subagent(hook) else environment(checkout(Path(hook.cwd), workspace_folders()) if hook.cwd else None)
         stays = bool(held.environment and held.provider) and not self.moving(session, held.environment, worked)
         env = held.environment if stays else self.bound(session, worked, prefer)
         if stays and not alive(held.pid):

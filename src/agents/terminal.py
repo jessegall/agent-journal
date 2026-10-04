@@ -131,12 +131,12 @@ def carried() -> dict | None:
 
 
 def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None, conversation: str = "") -> dict:
-    from providers import DRIVERS
+    from providers import DRIVERS, workspace_folders
     if not taken:
         cwd, args = DRIVERS[agent].placed(cwd, args)
-        top = checkout(cwd)
+        top = checkout(cwd, workspace_folders())
         if top:
-            share_journal(top, root)
+            share_journal(top, root, workspace_folders())
         worked = environment(top)
         env = Sessions(root).free(worked) if worked else env
     journal = [*entry("journal"), "--root", str(root)]

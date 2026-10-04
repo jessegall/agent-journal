@@ -147,6 +147,8 @@ class Claude(Provider):
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"
+    shared_files = (".claude/settings.local.json",)
+    worktrees = (".claude", "worktrees")
     link_skills = True
     applies_at_once = ("effort",)
     controls = {

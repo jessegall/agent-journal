@@ -5,7 +5,8 @@ from pathlib import Path
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from engine.worktree import WORKTREES, contains, current_branch, git, included, present, share_journal, tip
+from engine.worktree import contains, current_branch, git, included, present, share_journal, tip
+from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from resources.base import Refused
 from controllers.marks import lasting
@@ -48,7 +49,7 @@ class Worktrees(Controller):
             raise Refused(f"a worktree name is lowercase letters, digits and dashes, not {name!r}")
         project = self._project()
         working = self._working(project)
-        folder, branch = project.joinpath(*WORKTREES, name), f"{BRANCH}{name}"
+        folder, branch = project.joinpath(*workspace_folders().worktree_home, name), f"{BRANCH}{name}"
         if self._titled(name, standing=True) or folder.exists() or present(project, f"refs/heads/{branch}"):
             raise Refused(f"the worktree {name} is taken: drop it, or choose another name")
         base = tip(project, working)
@@ -56,7 +57,7 @@ class Worktrees(Controller):
         if made.returncode:
             raise Refused(f"the worktree {name} could not be made: {made.stderr.strip()}")
         included(project, folder)
-        share_journal(folder, self.record.root)
+        share_journal(folder, self.record.root, workspace_folders())
         row = self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
         return (f"worktree {row.n}: {folder} on branch {branch}, cut from {working} at {base[:10]}. "
                 f"Tell the helper to work and commit only there, and to rebase onto {working} before it reports.")

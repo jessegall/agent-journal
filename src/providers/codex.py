@@ -194,6 +194,7 @@ class Codex(Provider):
     home = ".codex"
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
+    shared_if_ignored = (".codex/hooks.json",)
     retired_skill_homes = (f"{home}/skills",)
 
     def skill_load(self, name: str) -> str:

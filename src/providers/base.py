@@ -137,6 +137,9 @@ class Provider(ABC):
     question_tools = frozenset()
     briefing_file = ""
     skill_home = ""
+    shared_files: tuple = ()
+    shared_if_ignored: tuple = ()
+    worktrees: tuple = ()
     link_skills = False
     retired_skill_homes = ()
     sleeping_tools = ()

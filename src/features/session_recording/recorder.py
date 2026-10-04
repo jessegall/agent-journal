@@ -4,10 +4,11 @@ import sys
 import time
 from pathlib import Path
 from engine.wording import digest
+from providers import workspace_folders
 
 POLL = 0.5
 PRUNED = {"runtime", "attic", "node_modules", "__pycache__", ".git"}
-LEFT_OUT = {".journal", ".claude", ".codex", ".agents", ".git"}
+LEFT_OUT = {".journal", ".git", *workspace_folders().homes}
 
 
 def walked(base: Path, left_out: set[str]):

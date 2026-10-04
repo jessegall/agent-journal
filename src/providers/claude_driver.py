@@ -8,7 +8,6 @@ from pathlib import Path
 from engine import runtime
 from engine.fields import Loaded
 from engine.stored import read_json, write_json
-from engine.worktree import WORKTREES
 from providers.claude import CHANNEL_MARK, SERVER, Claude
 from providers.claude_rows import Row
 from providers.drivers import CHOICE, LINE_START, Driver, joined, squeezed
@@ -56,7 +55,7 @@ class ClaudeDriver(Driver):
     SKIP_ARGS = ("--dangerously-skip-permissions",)
     RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
     WORKTREE = ("--worktree", "-w")
-    WORKTREES = WORKTREES
+    WORKTREES = Claude.worktrees
     EXIT = "/exit"
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", f"server:{SERVER}")
