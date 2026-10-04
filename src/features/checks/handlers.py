@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine import runtime
+from engine.command_runs import CommandRun
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceEvent
 from features.parts import AgentContext, Context, Handler
@@ -21,6 +22,7 @@ class CheckUpdated(ResourceEvent):
         return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, ran=bool(event.data.get("ran")))
 
 
+TESTS = "tests"
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
@@ -84,3 +86,21 @@ class ReportCheckResult(Handler):
 def summary(output: str) -> str:
     lines = [ANSI.sub("", line).strip() for line in output.splitlines()]
     return next((line for line in reversed(lines) if line and not line.startswith(("↳", "#"))), "")
+
+
+class MarkTestRuns(Handler):
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
+        row = context.agent.row
+        run = CommandRun.from_json(row.running) if row.running else None
+        if not run or run.effect != TESTS or not context.once("test_run", f"{run.at}|{run.done}"):
+            return
+        key = f"tests:{run.at}"
+        if not run.done:
+            context.journal.agents.card(row.n, key=key, label="Running tests", icon="check", command=run.command, state="running", started=run.at)
+            return
+        result = run.result
+        counts = ", ".join(part for part in (f"{result.passed} passed" if result and result.passed else "",
+                                             f"{result.failed} failed" if result and result.failed else "") if part)
+        failed = bool(result and (result.ok is False or result.failed))
+        context.journal.agents.card(row.n, key=key, label="Tests failed" if failed else "Tests passed", icon="check", command=run.command,
+                                    state="failed" if failed else "done", started=run.at, ended=run.done, detail=counts)
