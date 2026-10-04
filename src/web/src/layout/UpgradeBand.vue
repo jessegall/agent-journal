@@ -1,4 +1,5 @@
 <script setup>
+import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -54,7 +55,7 @@ function dismiss() {
 async function upgrade(always = false) {
     running.value = true;
     try {
-        if (always) await api.saveSettings({features: {auto_update: true}});
+        if (always) await saveSettings({features: {auto_update: true}});
         await api.update();
         lines.value = [`Installing ${upstream.value.latest}; this page reloads once it runs`];
     } catch (e) {
@@ -68,7 +69,9 @@ async function upgrade(always = false) {
 <template>
     <template v-if="store.offline">
         <div class="band offline" role="status">
-            <span class="text">The journal's server is not answering, so this page may be out of date. It catches up by itself once the server is back.</span>
+            <span class="text">
+                The journal's server is not answering, so this page may be out of date. It catches up by itself once the server is back.
+            </span>
         </div>
     </template>
     <template v-if="stale">

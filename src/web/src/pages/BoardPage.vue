@@ -1,4 +1,5 @@
 <script setup>
+import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -173,7 +174,7 @@ const starting = ref(false);
 async function setLimit(n) {
     store.board.slots = {...store.board.slots, limit: n};
     try {
-        store.settings = await api.saveSettings({tickets: {...((store.settings && store.settings.tickets) || {}), running: n}});
+        await saveSettings({tickets: {...((store.settings && store.settings.tickets) || {}), running: n}});
     } catch (e) {
         refuse(e);
     }

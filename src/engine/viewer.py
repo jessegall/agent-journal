@@ -1,3 +1,4 @@
+import fcntl
 import json
 from dataclasses import asdict, dataclass
 import os
@@ -23,6 +24,8 @@ PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if
 RUNNING_FOR = 5.0
 RUNNING: dict[str, tuple[float, str]] = {}
 HEARTBEAT = 2.0
+LAUNCHING = "viewer.launching"
+COMING_UP = 30.0
 PORT_WAIT = 30.0
 SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
@@ -205,8 +208,9 @@ def restart(root: Path, project: Path) -> str:
 
 
 def elsewhere(root: Path) -> str:
+    from engine.stop import serving
     was = last(root)
-    if not was.pid or was.pid == os.getpid() or not alive(was.pid) or time.time() - was.at > RESTARTING:
+    if not was.pid or was.pid == os.getpid() or serving(Path(root)) != was.pid:
         return ""
     until = time.time() + RESTARTING
     while time.time() < until and alive(was.pid):
@@ -214,7 +218,7 @@ def elsewhere(root: Path) -> str:
         if reply is not None and reply.serves(root):
             return was.url if reply.version == version() else ""
         time.sleep(0.2)
-    return ""
+    return was.url if alive(was.pid) else ""
 
 
 def start(root: Path, project: Path) -> str:
@@ -222,23 +226,26 @@ def start(root: Path, project: Path) -> str:
 
 
 def launch(root: Path, project: Path) -> tuple[str, int | None]:
-    already = running(root) or elsewhere(root)
-    if already:
-        return already, None
-    port = available(root, last(root).port)
     log = root / "runtime" / "viewer.log"
     log.parent.mkdir(parents=True, exist_ok=True)
-    command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
-    with log.open("a") as output:
-        server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
-    for _ in range(60):
-        time.sleep(0.1)
-        url = running(root)
-        if url:
-            return url, None
-        if server.poll() is not None:
-            return "", server.returncode
-    return "", None
+    with (root / "runtime" / LAUNCHING).open("a") as held:
+        fcntl.flock(held, fcntl.LOCK_EX)
+        already = running(root) or elsewhere(root)
+        if already:
+            return already, None
+        port = available(root, last(root).port)
+        command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
+        with log.open("a") as output:
+            server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
+        until = time.monotonic() + COMING_UP
+        while time.monotonic() < until:
+            time.sleep(0.1)
+            url = running(root)
+            if url:
+                return url, None
+            if server.poll() is not None:
+                return "", server.returncode
+        return "", None
 
 
 def show(url: str, env: str = "", opener=webbrowser.open, focuser=existing_tab) -> str:
