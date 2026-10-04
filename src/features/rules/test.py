@@ -106,7 +106,7 @@ def test_the_briefing_retires_the_old_blocks_and_leaves_a_file_it_cannot_read_sa
     (project / "CLAUDE.md").write_text(old)
     first = brief(project, record)
     text = (project / "AGENTS.md").read_text()
-    assert (len(first.written), text.startswith(f"# Notes\n\n{BEGIN}\n"), text.endswith(f"- only rule\n\n{END}\n\nfirst part.\n\nmiddle.\n\nlast part.\n"),
+    assert (len(first.written), text.startswith(f"# Notes\n\n{BEGIN}\n"), text.endswith(f"- only rule\n\n{END}\n\nfirst part.\n\n\n\n\n\nmiddle.\n\n\n\nlast part.\n"),
             "B1" in text or "old rule" in text) == (2, True, True, False), "the three old blocks become one block at the head, the project's text kept in order"
     assert brief(project, record).written == (), "a file already right is not written again"
     spaced = "# Notes\n\n\n  indented, with trailing spaces   \n\n\n\nend without a newline"
@@ -115,6 +115,11 @@ def test_the_briefing_retires_the_old_blocks_and_leaves_a_file_it_cannot_read_sa
     written = (project / "AGENTS.md").read_text()
     assert (written.endswith(f"{END}\n" + spaced.removeprefix("# Notes\n")), brief(project, record).written) == (True, ()), \
         "the project's own text is kept byte for byte, and a second write changes nothing"
+    crlf = ("# Notes\r\n\r\nfirst  \r\n<!-- journal rules -->\r\nold\r\n<!-- /journal rules -->\r\n\r\nlast\r\n")
+    (project / "AGENTS.md").write_bytes(crlf.encode())
+    brief(project, record)
+    kept = (project / "AGENTS.md").read_bytes()
+    assert kept.endswith(b"first  \r\n\r\n\r\nlast\r\n") and b"\n" not in kept.replace(b"\r\n", b""), "CRLF and the bytes around a retired block survive"
 
     left = {"lone": "a\n<!-- journal rules -->\nb\n", "lone current": "a\n<!-- BEGIN: agent-journal, form 2 (auto-generated, run `journal upgrade`) -->\nb\n", "conflicted": "a\n<<<<<<< ours\nb\n=======\nc\n>>>>>>> theirs\n",
             "newer": "<!-- BEGIN: agent-journal, form 9 (auto-generated, run `journal upgrade`) -->\nx\n<!-- END: agent-journal, form 9 -->\n"}

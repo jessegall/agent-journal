@@ -64,7 +64,11 @@ def test_a_visitor_comment_is_named_never_quoted_and_only_lands_where_the_link_a
     shares._visitor_answer(shares.load(share.n), asked.n, "Robin", "Yes, both shifts")
     question = shares._shared_data(shares.load(share.n))["comments"][0]["replies"][-1]
     assert (list(question["options"]), question["answer"]) == (["Yes, both shifts", "Only the day shift"], "Yes, both shifts"), "the page shows the question with its answer"
-    assert any("Robin answered your question" in line for line in nudges(record)), "and the agent hears the pick"
+    assert not any("Robin answered your question" in line for line in nudges(record)), "the agent is not told the pick before approval"
+    answer = [m for m in Messages(record).all() if m.title == f"Robin answered your question in comment {asked.n} through a shared link"]
+    assert [b["action"] for m in answer for b in m.data["buttons"]] == ["allow"], "the user gets a button for the untrusted answer"
+    Shares(record, actor=USER).allow(asked.n)
+    assert any(f"the user let you act on comment {asked.n} from Robin" in line for line in nudges(record)), "approval tells the agent"
     assert "answered" in refused_with(lambda: shares._visitor_answer(shares.load(share.n), asked.n, "Robin", "Only the day shift")), "a question is answered once"
     shares.update(share.n, agent_replies=False)
     assert [c["name"] for c in shares._shared_data(shares.load(share.n))["comments"]] == ["Robin"], "switched off, only visitors' comments show"
@@ -86,6 +90,9 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
         held = hook("ls")
         assert held.get("decision") == "block" and "journal share agree" in held.get("reason", ""), held
         assert hook(f'journal share agree {made.n} "{AGREEMENT}"').get("decision") != "block", "the agreement itself runs"
+        assert hook(f'journal --env={record.env} --agent=helper share agree {made.n} "{AGREEMENT}"').get("decision") != "block", "a helper can agree in its environment"
+        assert hook(f'journal share agree {made.n} "{AGREEMENT}"; ls').get("decision") == "block", "a chained command stays held"
+        assert hook(f'ls; journal share agree {made.n} "{AGREEMENT}"').get("decision") == "block", "an agreement after another command stays held"
         agreeing = Shares(record, actor=AGENT, session="claude-share")
         try:
             agreeing.agree(made.n, "I agree")
@@ -113,6 +120,9 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
     trusted = Shares(record, actor=USER)._visitor_comment(locked, f"doc:{doc.n}", "Sam", "Please add the night shift")
     announce(record, agent.n, "Bash", "journal search night", f"comment {trusted.n}: Please add the night shift")
     assert hook("ls").get("decision") != "block", "a comment through a link with a password is trusted: reading it holds nothing"
+    from engine.reach import Reach
+    from features.sharing.guard import RefuseUntilAgreed
+    assert RefuseUntilAgreed.reach is Reach.BOTH, "the hold covers subagents as well as the primary agent"
     assert any(f"Sam commented on doc {doc.n} through a shared link with a password" in line for line in nudges(record)), \
         "and the agent is told it came from someone the user gave the password to"
 
@@ -256,7 +266,7 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
         pass
 
 
-def test_an_address_owned_by_another_account_is_swapped_for_a_new_one(monkeypatch):
+def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
     import features
     from engine import runtime
     from engine.services import log_file
@@ -277,7 +287,15 @@ def test_an_address_owned_by_another_account_is_swapped_for_a_new_one(monkeypatc
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
     tick(record)
-    assert subdomain(record.root) != before and asked == [watchdog.TUNNEL], "a refused address is replaced and the tunnel restarted on the new one"
+    assert subdomain(record.root) == before and asked == [], "a refused address stays unchanged"
+    assert any("tunnel address is owned by another user" in message.title.lower() for message in Messages(record).all()), "the user is told to choose another address"
+    settings = record.root / "sharing.json"
+    settings.write_text("{broken")
+    assert "cannot read the tunnel address" in refused_with(lambda: subdomain(record.root))
+    assert settings.read_text() == "{broken", "unreadable sharing settings do not get a new address"
+    log.write_text("")
+    tick(record)
+    assert any(message.title == "The tunnel address cannot be read" for message in Messages(record).all())
 
 
 def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only(tmp_path, monkeypatch):

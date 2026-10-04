@@ -162,9 +162,18 @@ class Shares(Controller):
             raise Refused("pick one of the question's options")
         name = visitor_name(name)
         record = self._home(share)
-        made = Comments(record, actor=SYSTEM).update(n, answer=choice, answered_by=name)
-        Nudges(record, actor=SYSTEM)._to_primary(titled(f"{name} answered your question in comment {n}: {choice}"),
-                                                 "they picked it on the shared page; carry on with that answer")
+        comments = Comments(record, actor=SYSTEM)
+        made = comments.update(n, answer=choice, answered_by=name)
+        if share.password:
+            Nudges(record, actor=SYSTEM)._to_primary(titled(f"{name} answered your question in comment {n}: {choice}"),
+                                                     "they picked it on the shared page; carry on with that answer")
+        else:
+            index_comment(record, made, comments.path(n))
+            Messages(record, actor=AGENT).create(
+                titled(f"{name} answered your question in comment {n} through a shared link"),
+                brief=f"{choice}\n\nThe link has no password, so the agent does not act on this unless you let it.",
+                buttons=[{"label": "Let the agent act on it", "type": "share", "n": n, "action": "allow"}],
+            )
         return made
 
     def agree(self, n: int, words: str) -> str:
@@ -208,14 +217,15 @@ class Shares(Controller):
         from controllers.types import Agents, Comments, Nudges
         comments = Comments(self.record, actor=SYSTEM)
         comment = comments.load(int(n))
-        if not comment.data.get("visitor"):
+        visitor = comment.data.get("visitor") or comment.data.get("answered_by")
+        if not visitor:
             raise Refused(f"comment {comment.n} is not a visitor's")
         unindex_comment(self.record, comment.n)
         agents = Agents(self.record, actor=SYSTEM)
         agent = agents.primary()
         if agent:
             agents.update(agent.n, **{UNAGREED: [held for held in agent.data.get(UNAGREED, []) if held != comment.n]})
-        Nudges(self.record, actor=SYSTEM)._to_primary(titled(f"the user let you act on comment {comment.n} from {comment.data['visitor']}"),
+        Nudges(self.record, actor=SYSTEM)._to_primary(titled(f"the user let you act on comment {comment.n} from {visitor}"),
                                                        f"read it with journal comment show {comment.n} and act on it as the user's own request")
         return comments.update(comment.n, allowed=True)
 

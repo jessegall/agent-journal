@@ -13,7 +13,7 @@ WALKING: set[str] = set()
 WALK_FOR = 5.0
 UNLISTED = ("__pycache__", "node_modules")
 SOURCE_LIMIT = 400000
-SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|password|token|\.(pem|key|p12|pfx|keystore|jks|kdbx|env)$", re.I)
+SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|password|token|\.(pem|key|p12|pfx|keystore|jks|kdbx|env|p8|ppk|tfstate|gpg|asc)$", re.I)
 
 
 @dataclass(frozen=True)

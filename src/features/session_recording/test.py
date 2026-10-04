@@ -111,7 +111,7 @@ def recorded_session(tmp_path):
     return record, folder
 
 
-def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_path):
+def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_path, monkeypatch):
     record, folder = recorded_session(tmp_path)
     recordings = Recordings(record, actor=SYSTEM)
     assert leaks(folder, Scrubber()), "the synthetic session holds a home path, an email, a tunnel host and a session id"
@@ -120,6 +120,10 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     recordings.scrub(str(folder))
     assert not leaks(folder, Scrubber())
     assert "jesse@example.org" not in (folder / "frames.jsonl").read_text() + "".join(blob.read_text() for blob in (folder / "blobs").iterdir())
+    from types import SimpleNamespace
+    import features.session_recording.scrub as scrub
+    monkeypatch.setattr(scrub, "known", lambda: [SimpleNamespace(project="private-ledger", root="/projects/private-market/.journal")])
+    assert set(Scrubber().leaks("private-ledger private-market")) == {"private-ledger", "private-market"}
 
 
 def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path):
@@ -131,6 +135,8 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
         recordings.build(str(folder), str(shipped))
         assert undo.events == [], "the throwaway world's events never wait to be released into the command's record"
     demo = json.loads(shipped.read_text())
+    places = demo["answers"][demo["moments"][-1]["answers"]["phone.places"]]
+    assert [place["root"] for place in places["places"]] == [places["at"]], "the phone shows only the recorded journal"
     assert len(demo["moments"]) == 3
     assert len(set(demo["answers"])) < len(demo["moments"]) * len(demo["moments"][0]["answers"]), "an answer that did not change is stored once"
     assert not Scrubber().leaks(shipped.read_text()) and "/home/demo" in shipped.read_text()

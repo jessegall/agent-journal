@@ -210,6 +210,9 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     assert call(base, "/p/source?q=plan.md", key=key).body["path"] == "notes/plan.md", "a bare file name finds the one file of that name"
     assert [call(base, f"/p/source?q={asked}", key=key).status for asked in (".env", ".journal/record.json", "../../etc/hosts", "notes/credentials.json")] == [404, 404, 404, 404], \
         "hidden files, the journal's own and anything outside the project stay closed"
+    for suffix in ("p8", "ppk", "tfstate", "gpg", "asc"):
+        (record.root.parent / "notes" / f"private.{suffix}").write_text("secret")
+        assert call(base, f"/p/source?q=notes/private.{suffix}", key=key).status == 404
     journal = str(record.root.resolve())
     Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "elsewhere")
     assert "elsewhere" in next(p for p in call(base, "/p/places", key=key).body["places"] if p["root"] == journal)["environments"]

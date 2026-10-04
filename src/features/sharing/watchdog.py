@@ -2,14 +2,14 @@ import time
 
 from engine import runtime
 from engine.events.engine import ClockTicked
-from controllers.types import Nudges
+from controllers.types import Messages, Nudges
 from engine.services import UP, log_file, status, want
 from engine.state import State
 from features.parts import Context, Handler
 from features.sharing.controller import HEALTH, Shares, answers, reached
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import readdressed, refused_address, tunler
-from resources.base import SYSTEM
+from features.sharing.tunnel import refused_address, tunler
+from resources.base import SYSTEM, Refused
 
 MISSES_BEFORE_RESTART = 3
 PATIENCE = 10.0
@@ -24,11 +24,22 @@ class KeepTunnelAnswering(Handler):
         if not wanted(context.record.root) or not tunler():
             return
         if refused_address(log_file(context.record.root, TUNNEL)):
-            readdressed(context.record.root)
-            want(context.record.root, TUNNEL, UP, nonce=time.time())
+            state = State(context.record.root / "runtime" / "sharing-tunnel.json")
+            if not state.get("address_refused"):
+                state.set("address_refused", time.time())
+                Messages(context.record, actor=SYSTEM).create(
+                    "The tunnel address is owned by another user",
+                    brief="The phone and share links cannot use this address until you choose another one.")
             return
         state, shares = State(context.record.root / "runtime" / "sharing-tunnel.json"), Shares(context.record, actor=SYSTEM)
-        if shares._answering(PATIENCE):
+        try:
+            answering = shares._answering(PATIENCE)
+        except Refused as error:
+            if not state.get("settings_unreadable"):
+                state.set("settings_unreadable", time.time())
+                Messages(context.record, actor=SYSTEM).create("The tunnel address cannot be read", brief=f"{error}. The address has not changed.")
+            return
+        if answering:
             state.set("misses", 0)
             state.set("host_down", 0)
             return

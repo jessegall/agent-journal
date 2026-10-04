@@ -12,6 +12,7 @@ from engine.stored import read_json, write_json
 from typing import TypedDict
 from engine.given import given
 from engine.wording import slugged
+from resources.base import Refused
 
 TUNNEL_FILE = "sharing.json"
 OWNED = "domain is owned by another user"
@@ -22,19 +23,22 @@ DOWNLOAD_SECONDS = 60
 
 
 def subdomain(root: Path) -> str:
-    kept = read_json(Path(root) / TUNNEL_FILE, dict, {})
+    path = Path(root) / TUNNEL_FILE
+    kept = {}
+    if path.exists():
+        unreadable = f"cannot read the tunnel address in {path}; the address has not changed"
+        try:
+            kept = json.loads(path.read_text())
+        except (OSError, ValueError) as error:
+            raise Refused(unreadable) from error
+        if not isinstance(kept, dict):
+            raise Refused(unreadable)
     if kept.get("subdomain"):
         return kept["subdomain"]
     prefix = slugged(Path(root).resolve().parent.name, limit=20) or "journal"
     name = f"{prefix}-{secrets.token_hex(NAME_BYTES)}"
     write_json(Path(root) / TUNNEL_FILE, {**kept, "subdomain": name})
     return name
-
-
-def readdressed(root: Path) -> str:
-    kept = read_json(Path(root) / TUNNEL_FILE, dict, {})
-    write_json(Path(root) / TUNNEL_FILE, {key: value for key, value in kept.items() if key != "subdomain"})
-    return subdomain(root)
 
 
 def refused_address(log: Path) -> bool:
@@ -180,4 +184,3 @@ def owned() -> list[str]:
 def unclaim(domain: str, host: str) -> str:
     ok, said = ran("release", domain.removesuffix(f".{host}"))
     return "" if ok else said or f"tunler did not release {domain}"
-
