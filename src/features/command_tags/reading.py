@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 from controllers.types import Messages
-from features.messages.answering import nods
+from features.messages.answering import acknowledges
 from resources.base import SYSTEM
 
 REPLY_WITH = "reply_with"
@@ -89,9 +89,9 @@ def answered(numbers: list, record, **_) -> str:
     rows = [messages.load(n) for n in numbers if messages._exists(n)]
     panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
     told = [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
-    nodded = [row.n for row in rows if row.n not in panel and nods(row)]
-    told += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in nodded]
-    here = [n for n in numbers if n not in panel and n not in nodded]
+    acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
+    told += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in acknowledging]
+    here = [n for n in numbers if n not in panel and n not in acknowledging]
     if here:
         told.append(tagged(here))
     return "; ".join(told)

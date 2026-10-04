@@ -134,12 +134,12 @@ class AskStillBlocked(Handler):
         agent = context.journal.agents.primary()
         if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
             return
-        told, now = state.get("asked", {}), time.time()
-        due = [r for r in context.journal.todos._standing() if r.blocked and now - float(told.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
+        asked_at, now = state.get("asked", {}), time.time()
+        due = [r for r in context.journal.todos._standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
         for row in [r for r in due if not asked(context.record, r)]:
             context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked.rstrip("."))
-            told[str(row.n)] = now
-        state.set("asked", told)
+            asked_at[str(row.n)] = now
+        state.set("asked", asked_at)
 
 
 class EndWorkWithTodo(Handler):
@@ -158,7 +158,7 @@ class TrackFiles(Handler):
 
 POLLED = 3
 OPEN_REMINDERS = 3
-OPEN_TOLD = "open told"
+OPEN_COUNTS = "open reminders"
 FIRST_AFTER = 5
 CARRY_ON_TIMES = 3
 POLLING = "polling"
@@ -204,10 +204,10 @@ class RemindOpenWork(Handler):
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         for w in working(context)[:1]:
-            key, told = f"{w.n}:{w.updated}", context.state.get(OPEN_TOLD, {})
-            if told.get(key, 0) >= OPEN_REMINDERS:
+            key, counts = f"{w.n}:{w.updated}", context.state.get(OPEN_COUNTS, {})
+            if counts.get(key, 0) >= OPEN_REMINDERS:
                 return
-            context.state.set(OPEN_TOLD, {key: told.get(key, 0) + 1})
+            context.state.set(OPEN_COUNTS, {key: counts.get(key, 0) + 1})
             context.agent.say("open" if w.sections else "unlogged", n=w.n)
 
 
