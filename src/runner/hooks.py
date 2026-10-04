@@ -119,8 +119,14 @@ def display_chunk(root: Path, raw: dict) -> None:
             write_json(f, {**rest, message: parts, FINALS: finals})
             return
         last = finals.pop(message)
-        write_json(f, {**rest, FINALS: finals, DONE: [*rest.get(DONE, []), message][-KEPT_DONE:]})
-    send_to_chat(root, session, "".join(parts[str(i)] for i in range(last + 1)), message or None, streamed=True)
+        write_json(f, {**rest, message: parts, FINALS: {**finals, message: last}})
+    if not send_to_chat(root, session, "".join(parts[str(i)] for i in range(last + 1)), message or None, streamed=True):
+        return
+    with SHOWING:
+        held = read_json(f, dict, {})
+        write_json(f, {**{key: value for key, value in held.items() if key != message},
+                       FINALS: {key: value for key, value in held.get(FINALS, {}).items() if key != message},
+                       DONE: [*held.get(DONE, []), message][-KEPT_DONE:]})
 
 
 def shown(parts: dict) -> str:
@@ -147,6 +153,14 @@ def stopped(root: Path, session: str, text: str) -> None:
 
 def fingerprint(text: str) -> str:
     return digest(" ".join(text.split()))
+
+
+def next_turn(root: Path, session: str) -> None:
+    f = runtime.session_file(root, session, "displayed.json")
+    with SHOWING:
+        held = read_json(f, dict, {})
+        sent = [mark for mark in held.get(SENT, []) if not re.fullmatch(r"[0-9a-f]{40}", mark)]
+        write_json(f, {**held, SENT: sent, MATCHED: []})
 
 
 def unfinished(root: Path, session: str, row) -> None:
@@ -183,22 +197,25 @@ def unfinished(root: Path, session: str, row) -> None:
         send_to_chat(root, session, turn.text, turn.key)
 
 
-def send_to_chat(root: Path, session: str, text: str, turn: str | None = None, streamed: bool = False) -> None:
+def send_to_chat(root: Path, session: str, text: str, turn: str | None = None, streamed: bool = False) -> bool:
     if not text.strip():
-        return
+        return False
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)
     if row is None:
-        return
+        return False
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        mark = fingerprint(text) if turn is None else turn
-        if mark in held.get(SENT, []):
-            return
-        chat.send(record, row, text, turn=turn)
-        matched = [*held.get(MATCHED, []), fingerprint(text)] if streamed else held.get(MATCHED, [])
+        key = fingerprint(text)
+        mark = key if turn is None else turn
+        if mark in held.get(SENT, []) or key in held.get(SENT, []) or key in held.get(MATCHED, []):
+            return True
+        if not chat.send(record, row, text, turn=turn):
+            return False
+        matched = [*held.get(MATCHED, []), key] if streamed else held.get(MATCHED, [])
         write_json(f, {**held, SENT: [*held.get(SENT, []), mark][-KEPT_SENT:], MATCHED: matched[-KEPT_SENT:]})
+    return True
 
 
 def owned_environments(root: Path) -> set[str]:
@@ -270,4 +287,6 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         stopped(root, hook.session, hook.last_message)
     if hook.event in ("Stop", "UserPromptSubmit"):
         unfinished(root, hook.session, row)
+    if hook.event == "UserPromptSubmit":
+        next_turn(root, hook.session)
     return {}

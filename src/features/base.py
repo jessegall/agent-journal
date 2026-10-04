@@ -93,7 +93,7 @@ def written(record) -> int:
 
 def booted(record) -> dict[str, bool]:
     rows = Features(record, actor=SYSTEM)
-    SWITCHES[str(record.home)] = (written(record), {row.title: bool(row.enabled) for row in rows._every() if not row.deleted})
+    SWITCHES[str(record.home)] = (written(record), {row.title: bool(row.enabled) for row in rows._viewed()})
     return SWITCHES[str(record.home)][1]
 
 

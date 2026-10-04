@@ -87,12 +87,19 @@ class Agent(Actor):
         super().__init__(record)
         self.driver = driver
         self.pending: list[Event] = []
+        self.scanned = self.cursor()
 
     def notify(self, event: Event) -> None:
         self.pending.append(event)
+        self.scanned = max(self.scanned, event.id)
 
     def delivered_until(self) -> int:
-        return self.pending[-1].id if self.pending else self.cursor()
+        return self.scanned
+
+    def notified(self, event: Event) -> None:
+        self.scanned = max(self.scanned, event.id)
+        if not self.pending:
+            self.record.set_cursor(self.name, self.scanned)
 
     def delivered(self, done: list[Event]) -> None:
         reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)
@@ -106,8 +113,8 @@ class Agent(Actor):
         if not self.pending or not self.driver.ready():
             return ""
         for e in [e for e in self.pending if settled(self.record, e)]:
-            self.notified(e)
             self.pending.remove(e)
+            self.notified(e)
         yielding = [e for e in self.pending if spoken_data(self.record, e).get("yields")]
         line, groups = render([e for e in self.pending if e not in yielding], self.record)
         sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
@@ -115,8 +122,9 @@ class Agent(Actor):
         for e in done:
             if TYPES[e.type].stamped_when_notified:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
-            self.notified(e)
         self.pending = [e for e in self.pending if e not in done]
+        for e in done:
+            self.notified(e)
         if not sent:
             return ""
         self.delivered(done)

@@ -73,9 +73,9 @@ class Stored:
         p = self.path(r.n)
         if self.resource.own_folder:
             p.parent.mkdir(parents=True, exist_ok=True)
+        write_text(p, r.dump())
         if not self.resource.own_folder:
             self._note(r.n)
-        write_text(p, r.dump())
         if self.resource.own_folder:
             os.utime(self._folder())
 
@@ -319,6 +319,7 @@ class Stored:
     def _remove(self, n: int) -> None:
         folder = self._folder()
         before = self._moved(folder) if folder.is_dir() else None
+        HELD.pop(str(self.path(n)), None)
         self.path(n).unlink(missing_ok=True)
         if self.resource.own_folder and folder.is_dir():
             os.utime(folder)
@@ -361,6 +362,7 @@ class Stored:
         for row in rows:
             p = folder / member(row["n"])
             if p.is_file() and p.read_bytes() == texts[row["n"]]:
+                HELD.pop(str(p), None)
                 p.unlink()
 
     def _warm(self) -> None:

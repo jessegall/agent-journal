@@ -268,6 +268,8 @@ class Controller(Stored, Files, Links):
 
     @internal
     def action(self, name: str):
+        if name.startswith("_") or name not in {*actions(type(self)), *COMMANDS.get(self.type, {}), *self.resource.command_names.values()}:
+            self._refuse(f"{self.type} has no action {name!r}")
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
             return bus.commanded(self.type, name, partial(command, self))
