@@ -1,5 +1,5 @@
 from engine.events.agents import SessionStarted
-from engine.events.resources import ResourceCreated
+from engine.events.resources import WorkCreated
 from features.parts import ActionInterceptor, AgentContext, Context, Handler
 from resources.base import Refused
 
@@ -12,8 +12,8 @@ def template_of(journal, row):
         plan = next((p for p in journal.plans._every() if row.ref in p.refs and p.data.get("template")), None)
         given = plan.data.get("template") if plan else ""
     try:
-        return journal.templates.load(given) if given else None
-    except (ValueError, Refused):
+        return journal.templates.chosen(given)
+    except Refused:
         return None
 
 
@@ -37,8 +37,8 @@ class PrefaceShow(ActionInterceptor):
 
 
 class TellOnStart(Handler):
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        main = context.journal.agents.primary() if event.type == "work" else None
+    def handle(self, context: Context, event: WorkCreated) -> None:
+        main = context.journal.agents.primary()
         if main:
             tell(context.speaking_to(main), context.journal.works.load(event.n))
 

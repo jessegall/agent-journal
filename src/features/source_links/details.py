@@ -2,7 +2,7 @@ from features.base import FeatureDetails, Line
 from features.settings import Setting
 
 
-class TrackingDetails(FeatureDetails):
+class SourceLinksDetails(FeatureDetails):
     name = "source_links"
     has_skill = False
 

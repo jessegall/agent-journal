@@ -1,6 +1,15 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
-from features.work_modes.modes import BUILDER, NAME
+
+NAME = "work_modes"
+BUILDER, ORCHESTRATOR, SOLO = "builder", "orchestrator", "solo"
+MODES = {
+    BUILDER: "you do the work yourself and send helpers or subagents when a job is better done beside you",
+    ORCHESTRATOR: "you plan, send helpers and subagents to do the work, review what they bring back and merge it; "
+                  "you write code yourself only for reviews and small fixes",
+    SOLO: "you do all the work yourself: no subagents and no helpers",
+}
+MODE_SET = "mode set"
 
 
 class WorkModesDetails(FeatureDetails):
@@ -38,6 +47,12 @@ class WorkModesDetails(FeatureDetails):
     ]
 
     lines = [
+        Line(
+            name=MODE_SET,
+            while_waiting=True,
+            title="the user set the work mode to {{mode}}",
+            brief="From now on {{meaning}}.",
+        ),
         Line(
             name="drifted",
             title="You are the orchestrator here and have made {{edits}} edits yourself: send a helper for the rest, and keep your own edits to reviews and small fixes.",

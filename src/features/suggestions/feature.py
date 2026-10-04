@@ -4,7 +4,7 @@ from features.suggestions.details import SuggestionsDetails
 from features.suggestions.handlers import FileDecidedSuggestion
 
 
-class SuggestionsDecided(Feature):
+class SuggestionsFeature(Feature):
     details = SuggestionsDetails
 
     def register(self, journal: Journal) -> None:
