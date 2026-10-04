@@ -13,7 +13,7 @@ from features.sharing.page import PICTURES, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused
-from features.nudges import DAY
+from features.trigger import DAY
 from engine.wording import digest
 
 APP_PAGE = "phone.html"

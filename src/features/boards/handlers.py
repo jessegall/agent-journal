@@ -5,7 +5,8 @@ from typing import ClassVar
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from features.boards.controller import DRAFTING_PHASE, Boards
-from features.nudges import MINUTE, Sent
+from features.nudges import Sent
+from features.trigger import MINUTE
 from features.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
 

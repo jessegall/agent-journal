@@ -4,8 +4,8 @@ from typing import ClassVar
 
 from engine.events.engine import ClockTicked
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
-from features.nudges import MINUTE, Sent
-from features.trigger import MINUTES, Trigger
+from features.nudges import Sent
+from features.trigger import MINUTE, MINUTES, Trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Works
 from features.plans.controller import WAITING

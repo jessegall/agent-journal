@@ -4,7 +4,7 @@ from engine.events.engine import ClockTicked
 from features.parts import WHOLE_FEATURE, AgentContext, Handler
 from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER
-from features.nudges import DAY
+from features.trigger import DAY
 
 KEEP = {"report": 14, "todo": 7}
 PACK_AFTER = 3

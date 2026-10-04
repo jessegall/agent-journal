@@ -7,7 +7,8 @@ from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features import trigger
-from features.nudges import MINUTE, Sent
+from features.nudges import Sent
+from features.trigger import MINUTE
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE

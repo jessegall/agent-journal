@@ -1,24 +1,18 @@
-import inspect
 import time
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar, get_type_hints
+from typing import TYPE_CHECKING, ClassVar
 
-from controllers.base import COMMANDS, HANDLERS
-from controllers.types import Agents, Environments
-from engine import bus
-from engine.events.base import AgentEvent
+from controllers.types import Environments
 from engine.events.resources import AgentChanged
-from engine.gates import AFTERWARDS, CANCELERS, POLICIES
-from engine.reach import Guard, Reach
+from engine.reach import Reach
 from engine.state import State
-from engine.wording import APPENDS, digest
-from features.format import FORMATTERS
-from resources.base import SYSTEM, Refused
+from engine.wording import digest
+from features import trigger
+from features.settings import Settings
+from resources.base import SYSTEM
 
 if TYPE_CHECKING:
     from features.journal import BoundJournal
-
-from features.settings import Settings
 
 ONCE_KEPT = 1000
 
@@ -40,11 +34,6 @@ class Speaker:
     def move_to_background(self) -> dict:
         from agents.control import move_to_background
         return move_to_background(self.record.root, self.record.env, self.session)
-
-    def command(self, line: str) -> dict:
-        from agents.control import request
-        action, _, value = line.partition(" ")
-        return request(self.record.root, self.record.env, self.session, action, value.strip())
 
 
 @dataclass
@@ -73,6 +62,10 @@ class Context:
     def speaking_to(self, row) -> "AgentContext":
         return AgentContext.of(self.feature, self.record, row, self.provider, self.hook)
 
+    def to_primary(self) -> "AgentContext | None":
+        agent = self.journal.agents.primary()
+        return self.speaking_to(agent) if agent else None
+
     def due(self, behaviour: str = "") -> bool:
         return bool(self.agent) and self.feature.due(self.record, self.agent.row, behaviour)
 
@@ -82,9 +75,8 @@ class Context:
     def release(self, behaviour: str = "") -> None:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
-    def every(self, kind: str, key: str, spec) -> bool:
-        from features import trigger
-        return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", spec)
+    def every(self, kind: str, key: str, cadence: trigger.Trigger) -> bool:
+        return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", cadence)
 
     def at_most(self, kind: str, key: str, times: int) -> bool:
         if self.used_up(kind, key, times):
@@ -121,14 +113,6 @@ class AgentContext(Context):
 
 
 WHOLE_FEATURE = ""
-
-
-def wanted(part, feature, record, row, timed: bool = True) -> bool:
-    if part.behaviour is None:
-        return True
-    if not timed or not feature.cadence(record, part.behaviour):
-        return feature.on(record, part.behaviour)
-    return bool(row) and feature.due(record, row, part.behaviour)
 
 
 class Handler:
@@ -188,126 +172,3 @@ class ActionInterceptor:
 def in_background(record) -> bool:
     row = Environments(record, actor=SYSTEM)._titled(record.env)
     return bool(row and row.owner)
-
-
-def agent_row(record, n: int):
-    if record.memo is None:
-        return Agents(record, actor=SYSTEM).load(n)
-    key = ("agent row", n)
-    if key not in record.memo:
-        record.memo[key] = Agents(record, actor=SYSTEM).load(n)
-    return record.memo[key]
-
-
-class Events:
-    def __init__(self, feature):
-        self.feature = feature
-        self.names: list[str] = []
-
-    def handler(self, handler: Handler) -> None:
-        kind, feature = get_type_hints(handler.handle)["event"], self.feature
-
-        def run(event, record) -> None:
-            typed = kind.read(event)
-            if not typed.wanted():
-                return
-            if isinstance(typed, AgentEvent) and not typed.agent:
-                return
-            row = agent_row(record, typed.agent) if isinstance(typed, AgentEvent) else None
-            if wanted(handler, feature, record, row):
-                handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
-        self.names.append(kind.name())
-        bus.on(kind.on, run, enabled=feature.enabled)
-
-
-class Client:
-    def __init__(self, feature):
-        self.feature = feature
-
-    def formatter(self, formatter: TextFormatter) -> None:
-        feature = self.feature
-        FORMATTERS.append((lambda text, record: formatter.format(Context.of(feature, record), text)
-                           if not record or (feature.enabled(record) and wanted(formatter, feature, record, None, timed=False)) else text,
-                           formatter.surfaces))
-
-
-def refusals(interceptor: type) -> str:
-    return f"refused.{interceptor.__name__}"
-
-
-def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str) -> str:
-    key = refusals(type(interceptor))
-    limit = max(0, int(context.settings[interceptor.limit]))
-    aside = max(0, int(context.settings[interceptor.steps_aside])) if interceptor.steps_aside else 0
-    count = int(context.state.get(key, 0))
-    if not refused:
-        count = 0
-    elif aside:
-        count = count % (limit + aside) + 1
-    else:
-        count += 1
-    context.state.set(key, count)
-    return refused if count <= limit else ""
-
-
-class AgentHooks:
-    def __init__(self, feature):
-        self.feature = feature
-        self.guards: list[Guard] = []
-
-    def append_to_line(self, on: str, addition) -> None:
-        APPENDS.setdefault(on, []).append(addition)
-
-    def interceptor(self, interceptor: ToolInterceptor) -> None:
-        feature, guard = self.feature, Guard.of(interceptor)
-        self.guards.append(guard)
-
-        def policy(provider, record, hook, session) -> str:
-            if hook.tool.loads_skill and not interceptor.before_checks:
-                return ""
-            row = Agents(record, actor=SYSTEM)._shared(session)
-            if not feature.enabled(record) or not wanted(interceptor, feature, record, row, timed=False):
-                return ""
-            context = AgentContext.of(feature, record, row, provider, hook)
-            refused = interceptor.intercept(context, hook.tool) or ""
-            return limited(context, interceptor, refused) if interceptor.limit else refused
-        policy.guard = guard
-        if interceptor.before_checks:
-            POLICIES.insert(0, policy)
-            return
-        (POLICIES if interceptor.refuses else AFTERWARDS).append(policy)
-
-    def canceler(self, canceler: Canceler) -> None:
-        feature, guard = self.feature, Guard.of(canceler)
-        self.guards.append(guard)
-
-        def cancel(provider, record, hook, session, data) -> str:
-            if not feature.enabled(record):
-                return ""
-            row = Agents(record, actor=SYSTEM)._shared(session)
-            return canceler.cancel(AgentContext.of(feature, record, row, provider, hook), data) or ""
-        cancel.guard = guard
-        CANCELERS.setdefault(canceler.event, []).append(cancel)
-
-
-class Commands:
-    def __init__(self, feature):
-        self.feature = feature
-
-    def add(self, type_: str, command: Command) -> None:
-        feature = self.feature
-
-        def call(controller, *args, **kwargs):
-            if not feature.enabled(controller.record):
-                raise Refused(f"the {feature.name} feature is off")
-            return command.run(Context.of(feature, controller.record), controller, *args, **kwargs)
-        given = list(inspect.signature(command.run).parameters.values())[2:]
-        call.__signature__ = inspect.Signature([inspect.Parameter("controller", inspect.Parameter.POSITIONAL_OR_KEYWORD), *given])
-        call.__name__ = command.name
-        call.network = command.network
-        COMMANDS.setdefault(type_, {})[command.name] = call
-
-    def intercept(self, action: str, interceptor: ActionInterceptor) -> None:
-        feature = self.feature
-        HANDLERS.setdefault(action, []).append(
-            lambda controller, **args: interceptor.intercept(Context.of(feature, controller.record), controller, **args) if feature.enabled(controller.record) else None)

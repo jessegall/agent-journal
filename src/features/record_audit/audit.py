@@ -7,7 +7,7 @@ from features.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.project_files import matching
 from resources.base import SYSTEM
-from features.nudges import DAY
+from features.trigger import DAY
 
 CLAIMS = (Rules, Facts, Reminders)
 PATH = re.compile(r"(?<![\w/.~])(~/)?((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")

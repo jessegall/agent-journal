@@ -53,8 +53,7 @@ from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching, project_path, read_source
 from engine.paths import contained
 from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
-from features.shaping import KEEP_SHAPED, settled, shaped
-from features.format import VIEWER, formatted
+from features.format import KEEP_SHAPED, VIEWER, formatted, settled, shaped
 from commands.dispatch import dispatch  # noqa: F401
 
 

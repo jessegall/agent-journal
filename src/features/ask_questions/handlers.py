@@ -5,7 +5,8 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from controllers.types import Questions
 from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
-from features.nudges import DAY, Sent
+from features.nudges import Sent
+from features.trigger import DAY
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices

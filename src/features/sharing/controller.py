@@ -17,16 +17,15 @@ from controllers.messages import Messages
 from engine.record import Record
 from engine.stored import read_json
 from features import FEATURES
-from features.shaping import shaping
 from controllers.described import described_types
 from engine.markers import MARKER
-from features.format import SHARED, formatted
+from features.format import SHARED, formatted, shape
 from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
-from features.nudges import DAY
+from features.trigger import DAY
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
@@ -406,7 +405,7 @@ class Shares(Controller):
         rows = {}
         for ref in scope:
             row = self._shared_row(share, ref)
-            shaped = shaping(row, record, SHARED)
+            shaped = shape(row, record, SHARED)
             rows[ref] = {
                 "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
                 "title": scoped(shaped.get("title", ""), scope), "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),

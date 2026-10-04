@@ -1,8 +1,7 @@
-from features.shaping import shaped
 from controllers.types import Environments, Messages, Todos
 from engine.record import Record
 from features import load
-from features.format import VIEWER
+from features.format import VIEWER, shaped
 from resources.base import USER
 from tests.conftest import fresh
 

@@ -263,9 +263,11 @@ def main(argv: list[str]) -> None:
     from engine import runtime
     from engine.record import Record
     from features.sharing.controller import LAYOUT_FILE, Shares
+    from features.switches import watch_change_log
     from resources.base import SYSTEM
     root = Path(argv[0])
     features.load(root)
+    watch_change_log()
     serve(Shares(Record(root, runtime.env(root)), actor=SYSTEM), int(argv[1]))
 
 

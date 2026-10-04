@@ -1,10 +1,16 @@
 from controllers.faults import threw
-from resources.base import SECTION
+from engine.markers import plain
+from features.switches import generation
+from resources.base import SECTION, as_dict
 
 FORMATTERS: list = []
 DOWNLOAD = "download"
 VIEWER = "viewer"
 SHARED = "shared"
+TEXT_FIELDS = ("title", "abstract", "brief", "outcome")
+PLAIN_FIELDS = ("title", "abstract")
+SHAPED: dict = {}
+KEEP_SHAPED = 5000
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
@@ -21,9 +27,42 @@ def formatted(text: str, record=None, surface: str = "") -> str:
     return text
 
 
+def settled(record) -> tuple:
+    return record.settings_version(), generation()
+
+
+def shaped(r, record=None, surface: str = "") -> dict:
+    key = (str(record.home), r.type, r.n, r.updated, surface, settled(record)) if record is not None and hasattr(r, "updated") else None
+    if key in SHAPED:
+        return SHAPED[key]
+    out = shape(r, record, surface)
+    if key:
+        if len(SHAPED) >= KEEP_SHAPED:
+            SHAPED.clear()
+        SHAPED[key] = out
+    return out
+
+
+def shape(r, record=None, surface: str = "") -> dict:
+    row = as_dict(r)
+    fields = {key: formatted(row.get(key), record, surface) for key in TEXT_FIELDS if row.get(key)}
+    fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
+    parts = [{**s, SECTION.title: formatted(s.get(SECTION.title), record, surface), SECTION.body: formatted(s.get(SECTION.body), record, surface)}
+             for s in row.get("sections") or []]
+    data = {key: [{**item, **{sub: formatted(item.get(sub), record, surface) for sub in subs if item.get(sub)}} for item in row["data"].get(key) or []]
+            for key, subs in getattr(r, "formatted_data", {}).items() if row.get("data", {}).get(key)}
+    shaped_row = {**row, **fields}
+    if parts:
+        shaped_row["sections"] = parts
+    if data:
+        shaped_row["data"] = {**row["data"], **data}
+    return shaped_row
+
+
 def markdown(row, record=None) -> str:
-    parts = [f"# {formatted(row.title, record, DOWNLOAD)}"]
-    parts += [f"_{formatted(row.abstract, record, DOWNLOAD)}_"] if row.abstract else []
-    parts += [formatted(row.brief, record, DOWNLOAD)] if row.brief else []
-    parts += [f"## {formatted(s[SECTION.title], record, DOWNLOAD)}\n\n{formatted(s[SECTION.body], record, DOWNLOAD)}" for s in row.sections]
+    shaped_row = shape(row, record, DOWNLOAD)
+    parts = [f"# {shaped_row['title']}"]
+    parts += [f"_{shaped_row['abstract']}_"] if row.abstract else []
+    parts += [shaped_row["brief"]] if row.brief else []
+    parts += [f"## {s[SECTION.title]}\n\n{s[SECTION.body]}" for s in shaped_row.get("sections", [])]
     return "\n\n".join(part.strip() for part in parts) + "\n"

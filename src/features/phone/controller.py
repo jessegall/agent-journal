@@ -19,7 +19,7 @@ from controllers.types import Agents, Environments, Nudges, Todos
 from engine.sessions import Sessions
 from controllers.notices import Notices
 from engine.record import Record
-from features.format import VIEWER, formatted
+from features.format import VIEWER, formatted, shaped
 from features.message_buttons.shaping import Button, spent
 from engine.project_files import read_source
 from features.phone.export import Export, export
@@ -30,7 +30,6 @@ from features.phone.resource import Phone
 from features.plans.controller import WAITING as PLAN_WAITS
 from features.plans.progress import phase_rows, running as running_plans
 from features.plans.resource import PHASE
-from features.shaping import shaped
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
 from resources.shapes import level_named
@@ -39,7 +38,7 @@ from features.work_modes.modes import mode_of, pick
 from features.helpers.controller import Helpers
 from features import FEATURES
 from surfaces.summary import JournalSummary, lately_summarized, subagents
-from features.nudges import DAY
+from features.trigger import DAY
 
 CODE_SECONDS = 600
 HELPERS_SHOWN = 10

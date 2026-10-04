@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Facts, Rules
 from resources.base import SYSTEM
-from features.nudges import DAY
+from features.trigger import DAY
 
 
 def standing(record) -> list:

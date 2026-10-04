@@ -8,7 +8,7 @@ from engine.sessions import Sessions, live
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 from resources.types import SUBAGENT
-from features.nudges import MINUTE
+from features.trigger import MINUTE
 
 
 STOPPED = "stopped"

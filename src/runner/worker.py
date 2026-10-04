@@ -18,6 +18,7 @@ from engine.record import Record  # noqa: E402
 from engine.package import CODE  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
+from features.switches import watch_change_log  # noqa: E402
 from features.auto_update.check import Relaunch, UpdateCheck  # noqa: E402
 from features.work_tracking.auto import CheckIn  # noqa: E402
 
@@ -111,6 +112,7 @@ class Confirm:
 
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:
     hold_build(root, CODE)
+    watch_change_log()
     seat = seated(Seat(root, env, agent, session))
     relaunching = runtime.relaunch_file(root, session)
     stopping = session_flag(root, session)
