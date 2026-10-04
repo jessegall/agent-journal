@@ -1,12 +1,11 @@
 import re
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
 from engine.fields import Loaded
-from features.plugins.declared import declared, settings_of
-from features.plugins.lifecycle import called
+from features.plugins.declared import declared, named, settings_of, settings_with
 from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
@@ -52,7 +51,7 @@ def nudged(record, journal, plugin: str, session: str, text: str, private: bool)
 
 
 def raised(record, plugin: str, session: str, asked: Posting) -> None:
-    row = next((r for r in Plugins(record, actor=PLUGIN)._standing() if called(r) == plugin), None)
+    row = named(Plugins(record, actor=PLUGIN), plugin)
     name = asked.event
     event = declared(row).event(name) if row else None
     if not event:
@@ -78,14 +77,14 @@ def carded(record, session: str, plugin: str, look: Look, brief: str, page: str 
 
 def settled(record, plugin: str, values: dict) -> None:
     rows = Plugins(record, actor=PLUGIN)
-    row = next((r for r in rows._standing() if called(r) == plugin), None)
+    row = named(rows, plugin)
     if row is None:
         return
     known = {setting.key for setting in declared(row).settings}
     settings = settings_of(row)
     found = {key: str(value) for key, value in values.items() if key in known and settings.chosen.get(key) != str(value)}
     if found:
-        rows.update(row.n, settings=replace(settings, chosen={**settings.chosen, **found}).to_json())
+        rows.update(row.n, settings=settings_with(row, chosen={**settings.chosen, **found}))
 
 
 def wanted(reply: dict) -> list[tuple[str, object]]:

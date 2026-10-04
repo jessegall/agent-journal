@@ -2,6 +2,7 @@ import hashlib
 import re
 
 SLUG = re.compile(r"[^a-z0-9]+")
+PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
 
 
 def noun(n: int, word: str) -> str:
@@ -36,3 +37,13 @@ def counted(groups: dict[tuple, dict], record) -> list[str]:
     return [appended(f"{type_}.{action}", {"numbers": list(ns), "record": record}, f"{plural(len(ns), f'new {type_}')} {', '.join(map(str, ns))}" if action == "created"
                     else f"{noun(len(ns), type_)} {', '.join(map(str, ns))} {action}")
             for (type_, action), ns in groups.items()]
+
+
+def fill(value, values: dict):
+    if isinstance(value, str):
+        return PLACEHOLDER.sub(lambda m: str(values.get(m.group(1), m.group(0))), value)
+    if isinstance(value, list):
+        return [fill(part, values) for part in value]
+    if isinstance(value, dict):
+        return {key: fill(part, values) for key, part in value.items()}
+    return value

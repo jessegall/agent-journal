@@ -12,15 +12,15 @@ from engine.runtime import default_env
 from engine.record import Record
 from controllers.faults import threw
 from features.plugins.answer import apply
-from features.plugins.declared import Handler, Manifest, declared, settings_of
-from features.plugins.lifecycle import called
-from features.plugins.manifest import fill
+from engine.wording import fill
+from features.plugins.declared import Handler, Manifest, called, declared, settings_of
+from features.plugins.environment import placed, port_values
+from features.plugins.paths import folder, log, logged
 from features.plugins.payload import of, session_of
 from features.skill_loading.required import require_primary
 from features.plugins.queue import Refusal, drain
-from features.plugins.run import SECONDS, call
+from features.plugins.run import SECONDS, call, read
 from features.plugins.skills import published
-from features.plugins.source import environment, folder, log, logged
 from resources.base import PLUGIN, SYSTEM
 
 REPLAY = 600
@@ -47,15 +47,8 @@ def post(url: str, payload: dict, token: str) -> tuple[bool, dict | str]:
             out = answered.read().decode(errors="replace")
     except (urllib.error.URLError, OSError, ValueError) as error:
         return False, f"{url} did not answer: {error}"
-    if not out.strip():
-        return True, {}
-    try:
-        reply = json.loads(out)
-    except ValueError:
-        return False, f"{url} answered with something other than JSON"
-    if reply == []:
-        return True, {}
-    return (True, reply) if isinstance(reply, dict) else (False, f"{url} answered with something other than an object")
+    ok, reply = read(out)
+    return (True, reply) if ok else (False, f"{url}: {reply}")
 
 
 def watch(root: Path, journal) -> None:
@@ -87,23 +80,14 @@ class Host:
     def environments(self) -> list[Record]:
         return Record.every(self.root)
 
-    def installed(self, record) -> list:
-        return Plugins(record, actor=SYSTEM)._installed()
-
-    def name(self, row) -> str:
-        return called(row)
-
-    def cursor(self, record, plugin: str) -> str:
-        return f"plugin-{plugin}"
-
     def step(self, now: float = 0.0) -> int:
         sent = 0
         names: list[str] = []
         for record in self.environments():
-            for row in self.installed(record):
+            for row in Plugins(record, actor=SYSTEM)._installed():
                 sent += self.deliver(record, row, now)
-                if self.name(row) not in names:
-                    names.append(self.name(row))
+                if called(row) not in names:
+                    names.append(called(row))
         return sent + self.drained(names)
 
     def drained(self, names: list[str]) -> int:
@@ -124,10 +108,10 @@ class Host:
         self.journal.notice(record, "refused", name=plugin, queued=refusal.line[:200], why=refusal.why, log=log(self.root, plugin), tone="warn")
 
     def deliver(self, record, row, now: float = 0.0) -> int:
-        plugin = self.name(row)
+        plugin = called(row)
         if now and self.trouble.get(plugin, {}).get("until", 0) > now:
             return 0
-        mark = self.cursor(record, plugin)
+        mark = f"plugin-{plugin}"
         since = record.cursor(mark)
         if not since:
             record.set_cursor(mark, record.last_event())
@@ -145,7 +129,6 @@ class Host:
         return sent
 
     def handle(self, record, row, event, now: float = 0.0) -> tuple[bool, int]:
-        plugin = self.name(row)
         manifest = declared(row)
         skills = manifest.skills_for(patterns(event))
         if skills:
@@ -153,11 +136,10 @@ class Host:
         handlers = listening(manifest, event)
         if not handlers:
             return True, 0
-        where = folder(record.root, plugin)
+        plugin, where, env = placed(record, row)
         payload = of(record, event, plugin, where)
         if its_own(event, plugin, payload.get("resource")):
             return True, 0
-        env = environment(record.root, plugin, manifest, row.token, chosen=settings_of(row).chosen, env=record.env)
         for handler in handlers:
             if handler.post:
                 ok, reply = post(fill(handler.post, self.places(record, row)), payload, row.token)
@@ -178,8 +160,7 @@ class Host:
         return True, 1
 
     def places(self, record, row) -> dict:
-        ports = settings_of(row).ports
-        return {**{f"ports.{name}": port for name, port in ports.items()}, "dir": str(folder(record.root, self.name(row)))}
+        return {**port_values(settings_of(row).ports), "dir": str(folder(record.root, called(row)))}
 
     def failed(self, record, plugin: str, why, now: float = 0.0) -> None:
         logged(record.root, plugin, why)

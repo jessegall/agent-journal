@@ -329,11 +329,14 @@ def unshared(top: Path, project: Path, wanted: set[Path], folders: WorkspaceFold
 def excluded(top: Path, patterns: list[str], folders: WorkspaceFolders) -> None:
     gitdir = Path((top / ".git").read_text().split(":", 1)[1].strip())
     exclude = (gitdir if gitdir.is_absolute() else top / gitdir).resolve().parents[1] / "info" / "exclude"
+    ignore(exclude, patterns, folders.managed)
+
+
+def ignore(exclude: Path, patterns: list[str], managed: tuple = ()) -> None:
     exclude.parent.mkdir(parents=True, exist_ok=True)
     with (exclude.parent / "exclude.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         held = exclude.read_text().splitlines() if exclude.is_file() else []
-        managed = folders.managed
         kept = [line for line in held if not line.startswith(managed) or line in patterns]
         lines = kept + [pattern for pattern in patterns if pattern not in kept]
         if lines == held:

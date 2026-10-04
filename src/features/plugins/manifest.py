@@ -14,7 +14,6 @@ MANIFEST = Path(".journal-plugin") / "plugin.json"
 KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
-PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
 PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show", "when")
@@ -36,9 +35,7 @@ def read(folder: Path, version: str = "") -> Manifest:
         raise Refused(f"plugin.json is not JSON: {error}") from error
     if not isinstance(given, dict):
         raise Refused("plugin.json holds one object, with a name and what the plugin listens to")
-    for key in given:
-        if key not in KEYS:
-            raise Refused(f"plugin.json: unknown key {key!r}; known: {', '.join(KEYS)}")
+    unknown_keys(given, KEYS, "plugin.json")
     name = given.get("name")
     if not isinstance(name, str) or not NAME.fullmatch(name):
         raise Refused(f"plugin.json: name must be 2-32 lowercase letters, digits or dashes, got {name!r}")
@@ -51,30 +48,30 @@ def read(folder: Path, version: str = "") -> Manifest:
     if wanted and version and newer(str(wanted), version):
         raise Refused(f"{name} needs journal {wanted} or newer; this is {version} — run journal upgrade")
     checked = {key: given[key] for key in KEYS if key in given}
-    checked["requires"] = shaped(name, given.get("requires") or {}, "requires", ("check", "hint"), ("check",))
-    checked["env"] = texts(name, given.get("env") or {}, "env")
-    checked["setup"] = steps(name, given.get("setup") or [])
-    checked["services"] = services(name, given.get("services") or {})
-    checked["on"] = handlers(name, given.get("on") or {})
+    checked["requires"] = shaped(given.get("requires") or {}, "requires", ("check", "hint"), ("check",))
+    checked["env"] = texts(given.get("env") or {}, "env")
+    checked["setup"] = steps(given.get("setup") or [])
+    checked["services"] = services(given.get("services") or {})
+    checked["on"] = handlers(given.get("on") or {})
     if given.get("refuse_socket") and given["refuse_socket"] not in checked["services"]:
         raise Refused(f"plugin.json: refuse_socket names one of its services, not {given['refuse_socket']!r}")
-    checked["chat"] = chat(name, given.get("chat") or [])
+    checked["chat"] = chat(given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
     checked["dashboards"] = dashboards(given.get("dashboards") or [])
-    checked["settings"] = typed(shaped(name, given.get("settings") or {}, "settings", SETTING, ()))
-    checked["events"] = shaped(name, given.get("events") or {}, "events", ("title", "tone", "card"), ("title",))
+    checked["settings"] = typed(shaped(given.get("settings") or {}, "settings", SETTING, ()))
+    checked["events"] = shaped(given.get("events") or {}, "events", ("title", "tone", "card"), ("title",))
     for event, fields in checked["events"].items():
         if "card" in fields:
-            shaped(name, {event: fields["card"]}, "events.card", ("label", "color", "icon", "collapsed"), ())
+            shaped({event: fields["card"]}, "events.card", ("label", "color", "icon", "collapsed"), ())
         if fields.get("tone", "") not in TONES:
             raise Refused(f"plugin.json: events.{event}.tone is one of {', '.join(t for t in TONES if t)}")
     checked["load"] = loads(given.get("load") or {}, checked["events"])
     if "cancels" in checked:
         if not isinstance(checked["cancels"], dict) or any(event not in CANCELABLE for event in checked["cancels"]):
             raise Refused(f"plugin.json: cancels names events that can be cancelled: {', '.join(CANCELABLE)}")
-        checked["cancels"] = {event: command(name, f"cancels.{event}", run) for event, run in checked["cancels"].items()}
+        checked["cancels"] = {event: command(f"cancels.{event}", run) for event, run in checked["cancels"].items()}
     if "refuse" in checked:
-        checked["refuse"] = command(name, "refuse", checked["refuse"])
+        checked["refuse"] = command("refuse", checked["refuse"])
     checked["reads"] = bool(given.get("reads"))
     if "installed" in checked and not isinstance(checked["installed"], str):
         raise Refused("plugin.json: installed is one command, run right after the plugin is installed or upgraded; its answer fills the settings")
@@ -85,7 +82,13 @@ def read(folder: Path, version: str = "") -> Manifest:
     return Manifest.of(checked)
 
 
-def command(name: str, where: str, given) -> str | list:
+def unknown_keys(given: dict, known, where: str) -> None:
+    for key in given:
+        if key not in known:
+            raise Refused(f"{where} has unknown key {key!r}; known: {', '.join(known)}")
+
+
+def command(where: str, given) -> str | list:
     if isinstance(given, str) and given.strip():
         return given
     if isinstance(given, list) and given and all(isinstance(part, str) and part for part in given):
@@ -93,21 +96,19 @@ def command(name: str, where: str, given) -> str | list:
     raise Refused(f"plugin.json: {where} is a command, a line or a list of words, not {given!r}")
 
 
-def texts(name: str, given, where: str) -> dict:
+def texts(given, where: str) -> dict:
     if not isinstance(given, dict) or not all(isinstance(v, str) for v in given.values()):
         raise Refused(f"plugin.json: {where} names values, each one text")
     return dict(given)
 
 
-def shaped(name: str, given, where: str, keys: tuple, needed: tuple) -> dict:
+def shaped(given, where: str, keys: tuple, needed: tuple) -> dict:
     if not isinstance(given, dict):
         raise Refused(f"plugin.json: {where} names one entry each")
     for key, value in given.items():
         if not isinstance(value, dict):
             raise Refused(f"plugin.json: {where}.{key} is an object with {', '.join(keys)}")
-        for field in value:
-            if field not in keys:
-                raise Refused(f"plugin.json: {where}.{key} has unknown key {field!r}; known: {', '.join(keys)}")
+        unknown_keys(value, keys, f"plugin.json: {where}.{key}")
         for field in needed:
             if not value.get(field):
                 raise Refused(f"plugin.json: {where}.{key} needs {field}")
@@ -132,7 +133,7 @@ def typed(settings: dict) -> dict:
     return settings
 
 
-def steps(name: str, given) -> list[dict]:
+def steps(given) -> list[dict]:
     if not isinstance(given, list):
         raise Refused("plugin.json: setup is a list of steps, run in order")
     out = []
@@ -141,17 +142,15 @@ def steps(name: str, given) -> list[dict]:
             step = {"run": step}
         if not isinstance(step, dict):
             raise Refused(f"plugin.json: setup step {i} is a command or an object with {', '.join(STEP)}")
-        for field in step:
-            if field not in STEP:
-                raise Refused(f"plugin.json: setup step {i} has unknown key {field!r}; known: {', '.join(STEP)}")
-        made = {"name": str(step.get("name") or f"step {i}"), "run": command(name, f"setup step {i}", step.get("run"))}
+        unknown_keys(step, STEP, f"plugin.json: setup step {i}")
+        made = {"name": str(step.get("name") or f"step {i}"), "run": command(f"setup step {i}", step.get("run"))}
         if step.get("cwd"):
             made["cwd"] = str(step["cwd"])
         out.append(made)
     return out
 
 
-def services(name: str, given) -> dict:
+def services(given) -> dict:
     if not isinstance(given, dict):
         raise Refused("plugin.json: services names one service each")
     out = {}
@@ -160,9 +159,7 @@ def services(name: str, given) -> dict:
             raise Refused(f"plugin.json: service names are lowercase words; {service!r} is not")
         if not isinstance(value, dict):
             raise Refused(f"plugin.json: service {service!r} is an object with {', '.join(SERVICE)}")
-        for field in value:
-            if field not in SERVICE:
-                raise Refused(f"plugin.json: service {service!r} has unknown key {field!r}; known: {', '.join(SERVICE)}")
+        unknown_keys(value, SERVICE, f"plugin.json: service {service!r}")
         port = value.get("port")
         if port is not None and port != "auto" and not isinstance(port, int):
             raise Refused(f"plugin.json: service {service!r} takes a port number or \"auto\", not {port!r}")
@@ -172,11 +169,11 @@ def services(name: str, given) -> dict:
         when = value.get("when") or ""
         if not isinstance(when, str):
             raise Refused(f"plugin.json: service {service!r} takes \"when\" as one shell command whose exit 0 means it is needed here")
-        out[service] = {**value, "run": command(name, f"service {service!r}", value.get("run")), "restart": restart, "when": when}
+        out[service] = {**value, "run": command(f"service {service!r}", value.get("run")), "restart": restart, "when": when}
     return out
 
 
-def chat(name: str, given) -> list:
+def chat(given) -> list:
     if not isinstance(given, list):
         raise Refused("plugin.json: chat is a list of {\"find\": \"<regex>\", \"as\": \"<markdown>\"}")
     out = []
@@ -202,7 +199,7 @@ def loads(given, events: dict) -> dict:
     return dict(given)
 
 
-def handlers(name: str, given) -> dict:
+def handlers(given) -> dict:
     if not isinstance(given, dict):
         raise Refused("plugin.json: on names an event pattern for each handler")
     out = {}
@@ -214,7 +211,7 @@ def handlers(name: str, given) -> dict:
                 raise Refused(f"plugin.json: on {pattern!r} is a command, or {{\"post\": \"<url>\"}}")
             out[pattern] = dict(handler)
             continue
-        out[pattern] = {"run": command(name, f"on {pattern!r}", handler)}
+        out[pattern] = {"run": command(f"on {pattern!r}", handler)}
     return out
 
 
@@ -225,9 +222,7 @@ def pages(name: str, given, declared: dict) -> list[dict]:
     for page in given:
         if not isinstance(page, dict):
             raise Refused(f"plugin.json: each page is an object with {', '.join(PAGE)}")
-        for field in page:
-            if field not in PAGE:
-                raise Refused(f"plugin.json: page has unknown key {field!r}; known: {', '.join(PAGE)}")
+        unknown_keys(page, PAGE, "plugin.json: page")
         service = page.get("service")
         if service not in declared:
             raise Refused(f"plugin.json: page {page.get('title') or page.get('name')!r} names service {service!r}, which is not declared")
@@ -242,18 +237,6 @@ def dashboards(given) -> list[dict]:
     for board in given:
         if not isinstance(board, dict) or not board.get("name"):
             raise Refused(f"plugin.json: each dashboard is an object with a name, and may have {', '.join(DASHBOARD[1:])}")
-        for field in board:
-            if field not in DASHBOARD:
-                raise Refused(f"plugin.json: dashboard has unknown key {field!r}; known: {', '.join(DASHBOARD)}")
+        unknown_keys(board, DASHBOARD, "plugin.json: dashboard")
         out.append({**board, "name": str(board["name"]), "title": str(board.get("title") or board["name"]).strip()})
     return out
-
-
-def fill(value, values: dict):
-    if isinstance(value, str):
-        return PLACEHOLDER.sub(lambda m: str(values.get(m.group(1), m.group(0))), value)
-    if isinstance(value, list):
-        return [fill(part, values) for part in value]
-    if isinstance(value, dict):
-        return {key: fill(part, values) for key, part in value.items()}
-    return value

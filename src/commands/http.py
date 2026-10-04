@@ -46,9 +46,8 @@ from resources.base import AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import read_json, write_text, last_lines
 from features.plugins.dashboard import checked
-from features.plugins.declared import declared
-from features.plugins.lifecycle import called
-from features.plugins.source import data
+from features.plugins.declared import called, declared
+from features.plugins.paths import data
 from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching, project_path, read_source
 from engine.paths import contained
@@ -816,8 +815,7 @@ def get_subagent_transcript(req: Request) -> Reply:
 @route("GET", "/api/pages")
 def get_pages(req: Request) -> Reply:
     from engine.services import specs, status
-    from features.plugins.declared import declared
-    from features.plugins.lifecycle import called
+    from features.plugins.declared import called, declared
     from features.plugins.services import plugin_services, plugins as installed
     where = {spec.id: spec for spec in specs(req.root, (plugin_services,))}
     out = []
@@ -854,7 +852,8 @@ def get_service_log(req: Request) -> Reply:
 def post_plugins_preview(req: Request) -> Reply:
     from features.plugins.commands import VERSION
     from features.plugins.lifecycle import drop
-    from features.plugins.source import previewed, staged
+    from features.plugins.preview import previewed
+    from features.plugins.staging import staged
     asked = req.body_as(PluginSource)
     source = asked.source
     where, manifest, commit, linked = staged(req.root, source, asked.ref, VERSION)
@@ -870,7 +869,8 @@ def post_plugin_upgrade_preview(req: Request) -> Reply:
     from features.plugins.commands import VERSION
     from features.plugins.declared import Manifest
     from features.plugins.lifecycle import changed, drop
-    from features.plugins.source import previewed, staged
+    from features.plugins.preview import previewed
+    from features.plugins.staging import staged
     row = Plugins(req.record(), actor=USER).load(req.params["n"])
     where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
     try:
@@ -881,7 +881,7 @@ def post_plugin_upgrade_preview(req: Request) -> Reply:
 
 @route("GET", "/api/plugins/{name}/log")
 def get_plugin_log(req: Request) -> Reply:
-    from features.plugins.source import log
+    from features.plugins.paths import log
     return Reply(200, {"name": req.params["name"], "log": last_lines(log(req.root, req.params["name"]), asked_lines(req))})
 
 
