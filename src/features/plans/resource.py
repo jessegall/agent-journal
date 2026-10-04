@@ -71,3 +71,10 @@ class Plan(Shape, Resource):
         phase = self.current_phase
         holds = self.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
         return Placement(self.n, self.title, number, holds)
+
+    def start_line(self) -> str:
+        phase = self.current_phase
+        return f"{self.title} is {self.status} — phase {self.current}, {phase[PHASE.title] if phase else ''}"
+
+    def member_refs(self) -> list[str]:
+        return [f"todo:{n}" for phase in self.phases for n in phase.get(PHASE.todos, [])]

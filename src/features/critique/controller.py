@@ -9,7 +9,7 @@ from engine import runtime
 from features.critique.details import CritiqueDetails
 from features.critique.lenses import DEFAULT, LENSES
 from features.critique.resource import Critique
-from features.sharing.controller import answers
+from engine.ports import answers
 from resources.base import SYSTEM, Refused
 
 SEED_SECONDS = 300

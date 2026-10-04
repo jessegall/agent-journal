@@ -6,7 +6,8 @@ from controllers.types import Messages, Nudges
 from engine.services import UP, log_file, status, want
 from engine.state import State
 from features.parts import Context, Handler
-from features.sharing.controller import HEALTH, Shares, answers, reached
+from engine.ports import answers, reached
+from features.sharing.controller import HEALTH, Shares
 from features.sharing.services import SERVER, TUNNEL, wanted
 from features.sharing.tunnel import refused_address, tunler
 from resources.base import SYSTEM, Refused

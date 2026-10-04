@@ -4,6 +4,30 @@ from typing import ClassVar
 from resources.base import DOCUMENT, PROJECT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape
 
+BY_HAND = "by hand"
+
+
+@dataclass(frozen=True)
+class RunKey:
+    env: str
+    about: str = BY_HAND
+
+    @classmethod
+    def of(cls, key: str) -> "RunKey":
+        env, _, about = key.partition("|")
+        return cls(env, about)
+
+    @property
+    def text(self) -> str:
+        return f"{self.env}|{self.about}"
+
+    @property
+    def by_hand(self) -> bool:
+        return self.about == BY_HAND
+
+    def here(self, env: str) -> bool:
+        return self.env == env
+
 
 @dataclass(frozen=True)
 class Run:

@@ -211,6 +211,12 @@ class Resource:
     def agent_line(self) -> str:
         return f"{self.title} — {self.brief}" if self.brief else self.title
 
+    def start_line(self) -> str:
+        return f"{self.title}  ({self.abstract})" if self.abstract else self.title
+
+    def member_refs(self) -> list[str]:
+        return []
+
     def rewrite(self, words) -> None:
         self.title, self.abstract, self.brief, self.outcome = words(self.title), words(self.abstract), words(self.brief), words(self.outcome)
         self.sections = [{**s, SECTION.body: words(s[SECTION.body])} for s in self.sections]

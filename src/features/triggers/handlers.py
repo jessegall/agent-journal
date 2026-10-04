@@ -2,7 +2,8 @@ from engine.events.engine import AgentMessageSent
 from engine.events.resources import MessageCreated
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
-from features.triggers.resource import DENY, FIRED, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
+from features.triggers.controller import Triggers
+from features.triggers.resource import DENY, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
 from resources.base import SYSTEM, USER
 from engine.reach import Reach
 
@@ -24,7 +25,7 @@ def fire(context, agent, row, done: str = "", about: str = "") -> None:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text, trigger=row.n)
     elif row.does in (NUDGE, INSTRUCT):
         context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.text or row.brief)
-    context.record.emit("trigger", row.n, FIRED, SYSTEM, about=about)
+    Triggers(context.record, actor=SYSTEM).fired(row.n, about)
 
 
 class WatchWhatTheAgentDoes(ToolInterceptor):

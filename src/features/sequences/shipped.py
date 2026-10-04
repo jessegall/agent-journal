@@ -6,7 +6,6 @@ from features.sequences.drafting import DRAFTING
 from features.sequences.exploration import EXPLORATION, FILLER, PANEL
 from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
 from features.triggers.controller import Triggers
-from features.triggers.resource import FROM_USER, START
 from resources.base import AGENT, SECTION, SYSTEM, USER
 
 TITLED = re.compile(r"^sequence:\{(.+)\}$")
@@ -289,20 +288,11 @@ def retire(sequences: Sequences, titles: set[str]) -> None:
 
 
 def watched(record, shipped: ShippedSequence) -> str:
-    triggers = Triggers(record, actor=SYSTEM)
-    row = next((t for t in triggers._every() if t.title == shipped.title and not t.deleted), None) or triggers.create(
-        shipped.title, brief=f"Starts the sequence {shipped.title}", words=list(shipped.words), words_in=FROM_USER, does=START,
-        system=True)
-    if not row.system:
-        triggers.update(row.n, system=True)
-    return f"trigger:{row.n}"
+    return Triggers(record, actor=SYSTEM).watch_for(shipped.title, shipped.words).ref
 
 
 def unwatched(record, shipped: ShippedSequence) -> None:
-    triggers = Triggers(record, actor=SYSTEM)
-    for row in triggers._every():
-        if row.title == shipped.title and row.system and not row.deleted:
-            triggers.delete(row.n, why=f"{shipped.title} now starts on {shipped.start_moment}")
+    Triggers(record, actor=SYSTEM).unwatch(shipped.title, f"{shipped.title} now starts on {shipped.start_moment}")
 
 
 def in_step(sequences: Sequences, shipped: ShippedSequence, n: int | None) -> bool:
