@@ -1,6 +1,7 @@
 <script setup>
 import {useToggledSet} from "../composables/toggledSet.js";
 import EmptyState from "../kit/EmptyState.vue";
+import Btn from "../kit/Btn.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -66,23 +67,32 @@ async function open(s) {
 
 async function loadNow(s) {
     busy.value = s.name;
-    const got = await api.loadSkill(s.name);
-    notice.value = got.notice;
-    busy.value = "";
+    try {
+        const got = await api.loadSkill(s.name);
+        notice.value = got.notice;
+    } finally {
+        busy.value = "";
+    }
 }
 
 async function always(s, on) {
     busy.value = s.name;
-    await api.alwaysSkill(s.name, on);
-    await reload();
-    busy.value = "";
+    try {
+        await api.alwaysSkill(s.name, on);
+        await reload();
+    } finally {
+        busy.value = "";
+    }
 }
 
 async function keywords(s, words) {
     busy.value = s.name;
-    await api.skillKeywords(s.name, words);
-    await reload();
-    busy.value = "";
+    try {
+        await api.skillKeywords(s.name, words);
+        await reload();
+    } finally {
+        busy.value = "";
+    }
 }
 </script>
 
@@ -114,11 +124,11 @@ async function keywords(s, words) {
                             />
                         </template>
                         <template v-else>
-                            <button type="button" :class="['group', {folded: folded.has(group.key)}]" @click="fold(group.key)">
+                            <Btn fill :class="['group', {folded: folded.has(group.key)}]" @click="fold(group.key)">
                                 <span class="group-name">{{ group.name }}</span>
                                 <span class="group-count">{{ group.count }}</span>
                                 <Icon name="down" />
-                            </button>
+                            </Btn>
                             <template v-if="!folded.has(group.key)">
                                 <template v-for="item in group.items" :key="item.key">
                                     <SkillsRow

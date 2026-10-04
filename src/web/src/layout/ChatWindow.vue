@@ -1,7 +1,7 @@
 <script setup>
 import ShellPicker from "./ShellPicker.vue";
 import {framed, soloFloat} from "../platform/view.js";
-import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
+import {computed, onMounted, onUnmounted, reactive} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import AgentBar from "../chat/AgentBar.vue";
@@ -10,11 +10,9 @@ import {go, route} from "../route.js";
 import {dragShell, tellShell} from "../platform/extension.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {usePoll} from "../poll.js";
 
-const JOURNALS_EVERY = 20000;
 const shell = reactive({hosted: false, shut: false, journals: false, envs: false, driving: false, drivingUrl: ""});
-const journals = ref([]);
+const journals = computed(() => store.journals);
 const project = computed(() => (store.spec && store.spec.project) || "journal");
 const environments = computed(() => rows("environment").map((e) => e.title));
 function toShell(op, extra) {
@@ -50,13 +48,6 @@ function pick(name) {
     toShell("pick", {url: location.origin, env: name});
     go(name);
 }
-
-usePoll(
-    "journals",
-    () => api.journals(),
-    JOURNALS_EVERY,
-    (got) => (journals.value = got)
-);
 
 function pickJournal(journal) {
     shell.journals = false;

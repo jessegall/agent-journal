@@ -3,25 +3,40 @@ import EmptyState from "../kit/EmptyState.vue";
 import {nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
+import TextInput from "../kit/TextInput.vue";
 import {go, peek, route} from "../route.js";
 import ResourceCard from "../resource/ResourceCard.vue";
 
 const q = ref(route.value.q);
 const hits = ref([]);
+const searching = ref(false);
 const input = ref(null);
+let request = 0;
 
 onMounted(() => nextTick(() => input.value?.focus()));
 
 async function run() {
+    const current = ++request;
+    const query = q.value.trim();
     go(route.value.env, "search", 0, q.value);
-    hits.value = q.value.trim() ? await api.search(q.value.trim()) : [];
+    hits.value = [];
+    searching.value = !!query;
+    if (!query) {
+        return;
+    }
+    try {
+        const result = await api.search(query);
+        if (current === request) hits.value = result;
+    } finally {
+        if (current === request) searching.value = false;
+    }
 }
 
 watch(
     () => route.value.q,
     (v) => {
         q.value = v;
-        if (v) run();
+        run();
     },
     {immediate: true}
 );
@@ -31,9 +46,15 @@ watch(
     <section class="search">
         <form class="box" @submit.prevent="run">
             <Icon name="search" />
-            <input ref="input" v-model="q" placeholder="Search everything on this environment…" autofocus />
+            <TextInput
+                ref="input"
+                :value="q"
+                placeholder="Search everything on this environment…"
+                autofocus
+                @input="q = $event.target.value"
+            />
         </form>
-        <template v-if="route.q && !hits.length">
+        <template v-if="route.q && !searching && !hits.length">
             <EmptyState class="empty">Nothing matches “{{ route.q }}”.</EmptyState>
         </template>
         <div class="cards">

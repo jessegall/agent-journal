@@ -38,8 +38,12 @@ async function send() {
     const brief =
         `Please have ${agents.value === 1 ? "one agent" : `${agents.value} agents`} give plan ${props.plan.n} ${size.value}${guide}, ` +
         `and compile what they find into a report linked to the plan.`;
-    await sendMessage(scope.env || route.value.env, {brief, about: props.plan.ref});
-    emit("close");
+    try {
+        await sendMessage(scope.env || route.value.env, {brief, about: props.plan.ref});
+        emit("close");
+    } finally {
+        sending.value = false;
+    }
 }
 </script>
 

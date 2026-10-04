@@ -24,7 +24,7 @@ import {useTranscript} from "../composables/transcript.js";
 import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {age} from "../format/time.js";
-import {usePoll} from "../poll.js";
+import {pollKey, usePoll} from "../poll.js";
 import {PAGE, holding, rows} from "../sync/rows.js";
 import {route} from "../route.js";
 
@@ -56,7 +56,7 @@ const scope = elsewhere ? scopeIn(props.env) : null;
 if (scope) provide("scope", scope);
 const there = scope ? scope.api : api;
 const state = computed(() => props.band.state);
-const keyed = (what) => `agent-home:${props.env}:${props.session}:${props.band.label}:${what}`;
+const keyed = (what) => pollKey(`agent-home:${props.env}:${props.session}:${props.band.label}:${what}`);
 const rowsHere = scope ? scope.rows : rows;
 
 const found = ref(null);

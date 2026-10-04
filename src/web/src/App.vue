@@ -33,6 +33,8 @@ import HubPage from "./pages/HubPage.vue";
 import FilePage from "./pages/FilePage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
+import Btn from "./kit/Btn.vue";
+import EmptyState from "./kit/EmptyState.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
 import ViewWindow from "./layout/ViewWindow.vue";
@@ -48,6 +50,18 @@ import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
 usePoll(...polled.events);
+usePoll(...polled.journals);
+const bootError = ref("");
+let bootTimer = 0;
+function startBoot() {
+    bootError.value = "";
+    bootTimer = setTimeout(() => (bootError.value = "The journal is taking too long to respond."), 10000);
+    boot()
+        .then(() => (bootError.value = ""))
+        .catch((error) => (bootError.value = error.message || "The journal could not be reached."))
+        .finally(() => clearTimeout(bootTimer));
+}
+const retryBoot = () => location.reload();
 
 const page = computed(() =>
     !route.value.page
@@ -157,7 +171,8 @@ onUnmounted(() => {
     window.removeEventListener("keydown", onOpenFile);
 });
 
-onMounted(boot);
+onMounted(startBoot);
+onUnmounted(() => clearTimeout(bootTimer));
 watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);
 watch(
     () => route.value.env,
@@ -166,7 +181,15 @@ watch(
 </script>
 
 <template>
-    <template v-if="!store.spec && !route.page">
+    <template v-if="bootError && !store.booted">
+        <main class="home-loading">
+            <EmptyState>
+                {{ bootError }}
+                <Btn small @click="retryBoot">Retry</Btn>
+            </EmptyState>
+        </main>
+    </template>
+    <template v-else-if="!store.spec && !route.page">
         <main class="home-loading">
             <ThreadSkeleton />
         </main>

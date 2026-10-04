@@ -413,15 +413,14 @@ watch(
                             @close="(key) => apply(tabClosed(layout, id, key))"
                         >
                             <span class="pane-menu-anchor">
-                                <button
-                                    type="button"
+                                <Btn
                                     :class="['pane-menu-btn', {on: menu && menu.id === id, hinted: hinted === id}]"
                                     :data-pane-menu="id"
                                     title="Pane menu"
                                     @click.stop="toggleMenu($event, id)"
                                 >
                                     <Icon name="dots" />
-                                </button>
+                                </Btn>
                                 <template v-if="hinted === id">
                                     <HintBubble text="More for this window here: detach it, split it, dock it and more." />
                                 </template>

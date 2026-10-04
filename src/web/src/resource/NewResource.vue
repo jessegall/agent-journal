@@ -2,6 +2,7 @@
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import TextInput from "../kit/TextInput.vue";
 import Dialog from "../kit/Dialog.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import {route} from "../route.js";
@@ -69,8 +70,20 @@ async function submit() {
 <template>
     <Dialog :title="`New ${meta(type).title.toLowerCase()}`" @close="emit('close')">
         <form class="new" @submit.prevent="submit">
-            <input v-model="title" class="new-title" :placeholder="`${meta(type).title} title`" maxlength="80" autofocus />
-            <input v-model="abstract" :placeholder="label(type, 'abstract', 'One short line about it')" maxlength="200" />
+            <TextInput
+                :value="title"
+                class="new-title"
+                :placeholder="`${meta(type).title} title`"
+                maxlength="80"
+                autofocus
+                @input="title = $event.target.value"
+            />
+            <TextInput
+                :value="abstract"
+                :placeholder="label(type, 'abstract', 'One short line about it')"
+                maxlength="200"
+                @input="abstract = $event.target.value"
+            />
             <textarea v-model="brief" :placeholder="label(type, 'brief', 'As long as it needs to be')" rows="10" />
             <template v-if="detailing">
                 <textarea v-model="details" placeholder="Extra details, as long as they need to be" rows="6" />
@@ -80,14 +93,14 @@ async function submit() {
                     <template v-for="(file, i) in files" :key="file.name + i">
                         <span class="file">
                             {{ file.name }}
-                            <button type="button" class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</button>
+                            <Btn class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</Btn>
                         </span>
                     </template>
                 </div>
             </template>
             <div class="extras">
                 <template v-if="!detailing">
-                    <button type="button" class="extra" @click="detailing = true">Add details</button>
+                    <Btn class="extra" @click="detailing = true">Add details</Btn>
                 </template>
                 <label class="extra">
                     Attach files
@@ -118,10 +131,11 @@ async function submit() {
                                 />
                             </template>
                             <template v-else>
-                                <input
-                                    v-model="values[f.name]"
+                                <TextInput
+                                    :value="values[f.name]"
                                     :type="f.kind === 'number' ? 'number' : 'text'"
                                     :placeholder="f.default || ''"
+                                    @input="values[f.name] = $event.target.value"
                                 />
                             </template>
                         </label>

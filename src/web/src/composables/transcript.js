@@ -1,6 +1,6 @@
 import {computed, ref, unref, watch} from "vue";
 import {api} from "../api/client.js";
-import {usePoll} from "../poll.js";
+import {pollKey, usePoll} from "../poll.js";
 import {PAGE} from "../sync/rows.js";
 import {keepingPlace} from "./scrollback.js";
 
@@ -89,7 +89,7 @@ export function useTranscript(agent, session, scroller, client = api) {
         fetchTurns();
     });
 
-    usePoll(`transcript:${agent()}`, fetchTurns, EVERY);
+    usePoll(pollKey(`transcript:${client.env()}:${agent()}:${unref(session)}`), fetchTurns, EVERY);
 
     return {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry};
 }

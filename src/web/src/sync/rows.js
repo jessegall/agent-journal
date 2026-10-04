@@ -64,7 +64,7 @@ export async function holding(type, numbers) {
     missing.forEach((n) => pending.add(n));
     asked.set(type, pending);
     try {
-        const got = await api.list(type, {completed: true, only: missing}).catch(() => ({rows: []}));
+        const got = await api.list(type, {completed: true, only: missing});
         const found = new Set(got.rows.map((r) => r.n));
         missing
             .filter((n) => !found.has(n))

@@ -2,6 +2,7 @@
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
+import TextInput from "../kit/TextInput.vue";
 import {age} from "../format/time.js";
 
 defineProps({
@@ -20,11 +21,11 @@ function state(skill) {
 
 <template>
     <div :class="['row', {loaded: skill.loaded, stale: skill.stale, open: opened === skill.name}]" :style="{'--depth': depth}">
-        <button type="button" class="main" @click="$emit('open', skill)">
+        <Btn fill class="main" @click="$emit('open', skill)">
             <Icon name="book" />
             <span class="name" :title="skill.name">{{ skill.name }}</span>
             <span class="description">{{ skill.description }}</span>
-        </button>
+        </Btn>
         <span :class="['state', {stale: skill.stale}]">{{ state(skill) }}</span>
         <span class="changed" :title="`SKILL.md changed ${age(skill.changed)}`">{{ age(skill.changed) }}</span>
         <Btn
@@ -45,7 +46,7 @@ function state(skill) {
     <template v-if="opened === skill.name">
         <div class="keywords" :style="{'--depth': depth}">
             <label :for="`keywords-${skill.name}`">Load it when these words come up</label>
-            <input
+            <TextInput
                 :id="`keywords-${skill.name}`"
                 class="keyword-input"
                 :value="(skill.keywords || []).join(', ')"
