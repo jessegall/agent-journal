@@ -1,11 +1,11 @@
 <script setup>
+import {closeUpdate, updateView} from "../state/overlays.js";
 import {useEscape} from "../composables/windowEvent.js";
 import {computed, nextTick, onMounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import UpdateReport from "../resource/UpdateReport.vue";
 import {EASE, hydrate, still} from "../platform/hydrate.js";
-import {closeUpdate, updateView} from "./updateView.js";
 import {markSeen} from "../sync/seen.js";
 import {rows} from "../sync/rows.js";
 import {href, peek, route} from "../route.js";
@@ -42,7 +42,7 @@ function lay(el) {
 async function grow() {
     markSeen("report", [shown.value]);
     await nextTick();
-    const from = updateView.from;
+    const from = updateView.owner;
     if (still() || !from?.isConnected) return;
     busy = true;
     const at = cardAt(from);
@@ -72,13 +72,13 @@ async function grow() {
 }
 
 function done() {
-    [updateView.from, card()].forEach((el) => el && (el.style.visibility = ""));
+    [updateView.owner, card()].forEach((el) => el && (el.style.visibility = ""));
     closeUpdate();
 }
 
 async function shrink() {
     if (busy) return;
-    const to = updateView.from?.isConnected ? updateView.from : card();
+    const to = updateView.owner?.isConnected ? updateView.owner : card();
     if (still() || !to) return done();
     busy = true;
     try {

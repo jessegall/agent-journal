@@ -1,4 +1,5 @@
 <script setup>
+import {openUpdate} from "../state/overlays.js";
 import {withoutChips} from "../text/words.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
@@ -8,7 +9,6 @@ import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek} from "../route.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
-import {openUpdate} from "./updateView.js";
 
 const props = defineProps({report: Object, folded: Boolean});
 const dock = ref(null);

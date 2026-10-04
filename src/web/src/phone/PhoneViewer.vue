@@ -1,4 +1,5 @@
 <script setup>
+import {scrollIntoRoom} from "./reveal.js";
 import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Icon from "../kit/Icon.vue";
@@ -9,7 +10,6 @@ import {highlight, languageOf} from "../text/highlight.js";
 import {announce} from "./announce.js";
 import PhoneMissing from "./PhoneMissing.vue";
 import {useDrag} from "./drag.js";
-import {reveal} from "./reveal.js";
 
 const TEXT = /\.(txt|md|json|log|csv|ya?ml|toml|py|js|ts|vue|css|html|sh|sql|xml)$/i;
 const PICTURE = /\.(png|jpe?g|gif|webp|heic)$/i;
@@ -115,7 +115,7 @@ async function load() {
             told.value = error.message || "Not found";
         }
     }
-    if (line) nextTick(() => reveal(body.value, body.value?.querySelector(`[data-line="${line}"]`), true));
+    if (line) nextTick(() => scrollIntoRoom(body.value, body.value?.querySelector(`[data-line="${line}"]`), true));
 }
 
 onMounted(() => {

@@ -1,11 +1,11 @@
 <script setup>
+import {scrollIntoRoom} from "./reveal.js";
 import {cache, cached} from "./cache.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {CARDS, kindCard} from "./kinds.js";
-import {reveal} from "./reveal.js";
 import PhoneBoardList from "./PhoneBoardList.vue";
 import {useUnder} from "./under.js";
 
@@ -47,7 +47,7 @@ const board = ref(null);
 
 onMounted(() => {
     if (!props.waiting.length) return;
-    nextTick(() => reveal(board.value, board.value?.querySelector('[data-card="waiting"]')));
+    nextTick(() => scrollIntoRoom(board.value, board.value?.querySelector('[data-card="waiting"]')));
 });
 const listed = (kind) => lists.value[kind]?.rows || [];
 const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind));
