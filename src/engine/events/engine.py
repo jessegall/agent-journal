@@ -3,9 +3,10 @@ from typing import ClassVar
 
 from engine.chat import SENDING, SENT
 from engine.clock import TICKED
-from engine.events.base import AgentEvent
+from engine.events.base import AgentEvent, TypedEvent
 from engine.files import EDITED
 from engine.ran import COMMAND_RAN
+from engine.timing import MEASURED, TIMING
 
 
 @dataclass(frozen=True)
@@ -67,3 +68,21 @@ class FileEdited(AgentEvent):
     after: str = ""
     added: int = 0
     removed: int = 0
+
+
+@dataclass(frozen=True)
+class Measured(TypedEvent):
+    on: ClassVar[str] = f"{TIMING}.{MEASURED}"
+    root: str = ""
+    env: str = ""
+    kind: str = ""
+    target: str = ""
+    took: float = 0.0
+    working: float = 0.0
+    garbage: float = 0.0
+    waiting: float = 0.0
+    profile: object = None
+
+    @classmethod
+    def read(cls, event) -> "Measured":
+        return cls.from_json(event.data)

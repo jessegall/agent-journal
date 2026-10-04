@@ -3,6 +3,7 @@ import time
 import features
 from controllers.types import Features, Notifications
 from engine import runtime
+from engine.timing import measured
 from features import FEATURES
 from features.dev_faults.feature import Faults
 from resources.base import SYSTEM
@@ -27,20 +28,20 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     features.load()
     record = fresh()
     turned(record, False)
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+    with measured(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == [], "switched off, nothing is filed"
     turned(record, True)
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "command", "check run"):
+    with measured(record.root, record.env, "command", "check run"):
         time.sleep(0.08)
     assert notified(record) == [], "time spent waiting, as on a check a command runs, is not held against the budget"
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+    with measured(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
     log = record.root / "runtime" / "diagnostics.log"
     assert not log.exists(), "the diagnostic log is off by default"
     record.features = {**record.features, "dev_faults.log": True}
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+    with measured(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert "slow request GET /api/main/message" in log.read_text(), "switched on, a slow request is written to the diagnostic log"
 
@@ -49,7 +50,7 @@ def test_a_fast_request_is_never_reported():
     features.load()
     record = fresh()
     turned(record, True)
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/fact"):
+    with measured(record.root, record.env, "request", "GET /api/main/fact"):
         pass
     assert notified(record) == []
 
@@ -59,7 +60,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     record = fresh()
     turned(record, True)
     for _ in range(2):
-        with FEATURES["dev_faults"].reports.watched(record.root, record.env, "command", "message all"):
+        with measured(record.root, record.env, "command", "message all"):
             busy(0.08)
     rows = Notifications(record, actor=SYSTEM)._every()
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
@@ -72,7 +73,7 @@ def test_the_budget_is_tunable_per_environment():
     record = fresh()
     turned(record, True)
     record.set_setting("dev_faults", {"budget.request": 0})
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+    with measured(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == [], "a budget of 0 drops that budget"
     assert Faults().reports.milliseconds(record, "command") == 50

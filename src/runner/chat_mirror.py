@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Iterator
 
 from controllers.types import Agents
-from engine import chat, runtime
+from engine import chat, runtime, waits
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
@@ -32,12 +32,12 @@ REPLAYING = threading.Lock()
 
 class SessionLocks:
     def __init__(self):
-        self.locks: dict[str, threading.Lock] = {}
+        self.locks: dict[str, waits.Lock] = {}
         self.guard = threading.Lock()
 
-    def of(self, session: str) -> threading.Lock:
+    def of(self, session: str) -> waits.Lock:
         with self.guard:
-            return self.locks.setdefault(session, threading.Lock())
+            return self.locks.setdefault(session, waits.Lock("showing"))
 
 
 LOCKS = SessionLocks()

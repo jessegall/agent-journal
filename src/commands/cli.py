@@ -19,6 +19,7 @@ from engine import runtime
 from commands.parser import PRINTED, QUERIES, Misused, parser, words
 from features.command_line import CommandLine, wire
 from engine.stored import undoable
+from engine.timing import measured
 from engine.paths import environments
 from engine.worktree import checkout
 from typing import TypedDict
@@ -162,8 +163,7 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
-        faults = features.FEATURES.get("dev_faults")
-        with bus.settled(), faults.reports.watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if faults and not networked(command, method) else nullcontext():
+        with bus.settled(), measured(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if not networked(command, method) else nullcontext():
             got = invoke(controller.action(method), args, extra)
     except Refused as e:
         print(f"! {e}", file=err)
