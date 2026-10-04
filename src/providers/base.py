@@ -8,7 +8,7 @@ from typing import ClassVar
 from engine.fields import Loaded
 from engine.transcript import Turn
 from providers.jsonl import last_lines, parsed_row
-from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
 from resources.base import Refused
 from resources.types import IDLE
@@ -176,6 +176,10 @@ class Provider(ABC):
 
     def compacted(self, hook: Hook) -> bool:
         return False
+
+    @classmethod
+    def display_chunk(cls, raw: dict) -> Chunk | None:
+        return None
 
     def response(self, event: str, text: str) -> dict:
         return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}

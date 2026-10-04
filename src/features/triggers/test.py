@@ -56,14 +56,15 @@ def test_a_trigger_message_does_not_fire_the_trigger_again():
 
 
 def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
-    from runner.hooks import displayed
+    from providers.payload import Chunk
+    from runner.chat_mirror import displayed
     from engine.sessions import Sessions
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse", provider="claude")
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     Triggers(record, actor="user").create("no greeting", text="the test word is denied", **{"words": ["hello"], "does": "deny", "words_in": "text"})
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "Hello! Ready."})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "Hello! Ready."}))
     cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
     assert (cards, [n for n in nudges(record) if "no greeting" in n] != []) == ([("Trigger no greeting caught a denied word in the agent's message", "danger")], True), \
         "a denied word in the agent's own chat is marked and the agent is told"

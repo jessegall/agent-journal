@@ -241,15 +241,18 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     sequences.run(made.n)
     call = lambda command: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
     refused = lambda command: str(handle(claude, record.root, record.env, call(command)).get("reason", ""))
-    assert "take it up with journal sequence follow" in refused("journal todo create 'other work'"), "a journal write waits for the step"
-    assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal todo create 'other work'"), \
+    assert "take it up with journal sequence follow" in refused("journal work start 'other work'"), "a journal write waits for the step"
+    assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal work start 'other work'"), \
         "a write on a later line of the same command waits too, whatever else the command does"
     assert "take it up" not in refused(f"journal sequence follow {made.n}; journal plan progress 3; journal todo all"), \
         "reading the journal is never held, so the step can be taken up alongside a read"
-    assert "take it up" not in refused(f"journal sequence follow {made.n}") and "take it up" not in refused("journal message reply 3 'on it'"), \
-        "taking the step up and answering the user are never held"
+    assert not any("take it up" in refused(line) for line in (f"journal sequence follow {made.n}", "journal message reply 3 'on it'", "journal todo create 'other work'")), \
+        "taking the step up, answering the user and filing a to-do are never held"
+    mixed = refused("journal todo create filed; journal work start 'other work'")
+    assert "take it up" in mixed and "ran, so do not run them again: journal todo create filed" in mixed and "did not run either: journal work start 'other work'" in mixed, mixed
+    assert "filed" in [row.title for row in CONTROLLERS["todo"](record, actor=AGENT).all()], "the filing command of a refused line still runs"
     sequences.follow(made.n)
-    assert "take it up" not in refused("journal todo create 'other work'"), "once taken up, journal commands go through"
+    assert "take it up" not in refused("journal work start 'other work'"), "once taken up, journal commands go through"
 
 
 def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked():

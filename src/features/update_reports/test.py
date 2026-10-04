@@ -56,7 +56,8 @@ def test_notes_items_and_drops_change_only_an_update():
 
 
 def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_not():
-    from runner.hooks import displayed
+    from providers.payload import Chunk
+    from runner.chat_mirror import displayed
     from engine.sessions import Sessions
     from features.sequences.controller import Sequences
     from features.sequences.shipped import ship
@@ -72,8 +73,8 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     assert (trigger.words_in, sequences.load(writing["n"]).starts_on) == ("user", f"trigger:{trigger.n}"), \
         "the sequence starts on its own trigger, which watches only what the user writes"
 
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True,
-                            "delta": "TL;DR: the tests pass."})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True,
+                            "delta": "TL;DR: the tests pass."}))
     assert sequences.load(writing["n"]).runs == {}, "the agent saying it starts nothing"
     Messages(record, actor=USER).create("tldr?")
     assert len(sequences.load(writing["n"]).runs) == 1, "the user asking starts writing an update"

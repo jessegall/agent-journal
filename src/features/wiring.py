@@ -5,7 +5,7 @@ from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
 from engine.events.base import AgentEvent
-from engine.gates import AFTERWARDS, CANCELERS, POLICIES
+from engine.gates import AFTERWARDS, CANCELERS, POLICIES, RESPONDERS, HookCall
 from engine.reach import Guard
 from engine.wording import APPENDS
 from features.format import FORMATTERS
@@ -81,8 +81,8 @@ def limited(context: AgentContext, interceptor: ToolInterceptor, refused: str) -
     return refused if count <= limit else ""
 
 
-def hooked(feature, record, provider, hook, session: str) -> AgentContext:
-    return AgentContext.of(feature, record, Agents(record, actor=SYSTEM)._shared(session), provider, hook)
+def hooked(feature, call: HookCall) -> AgentContext:
+    return AgentContext.of(feature, call.record, call.row, call.provider, call.hook)
 
 
 class AgentHooks:
@@ -97,13 +97,13 @@ class AgentHooks:
         feature, guard = self.feature, Guard.of(interceptor)
         self.guards.append(guard)
 
-        def policy(provider, record, hook, session) -> str:
-            if hook.tool.loads_skill and not interceptor.before_checks:
+        def policy(call: HookCall) -> str:
+            if call.hook.tool.loads_skill and not interceptor.before_checks:
                 return ""
-            context = hooked(feature, record, provider, hook, session)
-            if not feature.enabled(record) or not wanted(interceptor, feature, record, context.agent.row, timed=False):
+            context = hooked(feature, call)
+            if not feature.enabled(call.record) or not wanted(interceptor, feature, call.record, call.row, timed=False):
                 return ""
-            refused = interceptor.intercept(context, hook.tool) or ""
+            refused = interceptor.intercept(context, call.hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.guard = guard
         if interceptor.before_checks:
@@ -115,12 +115,15 @@ class AgentHooks:
         feature, guard = self.feature, Guard.of(canceler)
         self.guards.append(guard)
 
-        def cancel(provider, record, hook, session, data) -> str:
-            if not feature.enabled(record):
+        def cancel(call: HookCall, data) -> str:
+            if not feature.enabled(call.record):
                 return ""
-            return canceler.cancel(hooked(feature, record, provider, hook, session), data) or ""
+            return canceler.cancel(hooked(feature, call), data) or ""
         cancel.guard = guard
         CANCELERS.setdefault(canceler.event, []).append(cancel)
+
+    def responder(self, event: str, respond) -> None:
+        RESPONDERS.setdefault(event, []).append(respond)
 
 
 class Commands:

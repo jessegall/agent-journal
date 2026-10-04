@@ -96,7 +96,7 @@ def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
     from features.base import clear_global_entries
     from features.switches import rebooted
-    from engine.gates import AFTERWARDS, CANCELERS, POLICIES
+    from engine.gates import AFTERWARDS, CANCELERS, POLICIES, RESPONDERS
     from features.format import FORMATTERS
     from engine.wording import APPENDS
     COMMANDS.clear()
@@ -106,6 +106,7 @@ def unload() -> None:
     POLICIES.clear()
     AFTERWARDS.clear()
     CANCELERS.clear()
+    RESPONDERS.clear()
     APPENDS.clear()
     clear_global_entries()
     FEATURES.clear()

@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Comments, Messages, Nudges
-from runner.hooks import displayed
+from providers.payload import Chunk
+from runner.chat_mirror import displayed
 from engine.sessions import Sessions
 from features.command_tags.reading import visible
 from tests.kit import nudges, report
@@ -151,12 +152,12 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     message = Messages(record, actor="user").create("still there?")
     base = {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "m1"}
-    displayed(record.root, {**base, "index": 0, "final": False, "delta": f"[!reply:{message.n}] shown in two "})
-    displayed(record.root, {**base, "index": 1, "final": True, "delta": "pieces"})
-    displayed(record.root, {**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"})
+    displayed(record.root, Chunk.from_json({**base, "index": 0, "final": False, "delta": f"[!reply:{message.n}] shown in two "}))
+    displayed(record.root, Chunk.from_json({**base, "index": 1, "final": True, "delta": "pieces"}))
+    displayed(record.root, Chunk.from_json({**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"}))
     assert [c.title for c in Comments(record, actor="system").linked_to(message.ref)] == ["shown in two pieces"], "joined, posted once"
     orphaned = Messages(record, actor="user").create("what if the first piece is missing?")
-    displayed(record.root, {**base, "message_id": "m3", "index": 1, "final": True, "delta": "the body without its tag"})
+    displayed(record.root, Chunk.from_json({**base, "message_id": "m3", "index": 1, "final": True, "delta": "the body without its tag"}))
     assert not [m for m in Messages(record, actor="system").all() if m.title == "the body without its tag"], "a stream without its first piece is not posted"
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{orphaned.n}]\nthe body without its tag"})
     assert [c.title for c in Comments(record, actor="system").linked_to(orphaned.ref)] == ["the body without its tag"], "the complete Stop text posts the reply once"

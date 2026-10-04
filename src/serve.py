@@ -14,14 +14,14 @@ import features
 from surfaces import updates  # noqa: E402
 import migrations  # noqa: E402
 import commands.cli  # noqa: E402,F401
-from commands.http import dispatch  # noqa: E402
+from commands.http import dispatch, unanswered  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
 from runner.engines import Children  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
-from runner.hooks import replay  # noqa: E402
+from runner.chat_mirror import replay  # noqa: E402
 from engine.runtime import default_env
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
@@ -168,6 +168,13 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
             server.shutdown()
 
 
+def watch_runtime(root: Path, halting: threading.Event) -> None:
+    while not halting.wait(WATCH_SECONDS):
+        runtime.refresh_flags(root)
+        if runtime.hook_failures(root).is_file():
+            unanswered(root, "")
+
+
 def freeze_caches(halting: threading.Event) -> None:
     while not halting.wait(FREEZE_SECONDS):
         gc.freeze()
@@ -201,6 +208,7 @@ def run(root: Path, port: int = 8430) -> None:
     gc.freeze()
     threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
+    threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()

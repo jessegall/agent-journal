@@ -1,4 +1,5 @@
 import difflib
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -195,6 +196,39 @@ def match_rank(path: str, wanted: str) -> int:
 def line_counts(project: Path, pairs: list[tuple[str, str]]) -> dict[tuple[str, str], LineCount]:
     texts = blob_texts(project, [sha for pair in pairs for sha in pair])
     return {(before, after): LineCount.between(texts[before], texts[after]) for before, after in pairs}
+
+
+class Coalesced:
+    def __init__(self):
+        self.guard = threading.Lock()
+        self.running: set = set()
+        self.again: dict = {}
+
+    def run(self, key, job) -> None:
+        with self.guard:
+            if key in self.running:
+                self.again[key] = job
+                return
+            self.running.add(key)
+        try:
+            while job is not None:
+                job()
+                with self.guard:
+                    job = self.again.pop(key, None)
+                    if job is None:
+                        self.running.discard(key)
+        except Exception:
+            with self.guard:
+                self.again.pop(key, None)
+                self.running.discard(key)
+            raise
+
+
+ANNOUNCING = Coalesced()
+
+
+def announce_writes(record, agent: int, homes: tuple[str, ...]) -> None:
+    ANNOUNCING.run((str(record.root), record.env), lambda: announce(record, agent, homes))
 
 
 def announce(record, agent: int, homes: tuple[str, ...]) -> None:

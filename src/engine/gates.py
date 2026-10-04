@@ -9,8 +9,25 @@ from engine.stored import read_json, write_json
 POLICIES: list = []
 AFTERWARDS: list = []
 CANCELERS: dict[str, list] = {}
+RESPONDERS: dict[str, list] = {}
 DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
 CANCELABLE = (DISPATCHING, LONG_COMMAND)
+
+
+@dataclass(frozen=True)
+class HookCall:
+    provider: object
+    record: object
+    hook: object
+    row: object
+
+    @property
+    def session(self) -> str:
+        return self.row.title
+
+    @property
+    def subagent(self) -> bool:
+        return self.row.subagent if self.hook is None else self.provider.is_subagent(self.hook)
 
 
 @dataclass(frozen=True)
@@ -19,9 +36,13 @@ class Hold(Loaded):
     reach: Reach = Reach.MAIN
 
 
-def cancelled(name: str, provider, record, hook, session: str, data: dict, subagent: bool) -> str:
-    reasons = [reason for cancel in CANCELERS.get(name, []) if cancel.guard.reaches(subagent) and (reason := cancel(provider, record, hook, session, data))]
+def cancelled(name: str, call: HookCall, data: dict) -> str:
+    reasons = [reason for cancel in CANCELERS.get(name, []) if cancel.guard.reaches(call.subagent) and (reason := cancel(call, data))]
     return "; ".join(reasons)
+
+
+def responded(call: HookCall) -> str:
+    return "".join(respond(call) for respond in RESPONDERS.get(call.hook.event, []))
 
 
 def start_file(root: Path, env: str, compacted: bool = False) -> Path:

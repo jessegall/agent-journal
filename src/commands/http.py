@@ -36,8 +36,8 @@ from engine import bus, runtime, viewer
 from surfaces.manifest import manifest
 from engine.version import version
 from controllers.faults import broke, log_file
-from runner.hooks import answer, displayed
-from providers.payload import DISPLAYED
+from runner.chat_mirror import displayed
+from runner.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
@@ -82,7 +82,7 @@ RESTART_GRACE = 15
 
 
 def unanswered(root: Path, env: str) -> None:
-    f = runtime.folder(root) / "hook-failures.log"
+    f = runtime.hook_failures(root)
     try:
         logged = f.read_text(errors="replace")
     except FileNotFoundError:
@@ -241,10 +241,10 @@ def post_hook(req: Request) -> Reply:
     asked = req.query_as(HookQuery)
     if Path(asked.root).resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
-    if req.body.get("hook_event_name") == DISPLAYED:
-        return Reply(200, {}, after=lambda: displayed(req.root, req.body))
-    unanswered(req.root, asked.env)
     provider = PROVIDERS[req.params["provider"]]()
+    chunk = provider.display_chunk(req.body)
+    if chunk is not None:
+        return Reply(200, {}, after=lambda: displayed(req.root, chunk))
     out = answer(provider, req.root, {**req.body, "inbox": asked.inbox}, asked.pid, asked.env)
     return Reply(403 if provider.refused(out) else 200, out)
 
