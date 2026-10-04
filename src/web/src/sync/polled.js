@@ -1,7 +1,6 @@
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {heardEvents} from "./rows.js";
-import {readSummary} from "./summary.js";
 
 const LIVE = 5;
 const newest = () => (store.events.length ? store.events[store.events.length - 1].id : 0);
@@ -25,7 +24,8 @@ export const polled = {
     organization: ["organization", () => api.organization(), 10000, (got) => (store.organization = got)],
     ticketTodos: ["ticketTodos", () => api.ticketTodos(), 10000, (got) => Array.isArray(got) && (store.ticketTodos = got)],
     online: ["online", () => api.onlineAgents(), 5000, (got) => (store.online = got)],
-    summary: ["summary", readSummary, 4000],
+    summary: ["summary", () => api.summary(), 4000, (got) => (store.summary = got)],
+    journals: ["journals", () => api.journals(), 10000, (got) => (store.journals = got)],
     manifest: ["manifest", () => api.manifest(), 30000, (got) => (store.spec = got)],
     events: ["events", pollEvents, 5000, heardPolled],
 };

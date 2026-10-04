@@ -1,16 +1,14 @@
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
-import {usePoll} from "../poll.js";
+import {startPoll} from "../poll.js";
 import {ago, span} from "../format/time.js";
 import {counted} from "../format/number.js";
 import {stateOf} from "../layout/statusline.js";
-import {readSummary} from "./summary.js";
 import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
 
 const LINGER = 60000;
-const SCAN_EVERY = 10000;
-const REFRESH_EVERY = 1000;
+const SUMMARY_EVERY = 5000;
 const STALE_AFTER = 10000;
 const STREAMS_PER_JOURNAL = 3;
 const THROWAWAY = [/\/pytest-of-[^/]+\//, /\/var\/folders\/.+\/T\/tmp[^/]*\/\.journal$/];
@@ -185,7 +183,7 @@ const tally = computed(() => {
     };
 });
 const streams = new Map();
-const waiting = new Map();
+const summaryPolls = new Map();
 let scanning = false;
 
 const asking = new Map();
@@ -206,7 +204,8 @@ async function reread(j) {
         return;
     }
     try {
-        j.summary = await (j.current ? readSummary() : api.journal(j).summary());
+        j.summary = j.current ? store.summary : await api.journal(j).summary();
+        j.changed = false;
         j.gone = 0;
         j.fresh = Date.now();
         j.unreadable = false;
@@ -215,15 +214,11 @@ async function reread(j) {
     }
 }
 
-function soon(j) {
-    if (waiting.has(j.root)) return;
-    waiting.set(
-        j.root,
-        setTimeout(() => {
-            waiting.delete(j.root);
-            refresh(j);
-        }, REFRESH_EVERY)
-    );
+const due = (j) => j.changed || Date.now() - (j.fresh || 0) > STALE_AFTER;
+
+function pollSummary(j) {
+    if (j.current || summaryPolls.has(j.root)) return;
+    summaryPolls.set(j.root, startPoll(`summary:${j.root}`, () => due(j) && refresh(j), SUMMARY_EVERY));
 }
 
 function listenTo(j) {
@@ -233,7 +228,7 @@ function listenTo(j) {
     for (const name of envs) {
         if (have.has(name)) continue;
         const source = api.journal(j).in(name).stream();
-        source.onmessage = () => soon(j);
+        source.onmessage = () => (j.changed = true);
         have.set(name, source);
     }
     for (const [name, source] of have) {
@@ -247,8 +242,8 @@ function listenTo(j) {
 function drop(root) {
     for (const source of (streams.get(root) || new Map()).values()) source.close();
     streams.delete(root);
-    clearTimeout(waiting.get(root));
-    waiting.delete(root);
+    summaryPolls.get(root)?.();
+    summaryPolls.delete(root);
     journals.value = journals.value.filter((j) => j.root !== root);
 }
 
@@ -276,6 +271,7 @@ async function rescan() {
             if (j.gone || (j.unreadable && changed) || Date.now() - (j.fresh || 0) > STALE_AFTER) await refresh(j);
         }
         listenTo(j);
+        pollSummary(j);
     }
     for (const j of [...journals.value]) {
         if (found.some((got) => got.port === j.port)) continue;
@@ -298,23 +294,13 @@ async function scan() {
 
 let users = 0;
 
-export function useJournalPoll() {
-    usePoll(
-        "journals",
-        async () => {
-            store.journals = await api.journals();
-            await scan();
-        },
-        SCAN_EVERY
-    );
-}
-
 export function useHub() {
+    watch(() => store.journals, scan);
     watch(
-        () => store.events,
-        () => {
+        () => store.summary,
+        (summary) => {
             const mine = journals.value.find((j) => j.current);
-            if (mine) soon(mine);
+            if (mine) mine.summary = summary;
         }
     );
 
