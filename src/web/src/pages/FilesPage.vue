@@ -18,8 +18,11 @@ import {useSlashFocus} from "../composables/slashFocus.js";
 const files = ref([]);
 const loaded = ref(false);
 onMounted(async () => {
-    files.value = await api.files();
-    loaded.value = true;
+    try {
+        files.value = await api.files();
+    } finally {
+        loaded.value = true;
+    }
 });
 const query = ref("");
 const kind = ref("");

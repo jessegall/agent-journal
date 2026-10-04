@@ -64,7 +64,7 @@ function pick(event) {
             <div class="runs">
                 <span class="label">Runs</span>
                 <template v-for="s in services" :key="s.id">
-                    <button type="button" :class="['run', {failing: isFailing(s)}]" title="Show its services" @click="emit('services')">
+                    <Btn fill :class="['run', {failing: isFailing(s)}]" title="Show its services" @click="emit('services')">
                         <StateDot :state="dotOf(s)" />
                         <span class="run-name">{{ s.service }}</span>
                         <span class="run-state">
@@ -72,7 +72,7 @@ function pick(event) {
                             <template v-if="isRunning(s) && s.since">· up {{ span(now - s.since) }}</template>
                         </span>
                         <Icon name="sidepanel" :size="13" class="run-open" />
-                    </button>
+                    </Btn>
                 </template>
             </div>
         </template>

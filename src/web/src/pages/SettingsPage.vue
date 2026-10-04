@@ -305,7 +305,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                 <template v-if="nothing">
                     <EmptyState class="settings-empty" title="No setting matches">
                         Try other words, or
-                        <button type="button" class="settings-reset" @click="showAll">show every setting</button>
+                        <Btn class="settings-reset" @click="showAll">show every setting</Btn>
                         .
                     </EmptyState>
                 </template>

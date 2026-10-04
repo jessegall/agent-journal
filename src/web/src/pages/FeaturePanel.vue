@@ -3,6 +3,7 @@ import {api} from "../api/client.js";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Switch from "../kit/Switch.vue";
+import TextInput from "../kit/TextInput.vue";
 import FeaturePermissions from "./FeaturePermissions.vue";
 import FeatureRetention from "./FeatureRetention.vue";
 import {store} from "../state/store.js";
@@ -24,7 +25,6 @@ const valueOf = (setting) => saved(props.feature.name)[setting.name] ?? setting.
 async function saveSetting(setting, value) {
     store.settings = await api.saveSettings({[props.feature.name]: {...saved(props.feature.name), [setting.name]: value}});
 }
-
 </script>
 
 <template>
@@ -76,7 +76,7 @@ async function saveSetting(setting, value) {
                         </template>
                         <template v-else>
                             <span class="amount">
-                                <input
+                                <TextInput
                                     class="field"
                                     :type="setting.kind === 'number' ? 'number' : 'text'"
                                     :value="valueOf(setting)"

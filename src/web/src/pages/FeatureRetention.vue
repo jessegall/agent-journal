@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
+import TextInput from "../kit/TextInput.vue";
 
 const KEPT = {report: 14, todo: 7};
 
@@ -21,12 +22,13 @@ async function saveRetention(type) {
             <div class="row">
                 <span class="title">{{ type }}s</span>
                 <span class="amount">
-                    <input
-                        v-model="days[type]"
+                    <TextInput
+                        :value="days[type]"
                         class="field"
                         type="number"
                         min="0"
                         :placeholder="String(retention[type] ?? kept)"
+                        @input="days[type] = $event.target.value"
                         @change="saveRetention(type)"
                     />
                     days

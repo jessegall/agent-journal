@@ -258,7 +258,7 @@ async function forget(j) {
 }
 
 async function rescan() {
-    const listed = (await api.journals())
+    const listed = store.journals
         .map((got) => ({...got, current: got.port === Number(location.port)}))
         .filter((got) => got.current || !isThrowaway(got));
     const found = listed.filter(

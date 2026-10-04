@@ -49,20 +49,25 @@ async function grow() {
     from.style.visibility = "hidden";
     scroller.value.style.opacity = "0";
     ghost.value.animate([{opacity: 1}, {opacity: 0}], {duration: 150, easing: "ease-out", fill: "forwards"});
-    await layer.value.animate(
-        [
-            {clipPath: at.clip, backgroundColor: tone("--raised")},
-            {clipPath: FULL, backgroundColor: tone("--bg")},
-        ],
-        {
-            duration: 300,
-            easing: EASE,
-        }
-    ).finished;
-    ghost.value.replaceChildren();
-    scroller.value.style.opacity = "";
-    hydrate(scroller.value, {also: LEADS});
-    busy = false;
+    try {
+        await layer.value
+            .animate(
+                [
+                    {clipPath: at.clip, backgroundColor: tone("--raised")},
+                    {clipPath: FULL, backgroundColor: tone("--bg")},
+                ],
+                {
+                    duration: 300,
+                    easing: EASE,
+                }
+            )
+            .finished.catch(() => {});
+        ghost.value.replaceChildren();
+        scroller.value.style.opacity = "";
+        hydrate(scroller.value, {also: LEADS});
+    } finally {
+        busy = false;
+    }
 }
 
 function done() {
@@ -75,22 +80,30 @@ async function shrink() {
     const to = updateView.from?.isConnected ? updateView.from : card();
     if (still() || !to) return done();
     busy = true;
-    await scroller.value.animate([{opacity: 1}, {opacity: 0}], {duration: 90, easing: "ease-in", fill: "forwards"}).finished;
-    const at = cardAt(to);
-    lay(to);
-    ghost.value.animate([{opacity: 0}, {opacity: 1}], {duration: 140, delay: 120, easing: "ease-in", fill: "both"});
-    await layer.value.animate(
-        [
-            {clipPath: FULL, backgroundColor: tone("--bg")},
-            {clipPath: at.clip, backgroundColor: tone("--raised")},
-        ],
-        {
-            duration: 260,
-            easing: EASE,
-            fill: "forwards",
-        }
-    ).finished;
-    done();
+    try {
+        await scroller.value
+            .animate([{opacity: 1}, {opacity: 0}], {duration: 90, easing: "ease-in", fill: "forwards"})
+            .finished.catch(() => {});
+        const at = cardAt(to);
+        lay(to);
+        ghost.value.animate([{opacity: 0}, {opacity: 1}], {duration: 140, delay: 120, easing: "ease-in", fill: "both"});
+        await layer.value
+            .animate(
+                [
+                    {clipPath: FULL, backgroundColor: tone("--bg")},
+                    {clipPath: at.clip, backgroundColor: tone("--raised")},
+                ],
+                {
+                    duration: 260,
+                    easing: EASE,
+                    fill: "forwards",
+                }
+            )
+            .finished.catch(() => {});
+    } finally {
+        busy = false;
+        done();
+    }
 }
 
 async function step(n) {
@@ -105,8 +118,15 @@ async function toPanel() {
     if (busy) return;
     busy = true;
     peek("report", shown.value);
-    if (!still()) await layer.value.animate([{opacity: 1}, {opacity: 0}], {duration: 220, easing: EASE, fill: "forwards"}).finished;
-    done();
+    try {
+        if (!still())
+            await layer.value
+                .animate([{opacity: 1}, {opacity: 0}], {duration: 220, easing: EASE, fill: "forwards"})
+                .finished.catch(() => {});
+    } finally {
+        busy = false;
+        done();
+    }
 }
 
 function all() {

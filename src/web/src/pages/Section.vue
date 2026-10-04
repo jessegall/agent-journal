@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
+import TextInput from "../kit/TextInput.vue";
 import {store} from "../state/store.js";
 
 const emit = defineEmits(["saveColor"]);
@@ -13,7 +14,7 @@ const identity = computed(() => store.identity || {});
             <Btn small title="Go back to the color picked from the project name" @click="emit('saveColor', null)">Reset</Btn>
         </template>
         <label class="swatch" :style="{'--swatch': identity.color || 'var(--text-4)'}" title="Pick a color">
-            <input
+            <TextInput
                 class="swatch-input"
                 type="color"
                 :value="identity.color || '#000000'"

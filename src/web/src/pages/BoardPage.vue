@@ -2,6 +2,7 @@
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import TextInput from "../kit/TextInput.vue";
 import Icon from "../kit/Icon.vue";
 import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
@@ -340,7 +341,7 @@ const ask = usePoll(
                 </template>
             </Btn>
             <div :class="['tools', {searching}]">
-                <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
+                <TextInput ref="finder" :value="text" class="find" placeholder="Filter cards  /" @input="text = $event.target.value" />
                 <Switch :on="showingDone" word="Show done cards" @change="(on) => lens({done: on})" />
             </div>
             <Btn kind="primary" small title="New work (N)" @click="newWork('')">
@@ -383,11 +384,9 @@ const ask = usePoll(
             </template>
             <template v-if="!tickets">
                 <div class="plans">
-                    <button type="button" :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</button>
+                    <Btn :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</Btn>
                     <template v-for="plan in plans" :key="plan.n">
-                        <button type="button" :class="['plan', {on: chosenPlan === plan.n}]" @click="lens({plan: plan.n})">
-                            Plan {{ plan.n }}
-                        </button>
+                        <Btn :class="['plan', {on: chosenPlan === plan.n}]" @click="lens({plan: plan.n})">Plan {{ plan.n }}</Btn>
                     </template>
                     <span class="grow" />
                     <AgentStrip />
