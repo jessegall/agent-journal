@@ -433,7 +433,7 @@ def get_extension_zip(req: Request) -> Reply:
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
     asked = req.query_as(EventsQuery)
-    return Reply(200, [e.to_json() for e in req.record().events(asked.since, asked.last)])
+    return Reply(200, [e.to_json() for e in req.record().event_log.events(asked.since, asked.last)])
 
 
 @route("GET", "/api/{env}/settings")
@@ -1094,7 +1094,7 @@ def get_dashboard(req: Request) -> Reply:
     whole = "events" in req.query
     body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
     if whole:
-        body.update(events=[e.to_json() for e in record.events(0, asked.events)], settings=settings(record))
+        body.update(events=[e.to_json() for e in record.event_log.events(0, asked.events)], settings=settings(record))
     return Reply(200, body)
 
 
@@ -1111,12 +1111,9 @@ def post_create(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/{type}/{n}")
 def get_one(req: Request) -> Reply:
-    try:
-        controller = req.controller()
-        n = int(req.params["n"])
-        return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
-    except Refused as e:
-        raise Missing(str(e)) from e
+    controller = req.controller()
+    n = int(req.params["n"])
+    return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
 
 
 @route("GET", "/api/{env}/{type}/{n}/choices")

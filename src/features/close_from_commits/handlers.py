@@ -23,8 +23,8 @@ class CloseRowsFromCommits(Handler):
         if not commits:
             return
         cursor = f"{context.feature.name}-{digest(str(head_log(project)), 12)}"
-        seen = context.record.cursor_text(cursor)
-        context.record.set_cursor_text(cursor, commits[0][0])
+        seen = context.record.event_log.cursor_text(cursor)
+        context.record.event_log.set_cursor_text(cursor, commits[0][0])
         shas = [sha for sha, *_ in commits]
         if seen not in shas:
             return

@@ -38,7 +38,7 @@ class Tidied:
 
 
 def tidy(root: Path, days: float) -> Tidied:
-    events = sum(Record(Path(root), env.name).trim_events(EVENTS_KEPT, time.time() - READERS_WITHIN)
+    events = sum(Record(Path(root), env.name).event_log.trim(EVENTS_KEPT, time.time() - READERS_WITHIN)
                  for env in (Path(root) / "environments").glob("*") if (env / "events.jsonl").is_file())
     return replace(tidy_files(Path(root), days), events=events)
 

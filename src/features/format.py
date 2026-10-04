@@ -28,7 +28,7 @@ def formatted(text: str, record=None, surface: str = "") -> str:
 
 
 def settled(record) -> tuple:
-    return record.settings_version(), generation()
+    return record.settings_file.held()[0], generation()
 
 
 def shaped(r, record=None, surface: str = "") -> dict:

@@ -76,13 +76,13 @@ def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not
     record = fresh()
     for i in range(150):
         record.emit("todo", i, "created", "system", quiet=True)
-    first = record.events(last=150)[0].id
-    record.set_cursor("slow", first + 19)
-    record.set_cursor("gone", first + 4)
+    first = record.event_log.events(last=150)[0].id
+    record.event_log.set_cursor("slow", first + 19)
+    record.event_log.set_cursor("gone", first + 4)
     two_days_ago = time.time() - 2 * 86400
     os.utime(record.home / "runtime" / "cursor-gone", (two_days_ago, two_days_ago))
     tidy(record.root, 2)
-    kept = [e.id for e in record.events()]
+    kept = [e.id for e in record.event_log.events()]
     assert (kept[0], len(kept)) == (first + 20, 130), "the last 100 stay, and everything after a live reader's place; a reader gone for days holds nothing"
     assert record.emit("todo", 1, "updated", "system", quiet=True).id == first + 150, "ids keep counting up"
 

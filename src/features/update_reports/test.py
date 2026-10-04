@@ -83,15 +83,15 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
 def test_a_commit_reminds_the_agent_it_may_write_an_update_at_most_hourly():
     features.load()
     record = fresh()
-    record.set_cursor_text("close_from_commits", "aaa")
+    record.event_log.set_cursor_text("close_from_commits", "aaa")
     report(record, "idle", "Stop")
     offers = lambda: [n for n in nudges(record) if n.startswith("you committed work")]
     assert offers() == [], "the first commit seen only sets the mark"
-    record.set_cursor_text("close_from_commits", "bbb")
-    record.set_cursor_text("update-offered", "aaa 0")
+    record.event_log.set_cursor_text("close_from_commits", "bbb")
+    record.event_log.set_cursor_text("update-offered", "aaa 0")
     report(record, "idle", "Stop")
     assert len(offers()) == 1, "a new commit reminds the agent once"
-    record.set_cursor_text("close_from_commits", "ccc")
+    record.event_log.set_cursor_text("close_from_commits", "ccc")
     report(record, "idle", "Stop")
     assert len(offers()) == 1, "another commit within the hour says nothing more"
 

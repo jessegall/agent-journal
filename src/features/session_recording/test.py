@@ -49,7 +49,7 @@ def test_a_write_makes_a_frame_with_the_changed_row_and_file_and_a_quiet_poll_ma
     trimmed.write_text("".join(line + "\n" for line in lines[1:]))
     trimmed.replace(log)
     Todos(record, actor=AGENT).create("third row")
-    ids = [e.id for e in record.events()]
+    ids = [e.id for e in record.event_log.events()]
     assert len(ids) == len(set(ids)), "after the tidy rewrites the events log, a new event never reuses an id"
     assert recorder.poll(), "an events log rewritten by the tidy is read again from its start"
     assert [e["action"] for e in frames(tmp_path)[-1]["events"]] == ["created"], "and only the events after the last one recorded are kept"

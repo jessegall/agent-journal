@@ -187,7 +187,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     Agents(record, actor=AGENT).create("s-1")
     off = bus.on("typed.sin-found", lambda event, record: heard.append(event.data["brief"]))
     apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "sin-found", "brief": "deep-nesting at src/A.php:12"}})
-    raised = [e for e in record.events() if e.action == "raised"][-1]
+    raised = [e for e in record.event_log.events() if e.action == "raised"][-1]
     assert (raised.data["title"], raised.data["tone"], raised.data["brief"], heard) == ("Sin found", "warn", "deep-nesting at src/A.php:12", ["deep-nesting at src/A.php:12"]), \
         "a plugin raises an event it declared, styled from its manifest, and anything listening by its name hears it"
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]

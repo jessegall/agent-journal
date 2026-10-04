@@ -81,8 +81,8 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     todos.complete(1, "done")
     assert by_agent.load(plan.n).data["current"] == 1, "one row done: the phase is not complete"
     Todos(record, actor=AGENT).complete(2, "done")
-    assert (by_agent.load(plan.n).data["current"], [e for e in record.events() if e.type == "plan"][-1].actor,
-            [e for e in record.events() if e.type == "plan"][-1].data) == \
+    assert (by_agent.load(plan.n).data["current"], [e for e in record.event_log.events() if e.type == "plan"][-1].actor,
+            [e for e in record.event_log.events() if e.type == "plan"][-1].data) == \
         (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False, "cause": AGENT}), \
         "every row done: the next phase is current, by the feature, as SYSTEM, caused by the agent"
     assert ready(record)[0].n == 3, "next offers the new phase's row"
@@ -120,7 +120,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     Plans(auto, actor=USER).approve(run.n)
     Plans(auto, actor=USER).start(run.n)
     auto_todos.complete(a, "done")
-    assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.events() if e.type == "plan"][-1].data["passed"]) == \
+    assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.event_log.events() if e.type == "plan"][-1].data["passed"]) == \
         ("active", 2, True), "with auto on, a checkpoint phase complete moves straight on, and the event says it was passed"
     auto.features = {"work_tracking.auto": False}
     quick.phase(run.n, "Late gate", checkpoint=True)
