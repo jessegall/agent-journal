@@ -76,14 +76,22 @@ def scoped(text: str, scope: set[str]) -> str:
     return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
 
 
-def answers(url: str, wait: float = REACH_SECONDS) -> bool:
+def status_of(url: str, wait: float = REACH_SECONDS) -> int:
     try:
         with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=wait) as answer:
-            return answer.status < 500
+            return answer.status
     except urllib.error.HTTPError as error:
-        return error.code < 500
+        return error.code
     except (OSError, ValueError):
-        return False
+        return 0
+
+
+def answers(url: str, wait: float = REACH_SECONDS) -> bool:
+    return 0 < status_of(url, wait) < 500
+
+
+def reached(url: str, wait: float = REACH_SECONDS) -> bool:
+    return status_of(url, wait) > 0
 
 
 def until(expires: str) -> float:
