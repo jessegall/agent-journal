@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import PROJECT, USER, Resource, ResourceDetails
+from resources.base import PROJECT, SIDEBAR, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, TEXT, Field, Shape
 
 MESSAGE, NUDGE, INSTRUCT, DENY, START = "message", "nudge", "instruct", "deny", "start"
@@ -25,6 +25,7 @@ class Trigger(Shape, Resource):
     type = "trigger"
     icon = "bolt"
     scope = PROJECT
+    listed_under = SIDEBAR
     created_in_viewer = True
     command_names = {"complete": "retire"}
     notified = (USER,)

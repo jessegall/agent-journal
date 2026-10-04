@@ -255,7 +255,7 @@ class Suggestion(Options, Resource):
     needs_attention = True
     cleared_by = COMPLETED
     icon = "bulb"
-    listed_under = RESULTS
+    listed_under = SIDEBAR
     command_names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
 

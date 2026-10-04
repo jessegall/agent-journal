@@ -45,7 +45,7 @@ function chipOrUpdate(e) {
 function shaped() {
     const el = bubble.value;
     const text = el && el.querySelector(".thread-text");
-    if (!el || !text || files.value.length) return;
+    if (!el || !text || files.value.length || props.turn.type === "question") return;
     Object.assign(el.style, {width: "9999px", maxWidth: ""});
     const cap = el.getBoundingClientRect().width;
     const rows = () => Math.round(text.getBoundingClientRect().height / parseFloat(getComputedStyle(text).lineHeight));
