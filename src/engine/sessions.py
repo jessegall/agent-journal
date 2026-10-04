@@ -9,7 +9,7 @@ from engine.fields import Loaded
 from resources.types import TYPES
 from engine.stored import read_json, write_json, write_text
 from engine.proc import run
-from engine import runtime
+from engine import runtime, waits
 
 
 RECENT = 600.0
@@ -108,7 +108,8 @@ class Sessions:
     def write(self, session: str, **fields) -> SessionRecord:
         self.path(session).parent.mkdir(parents=True, exist_ok=True)
         with (self.path(session).parent / "session.lock").open("w") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
+            with waits.waited("sessions"):
+                fcntl.flock(lock, fcntl.LOCK_EX)
             raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)

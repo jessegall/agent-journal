@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine import bus, runtime
+from engine import bus, runtime, waits
 from engine.event_log import EventLog
 from engine.settings_file import SettingsFile
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
@@ -55,7 +55,7 @@ class Record:
         self.home = environment_home(self.root, env)
         self.home.mkdir(parents=True, exist_ok=True)
         self._held: dict[Path, int] = {}
-        self._threads = threading.RLock()
+        self._threads = waits.Lock("record", threading.RLock())
         self.memo = {} if memo else None
         self._made: set[Path] = set()
         self.event_log = EventLog(self.home, self.locked)
@@ -85,7 +85,8 @@ class Record:
                 return
             path.parent.mkdir(parents=True, exist_ok=True)
             with path.open("a+") as fh:
-                fcntl.flock(fh, fcntl.LOCK_EX)
+                with waits.waited("record"):
+                    fcntl.flock(fh, fcntl.LOCK_EX)
                 self._held[path] = 1
                 try:
                     yield

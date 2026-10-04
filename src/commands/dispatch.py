@@ -1,15 +1,13 @@
 import json
 import mimetypes
 import re
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterator
 from urllib.parse import unquote
-import features
 from controllers.types import CONTROLLERS
 from engine import bus, runtime
-from engine.collecting import collecting
+from engine.timing import Stopwatch, profiler
 from engine.record import Record
 from controllers.faults import threw
 from features.format import shaped
@@ -122,15 +120,11 @@ def later(reply: Reply, then) -> Reply:
     return reply
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple, profile=None) -> Reply:
-    faults = features.FEATURES.get("dev_faults")
-    if not faults or not reply.timed:
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None) -> Reply:
+    if not reply.timed:
         return reply
-    took = (time.perf_counter() - began[0]) * 1000
-    working = (time.thread_time() - began[1]) * 1000
-    garbage = (collecting() - began[2]) * 1000
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
-    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", name, took, working, profile, garbage))
+    return later(reply, lambda: began.announce(root, env, "hook" if "/hook/" in path else "request", name, profile))
 
 
 def known_environment(root: Path, env: str) -> bool:
@@ -152,9 +146,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     r, params = found
     if method == "GET" and "env" in params and not known_environment(root, params["env"]):
         return Reply(404, {"error": f"no environment {params['env']}"})
-    faults = features.FEATURES.get("dev_faults")
-    profile = faults.reports.profiler(root) if faults else None
-    began = (time.perf_counter(), time.thread_time(), collecting())
+    profile = profiler(root)
+    began = Stopwatch()
     req = Request(root, params, query, body)
     try:
         with bus.held() as queued:

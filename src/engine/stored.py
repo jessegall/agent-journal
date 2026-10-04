@@ -8,6 +8,8 @@ from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
+from engine import waits
+
 UNDO = threading.local()
 MIGRATIONS = ContextVar("migrations", default=())
 MIGRATION_LOCK = ".migrations.lock"
@@ -107,11 +109,11 @@ def shared_lock(root: Path) -> tuple:
     with SHARING:
         if root not in SHARED:
             root.mkdir(parents=True, exist_ok=True)
-            SHARED[root] = ((root / MIGRATION_LOCK).open("a"), threading.Lock())
+            SHARED[root] = ((root / MIGRATION_LOCK).open("a"), waits.Lock("writes"))
         return SHARED[root]
 
 
-def waited(held, operation: int) -> None:
+def acquire(held, operation: int) -> None:
     deadline = time.monotonic() + LOCK_WAIT
     while True:
         try:
@@ -128,7 +130,7 @@ def hold_record_writes(root: Path):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     with (root / MIGRATION_LOCK).open("a") as held:
-        waited(held, fcntl.LOCK_EX)
+        acquire(held, fcntl.LOCK_EX)
         token = MIGRATIONS.set((*MIGRATIONS.get(), root))
         try:
             yield
@@ -148,8 +150,8 @@ def writing(path: Path):
         yield
         return
     held, guard = shared_lock(roots[0])
-    with guard:
-        waited(held, fcntl.LOCK_SH)
+    with guard, waits.waited("writes"):
+        acquire(held, fcntl.LOCK_SH)
         try:
             yield
         finally:
