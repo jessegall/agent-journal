@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {store} from "../state/store.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
@@ -54,7 +55,7 @@ const tabs = computed(() => [
     {key: "new", title: "New link"},
     {key: "open", title: "Open links", count: open.value.length + waiting.value.length},
 ]);
-const loggedIn = (status) => (tunnelStatus.value = status);
+const loggedIn = (status) => (store.tunnel = status);
 const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.installed || !tunnelStatus.value.logged_in));
 
 onMounted(async () => {
@@ -138,7 +139,12 @@ async function stop(share) {
                             </template>
                             <template v-else>
                                 <ShareOpens :opens="opens" />
-                                <ShareSettings v-model:expires="expires" v-model:password="password" v-model:comments="comments" v-model:agent-replies="agentReplies" />
+                                <ShareSettings
+                                    v-model:expires="expires"
+                                    v-model:password="password"
+                                    v-model:comments="comments"
+                                    v-model:agent-replies="agentReplies"
+                                />
                             </template>
                         </template>
                         <template #open>

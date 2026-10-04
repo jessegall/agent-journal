@@ -1,4 +1,4 @@
-import {reactive, ref, watch} from "vue";
+import {ref, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {onOutboxChange} from "../chat/outbox.js";
@@ -7,7 +7,6 @@ import {store} from "../state/store.js";
 
 export const PAGE = 25;
 export const RECENT = 100;
-export const paging = reactive({size: {}, more: {}});
 
 const watchedTypes = new Set();
 const seen = ref(0);
@@ -34,8 +33,8 @@ function trimmed(type) {
     if (held.length <= PAGE) return;
     const recent = new Set(held.slice(-PAGE));
     store.rows[type] = held.filter((r) => recent.has(r) || !r.completed);
-    paging.size[type] = PAGE;
-    paging.more[type] = true;
+    store.paging.size[type] = PAGE;
+    store.paging.more[type] = true;
 }
 
 function forget() {
@@ -45,13 +44,11 @@ function forget() {
     seen.value += 1;
 }
 
-export const damaged = reactive({});
-
 async function damage(type, n) {
     try {
         await api.show(type, n);
     } catch (e) {
-        if (/ is damaged: /.test(e.message)) damaged[`${type}:${n}`] = e.message.split(" is damaged: ").pop();
+        if (/ is damaged: /.test(e.message)) store.damaged[`${type}:${n}`] = e.message.split(" is damaged: ").pop();
     }
 }
 
@@ -76,7 +73,7 @@ export async function holding(type, numbers) {
         if (!got.rows.length) return;
         const known = new Set((store.rows[type] || []).map((r) => r.n));
         store.rows[type] = [...(store.rows[type] || []), ...got.rows.filter((r) => !known.has(r.n))].sort((a, b) => a.n - b.n);
-        paging.size[type] = store.rows[type].length;
+        store.paging.size[type] = store.rows[type].length;
     } finally {
         missing.forEach((n) => pending.delete(n));
     }
@@ -96,18 +93,18 @@ watch(
 function took(type, got) {
     loaded.add(type);
     store.rows[type] = got.rows;
-    paging.size[type] = paging.size[type] || PAGE;
-    paging.more[type] = got.more;
+    store.paging.size[type] = store.paging.size[type] || PAGE;
+    store.paging.more[type] = got.more;
 }
 
 export async function load(type) {
-    const size = paging.size[type] || PAGE;
+    const size = store.paging.size[type] || PAGE;
     const starting = new Set((store.rows[type] || []).map((r) => r.n));
     const got = await api.list(type, {last: size, completed: true});
     const listed = new Set(got.rows.map((r) => r.n));
     const arriving = (store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n));
     took(type, {...got, rows: [...got.rows, ...arriving].sort((a, b) => a.n - b.n)});
-    paging.size[type] = size;
+    store.paging.size[type] = size;
     return store.rows[type];
 }
 
@@ -119,12 +116,12 @@ async function caughtUp(type) {
     const fresh = new Map(got.rows.map((r) => [r.n, r]));
     const kept = held.filter((r) => !fresh.has(r.n)).concat(got.rows.filter((r) => !r.deleted));
     store.rows[type] = kept.sort((a, b) => a.n - b.n);
-    paging.size[type] = store.rows[type].length;
+    store.paging.size[type] = store.rows[type].length;
     return store.rows[type];
 }
 
 export async function earlier(...types) {
-    const growing = types.filter((type) => paging.more[type]);
+    const growing = types.filter((type) => store.paging.more[type]);
     await Promise.all(
         growing.map(async (type) => {
             const starting = store.rows[type] || [];
@@ -134,8 +131,8 @@ export async function earlier(...types) {
             const held = store.rows[type] || [];
             const known = new Set(held.map((r) => r.n));
             store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
-            paging.size[type] = store.rows[type].length;
-            paging.more[type] = got.more;
+            store.paging.size[type] = store.rows[type].length;
+            store.paging.more[type] = got.more;
         })
     );
     return growing.length > 0;
@@ -152,7 +149,7 @@ async function fetched(types, whole = false) {
 }
 
 async function pull(types, whole) {
-    const plain = types.filter((type) => (paging.size[type] || PAGE) === PAGE);
+    const plain = types.filter((type) => (store.paging.size[type] || PAGE) === PAGE);
     const sized = types.filter((type) => !plain.includes(type));
     const [got] = await Promise.all([
         plain.length || whole ? api.dashboard(plain, {last: PAGE, events: whole ? RECENT : null}) : null,

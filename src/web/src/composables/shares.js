@@ -1,6 +1,7 @@
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import {api} from "../api/client.js";
 import {rows} from "../sync/rows.js";
+import {store} from "../state/store.js";
 
 const NAMED = /^(.*?) (?:\((\w+) (\d+)\)|\[\[chip (\w+):(\d+)\|[^\]]*\]\])$/;
 const now = () => Date.now() / 1000;
@@ -35,11 +36,11 @@ export const stopShare = (share) => api.act("share", share.n, "stop");
 
 export const approveShare = (share) => api.act("share", share.n, "approve");
 
-export const tunnelStatus = ref(null);
+export const tunnelStatus = computed(() => store.tunnel);
 
 export async function checkTunnel() {
-    tunnelStatus.value = await api.command("share", "tunnel").catch(() => null);
-    return tunnelStatus.value;
+    store.tunnel = await api.command("share", "tunnel").catch(() => null);
+    return store.tunnel;
 }
 
 export const linkMessage = (title, link) => `Here's the link to ${title}: ${link}`;

@@ -1,11 +1,11 @@
-import {nextTick, onMounted, onUnmounted, ref} from "vue";
+import {nextTick, onMounted, onUnmounted} from "vue";
+import {ui} from "../state/ui.js";
 
-const landing = ref(null);
 const EASE = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 
 export function useLanding(el) {
-    onMounted(() => (landing.value = el.value));
-    onUnmounted(() => landing.value === el.value && (landing.value = null));
+    onMounted(() => (ui.landing = el.value));
+    onUnmounted(() => ui.landing === el.value && (ui.landing = null));
 }
 
 export async function flyToBar(card, change) {
@@ -28,7 +28,7 @@ export async function flyToBar(card, change) {
     ghost.querySelectorAll("[data-fades]").forEach((el) => el.animate([{opacity: 1}, {opacity: 0}], {duration: 160, fill: "forwards"}));
     const done = change();
     await nextTick();
-    const bar = landing.value;
+    const bar = ui.landing;
     const gone = () => ghost.animate([{opacity: 1}, {opacity: 0}], {duration: 200, fill: "forwards"}).finished.then(() => ghost.remove());
     if (!bar) {
         gone();

@@ -10,7 +10,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
 import {groupOf, GROUPS, open} from "../domain/records.js";
 import {counted, meta, store, word} from "../state/store.js";
-import {earlier, paging, rows} from "../sync/rows.js";
+import {earlier, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import CheckCard from "../resource/CheckCard.vue";
@@ -57,7 +57,7 @@ const search = ref(null);
 watch(
     library,
     async (on) => {
-        while (on && paging.more[props.type] && (await earlier(props.type)));
+        while (on && store.paging.more[props.type] && (await earlier(props.type)));
     },
     {immediate: true}
 );
@@ -65,7 +65,7 @@ useSlashFocus(search, () => library.value);
 const end = ref(null);
 const scrolled = ref(false);
 const moved = () => (scrolled.value = true);
-useSighted(end, () => scrolled.value && paging.more[props.type] && earlier(props.type));
+useSighted(end, () => scrolled.value && store.paging.more[props.type] && earlier(props.type));
 window.addEventListener("wheel", moved, {passive: true});
 window.addEventListener("touchmove", moved, {passive: true});
 onUnmounted(() => {
