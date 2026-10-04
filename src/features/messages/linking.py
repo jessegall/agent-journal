@@ -8,7 +8,7 @@ LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 
 
 def filed(context: Context, message) -> None:
-    events = context.record.events(last=RECENT)
+    events = context.record.event_log.events(last=RECENT)
     read = max((e.at for e in events if e.type == "message" and e.data.get("seen") == AGENT and message.n in (e.data.get("numbers") or [e.n])), default=0.0)
     claimed = {e.data.get("to") for e in events if e.type == "message" and e.action == "linked" and not e.data.get("off")}
     for e in events:

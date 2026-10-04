@@ -129,8 +129,8 @@ class Engine:
 
     def relay(self) -> None:
         if self.relayed is None:
-            self.relayed = self.record.last_event()
-        for e in self.record.events(self.relayed):
+            self.relayed = self.record.event_log.last_id()
+        for e in self.record.event_log.events(self.relayed):
             self.relayed = e.id
             features.passed(e, self.record)
             if not e.handled:
@@ -387,7 +387,7 @@ class Engine:
         count = 0
         for actor in self.actors:
             fresh = actor.cursor() == 0
-            for e in self.record.events(actor.delivered_until()):
+            for e in self.record.event_log.events(actor.delivered_until()):
                 if e.type not in TYPES:
                     actor.notified(e)
                     continue

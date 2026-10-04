@@ -34,7 +34,7 @@ environment_records = Record.every
 
 
 def warm_record(record: Record, pause: float = 0.0) -> None:
-    record.recent_events()
+    record.event_log.recent()
     for controller in CONTROLLERS.values():
         try:
             controller(record, actor=SYSTEM)._warm()

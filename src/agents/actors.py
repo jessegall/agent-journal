@@ -54,13 +54,13 @@ class Actor(ABC):
     def notify(self, event: Event) -> None: ...
 
     def cursor(self) -> int:
-        return self.record.cursor(self.name)
+        return self.record.event_log.cursor(self.name)
 
     def delivered_until(self) -> int:
         return self.cursor()
 
     def notified(self, event: Event) -> None:
-        self.record.set_cursor(self.name, event.id)
+        self.record.event_log.set_cursor(self.name, event.id)
 
 
 class User(Actor):
@@ -99,7 +99,7 @@ class Agent(Actor):
     def notified(self, event: Event) -> None:
         self.scanned = max(self.scanned, event.id)
         if not self.pending:
-            self.record.set_cursor(self.name, self.scanned)
+            self.record.event_log.set_cursor(self.name, self.scanned)
 
     def delivered(self, done: list[Event]) -> None:
         reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)

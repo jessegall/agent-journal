@@ -214,7 +214,7 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     running = {"id": "t1", "task": "audit the hooks", "type": "auditor", "model": "sonnet", "ended": 0.0}
     for subagents in ([last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}]):
         seat.subagents_moved(last, subagents)
-    heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
     assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
     import json
     from providers.claude import Claude

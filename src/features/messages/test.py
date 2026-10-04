@@ -127,10 +127,10 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     record = fresh()
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", asking={})
-    since = record.last_event()
+    since = record.event_log.last_id()
     Nudges(record).create("for this session", session="claude-1", private=True)
     Nudges(record).create("for another", session="claude-2", private=True)
-    received = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.events(since)}
+    received = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.event_log.events(since)}
     assert list(received.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"
 
 
@@ -258,7 +258,7 @@ def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update(
     agent.read_all([n + 1])
     agent.action("read")(n)
     agent.action("react")(n, "👍")
-    heard = [(e.type, e.action, e.data.get("by")) for e in record.events() if e.n == n or e.type == "reaction"]
-    read = [e.data.get("by") for e in record.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
+    heard = [(e.type, e.action, e.data.get("by")) for e in record.event_log.events() if e.n == n or e.type == "reaction"]
+    read = [e.data.get("by") for e in record.event_log.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
     assert read == ["read", "read"], f"a read from the viewer's read-all and from the command both say read: {read}"
     assert [by for t, _, by in heard if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {heard}"

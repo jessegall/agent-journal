@@ -4,7 +4,7 @@ import zipfile
 from bisect import bisect_left
 from dataclasses import dataclass
 from pathlib import Path
-from resources.base import LAZY, MEMORY, OWNER, PART_OF, Refused, Resource
+from resources.base import LAZY, MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
 from controllers.marks import internal
 
@@ -296,7 +296,7 @@ class Stored:
         except OSError as error:
             entry = self._packed().get(n)
             if not entry:
-                raise Refused(f"no {self.type} {n}") from error
+                raise Missing(f"no {self.type} {n}") from error
             archive = self._folder() / PACKED / entry[ARCHIVE]
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
         if self.resource.loading != MEMORY:

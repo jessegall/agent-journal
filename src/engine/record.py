@@ -137,30 +137,6 @@ class Record:
             return stamped(0)
         return release()
 
-    def events(self, since: int = 0, last: int = 0) -> list[Event]:
-        return self.event_log.events(since, last)
-
-    def recent_events(self) -> list[Event]:
-        return self.event_log.recent()
-
-    def last_event(self) -> int:
-        return self.event_log.last_id()
-
-    def trim_events(self, keep: int, readers_since: float) -> int:
-        return self.event_log.trim(keep, readers_since)
-
-    def cursor_text(self, name: str) -> str:
-        return self.event_log.cursor_text(name)
-
-    def set_cursor_text(self, name: str, text: str) -> None:
-        self.event_log.set_cursor_text(name, text)
-
-    def cursor(self, name: str) -> int:
-        return self.event_log.cursor(name)
-
-    def set_cursor(self, name: str, n: int) -> None:
-        self.event_log.set_cursor(name, n)
-
     def state(self, owner: str, session: str | None = None) -> State:
         folder = self.home / "state" if session is None else runtime.sessions(self.root) / session
         return State(folder / f"{owner}.json")
@@ -175,9 +151,6 @@ class Record:
         if self.memo is not None:
             self.memo["settings"] = found
         return found
-
-    def settings_version(self) -> int:
-        return self.settings_file.held()[0]
 
     def reread_settings(self) -> None:
         self.settings_file.reread()

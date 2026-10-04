@@ -11,7 +11,7 @@ from engine.timing import Stopwatch, profiler
 from engine.record import Record
 from controllers.faults import threw
 from features.format import shaped
-from resources.base import USER, Refused
+from resources.base import USER, Missing, Refused
 from engine.package import data
 from engine.fields import Loaded
 from engine.paths import contained, environment_home
@@ -75,10 +75,6 @@ class Reply:
         if isinstance(self.body, bytes):
             return self.body
         return self.body.encode() if self.kind == PLAIN else json.dumps(self.body).encode()
-
-
-class Missing(Exception):
-    pass
 
 
 @dataclass

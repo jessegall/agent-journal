@@ -29,7 +29,7 @@ def test_reports_and_todos_past_their_keep_days_are_archived_open_ones_never():
     assert (bool(reports.load(old_report.n).completed), reports.load(old_report.n).outcome) == (True, "aged out after 14 days"), \
         "a report past its keep days is archived, saying so"
     assert reports.load(fresh_report.n).completed == 0.0, "a fresh report stays"
-    assert ([t.n for t in todos.all()], [e.data["why"] for e in record.events() if e.type == "todo" and e.action == "deleted"]) == \
+    assert ([t.n for t in todos.all()], [e.data["why"] for e in record.event_log.events() if e.type == "todo" and e.action == "deleted"]) == \
         ([open_row.n], ["archived 7 days after it was closed"]), "a to-do closed past its keep days is archived, an open one never"
 
 

@@ -112,19 +112,19 @@ class Host:
         if now and self.trouble.get(plugin, {}).get("until", 0) > now:
             return 0
         mark = f"plugin-{plugin}"
-        since = record.cursor(mark)
+        since = record.event_log.cursor(mark)
         if not since:
-            record.set_cursor(mark, record.last_event())
+            record.event_log.set_cursor(mark, record.event_log.last_id())
             return 0
         sent = 0
-        for event in record.events(since=since):
+        for event in record.event_log.events(since=since):
             if now and event.at < now - self.replay:
-                record.set_cursor(mark, event.id)
+                record.event_log.set_cursor(mark, event.id)
                 continue
             ok, delivered = self.handle(record, row, event, now)
             if not ok:
                 return sent
-            record.set_cursor(mark, event.id)
+            record.event_log.set_cursor(mark, event.id)
             sent += delivered
         return sent
 

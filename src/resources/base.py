@@ -244,6 +244,10 @@ class Refused(Exception):
     pass
 
 
+class Missing(Refused):
+    pass
+
+
 def check_title(title: str) -> str:
     flat = " ".join((title or "").split())
     if not flat:
