@@ -9,8 +9,6 @@ import SettingRow from "../kit/SettingRow.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {STATE_WORDS, countsOf, envState, focusOf} from "../sync/hub.js";
-import {usePoll} from "../poll.js";
-import {polled} from "../sync/polled.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
@@ -19,9 +17,6 @@ import {matches} from "../domain/settingsCatalog.js";
 const props = defineProps({query: {type: String, default: ""}});
 const summary = computed(() => store.summary);
 const ask = ref({});
-
-usePoll(...polled.summary);
-usePoll(...polled.online);
 
 const summaryOf = (name) => ((summary.value && summary.value.environments) || []).find((e) => e.name === name) || null;
 const live = (name) => store.online.some((agent) => agent.environment === name);

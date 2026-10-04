@@ -27,7 +27,7 @@ import NotePrompt from "../board/NotePrompt.vue";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import StopPrompt from "../board/StopPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
-import {usePoll} from "../poll.js";
+import {poke, usePoll} from "../poll.js";
 import {peek, route} from "../route.js";
 import {boardOn, store} from "../state/store.js";
 
@@ -287,15 +287,12 @@ watch(
 );
 
 let seen = 0;
-let waiting = 0;
 watch(
     () => (store.events.length ? store.events[store.events.length - 1].id : 0),
     (newest) => {
         const fresh = store.events.some((event) => event.id > seen && LIVE.has(event.type));
         seen = newest;
-        if (!fresh) return;
-        clearTimeout(waiting);
-        waiting = setTimeout(refresh, 300);
+        if (fresh) poke("board");
     }
 );
 

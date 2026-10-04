@@ -5,11 +5,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
 import {useNow} from "../composables/now.js";
-
-usePoll(...polled.manifest);
 
 const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));

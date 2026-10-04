@@ -8,10 +8,7 @@ import SectionHeading from "../kit/SectionHeading.vue";
 import RoleCard from "../organization/RoleCard.vue";
 import {peek, route} from "../route.js";
 import {store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
 
-usePoll(...polled.organization);
 const domains = computed(() => store.organization && store.organization.domains);
 const opened = computed(() => (typeof route.value.n === "string" ? route.value.n : ""));
 const shown = computed(() => (domains.value || []).filter((domain) => !opened.value || domain.name === opened.value));
@@ -55,7 +52,11 @@ async function draft() {
                             <p class="description">No agent in this domain is working right now.</p>
                         </template>
                         <template v-for="agent in domain.working" :key="`${agent.role}.${agent.n}.${agent.env}`">
-                            <button type="button" class="working-row" @click="agent.plan ? peek('plan', agent.plan) : peek('ticket', agent.n)">
+                            <button
+                                type="button"
+                                class="working-row"
+                                @click="agent.plan ? peek('plan', agent.plan) : peek('ticket', agent.n)"
+                            >
                                 <ListRow
                                     :kind="agent.role_title"
                                     :title="agent.plan ? `For plan ${agent.plan}` : `Ticket ${agent.n}`"

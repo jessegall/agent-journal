@@ -10,13 +10,7 @@ import {ink, project, tint} from "../identity.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
-import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.agents);
-usePoll(...polled.pages);
-usePoll(...polled.organization);
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed && !e.data.owner));
 const pages = computed(() => store.pages || []);
@@ -27,7 +21,6 @@ const fold = (key) => {
     folded[key] = !folded[key];
 };
 const {sections: groups} = useNavigation();
-usePoll(...polled.online);
 const live = (name) => store.online.some((agent) => agent.environment === name);
 
 const tip = ref(null);

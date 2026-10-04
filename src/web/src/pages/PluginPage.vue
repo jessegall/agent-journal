@@ -6,12 +6,9 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
+import {pollNow} from "../poll.js";
 import {RUNNING} from "../domain/services.js";
 import {useServiceAction} from "../composables/service.js";
-
-const refreshPages = usePoll(...polled.pages);
 
 const pages = computed(() => store.pages || []);
 const log = ref("");
@@ -23,7 +20,7 @@ const src = computed(() => {
     return api.pluginUrl(page.value, route.value.at || page.value.path);
 });
 
-const {error, set, busy} = useServiceAction(() => refreshPages());
+const {error, set, busy} = useServiceAction(() => pollNow("pages"));
 const runPluginAction = (want) => page.value && set(page.value.service, want);
 const starting = computed(() => Boolean(page.value) && busy(page.value.service, "up"));
 
