@@ -26,6 +26,7 @@ from engine.runtime import default_env
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
 
+DEFAULT_PORT = 8430
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
 
@@ -107,7 +108,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
+def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     Handler.root = root
     other = elsewhere(root)
     if other:
@@ -195,7 +196,7 @@ def warm_viewer(root: Path, env: str) -> None:
     dispatch("GET", f"/api/{env}/family", root, {}, {})
 
 
-def run(root: Path, port: int = 8430) -> None:
+def run(root: Path, port: int = DEFAULT_PORT) -> None:
     runtime.STARTED[0] = time.time()
     server = serve(root, port)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
@@ -236,5 +237,5 @@ def run(root: Path, port: int = 8430) -> None:
 
 if __name__ == "__main__":
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".journal").resolve()
-    port = int(sys.argv[2]) if len(sys.argv) > 2 else 8430
+    port = int(sys.argv[2]) if len(sys.argv) > 2 else DEFAULT_PORT
     run(root, port)

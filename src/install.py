@@ -12,7 +12,8 @@ import time
 import zipfile
 from importlib.util import MAGIC_NUMBER
 from pathlib import Path
-from typing import Callable, TypedDict
+from dataclasses import dataclass
+from typing import Callable
 
 
 PACKAGE = Path(__file__).resolve().parent
@@ -24,6 +25,9 @@ PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
+REPOSITORY_ENV = "AGENT_JOURNAL_REPO"
+BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
+HEALED = "AGENT_JOURNAL_HEALED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
@@ -131,7 +135,7 @@ fi
 
 
 def asks() -> str:
-    return ASKS.replace("__SERVED__", "|".join(sorted(served())))
+    return ASKS.replace("__SERVED__", "|".join(sorted(LOADED.served())))
 
 SHIM = """#!/bin/sh
 dir="$(pwd)"
@@ -205,22 +209,23 @@ def old_git_hook(project: Path) -> list[str]:
 def configure(project: Path, root: Path) -> list[str]:
     done = old_git_hook(project)
     present = []
-    for name, cls in PROVIDERS.items():
+    for name, cls in LOADED.providers.items():
         provider = cls()
         if not provider.present(project):
             continue
         f = provider.wire(project, f"sh {code(root) / 'hook.sh'} {name} {root}")
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         present.append(name)
-    if not done:
-        return ["no agent found here: neither Claude nor Codex"]
-    written, linked = publish(project, tuple(present))
-    done.append(f"{len(written)} skills in {LIBRARY}" + (f", linked from {', '.join(LINKED[a] for a in present if a in LINKED)}" if linked else ""))
-    record = Record(root, default_env(root))
-    briefing = brief(project, record)
-    done.append(f"the journal's block in {', '.join(f.name for f in briefing.written) or 'AGENTS.md and CLAUDE.md'}")
+    if not present:
+        return [*done, f"no agent found here: neither {' nor '.join(name.capitalize() for name in LOADED.providers)}"]
+    written, linked = LOADED.publish(project, tuple(present))
+    done.append(f"{len(written)} skills in {LOADED.library}" + (f", linked from {', '.join(LOADED.linked[a] for a in present if a in LOADED.linked)}" if linked else ""))
+    record = LOADED.record(root, LOADED.default_env(root))
+    briefing = LOADED.brief(project, record)
+    named = ' and '.join(sorted(cls.briefing_file for cls in LOADED.providers.values() if cls.briefing_file))
+    done.append(f"the journal's block in {', '.join(f.name for f in briefing.written) or named}")
     done.extend(briefing.left)
-    written = agent_types(project, record)
+    written = LOADED.agent_types(project, record)
     if written:
         done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
@@ -240,15 +245,15 @@ def token() -> str:
     return got.stdout.strip() if got.returncode == 0 else ""
 
 
-def reachable(repository: str, secret: str) -> str:
+def with_token(repository: str, secret: str) -> str:
     return repository.replace("https://", f"https://x-access-token:{secret}@", 1) if secret and repository.startswith("https://github.com/") else repository
 
 
-def plain(text: str, secret: str) -> str:
+def redacted(text: str, secret: str) -> str:
     return text.replace(secret, "the token") if secret else text
 
 
-def counted(version: str) -> tuple:
+def version_key(version: str) -> tuple:
     return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
@@ -258,19 +263,19 @@ def released(repository: str = REPOSITORY) -> str:
     except (OSError, subprocess.TimeoutExpired):
         return ""
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
-    return max(versions, key=counted) if versions else ""
+    return max(versions, key=version_key) if versions else ""
 
 
 def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
-    wanted = repository or os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY)
+    wanted = repository or os.environ.get(REPOSITORY_ENV, REPOSITORY)
     secret = token() if wanted.startswith("https://github.com/") else ""
-    source = reachable(wanted, secret)
+    source = with_token(wanted, secret)
     into.mkdir(parents=True, exist_ok=True)
     try:
         for step in (["init", "-q"], ["fetch", "-q", "--depth", "1", source, ref or "HEAD"], ["checkout", "-q", "FETCH_HEAD"]):
             done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120)
             if done.returncode:
-                return "", plain(done.stderr.strip() or f"git {step[0]} failed", secret)
+                return "", redacted(done.stderr.strip() or f"git {step[0]} failed", secret)
         return subprocess.run(["git", "rev-parse", "HEAD"], cwd=into, capture_output=True, text=True, timeout=30).stdout.strip(), ""
     except (OSError, subprocess.TimeoutExpired) as error:
         return "", str(error)
@@ -298,7 +303,7 @@ def half_done(root: Path) -> bool:
 
 def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
-    mark = root / "runtime" / "upgrading"
+    mark = LOADED.upgrade_mark(root)
     mark.parent.mkdir(parents=True, exist_ok=True)
     with (root / "runtime" / "upgrade.lock").open("a") as lock:
         try:
@@ -320,9 +325,9 @@ def installed_here(root: Path, package: Path = PACKAGE) -> bool:
 def upgrading(project: Path, root: Path) -> list[str]:
     done = [line for line in [keep_copy(root)] if line]
     source, temporary, newest = PACKAGE, None, ""
-    reloaded = installed_here(root) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
+    reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
-        newest = released(os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY))
+        newest = released(os.environ.get(REPOSITORY_ENV, REPOSITORY))
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
         _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
@@ -355,7 +360,7 @@ def complete(folder: Path) -> bool:
 
 def handed_over(project: Path, root: Path) -> list[str]:
     finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120,
-                              env={**os.environ, "AGENT_JOURNAL_BOOTSTRAPPED": "1"})
+                              env={**os.environ, BOOTSTRAPPED: "1"})
     return finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"]
 
 
@@ -368,7 +373,7 @@ def finish(project: Path, root: Path) -> list[str]:
     if PACKAGE.resolve() == root.resolve():
         refresh(PACKAGE, code(root))
     done = []
-    if not complete(code(root)) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED"):
+    if not complete(code(root)) and not os.environ.get(BOOTSTRAPPED):
         temporary = Path(tempfile.mkdtemp())
         _, failed = fetch(temporary / "package", ref=release_of(code(root)))
         try:
@@ -381,9 +386,9 @@ def finish(project: Path, root: Path) -> list[str]:
         if not failed:
             return done + handed_over(project, root)
     done += configure(project, root)
-    ran = migrate(root)
+    ran = LOADED.migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
-    done.append(ship_sequences(root))
+    done.append(LOADED.ship_sequences(root))
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
@@ -424,8 +429,8 @@ def pack(root: Path) -> str:
             built.unlink(missing_ok=True)
             return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
         built.replace(target)
-    point(root, target)
-    held = held_builds(root)
+    LOADED.point(root, target)
+    held = LOADED.held_builds(root)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
         if old != target and old.name not in held:
             old.unlink(missing_ok=True)
@@ -468,15 +473,16 @@ def heal() -> None:
         refresh(temporary / "package", PACKAGE)
     finally:
         shutil.rmtree(temporary, ignore_errors=True)
-    os.execve(sys.executable, [sys.executable, str(PACKAGE / "install.py"), *sys.argv[1:]], {**os.environ, "AGENT_JOURNAL_HEALED": "1"})
+    os.execve(sys.executable, [sys.executable, str(PACKAGE / "install.py"), *sys.argv[1:]], {**os.environ, HEALED: "1"})
 
 
-class Package(TypedDict):
-    PROVIDERS: dict
-    LIBRARY: str
-    LINKED: dict
+@dataclass(frozen=True)
+class Package:
+    providers: dict
+    library: str
+    linked: dict
     agent_types: Callable
-    Record: type
+    record: type
     default_env: Callable
     served: Callable
     point: Callable
@@ -485,6 +491,7 @@ class Package(TypedDict):
     migrate: Callable
     ship_sequences: Callable
     publish: Callable
+    upgrade_mark: Callable
 
 
 def package() -> Package:
@@ -501,15 +508,16 @@ def package() -> Package:
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
-    from engine.runtime import default_env
-    return {"agent_types": agent_types, "Record": Record, "default_env": default_env, "served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS,
-            "LIBRARY": LIBRARY, "LINKED": LINKED, "publish": publish}
+    from engine.runtime import default_env, upgrade_mark
+    return Package(providers=PROVIDERS, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env, served=served, point=point,
+                   held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"), publish=publish,
+                   upgrade_mark=upgrade_mark)
 
 
 try:
-    globals().update(package())
+    LOADED = package()
 except ImportError:
-    if __name__ != "__main__" or os.environ.get("AGENT_JOURNAL_HEALED"):
+    if __name__ != "__main__" or os.environ.get(HEALED):
         raise
     heal()
 
