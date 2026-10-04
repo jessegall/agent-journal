@@ -22,7 +22,10 @@ def open_shares(root: Path) -> list:
 
 
 def wanted(root: Path) -> bool:
-    return bool(open_shares(root)) or any(keep(root) for keep in KEEP_UP)
+    from features import FEATURES
+    record = Record(root, runtime.env(root))
+    sharing = "sharing" in FEATURES and FEATURES["sharing"].enabled(record)
+    return (sharing and bool(open_shares(root))) or any(keep(root) for keep in KEEP_UP)
 
 
 def share_services(root: Path, taken: set) -> list:

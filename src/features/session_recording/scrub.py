@@ -14,11 +14,27 @@ HOME = "/home/demo"
 PROJECT = "/home/demo/project"
 SHORTEST_NAME = 4
 NAMED = re.compile(r"[-_\d]|^\w{10,}$")
+WORDS = "/usr/share/dict/words"
+
+
+def dictionary() -> frozenset:
+    try:
+        return frozenset(Path(WORDS).read_text(errors="ignore").lower().split())
+    except OSError:
+        return frozenset()
+
+
+def word(name: str) -> bool:
+    lowered = name.lower()
+    return lowered in DICTIONARY or lowered.removesuffix("s") in DICTIONARY
 
 
 def private(name: str) -> bool:
-    return len(name) >= SHORTEST_NAME and not name.startswith("tmp") and bool(NAMED.search(name))
+    return len(name) >= SHORTEST_NAME and not name.startswith("tmp") and not TUNNEL.search(f"{name}.com") and (bool(NAMED.search(name)) or not word(name))
 
+
+
+DICTIONARY = dictionary()
 
 class Scrubber:
     def __init__(self, folders: list[str] | None = None):

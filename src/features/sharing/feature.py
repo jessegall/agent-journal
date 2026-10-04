@@ -14,7 +14,7 @@ class SharingFeature(Feature):
     details = SharingDetails
 
     def register(self, journal: Journal) -> None:
-        self.register_global(SOURCES, share_services, list)
+        self.register_always(SOURCES, share_services)
         journal.events.handler(HoldOnVisitorComment())
         journal.events.handler(NameVisitorComment())
         journal.events.handler(KeepTunnelAnswering())

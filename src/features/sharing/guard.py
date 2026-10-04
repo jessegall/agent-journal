@@ -9,7 +9,7 @@ from features.sharing.visitors import AGREEMENT, UNAGREED, read_now
 from resources.base import SYSTEM
 from engine.reach import Reach
 
-PLAIN = re.compile(r"[\w.:@/+-]+")
+PLAIN = re.compile(r"[\w .:@/+-]+")
 
 
 def only_agree(command: str) -> bool:

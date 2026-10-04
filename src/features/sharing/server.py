@@ -42,8 +42,9 @@ HEADERS = {
 }
 
 
-def routed(parts: list[str]):
-    return ROUTES.get(parts[0]) if parts else None
+def routed(parts: list[str], record):
+    route = ROUTES.get(parts[0]) if parts else None
+    return route if route is not None and route.on(record) else None
 
 
 @dataclass(frozen=True)
@@ -96,7 +97,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if parts == [HEALTH]:
             return self.send(200, b"ok", {"Content-Type": "text/plain"})
-        if (route := routed(parts)) is not None:
+        if (route := routed(parts, self.shares.record)) is not None:
             return route.get(self, parts[1:])
         if len(parts) < 2 or parts[0] != "s":
             return self.page(404, unshared())
@@ -138,7 +139,7 @@ class ShareHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
-        if (route := routed(parts)) is not None:
+        if (route := routed(parts, self.shares.record)) is not None:
             return route.post(self, parts[1:])
         if len(parts) != 3 or parts[0] != "s" or parts[2] not in VISITOR_POSTS:
             return self.refused()
