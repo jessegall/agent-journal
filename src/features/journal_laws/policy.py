@@ -24,7 +24,7 @@ class Markers:
 
     @property
     def pattern(self) -> re.Pattern:
-        return re.compile(rf"\n?{re.escape(self.begin)}.*?{re.escape(self.end)}\n?", re.DOTALL)
+        return re.compile(rf"{re.escape(self.begin)}.*?{re.escape(self.end)}", re.DOTALL)
 
     def lone(self, text: str) -> str:
         found = [marker for marker in (self.begin, self.end) if marker in text]
@@ -118,7 +118,7 @@ def brief(project: Path, record) -> Briefing:
     written, left = [], []
     for name in sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file}):
         target = project / name
-        had = target.read_text() if target.is_file() else ""
+        had = target.read_bytes().decode() if target.is_file() else ""
         why = untouchable(had)
         if why:
             left.append(f"{name} left as it is: {why}")
@@ -132,7 +132,7 @@ def brief(project: Path, record) -> Briefing:
 
 def instructions_hash(project: Path, record) -> str:
     names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
-    texts = [CURRENT.sub("", (project / name).read_text()) for name in names if (project / name).is_file()]
+    texts = [CURRENT.sub("", (project / name).read_bytes().decode()) for name in names if (project / name).is_file()]
     return digest("\0".join((*texts, *injected(record), carry(record)))) if texts else ""
 
 
@@ -147,6 +147,8 @@ def untouchable(text: str) -> str:
 
 
 def leading(had: str, managed: str) -> str:
+    newline = "\r\n" if "\r\n" in had else "\n"
+    managed = managed.replace("\n", newline)
     rest = had
     for retired in RETIRED:
         rest = retired.pattern.sub("", rest)
@@ -154,10 +156,10 @@ def leading(had: str, managed: str) -> str:
     if found:
         return rest[:found.start()] + managed + rest[found.end():]
     if not rest.startswith("# "):
-        return f"{managed}\n\n{rest}"
-    head, _, after = rest.partition("\n")
-    separator = "\n" if after.startswith("\n") else "\n\n"
-    return f"{head}\n\n{managed}{separator}{after}"
+        return f"{managed}{newline}{newline}{rest}"
+    head, _, after = rest.partition(newline)
+    separator = newline if after.startswith(newline) else newline + newline
+    return f"{head}{newline}{newline}{managed}{separator}{after}"
 
 
 def refusal(dispatch, cartoon: bool = False) -> str:

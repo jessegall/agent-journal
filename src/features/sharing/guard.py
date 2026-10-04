@@ -1,3 +1,5 @@
+import shlex
+
 from controllers.types import Agents
 from engine.events.engine import CommandRan
 from engine.events.resources import ResourceCreated
@@ -6,12 +8,25 @@ from features.sharing.visitors import AGREEMENT, UNAGREED, read_now
 from resources.base import SYSTEM
 from engine.reach import Reach
 
-AGREE_COMMAND = "share agree"
+def only_agree(command: str) -> bool:
+    try:
+        words = shlex.split(command)
+    except ValueError:
+        return False
+    if not words or words[0] != "journal":
+        return False
+    words = words[1:]
+    while words and words[0].startswith("--"):
+        option, separator, _ = words[0].partition("=")
+        if option not in ("--env", "--agent", "--root"):
+            return False
+        words = words[1:] if separator else words[2:]
+    return len(words) == 4 and words[:2] == ["share", "agree"] and words[2].isdigit() and words[3] == AGREEMENT
 
 
 class HoldOnVisitorComment(Handler):
     def handle(self, context: AgentContext, event: CommandRan) -> None:
-        if AGREE_COMMAND in event.command:
+        if only_agree(event.command):
             return
         read = read_now(context.record, event.command, event.output)
         if read:
@@ -20,10 +35,10 @@ class HoldOnVisitorComment(Handler):
 
 
 class RefuseUntilAgreed(ToolInterceptor):
-    reach = Reach.MAIN
+    reach = Reach.BOTH
     def intercept(self, context: AgentContext, call) -> str:
         held = context.agent.row.data.get(UNAGREED, [])
-        if not held or any(AGREE_COMMAND in command for command in call.commands):
+        if not held or len(call.commands) == 1 and only_agree(call.commands[0]):
             return ""
         title, brief = context.feature.line("agree", {"comments": ", ".join(map(str, held)), "words": AGREEMENT})
         return f"{title} - {brief}"

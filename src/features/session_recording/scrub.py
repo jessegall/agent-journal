@@ -3,6 +3,8 @@ import re
 import socket
 from pathlib import Path
 
+from engine.viewer import known
+
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z]{2,}\b")
 SESSION = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")
 TUNNEL = re.compile(r"[\w.-]*(?:tunler|trycloudflare|ngrok)[\w.-]*\.[a-z]{2,}", re.IGNORECASE)
@@ -17,6 +19,8 @@ class Scrubber:
         self.sessions: dict[str, str] = {}
         self.paths = {str(Path.home()): HOME, **dict.fromkeys(folders or [], PROJECT)}
         self.names = {name: "demo" for name in (getpass.getuser(), Path.home().name) if len(name) >= SHORTEST_NAME}
+        self.names.update({name: "demo" for journal in known() for name in (journal.project, Path(journal.root).parent.name)
+                           if len(name) >= SHORTEST_NAME})
         host = socket.gethostname().split(".")[0]
         if len(host) >= SHORTEST_NAME:
             self.names[host] = "demo-host"
