@@ -5,7 +5,7 @@ import re
 import shutil
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
+from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
 from providers.base import BackgroundTasks, Provider, SubagentRow, running_and_latest
 from providers.jsonl import last_lines, parsed, rows
@@ -317,7 +317,7 @@ class Codex(Provider):
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
 
-    def turn(self, row: Row) -> tuple[str, str] | None:
+    def turn(self, row: Row, line: int) -> Turn | None:
         payload = row.payload
         if row.type != "response_item":
             return None
@@ -325,11 +325,11 @@ class Codex(Provider):
             if not payload.text.strip() or payload.role not in ("user", "assistant"):
                 return None
             turn_kind = message_kind(payload)
-            return "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at, []
+            return Turn(line, "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at)
         if payload.type in ("function_call", "custom_tool_call"):
-            return "agent", "", AGENT, row.at, [TOOLS.get(payload.name, payload.name if payload.name else "?")]
+            return Turn(line, "agent", "", AGENT, row.at, [TOOLS.get(payload.name, payload.name if payload.name else "?")])
         if payload.type in ("function_call_output", "custom_tool_call_output"):
-            return TOOL, payload.output_text, TOOL, row.at, []
+            return Turn(line, TOOL, payload.output_text, TOOL, row.at)
         return None
 
     def context(self, hook: Hook) -> float | None:

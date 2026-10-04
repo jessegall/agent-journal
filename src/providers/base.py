@@ -257,9 +257,9 @@ class Provider(ABC):
     def read_turns(self, lines: list[bytes], count: int) -> list:
         turns = []
         for i, found in enumerate((parsed_row(line, self.row_of) for line in lines), count + 1):
-            turn = self.turn(found) if found is not None else None
+            turn = self.turn(found, i) if found is not None else None
             if turn:
-                turns.append(Turn(i, *turn))
+                turns.append(turn)
         return turns
 
     def refine(self, turns: list[Turn]) -> list[Turn]:
@@ -268,7 +268,7 @@ class Provider(ABC):
     def row_of(self, raw: dict):
         return raw
 
-    def turn(self, row: dict) -> tuple[str, str] | None:
+    def turn(self, row, line: int) -> Turn | None:
         return None
 
     def tool_uses(self, row: dict) -> list[dict]:

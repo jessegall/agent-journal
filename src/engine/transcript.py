@@ -12,6 +12,13 @@ INJECTED, TASK, PEER, SENT = "injected", "task", "peer", "sent"
 SUMMARY, SUPERSEDED = "summary", "superseded"
 
 
+@dataclass(frozen=True)
+class PeerNote:
+    direction: str
+    name: str
+    address: str
+
+
 @dataclass
 class Turn:
     line: int
@@ -23,6 +30,7 @@ class Turn:
     parent: str = ""
     asked: list[str] = field(default_factory=list)
     answered: list[str] = field(default_factory=list)
+    peer: PeerNote | None = None
 
     @property
     def key(self) -> str:

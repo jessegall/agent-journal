@@ -20,7 +20,7 @@ from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import SeatReport
 from engine.wording import plural
-from engine.transcript import PEER, SENT
+from engine.transcript import PEER
 from providers.turns import turns
 from engine.stored import Growth, read_json, write_json
 from engine.fields import Loaded
@@ -144,19 +144,17 @@ class Engine:
         f = runtime.session_file(self.record.root, row.title, "peers.json")
         seen = read_json(f, dict, None)
         log = PeerLog.from_json(seen)
-        recent = sorted((t for t in reading.provider.tail(reading.transcript) if t.kind == PEER and t.who.startswith((f"{PEER}:", f"{SENT}:"))), key=lambda t: t.at)
+        recent = sorted((t for t in reading.provider.tail(reading.transcript) if t.peer is not None), key=lambda t: t.at)
         newest = max([t.at for t in recent] + [log.at])
         names = dict(log.names)
         for t in recent if seen is not None else []:
             if t.at <= log.at:
                 continue
-            kind, _, rest = t.who.partition(":")
-            if kind == PEER:
-                name, _, address = rest.partition(":")
-                names[address] = name
-                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, peer=name)
+            if t.peer.direction == PEER:
+                names[t.peer.address] = t.peer.name
+                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, peer=t.peer.name)
             else:
-                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, sent_to=names.get(rest, rest))
+                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, sent_to=names.get(t.peer.address, t.peer.address))
         write_json(f, asdict(PeerLog(newest, names)))
 
     def announce_written(self) -> None:
