@@ -474,7 +474,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
-    from features.tickets.limits import CARD_LINE, CARD_TITLE, PANEL_REPLY
+    from features.boards.controller import PANEL_REPLY
+    from features.tickets.limits import CARD_LINE, CARD_TITLE
     from controllers.types import Messages
     from tests.conftest import refused
     record = fresh()

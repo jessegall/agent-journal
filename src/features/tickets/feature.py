@@ -14,7 +14,7 @@ from features.tickets.handlers import (
     decisions,
     ticket_calls,
 )
-from features.tickets.limits import DraftsCarryOneLine, FillerKeepsToTheBoard, PanelRepliesStayShort
+from features.tickets.limits import DraftsCarryOneLine
 from features.boards.controller import CARD_ROWS
 from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from features.plans.resource import PHASE
@@ -46,7 +46,3 @@ class TicketsFeature(Feature):
         journal.events.handler(HoldTicketKnowledge())
         journal.commands.intercept("create", DraftsCarryOneLine())
         journal.commands.intercept("update", DraftsCarryOneLine())
-        journal.commands.intercept("create", PanelRepliesStayShort())
-        journal.commands.intercept("create", FillerKeepsToTheBoard())
-        journal.commands.intercept("update", FillerKeepsToTheBoard())
-        journal.commands.intercept("complete", FillerKeepsToTheBoard())

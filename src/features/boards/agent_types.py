@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine.record import Record
-from features.sequences.exploration import FILLER
+from features.boards.exploration import FILLER
 
 
 @dataclass(frozen=True)
