@@ -357,11 +357,11 @@ export class ApiClient {
     }
 
     previewPlugin(source) {
-        return this.post(this.here("/plugins/preview"), {source});
+        return this.post(this.here("/plugins/preview"), {source}, LONG_WAIT_MS);
     }
 
     previewUpgrade(n) {
-        return this.post(this.here(`/plugins/${n}/upgrade-preview`), {});
+        return this.post(this.here(`/plugins/${n}/upgrade-preview`), {}, LONG_WAIT_MS);
     }
 
     findFiles(q) {
