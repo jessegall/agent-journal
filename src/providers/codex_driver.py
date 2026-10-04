@@ -2,7 +2,7 @@ import re
 import time
 from pathlib import Path
 
-from providers.base import Asking
+from providers.payload import Asking
 from providers.drivers import Driver, plain, squeezed
 
 
