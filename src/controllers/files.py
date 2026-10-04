@@ -15,7 +15,7 @@ REVISIONS = "revisions"
 class Files:
     def folder(self, n: int) -> Path:
         self.load(n)
-        f = self.record.folder(self.type, self.resource.scope) / f"{n:03d}"
+        f = self._row_folder(n)
         f.mkdir(exist_ok=True)
         return f
 

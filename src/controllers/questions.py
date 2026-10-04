@@ -16,7 +16,7 @@ class Questions(Controller):
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         about = data.get("about")
-        waiting = None if self.resource(data=self._shaped(data)).hidden else self._open_about(about)
+        waiting = None if self._given(data).hidden else self._open_about(about)
         if waiting:
             self._refuse(f"{about.replace(':', ' ')} already waits on question {waiting.n}, {waiting.title}: wait for its answer instead of asking again")
         return super().create(title, abstract, brief, **data)
@@ -28,7 +28,7 @@ class Questions(Controller):
         return self.complete(n, how=f"{DISMISSED}: {why}" if why.strip() else DISMISSED, reason=why, dismissed=True)
 
     def complete(self, n: int, how: str = "", **data):
-        if self.actor == AGENT and not self.resource(data=self._shaped(data)).reason.strip():
+        if self.actor == AGENT and not self._given(data).reason.strip():
             raise Refused(f'you are answering question {n} yourself: say why with --set reason="<why>"')
         return super().complete(n, how=how, **{**data, "kept": False, ANSWERED_BY: self.actor, CHOSEN: self.load(n).chosen_for(how)})
 

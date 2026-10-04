@@ -37,8 +37,20 @@ def mtime(path: Path) -> int:
         return 0
 
 
+def numbered(n: int) -> str:
+    return f"{n:03d}"
+
+
 def member(n: int) -> str:
-    return f"{n:03d}.md"
+    return f"{numbered(n)}.md"
+
+
+def stamp_of(found: os.stat_result) -> str:
+    return f"{found.st_mtime_ns}-{found.st_size}"
+
+
+def is_part(row: dict) -> bool:
+    return bool(row.get(PART_OF) or row.get(DRAFT_OF))
 
 
 def opened(archive: Path) -> zipfile.ZipFile:
@@ -63,11 +75,13 @@ class Stamped:
 class Stored:
     @internal
     def path(self, n: int) -> Path:
-        folder = self._folder()
-        return folder / f"{n:03d}" / f"{self.type}.md" if self.resource.own_folder else folder / f"{n:03d}.md"
+        return self._row_folder(n) / f"{self.type}.md" if self.resource.own_folder else self._folder() / member(n)
 
     def _folder(self) -> Path:
         return self.record.folder(self.type, self.resource.scope)
+
+    def _row_folder(self, n: int) -> Path:
+        return self._folder() / numbered(n)
 
     def _write_file(self, r: Resource) -> None:
         p = self.path(r.n)
@@ -78,6 +92,12 @@ class Stored:
             self._note(r.n)
         if self.resource.own_folder:
             os.utime(self._folder())
+
+    def _persist(self, r: Resource) -> None:
+        folder = self._folder()
+        before = self._moved(folder) if folder.is_dir() else None
+        self._write_file(r)
+        self._reindexed(r.n, before, r)
 
     def _note(self, n: int) -> None:
         append_text(self._folder() / CHANGES, f"{n}\n")
@@ -105,16 +125,12 @@ class Stored:
 
     @internal
     def numbers(self) -> list[int]:
-        folder = self.record.folder(self.type, self.resource.scope)
+        folder = self._folder()
         return sorted(set(self._stamps(folder)) | set(self._packed()))
 
     @internal
-    def moved(self) -> tuple:
-        return self._moved(self.record.folder(self.type, self.resource.scope))
-
-    @internal
     def summaries(self) -> list[dict]:
-        folder = self.record.folder(self.type, self.resource.scope)
+        folder = self._folder()
         moved = self._moved(folder)
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
@@ -129,7 +145,7 @@ class Stored:
     def _differing(self, held: list[dict], loose: dict[int, dict]) -> set[int]:
         listed = {row["n"]: row for row in held}
         packed = self._packed()
-        shown = {n: row for n, row in loose.items() if not (row.get(DAMAGED) or row.get(PART_OF) or row.get(DRAFT_OF))}
+        shown = {n: row for n, row in loose.items() if not (row.get(DAMAGED) or is_part(row))}
         return {n for n, row in shown.items() if listed.get(n) is not row} | {n for n in listed if n not in shown and n not in packed}
 
     def _patched(self, folder: Path, moved: tuple, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
@@ -139,7 +155,7 @@ class Stored:
             if at < len(rows) and rows[at]["n"] == n:
                 del rows[at]
             row = loose.get(n) or self._packed().get(n)
-            if row and not row.get(DAMAGED) and not (row.get(PART_OF) or row.get(DRAFT_OF)):
+            if row and not row.get(DAMAGED) and not is_part(row):
                 rows.insert(at, row)
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
@@ -150,12 +166,12 @@ class Stored:
     def _summarised(self, folder: Path, moved: tuple, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
         packed = [row for n, row in self._packed().items() if n not in seen]
-        rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), lambda row: row.get(PART_OF) or row.get(DRAFT_OF))
+        rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
     def _reindexed(self, n: int, before: tuple | None, r: Resource | None = None) -> None:
-        folder = self.record.folder(self.type, self.resource.scope)
+        folder = self._folder()
         held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
         if not held or known is None or held[0] != before:
             return
@@ -166,9 +182,8 @@ class Stored:
         if r is None:
             known.pop(n, None)
         else:
-            found = self.path(n).stat()
-            known[n] = self._row(r, f"{found.st_mtime_ns}-{found.st_size}")
-            if not (known[n].get(PART_OF) or known[n].get(DRAFT_OF)):
+            known[n] = self._row(r, stamp_of(self.path(n).stat()))
+            if not is_part(known[n]):
                 rows.insert(at, known[n])
         SUMMARIES[str(folder)] = (self._moved(folder), rows)
 
@@ -178,7 +193,7 @@ class Stored:
                 **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
     def _packed(self) -> dict[int, dict]:
-        index = self.record.folder(self.type, self.resource.scope) / PACKED / INDEX
+        index = self._folder() / PACKED / INDEX
         stamp = mtime(index)
         if not stamp:
             return {}
@@ -208,8 +223,7 @@ class Stored:
                 if fresh and held.inodes.get(n) == inodes[n]:
                     stamps[n] = held.stamps[n]
                 else:
-                    found = e.stat()
-                    stamps[n] = f"{found.st_mtime_ns}-{found.st_size}"
+                    stamps[n] = stamp_of(e.stat())
             STAMPED[str(folder)] = Stamped(mark, held.checked if fresh else now, stamps, inodes, noted)
             return stamps
         stamps = {}
@@ -220,7 +234,7 @@ class Stored:
                 found = os.stat(os.path.join(e.path, f"{self.type}.md"))
             except OSError:
                 continue
-            stamps[int(e.name)] = f"{found.st_mtime_ns}-{found.st_size}"
+            stamps[int(e.name)] = stamp_of(found)
         return stamps
 
     def _restamped(self, folder: Path, mark: int, held: Stamped, changed: set[int], noted: int) -> dict[int, str]:
@@ -232,7 +246,7 @@ class Stored:
                 stamps.pop(n, None)
                 inodes.pop(n, None)
                 continue
-            stamps[n], inodes[n] = f"{found.st_mtime_ns}-{found.st_size}", found.st_ino
+            stamps[n], inodes[n] = stamp_of(found), found.st_ino
         STAMPED[str(folder)] = Stamped(mark, held.checked, stamps, inodes, noted)
         return stamps
 
@@ -254,9 +268,7 @@ class Stored:
                 r = self.load(n)
             except (Refused, OSError) as error:
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
-                if self.resource.type != "notice":
-                    from controllers.faults import damaged
-                    damaged(self.record, str(self.path(n)), str(error))
+                self._damaged(str(self.path(n)), str(error))
                 continue
             rows[n] = self._row(r, stamp)
         changed = sum(1 for n, row in rows.items() if known.get(n) is not row) + len(known.keys() - rows.keys())
@@ -331,7 +343,7 @@ class Stored:
         self._reindexed(n, before)
 
     def _pack(self, before: float) -> int:
-        folder = self.record.folder(self.type, self.resource.scope)
+        folder = self._folder()
         chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before]
         days: dict[str, list[dict]] = {}
         for row in chosen:

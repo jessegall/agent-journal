@@ -31,21 +31,18 @@ class Docs(Controller):
     def unhide(self, n: int):
         return self.update(int(n), hidden=False)
 
-    def _standing(self):
-        return [r for r in super()._standing() if not r.data.get("hidden")]
+    def _standing(self, closed_since: float = 0, closed_last: int = 0):
+        return [r for r in super()._standing(closed_since, closed_last) if not r.hidden]
 
     def search(self, term: str):
-        return [r for r in super().search(term) if not r.data.get("hidden")]
+        return [r for r in super().search(term) if not r.hidden]
 
     def file(self, title: str, path: str):
         source = Path(path).expanduser()
         if not source.is_file():
             raise Refused(f"no such file: {path}; write the finished text to a file, then journal doc file \"{title}\" <file>")
         written = Written.read(source.read_text(errors="replace"))
-        doc = self.create(title, brief=written.brief, written=True)
-        for chapter, body in written.chapters:
-            self.section(doc.n, chapter, body)
-        return self.load(doc.n)
+        return self._created_with_sections(title, "", written.brief, list(written.chapters), written=True)
 
     def draft(self, n: int):
         return self.update(n, status="draft")
@@ -55,7 +52,6 @@ class Docs(Controller):
         return super().complete(n, how or "final", **data)
 
     def supersede(self, n: int, by: int):
-        newer = self.load(by)
-        self.complete(n, how=f"superseded by doc {newer.n}")
+        newer = self._supersede(n, self.load(by).n)
         self.link(n, newer.ref)
-        return self.link(newer.n, self.load(n).ref)
+        return newer

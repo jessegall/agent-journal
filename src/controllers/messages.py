@@ -25,7 +25,7 @@ class Messages(Controller):
         return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
 
     def waiting(self) -> list:
-        return [m for m in self._standing() if m.seen[:1] != [AGENT]]
+        return [m for m in self._standing() if m.author != AGENT]
 
     def file(self, n: int, name: str, into: str = "keep"):
         r = self.load(n)
@@ -63,7 +63,7 @@ class Messages(Controller):
         made = self.comment(numbers[0], f"{quoted}\n\n{text}" if quoted and not text.startswith(">") else text)
         for number in numbers[1:]:
             Comments(self.record, actor=self.actor).link(made.n, f"message:{number}")
-            self.save(self.load(number), "commented", comment=made.n)
+            self._mark_commented(number, made)
         if file:
             Comments(self.record, actor=self.actor).attach(made.n, file)
         return made
