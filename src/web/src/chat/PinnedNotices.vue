@@ -1,5 +1,5 @@
 <script setup>
-import Notice from "./Notice.vue";
+import ChatNotice from "./ChatNotice.vue";
 import PinsToggle from "./PinsToggle.vue";
 import {usePins} from "./pins.js";
 
@@ -11,7 +11,7 @@ const {shown} = usePins(() => props.notices);
     <div class="pinned">
         <TransitionGroup name="act">
             <template v-for="x in shown" :key="x.n">
-                <Notice :notice="x" />
+                <ChatNotice :notice="x" />
             </template>
         </TransitionGroup>
         <template v-if="!withoutToggle">

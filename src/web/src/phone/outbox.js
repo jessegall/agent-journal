@@ -115,9 +115,12 @@ async function flushOnce() {
             continue;
         }
         const missing = [];
-        for (const file of files) {
+        for (const [index, file] of files.entries()) {
+            if (line.attached?.includes(index)) continue;
             try {
                 await phone.attach(made.n, file);
+                line.attached = [...(line.attached || []), index];
+                keep(waitingToSend.value);
             } catch (error) {
                 if (ended(error) || unreachable(error)) throw error;
                 missing.push(file.name);

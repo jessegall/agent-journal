@@ -120,7 +120,9 @@ async function asked() {
     try {
         const got = await phone.feed();
         offline.value = false;
-        await flush();
+        flush().catch((error) => {
+            if (ended(error)) failed(error);
+        });
         return got;
     } catch (error) {
         if (ended(error)) failed(error);

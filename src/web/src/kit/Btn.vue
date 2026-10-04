@@ -1,11 +1,11 @@
 <script setup>
 import Spinner from "./Spinner.vue";
 
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean, fill: Boolean});
+defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean, disabled: Boolean, fill: Boolean});
 </script>
 
 <template>
-    <button type="button" :class="['btn', kind, {small, large, busy, fill}]" :aria-busy="busy" :disabled="busy">
+    <button type="button" :class="['btn', kind, {small, large, busy, fill}]" :aria-busy="busy" :disabled="busy || disabled">
         <span :class="['btn-label', {hidden: busy}]"><slot /></span>
         <template v-if="busy">
             <Spinner class="btn-spinner" />

@@ -1,40 +1,38 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
+import Notice from "../kit/Notice.vue";
 import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
 
-const forcing = ref(false);
+const working = ref(false);
+const failure = ref("");
 
-async function force() {
-    forcing.value = true;
+async function run(action) {
+    if (working.value) return;
+    working.value = true;
+    failure.value = "";
     try {
-        await api.forceAgent(props.notice.data.session);
+        await action();
     } catch (e) {
-        forcing.value = false;
+        failure.value = e.message;
+    } finally {
+        working.value = false;
     }
 }
 
-const answering = ref(false);
-
-async function permit(allow) {
-    answering.value = true;
-    try {
-        await api.permitAgent(props.notice.data.session, allow);
-    } catch (e) {
-        answering.value = false;
-    }
-}
+const force = () => run(() => api.forceAgent(props.notice.data.session));
+const permit = (allow) => run(() => api.permitAgent(props.notice.data.session, allow));
 
 const ARMED_AFTER = 1500;
 const armed = ref(false);
 onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
 
 async function close() {
-    if (armed.value) await api.act("notice", props.notice.n, "close");
+    if (armed.value) await run(() => api.act("notice", props.notice.n, "close"));
 }
 </script>
 
@@ -46,14 +44,17 @@ async function close() {
             <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
         </template>
         <template v-if="notice.data.action === 'permission' && notice.data.session">
-            <Btn small :disabled="answering" @click="permit(true)">Allow</Btn>
-            <Btn small :disabled="answering" @click="permit(false)">Deny</Btn>
+            <Btn small :disabled="working" @click="permit(true)">Allow</Btn>
+            <Btn small :disabled="working" @click="permit(false)">Deny</Btn>
         </template>
         <template v-else-if="notice.data.action && notice.data.session">
-            <Btn small :busy="forcing" :disabled="forcing" @click="force">Force now</Btn>
+            <Btn small :busy="working" @click="force">Force now</Btn>
         </template>
         <template v-if="!fixed">
-            <CloseButton :class="{unarmed: !armed}" title="Close this" @click="close" />
+            <CloseButton :class="{unarmed: !armed}" :disabled="working" title="Close this" @click="close" />
+        </template>
+        <template v-if="failure">
+            <Notice role="alert" class="chat-notice-error">{{ failure }}</Notice>
         </template>
     </div>
 </template>
@@ -68,6 +69,7 @@ async function close() {
 
     flex: none;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     min-height: 30px;
@@ -94,6 +96,11 @@ async function close() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.chat-notice-error {
+    flex-basis: 100%;
+    color: var(--danger);
 }
 
 .chat-notice :deep(.btn.small) {

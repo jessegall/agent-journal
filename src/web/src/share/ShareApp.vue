@@ -66,14 +66,14 @@ const errors = reactive({});
 
 provide("fileUrl", (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`);
 
-function row(ref, given) {
-    const [type, n] = ref.split(":");
+function shareRow(reference, given) {
+    const [type, n] = reference.split(":");
     const files = Object.fromEntries((given.files || []).map((name) => [name, ""]));
     return {
         ...given,
         type,
         n: Number(n),
-        ref,
+        ref: reference,
         refs: given.members || [],
         seen: [],
         data: {...given.data, files, pictures: given.pictures || {}},
@@ -87,7 +87,7 @@ function stock(rows, types = {}) {
     const names = [...new Set([...Object.keys(KINDS), ...Object.keys(rows).map((ref) => ref.split(":")[0])])];
     store.spec = {priority: names, types: Object.fromEntries(names.map((name) => [name, kindOf(name, types[name])]))};
     const grouped = {};
-    for (const [ref, given] of Object.entries(rows)) (grouped[ref.split(":")[0]] ||= []).push(row(ref, given));
+    for (const [ref, given] of Object.entries(rows)) (grouped[ref.split(":")[0]] ||= []).push(shareRow(ref, given));
     store.rows = grouped;
 }
 
@@ -100,13 +100,15 @@ function take(got) {
 
 function ask() {
     return sharedData().catch((e) => {
-        if ([404, 410].includes(e.status)) failed.value = true;
-        else reconnecting.value = true;
+        if ([401, 404, 410].includes(e.status)) {
+            failed.value = true;
+            reconnecting.value = false;
+        } else reconnecting.value = true;
         throw e;
     });
 }
 
-usePoll("shared", ask, REFRESH_MS, take);
+usePoll("shared", ask, REFRESH_MS, take, () => !failed.value);
 
 const shownRef = computed(() => {
     const open = route.value.open;
