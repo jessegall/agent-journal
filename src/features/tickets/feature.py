@@ -16,10 +16,10 @@ from features.tickets.handlers import (
 )
 from features.tickets.limits import DraftsCarryOneLine, FillerKeepsToTheBoard, PanelRepliesStayShort
 from features.boards.controller import CARD_ROWS
-from features.plans.progress import PHASE_ROWS
+from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from features.plans.resource import PHASE
-from features.plans.worker import PHASE_STARTS
 from features.tickets.phases import start_phase_tickets
+from features.tickets.worker import start_worker
 
 __all__ = ["Tickets"]
 
@@ -35,10 +35,10 @@ class TicketsFeature(Feature):
     )
 
     def register(self, journal: Journal) -> None:
-        PHASE_ROWS[PHASE.tickets] = Tickets
-        CARD_ROWS[:] = [Tickets]
-        if start_phase_tickets not in PHASE_STARTS:
-            PHASE_STARTS.append(start_phase_tickets)
+        self.register_always(PHASE_ROWS, Tickets, PHASE.tickets)
+        self.register_always(CARD_ROWS, Tickets)
+        self.register_global(PHASE_STARTS, start_phase_tickets, list)
+        self.register_global(PLAN_STARTS, start_worker, str)
         journal.commands.add("ticket", ShowTicketTodos())
         journal.events.handler(LookAfterTicketBranches())
         journal.events.handler(WakeTheTicketAgent())

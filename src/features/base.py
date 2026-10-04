@@ -144,9 +144,13 @@ class Feature(ABC):
             self.journal.events.handler(SendOnTheClock(self.nudges))
             self.journal.events.handler(SendOnToolUse(self.nudges))
 
-    def register_always(self, container: list, entry) -> None:
-        container.append(entry)
-        GLOBAL_ENTRIES.append((container, entry))
+    def register_always(self, container, entry, key=None) -> None:
+        if isinstance(container, list):
+            container.append(entry)
+            GLOBAL_ENTRIES.append((container, entry))
+            return
+        container[key] = entry
+        GLOBAL_ENTRIES.append((container, key))
 
     def register_global(self, container, callback, empty, key=None) -> None:
         def enabled(*args, **kwargs):

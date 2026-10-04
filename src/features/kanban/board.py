@@ -1,70 +1,15 @@
 import time
-from dataclasses import asdict, dataclass, field
+from typing import TypedDict
 
 from features.format import formatted
-from features.kanban.lanes import DONE, LANES, Lane, Sources, lane_of, reason_of
+from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
+from features.kanban.shifts import targets
+from features.plans.resource import ACTIVE
+from features.trigger import DAY
+from resources.base import Ref
+from surfaces.board import AgentChip, BoardLanes, Card
 
 DONE_SHOWN = 50
-from features.kanban.shifts import targets
-from features.plans.controller import ACTIVE
-from typing import TypedDict
-from features.trigger import DAY
-
-
-@dataclass
-class Card:
-    n: int
-    title: str
-    priority: int
-    lane: str
-    reason: str = ""
-    plan: dict | None = None
-    assigned: str = ""
-    worker: dict | None = None
-    question: int = 0
-    reported: bool = False
-    targets: list[str] = field(default_factory=list)
-    updated: float = 0.0
-    completed: float = 0.0
-    type: str = "todo"
-    actions: list = field(default_factory=list)
-    link: str = ""
-    link_label: str = ""
-    state: str = ""
-    session: str = ""
-    repositories: list = field(default_factory=list)
-
-
-@dataclass
-class AgentChip:
-    n: int
-    name: str
-    title: str
-    status: str
-    parent: str
-    work: int
-    todo: int
-    subagents: int
-
-
-@dataclass
-class BoardLanes:
-    lanes: list[tuple[Lane, list[Card]]]
-    agents: list[AgentChip]
-    plan_hold: str | None = None
-
-    def shaped(self) -> dict:
-        return {"lanes": [{**asdict(lane), "cards": [asdict(card) for card in cards]} for lane, cards in self.lanes],
-                "agents": [asdict(agent) for agent in self.agents], "plan_hold": self.plan_hold, "out": self.text()}
-
-    def text(self) -> str:
-        blocks = [] if self.plan_hold is None else [self.plan_hold]
-        for lane, cards in self.lanes:
-            lines = [f"  {card.n:>4}  {card.title}" + (f"  [{card.reason}]" if card.reason else "") for card in cards]
-            blocks.append("\n".join([f"{lane.title} ({len(cards)})", *(lines or ["  none"])]))
-        return "\n\n".join(blocks)
-
-
 QUIET_SUBAGENT = 20 * 60
 
 
@@ -92,7 +37,7 @@ def card_of(sources: Sources, todo, main: str = "") -> Card:
 
 def sources_of(journal) -> Sources:
     works = {int(w.todo): w for w in journal.works._standing() if w.todo}
-    questions = {int(ref.split(":")[1]): q.n for q in journal.questions._standing() for ref in q.refs if ref.startswith("todo:")}
+    questions = {Ref.parse(ref).n: q.n for q in journal.questions._standing() for ref in q.refs if ref.startswith("todo:")}
     return Sources(journal.todos, works, questions, journal.plans._every())
 
 

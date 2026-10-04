@@ -3,12 +3,11 @@ from typing import ClassVar
 
 from controllers.types import Works
 from engine.events.agents import AgentReported
-from engine.events.resources import AnyEvent, ResourceEvent
+from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
 from features.nudges import Sent
 from features.trigger import MINUTE
-from features.plans.progress import catch_up, current_phase
-from features.plans.resource import PHASE, rows_of
+from features.plans.resource import PHASE, PHASE_FIELDS
 from features.work_tracking.auto import passes_checkpoints
 from features.work_tracking.next import carried_on, named_rows, ready, waiting_rows
 from features.parts import AgentContext, Context, Handler
@@ -26,31 +25,30 @@ class PlanChanged(ResourceEvent):
 
 class StartBuilding(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
-        agent = context.journal.agents.primary()
-        if event.action == "created" and event.actor == USER and agent:
+        speaking = context.to_primary()
+        if event.action == "created" and event.actor == USER and speaking:
             plan = context.journal.plans.load(event.n)
-            context.speaking_to(agent).agent.say("started", n=plan.n, title=plan.title, depth=DEPTHS[plan.depth])
+            speaking.agent.say("started", n=plan.n, title=plan.title, depth=DEPTHS[plan.depth])
 
 
 class StartApproved(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
-        agent = context.journal.agents.primary()
-        if event.action != "updated" or event.actor not in (USER, SYSTEM) or not agent:
+        speaking = context.to_primary()
+        if event.action != "updated" or event.actor not in (USER, SYSTEM) or not speaking:
             return
         plan = context.journal.plans.load(event.n)
-        speaking = context.speaking_to(agent)
         if plan.status == APPROVED and speaking.once("approved", str(plan.n)):
             speaking.agent.say("approved", n=plan.n, title=plan.title)
 
 
 class TellParkedAndPickedUp(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
-        agent = context.journal.agents.primary()
-        if event.action != "updated" or event.actor != USER or event.status not in (ACTIVE, PARKED) or event.parked_for or not agent:
+        speaking = context.to_primary()
+        if event.action != "updated" or event.actor != USER or event.status not in (ACTIVE, PARKED) or event.parked_for or not speaking:
             return
         plan = context.journal.plans.load(event.n)
         line = "picked up" if event.status == ACTIVE else "parked"
-        context.speaking_to(agent).agent.say(line, n=plan.n, title=plan.title, phase=plan.current)
+        speaking.agent.say(line, n=plan.n, title=plan.title, phase=plan.current)
 
 
 class GuideBuilding(Handler):
@@ -58,13 +56,12 @@ class GuideBuilding(Handler):
         if not (event.written or event.action == "linked") or event.actor != AGENT:
             return
         plan = context.journal.plans.load(event.n)
-        agent = context.journal.agents.primary()
-        if plan.status != BUILDING or not agent:
+        speaking = context.to_primary()
+        if plan.status != BUILDING or not speaking:
             return
         stage = plan.stage or PHASES
-        filled = bool(plan.phases) and all(rows_of(p) for p in plan.phases)
+        filled = bool(plan.phases) and not plan.empty_phases()
         line = "ready" if stage != PHASES and filled else stage
-        speaking = context.speaking_to(agent)
         if speaking.once("planned", f"{plan.n}:{line}"):
             speaking.agent.say(line, n=plan.n)
 
@@ -80,22 +77,20 @@ class PassCheckpointsInAuto(Handler):
 
 
 class TakeStruckRowsOutOfUnapprovedPlans(Handler):
-    def handle(self, context: Context, event: AnyEvent) -> None:
-        if (event.type, event.action) != ("todo", "completed") or not context.journal.todos.load(event.n).data.get("struck"):
+    def handle(self, context: Context, event: TodoCompleted) -> None:
+        if not context.journal.todos.load(event.n).data.get("struck"):
             return
         plans = context.journal.plans
         for plan in plans._every():
-            if plan.status not in (BUILDING, DRAFT, READY):
-                continue
-            for p, phase in enumerate(plan.phases, 1):
-                if event.n in phase[PHASE.todos]:
-                    plans.place(plan.n, p, [event.n], off=True)
+            p = plan.phase_of("todo", event.n)
+            if p and plan.status in (BUILDING, DRAFT, READY):
+                plans.place(plan.n, p, [event.n], off=True)
 
 
 class AdvancePlans(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if (event.type, event.action) in ADVANCES:
-            catch_up(context.record)
+            Plans(context.record, actor=SYSTEM)._catch_up()
 
 
 @dataclass(frozen=True)
@@ -105,12 +100,11 @@ class RowReopened(ResourceEvent):
 
 class ReopenPlansWithTheirRows(Handler):
     def handle(self, context: Context, event: RowReopened) -> None:
-        field = {"todo": PHASE.todos, "ticket": PHASE.tickets}.get(event.type)
-        if not field:
+        if event.type not in PHASE_FIELDS:
             return
         plans = Plans(context.record, actor=SYSTEM)
         for plan in plans._every():
-            found = next((p for p, phase in enumerate(plan.phases, 1) if event.n in phase.get(field, [])), 0)
+            found = plan.phase_of(event.type, event.n)
             if not found or plan.status == ABANDONED or (plan.status in RUNNING and plan.current <= found):
                 continue
             if plan.completed:
@@ -123,12 +117,12 @@ def still_plans(context, agent) -> list[Sent]:
     quiet = agent.idle_for
     if quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE or carried_on(context.record):
         return []
-    found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._every() if plan.status == ACTIVE]
+    found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._active()]
     return [Sent(f"{plan.n}:{plan.updated}", {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]
 
 
 def doable(record, plan) -> str:
-    phase = current_phase(plan)
+    phase = plan.current_phase
     if phase is None:
         return ""
     mine = set(phase[PHASE.todos])
@@ -144,7 +138,7 @@ def doable(record, plan) -> str:
 
 def blocked_plans(context, agent) -> list[Sent]:
     found = []
-    for plan in [p for p in Plans(context.record, actor=SYSTEM)._every() if p.status == ACTIVE]:
+    for plan in Plans(context.record, actor=SYSTEM)._active():
         held = waiting_rows(context.record, {n for phase in plan.phases for n in phase[PHASE.todos]})
         if held:
             found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": named_rows(held)}))
