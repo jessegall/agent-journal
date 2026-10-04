@@ -45,10 +45,16 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     assert (bool(first), len(checking().runs)) == (True, 0), "the first start only records the files as seen"
     brief(project, record)
     started()
-    assert (record.state("journal_laws").get("instructions"), len(checking().runs)) == (first, 0), "the journal's own block changing is not a change to check"
-    (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Fridays.\n")
+    assert (record.state("journal_laws").get("instructions"), len(checking().runs)) == (first, 0), "a start with the files as they were starts nothing"
+    from controllers.types import Rules
+    from resources.base import USER
+    Rules(record, actor=USER).inject(Rules(record, actor=USER).create("never deploy on Fridays", keywords="deploy").n)
     started()
-    assert len(checking().runs) == 1, "the project's own text changing starts the check at the next start"
+    assert len(checking().runs) == 1, "the journal's block changing is checked at the next start"
+    seen = record.state("journal_laws").get("instructions")
+    (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Mondays.\n")
+    started()
+    assert record.state("journal_laws").get("instructions") != seen, "and so is the project's own text changing"
 
 
 def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
@@ -207,3 +213,9 @@ def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band
     agents_md.write_text("x" * 210_000)
     report(record, "working", "PostToolUse")
     assert len([n for n in nudges(record) if n.startswith("AGENTS.md is")]) == 2, "growing by another band tells it again"
+    agents_md.write_text("x" * 100)
+    (record.root.parent / "app").mkdir()
+    (record.root.parent / "app" / "AGENTS.md").write_text("y" * 200_000)
+    report(record, "working", "PostToolUse", cwd=str(record.root.parent / "app"))
+    assert any(n.startswith("AGENTS.md with app/AGENTS.md is 200,100 bytes") for n in nudges(record)), \
+        "every AGENTS.md Codex reads on the way to its working folder counts against the one budget"

@@ -265,7 +265,9 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
                                   "line, which should win and why>\". Then journal sequence next <this sequence> --about <ref>."),
         ("Propose each fix", "File each fix as a suggestion whose brief holds the exact change, as a diff: journal suggestion "
                              "suggest \"<the change>\" --brief \"<why, and the diff>\". Never edit the files yourself; the "
-                             "user accepts a suggestion first, and the journal's block is only ever written by the journal. "
+                             "user accepts a suggestion first, and the journal's block is only ever written by the journal. When an "
+                             "accepted fix comes back as a to-do, apply it only where the lines still read as the diff shows; if they "
+                             "changed since, read the files again and propose the fix anew. "
                              "Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )

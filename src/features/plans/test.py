@@ -232,6 +232,9 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     tick(record)
     assert sum("is running and nothing has moved" in n for n in nudges(record)) == 1, "once per stretch of standing still"
     todos.block(2, "waits on the supplier's price list")
+    quiet(6)
+    assert f"plan {first}, first, cannot go on - every row of its phase waits" in nudges(record), \
+        "an idle agent whose every row in the phase is blocked is told within minutes to put each blocker to the user"
     asked = lambda: sum(f"plan {first}, first, has blocked to-dos" in n for n in nudges(record))
     tick(record)
     report(record, "working", "PreToolUse")

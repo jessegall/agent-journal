@@ -176,6 +176,12 @@ def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time(
                                                                              "input": 'const r=await tools.exec_command({cmd:"make test",yield_time_ms:1000});text(r);'}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c1",
                                                                              "output": [{"type": "input_text", "text": '{"chunk_id":"a","session_id":42,"output":""}'}]}},
+        {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c3", "name": "exec",
+                                                                             "input": 'const r=await tools.exec_command({cmd:"npm run watch"});text(r);'}},
+        {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c3",
+                                                                             "output": [{"type": "input_text", "text": '{"session_id":50,"output":""}'}]}},
+        {"timestamp": stamp(time.time() - 60), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c4",
+                                                                                      "output": [{"type": "input_text", "text": '{"session_id":50,"output":"compiled"}'}]}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c2", "name": "exec",
                                                                              "input": 'const r=await tools.list_files({path:"."});text(r);'}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c2",
@@ -184,7 +190,8 @@ def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time(
     report(record, "idle", "Stop", provider="codex", transcript=str(transcript))
     tick(record)
     tick(record)
-    assert told() == ["a command you left running has run for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
+    assert not [n for n in nudges(record) if "nothing new" in n and "npm run watch" in n], "a command that printed a minute ago is not stalled"
+    assert told() == ["a command you left running has shown nothing new for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
         "a run open past ten minutes and an agent stopped while it runs are each told once"
     with transcript.open("a") as more:
         more.write(json.dumps({"timestamp": stamp(time.time()), "type": "event_msg", "payload": {

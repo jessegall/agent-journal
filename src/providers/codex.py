@@ -10,7 +10,7 @@ from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
 from providers.base import Asking, BackgroundTasks, Provider, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
-from providers.codex_rows import Row
+from providers.codex_rows import Chunk, Row
 from engine.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import read_json, tail, write_text
@@ -84,6 +84,10 @@ class CodexModel:
     @property
     def choice(self) -> dict:
         return {"value": self.slug, "label": self.display_name}
+
+
+def polled(text: str) -> list[Chunk]:
+    return [found for found in (parsed(line, Chunk.from_json) for line in text.splitlines() if line.startswith("{")) if found is not None]
 
 
 @dataclass
@@ -322,6 +326,9 @@ class Codex(Provider):
             for session in [s for s in SESSION_OPEN.findall(found.output_text) if s not in tasks.started]:
                 tasks.started[session] = row.at
                 tasks.commands[session] = script
+        if found.type == "custom_tool_call_output":
+            for chunk in [c for c in polled(found.output_text) if c.session_id in tasks.started and c.output]:
+                tasks.printed[chunk.session_id] = row.at
         detached = DETACHED.match(found.item.command_line) if found.type == "item_completed" and found.item.type == "CommandExecution" else None
         if detached and found.item.stdout.strip().isdigit():
             key = f"pid:{found.item.stdout.strip()}"

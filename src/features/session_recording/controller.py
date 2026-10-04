@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import signal
@@ -16,6 +15,7 @@ from features.session_recording.resource import Recording
 from engine.sessions import alive
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
+from engine.stored import write_json
 
 
 class Recordings(Controller):
@@ -61,7 +61,7 @@ class Recordings(Controller):
 
     def build(self, folder: str, into: str, env: str = "", name: str = "") -> str:
         demo = branched(Path(folder), env, name or Path(folder).resolve().name)
-        Path(into).write_text(json.dumps(demo))
+        write_json(Path(into), demo)
         return f"wrote {len(demo['moments'])} moments and {len(demo['answers'])} answers into {into}"
 
     def _running(self):
