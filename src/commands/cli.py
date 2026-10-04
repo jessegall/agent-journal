@@ -1,4 +1,3 @@
-import inspect
 from contextlib import nullcontext
 import io
 import os
@@ -16,9 +15,9 @@ from engine.sessions import Sessions, allowed
 from resources.base import OWNER, Refused
 from resources.shapes import typed
 from engine import runtime
+from commands.invoke import invoked
 from commands.parser import PRINTED, QUERIES, Misused, parser, words
 from features.command_line import CommandLine, wire
-from engine.stored import undoable
 from engine.timing import measured
 from engine.paths import environments
 from engine.worktree import checkout
@@ -62,20 +61,6 @@ LOCAL = {"browser"}
 def served() -> frozenset:
     features.load()
     return frozenset(CONTROLLERS) - LOCAL
-
-
-def invoke(fn, args: dict, extra: dict):
-    params = list(inspect.signature(fn).parameters.values())
-    named = {p.name for p in params if p.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)}
-    for key in [key for key in extra if key in named and args.get(key) is None]:
-        args[key] = extra.pop(key)
-    at = next((i for i, p in enumerate(params) if p.kind is inspect.Parameter.VAR_POSITIONAL), None)
-    positional = []
-    if at is not None:
-        positional = [args.pop(p.name) for p in params[:at] if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)]
-        positional.extend(args.pop(params[at].name))
-    with undoable():
-        return fn(*positional, **args, **extra)
 
 
 TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force", "--cwd", "--plugin"}
@@ -154,7 +139,7 @@ def run(argv: list[str], out=None, err=None) -> int:
             print(query({**ctx, **args}), file=out)
             return 0
         method = args.pop("method")
-        args.pop("action", None)
+        word = args.pop("action")
         extra = {k: typed(v) for k, v in (kv.split("=", 1) for kv in args.pop("set", []))}
         if ctx["plugin"] and method == "create":
             extra = {OWNER: ctx["plugin"], "locked": True, **extra}
@@ -163,8 +148,8 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
-        with bus.settled(), measured(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if not networked(command, method) else nullcontext():
-            got = invoke(controller.action(method), args, extra)
+        with measured(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if not networked(command, method) else nullcontext():
+            got = invoked(controller, word, named=args, extra=extra)
     except Refused as e:
         print(f"! {e}", file=err)
         return 1
