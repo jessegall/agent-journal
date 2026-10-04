@@ -9,6 +9,7 @@ import PhoneHome from "./PhoneHome.vue";
 import {waitingActions, waitingToSend} from "./outbox.js";
 import {wanted} from "./wanted.js";
 import {useKeyboard} from "./keyboard.js";
+import {usePoll} from "../poll.js";
 
 const OPEN = "open=";
 
@@ -67,7 +68,7 @@ async function reconnect() {
     }
 }
 
-const retry = setInterval(() => state.value === "unreachable" && !document.hidden && load(), RETRY_EVERY);
+usePoll("phone-retry", load, RETRY_EVERY, undefined, () => state.value === "unreachable");
 
 async function pairTyped() {
     pairing.value = true;
@@ -95,7 +96,6 @@ onMounted(() => {
     load();
 });
 onUnmounted(() => {
-    clearInterval(retry);
     window.removeEventListener("scroll", pinned);
     document.removeEventListener("focusout", released);
     navigator.serviceWorker?.removeEventListener("message", serviceMessage);
