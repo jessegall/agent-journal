@@ -29,7 +29,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
         ["--dangerously-skip-permissions", "--model", "opus", "--resume", "abc"], "skip on, resumed in place of continue"
     assert claude.skipping(["--dangerously-skip-permissions", "x"], False) == ["x"], "skip off drops the flag"
-    from features.permission_prompts.feature import launch_args
+    from features.permission_prompts.skipping import launch_args
     typed = fresh()
     typed.set_setting("permission_prompts", {"skip": False})
     assert (launch_args(typed, "claude", ["--dangerously-skip-permissions"]), typed.setting("permission_prompts", {}).get("skip")) == \
@@ -91,7 +91,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
 
 def test_every_flag_typed_at_launch_reaches_the_agent_whatever_the_switch_says():
     from providers import DRIVERS
-    from features.permission_prompts.feature import launch_args
+    from features.permission_prompts.skipping import launch_args
     for name, driver in DRIVERS.items():
         typed = ["--model", "opus", "--some-flag", "value", *driver.SKIP_ARGS]
         for skip in (True, False):
@@ -147,7 +147,7 @@ def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_pa
 
 
 def test_auto_mode_launches_each_agent_in_its_own_approval_mode():
-    from features.permission_prompts.feature import launch_args
+    from features.permission_prompts.skipping import launch_args
     record = fresh()
     record.features = {**record.features, "work_tracking.auto": True}
     record.set_setting("permission_prompts", {"skip": False})

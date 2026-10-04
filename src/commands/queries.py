@@ -244,7 +244,7 @@ def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=
 
 
 def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:
-    from features.permission_prompts.feature import skipped
+    from features.permission_prompts.skipping import set_skipped, skipped
     answering = sys.stdin.isatty() if answering is None else answering
     driver = DRIVERS.get(agent)
     if not answering or not driver or not driver.SKIP_ARGS or set(driver.SKIP_ARGS) <= set(args):
@@ -253,7 +253,7 @@ def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answer
              "so the journal can keep it working. Settings can change this later."]
     picked = choose("Run without permission prompts", notes, ["Yes, skip them", "No, ask me each time"], 0 if skipped(record) else 1, ask)
     if picked is not None:
-        record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": picked == 0})
+        set_skipped(record, picked == 0)
 
 
 def asked_history(record: Record, agent: str, conversation: str, ask=input, answering=None) -> None:

@@ -5,7 +5,7 @@ from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions
 from engine.stop import ask_session
-from features.permission_prompts.feature import prompted
+from features.permission_prompts.skipping import prompted
 from resources.base import SYSTEM
 
 QUIET = ("dev_faults",)

@@ -115,7 +115,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     ticket = tickets.create("Dark mode", board=board.n)
     tickets.move(ticket.n, "Building")
     from engine.record import Record
-    from features.permission_prompts.feature import skipped
+    from features.permission_prompts.skipping import skipped
     env, agent, args = launched[0]
     assert (env, agent, args[:2], skipped(Record(record.root, f"ticket-{ticket.n}"))) == \
         (f"ticket-{ticket.n}", "claude", ["--worktree", f"ticket-{ticket.n}"], True), \

@@ -12,7 +12,7 @@ from engine.state import State
 from engine.stop import ask_session
 from engine.worktree import branched, changed, contains, current_branch, git, keep, linked, merged, merged_into, present, roots, spread, tip
 from engine.sessions import Sessions, live
-from features.permission_prompts.feature import prompted
+from features.permission_prompts.skipping import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, internal
 from controllers.prioritised import Prioritised

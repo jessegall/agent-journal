@@ -9,6 +9,7 @@ from engine.seats import live_session
 from providers.drivers import AGENT_COMMAND
 from agents.terminal import relaunch as relaunch_session
 from providers import DRIVERS, PROVIDERS
+from features.permission_prompts.skipping import set_skipped
 from providers.base import Provider
 from resources.base import SYSTEM, Refused
 from typing import TypedDict
@@ -107,7 +108,7 @@ def permit(root: Path, env: str, session: str, allow: bool) -> dict:
 def relaunch(root: Path, env: str, session: str, skip: bool) -> dict:
     found = online(root, env, session)
     record = Record(Path(root), env)
-    record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": skip})
+    set_skipped(record, skip)
     relaunch_session(Path(root), env, found.terminal, session)
     return {"relaunching": True, "skip": skip}
 
