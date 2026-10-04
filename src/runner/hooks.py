@@ -65,6 +65,7 @@ SHOWING = threading.Lock()
 PRIVATE = "_"
 DONE = "_done"
 SENT = "_sent"
+MATCHED = "_matched"
 FINALS = "_finals"
 KEPT_DONE = 50
 CATCH_UP = 600.0
@@ -117,7 +118,7 @@ def display_chunk(root: Path, raw: dict) -> None:
             return
         last = finals.pop(message)
         write_json(f, {**rest, FINALS: finals, DONE: [*rest.get(DONE, []), message][-KEPT_DONE:]})
-    send_to_chat(root, session, "".join(parts[str(i)] for i in range(last + 1)))
+    send_to_chat(root, session, "".join(parts[str(i)] for i in range(last + 1)), message, streamed=True)
 
 
 def shown(parts: dict) -> str:
@@ -139,7 +140,7 @@ def stopped(root: Path, session: str, text: str) -> None:
         finals = {key: value for key, value in held.get(FINALS, {}).items() if key not in cut}
         rest = {key: value for key, value in held.items() if key not in (*cut, FINALS)}
         write_json(f, {**rest, FINALS: finals, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
-    send_to_chat(root, session, text)
+    send_to_chat(root, session, text, cut[0], streamed=True)
 
 
 def fingerprint(text: str) -> str:
@@ -150,16 +151,33 @@ def unfinished(root: Path, session: str, row) -> None:
     provider = PROVIDERS.get(row.provider)
     if provider is None or not row.transcript:
         return
-    answers = [turn.text for turn in provider().tail(row.transcript) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
+    turns = [turn for turn in provider().tail(row.transcript) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        write_json(f, {DONE: held.get(DONE, []), SENT: held.get(SENT, [])})
-    for text in answers:
-        send_to_chat(root, session, text)
+        sent = [*held.get(SENT, [])]
+        streamed = [*held.get(MATCHED, [])]
+        pending = []
+        for turn in turns:
+            key = f"transcript:{turn.line}"
+            if key in sent:
+                continue
+            matched = fingerprint(turn.text)
+            if matched in sent:
+                sent.remove(matched)
+                sent.append(key)
+                continue
+            if matched in streamed:
+                streamed.remove(matched)
+                sent.append(key)
+                continue
+            pending.append(turn)
+        write_json(f, {**held, SENT: sent[-KEPT_DONE:], MATCHED: streamed[-KEPT_DONE:]})
+    for turn in pending:
+        send_to_chat(root, session, turn.text, f"transcript:{turn.line}")
 
 
-def send_to_chat(root: Path, session: str, text: str) -> None:
+def send_to_chat(root: Path, session: str, text: str, turn: str = "", streamed: bool = False) -> None:
     if not text.strip():
         return
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
@@ -169,11 +187,15 @@ def send_to_chat(root: Path, session: str, text: str) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        mark = fingerprint(text)
+        mark = turn or fingerprint(text)
         if mark in held.get(SENT, []):
             return
-        chat.send(record, row, text)
-        write_json(f, {**held, SENT: [*held.get(SENT, []), mark][-KEPT_DONE:]})
+        if turn:
+            chat.send(record, row, text, turn=turn)
+        else:
+            chat.send(record, row, text)
+        matched = [*held.get(MATCHED, []), fingerprint(text)] if streamed else held.get(MATCHED, [])
+        write_json(f, {**held, SENT: [*held.get(SENT, []), mark][-KEPT_DONE:], MATCHED: matched[-KEPT_DONE:]})
 
 
 def owned_environments(root: Path) -> set[str]:

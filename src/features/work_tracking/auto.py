@@ -8,15 +8,9 @@ from resources.types import AT_REST
 AUTO = "work_tracking.auto"
 
 
-OWNERS: dict = {}
-
-
 def steered(record) -> str:
-    key = (str(record.root), record.env)
-    if key not in OWNERS:
-        place = Environments(record, actor=SYSTEM)._titled(record.env)
-        OWNERS[key] = str(place.owner) if place else ""
-    return OWNERS[key]
+    place = Environments(record, actor=SYSTEM)._titled(record.env)
+    return str(place.owner) if place else ""
 
 
 def automatic(record) -> bool:

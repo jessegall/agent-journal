@@ -44,6 +44,17 @@ def test_a_trigger_fires_on_what_the_user_writes():
     assert [n for n in nudges(record) if "ship it" in n], "the user's own words fire it too"
 
 
+def test_a_trigger_message_does_not_fire_the_trigger_again():
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    Triggers(record, actor="user").create("release reminder", brief="release checklist", **{"words": ["release"], "does": "message"})
+    Messages(record, actor="user").create("release time")
+    messages = Messages(record, actor="system")._every()
+    assert len(messages) == 2
+    assert messages[-1].data["trigger"] == 1
+
+
 def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
     from runner.hooks import displayed
     from engine.sessions import Sessions

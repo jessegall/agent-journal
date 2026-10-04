@@ -9,6 +9,21 @@ from tests.conftest import refused
 from tests.kit import commit, git, project_on
 
 
+def test_a_helper_is_not_told_about_another_environments_worktrees():
+    from engine.record import Record
+    from providers import DRIVERS
+    from resources.base import SYSTEM
+    from runner.engine import Engine
+    from tests.conftest import fresh
+
+    record = fresh("main")
+    row = Worktrees(record, actor=SYSTEM).create("main-helper")
+    helper = Record(record.root, "main-helper")
+    assert Worktrees(helper, actor=SYSTEM).summaries()[0]["environment"] == "main"
+    assert f"unread worktree {row.n}" in Engine(record, DRIVERS["claude"](record, "main")).owed()
+    assert "unread worktree" not in Engine(helper, DRIVERS["claude"](helper, "helper")).owed()
+
+
 def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     features.load()
     repo = project_on("phone-connection")

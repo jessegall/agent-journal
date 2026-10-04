@@ -19,11 +19,16 @@ def current_phase(plan) -> dict | None:
 
 def held(record, todo) -> bool:
     plans = Plans(record, actor=SYSTEM)._every()
+    in_plan = False
     for plan in plans:
         if plan.status in ENDED or not any(todo.n in phase[PHASE.todos] for phase in plan.phases):
             continue
+        in_plan = True
         phase = current_phase(plan)
-        return plan.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
+        if plan.status == ACTIVE and phase is not None and todo.n in phase[PHASE.todos]:
+            return False
+    if in_plan:
+        return True
     return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
 
 

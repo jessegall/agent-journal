@@ -21,7 +21,7 @@ def fire(context, agent, row, done: str = "", about: str = "") -> None:
         context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
                                                    tone="danger" if row.does == DENY else "note", title=row.text or row.brief, ref=row.ref)
     if row.does == MESSAGE:
-        context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)
+        context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text, trigger=row.n)
     elif row.does in (NUDGE, INSTRUCT):
         context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.text or row.brief)
     context.record.emit("trigger", row.n, FIRED, SYSTEM, about=about)
@@ -57,6 +57,8 @@ class WatchWhatTheUserWrites(Handler):
             return
         agent = context.journal.acting(SYSTEM).agents.primary()
         message = context.journal.messages.load(event.n)
+        if message.data.get("trigger"):
+            return
         text = f"{message.title} {message.brief}"
         for row in firing(context, lambda scope: "" if scope == COMMANDS else text, from_user=True):
             if agent and row.does != DENY:

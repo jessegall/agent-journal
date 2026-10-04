@@ -10,7 +10,7 @@ from features.command_line import command_line
 class RunTagCommands(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
         message = event.text
-        if CARRIED.search(message) and context.once("tagged", message):
+        if CARRIED.search(message) and context.once("tagged", event.turn):
             self.run(context, message)
         if replies(message) or waits(message):
             event.stop()

@@ -46,8 +46,11 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     by_agent.phase(plan.n, "First", when="the first is done")
     by_agent.phase(plan.n, "Third", when="the third is done", checkpoint=True)
     by_agent.phase(plan.n, "Second", when="the second is done", before=2)
+    assert refused(lambda: by_agent.phase(plan.n, "Outside", before=-1)) == f"plan {plan.n} has no phase -1"
     assert [p["title"] for p in by_agent.phases(plan.n)] == ["First", "Second", "Third"], "a phase before another goes in the middle"
     by_agent.rephrase(plan.n, 2, title="Second, reworded", checkpoint=True)
+    assert refused(lambda: by_agent.rephrase(plan.n, 0, title="Wrong")) == f"plan {plan.n} has no phase 0"
+    assert refused(lambda: by_agent.place(plan.n, -1, [rows[0]])) == f"plan {plan.n} has no phase -1"
     assert (by_agent.phases(plan.n)[1]["title"], by_agent.phases(plan.n)[1]["checkpoint"]) == ("Second, reworded", True), \
         "rephrase changes what it is given"
     assert ("80" in refused(lambda: by_agent.phase(plan.n, "x" * 81))) is True, "a phase title past 80 characters is refused"
@@ -204,6 +207,13 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     todos.complete(1, "done")
     by_agent.start(second)
     assert (status(first), status(second)) == (("parked", 2), ("active", 1)), "starting a second plan parks the one that runs"
+    shared = todos.create("shared between plans").n
+    by_agent.place(first, 2, [shared])
+    by_agent.place(second, 1, [shared])
+    assert shared in [t.n for t in ready(record)], "the active plan offers a row that also sits in a parked plan"
+    by_agent.place(first, 2, [shared], off=True)
+    by_agent.place(second, 1, [shared], off=True)
+    todos.complete(shared, "checked")
     assert [t.n for t in ready(record)] == [3], "the parked plan's rows wait; the running plan's are offered"
     by_user.park(second)
     assert nudges(record)[-1] == f"the user parked plan {second}, second", "parking tells the agent"

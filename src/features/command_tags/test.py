@@ -51,6 +51,20 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     assert visible("[!reply:n] plus the command tags") == "[!reply:n] plus the command tags", "only a real number or name makes a tag"
 
 
+def test_the_same_tag_in_two_turns_runs_twice():
+    import features
+    from controllers.types import Agents, Todos
+    from engine import chat
+
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    features.load()
+    agent = Agents(record, actor="system").by_session("claude-1")
+    chat.send(record, agent, '[!todo="Repeated work"] first')
+    chat.send(record, agent, '[!todo="Repeated work"] first')
+    assert [todo.title for todo in Todos(record, actor="system").all()] == ["Repeated work", "Repeated work"]
+
+
 def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     from engine.wording import counted
     record = fresh()

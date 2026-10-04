@@ -18,8 +18,8 @@ class BoardsFeature(Feature):
     nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas),)
 
     def register(self, journal: Journal) -> None:
-        START_PARTS[ORCHESTRATION] = orchestration
-        DISPATCH_MODELS[FILLER] = filler_model
+        self.register_global(START_PARTS, orchestration, str, ORCHESTRATION)
+        self.register_global(DISPATCH_MODELS, filler_model, str, FILLER)
         journal.commands.intercept("create", BoardWorkStaysOnTheBoard())
         journal.events.handler(OfferToPlaceAddedCards())
         journal.events.handler(MarkQuietFillingStalled())

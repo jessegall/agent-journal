@@ -30,6 +30,10 @@ class AgentMessageSending(AgentEvent):
     def text(self) -> str:
         return str(self.data["text"])
 
+    @property
+    def turn(self) -> str:
+        return str(self.data["turn"])
+
     def change(self, text: str) -> None:
         self.data["text"] = text
 
@@ -41,6 +45,7 @@ class AgentMessageSending(AgentEvent):
 class AgentMessageSent(AgentEvent):
     on: ClassVar[str] = f"agent.{SENT}"
     text: str = ""
+    turn: str = ""
 
 
 @dataclass(frozen=True)

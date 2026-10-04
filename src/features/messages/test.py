@@ -156,6 +156,8 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Cut short by the next prompt"}]}}) + "\n")
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "claude-1", "prompt": "next"})
     assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
+    displayed(record.root, {"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"})
+    assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():

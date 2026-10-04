@@ -141,17 +141,18 @@ class Controller(Stored, Files, Links):
         fields = self.resource.fields
         return {k: checked_field(fields, k, v) for k, v in data.items()}
 
-    def _twin(self, title: str, brief: str, about) -> Resource | None:
+    def _twin(self, title: str, brief: str, about, idempotency: str = "") -> Resource | None:
         if not self.resource.deduplicates:
             return None
         since = time.time() - TWICE_WITHIN
         lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]
         recent = (self.load(n) for n in reversed(lately[-20:]))
         return next((r for r in recent if r.created >= since and r.title == title and r.brief == brief
-                     and r.seen[:1] == [self.actor] and (not about or about in r.refs)), None)
+                     and r.seen[:1] == [self.actor] and (not about or about in r.refs)
+                     and (not idempotency or r.data.get("idempotency") == idempotency)), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
-        twin = self._twin(title, brief, data.get("about"))
+        twin = self._twin(title, brief, data.get("about"), data.get("idempotency", ""))
         if twin is not None:
             return twin
         taken = self._handled("create", title=title, abstract=abstract, brief=brief, **data)

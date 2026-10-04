@@ -28,6 +28,27 @@ def test_the_other_hooks_are_set_aside_and_put_back_and_skills_stay(tmp_path, mo
     assert put_back(record) == 0, "a second put back has nothing to do"
 
 
+def test_a_second_set_aside_keeps_the_original_hooks_until_the_last_session_ends(tmp_path, monkeypatch):
+    import os
+    from engine.sessions import Sessions
+    from features.clean_slate.slate import moved
+
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    record = fresh()
+    settings = record.root.parent / ".claude" / "settings.local.json"
+    settings.parent.mkdir()
+    settings.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
+    before = settings.read_text()
+    set_aside(record, record.root.parent, "claude")
+    original = moved(record)
+    Sessions(record.root).bind("other", record.env, pid=os.getpid(), provider="claude")
+    set_aside(record, record.root.parent, "claude")
+    assert moved(record) == original
+    Sessions(record.root).write("other", pid=2 ** 22 + 7)
+    put_back(record)
+    assert settings.read_text() == before
+
+
 def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
     import features.clean_slate.slate as slate
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
