@@ -92,8 +92,10 @@ class Ref:
     n: int
 
     @classmethod
-    def parse(cls, ref: str) -> "Ref":
+    def parse(cls, ref: "str | Ref") -> "Ref":
         kind, _, n = str(ref).partition(":")
+        if not kind or not n.isdigit():
+            raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
         return cls(kind, int(n))
 
     @property

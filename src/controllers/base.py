@@ -8,7 +8,7 @@ from functools import partial
 from engine import bus
 from engine.markers import plain
 from engine.record import Record
-from resources.base import PART_OF, PROJECT, SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
+from resources.base import PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.files import Files
@@ -233,6 +233,9 @@ class Controller(Stored, Files, Links, Discussed):
     def stamp(self, n: int, **data) -> Resource:
         return self._changed(n, "stamped", data, quiet=True, fields=sorted(data))
 
+    def _appended(self, r: Resource, field: str, entry, keep: int, **data) -> Resource:
+        return self.update(r.n, **{field: [*(r.data.get(field) or []), entry][-keep:]}, **data)
+
     def _changed(self, n: int, action: str, data: dict, **event) -> Resource:
         with self.record.locked(self.resource.scope):
             r = self.load(n)
@@ -402,6 +405,17 @@ class Controller(Stored, Files, Links, Discussed):
         if len(hits) != 1:
             raise Refused(f"{'no' if not hits else len(hits)} {noun(len(hits), self.type)} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
         return self.load(hits[0])
+
+
+def controller_of(record: Record, ref: "str | Ref", actor: str = SYSTEM) -> "Controller":
+    ref = Ref.parse(ref)
+    if ref.type not in CONTROLLERS:
+        raise Refused(f"{str(ref)!r} is not a row: write it as type:number, like todo:785")
+    return CONTROLLERS[ref.type](record, actor=actor)
+
+
+def row_of(record: Record, ref: "str | Ref") -> Resource:
+    return controller_of(record, ref).load(Ref.parse(ref).n)
 
 
 def register(*classes) -> None:

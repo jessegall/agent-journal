@@ -39,7 +39,7 @@ class Agents(Controller):
             return self.update(row.n, cards=[{**kept, **card} if kept.get("key") == key else kept for kept in cards])
         if "label" not in card:
             return row
-        return self.update(row.n, cards=[*cards, {"at": time.time(), **card}][-KEPT_CARDS:])
+        return self._appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
     def stop_task(self, n: int, task: str, description: str = ""):
         if not task.strip():
