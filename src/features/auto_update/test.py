@@ -5,6 +5,7 @@ import pytest
 from types import SimpleNamespace
 
 import features.auto_update.check as updates
+import features.auto_update.relaunch as relaunching
 from engine.heal import ledger
 from engine.stored import write_json
 from controllers.types import Features
@@ -44,7 +45,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     row = Agents(record).by_session("conversation-1")
     driver = SimpleNamespace(session="claude-1", last_report=lambda: Agents(record).load(row.n))
     state = {"now": "working"}
-    relaunch = updates.Relaunch(SimpleNamespace(record=record, driver=driver, state=lambda: state["now"]))
+    relaunch = relaunching.Relaunch(SimpleNamespace(record=record, driver=driver, state=lambda: state["now"]))
     Sessions(record.root).write("claude-1", launch=LAUNCH - 1)
     assert relaunch.tick() == "" and not runtime.relaunch_file(record.root, "claude-1").exists(), "a busy agent is never restarted"
     state["now"] = IDLE
