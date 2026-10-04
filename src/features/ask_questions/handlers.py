@@ -1,14 +1,19 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events.agents import AgentReported
-from engine.events.resources import MessageCreated, QuestionAnswered, ResourceEvent
+from controllers.types import Questions
+from engine.events.resources import MessageCreated, QuestionAnswered, ResourceCompleted, ResourceEvent
+from features.nudges import Sent
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
-from resources.base import USER
+from resources.base import SYSTEM, USER
 
 ASKING = "asking"
+WAITED_ON = ("todo", "plan", "ticket")
+DAY = 24 * 3600.0
 
 
 @dataclass(frozen=True)
@@ -45,3 +50,18 @@ class MarkTheAnswer(Handler):
             return
         agents.card(row.n, label=f"You answered question {question.n}", icon="question",
                     color="var(--blocking)", side=USER, row=question.ref)
+
+
+class DismissSettledQuestions(Handler):
+    def handle(self, context: Context, event: ResourceCompleted) -> None:
+        if event.type not in WAITED_ON:
+            return
+        ref, questions = f"{event.type}:{event.n}", Questions(context.record, actor=SYSTEM)
+        for question in [q for q in questions._standing() if ref in q.refs]:
+            questions.dismiss(question.n, why=f"{ref.replace(':', ' ')}, which it was about, is closed")
+
+
+def open_a_day(context, agent) -> list[Sent]:
+    now = time.time()
+    return [Sent(str(q.n), {"n": q.n, "title": q.title}) for q in Questions(context.record, actor=SYSTEM)._standing()
+            if not q.hidden and now - q.created > DAY]

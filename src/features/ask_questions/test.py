@@ -142,3 +142,23 @@ def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
         "a dismissal closes the question with the user's reason"
     assert "not asked again" in dismissed.outcome, "the agent hears it is not to act on it or ask again"
     assert Todos(record, actor=AGENT).ask(row.n, "Tag it as 5.2?").n, "once it is closed the row may ask again"
+
+
+def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day():
+    from controllers.types import Todos
+    from tests.kit import report, tick
+    record = fresh()
+    report(record, "idle", "Stop")
+    todos, questions = Todos(record, actor=AGENT), Questions(record, actor=AGENT)
+    row = todos.create("the pricing")
+    asked = questions.create("Which price, 5 or 7?", about=row.ref)
+    other = questions.create("Which font for the menu?")
+    todos.complete(row.n, how="the price came from the supplier's list")
+    assert (questions.load(asked.n).completed > 0, questions.load(asked.n).data.get("dismissed"), questions.load(other.n).completed) == (True, True, 0.0), \
+        "closing the row a question is about dismisses it, and leaves the others"
+    old = questions.load(other.n)
+    old.created = 1.0
+    questions.save(old, "updated")
+    tick(record)
+    assert [n for n in nudges(record) if "waited a day" in n] == [f"question {other.n}, Which font for the menu?, has waited a day for an answer"], \
+        "a question open for a day is put to the agent, to dismiss if the work settled it"

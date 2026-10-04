@@ -37,6 +37,11 @@ class ResourceCreated(ResourceEvent):
 
 
 @dataclass(frozen=True)
+class ResourceCompleted(ResourceEvent):
+    on: ClassVar[str] = "completed"
+
+
+@dataclass(frozen=True)
 class MessageCreated(ResourceEvent):
     on: ClassVar[str] = "message.created"
 
