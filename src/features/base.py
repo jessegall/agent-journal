@@ -22,6 +22,17 @@ REGISTRY: dict[str, type] = {}
 GLOBAL_ENTRIES: list[tuple[object, object]] = []
 
 
+class Switched:
+    def __init__(self, feature, target) -> None:
+        self.feature, self.target = feature, target
+
+    def on(self, record) -> bool:
+        return self.feature.enabled(record)
+
+    def __getattr__(self, name: str):
+        return getattr(self.target, name)
+
+
 def clear_global_entries() -> None:
     for container, entry in GLOBAL_ENTRIES:
         if isinstance(container, list):
@@ -171,6 +182,10 @@ class Feature(ABC):
             self.journal.events.handler(SendOnTheClock(self.nudges))
             self.journal.events.handler(SendOnToolUse(self.nudges))
 
+    def register_always(self, container: list, entry) -> None:
+        container.append(entry)
+        GLOBAL_ENTRIES.append((container, entry))
+
     def register_global(self, container, callback, empty, key=None) -> None:
         def enabled(*args, **kwargs):
             source = args[0]
@@ -178,7 +193,7 @@ class Feature(ABC):
             return callback(*args, **kwargs) if self.enabled(record) else empty()
 
         if not callable(callback):
-            container[key] = callback
+            container[key] = Switched(self, callback)
             GLOBAL_ENTRIES.append((container, key))
             return
         if isinstance(container, list):

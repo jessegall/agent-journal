@@ -119,6 +119,7 @@ async function flushOnce() {
             try {
                 await phone.attach(made.n, file);
             } catch (error) {
+                if (ended(error) || unreachable(error)) throw error;
                 missing.push(file.name);
             }
         }
