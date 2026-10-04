@@ -5,7 +5,8 @@ from pathlib import Path
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from engine.worktree import contains, current_branch, git, included, present, share_journal, tip
+from engine.wording import plural
+from engine.worktree import contains, current_branch, git, included, lines, present, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from resources.base import Refused
@@ -26,13 +27,9 @@ class Drift:
     current: bool
 
     @property
-    def told(self) -> str:
-        shown = "; ".join(self.gained[:SHOWN]) + (f"; and {len(self.gained) - SHOWN} more" if len(self.gained) > SHOWN else "")
-        return f"{len(self.gained)} commit{'s' if len(self.gained) != 1 else ''} ({shown})"
-
-
-def listed(project: Path, *args: str) -> list[str]:
-    return [line for line in git(project, *args).stdout.splitlines() if line.strip()]
+    def commits(self) -> str:
+        first = "; ".join(self.gained[:SHOWN]) + (f"; and {len(self.gained) - SHOWN} more" if len(self.gained) > SHOWN else "")
+        return f"{plural(len(self.gained), 'commit')} ({first})"
 
 
 def within(folder: Path, places: tuple[Path, ...], commands: tuple[str, ...]) -> bool:
@@ -45,6 +42,11 @@ class Worktrees(Controller):
 
     @lasting
     def cut(self, name: str, helper: str = "") -> str:
+        row = self._cut(name, helper)
+        return (f"worktree {row.n}: {row.path} on branch {row.branch}, cut from {row.working} at {row.base[:10]}. "
+                f"Tell the helper to work and commit only there, and to rebase onto {row.working} before it reports.")
+
+    def _cut(self, name: str, helper: str = ""):
         if not NAMED.match(name):
             raise Refused(f"a worktree name is lowercase letters, digits and dashes, not {name!r}")
         project = self._project()
@@ -58,14 +60,12 @@ class Worktrees(Controller):
             raise Refused(f"the worktree {name} could not be made: {made.stderr.strip()}")
         included(project, folder)
         share_journal(folder, self.record.root, workspace_folders())
-        row = self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
-        return (f"worktree {row.n}: {folder} on branch {branch}, cut from {working} at {base[:10]}. "
-                f"Tell the helper to work and commit only there, and to rebase onto {working} before it reports.")
+        return self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
 
     def drift(self, n: int) -> str:
         row = self._unfinished(n, "dropped")
         found = self._drift(row)
-        moved = f"{found.working} gained {found.told} since the cut" if found.gained else f"{found.working} has not moved since the cut"
+        moved = f"{found.working} gained {found.commits} since the cut" if found.gained else f"{found.working} has not moved since the cut"
         return f"{moved}; {row.branch} {'contains' if found.current else 'does not contain'} its tip {found.tip[:10]}"
 
     @lasting
@@ -76,15 +76,15 @@ class Worktrees(Controller):
             raise Refused(f"the main checkout is not on {row.working}; switch it back before taking worktree {n}")
         found = self._drift(row)
         if not found.current:
-            raise Refused(f"{row.branch} does not contain the tip of {row.working}, which gained {found.told}: "
+            raise Refused(f"{row.branch} does not contain the tip of {row.working}, which gained {found.commits}: "
                           f"rebase it onto {row.working} in {row.path} first")
-        commits = listed(project, "rev-list", "--reverse", f"{row.working}..{row.branch}")
+        commits = lines(project, "rev-list", "--reverse", f"{row.working}..{row.branch}")
         if not commits:
             raise Refused(f"{row.branch} has no commits beyond {row.working}: nothing to take")
-        if listed(project, "rev-list", "--merges", f"{row.working}..{row.branch}"):
+        if lines(project, "rev-list", "--merges", f"{row.working}..{row.branch}"):
             raise Refused(f"{row.branch} carries merge commits: rebase it onto {row.working} so its history is a straight line")
-        touched = listed(project, "diff", "--name-only", f"{row.working}...{row.branch}")
-        dirty = listed(project, "status", "--porcelain", "--", *touched)
+        touched = lines(project, "diff", "--name-only", f"{row.working}...{row.branch}")
+        dirty = lines(project, "status", "--porcelain", "--", *touched)
         if dirty:
             raise Refused(f"the main checkout has changes in files this take would touch: {', '.join(line[3:] for line in dirty)}; commit or move them first")
         picked = git(project, "cherry-pick", *commits)
@@ -92,7 +92,7 @@ class Worktrees(Controller):
             git(project, "cherry-pick", "--abort")
             raise Refused(f"the cherry-pick stopped and was undone: {(picked.stderr or picked.stdout).strip()}")
         self.update(row.n, taken=tip(project, row.branch))
-        return f"took {len(commits)} commit{'s' if len(commits) != 1 else ''} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
+        return f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
 
     @lasting
     def complete(self, n: int, how: str = "", **data):
@@ -100,7 +100,7 @@ class Worktrees(Controller):
         project = self._project()
         folder = Path(row.path) if row.path else None
         if folder and folder.is_dir():
-            if listed(folder, "status", "--porcelain"):
+            if lines(folder, "status", "--porcelain"):
                 raise Refused(f"{folder} has uncommitted changes: commit them, or remove them, before dropping it")
             git(project, "worktree", "remove", str(folder))
         if row.branch and present(project, f"refs/heads/{row.branch}"):
@@ -113,17 +113,19 @@ class Worktrees(Controller):
         now = tip(project, row.working)
         if not now or not row.base:
             raise Refused(f"worktree {row.n} has no working branch to measure against")
-        gained = tuple(listed(project, "log", "--format=%h %s", f"{row.base}..{now}"))
+        gained = tuple(lines(project, "log", "--format=%h %s", f"{row.base}..{now}"))
         return Drift(row.working, row.base, now, gained, bool(row.branch) and contains(project, now, row.branch))
 
-    def _has_new_tip(self, row) -> bool:
-        return row.told != tip(self._project(), row.working)
-
-    def _touched(self, places: tuple[Path, ...], commands: tuple[str, ...]) -> list:
-        return [row for row in self._standing() if row.path and within(Path(row.path), places, commands)]
-
-    def _told(self, row, now: str) -> None:
-        self.update(row.n, told=now)
+    def _drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]):
+        project = self._project()
+        for row in self._standing():
+            if not row.path or not within(Path(row.path), places, commands) or row.told == tip(project, row.working):
+                continue
+            found = self._drift(row)
+            if not found.current:
+                self.update(row.n, told=found.tip)
+                return row, found
+        return None
 
     def _project(self) -> Path:
         return self.record.root.resolve().parent

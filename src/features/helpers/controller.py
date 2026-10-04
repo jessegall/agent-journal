@@ -5,15 +5,14 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Environments, Messages, Nudges, Todos
 from engine.record import Record
-from engine.seats import terminal_of
 from engine.sessions import Sessions
-from features.agent_sessions.launch import launched, prepared
+from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
+from resources.types import HELPER
 from controllers.marks import lasting
 from engine.wording import slugged
-
 
 
 def kickoff(row, folder: Path, todo: int) -> str:
@@ -47,9 +46,7 @@ class Helpers(Controller):
         row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place)
         folder = self.record.root.resolve().parent
         if worktree:
-            cut = Worktrees(self.record, actor=SYSTEM)
-            cut.cut(place, helper=name)
-            given = cut._titled(place, standing=True)
+            given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         driver = DRIVERS[provider]
@@ -60,10 +57,8 @@ class Helpers(Controller):
 
     @lasting
     def say(self, n: int, text: str) -> str:
-        from providers import DRIVERS
         row = self._unfinished(n, "finished")
-        session = Sessions(self.record.root).holder(row.environment)
-        if not session or not DRIVERS[row.provider](Record(self.record.root, row.environment), terminal_of(self.record.root, session)).send(text, now=True, by=self.record.env):
+        if not tell_in(self.record, row.environment, row.provider, text):
             raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
         return f"sent to {row.name}"
 
@@ -85,7 +80,7 @@ class Helpers(Controller):
         return place if place and place.helping else None
 
     def _helper(self, place) -> Helper:
-        return Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).load(int(place.owner.partition(":")[2]))
+        return Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).load(place.owned_by(HELPER))
 
     def _told(self, place, text: str) -> None:
         home = Record(self.record.root, place.launched_from)

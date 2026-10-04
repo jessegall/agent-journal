@@ -2,6 +2,9 @@ from pathlib import Path
 
 from controllers.types import Environments, Features
 from engine.record import Record
+from engine.seats import terminal_of
+from engine.sessions import Sessions
+from engine.stop import ask_session
 from features.permission_prompts.feature import prompted
 from resources.base import SYSTEM
 
@@ -35,3 +38,20 @@ def launched(record, name: str, provider: str, args: list[str], cwd: Path) -> st
     from agents.terminal import detached
     detached(record.root, cwd, name, provider, args)
     return name
+
+
+def driver_in(record, environment: str, provider: str):
+    from providers import DRIVERS
+    session = Sessions(record.root).holder(environment)
+    return DRIVERS[provider](Record(record.root, environment), terminal_of(record.root, session)) if session else None
+
+
+def tell_in(record, environment: str, provider: str, text: str) -> bool:
+    driver = driver_in(record, environment, provider)
+    return bool(driver) and driver.send(text, now=True, by=record.env)
+
+
+def stop_in(record, environment: str) -> None:
+    session = Sessions(record.root).holder(environment)
+    if session:
+        ask_session(record.root, terminal_of(record.root, session))
