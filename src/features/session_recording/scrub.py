@@ -1,3 +1,4 @@
+import json
 import getpass
 import re
 import socket
@@ -41,4 +42,14 @@ class Scrubber:
         found += TUNNEL.findall(raw)
         found += [email for email in EMAIL.findall(raw) if email != KEPT_EMAIL]
         found += SESSION.findall(raw)
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            data = {}
+        answers = data.get("answers", {}) if isinstance(data, dict) else {}
+        for answer in (data, *(answers.values() if isinstance(answers, dict) else ())):
+            if not isinstance(answer, dict) or not isinstance(answer.get("places"), list) or not isinstance(answer.get("at"), str):
+                continue
+            found.extend(name for place in answer["places"] if isinstance(place, dict) and isinstance(place.get("root"), str)
+                         and place["root"] != answer["at"] for name in (place["project"], Path(place["root"]).parent.name))
         return sorted(set(found))

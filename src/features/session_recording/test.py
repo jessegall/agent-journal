@@ -124,6 +124,11 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     import features.session_recording.scrub as scrub
     monkeypatch.setattr(scrub, "known", lambda: [SimpleNamespace(project="private-ledger", root="/projects/private-market/.journal")])
     assert set(Scrubber().leaks("private-ledger private-market")) == {"private-ledger", "private-market"}
+    places = {"at": "/home/demo/project/.journal", "places": [{"project": "recorded", "root": "/home/demo/project/.journal"},
+                                                               {"project": "private-other", "root": "/home/demo/projects/private-other/.journal"}]}
+    assert "private-other" in Scrubber().leaks(json.dumps(places)), "any other journal in the phone's places list is a leak"
+    places["places"][1]["project"] = "demo"
+    assert "private-other" in Scrubber().leaks(json.dumps(places)), "a renamed project cannot hide its journal path"
 
 
 def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path):
