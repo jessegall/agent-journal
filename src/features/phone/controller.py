@@ -1,8 +1,6 @@
 import hashlib
 from itertools import islice
-import mimetypes
 import math
-import re
 from dataclasses import dataclass
 import secrets
 import tempfile
@@ -23,7 +21,7 @@ from controllers.notices import Notices
 from engine.record import Record
 from features.format import VIEWER, formatted
 from features.message_buttons.shaping import Button, spent
-from engine.project_files import matching
+from engine.project_files import read_source
 from features.phone.export import Export, export
 from features.phone.places import MAIN, Place, places
 from surfaces.agent_state import agent_state
@@ -52,8 +50,6 @@ KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 FEED = 40
-SOURCE_LIMIT = 400000
-SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|password|token|\.(pem|key|p12|pfx|keystore|jks|kdbx|env)$", re.I)
 CARDS = ("todo", "question", "suggestion", "plan", "report", "doc", "work", "agent")
 WAITING_CARD = "waiting"
 LISTED = 20
@@ -437,17 +433,8 @@ class Phones(Controller):
 
     def _source(self, phone: Phone, asked: str) -> Source:
         project = self._home(phone).root.parent.resolve()
-        target = (project / asked).resolve()
-        if not target.is_file():
-            found = matching(project, asked)
-            if len(found) != 1:
-                raise Refused(f"{len(found)} files in the project are called {asked!r}" if found else f"no file {asked!r} in the project")
-            target = (project / found[0]).resolve()
-        if project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts) or SECRET.search(target.name):
-            raise Refused(f"{asked!r} is not a file the phone may read")
-        kind = mimetypes.guess_type(target.name)[0] or ""
-        text = "" if kind.startswith("image/") else target.read_bytes()[:SOURCE_LIMIT].decode("utf-8", errors="replace")
-        return Source(path=str(target.relative_to(project)), kind=kind, text=text, lines=len(text.splitlines()))
+        source = read_source(project, asked)
+        return Source(path=source.path, kind=source.kind, text=source.text, lines=source.lines)
 
     def _push_key(self) -> str:
         return unpadded(Keys.kept(self.record.root).public)

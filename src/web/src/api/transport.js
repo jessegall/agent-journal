@@ -12,6 +12,7 @@ class Transport {
         this.written = () => {};
         this.watcher = () => {};
         this.health = () => {};
+        this.tokens = new Map();
     }
 
     onHealth(fn) {
@@ -26,12 +27,32 @@ class Transport {
         this.written = fn;
     }
 
+    token(url) {
+        const origin = new URL(url, location.origin).origin;
+        if (!this.tokens.has(origin)) {
+            const request = fetch(`${origin}/api/session-token`, {cache: "no-store"})
+                .then((response) => {
+                    if (!response.ok) throw new Error("The journal did not grant this page write access");
+                    return response.json();
+                })
+                .then((body) => body.token)
+                .catch((error) => {
+                    this.tokens.delete(origin);
+                    throw error;
+                });
+            this.tokens.set(origin, request);
+        }
+        return this.tokens.get(origin);
+    }
+
     async reach(method, url, body, wait, tries) {
         const raw = body instanceof FormData;
         try {
+            const headers = body === undefined || raw ? {} : {"Content-Type": "application/json"};
+            if (method === "POST") headers["X-Journal-Token"] = await this.token(url);
             return await fetch(url, {
                 method,
-                headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
+                headers,
                 body: body === undefined || raw ? body : JSON.stringify(body),
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : method === "GET" ? READ_WAIT_MS : WAIT_MS)),
             });
@@ -48,7 +69,13 @@ class Transport {
 
     async send(method, url, body, wait = 0) {
         this.watcher("sent", method, url, body);
-        const res = await this.reach(method, url, body, wait, RELOAD_TRIES).finally(() => this.watcher("answered", method, url, body));
+        const res = await this.reach(method, url, body, wait, RELOAD_TRIES)
+            .then(async (response) => {
+                if (method !== "POST" || response.status !== 403) return response;
+                this.tokens.delete(new URL(url, location.origin).origin);
+                return this.reach(method, url, body, wait, RELOAD_TRIES);
+            })
+            .finally(() => this.watcher("answered", method, url, body));
         if (new URL(url, location.origin).origin === location.origin) this.health(true);
         if (!res.ok) {
             const body = await res.json().catch(() => ({}));
