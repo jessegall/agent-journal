@@ -1,3 +1,4 @@
+import os
 import re
 from abc import ABC
 from dataclasses import asdict
@@ -77,11 +78,15 @@ class Line:
 
 SWITCHES: dict[str, tuple[int, dict[str, bool]]] = {}
 GENERATION = [0]
+CHANGE_LOGS: dict[str, str] = {}
 
 
 def written(record) -> int:
+    home = str(record.home)
+    if home not in CHANGE_LOGS:
+        CHANGE_LOGS[home] = str(Features(record, actor=SYSTEM)._folder() / CHANGES)
     try:
-        return (Features(record, actor=SYSTEM)._folder() / CHANGES).stat().st_size
+        return os.stat(CHANGE_LOGS[home]).st_size
     except OSError:
         return 0
 

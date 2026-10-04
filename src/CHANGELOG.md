@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.1 — a quicker agent list
+
+**The viewer's list of agents, polled every second, answers in a few milliseconds again after an agent changes.** A
+row's formatted text is kept for a minute, so only what changed is formatted again, and the check for switched
+features reads one remembered file instead of building a controller each time.
+
 ## 2.249.0 — seven review rounds, and what they found
 
 **The journal's local server answers only its own address, and its file readers keep to the project's visible
