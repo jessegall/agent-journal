@@ -179,24 +179,24 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     driver.last_report = lambda: SimpleNamespace(transcript=str(transcript), asking={})
     stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
-    assert driver._handed("todo 5 next", "journal") is True, "a live channel takes the line"
+    assert driver._post("todo 5 next", "journal") is True, "a live channel takes the line"
     time.sleep(0.01)
     written({"type": "attachment", "timestamp": stamp(), "attachment": {"type": "queued_command", "prompt": '<channel source="journal" from="journal">\ntodo 5 next'}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("2 new messages 7, 8", "journal") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
+    assert driver._post("2 new messages 7, 8", "journal") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
     time.sleep(0.01)
     tucked = 'done\nA message arrived from journal while you were working:\n<channel source="journal" from="journal">\n2 new messages 7, 8\n</channel>'
     written({"type": "user", "timestamp": stamp(), "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": tucked}]}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("todo 7 next", "journal") is True, "a line that reached the agent inside a tool result keeps the channel in use"
+    assert driver._post("todo 7 next", "journal") is True, "a line that reached the agent inside a tool result keeps the channel in use"
     time.sleep(0.01)
     written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\ntodo 7 next\n</channel>'},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
+    assert driver._post("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
     time.sleep(0.01)
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
-    assert driver._handed("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
+    assert driver._post("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
+    assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):

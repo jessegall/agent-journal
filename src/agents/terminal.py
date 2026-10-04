@@ -13,15 +13,12 @@ from engine.fields import Loaded
 from engine.worktree import checkout, environment, share_journal
 from typing import TypedDict
 
-RELOAD = 75
-STOP = 76
-RELAUNCH = 77
-HEAL = 78
+from supervisor import LAUNCHED, SCREEN, SCREEN_SHAPE
+
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
 LAUNCH_ARGS: list = []
 OUTPUT_LINES: list = []
-LAUNCHED = "launched.json"
 
 
 @dataclass(frozen=True)
@@ -82,7 +79,7 @@ def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conv
     from providers import DRIVERS, PROVIDERS
     from engine.record import Record
     driver = DRIVERS[agent]
-    named = driver.command(driver, driver.resumed(shaped_args(Record(root, env), agent, args), conversation), cwd)
+    named = driver.command(driver.resumed(shaped_args(Record(root, env), agent, args), conversation), cwd)
     command = [driver.binary(os.environ.get("PATH", "")), *named[1:]]
     provider = PROVIDERS[agent]()
     inherited = {name: value for name, value in os.environ.items() if name not in provider.session_markers}
@@ -91,17 +88,16 @@ def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conv
 
 
 @dataclass(frozen=True)
-class Seat:
+class TerminalSession:
     root: Path
     env: str
     agent: str
     session: str
 
 
-def seated(seat: Seat) -> Seat:
+def seated(seat: TerminalSession) -> TerminalSession:
     from controllers.types import Environments
     from engine.record import Record
-    from engine.sessions import Sessions
     from resources.base import SYSTEM
     launched = Launched.read(seat.root, seat.session)
     sessions = Sessions(seat.root)
@@ -113,7 +109,6 @@ def seated(seat: Seat) -> Seat:
 
 
 def relaunch(root: Path, env: str, session: str, conversation: str) -> Path:
-    from engine.sessions import Sessions
     launched = Launched.read(root, session)
     provider = Sessions(root).read(session).provider
     agent = provider if provider else session.split("-", 1)[0]
@@ -195,8 +190,8 @@ class ScreenPart:
 
 def screen_since(root: Path, terminal: str, since: int) -> ScreenPart:
     import base64
-    screen = runtime.session_file(root, terminal, "screen")
-    shape = read_json(runtime.session_file(root, terminal, "screen.json"), dict, {"rows": 40, "cols": 120})
+    screen = runtime.session_file(root, terminal, SCREEN)
+    shape = read_json(runtime.session_file(root, terminal, SCREEN_SHAPE), dict, {"rows": 40, "cols": 120})
     if not screen.is_file():
         return ScreenPart.blank(int(shape["rows"]), int(shape["cols"]))
     size = screen.stat().st_size
@@ -218,7 +213,7 @@ def attach(root: Path, session: str) -> str:
     import termios
     import tty
     from engine import typist
-    screen = runtime.session_file(root, session, "screen")
+    screen = runtime.session_file(root, session, SCREEN)
     if not screen.is_file():
         return f"journal: no session {session} to attach to"
     at = max(0, screen.stat().st_size - SHOWN_BACK)
