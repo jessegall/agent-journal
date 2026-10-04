@@ -49,7 +49,7 @@ def check(name: str, spec, value):
     if spec == LIST and isinstance(value, str):
         value = [word.strip() for word in value.split(",") if word.strip()]
     if spec == NUMBER and isinstance(value, str) and value.lower() in LEVELS:
-        value = LEVELS[value.lower()]
+        value = priority_level(value)
     if not isinstance(value, KINDS[spec]) or isinstance(value, bool) and spec != FLAG:
         raise Refused(f"{name} is a {spec}")
     return value

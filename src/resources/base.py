@@ -23,7 +23,6 @@ USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
 OPEN, CLOSED, EVERY = "open", "closed", "every"
 UPDATES = "updates"
 OPENED, COMPLETED, CLEARED = "opened", "completed", "cleared"
-CLEARINGS = (OPENED, COMPLETED, CLEARED)
 WHOM = "whom"
 KEYWORDS = "keywords"
 KEYWORDS_IN = "keywords_in"
@@ -32,7 +31,7 @@ OWNER = "plugin"
 ENVIRONMENT, PROJECT = "environment", "project"
 SIDEBAR, RESULTS, WORKINGS, UNLISTED = "sidebar", "results", "workings", ""
 SCOPES = (ENVIRONMENT, PROJECT)
-LAZY, EAGER, MEMORY = "lazy", "eager", "memory"
+LAZY, MEMORY = "lazy", "memory"
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
 
 
@@ -85,6 +84,24 @@ def copied(value):
     if isinstance(value, list):
         return [copied(v) for v in value]
     return value
+
+
+@dataclass(frozen=True)
+class Ref:
+    type: str
+    n: int
+
+    @classmethod
+    def parse(cls, ref: str) -> "Ref":
+        kind, _, n = str(ref).partition(":")
+        return cls(kind, int(n))
+
+    @property
+    def spoken(self) -> str:
+        return f"{self.type} {self.n}"
+
+    def __str__(self) -> str:
+        return f"{self.type}:{self.n}"
 
 
 def as_dict(r) -> dict:
@@ -186,6 +203,10 @@ class Resource:
     @property
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
+
+    @property
+    def author(self) -> str:
+        return self.seen[0] if self.seen else ""
 
     def agent_line(self) -> str:
         return f"{self.title} — {self.brief}" if self.brief else self.title
