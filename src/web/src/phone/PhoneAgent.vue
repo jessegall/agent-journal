@@ -1,5 +1,5 @@
 <script setup>
-import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
+import {SILENT, SILENT_WORD} from "../domain/agentState.js";
 
 defineProps({state: {type: String, required: true}, auto: {type: Boolean, default: false}});
 const WORDS = {offline: "Not running", idle: "Idle", working: "Working", [SILENT]: SILENT_WORD};

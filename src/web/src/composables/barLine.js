@@ -1,5 +1,5 @@
+import {TICK, visibleQueue} from "../domain/statusQueue.js";
 import {onUnmounted, ref, watch} from "vue";
-import {TICK, visibleQueue} from "../layout/bar.js";
 
 export function useBarLine(queue) {
     const state = ref({at: 0, since: 0});

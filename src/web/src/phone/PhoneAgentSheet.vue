@@ -1,7 +1,7 @@
 <script setup>
+import {line} from "../domain/statusQueue.js";
 import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
-import {line} from "../layout/bar.js";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
 import {plainDoing} from "./doing.js";

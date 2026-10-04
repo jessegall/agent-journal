@@ -1,17 +1,16 @@
 <script setup>
 import Dot from "./Dot.vue";
 
-const LIT = ["working", "busy", "compacting", "waiting"];
-
 defineProps({
     state: {type: String, required: true},
+    lit: Boolean,
     note: {type: String, default: ""},
     size: {type: Number, default: 7},
 });
 </script>
 
 <template>
-    <span :class="['status-label', state, {lit: LIT.includes(state)}]">
+    <span :class="['status-label', state, {lit}]">
         <template v-if="state === 'stopped'">
             <Dot kind="struck" :size="size" />
         </template>

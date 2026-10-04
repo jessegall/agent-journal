@@ -1,4 +1,5 @@
 <script setup>
+import {PLAN_STATES, sizeOf, stoppedOf} from "../domain/plans.js";
 import {ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -9,7 +10,6 @@ import {useOutside} from "../composables/outside.js";
 import {usePlanRows} from "../composables/planRows.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
-import {PLAN_STATES, sizeOf, stoppedOf} from "./statusline.js";
 
 const props = defineProps({plans: Array, running: Boolean, up: Boolean, anchor: {type: Object, default: null}});
 const emit = defineEmits(["close"]);

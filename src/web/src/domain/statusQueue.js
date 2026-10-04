@@ -1,6 +1,5 @@
 import {span} from "../format/time.js";
 export const TICK = 250;
-export const MINUTE = 60;
 const BEHIND = 3;
 
 export function visibleQueue(queue, state, now) {
@@ -38,7 +37,7 @@ export function frames(message, elapsed) {
     });
 }
 
-export function clock(message) {
+export function queueClock(message) {
     return message && message.clock ? span(message.for, true) : "";
 }
 
@@ -49,7 +48,7 @@ export function line(message, elapsed) {
         key: message.key,
         parts,
         text: parts.map((p) => `${p.prefix}${p.value}`).join(" "),
-        clock: clock(message),
+        clock: queueClock(message),
         done: !!message.done,
     };
 }

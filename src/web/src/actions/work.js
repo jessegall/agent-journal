@@ -1,6 +1,6 @@
+import {planButton} from "../domain/plans.js";
 import {saveSettings} from "./settings.js";
 import {api} from "../api/client.js";
-import {planButton} from "../layout/statusline.js";
 import {store} from "../state/store.js";
 
 const AUTO = "work_tracking.auto";

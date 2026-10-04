@@ -1,4 +1,7 @@
 <script setup>
+import {barPlan, otherPlans} from "../domain/plans.js";
+import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
+import {silentIn} from "../domain/journals.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import PSection from "./PSection.vue";
 
@@ -19,9 +22,6 @@ import {helperState} from "../domain/helpers.js";
 import {MODES, modeOf} from "../domain/modes.js";
 import {agent, autoOn, steered, store, workMode} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
-import {silentIn} from "../sync/hub.js";
-import {SILENT} from "../domain/agentStates.js";
 import AgentStopButton from "../chat/AgentStopButton.vue";
 import {runPlan, setAuto} from "../actions/work.js";
 

@@ -1,10 +1,10 @@
 <script setup>
+import {planMeter} from "../domain/journals.js";
 import {computed} from "vue";
 import Meter from "../kit/Meter.vue";
 import StateDot from "../kit/StateDot.vue";
 import Tile from "../kit/Tile.vue";
 import {agentState} from "../domain/ticketAgents.js";
-import {planMeter} from "../sync/hub.js";
 import {clock} from "../format/time.js";
 import {useNow} from "../composables/now.js";
 import {quietOf} from "../domain/orchestra.js";

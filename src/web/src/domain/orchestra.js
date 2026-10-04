@@ -1,4 +1,4 @@
-import {envState, focusOf, isActive} from "../sync/hub.js";
+import {envState, focusOf, isActive} from "./journals.js";
 import {rows} from "../sync/rows.js";
 import {agentState} from "./ticketAgents.js";
 

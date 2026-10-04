@@ -1,4 +1,6 @@
 <script setup>
+import {projectPath, stoppedNote} from "../domain/journals.js";
+import {useHub} from "../composables/hub.js";
 import {computed, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -7,7 +9,6 @@ import JournalTile from "../layout/JournalTile.vue";
 import ListBox from "../kit/ListBox.vue";
 import ListRow from "../kit/ListRow.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
-import {projectPath, stoppedNote, useHub} from "../sync/hub.js";
 import {counted} from "../format/number.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {stopsOpen} from "../chat/agentStop.js";
@@ -43,7 +44,7 @@ function toggleStopped() {
         <ListBox title="Journals" :count="online.length">
             <template #aside>
                 <span class="hub-facts">
-                    <StatusLabel :state="tally.working ? 'working' : 'idle'" :note="`${tally.idle} idle`">
+                    <StatusLabel :state="tally.working ? 'working' : 'idle'" :lit="!!tally.working" :note="`${tally.idle} idle`">
                         {{ counted(tally.working, "agent working", "agents working") }}
                     </StatusLabel>
                     <IconCount icon="help" :count="tally.needs" label="waiting on you" :hot="tally.needs > 0" />
