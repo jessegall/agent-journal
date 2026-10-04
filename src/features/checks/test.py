@@ -117,3 +117,11 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     checks.gate(suite.n, "break the hook", paths="hooks/code.py", wait=True)
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook", "a failure commits nothing"
     assert any("failed, nothing was committed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "and the agent is told why"
+
+
+def test_a_check_that_runs_out_of_time_says_so():
+    record = fresh()
+    check = Checks(record, actor=USER).create("Slow", command="echo started; sleep 5", timeout=1)
+    last = Checks(record, actor=USER).run(check.n, wait=True).last
+    assert (last["ok"], last["output"].splitlines()[0]) == (False, "started"), "the run fails and keeps what the command printed"
+    assert "ran out of time: stopped after 1 seconds" in last["output"].splitlines()[-1], "its last line names the time limit, which the failure notice shows"
