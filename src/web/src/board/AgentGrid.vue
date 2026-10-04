@@ -6,13 +6,10 @@ import AgentDrawer from "./AgentDrawer.vue";
 import AgentWindow from "./AgentWindow.vue";
 import TicketAgent from "./TicketAgent.vue";
 import {hiddenBy, hiddenSummary, orchestraOf, ordered} from "../domain/orchestra.js";
-import {usePoll} from "../poll.js";
-import {polled} from "../sync/polled.js";
 import {store} from "../state/store.js";
 import {peekThere} from "../route.js";
 import {agentView} from "../composables/agentsShown.js";
 
-usePoll(...polled.summary);
 const summary = computed(() => store.summary);
 const every = computed(() =>
     orchestraOf(summary.value && summary.value.environments, summary.value && summary.value.helpers, Date.now() / 1000)

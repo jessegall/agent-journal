@@ -1,12 +1,8 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
 import {line} from "../layout/bar.js";
 import {useBarLine} from "../composables/barLine.js";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.bar);
 
 defineProps({idle: {type: String, default: "working"}});
 

@@ -15,10 +15,6 @@ import LoopList from "./LoopList.vue";
 import "./drop.css";
 import {go, peek, route} from "../route.js";
 import {agent, store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.agents);
 
 const open = ref("");
 const schemesOpen = ref(false);

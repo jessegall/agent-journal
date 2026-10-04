@@ -7,11 +7,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {agent} from "../state/store.js";
-import {polled} from "../sync/polled.js";
 import SkillsRow from "./SkillsRow.vue";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.agents);
 
 const rows = ref([]);
 const loaded = ref(false);

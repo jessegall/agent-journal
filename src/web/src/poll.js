@@ -4,6 +4,7 @@ import {transport} from "./api/transport.js";
 const BACKOFF_CAP_MS = 60000;
 const SLOW_FACTOR = 4;
 const WAKE_SPREAD_MS = 300;
+const POKE_GAP_MS = 1000;
 
 const polls = new Map();
 let instance = 0;
@@ -40,6 +41,7 @@ function round(held) {
 
 async function answer(held) {
     const started = performance.now();
+    held.started = started;
     try {
         const got = await transport.attemptOnce(held.ask);
         held.took = performance.now() - started;
@@ -64,6 +66,14 @@ async function rounds(held) {
     later(held, pause(held));
 }
 
+export const pollNow = (key) => (polls.has(key) ? round(polls.get(key)) : Promise.resolve());
+
+export function poke(key) {
+    const held = polls.get(key);
+    if (!held || held.running) return;
+    later(held, Math.max(0, POKE_GAP_MS - (performance.now() - held.started)));
+}
+
 export function wakePolls() {
     polls.forEach((held) => {
         if (!held.failures) return;
@@ -72,7 +82,9 @@ export function wakePolls() {
     });
 }
 
-document.addEventListener("visibilitychange", () => polls.forEach((held) => (document.hidden ? clearTimeout(held.timer) : later(held, staggered()))));
+document.addEventListener("visibilitychange", () =>
+    polls.forEach((held) => (document.hidden ? clearTimeout(held.timer) : later(held, staggered())))
+);
 
 function leave(key, token) {
     const held = polls.get(key);
@@ -89,7 +101,7 @@ export function startPoll(key, ask, every, take = () => {}, active = () => true)
     if (held) {
         held.users.set(token, {every, take});
     } else {
-        const fresh = {key, ask, active, users: new Map([[token, {every, take}]]), timer: 0, failures: 0, took: 0};
+        const fresh = {key, ask, active, users: new Map([[token, {every, take}]]), timer: 0, failures: 0, took: 0, started: -Infinity};
         polls.set(key, fresh);
         round(fresh);
     }
@@ -100,5 +112,5 @@ export function usePoll(key, ask, every, take = () => {}, active = () => true) {
     let stop = () => {};
     onMounted(() => (stop = startPoll(key, ask, every, take, active)));
     onUnmounted(() => stop());
-    return () => polls.has(key) && round(polls.get(key));
+    return () => pollNow(key);
 }

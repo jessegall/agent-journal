@@ -18,12 +18,9 @@ import PluginMakeDialog from "./PluginMakeDialog.vue";
 import PluginRemoveDialog from "./PluginRemoveDialog.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 import {sendMessage} from "../chat/outbox.js";
-
-usePoll(...polled.pages);
 
 const source = ref("");
 const guide = ref(false);

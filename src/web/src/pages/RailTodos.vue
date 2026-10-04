@@ -7,10 +7,6 @@ import {peek, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {groupOf, GROUPS, planOf} from "../domain/records.js";
 import {store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.ticketTodos);
 
 const emit = defineEmits(["open"]);
 const scope = useScope();

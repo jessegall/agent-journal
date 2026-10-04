@@ -18,18 +18,12 @@ import {useHelpers} from "../chat/helpers.js";
 import {helperState} from "../domain/helpers.js";
 import {MODES, modeOf} from "../domain/modes.js";
 import {agent, autoOn, steered, store, workMode} from "../state/store.js";
-import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
 import {silentIn} from "../sync/hub.js";
 import {SILENT} from "../domain/agentStates.js";
 import AgentStopButton from "../chat/AgentStopButton.vue";
-import {usePoll} from "../poll.js";
 import {runPlan, setAuto} from "../actions/work.js";
-
-usePoll(...polled.bar);
-usePoll(...polled.agents);
-usePoll(...polled.summary);
 
 const current = computed(() => currentWork(rows("work")));
 const reported = computed(() => stateOf(agent.value, rows("work")));
