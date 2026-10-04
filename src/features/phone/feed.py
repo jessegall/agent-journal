@@ -12,7 +12,7 @@ from controllers.reactions import Reactions
 from controllers.types import CONTROLLERS, Agents, Comments, Environments, Todos
 from engine.record import Record
 from engine.sessions import Sessions
-from features.ask_questions.details import QuestionsDetails
+from features.ask_questions.details import AskQuestionsDetails
 from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
@@ -148,7 +148,7 @@ def in_feed(kind: str, row) -> bool:
 
 
 def hold(home: Record) -> int:
-    return QuestionsDetails.values(home).hold
+    return AskQuestionsDetails.values(home).hold
 
 
 def reaches(home: Record, phone, row) -> bool:

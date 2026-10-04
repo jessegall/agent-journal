@@ -4,7 +4,7 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 
 
-class QuestionsDetails(FeatureDetails):
+class AskQuestionsDetails(FeatureDetails):
     name = "ask_questions"
     when = "a decision only the user can make comes up, or before offering the user choices"
 
