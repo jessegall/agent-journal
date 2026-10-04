@@ -8,6 +8,7 @@ import features
 from engine import bus, chat, clock, ran, runtime
 from agents.actors import Actor, Agent, System, User, spoken_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
+from providers.base import asking_row
 from providers.drivers import AGENT_COMMAND
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
 from engine.record import Record
@@ -113,6 +114,7 @@ class Engine(Seat):
         self.echoed()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
+        self.screen_asks()
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.seat()
@@ -242,6 +244,16 @@ class Engine(Seat):
             driver.clear_input()
             driver.typed.unlink(missing_ok=True)
         return ""
+
+    def screen_asks(self) -> None:
+        driver = self.agent.driver
+        row = driver.last_report() if driver.ASKS_ON_SCREEN else None
+        if row is None:
+            return
+        asked = driver.asked()
+        if (asked is not None) == bool(row.asking):
+            return
+        Agents(self.record, actor=SYSTEM).update(row.n, asking=asking_row(asked))
 
     def permitted(self) -> str:
         queued = take(self.record.root, self.names(), PERMIT)

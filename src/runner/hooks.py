@@ -14,6 +14,7 @@ from resources.base import AGENT, SYSTEM
 from engine import bus, chat, files, ran, runtime
 from engine.stored import read_json, write_json
 from providers import PROVIDERS, skill_folders
+from providers.base import asking_row
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
 from engine.fields import Loaded
@@ -220,7 +221,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     subagent = provider.is_subagent(hook)
     if subagent:
         if hook.event == PERMISSION or row.asking:
-            agents.update(row.n, asking=provider.asking(hook))
+            agents.update(row.n, asking=asking_row(provider.asking(hook)))
         if hook.event != "PreToolUse":
             return {}
         why = PAUSED if paused(row, subagent) else gated(provider, record, hook, row.title)

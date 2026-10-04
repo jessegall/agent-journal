@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.248.0 — Codex's approval prompt in the chat
+
+**When a Codex agent asks to run a command, the chat now shows it with Allow and Deny, as it does for Claude.** Codex
+has no hook for it, so the journal reads the prompt off Codex's screen, with the command it wants to run; Allow
+answers Codex's own "Yes, proceed". **Codex 0.160's new folder-trust question is answered too**: it now reads "Trust
+this folder? 1. Trust and continue", and a Codex agent started in a folder it had not seen could wait there.
+
 ## 2.247.3 — the hourly tidy no longer trips over a vanishing file
 
 **The hourly housekeeping no longer stops with an error when a session file disappears while it looks at it**; it
