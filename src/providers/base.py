@@ -1,4 +1,3 @@
-import hashlib
 import json
 import pickle
 import time
@@ -12,6 +11,7 @@ from engine.transcript import Turn
 from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
+from engine.wording import digest
 
 RECENT: dict[str, tuple] = {}
 FOLDS: dict[tuple, tuple] = {}
@@ -22,7 +22,7 @@ KEPT: dict[tuple, float] = {}
 
 
 def fold_file(key: tuple) -> Path:
-    return FOLD_CACHE / f"{hashlib.sha1('|'.join(key).encode()).hexdigest()[:20]}.pickle"
+    return FOLD_CACHE / f"{digest('|'.join(key), 20)}.pickle"
 
 
 def kept_fold(key: tuple) -> tuple | None:

@@ -21,6 +21,7 @@ from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 from engine.reach import Reach
 from engine.wording import clipped
+from features.nudges import MINUTE
 
 STEP = "step"
 STEP_HELD = "step held"
@@ -29,7 +30,6 @@ REQUEST_TEXT = 400
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
-MINUTE = 60
 JOURNAL_CALL = re.compile(r"(?:^|[;&|(\n])\s*(journal\s[^;&|\n]*)")
 FREE_WHILE_HELD = re.compile(r"journal\s+(?:--\S+\s+)*(?:sequence\s+(?:follow|next|abandon)|message\s|(?:search|carry|status|user|conversation)\b"
                              r"|\S+\s+(?:show|read|comments|all|progress|search|unread|board|screen|paths|find|linked_to|members|tasks|revisions|revision|changes|files|--help)\b)")

@@ -1,4 +1,3 @@
-import hashlib
 import json
 import os
 import shutil
@@ -17,6 +16,7 @@ from features.phone.resource import Phone
 from features.phone.routes import read_body
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Event, Refused
+from engine.wording import digest
 
 EVERYTHING = 100000
 EVENTS = 1000
@@ -73,7 +73,7 @@ def scrubbed(folder: Path, scrubber: Scrubber) -> None:
             continue
         clean = scrubber.text(raw)
         if path.parent.name == "blobs":
-            renamed[path.name] = hashlib.sha1(clean.encode()).hexdigest()
+            renamed[path.name] = digest(clean)
             path.unlink()
             (path.parent / renamed[path.name]).write_text(clean)
         else:
@@ -215,7 +215,7 @@ def built(folder: Path, env: str = "", name: str | None = None) -> dict:
             answers = {}
             for name, answer in world.answers(env):
                 text = json.dumps(answer, sort_keys=True)
-                answers[name] = hashlib.sha1(text.encode()).hexdigest()[:12]
+                answers[name] = digest(text, 12)
                 stored[answers[name]] = json.loads(text)
             phoned = {name: id for name, id in answers.items() if name.startswith(PHONE)} or phoned
             moments.append({"at": frame.at, "events": len(frame.events), "answers": {**phoned, **answers}})

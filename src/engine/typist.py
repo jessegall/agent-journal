@@ -1,15 +1,15 @@
 import errno
-import hashlib
 import socket
 import time
 from pathlib import Path
+from engine.wording import digest
 
 PACKET = 2048
 FULL_FOR = 2.0
 
 
 def folder(root: Path) -> Path:
-    return Path("/tmp") / f"journal-{hashlib.sha1(str(Path(root).resolve()).encode()).hexdigest()[:16]}"
+    return Path("/tmp") / f"journal-{digest(str(Path(root).resolve()), 16)}"
 
 
 def path(root: Path, session: str) -> Path:

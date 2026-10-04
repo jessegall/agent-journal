@@ -3,11 +3,12 @@ import re
 from controllers.types import Nudges
 from engine.events.engine import AgentMessageSending
 from features.command_tags.reading import CARRIED
+from features.messages.answering import NODS
 from features.parts import AgentContext, Handler
 from providers.base import JOURNAL
 from resources.base import AGENT, SYSTEM, Refused, titled
 
-NOD = r"(?:ok(?:ay)?|noted|understood|got it|acknowledged|will do|on it|done|carrying on|continuing|still waiting|waiting|sir(?: jesse)?|thanks|thank you)"
+NOD = rf"(?:{NODS}|noted|understood|acknowledged|will do|on it|done|carrying on|continuing|still waiting|waiting|sir(?: jesse)?)"
 BARE = re.compile(rf"^\W*{NOD}(?:[\s,.;:!-]+{NOD})*\W*$", re.I)
 ALWAYS_KEPT = ("message", "question", "comment")
 

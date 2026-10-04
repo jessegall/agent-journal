@@ -1,10 +1,10 @@
-import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from providers import PROVIDERS
 from engine.stored import write_text
+from engine.wording import digest
 
 
 
@@ -15,6 +15,26 @@ class Law:
     reason: str
     keywords: tuple[str, ...]
     keywords_in: str
+
+
+@dataclass(frozen=True)
+class Markers:
+    begin: str
+    end: str
+
+    @property
+    def pattern(self) -> re.Pattern:
+        return re.compile(rf"\n?{re.escape(self.begin)}.*?{re.escape(self.end)}\n?", re.DOTALL)
+
+    def lone(self, text: str) -> str:
+        found = [marker for marker in (self.begin, self.end) if marker in text]
+        return found[0] if len(found) == 1 else ""
+
+
+@dataclass(frozen=True)
+class Briefing:
+    written: tuple[Path, ...] = ()
+    left: tuple[str, ...] = ()
 
 
 LAWS = (
@@ -39,6 +59,27 @@ CARTOON = Law("L5", "Every subagent dispatch names the agent: a cartoon characte
               ("subagent", "spawn_agent", "dispatch"), "everything")
 
 
+FORM = 2
+BEGIN = f"<!-- BEGIN: agent-journal, form {FORM} (auto-generated, run `journal upgrade`) -->"
+END = f"<!-- END: agent-journal, form {FORM} -->"
+CURRENT = re.compile(r"<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->", re.DOTALL)
+CONFLICTED = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
+GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
+CURRENT_MARKERS = Markers("<!-- BEGIN: agent-journal, form", "<!-- END: agent-journal, form")
+RETIRED = (
+    Markers("<!-- BEGIN: agent-journal (auto-generated, run `journal update`) -->", "<!-- END: agent-journal -->"),
+    Markers("<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->", "<!-- END: agent-journal law -->"),
+    Markers("<!-- journal rules -->", "<!-- /journal rules -->"),
+)
+PRECEDENCE = ("The journal's lines come first on how you report, how you carry on and what you say in the chat. "
+              "This file's own safety and deploy rules still stand. The user's own word comes before both.")
+NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")
+
+
+NAMING = {False: "Start the description with a human name, a little quirky and fitting the role, then a colon and the task, like \"Dr. Einstein: profile the slow hooks\".",
+          True: "Start the description with a cartoon character fitting the role, then a colon and the task, like \"Dora the Explorer: research the slow hooks\"."}
+
+
 def laws(record=None) -> tuple[Law, ...]:
     if record is None or not cartoon_names(record):
         return LAWS
@@ -48,49 +89,11 @@ def laws(record=None) -> tuple[Law, ...]:
 def cartoon_names(record) -> bool:
     from features.journal_laws.details import LawDetails
     return bool(LawDetails.values(record).cartoon_names)
-FORM = 2
-BEGIN = f"<!-- BEGIN: agent-journal, form {FORM} (auto-generated, run `journal upgrade`) -->"
-END = f"<!-- END: agent-journal, form {FORM} -->"
-CURRENT = re.compile(r"<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->", re.DOTALL)
-CONFLICTED = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
-GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
-
-
-@dataclass(frozen=True)
-class Markers:
-    begin: str
-    end: str
-
-    @property
-    def pattern(self) -> re.Pattern:
-        return re.compile(rf"\n?{re.escape(self.begin)}.*?{re.escape(self.end)}\n?", re.DOTALL)
-
-    def lone(self, text: str) -> str:
-        found = [marker for marker in (self.begin, self.end) if marker in text]
-        return found[0] if len(found) == 1 else ""
-
-
-CURRENT_MARKERS = Markers("<!-- BEGIN: agent-journal, form", "<!-- END: agent-journal, form")
-RETIRED = (
-    Markers("<!-- BEGIN: agent-journal (auto-generated, run `journal update`) -->", "<!-- END: agent-journal -->"),
-    Markers("<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->", "<!-- END: agent-journal law -->"),
-    Markers("<!-- journal rules -->", "<!-- /journal rules -->"),
-)
-
-
-@dataclass(frozen=True)
-class Briefing:
-    written: tuple[Path, ...] = ()
-    left: tuple[str, ...] = ()
 
 
 def carry(record=None) -> str:
     rows = "\n".join(f"  - {law.text}  [{law.name}]" for law in laws(record))
     return f"LAWS THE JOURNAL SHIPS, always in force:\n{rows}"
-
-
-PRECEDENCE = ("The journal's lines come first on how you report, how you carry on and what you say in the chat. "
-              "This file's own safety and deploy rules still stand. The user's own word comes before both.")
 
 
 def block(record=None, rules: tuple[str, ...] = ()) -> str:
@@ -130,7 +133,7 @@ def brief(project: Path, record) -> Briefing:
 def instructions_hash(project: Path) -> str:
     names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
     texts = [(project / name).read_text() for name in names if (project / name).is_file()]
-    return hashlib.sha1("\0".join(texts).encode()).hexdigest() if texts else ""
+    return digest("\0".join(texts)) if texts else ""
 
 
 def untouchable(text: str) -> str:
@@ -153,14 +156,8 @@ def leading(had: str, managed: str) -> str:
     if not rest.startswith("# "):
         return f"{managed}\n\n{rest}"
     head, _, after = rest.partition("\n")
-    return f"{head}\n\n{managed}\n{after if after.startswith(chr(10)) else chr(10) + after}"
-
-
-NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")
-
-
-NAMING = {False: "Start the description with a human name, a little quirky and fitting the role, then a colon and the task, like \"Dr. Einstein: profile the slow hooks\".",
-          True: "Start the description with a cartoon character fitting the role, then a colon and the task, like \"Dora the Explorer: research the slow hooks\"."}
+    separator = "\n" if after.startswith("\n") else "\n\n"
+    return f"{head}\n\n{managed}{separator}{after}"
 
 
 def refusal(dispatch, cartoon: bool = False) -> str:

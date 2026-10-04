@@ -7,7 +7,7 @@ from features import trigger
 from features.parts import AgentContext, Handler
 
 MINUTE = 60.0
-SENT_TIMES = "sent times"
+DAY = 24 * 60 * MINUTE
 
 
 @dataclass(frozen=True)
@@ -40,11 +40,7 @@ class Nudge:
         return self.capped(context, due) if self.most and due else due
 
     def capped(self, context, due: list[Sent]) -> list[Sent]:
-        sent = context.state.get(SENT_TIMES, {})
-        kept = [found for found in due if sent.get(f"{self.line}:{found.key}", 0) < self.most]
-        if kept:
-            context.state.set(SENT_TIMES, {**sent, **{f"{self.line}:{found.key}": sent.get(f"{self.line}:{found.key}", 0) + 1 for found in kept}})
-        return kept
+        return [found for found in due if context.at_most(self.line, found.key, self.most)]
 
 
 def send(context, nudges: tuple) -> None:

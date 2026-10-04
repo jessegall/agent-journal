@@ -1,5 +1,4 @@
 import fcntl
-import hashlib
 import json
 import os
 import re
@@ -19,6 +18,7 @@ from features.plugins.manifest import fill, read
 from install import fetch
 from resources.base import Refused
 from typing import NamedTuple, TypedDict
+from engine.wording import digest
 
 HOME = "plugins"
 CHOSEN = "chosen"
@@ -43,7 +43,7 @@ def data(root: Path, name: str) -> Path:
 
 
 def plugin_socket(root: Path, name: str) -> Path:
-    return Path("/tmp") / f"journal-{hashlib.sha1(str(data(root, name).resolve()).encode()).hexdigest()[:12]}.sock"
+    return Path("/tmp") / f"journal-{digest(str(data(root, name).resolve()), 12)}.sock"
 
 
 def log(root: Path, name: str) -> Path:

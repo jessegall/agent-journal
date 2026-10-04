@@ -8,6 +8,7 @@ DONE_SHOWN = 50
 from features.kanban.shifts import targets
 from features.plans.controller import ACTIVE
 from typing import TypedDict
+from features.nudges import DAY
 
 
 @dataclass
@@ -98,7 +99,7 @@ def sources_of(journal) -> Sources:
 def build(journal, done_days: float, plan: int, agent: str) -> BoardLanes:
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
-    since = time.time() - float(done_days) * 86400
+    since = time.time() - float(done_days) * DAY
     rows = [t for t in journal.todos._standing(closed_since=since, closed_last=DONE_SHOWN) if not t.completed or not t.struck]
     if plan:
         placed = next((p for p in plans if p.n == int(plan)), None)

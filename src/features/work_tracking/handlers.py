@@ -158,7 +158,6 @@ class TrackFiles(Handler):
 
 POLLED = 3
 OPEN_REMINDERS = 3
-OPEN_COUNTS = "open reminders"
 FIRST_AFTER = 5
 CARRY_ON_TIMES = 3
 POLLING = "polling"
@@ -203,11 +202,7 @@ class RemindOpenWork(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        for w in working(context)[:1]:
-            key, counts = f"{w.n}:{w.updated}", context.state.get(OPEN_COUNTS, {})
-            if counts.get(key, 0) >= OPEN_REMINDERS:
-                return
-            context.state.set(OPEN_COUNTS, {key: counts.get(key, 0) + 1})
+        for w in [w for w in working(context)[:1] if context.at_most("open", f"{w.n}:{w.updated}", OPEN_REMINDERS)]:
             context.agent.say("open" if w.sections else "unlogged", n=w.n)
 
 

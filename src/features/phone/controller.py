@@ -41,6 +41,7 @@ from features.work_modes.modes import mode_of, pick
 from features.helpers.controller import Helpers
 from features import FEATURES
 from surfaces.summary import JournalSummary, lately_summarized, subagents
+from features.nudges import DAY
 
 CODE_SECONDS = 600
 HELPERS_SHOWN = 10
@@ -341,7 +342,7 @@ class Phones(Controller):
                 return None
             key = secrets.token_urlsafe(32)
             named = titled(" ".join(str(device).split())[:DEVICE_LONGEST] or "A phone")
-            paired = super().update(phone.n, title=named, key=hashed(key), code="", short="", code_until=0, expires=now + phone.days * 86400, last_seen=now)
+            paired = super().update(phone.n, title=named, key=hashed(key), code="", short="", code_until=0, expires=now + phone.days * DAY, last_seen=now)
         Notices(Record(self.record.root, paired.environment), actor=SYSTEM).create(
             f"A phone connected, {named}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
         return paired, key

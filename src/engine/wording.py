@@ -1,3 +1,4 @@
+import hashlib
 import re
 
 SLUG = re.compile(r"[^a-z0-9]+")
@@ -9,6 +10,10 @@ def noun(n: int, word: str) -> str:
 
 def plural(n: int, word: str) -> str:
     return f"{n} {noun(n, word)}"
+
+
+def digest(text: str | bytes, length: int = 40) -> str:
+    return hashlib.sha1(text if isinstance(text, bytes) else text.encode()).hexdigest()[:length]
 
 
 def clipped(text: str, limit: int) -> str:

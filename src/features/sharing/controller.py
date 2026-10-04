@@ -13,6 +13,7 @@ from pathlib import Path
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
+from controllers.messages import Messages
 from engine.record import Record
 from features import FEATURES
 from features.shaping import shaping
@@ -24,9 +25,10 @@ from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, own
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
+from features.nudges import DAY
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
-SPANS = {"h": 3600, "d": 86400}
+SPANS = {"h": DAY / 24, "d": DAY}
 NEVER = ("", "0", "never")
 HASH_ROUNDS = 200_000
 REACH_SECONDS = 3
@@ -194,7 +196,7 @@ class Shares(Controller):
         return made
 
     def _show_visitor_comment(self, record, comment, ref: str) -> None:
-        CONTROLLERS["message"](record, actor=AGENT).create(
+        Messages(record, actor=AGENT).create(
             titled(f"{comment.data['visitor']} commented on {ref.replace(':', ' ')} through a shared link"),
             brief=f"{comment.brief}\n\nThe link has no password, so the agent does not act on this unless you let it.",
             buttons=[{"label": "Let the agent act on it", "type": "share", "n": comment.n, "action": "allow"}],
@@ -237,7 +239,7 @@ class Shares(Controller):
 
     def _ask_to_open(self, share, target) -> None:
         opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
-        CONTROLLERS["message"](self.record, actor=AGENT).create(
+        Messages(self.record, actor=AGENT).create(
             f"The agent wants to share {target.type} {target.n}",
             brief=f"The agent made a link to share {target.title} ({target.type} {target.n}). Nothing opens until you accept it.\n\n"
                   f"Whoever has the link will be able to view:\n{opens}\n\n{share.abstract}",

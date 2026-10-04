@@ -8,15 +8,16 @@ from providers.base import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
+from features.nudges import DAY
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "channels/*.jsonl": 1024 * 1024}
 EVENTS_KEPT = 100
-READERS_WITHIN = 86400
+READERS_WITHIN = DAY
 STAGING_FOR = 3600
-OUTPUTS_FOR = 86400
-ARCHIVES_FOR = 90 * 86400
+OUTPUTS_FOR = DAY
+ARCHIVES_FOR = 90 * DAY
 PROFILES_KEPT = 50
-FOLDS_FOR = 7 * 86400
+FOLDS_FOR = 7 * DAY
 
 
 @dataclass(frozen=True)
@@ -47,7 +48,7 @@ def tidy_files(root: Path, days: float) -> Tidied:
     runtime = root / "runtime"
     if not runtime.is_dir():
         return Tidied(leftovers=left)
-    quiet = time.time() - days * 86400
+    quiet = time.time() - days * DAY
     removed = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < quiet]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)

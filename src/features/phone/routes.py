@@ -1,4 +1,3 @@
-import hashlib
 import json
 import mimetypes
 import re
@@ -14,6 +13,8 @@ from features.sharing.page import PICTURES, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused
+from features.nudges import DAY
+from engine.wording import digest
 
 APP_PAGE = "phone.html"
 WORKER = "sw.js"
@@ -400,7 +401,7 @@ class PhoneRoutes:
         if paired is None:
             return handler.answer(410, "this code was used or has run out: make a new one on your computer")
         phone, key = paired
-        cookie = f"{COOKIE}={key}; Max-Age={int(phone.days * 86400)}; Path=/; Secure; HttpOnly; SameSite=Strict"
+        cookie = f"{COOKIE}={key}; Max-Age={int(phone.days * DAY)}; Path=/; Secure; HttpOnly; SameSite=Strict"
         return self.json(handler, 200, {"phone": phone.title, "environment": phone.environment, "expires": phone.expires}, {"Set-Cookie": cookie})
 
     def phone(self, handler):
@@ -436,7 +437,7 @@ class PhoneRoutes:
 
     def json(self, handler, code: int, body: dict, headers: dict | None = None) -> None:
         raw = json.dumps(body).encode()
-        tag = f'"{hashlib.sha1(raw).hexdigest()}"'
+        tag = f'"{digest(raw)}"'
         kept = {**APP_HEADERS, "ETag": tag, "Cache-Control": "private, no-cache"}
         if handler.command == "GET" and code == 200 and handler.headers.get("If-None-Match") == tag:
             return handler.send(304, b"", kept)

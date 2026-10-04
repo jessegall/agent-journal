@@ -1,4 +1,3 @@
-import hashlib
 import re
 from pathlib import Path
 
@@ -6,6 +5,7 @@ from engine.events.agents import AgentReported
 from engine.proc import git
 from features.parts import AgentContext, Context, Handler
 from resources.base import Refused
+from engine.wording import digest
 
 MADE_HERE = "commit"
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +)\d+\b)*)(?: +(.*))?$", re.MULTILINE)
@@ -22,7 +22,7 @@ class CloseRowsFromCommits(Handler):
         commits = self.log(project)
         if not commits:
             return
-        cursor = f"{context.feature.name}-{hashlib.sha1(str(head_log(project)).encode()).hexdigest()[:12]}"
+        cursor = f"{context.feature.name}-{digest(str(head_log(project)), 12)}"
         seen = context.record.cursor_text(cursor)
         context.record.set_cursor_text(cursor, commits[0][0])
         shas = [sha for sha, *_ in commits]
