@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 import {ordered} from "./waiting.js";
 
 const props = defineProps({waiting: {type: Array, required: true}});
@@ -19,7 +19,7 @@ const summary = computed(() => {
             <span class="waiting-dot" />
             <span class="waiting-summary">{{ summary }}</span>
             <span class="waiting-go">Review</span>
-            <PhoneChevron class="waiting-arrow" />
+            <Icon name="chevronRight" bold class="waiting-arrow" :size="14" />
         </button>
     </template>
 </template>

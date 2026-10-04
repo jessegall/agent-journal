@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 import {closed, here, phaseProgress, WAITS} from "./planGo.js";
 
@@ -35,7 +35,7 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
                 <span class="plan-sheet-kind">Plan {{ plan.n }}</span>
                 <button type="button" class="plan-sheet-full" @click="emit('read', `plan:${plan.n}`)">
                     Full plan
-                    <PhoneChevron :size="12" />
+                    <Icon name="chevronRight" bold :size="12" />
                 </button>
             </header>
             <h2>{{ plan.title }}</h2>
@@ -92,7 +92,7 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
                             <span class="plan-sheet-phase-count">
                                 {{ phase.todos.length ? `${closed(phase)} of ${phase.todos.length}` : "No to-dos yet" }}
                             </span>
-                            <PhoneChevron :size="12" :facing="opened.has(index + 1) ? 'down' : 'right'" />
+                            <Icon name="chevronRight" bold :size="12" :facing="opened.has(index + 1) ? 'down' : 'right'" />
                         </button>
                         <template v-if="opened.has(index + 1)">
                             <ul class="plan-sheet-todos" :aria-label="phaseProgress(phase)">

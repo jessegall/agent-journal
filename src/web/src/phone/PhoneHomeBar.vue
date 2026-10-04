@@ -1,7 +1,7 @@
 <script setup>
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneAtWorkChip from "./PhoneAtWorkChip.vue";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import PhonePlanStrip from "./PhonePlanStrip.vue";
 import PhoneWaiting from "./PhoneWaiting.vue";
@@ -29,7 +29,7 @@ const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list"
                 <span class="home-title">
                     <span class="home-dot" :style="{background: connection.color}" />
                     <span class="home-project">{{ connection.project }}</span>
-                    <PhoneChevron facing="down" :size="12" class="home-chevron" />
+                    <Icon name="chevronRight" bold facing="down" :size="12" class="home-chevron" />
                 </span>
                 <span :class="['home-note', {offline}]">
                     <template v-if="offline">

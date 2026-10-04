@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 import {here, phaseAt, phaseProgress, share, WAITS} from "./planGo.js";
 
 const SEGMENTS = 8;
@@ -57,7 +57,7 @@ onUnmounted(() => {
                     {{ where }}
                     <template v-if="folded">· {{ count }}</template>
                 </span>
-                <PhoneChevron :size="12" class="plan-chevron" />
+                <Icon name="chevronRight" bold :size="12" class="plan-chevron" />
             </span>
             <template v-if="!folded">
                 <span class="plan-row plan-progress">

@@ -1,9 +1,9 @@
 <script setup>
+import PhoneNavRow from "./PhoneNavRow.vue";
 import {computed} from "vue";
 import {ago} from "../format/time.js";
 import {kindWaiting} from "./kinds.js";
 import {ordered} from "./waiting.js";
-import PhoneChevron from "./PhoneChevron.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 
 const props = defineProps({waiting: {type: Array, required: true}});
@@ -17,14 +17,13 @@ const sorted = computed(() => ordered(props.waiting));
         <ul class="needs-list">
             <template v-for="item in sorted" :key="item.ref">
                 <li>
-                    <button type="button" :class="['needs-row', item.type]" @click="emit('open', item.ref)">
+                    <PhoneNavRow :class="['needs-row', item.type]" @click="emit('open', item.ref)">
                         <span class="needs-mark" />
                         <span class="needs-words">
                             <span class="needs-name">{{ item.title }}</span>
                             <span class="needs-kind">{{ kindWaiting(item.type) }} · {{ ago(item.created) }}</span>
                         </span>
-                        <PhoneChevron class="needs-chevron" />
-                    </button>
+                    </PhoneNavRow>
                 </li>
             </template>
         </ul>
@@ -54,17 +53,8 @@ const sorted = computed(() => ordered(props.waiting));
 }
 
 .needs-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
     min-height: 56px;
     padding: 8px 16px;
-    border: 0;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    text-align: left;
 }
 
 .needs-mark {
@@ -99,11 +89,6 @@ const sorted = computed(() => ordered(props.waiting));
 .needs-kind {
     color: var(--text-2);
     font-size: 0.765rem;
-}
-
-.needs-chevron {
-    flex: none;
-    color: var(--text-3);
 }
 
 .needs-close {

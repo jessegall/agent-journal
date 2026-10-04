@@ -6,7 +6,7 @@ import {ago} from "../format/time.js";
 import {kindCard, kindWord} from "./kinds.js";
 import {counted, plainDoing} from "./doing.js";
 import PhoneAgent from "./PhoneAgent.vue";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 
 const props = defineProps({
     place: {type: Object, required: true},
@@ -32,7 +32,7 @@ onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));
 <template>
     <div class="detail">
         <button type="button" class="detail-back" aria-label="Back to all journals" @click="emit('back')">
-            <PhoneChevron facing="left" :size="16" />
+            <Icon name="chevronRight" bold facing="left" :size="16" />
             Journals
         </button>
         <h3 ref="heading" class="detail-title" tabindex="-1">

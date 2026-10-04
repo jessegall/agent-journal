@@ -1,5 +1,5 @@
 <script setup>
-import Icon from "../kit/Icon.vue";
+import Icon from "./Icon.vue";
 
 defineProps({side: {type: String, default: ""}, name: {type: String, required: true}, when: {type: String, default: ""}, small: Boolean});
 </script>

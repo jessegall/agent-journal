@@ -1,7 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
-import PhoneChevron from "./PhoneChevron.vue";
 
 const props = defineProps({notices: {type: Array, required: true}});
 const emit = defineEmits(["open", "close"]);
@@ -36,7 +35,7 @@ const said = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${notice.dat
             <template v-if="notices.length > ALL_UP_TO">
                 <button type="button" class="notices-fold" :aria-expanded="opened" @click="opened = !opened">
                     <span class="notices-count">{{ opened ? "Show fewer" : `+${notices.length - 1} more` }}</span>
-                    <PhoneChevron :facing="opened ? 'down' : 'up'" :size="14" />
+                    <Icon name="chevronRight" bold :facing="opened ? 'down' : 'up'" :size="14" />
                 </button>
             </template>
         </div>
