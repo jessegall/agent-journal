@@ -126,7 +126,7 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     sequences.run(made.n)
     key = next(iter(sequences.load(made.n).runs))
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 600}})
-    late = lambda: [n for n in nudges(record) if "how is it going" in n]
+    late = lambda: [n for n in nudges(record) if "is still at step" in n]
     tick(record)
     assert len(late()) == 1, "a step handed ten minutes ago is called late"
     sequences.follow(made.n)
@@ -274,7 +274,7 @@ def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked()
     sequences.section(made.n, "Second", "do the second")
     sequences.run(made.n)
     key = next(iter(sequences.load(made.n).runs))
-    late = lambda: [n for n in nudges(record) if "how is it going" in n]
+    late = lambda: [n for n in nudges(record) if "is still at step" in n]
     CONTROLLERS["question"](record, actor=AGENT).create("Which colour for the button?")
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 90}})
     tick(record)
