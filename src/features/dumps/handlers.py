@@ -4,8 +4,8 @@ from typing import ClassVar
 from engine.events.engine import ClockTicked
 from engine.events.resources import MessageUpdated, ResourceEvent
 from engine.transcript import IDLE
+from engine.wording import plural
 from features.dumps.controller import OWN_WORDS
-from features.dumps.resource import ITEM
 from features.parts import AgentContext, Context, Handler
 from resources.base import USER
 
@@ -22,17 +22,9 @@ class DumpWritten(ResourceEvent):
 
 class PromptFiling(Handler):
     def handle(self, context: Context, event: DumpWritten) -> None:
-        dumps, agent = context.journal.dumps, context.journal.agents.primary()
+        dumps, speaking = context.journal.dumps, context.to_primary()
         dump = dumps.load(event.n)
-        speaking = context.speaking_to(agent) if agent else None
-        chosen = dump.data.get("chosen") or {}
-        if speaking and chosen and speaking.once("dump choice", f"{dump.n}:{chosen.get('at')}"):
-            if int(chosen.get("pick", -1)) == OWN_WORDS:
-                return
-            if int(chosen.get("pick", -1)) < 0:
-                speaking.agent.say("decide", n=dump.n)
-            else:
-                speaking.agent.say("chose", n=dump.n, label=chosen["label"])
+        if speaking and self.choice(speaking, dump):
             return
         if event.action == FILED:
             if speaking and not dump.data.get("stopped"):
@@ -42,14 +34,31 @@ class PromptFiling(Handler):
                 return
         elif getattr(dumps._in_hand(), "n", 0) != dump.n:
             return
-        answers = dump.data.get("answers") or []
-        if speaking and answers and speaking.once("dump answer", f"{dump.n}:{len(answers)}"):
-            speaking.agent.say("answered", n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"])
+        if speaking and self.answer(speaking, dump):
             return
-        items = dump.data.get("items") or {}
-        waiting = [name for name in dumps._names(dump) if not (items.get(name) or {}).get(ITEM.insight)]
-        if agent and waiting and not dump.completed:
-            context.speaking_to(agent).agent.say("arrived", n=dump.n, count=context.feature.plural(len(waiting), "item"))
+        waiting = [name for name in dump.item_names if not dump.item(name).insight]
+        if speaking and waiting and not dump.completed:
+            speaking.agent.say("arrived", n=dump.n, count=plural(len(waiting), "item"))
+
+    def choice(self, speaking: AgentContext, dump) -> bool:
+        chosen = dump.data.get("chosen") or {}
+        if not chosen or not speaking.once("dump choice", f"{dump.n}:{chosen.get('at')}"):
+            return False
+        pick = int(chosen.get("pick", -1))
+        if pick == OWN_WORDS:
+            return True
+        if pick < 0:
+            speaking.agent.say("decide", n=dump.n)
+        else:
+            speaking.agent.say("chose", n=dump.n, label=chosen["label"])
+        return True
+
+    def answer(self, speaking: AgentContext, dump) -> bool:
+        answers = dump.data.get("answers") or []
+        if not answers or not speaking.once("dump answer", f"{dump.n}:{len(answers)}"):
+            return False
+        speaking.agent.say("answered", n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"])
+        return True
 
 
 class TranscriptToDump(Handler):
@@ -74,8 +83,7 @@ class CarryOnFiling(Handler):
         dump = dumps._in_hand()
         if not dump or (dump.data.get("question") or {}).get("text"):
             return
-        items = dump.data.get("items") or {}
-        left = [name for name in dumps._names(dump) if not ((items.get(name) or {}).get(ITEM.outcome) or (items.get(name) or {}).get(ITEM.failed))]
+        left = [name for name in dump.item_names if not dump.item(name).settled]
         stretch = f"{dump.n}:{context.agent.row.at}"
         if left and context.once("carried", stretch):
-            context.agent.say("carry on", n=dump.n, count=context.feature.plural(len(left), "item"))
+            context.agent.say("carry on", n=dump.n, count=plural(len(left), "item"))
