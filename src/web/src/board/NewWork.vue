@@ -1,4 +1,6 @@
 <script setup>
+import {useFileHandIn} from "../composables/fileHandIn.js";
+import {useWindowEvent} from "../composables/windowEvent.js";
 import {wait} from "../platform/timing.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -249,15 +251,14 @@ watch(
 
 const {openChat} = useFloatingChat();
 
-const LISTENERS = {keydown: onKey, dragover: (e) => hovering(e), drop: (e) => dropped(e), paste: (e) => pastedFile(e)};
+useWindowEvent("keydown", onKey);
+useFileHandIn({active: () => props.open && !since.value, take});
 onMounted(() => {
-    Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener));
     WIDE.addEventListener("change", fits);
     SMALL.addEventListener("change", fits);
     window.visualViewport && window.visualViewport.addEventListener("resize", measured);
 });
 onUnmounted(() => {
-    Object.entries(LISTENERS).forEach(([event, listener]) => window.removeEventListener(event, listener));
     WIDE.removeEventListener("change", fits);
     SMALL.removeEventListener("change", fits);
     window.visualViewport && window.visualViewport.removeEventListener("resize", measured);
@@ -347,22 +348,6 @@ async function hand() {
         failed.value = file.name;
     }
 }
-
-function dropped(e) {
-    const file = e.dataTransfer && e.dataTransfer.files[0];
-    if (!props.open || !file || since.value) return;
-    e.preventDefault();
-    take(file);
-}
-
-function pastedFile(e) {
-    const file = props.open && e.clipboardData && e.clipboardData.files[0];
-    if (!file || since.value) return;
-    e.preventDefault();
-    take(file);
-}
-
-const hovering = (e) => props.open && !since.value && e.preventDefault();
 
 function filed(text, id) {
     if (drafts.value.length) return api.reviseWork(props.board.n, text, id);

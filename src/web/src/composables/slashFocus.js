@@ -1,4 +1,4 @@
-import {onMounted, onUnmounted} from "vue";
+import {useWindowEvent} from "./windowEvent.js";
 
 const TYPING = ["INPUT", "TEXTAREA", "SELECT"];
 
@@ -8,6 +8,5 @@ export function useSlashFocus(field, on = () => true) {
         event.preventDefault();
         field.value?.focus();
     }
-    onMounted(() => window.addEventListener("keydown", slash));
-    onUnmounted(() => window.removeEventListener("keydown", slash));
+    useWindowEvent("keydown", slash);
 }

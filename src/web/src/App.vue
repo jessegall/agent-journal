@@ -1,4 +1,5 @@
 <script setup>
+import {useWindowEvent} from "./composables/windowEvent.js";
 import {chatOnly, narrow, soloView} from "./platform/view.js";
 import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
@@ -156,18 +157,11 @@ function onWide(e) {
         store.wide = !store.wide;
     }
 }
-window.addEventListener("pointerdown", sawPointer, true);
-window.addEventListener("keydown", sawKeyMove, true);
-window.addEventListener("keydown", onSpace);
-window.addEventListener("keydown", onWide);
-window.addEventListener("keydown", onOpenFile);
-onUnmounted(() => {
-    window.removeEventListener("pointerdown", sawPointer, true);
-    window.removeEventListener("keydown", sawKeyMove, true);
-    window.removeEventListener("keydown", onSpace);
-    window.removeEventListener("keydown", onWide);
-    window.removeEventListener("keydown", onOpenFile);
-});
+useWindowEvent("pointerdown", sawPointer, true);
+useWindowEvent("keydown", sawKeyMove, true);
+useWindowEvent("keydown", onSpace);
+useWindowEvent("keydown", onWide);
+useWindowEvent("keydown", onOpenFile);
 
 onMounted(startBoot);
 onUnmounted(() => clearTimeout(bootTimer));

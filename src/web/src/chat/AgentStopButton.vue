@@ -1,6 +1,6 @@
 <script setup>
 import {onUnmounted, watch} from "vue";
-import {useAnchoredAction} from "../actions/anchored.js";
+import {useAnchoredAction} from "../composables/anchored.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import MenuPanel from "../kit/MenuPanel.vue";

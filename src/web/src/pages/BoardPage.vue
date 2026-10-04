@@ -1,6 +1,7 @@
 <script setup>
+import {useWindowEvent} from "../composables/windowEvent.js";
 import {saveSettings} from "../actions/settings.js";
-import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {computed, onMounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -67,8 +68,8 @@ const KEYS = {"/": () => finder.value.focus(), n: newWork, z: (e) => (e.metaKey 
 const openFlow = () => writingWork.value || newBoard.value;
 const onKey = (e) =>
     KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key](e));
+useWindowEvent("keydown", onKey);
 onMounted(async () => {
-    window.addEventListener("keydown", onKey);
     const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
     newBoard.value = route.value.q === "new" || (!known.length && !remembered(FIRST_BOARD_SEEN, false));
     settle(known);
@@ -119,7 +120,6 @@ function boardMade(n) {
     leaveNewBoard();
     lens({board: n});
 }
-onUnmounted(() => window.removeEventListener("keydown", onKey));
 const chosenPlan = computed(() => store.board.lens.plan);
 
 function made(n) {

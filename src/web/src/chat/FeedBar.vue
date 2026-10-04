@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {useAnchoredAction} from "../composables/anchored.js";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
@@ -9,7 +9,7 @@ import ToggleItem from "../kit/ToggleItem.vue";
 
 const props = defineProps({options: {type: Object, required: true}, filter: {type: String, default: ""}});
 const emit = defineEmits(["options", "filter", "expand"]);
-const anchor = ref(null);
+const {anchor, toggle} = useAnchoredAction();
 const TOGGLES = [
     {key: "headers", label: "Headers only", icon: "file"},
     {key: "collapse", label: "Collapse big files", icon: "minimize"},
@@ -30,7 +30,6 @@ const LINES = [
 const limited = (key) => key === "collapse" && Number(props.options.lines) > 0;
 const set = (patch) => emit("options", {...props.options, ...patch});
 const sized = (by) => set({size: Math.max(SIZES[0], Math.min(SIZES[SIZES.length - 1], props.options.size + by))});
-const toggle = (e) => (anchor.value = anchor.value ? null : e.currentTarget);
 
 function expand() {
     anchor.value = null;
