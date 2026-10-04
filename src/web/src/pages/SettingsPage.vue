@@ -1,4 +1,5 @@
 <script setup>
+import {saveSettings} from "../actions/settings.js";
 import {demo} from "../platform/demo.js";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -41,7 +42,7 @@ const delivers = (how) => {
 };
 
 async function setDelivery(how, value) {
-    await api.saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
+    await saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
 }
 
 const viewerOn = (key) => (store.settings?.viewer || {})[key] !== false;

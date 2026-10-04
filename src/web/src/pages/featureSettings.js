@@ -1,3 +1,4 @@
+import {saveSettings} from "../actions/settings.js";
 import {computed} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
@@ -26,11 +27,11 @@ export function on(name, fallback = false) {
 }
 
 export async function flip(name, value) {
-    await api.saveSettings({features: {...saved("features"), [name]: value}});
+    await saveSettings({features: {...saved("features"), [name]: value}});
 }
 
 async function setTrigger(f, next) {
-    await api.saveSettings({triggers: {...saved("triggers"), [f.name]: next}});
+    await saveSettings({triggers: {...saved("triggers"), [f.name]: next}});
 }
 
 export function every(f, value) {

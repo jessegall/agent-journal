@@ -1,4 +1,5 @@
 <script setup>
+import {saveSettings} from "../actions/settings.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
@@ -10,7 +11,7 @@ const days = ref({});
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 
 async function saveRetention(type) {
-    await api.saveSettings({keep: {...retention.value, [type]: Number(days.value[type])}});
+    await saveSettings({keep: {...retention.value, [type]: Number(days.value[type])}});
 }
 </script>
 

@@ -1,4 +1,5 @@
 <script setup>
+import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -23,7 +24,7 @@ const pieces = (text) =>
 const valueOf = (setting) => saved(props.feature.name)[setting.name] ?? setting.default;
 
 async function saveSetting(setting, value) {
-    store.settings = await api.saveSettings({[props.feature.name]: {...saved(props.feature.name), [setting.name]: value}});
+    await saveSettings({[props.feature.name]: {...saved(props.feature.name), [setting.name]: value}});
 }
 </script>
 
