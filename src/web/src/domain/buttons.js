@@ -2,10 +2,13 @@ export const allButtons = (row) => (Array.isArray(row.data.buttons) ? row.data.b
 
 export const pressedLabels = (row) => [].concat(row.data.pressed || []);
 
-export function spent(row, button) {
-    const pressed = pressedLabels(row);
-    const chosen = new Set(allButtons(row).filter((b) => b.choice && pressed.includes(b.label)).map((b) => b.choice));
+function usedAmong(buttons, pressed, button) {
+    const chosen = new Set(buttons.filter((b) => b.choice && pressed.includes(b.label)).map((b) => b.choice));
     return (!button.again && pressed.includes(button.label)) || Boolean(button.choice && chosen.has(button.choice));
 }
 
-export const liveButtons = (row) => allButtons(row).filter((b) => !spent(row, b));
+export const spent = (row, button) => usedAmong(allButtons(row), pressedLabels(row), button);
+
+export const unpressed = (buttons, pressed) => buttons.filter((b) => !usedAmong(buttons, pressed, b));
+
+export const liveButtons = (row) => unpressed(allButtons(row), pressedLabels(row));

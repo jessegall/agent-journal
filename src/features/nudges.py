@@ -27,6 +27,10 @@ class Nudge:
     most: int = 0
     first: bool = False
 
+    def __post_init__(self) -> None:
+        if self.first and not self.most:
+            raise ValueError(f"nudge {self.line} offers the first row under a cap, so it needs most")
+
     def cadence(self, context) -> trigger.Trigger:
         spec = context.feature.cadence(context.record, self.behaviour)
         return spec if self.pace is None else replace(spec, every=self.pace(context))

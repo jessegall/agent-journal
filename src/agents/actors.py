@@ -99,7 +99,7 @@ class Agent(Actor):
         row = agents._titled(reported.title) if reported is not None else None
         if row is None:
             return
-        earlier = list(row.delivered) if row.status == WORKING else []
+        earlier = [] if row.status in (IDLE, STOPPED) else list(row.delivered)
         agents.update(row.n, delivered=list(dict.fromkeys([*earlier, *(f"{e.type}:{e.n}" for e in done)])))
 
     def flush(self) -> str:

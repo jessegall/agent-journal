@@ -9,6 +9,7 @@ SKIPPED = object()
 class Loaded:
     aliases: ClassVar[dict] = {}
     keyed_by: ClassVar[str] = ""
+    string_key: ClassVar[str] = ""
 
     @classmethod
     def from_json(cls, raw):
@@ -42,7 +43,7 @@ def converter(kind):
     if base in (Any, object):
         return lambda value: value
     if isinstance(base, type) and issubclass(base, Loaded):
-        return lambda value: base.from_json(value) if isinstance(value, dict) and value else SKIPPED
+        return lambda value: loaded(base, value)
     if base is tuple:
         return items(next(iter(get_args(kind)), Any))
     if base in (dict, list):
@@ -52,6 +53,14 @@ def converter(kind):
     if base is int:
         return lambda value: value if type(value) is int else int(float(value))
     return base
+
+
+def loaded(base, value):
+    if isinstance(value, str) and base.string_key and value:
+        return base.from_json({base.string_key: value})
+    if isinstance(value, dict) and value:
+        return base.from_json(value)
+    return SKIPPED
 
 
 def items(kind):

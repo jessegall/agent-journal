@@ -7,7 +7,7 @@ from tests.conftest import fresh, refused
 from controllers.types import Agents, Nudges, Questions, Todos, Works
 from resources.base import SYSTEM
 from features.work_tracking.auto import QUIET_FOR, still_there
-from features.work_tracking.next import next, ready
+from features.work_tracking.next import ready
 from resources.base import AGENT, USER
 from tests.kit import idle, nudges
 
@@ -110,13 +110,20 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     report(stopped, "working", "PreToolUse")
     works.action("await")("the CI run on main")
     assert len(idle_for(6)) == 3, "work it declared a wait on is left to the wait"
+    asking = fresh()
+    row = Todos(asking, actor=AGENT).create("the schema")
+    Todos(asking, actor=AGENT).start(row.n)
+    stopped, agents = asking, Agents(asking, actor=SYSTEM)
+    assert len(idle_for(6)) == 1, "work on a row is told to carry on"
+    Todos(asking, actor=AGENT).ask(row.n, "Files or SQLite?")
+    assert len(idle_for(16)) == 1, "work whose row waits on a question is left to the question"
 
 
 def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_ready():
     record = fresh()
     todos = Todos(record, actor=USER)
     a, b, c, d, e = (todos.create(t) for t in ("a", "b", "c", "d", "e"))
-    assert next(record).n == a.n, "nothing set: the first row by number"
+    assert ready(record)[0].n == a.n, "nothing set: the first row by number"
     todos.priority(c.n, "critical")
     assert [t.n for t in ready(record)] == [c.n, a.n, b.n, d.n, e.n], "a higher priority comes first"
     todos.priority(e.n, "high")
@@ -127,22 +134,22 @@ def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_
     todos.priority(e.n, "default")
     todos.priority(b.n, "100")
     todos.set(c.n, "blocked", "the release is not cut")
-    assert next(record).n == a.n, "a blocked row is skipped"
+    assert ready(record)[0].n == a.n, "a blocked row is skipped"
     todos.after(a.n, str(b.n))
-    assert next(record).n == b.n, "a row waiting on an open row is skipped"
+    assert ready(record)[0].n == b.n, "a row waiting on an open row is skipped"
     todos.complete(b.n, "done")
-    assert next(record).n == a.n, "its prerequisite closed, the row is ready again"
+    assert ready(record)[0].n == a.n, "its prerequisite closed, the row is ready again"
     Questions(record, actor=AGENT).create("which way", about=a.ref).n
     Questions(record, actor=AGENT).link(1, a.ref)
-    assert next(record).n == d.n, "a row with an open question waits on the user"
+    assert ready(record)[0].n == d.n, "a row with an open question waits on the user"
     work = Todos(record, actor=AGENT).start(d.n)
     Works(record, actor=AGENT).update(work.n, parked="a subagent holds it")
-    assert next(record).n == e.n, "a row whose work is open, even parked, is not offered again"
+    assert ready(record)[0].n == e.n, "a row whose work is open, even parked, is not offered again"
     Questions(record, actor=USER).complete(1, "this way")
-    assert next(record).n == a.n, "answered: the row is ready"
+    assert ready(record)[0].n == a.n, "answered: the row is ready"
     for t in ready(record):
         todos.complete(t.n, "done")
-    assert next(record) is None, "nothing ready: nothing"
+    assert ready(record) == [], "nothing ready: nothing"
 
 
 def test_a_mistyped_command_through_the_server_says_what_is_wrong():

@@ -84,6 +84,10 @@ def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal
                                                                      "tool_name": "AskUserQuestion", "tool_input": {"questions": [{"question": "Keep the old parser?", "options": [{"label": "Yes"}, {"label": "No"}]}]}})
     assert (passed.get("decision"), Questions(record, actor=AGENT).all()[-1].title) == (None, "Which store - files or SQLite?"), \
         "a subagent gets no journal guard: its question tool is left to it"
+    handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-1", "tool_name": "request_user_input_async",
+                                                           "tool_input": {"questions": [{"title": "Which port?", "options": ["8080", "9090"]}]}})
+    question = Questions(record, actor=AGENT).all()[-1]
+    assert (question.title, [o["title"] for o in question.data["options"]]) == ("Which port?", ["8080", "9090"]), "Codex's async question with plain options is filed too"
 
 
 def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_on_the_users_side():
