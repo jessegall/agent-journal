@@ -174,6 +174,7 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     monkeypatch.setattr(Shares, "_answering", lambda self, wait=0: False)
     monkeypatch.setattr(watchdog, "serving", lambda root: True)
+    monkeypatch.setattr(watchdog, "reached", lambda url, wait=0: True)
     tick(record)
     tick(record)
     assert asked == [], "two missed checks are not enough: a busy machine can miss one or two"
@@ -190,6 +191,13 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     assert asked[-1] == watchdog.SERVER, "with the phone's server itself down, the server is what is restarted"
     from controllers.types import Nudges
     assert len([n for n in Nudges(record, actor=USER).all() if "phone's address did not answer" in n.title]) == 2, "and the agent is told each time"
+    monkeypatch.setattr(watchdog, "reached", lambda url, wait=0: False)
+    restarts = len(asked)
+    for _ in range(9):
+        watchdog.State(record.root / "runtime" / "sharing-tunnel.json").set("restarted", 0)
+        tick(record)
+    assert (len(asked), len([n for n in Nudges(record, actor=USER).all() if "answers for no address" in n.title])) == (restarts, 1), \
+        "with the tunnel server answering for no address at all, nothing is restarted and the agent is told once"
 
 
 def test_a_layout_link_hands_the_layout_once_to_any_viewer():
