@@ -52,6 +52,7 @@ from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching, project_path, read_source
 from engine.paths import contained
 from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
+from commands.invoke import invoked
 from features.format import KEEP_SHAPED, VIEWER, formatted, settled, shaped
 from commands.dispatch import dispatch  # noqa: F401
 
@@ -1104,8 +1105,8 @@ def get_all(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}")
 def post_create(req: Request) -> Reply:
-    controller = req.controller()
-    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))}), req.record(), VIEWER))
+    created = invoked(req.controller(), "create", named={**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))})
+    return Reply(201, shaped(created, req.record(), VIEWER))
 
 
 @route("GET", "/api/{env}/{type}/{n}")
@@ -1158,16 +1159,16 @@ def post_upload(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}/read-all")
 def post_read_all(req: Request) -> Reply:
-    controller = req.controller()
-    return Reply(200, represented(controller.read_all(req.body.get("numbers", [])), req.record()))
+    return Reply(200, represented(invoked(req.controller(), "read_all", (req.body.get("numbers", []),)), req.record()))
 
 
 @route("POST", "/api/{env}/{type}/{action}")
 def post_action_bare(req: Request) -> Reply:
-    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body), req.record()), timed=not networked(req.params["type"], req.params["action"]))
+    got = invoked(req.controller(), req.params["action"], named=req.body)
+    return Reply(201, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))
 
 
 @route("POST", "/api/{env}/{type}/{n}/{action}")
 def post_action(req: Request) -> Reply:
-    got = req.controller().method(req.params["action"])(int(req.params["n"]), **req.body)
+    got = invoked(req.controller(), req.params["action"], (int(req.params["n"]),), req.body)
     return Reply(200, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))

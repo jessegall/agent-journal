@@ -170,9 +170,6 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return Reply(404, {"error": str(e)})
     except Refused as e:
         return Reply(400, {"error": str(e)})
-    except (TypeError, AttributeError) as e:
-        threw(root, req.env, f"{method} {path}")
-        return Reply(400, {"error": f"not an action here: {e}"})
     except Exception as e:
         threw(root, req.env, f"{method} {path}")
         return Reply(500, {"error": f"{type(e).__name__}: {e}"})

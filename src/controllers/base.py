@@ -282,10 +282,7 @@ class Controller(Stored, Files, Links, Discussed):
 
     @internal
     def method(self, name: str):
-        for method, alias in self.resource.command_names.items():
-            if alias == name:
-                return getattr(self, method)
-        if name in self.resource.command_names:
+        if name in self.resource.command_names and name not in self.resource.command_names.values():
             raise Refused(f"a {self.type} calls that {self.resource.command_names[name]}")
         return self.action(name)
 
