@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.245.2 — auto mode stops repeating an offer that is passed
+
+**Auto mode offers the same ready row three times at most while the agent does not take it**, instead of at every
+idle. A replay with a Codex helper showed the same row offered about seventy times in fifteen minutes, each one
+answered in the chat. A row that changes, such as one taken and later ready again, is offered afresh.
+
 ## 2.245.1 — a command Codex detaches is watched too
 
 **Codex sometimes starts a background command detached, as `(command) & echo $!`, which leaves no exec session
