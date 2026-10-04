@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events.resources import ResourceCreated, ResourceEvent
-from features.journal_laws.policy import brief
+from features.journal_laws.briefing import brief
 from features.parts import Context, Handler
 from resources.base import AGENT
 

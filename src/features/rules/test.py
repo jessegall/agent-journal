@@ -1,5 +1,5 @@
 from controllers.types import Facts, Nudges, Rules
-from features.journal_laws.policy import BEGIN, END, brief
+from features.journal_laws.briefing import BEGIN, END, brief
 from runner.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER

@@ -2,17 +2,18 @@ from agents.terminal import OUTPUT_LINES
 from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs
-from features.journal_laws.details import LawDetails
-from features.journal_laws.handlers import TOO_LONG, CheckChangedInstructions, NoticeLargestResult, long_briefings
+from features.journal_laws.briefing import long_briefings
+from features.journal_laws.details import TOO_LONG, LawDetails
+from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword
-from features.journal_laws.policy import carry
+from features.journal_laws.laws import carry
 from features.nudges import Nudge
 from features.session_briefing.start import LAW, START_PARTS
 
 __all__ = ["Outputs"]
 
 
-class Law(Feature):
+class JournalLaws(Feature):
     details = LawDetails
     nudges = (Nudge(TOO_LONG, behaviour=TOO_LONG, about=long_briefings),)
 
