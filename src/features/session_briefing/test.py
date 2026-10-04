@@ -111,12 +111,12 @@ def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
 
 def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path):
     import json
-    from channel import contents, fresh_lines, start
+    from providers.claude_channel import contents, fresh_lines, start
     f = tmp_path / "channel.jsonl"
     at = start(f)
     f.write_text(json.dumps({"content": "your last message has no tag"}) + "\n")
     assert contents(fresh_lines(f, at)[0]) == ["your last message has no tag"], "the first line written after the channel started is sent"
-    from channel import build, renewed
+    from providers.claude_channel import build, renewed
     for name in ("journal-1.0.0-a.pyz", "journal-1.0.1-b.pyz"):
         (tmp_path / name).write_text("")
     (tmp_path / "journal.pyz").symlink_to("journal-1.0.0-a.pyz")
@@ -126,7 +126,7 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     (tmp_path / "journal.pyz").symlink_to("journal-1.0.1-b.pyz")
     assert renewed(tmp_path, began), "a newly installed build restarts the channel in place, keeping its connection"
     import os
-    from channel import READ_AT
+    from providers.claude_channel import READ_AT
     os.environ[READ_AT] = str(at)
     assert (start(f), READ_AT in os.environ) == (at, False), "the restarted channel reads on from where it stopped, so nothing queued meanwhile is skipped"
 
