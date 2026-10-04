@@ -2,7 +2,7 @@ from features.base import FeatureDetails
 from features.settings import Setting
 
 
-class AddressDetails(FeatureDetails):
+class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
     has_skill = False
 

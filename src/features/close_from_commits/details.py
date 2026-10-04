@@ -1,7 +1,7 @@
 from features.base import FeatureDetails, Line
 
 
-class CommitsDetails(FeatureDetails):
+class CloseFromCommitsDetails(FeatureDetails):
     name = "close_from_commits"
     has_skill = False
 

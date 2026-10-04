@@ -1,11 +1,11 @@
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
 from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
+from engine.proc import git
 from engine.wording import plural
 from engine.stored import read_json, write_json
 from providers import PROVIDERS
@@ -27,28 +27,21 @@ def listed(record: Record) -> Path:
 
 
 def moved(record: Record) -> list[dict]:
-    return read_json(listed(record), list, []) + (state(record).get("moved") or [])
+    return read_json(listed(record), list, [])
 
 
 def keep_moved(record: Record, entries: list[dict]) -> None:
     place(record).mkdir(parents=True, exist_ok=True)
     write_json(listed(record), entries)
-    if state(record).get("moved"):
-        record.set_setting(KEY, {**state(record), "moved": []})
 
 
 def others(project: Path, agent: str) -> list[Path]:
     return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, dict, {})) != read_json(f, dict, {})]
 
 
-def git(folder: Path, *args: str) -> str:
-    done = subprocess.run(["git", "-C", str(folder), *args], capture_output=True, text=True, timeout=30)
-    return done.stdout if done.returncode == 0 else ""
-
-
 def hide(folder: Path, files: list[str], hidden: bool) -> None:
     if files:
-        git(folder, "update-index", "--skip-worktree" if hidden else "--no-skip-worktree", "--", *files)
+        git(["update-index", "--skip-worktree" if hidden else "--no-skip-worktree", "--", *files], folder, timeout=30)
 
 
 def kept(settings) -> dict:
