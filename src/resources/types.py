@@ -100,6 +100,7 @@ class Doc(Shape, Resource):
         Field(default=0, name="revisions"),
         Field(default=0, name="open_until"),
         Field(default=False, name="written"),
+        Field(default=False, name="hidden"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Document",
@@ -321,7 +322,6 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="monitors"),
         Field(default=list, name="monitor_rows"),
         Field(default="", name="parent"),
-        Field(default="", name="dispatcher"),
         Field(FLAG, False, name="compacting"),
         Field(default=dict, name="running"),
         Field(default=list, name="commands"),
@@ -500,6 +500,9 @@ class Environment(Shape, Resource):
     @property
     def helping(self) -> bool:
         return self.owner.startswith(f"{HELPER}:")
+
+    def owned_by(self, kind: str) -> int:
+        return int(self.owner.split(":")[1]) if self.owner.startswith(f"{kind}:") else 0
 
 
 class Ask(Shape, Resource):
