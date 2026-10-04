@@ -7,7 +7,7 @@ import {EASE, hydrate, still} from "../composables/hydrate.js";
 import {closeUpdate, updateView} from "./updateView.js";
 import {markSeen} from "../sync/seen.js";
 import {rows} from "../sync/rows.js";
-import {peek, route} from "../route.js";
+import {href, peek, route} from "../route.js";
 
 const FULL = "inset(0px 0px 0px 0px round 0px)";
 const LEADS = ".body > .head, .body > .abstract, .body > .controls";
@@ -131,7 +131,7 @@ async function toPanel() {
 
 function all() {
     done();
-    location.hash = `#/${route.value.env}/report?sub=updates`;
+    location.hash = href.reportUpdates(route.value.env);
 }
 
 const onKey = (e) => e.key === "Escape" && !route.value.open && shrink();

@@ -6,7 +6,7 @@ import EmptyState from "../kit/EmptyState.vue";
 import ListRow from "../kit/ListRow.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import RoleCard from "../organization/RoleCard.vue";
-import {peek, route} from "../route.js";
+import {href, peek, route} from "../route.js";
 import {store} from "../state/store.js";
 
 const domains = computed(() => store.organization && store.organization.domains);
@@ -37,7 +37,7 @@ async function draft() {
             </template>
         </template>
         <template v-if="opened">
-            <a class="back" :href="`#/${route.env}/organization`">All domains</a>
+            <a class="back" :href="href.organization(route.env)">All domains</a>
         </template>
         <template v-for="domain in shown" :key="domain.name">
             <section class="domain">

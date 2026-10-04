@@ -28,7 +28,7 @@ import ShiftPrompt from "../board/ShiftPrompt.vue";
 import StopPrompt from "../board/StopPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
 import {poke, usePoll} from "../poll.js";
-import {peek, route} from "../route.js";
+import {href, peek, route} from "../route.js";
 import {boardOn, store} from "../state/store.js";
 
 const SKELETON = ["To do", "Held", "Doing", "Needs you", "Done"].map((title) => ({key: title, title, cards: []}));
@@ -350,7 +350,7 @@ const ask = usePoll(
         <template v-if="!boardOn">
             <p class="off">
                 The Kanban board is off.
-                <a :href="`#/${route.env}/settings`">Turn it on in Settings</a>
+                <a :href="href.page(route.env, 'settings')">Turn it on in Settings</a>
             </p>
         </template>
         <template v-else-if="empty && !tickets">

@@ -30,12 +30,24 @@ export const route = computed(() => {
     };
 });
 
+export const href = {
+    page: (env, page = "", n = 0, q = "") =>
+        `#/${env}${page ? `/${page}` : ""}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+    file: (env, path, line = 0, sub = "") =>
+        `#/${env}/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}${sub ? `&sub=${sub}` : ""}`,
+    commit: (env, sha) => `#/${env}/commit/${sha}`,
+    pluginPage: (env, page) => `#/${env}/page/${page.plugin}.${page.name}`,
+    organization: (env, domain = "") => `#/${env}/organization${domain ? `/${domain}` : ""}`,
+    reportUpdates: (env) => `#/${env}/report?sub=updates`,
+    opened: (env, page, ref) => `${href.page(env, page)}?open=${ref}`,
+};
+
 export function go(env, page = "", n = 0, q = "") {
-    location.hash = `#/${env}${page ? `/${page}` : ""}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`;
+    location.hash = href.page(env, page, n, q);
 }
 
 export function showFile(env, path, line = 0) {
-    location.hash = `#/${env}/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}`;
+    location.hash = href.file(env, path, line);
 }
 
 const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
@@ -66,22 +78,23 @@ export function peekThere(env, type, n, comment = 0, sub = "") {
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment, env}], sub);
 }
 
-export function peekIn(env, type, n) {
-    location.hash = `#/${env}?open=${type}:${n}`;
-}
-
 export function peekRef(ref) {
     const [row, env] = ref.split("@");
     const [type, n] = row.split(":");
     return env ? peekThere(env, type, Number(n)) : peek(type, Number(n));
 }
 
-export function peekChip(e) {
-    const chip = e.target.closest("[data-peek]");
-    if (!chip) return;
-    e.preventDefault();
-    e.stopPropagation();
-    peekRef(chip.dataset.peek);
+export function chipTarget(event) {
+    const chip = event.target.closest("[data-peek]");
+    if (!chip) return "";
+    event.preventDefault();
+    event.stopPropagation();
+    return chip.dataset.peek;
+}
+
+export function peekChip(event) {
+    const target = chipTarget(event);
+    if (target) peekRef(target);
 }
 
 export function swap(type, n) {

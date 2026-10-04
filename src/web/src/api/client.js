@@ -1,4 +1,4 @@
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {LONG_WAIT_MS, transport} from "./transport.js";
 
 const encoded = (value) => encodeURIComponent(value);
@@ -476,7 +476,7 @@ export class ApiClient {
     }
 
     page(env, page = "") {
-        return `${this.base}/#/${env}${page ? `/${page}` : ""}`;
+        return `${this.base}/${href.page(env, page)}`;
     }
 
     origin() {

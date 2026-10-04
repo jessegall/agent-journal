@@ -2,7 +2,7 @@
 import EmptyState from "../kit/EmptyState.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {clock} from "../format/time.js";
 import Diff from "../kit/Diff.vue";
 
@@ -61,11 +61,7 @@ function blocks(f) {
             <div class="files">
                 <template v-for="f in files" :key="f.path">
                     <div class="file">
-                        <a
-                            class="path"
-                            :href="`#/${route.env}/file?q=${encodeURIComponent(f.path.replace(/\{.*=> (.*)\}/, '$1'))}`"
-                            :title="`Open ${f.path}`"
-                        >
+                        <a class="path" :href="href.file(route.env, f.path.replace(/\{.*=> (.*)\}/, '$1'))" :title="`Open ${f.path}`">
                             {{ f.path }}
                         </a>
                         <span class="count">{{ f.count }}</span>
@@ -77,7 +73,7 @@ function blocks(f) {
                     </div>
                 </template>
             </div>
-            <Diff :text="commit.diff" />
+            <Diff :text="commit.diff" :file-href="(path) => href.file(route.env, path)" />
         </template>
     </section>
 </template>
