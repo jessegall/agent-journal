@@ -2,7 +2,6 @@ import fcntl
 import os
 import time
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 
 from engine.fields import Loaded
@@ -81,7 +80,6 @@ def live(session: SessionRecord) -> bool:
     return time.time() - session.last_heard < RECENT
 
 
-@lru_cache(maxsize=256)
 def agent_pid(pid: int) -> int:
     for _ in range(4):
         try:

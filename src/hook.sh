@@ -27,7 +27,7 @@ out=${reply%
 *}
 case "$code" in
   200|403) [ -z "$out" ] || [ "$out" = "{}" ] || printf '%s\n' "$out" ;;
-  *) printf '%s %s %s\n' "$(date +%s)" "${code:-000}" "$1" >> "$root/runtime/hook-failures.log"; keep ;;
+  *) printf '%s %s %s %s\n' "$(date +%s)" "${code:-000}" "$1" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"; keep ;;
 esac
 rm -f "$body"
 exit 0

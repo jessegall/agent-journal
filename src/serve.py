@@ -173,7 +173,7 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
         if runtime.hook_failures(root).is_file():
-            unanswered(root, "")
+            unanswered(root)
 
 
 def freeze_caches(halting: threading.Event) -> None:

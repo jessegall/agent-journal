@@ -1,4 +1,5 @@
 import shlex
+import time
 from dataclasses import dataclass
 
 from commands.cli import captured
@@ -13,6 +14,7 @@ SEPARATORS = frozenset(";&|()\n")
 PUNCTUATION = "".join(SEPARATORS) + "<>"
 EXPANDING = ("$", "`", "<<")
 VALUED = frozenset({"--root", "--env", "--as", "--session", "--agent", "--cwd"})
+ANSWERED, KEPT_ANSWERED = "answers_ran", 200
 ANSWERING = frozenset({("message", "reply"), ("message", "react"), ("message", "read"), ("message", "process"), ("message", "processed"), ("todo", "create")})
 
 
@@ -37,12 +39,13 @@ class JournalCall:
 
     @property
     def is_answering(self) -> bool:
-        return self.command in ANSWERING and not any(set(word) <= set(PUNCTUATION) for word in self.words)
+        return self.command in ANSWERING and not any(set(word) <= set(PUNCTUATION) or word.split("=", 1)[0] in VALUED for word in self.words)
 
 
 def pieces(shell: str) -> list[tuple[str, ...]]:
     lexer = shlex.shlex(shell, posix=True, punctuation_chars=PUNCTUATION)
     lexer.whitespace = " \t\r"
+    lexer.commenters = ""
     lexer.whitespace_split = True
     found, piece = [], []
     for token in lexer:
@@ -67,7 +70,7 @@ class ShellLine:
             found = [piece for shell in shells for piece in pieces(shell)]
         except ValueError:
             return cls((), 1, False)
-        calls = tuple(JournalCall(piece) for piece in found if piece[0].rsplit("/", 1)[-1] == "journal")
+        calls = tuple(JournalCall(piece) for piece in found if piece[0] == "journal")
         return cls(calls, len(found) - len(calls), not any(mark in shell for shell in shells for mark in EXPANDING))
 
     @property
@@ -108,8 +111,14 @@ def run_answer(call: HookCall, journal: JournalCall) -> bool:
     return code == 0
 
 
+def first_try(call: HookCall) -> bool:
+    return call.record.state(ANSWERED, call.session).claim(call.hook.tool_use, time.time(), keep=KEPT_ANSWERED)
+
+
 def alongside(call: HookCall, line: ShellLine) -> str:
-    done = [journal for journal in line.calls if line.runnable and journal.is_answering and run_answer(call, journal)]
+    answering = [journal for journal in line.calls if line.runnable and journal.is_answering and call.hook.tool_use]
+    retried = bool(answering) and not first_try(call)
+    done = [journal for journal in answering if retried or run_answer(call, journal)]
     left = [journal for journal in line.calls if journal not in done]
     return "".join([f" — these journal commands on the same line ran, so do not run them again: {'; '.join(j.line for j in done)}" if done else "",
                     f" — and these were on the same line, so they did not run either: {'; '.join(j.line for j in left)}" if left else ""])

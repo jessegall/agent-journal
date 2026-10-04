@@ -474,7 +474,7 @@ def call_of(raw: dict, kinds: dict) -> ToolUse:
 @dataclass(frozen=True)
 class Hook(Loaded):
     aliases = {"event": ("hook_event_name",), "session": ("session_id",), "transcript": ("transcript_path",),
-               "last_message": ("last_assistant_message",), "agent": ("agent_id",)}
+               "last_message": ("last_assistant_message",), "agent": ("agent_id",), "tool_use": ("tool_use_id", "call_id")}
     event: str = ""
     session: str = ""
     transcript: Path | None = None
@@ -485,6 +485,7 @@ class Hook(Loaded):
     last_message: str = ""
     agent: str = ""
     prompt: str = ""
+    tool_use: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod

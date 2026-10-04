@@ -68,7 +68,7 @@ def replay(root: Path) -> None:
             raw = read_json(f, dict, {})
             f.unlink(missing_ok=True)
             for chunk in display_chunks(raw):
-                displayed(root, chunk)
+                shown(root, chunk)
 
 
 def display_chunks(raw: dict) -> list[Chunk]:
@@ -76,6 +76,11 @@ def display_chunks(raw: dict) -> list[Chunk]:
 
 
 def displayed(root: Path, chunk: Chunk) -> None:
+    replay(root)
+    shown(root, chunk)
+
+
+def shown(root: Path, chunk: Chunk) -> None:
     session, message = chunk.session, chunk.message
     ledger = DisplayedLedger(root, session)
     with ledger.changing() as held:

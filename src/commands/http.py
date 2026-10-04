@@ -81,7 +81,7 @@ def settings(record: Record) -> dict:
 RESTART_GRACE = 15
 
 
-def unanswered(root: Path, env: str) -> None:
+def unanswered(root: Path) -> None:
     f = runtime.hook_failures(root)
     try:
         logged = f.read_text(errors="replace")
@@ -92,13 +92,16 @@ def unanswered(root: Path, env: str) -> None:
     since = min(started - RESTART_GRACE, float(marked.read_text() or started)) if marked.is_file() else started - RESTART_GRACE
     lines = [line for line in logged.splitlines() if len(line.split()) > 2 and not since <= float(line.split()[0]) <= started]
     f.unlink(missing_ok=True)
-    if not lines:
-        return
-    codes = sorted({line.split()[1] for line in lines})
-    trouble = "\n".join([*lines[-5:], f"the hook got no answer from the server {len(lines)} times (codes {', '.join(codes)})"])
-    with log_file(root).open("a") as log:
-        log.write(f"the hook\n{trouble}\n")
-    broke(Record(root, env or runtime.env(root)), trouble, where="the hook")
+    by_env: dict[str, list[str]] = {}
+    for line in lines:
+        named = line.split()[3:4]
+        by_env.setdefault(named[0] if named else runtime.env(root), []).append(line)
+    for env, logged in by_env.items():
+        codes = sorted({line.split()[1] for line in logged})
+        trouble = "\n".join([*logged[-5:], f"the hook got no answer from the server {len(logged)} times (codes {', '.join(codes)})"])
+        with log_file(root).open("a") as log:
+            log.write(f"the hook\n{trouble}\n")
+        broke(Record(root, env), trouble, where="the hook")
 
 
 

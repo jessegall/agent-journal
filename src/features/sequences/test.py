@@ -239,8 +239,9 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     sequences.section(made.n, "First", "do the first")
     sequences.section(made.n, "Second", "do the second")
     sequences.run(made.n)
-    call = lambda command: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
-    refused = lambda command: str(handle(claude, record.root, record.env, call(command)).get("reason", ""))
+    uses = iter(range(100))
+    call = lambda command, use: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse", "tool_use_id": use}
+    refused = lambda command, use=None: str(handle(claude, record.root, record.env, call(command, use or f"use-{next(uses)}")).get("reason", ""))
     assert "take it up with journal sequence follow" in refused("journal work start 'other work'"), "a journal write waits for the step"
     assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal work start 'other work'"), \
         "a write on a later line of the same command waits too, whatever else the command does"
@@ -248,9 +249,15 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
         "reading the journal is never held, so the step can be taken up alongside a read"
     assert not any("take it up" in refused(line) for line in (f"journal sequence follow {made.n}", "journal message reply 3 'on it'", "journal todo create 'other work'")), \
         "taking the step up, answering the user and filing a to-do are never held"
-    mixed = refused("journal todo create filed; journal work start 'other work'")
-    assert "take it up" in mixed and "ran, so do not run them again: journal todo create filed" in mixed and "did not run either: journal work start 'other work'" in mixed, mixed
-    assert "filed" in [row.title for row in CONTROLLERS["todo"](record, actor=AGENT).all()], "the filing command of a refused line still runs"
+    assert all("take it up" in refused(line) for line in ("journal message reply 3 a#; journal work start 'other work'", "journal --env other todo create other",
+                                                          "journal todo create other --session other")), \
+        "a '#' inside a word hides nothing, and a line naming its own environment or session is held"
+    assert "ran" not in refused("/tmp/journal message reply 3 x; journal work start 'other work'"), "only the bare journal command runs, never another program by that name"
+    mixed = lambda: refused("journal todo create filed; journal work start 'other work'", "use-mixed")
+    first, again = mixed(), mixed()
+    assert "take it up" in first and "ran, so do not run them again: journal todo create filed" in first and "did not run either: journal work start 'other work'" in first, first
+    assert [row.title for row in CONTROLLERS["todo"](record, actor=AGENT).all()].count("filed") == 1 and "do not run them again" in again, \
+        "the filing command of a refused line runs once, however often the same tool call's hook arrives"
     sequences.follow(made.n)
     assert "take it up" not in refused("journal work start 'other work'"), "once taken up, journal commands go through"
 
