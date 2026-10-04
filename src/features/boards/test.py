@@ -1,6 +1,7 @@
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
-from features.boards.controller import START_OVER, Boards
+from features.boards.controller import Boards
+from features.boards.requests import START_OVER
 from features.work_modes.modes import mode_of
 from engine.wording import counted
 from tests.kit import Plans
@@ -67,7 +68,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
     tick(record)
     tick(record)
     assert sum(f"on board {board.n}" in line and "think up" in line for line in said(record)) == 1, "stale ideas ask for new ones once"
-    filler_board._update_drafting(boards.load(board.n), phase="drafting")
+    filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
     filler_board.wait(board.n)
     assert boards.load(board.n).drafting["phase"] == "waiting", "the filler says it waits for the user's picks, and no stall is called"
     more = boards.follow_up(board.n, "Also by mail")

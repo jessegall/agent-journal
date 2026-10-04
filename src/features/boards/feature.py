@@ -7,7 +7,7 @@ from features.journal import Journal
 from features.nudges import Nudge
 from features.boards.exploration import FILLER
 from features.sequences.dispatch import DISPATCH_MODELS
-from features.boards.orchestration import orchestration
+from features.boards.orchestration import filler_model, orchestration
 from features.session_briefing.start import ORCHESTRATION, START_PARTS
 
 __all__ = ["Boards"]
@@ -27,7 +27,3 @@ class BoardsFeature(Feature):
         journal.commands.intercept("complete", FillerKeepsToTheBoard())
         journal.events.handler(OfferToPlaceAddedCards())
         journal.events.handler(MarkQuietFillingStalled())
-
-
-def filler_model(record) -> str:
-    return BoardsDetails.values(record).filler_model
