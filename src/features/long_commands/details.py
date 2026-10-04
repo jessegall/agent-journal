@@ -25,7 +25,7 @@ class LongCommandsDetails(FeatureDetails):
         and when it ends.
 
         An agent whose provider does not wake it when a command it left running ends, as Codex's does not, is
-        told by the journal instead: when the command ends, when it has run ten minutes, and when the agent
+        told by the journal instead: when the command ends, when it has shown nothing new for ten minutes, and when the agent
         stops while it still runs. Each is said once for each command.
     """
 
@@ -75,7 +75,7 @@ class LongCommandsDetails(FeatureDetails):
         Line(
             name=RUN_STALLED,
             reply_kept=True,
-            title="a command you left running has run for {{minutes}} minutes - {{command}}",
+            title="a command you left running has shown nothing new for {{minutes}} minutes - {{command}}",
             brief="check that it still moves; stop it if it hangs, and carry on with what you can do meanwhile",
         ),
     ]

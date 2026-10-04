@@ -80,6 +80,12 @@ class Source(Loaded):
 
 
 @dataclass(frozen=True)
+class Chunk(Loaded):
+    session_id: str = ""
+    output: str = ""
+
+
+@dataclass(frozen=True)
 class Item(Loaded):
     type: str = ""
     process_id: str = ""

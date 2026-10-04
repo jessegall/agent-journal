@@ -127,9 +127,9 @@ def brief(project: Path, record) -> Briefing:
     return Briefing(tuple(written), tuple(left))
 
 
-def project_text(project: Path) -> str:
+def instructions_hash(project: Path) -> str:
     names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
-    texts = [CURRENT.sub("", (project / name).read_text()) for name in names if (project / name).is_file()]
+    texts = [(project / name).read_text() for name in names if (project / name).is_file()]
     return hashlib.sha1("\0".join(texts).encode()).hexdigest() if texts else ""
 
 

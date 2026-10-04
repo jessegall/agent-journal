@@ -80,7 +80,7 @@ def described(tasks: BackgroundTasks, session: str) -> dict:
 
 def open_since(tasks: BackgroundTasks) -> dict[str, float]:
     now = time.time()
-    return {session: now - at for session, at in tasks.started.items() if session not in tasks.ended and now - at < DAY}
+    return {session: now - tasks.printed.get(session, at) for session, at in tasks.started.items() if session not in tasks.ended and now - at < DAY}
 
 
 def ended_runs(context, agent) -> list[Sent]:

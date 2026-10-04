@@ -1,5 +1,7 @@
+from pathlib import Path
+
 from engine.events.agents import SessionStarted, ToolFinished
-from features.journal_laws.policy import project_text
+from features.journal_laws.policy import instructions_hash
 from features.sequences.shipped import CHECKING_THE_INSTRUCTION_FILES
 from features.nudges import Sent
 from features.parts import AgentContext, Handler, in_background
@@ -23,18 +25,27 @@ class NoticeLargestResult(Handler):
 
 
 def long_briefings(context, agent) -> list[Sent]:
-    project = context.record.root.parent
-    files = [(cls, project / cls.briefing_file) for cls in PROVIDERS.values() if cls.briefing_limit()]
-    sizes = [(cls, target, target.stat().st_size) for cls, target in files if target.is_file()]
-    return [Sent(f"{target.name}:{size // BAND}", {"file": target.name, "size": f"{size:,}", "limit": f"{cls.briefing_limit():,}", "provider": cls.name.title()})
-            for cls, target, size in sizes if size > cls.briefing_limit()]
+    project, found = context.record.root.parent.resolve(), []
+    for cls in [c for c in PROVIDERS.values() if c.briefing_limit()]:
+        files = read_on_the_way(project, Path(agent.cwd) if agent.cwd else project, cls.briefing_file)
+        size = sum(f.stat().st_size for f in files)
+        if size > cls.briefing_limit():
+            names = " with ".join(str(f.relative_to(project)) for f in files)
+            found.append(Sent(f"{names}:{size // BAND}", {"file": names, "size": f"{size:,}", "limit": f"{cls.briefing_limit():,}", "provider": cls.name.title()}))
+    return found
+
+
+def read_on_the_way(project: Path, cwd: Path, name: str) -> list[Path]:
+    inside = cwd.resolve() if cwd.resolve().is_relative_to(project) else project
+    folders = [project, *reversed([p for p in inside.parents if p.is_relative_to(project) and p != project]), inside]
+    return [f / name for f in dict.fromkeys(folders) if (f / name).is_file()]
 
 
 class CheckChangedInstructions(Handler):
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         if in_background(context.record):
             return
-        state, seen = context.record.state(context.feature.name), project_text(context.record.root.parent)
+        state, seen = context.record.state(context.feature.name), instructions_hash(context.record.root.parent)
         known = state.get("instructions")
         if not seen or known == seen:
             return
