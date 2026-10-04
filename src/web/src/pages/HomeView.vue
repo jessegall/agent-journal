@@ -1,11 +1,11 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
 import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
 import AgentGrid from "../board/AgentGrid.vue";
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import {open} from "../domain/records.js";
-import {agent} from "../state/store.js";
 import Thread from "../chat/Thread.vue";
 import PinnedNotices from "../chat/PinnedNotices.vue";
 import FileFeed from "../chat/FileFeed.vue";

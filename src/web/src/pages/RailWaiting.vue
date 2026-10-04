@@ -1,4 +1,5 @@
 <script setup>
+import {meta, types} from "../domain/spec.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
@@ -8,7 +9,6 @@ import {finishedUnread, happened, open as openRows, unreadByUser} from "../domai
 import {patched, rows} from "../sync/rows.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
-import {meta, types} from "../state/store.js";
 
 const TINT = {
     question: "var(--blocking)",

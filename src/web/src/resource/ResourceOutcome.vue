@@ -1,9 +1,9 @@
 <script setup>
+import {label, word} from "../domain/spec.js";
 import {computed} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import ResourceBlock from "./ResourceBlock.vue";
 import {age} from "../format/time.js";
-import {label, word} from "../state/store.js";
 
 const props = defineProps({resource: {type: Object, required: true}, documented: {type: Boolean, default: false}});
 const heading = computed(() =>

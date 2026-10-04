@@ -1,4 +1,6 @@
 <script setup>
+import {ui} from "../state/ui.js";
+import {remember, remembered} from "../platform/storage.js";
 import {projectPath, stoppedNote} from "../domain/journals.js";
 import {useHub} from "../composables/hub.js";
 import {computed, reactive, ref, watch} from "vue";
@@ -10,15 +12,13 @@ import ListBox from "../kit/ListBox.vue";
 import ListRow from "../kit/ListRow.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import {counted} from "../format/number.js";
-import {remember, remembered} from "../composables/remembered.js";
-import {stopsOpen} from "../chat/agentStop.js";
 
 const {loaded, running, online, stopped, needs, tally, refresh, forget} = useHub();
 const opened = reactive(new Set(remembered("journal.hub.open", [])));
 const stoppedFolded = ref(remembered("journal.hub.stopped.folded", false));
 const hovering = ref(false);
 const focused = ref(false);
-const holding = computed(() => hovering.value || focused.value || stopsOpen.value > 0);
+const holding = computed(() => hovering.value || focused.value || ui.stopsOpen > 0);
 const order = ref([]);
 watch([online, holding], () => !holding.value && (order.value = online.value.map((j) => j.root)), {immediate: true});
 const tiles = computed(() => {

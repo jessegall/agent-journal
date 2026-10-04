@@ -17,7 +17,7 @@ import ServicesPanel from "./ServicesPanel.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
 import {LINKS, catalog, counted, counts, narrowed} from "../domain/settingsCatalog.js";
-import {remember, remembered} from "../composables/remembered.js";
+import {remember, remembered} from "../platform/storage.js";
 import {useScrollSpy} from "../composables/scrollSpy.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 import {route} from "../route.js";

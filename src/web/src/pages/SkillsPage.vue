@@ -1,4 +1,5 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 import EmptyState from "../kit/EmptyState.vue";
 import Btn from "../kit/Btn.vue";
@@ -6,7 +7,6 @@ import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {agent} from "../state/store.js";
 import SkillsRow from "./SkillsRow.vue";
 
 const rows = ref([]);

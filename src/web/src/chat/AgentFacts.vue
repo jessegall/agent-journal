@@ -1,4 +1,5 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
 import {demo, unlessDemo} from "../platform/demo.js";
 import Spinner from "../kit/Spinner.vue";
@@ -6,7 +7,6 @@ import AgentFact from "./AgentFact.vue";
 import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../agents.js";
 import {span} from "../format/time.js";
 import {peek} from "../route.js";
-import {agent} from "../state/store.js";
 
 const props = defineProps({data: {type: Object, default: null}, open: {type: String, default: ""}});
 const emit = defineEmits(["toggle"]);
@@ -52,7 +52,14 @@ const toggle = (key, e) => emit("toggle", key, e);
 <template>
     <div class="agent-facts">
         <template v-if="!data">
-            <AgentFact class="agent-fact-lead" icon="agents" :disabled="demo" :title="unlessDemo('')" :aria-expanded="open === 'appoint'" @click="toggle('appoint', $event)">
+            <AgentFact
+                class="agent-fact-lead"
+                icon="agents"
+                :disabled="demo"
+                :title="unlessDemo('')"
+                :aria-expanded="open === 'appoint'"
+                @click="toggle('appoint', $event)"
+            >
                 Assign agent
             </AgentFact>
         </template>

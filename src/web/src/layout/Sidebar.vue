@@ -1,4 +1,5 @@
 <script setup>
+import {agentRunningIn} from "../composables/settings.js";
 import {computed, reactive, ref} from "vue";
 import EnvStart from "./EnvStart.vue";
 import NewEnvironment from "./NewEnvironment.vue";
@@ -21,7 +22,6 @@ const fold = (key) => {
     folded[key] = !folded[key];
 };
 const {sections: groups} = useNavigation();
-const live = (name) => store.online.some((agent) => agent.environment === name);
 
 const tip = ref(null);
 
@@ -92,10 +92,10 @@ function point(e) {
                 <template v-for="e in envs" :key="e.n">
                     <div class="env-row">
                         <a :class="['item', {on: route.env === e.title}]" :href="href.page(e.title)">
-                            <span :class="['env-dot', {live: live(e.title)}]" />
+                            <span :class="['env-dot', {live: agentRunningIn(e.title)}]" />
                             <span class="label">{{ e.title }}</span>
                         </a>
-                        <EnvStart :env="e" :live="live(e.title)" />
+                        <EnvStart :env="e" :live="agentRunningIn(e.title)" />
                     </div>
                 </template>
                 <button type="button" class="item item-new" :disabled="demo" :title="unlessDemo('')" @click="creating = true">

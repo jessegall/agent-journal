@@ -1,5 +1,5 @@
+import {remember, remembered} from "../platform/storage.js";
 import {computed, ref, watch} from "vue";
-import {remember, remembered} from "../composables/remembered.js";
 
 const MINIMISED = "chat.pins.minimised";
 const minimised = ref(remembered(MINIMISED, false));

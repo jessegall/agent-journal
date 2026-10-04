@@ -1,4 +1,6 @@
 <script setup>
+import {store} from "../state/store.js";
+import {word} from "../domain/spec.js";
 import {useFileHandIn} from "../composables/fileHandIn.js";
 import {useWindowEvent} from "../composables/windowEvent.js";
 import {wait} from "../platform/timing.js";
@@ -10,7 +12,6 @@ import ChatPanel from "../kit/ChatPanel.vue";
 import FocusStage from "../kit/FocusStage.vue";
 import Icon from "../kit/Icon.vue";
 import {quoted} from "../format/quote.js";
-import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {useFloatingChat} from "../composables/floatingChat.js";
 import {useStepAbout} from "../composables/sequenceRuns.js";

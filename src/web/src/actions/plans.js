@@ -1,5 +1,5 @@
+import {word} from "../domain/spec.js";
 import {api} from "../api/client.js";
-import {word} from "../state/store.js";
 import {patched, rows} from "../sync/rows.js";
 
 const act = (plan, method) => api.act("plan", plan.n, word("plan", method));

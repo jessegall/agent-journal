@@ -1,4 +1,5 @@
-import {meta, types, word} from "../state/store.js";
+import {meta, types, word} from "./spec.js";
+import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
 const ENDED = ["done", "abandoned"];
@@ -94,3 +95,5 @@ export function missed(since) {
         .filter((n) => !n.deleted && !n.completed && n.created * 1000 >= since && !n.seen.includes("user"))
         .sort((a, b) => b.created - a.created);
 }
+
+export const recordCount = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;

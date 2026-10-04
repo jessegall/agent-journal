@@ -1,7 +1,8 @@
+import {agent} from "../composables/leadAgent.js";
+import {store} from "../state/store.js";
 import {isActive} from "../domain/journals.js";
 import {api} from "../api/client.js";
 import {usePoll} from "../poll.js";
-import {agent, store} from "../state/store.js";
 import {takeEvents} from "./rows.js";
 
 const LIVE = 5;

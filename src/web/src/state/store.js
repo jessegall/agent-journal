@@ -1,6 +1,5 @@
-import {computed, reactive} from "vue";
-import {kept, remembered} from "../composables/remembered.js";
-import {DEFAULT_MODE} from "../domain/modes.js";
+import {reactive} from "vue";
+import {kept, remembered} from "../platform/storage.js";
 
 export const store = reactive({
     spec: null,
@@ -57,21 +56,3 @@ export const store = reactive({
 kept("journal.activity", () => store.activity);
 kept("journal.side.mini", () => store.sideMini);
 kept("journal.board.lens", () => store.board.lens);
-
-export const types = computed(() => (store.spec ? store.spec.priority.map((t) => ({name: t, ...store.spec.types[t]})) : []));
-export const meta = (type) => store.spec.types[type];
-export const word = (type, method) => meta(type).command_names[method] || method;
-export const label = (type, field, fallback) => meta(type).labels[field] || fallback;
-export const counted = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;
-const stopped = (a) => (a.data.status === "stopped" ? 1 : 0);
-export const agent = computed(
-    () =>
-        [...store.agents].filter((a) => !a.data.parent).sort((a, b) => stopped(a) - stopped(b) || (b.data.at || 0) - (a.data.at || 0))[0] ||
-        null
-);
-export const feedOn = computed(() => !store.settings || store.settings.features.file_feed !== false);
-export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
-export const steered = computed(() => (store.settings && store.settings.work_tracking && store.settings.work_tracking.steered) || "");
-export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]) || !!steered.value);
-export const workMode = computed(() => (store.settings && store.settings.work_modes && store.settings.work_modes.mode) || DEFAULT_MODE);
-export const sharingOn = computed(() => !store.settings || store.settings.features.sharing !== false);

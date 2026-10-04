@@ -1,10 +1,10 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import Chip from "../kit/Chip.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
-import {meta} from "../state/store.js";
 import {computed} from "vue";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 

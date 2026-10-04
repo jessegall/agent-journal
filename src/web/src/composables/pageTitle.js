@@ -1,6 +1,6 @@
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import {route} from "../route.js";
-import {meta} from "../state/store.js";
 
 const PAGES = {
     settings: "Settings",

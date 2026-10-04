@@ -1,10 +1,11 @@
 <script setup>
+import {store} from "../state/store.js";
+import {word} from "../domain/spec.js";
 import TextInput from "../kit/TextInput.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
-import {store, word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
 import {answer, answered, dismiss} from "../chat/answers.js";
 import {route} from "../route.js";

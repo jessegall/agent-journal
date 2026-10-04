@@ -1,4 +1,7 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {autoOn, steered, workMode} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {stopAgentNamed} from "../actions/agents.js";
 import {barPlan, otherPlans} from "../domain/plans.js";
 import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
@@ -21,7 +24,6 @@ import HelperList from "../chat/HelperList.vue";
 import {useHelpers} from "../chat/helpers.js";
 import {helperState} from "../domain/helpers.js";
 import {MODES, modeOf} from "../domain/modes.js";
-import {agent, autoOn, steered, store, workMode} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import AgentStopButton from "../chat/AgentStopButton.vue";
 import {runPlan, setAuto} from "../actions/work.js";

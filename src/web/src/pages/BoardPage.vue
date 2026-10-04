@@ -1,4 +1,7 @@
 <script setup>
+import {remember, remembered} from "../platform/storage.js";
+import {boardOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {useWindowEvent} from "../composables/windowEvent.js";
 import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, provide, ref, watch} from "vue";
@@ -22,7 +25,6 @@ import RunBar from "../board/RunBar.vue";
 import BoardGoal from "../board/BoardGoal.vue";
 import BoardMenu from "../board/BoardMenu.vue";
 import BuildStrip from "../board/BuildStrip.vue";
-import {remember, remembered} from "../composables/remembered.js";
 import {load as loadRows, patched, rows} from "../sync/rows.js";
 import NotePrompt from "../board/NotePrompt.vue";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
@@ -30,7 +32,6 @@ import StopPrompt from "../board/StopPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
 import {poke, usePoll} from "../poll.js";
 import {href, peek, route} from "../route.js";
-import {boardOn, store} from "../state/store.js";
 
 const SKELETON = ["To do", "Held", "Doing", "Needs you", "Done"].map((title) => ({key: title, title, cards: []}));
 const adding = ref("");

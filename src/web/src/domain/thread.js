@@ -1,5 +1,5 @@
+import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
-import {meta} from "../state/store.js";
 import {shownIn} from "./chatShown.js";
 
 const PROMISED_WITHIN = 5;

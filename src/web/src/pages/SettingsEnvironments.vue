@@ -1,4 +1,5 @@
 <script setup>
+import {agentRunningIn} from "../composables/settings.js";
 import {countsOf, envState, focusOf, isActive, STATE_WORDS} from "../domain/journals.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
@@ -19,7 +20,6 @@ const summary = computed(() => store.summary);
 const ask = ref({});
 
 const summaryOf = (name) => ((summary.value && summary.value.environments) || []).find((e) => e.name === name) || null;
-const live = (name) => store.online.some((agent) => agent.environment === name);
 const here = (e) => e.title === route.value.env;
 
 const envRows = computed(() =>
@@ -31,8 +31,8 @@ const envRows = computed(() =>
                 env: e,
                 n: e.n,
                 title: e.title,
-                live: live(e.title),
-                state: !live(e.title) ? "stopped" : got ? envState(got) : "busy",
+                live: agentRunningIn(e.title),
+                state: !agentRunningIn(e.title) ? "stopped" : got ? envState(got) : "busy",
                 work: got && focusOf(got).known ? focusOf(got) : null,
                 counts: got ? countsOf(got.counts) : [],
             };

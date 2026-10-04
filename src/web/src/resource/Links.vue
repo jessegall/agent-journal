@@ -1,11 +1,11 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import SectionHeading from "../kit/SectionHeading.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
 import {byRef, linkedTo, refParts} from "../domain/records.js";
 import {age} from "../format/time.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
 const skip = (type) => meta(type).nested || (meta(type).fields.options && meta(type).needs_attention);

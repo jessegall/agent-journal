@@ -1,11 +1,11 @@
 <script setup>
+import {meta, word} from "../domain/spec.js";
 import TextInput from "../kit/TextInput.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import {meta, word} from "../state/store.js";
 import {linkedTo, open} from "../domain/records.js";
 import {peek} from "../route.js";
 

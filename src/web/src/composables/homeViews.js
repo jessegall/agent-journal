@@ -1,7 +1,8 @@
+import {feedOn} from "./settings.js";
+import {meta, types} from "../domain/spec.js";
 import {computed} from "vue";
 import {open, unreadByUser} from "../domain/records.js";
 import {VIEWS} from "../domain/panes.js";
-import {feedOn, meta, types} from "../state/store.js";
 
 const OWN_TABS = ["question", "suggestion"];
 

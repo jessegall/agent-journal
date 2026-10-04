@@ -1,10 +1,10 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import EmptyState from "../kit/EmptyState.vue";
 import {computed, inject, reactive, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
-import {meta} from "../state/store.js";
 import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
 import ResourceBody from "./ResourceBody.vue";

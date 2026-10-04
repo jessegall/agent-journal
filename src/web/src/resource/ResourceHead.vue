@@ -1,4 +1,5 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,7 +9,6 @@ import DownloadLink from "./DownloadLink.vue";
 import {isUpdate, updateLabel} from "../domain/updates.js";
 import {age} from "../format/time.js";
 import {peek} from "../route.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({
     resource: {type: Object, required: true},
