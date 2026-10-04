@@ -78,6 +78,8 @@ class Plans(Controller):
 
     def phase(self, n: int, title: str, when: str | None = None, checkpoint: bool = False, brief: str = "", before: int = 0):
         r = self.load(n)
+        if before and not 1 <= int(before) <= len(r.phases) + 1:
+            raise Refused(f"plan {r.n} has no phase {before}")
         made = {PHASE.title: check_title(title), PHASE.when: check_title(when) if when is not None else "", PHASE.checkpoint: bool(checkpoint), PHASE.brief: brief, PHASE.todos: []}
         r.phases.insert(int(before) - 1 if before else len(r.phases), made)
         return self.save(r, "updated", phase=r.phases.index(made) + 1)
@@ -201,6 +203,8 @@ class Plans(Controller):
             raise Refused(f"plan {r.n} is {r.status}, not one that can become {to}")
 
     def _phase(self, r, p: int) -> dict:
+        if not 1 <= int(p) <= len(r.phases):
+            raise Refused(f"plan {r.n} has no phase {p}")
         try:
             return r.phases[int(p) - 1]
         except IndexError as error:

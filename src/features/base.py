@@ -2,6 +2,7 @@ import re
 from abc import ABC
 from dataclasses import asdict
 from functools import cached_property
+from pathlib import Path
 from typing import ClassVar
 
 from controllers.types import Agents, Environments, Features
@@ -9,6 +10,8 @@ from features import trigger
 from features.trigger import NEVER, Trigger
 from engine.gates import Hold, hold
 from engine.reach import Reach, Unreached
+from engine.record import Record
+from engine.runtime import env
 from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
@@ -16,6 +19,16 @@ from resources.base import Refused, SYSTEM
 from engine.wording import plural
 
 REGISTRY: dict[str, type] = {}
+GLOBAL_ENTRIES: list[tuple[object, object]] = []
+
+
+def clear_global_entries() -> None:
+    for container, entry in GLOBAL_ENTRIES:
+        if isinstance(container, list):
+            container.remove(entry)
+        else:
+            container.pop(entry, None)
+    GLOBAL_ENTRIES.clear()
 
 
 class Behaviour:
@@ -157,6 +170,19 @@ class Feature(ABC):
             from features.nudges import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))
             self.journal.events.handler(SendOnToolUse(self.nudges))
+
+    def register_global(self, container, callback, empty, key=None) -> None:
+        def enabled(*args, **kwargs):
+            source = args[0]
+            record = Record(source, env(source)) if isinstance(source, Path) else source
+            return callback(*args, **kwargs) if self.enabled(record) else empty()
+
+        if isinstance(container, list):
+            container.append(enabled)
+            GLOBAL_ENTRIES.append((container, enabled))
+            return
+        container[key] = enabled
+        GLOBAL_ENTRIES.append((container, key))
 
     @classmethod
     def default_for(cls, root) -> bool:

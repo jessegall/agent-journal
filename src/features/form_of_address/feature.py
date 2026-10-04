@@ -9,9 +9,8 @@ class FormOfAddress(Feature):
     details = AddressDetails
 
     def register(self, journal: Journal) -> None:
-        START_PARTS[ADDRESS] = addressed
-        return None
+        self.register_global(START_PARTS, addressed, str, ADDRESS)
 
 
 def addressed(record) -> str:
-    return address(record) if FormOfAddress.on_for(record) else ""
+    return address(record)

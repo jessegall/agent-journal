@@ -41,12 +41,6 @@ FORCE_AFTER = 30.0
 PROBE_WAIT = 5.0
 
 
-def after(written: list, line: int) -> list[str]:
-    known = next((i for i, t in enumerate(written) if t.line == line), None)
-    return [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
-
-
-
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
 MOVED_ON = "Moved a long command to the background"
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
@@ -175,7 +169,10 @@ class Engine(Seat):
         if announced is None:
             return
         stopped = [row.last_message] if row.last_message and row.event == "Stop" and row.last_message != announced.get("last_message") else []
-        for text in [*after(written, announced["line"]), *stopped]:
+        known = next((i for i, turn in enumerate(written) if turn.line == announced["line"]), None)
+        for turn in (written[known + 1:] if known is not None else written[-1:]):
+            chat.send(self.record, row, turn.text, turn=f"transcript:{turn.line}")
+        for text in stopped:
             chat.send(self.record, row, text)
 
     def elsewhere(self, e) -> bool:
@@ -461,7 +458,8 @@ class Engine(Seat):
             if AGENT not in TYPES[type_].notified or TYPES[type_].typed_as_title:
                 continue
             unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).summaries()
-                      if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]]
+                      if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]
+                      and (type_ != "worktree" or row.get("environment") == self.record.env)]
             if unread:
                 waiting.append(f"{plural(len(unread), f'unread {type_}')} {', '.join(map(str, unread[-5:]))}")
         return "waiting: " + "; ".join(waiting) if waiting else ""

@@ -13,11 +13,11 @@ TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +
 
 class CloseRowsFromCommits(Handler):
     def __init__(self):
-        self.seen: dict[str, int] = {}
+        self.seen: dict[tuple[str, str], int] = {}
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         project = self.worktree(context)
-        if not self.moved(project):
+        if not self.moved(project, context.record.env):
             return
         commits = self.log(project)
         if not commits:
@@ -60,14 +60,15 @@ class CloseRowsFromCommits(Handler):
         if closed:
             context.agent.say("closed", sha=sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
 
-    def moved(self, project) -> bool:
+    def moved(self, project, environment: str) -> bool:
         try:
             stamp = (head_log(Path(project))).stat().st_mtime_ns
         except OSError:
             return False
-        if self.seen.get(str(project)) == stamp:
+        key = (str(project), environment)
+        if self.seen.get(key) == stamp:
             return False
-        self.seen[str(project)] = stamp
+        self.seen[key] = stamp
         return True
 
 

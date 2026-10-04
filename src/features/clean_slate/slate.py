@@ -59,6 +59,8 @@ def kept(settings) -> dict:
 
 def set_aside(record: Record, project: Path, agent: str) -> str:
     put_back(record)
+    if moved(record):
+        return "the other hooks are already set aside until the journal stops"
     hooks = others(project, agent)
     folder = place(record)
     folder.mkdir(parents=True, exist_ok=True)

@@ -22,6 +22,7 @@ class Worktree(Shape, Resource):
     type = "worktree"
     icon = "branch"
     scope = PROJECT
+    indexed = ("environment",)
     listed_under = UNLISTED
     in_sidebar = False
     created_in_viewer = False

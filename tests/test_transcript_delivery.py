@@ -27,12 +27,12 @@ def test_unfinished_delivers_answers_on_its_first_call(tmp_path, monkeypatch):
     turns = [Turn(1, AGENT, "An answer", at=time.time())]
     monkeypatch.setitem(hooks.PROVIDERS, "sample", lambda: SimpleNamespace(tail=lambda path: turns))
     sent = []
-    monkeypatch.setattr(hooks, "send_to_chat", lambda root, session, text: sent.append(text))
+    monkeypatch.setattr(hooks, "send_to_chat", lambda root, session, text, turn: sent.append((text, turn)))
     row = SimpleNamespace(provider="sample", transcript=tmp_path / "transcript.jsonl")
 
     hooks.unfinished(tmp_path, "session", row)
 
-    assert sent == ["An answer"]
+    assert sent == [("An answer", "transcript:1")]
     state = json.loads(hooks.runtime.session_file(tmp_path, "session", "displayed.json").read_text())
     assert state[hooks.SENT] == []
 

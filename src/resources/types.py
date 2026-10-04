@@ -8,6 +8,7 @@ from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked,
 class Message(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="idempotency"),
+        Field(NUMBER, name="trigger"),
         Field(name="delivered"),
         Field(FLAG, False, name="acknowledgement"),
     ]
