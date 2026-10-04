@@ -11,7 +11,7 @@ from engine import bus, runtime
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.stored import append_text, held_back, read_json, write_json, write_text
-from engine.paths import environment_path
+from engine.paths import environment_home, environments
 
 RESOURCES = "project"
 KEPT_EVENTS = 2000
@@ -67,12 +67,16 @@ class Record:
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
         self.env = env
-        self.home = environment_path(self.root / "environments", env)
+        self.home = environment_home(self.root, env)
         self.home.mkdir(parents=True, exist_ok=True)
         self._held: dict[Path, int] = {}
         self._threads = threading.RLock()
         self.memo = {} if memo else None
         self._made: set[Path] = set()
+
+    @classmethod
+    def every(cls, root: Path) -> list["Record"]:
+        return [cls(Path(root), home.name) for home in sorted(environments(root).glob("*/"))]
 
     def folder(self, type: str, scope: str = "") -> Path:
         f = (self.root / RESOURCES if scope == PROJECT else self.home) / type

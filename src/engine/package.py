@@ -9,6 +9,7 @@ DATA = CODE.with_name("src") if ZIPPED else CODE
 
 
 SRC = "src"
+ARCHIVE = "journal.pyz"
 
 
 def code(root: Path) -> Path:
@@ -21,15 +22,15 @@ def data(*parts: str) -> Path:
 
 def entry(module: str) -> list[str]:
     if ZIPPED:
-        return [sys.executable, str(CODE.with_name("journal.pyz")), "-m", module]
+        return [sys.executable, str(CODE.with_name(ARCHIVE)), "-m", module]
     return [sys.executable, str(CODE.joinpath(*module.split("."))) + ".py"]
 
 
 def point(root: Path, build: Path) -> None:
-    pointer = Path(root) / "journal.pyz.link"
+    pointer = Path(root) / f"{ARCHIVE}.link"
     pointer.unlink(missing_ok=True)
     pointer.symlink_to(build.name)
-    pointer.replace(Path(root) / "journal.pyz")
+    pointer.replace(Path(root) / ARCHIVE)
 
 
 def modules(package: str) -> list[tuple[str, bool]]:

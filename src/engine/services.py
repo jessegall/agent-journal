@@ -8,7 +8,7 @@ from pathlib import Path
 from engine.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
-from engine.package import entry
+from engine.package import ARCHIVE, entry
 from engine.ports import free
 from engine.runtime import folder
 from engine.sessions import alive
@@ -42,7 +42,7 @@ def lock_file(root: Path, sid: str) -> Path:
 
 
 def current_build(root: Path) -> str:
-    return (Path(root) / "journal.pyz").resolve().name
+    return (Path(root) / ARCHIVE).resolve().name
 
 
 def spec_file(root: Path, sid: str) -> Path:
@@ -116,9 +116,6 @@ def files_for(root: Path, sid: str) -> ServiceFiles:
 def specs(root: Path, sources) -> list[ServiceSpec]:
     taken: set[int] = set()
     return [spec for source in (*sources, *SOURCES) for spec in source(root, taken)]
-
-
-    return True
 
 
 def spawn(spec: ServiceSpec, lifeline: int) -> int:

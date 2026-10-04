@@ -16,7 +16,8 @@ from typing import Callable, TypedDict
 
 
 PACKAGE = Path(__file__).resolve().parent
-PACKAGE_DIRS = ("agents", "commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "runner", "skills", "surfaces")
+PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "providers", "resources", "runner", "surfaces")
+PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"
 PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py", "worker.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
@@ -31,7 +32,6 @@ NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
-PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "providers", "resources", "runner", "surfaces")
 
 
 def code(root: Path) -> Path:
@@ -49,6 +49,10 @@ def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
 
 def packaged(source: Path) -> Path:
     return source / SRC if (source / SRC / "install.py").is_file() else source
+
+
+def version_in(folder: Path, missing: str = "") -> str:
+    return (folder / VERSION).read_text().strip() if (folder / VERSION).is_file() else missing
 
 
 def version_file(package: Path) -> Path:
@@ -275,7 +279,7 @@ def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
 def keep_copy(root: Path) -> str:
     if not (root / "environments").is_dir():
         return ""
-    version = (code(root) / VERSION).read_text().strip() if (code(root) / VERSION).is_file() else "unknown"
+    version = version_in(code(root), "unknown")
     attic = root / "attic"
     attic.mkdir(parents=True, exist_ok=True)
     copy = attic / f"before-{version}-{int(time.time())}.tar.gz"
@@ -336,7 +340,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
         if temporary:
             shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
-    installed = (code(root) / VERSION).read_text().strip() if (code(root) / VERSION).is_file() else ""
+    installed = version_in(code(root))
     if newest and installed != newest:
         return done + [f"package refreshed but failed to reach the release: installed {installed or 'nothing'}, not {newest}"]
     if reloaded:
@@ -356,7 +360,7 @@ def handed_over(project: Path, root: Path) -> list[str]:
 
 
 def release_of(folder: Path) -> str:
-    installed = (folder / VERSION).read_text().strip() if (folder / VERSION).is_file() else ""
+    installed = version_in(folder)
     return f"refs/tags/v{installed}" if installed and "unreleased" not in installed else ""
 
 
@@ -403,7 +407,7 @@ def pack(root: Path) -> str:
     if not (src / "__main__.py").is_file():
         return f"the Python is already in {ARCHIVE}"
     digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
-    version = (src / VERSION).read_text().strip() if (src / VERSION).is_file() else "0"
+    version = version_in(src, "0")
     target = root / f"journal-{version}-{digest}.pyz"
     if not target.is_file():
         built = target.with_suffix(".new")

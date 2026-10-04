@@ -74,21 +74,14 @@ class FoundFile:
 INDEXES: dict[Path, Indexed] = {}
 HASHED: dict[Path, Hashed] = {}
 UNTRACKED: dict[Path, tuple[str, ...]] = {}
-REPOSITORIES: dict[Path, tuple[float, tuple[Path, ...]]] = {}
 MOST_FOUND = 50
-RESCAN_SECONDS = 300
 REPOSITORY_DEPTH = 2
 SKIPPED = {"node_modules", "vendor", "dist", "build"}
 
 
 @cache
-def repositories(project: Path) -> tuple[Path, ...]:
-    held = REPOSITORIES.get(project)
-    if held and time.time() - held[0] < RESCAN_SECONDS:
-        return held[1]
-    found = (project,) if (project / ".git").exists() else tuple(sorted(nested_repositories(project, REPOSITORY_DEPTH)))
-    REPOSITORIES[project] = (time.time(), found)
-    return found
+def project_repositories(project: Path) -> tuple[Path, ...]:
+    return (project,) if (project / ".git").exists() else tuple(sorted(nested_repositories(project, REPOSITORY_DEPTH)))
 
 
 def nested_repositories(folder: Path, depth: int) -> list[Path]:
@@ -108,10 +101,6 @@ def prefixed(project: Path, repository: Path, paths: dict) -> dict:
 
 def index_file(project: Path) -> Path:
     return project / git(["rev-parse", "--git-path", "index"], project).strip()
-
-
-def tracked(project: Path) -> dict:
-    return {path: sha for repository in repositories(project) for path, sha in prefixed(project, repository, tracked_in(repository)).items()}
 
 
 def tracked_in(project: Path) -> dict:
@@ -146,7 +135,7 @@ def hashed(project: Path, paths: list[str]) -> dict:
 
 def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
     marks = internal(record, project, homes)
-    found = repositories(project)
+    found = project_repositories(project)
     with ThreadPoolExecutor(max_workers=len(found) or 1) as pool:
         trees = list(pool.map(blobs_in, found))
     tree = {path: sha for repository, held in zip(found, trees) for path, sha in prefixed(project, repository, held).items()}
@@ -166,7 +155,7 @@ def blobs_in(project: Path) -> dict:
 
 def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
     texts = {EMPTY_BLOB: ""}
-    for repository in repositories(project):
+    for repository in project_repositories(project):
         wanted = [sha for sha in dict.fromkeys(shas) if sha not in texts]
         if not wanted:
             break
@@ -175,7 +164,7 @@ def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
 
 
 def project_paths(project: Path) -> set[str]:
-    return {path for repository in repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository))) if readable_path(project, project / path)}
+    return {path for repository in project_repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository))) if readable_path(project, project / path)}
 
 
 def paths_in(project: Path) -> set[str]:

@@ -2,6 +2,8 @@ from pathlib import Path
 
 from resources.base import Refused
 
+ENVIRONMENTS = "environments"
+
 
 def contained(folder: Path, name: str, nested: bool = False) -> Path:
     if not isinstance(name, str) or not name or "\\" in name or "\x00" in name:
@@ -17,3 +19,11 @@ def contained(folder: Path, name: str, nested: bool = False) -> Path:
 
 def environment_path(folder: Path, name: str) -> Path:
     return contained(folder, name)
+
+
+def environments(root: Path) -> Path:
+    return Path(root) / ENVIRONMENTS
+
+
+def environment_home(root: Path, name: str) -> Path:
+    return contained(environments(root), name)

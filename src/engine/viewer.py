@@ -244,7 +244,3 @@ def show(url: str, env: str = "", opener=webbrowser.open, focuser=existing_tab) 
     if destination and not focuser(destination):
         opener(destination)
     return destination
-
-
-def ensure(root: Path, project: Path, opener=webbrowser.open, focuser=existing_tab) -> str:
-    return show(start(root, project), opener=opener, focuser=focuser)
