@@ -1,5 +1,5 @@
 import {reactive, ref, watch} from "vue";
-import {api, onHealth, onWrite} from "../api/client.js";
+import {api, onWrite} from "../api/client.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {route} from "../route.js";
@@ -254,9 +254,4 @@ export async function heardEvents(events) {
 }
 
 onWrite((type) => refresh([type]));
-onHealth((ok) => {
-    const lost = !ok;
-    if (store.offline && ok) reload();
-    store.offline = lost;
-});
 onOutboxChange(() => refresh(["message"]));

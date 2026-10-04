@@ -39,7 +39,7 @@ const shown = computed(() => made.value && reachable.value);
 
 usePoll(
     "phone-tunnel",
-    () => (made.value && !reachable.value ? api.tunnelAnswering().catch(() => null) : null),
+    () => (made.value && !reachable.value ? api.tunnelAnswering() : null),
     ASK_EVERY,
     (got) => got && (reachable.value = Boolean(got.reachable)),
 );

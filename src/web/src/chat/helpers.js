@@ -8,13 +8,9 @@ export function useHelpers() {
     const rows = ref([]);
     const refresh = usePoll(
         "helpers",
-        () =>
-            api
-                .list("helper", {completed: true})
-                .then((got) => got.rows || [])
-                .catch(() => null),
+        () => api.list("helper", {completed: true}).then((got) => got.rows || []),
         EVERY,
-        (got) => got && (rows.value = got),
+        (got) => (rows.value = got),
     );
     return {rows, refresh};
 }
