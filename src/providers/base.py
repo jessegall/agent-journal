@@ -1,86 +1,73 @@
-import importlib.util
 import json
-import pickle
-import pkgutil
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
-from functools import cache
 from pathlib import Path
-from typing import Any, Callable, ClassVar, TypeVar
+from typing import ClassVar
 
 from engine.fields import Loaded
 from engine.transcript import Turn
-from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.jsonl import last_lines, parsed_row
+from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.transcript_cache import CACHE, RECENT_BYTES
+from providers.transcript_cache import FOLD_CACHE  # noqa: F401
 from resources.base import Refused
+from resources.types import IDLE
 from engine.stored import read_json, write_text
-from engine.wording import digest
 
-RECENT: dict[str, tuple] = {}
-FOLDS: dict[tuple, tuple] = {}
-FOLD_CACHE = Path.home() / ".cache" / "agent-journal" / "folds"
-KEEP_EVERY = 10.0
-KEEP_TRANSCRIPT_EVERY = 300.0
-KEPT: dict[tuple, float] = {}
-
-
-def fold_file(key: tuple) -> Path:
-    return FOLD_CACHE / f"{digest('|'.join(key), 20)}.pickle"
-
-
-def kept_fold(key: tuple) -> tuple | None:
-    try:
-        return pickle.loads(fold_file(key).read_bytes())
-    except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError, TypeError):
-        return None
-
-
-def keep_fold(key: tuple, offset: int, state, every: float = KEEP_EVERY) -> None:
-    if time.monotonic() - KEPT.get(key, 0.0) < every:
-        return
-    KEPT[key] = time.monotonic()
-    try:
-        FOLD_CACHE.mkdir(parents=True, exist_ok=True)
-        fold_file(key).write_bytes(pickle.dumps((offset, state)))
-    except (OSError, pickle.PicklingError):
-        return
-TRANSCRIPTS: dict[str, tuple] = {}
-SEAM = 256
-RECENT_BYTES = 1_000_000
-RECENT_ROWS = 1000
 LEGACY = ".journal/hook.py"
 LIBRARY = ".agents/skills"
 MARK = "[journal]"
 JOURNAL, PERSON = "journal", "person"
+KEPT_ENDED = 20
 
 
 def journal_hook(text: str) -> bool:
     return LEGACY in text or ("/hook.sh " in text and "/.journal" in text)
 
 
-KEPT_ENDED = 20
-
-
-def recent(rows: list[dict]) -> list[dict]:
+def running_and_latest(rows: list[dict]) -> list[dict]:
     late = {id(row) for row in [row for row in rows if not row.get("running")][-KEPT_ENDED:]}
     return [row for row in rows if row.get("running") or id(row) in late]
 
 
-T = TypeVar("T")
+@dataclass(frozen=True)
+class HookCommand:
+    script: str
+    provider: str
+    root: str
+
+    @classmethod
+    def parse(cls, text: str) -> "HookCommand":
+        return cls(*text.split()[1:4])
+
+    @property
+    def text(self) -> str:
+        return f"sh {self.script} {self.provider} {self.root}"
+
+    def wired_in(self, block: dict) -> bool:
+        return self.text in json.dumps(block)
+
+    def replaces(self, block: dict) -> bool:
+        found = json.dumps(block)
+        return self.text not in found and (LEGACY in found or ("/hook." in found and f" {self.provider} {self.root}" in found))
 
 
-def parsed(line: str, into: Callable[[Any], T]) -> T | None:
-    try:
-        return into(json.loads(line))
-    except (ValueError, TypeError, KeyError, AttributeError):
-        return None
+@dataclass(frozen=True)
+class SubagentRow:
+    id: str
+    task: str
+    type: str
+    model: str
+    running: bool
+    at: float
+    ended: float
+    status: str
+    session: str
 
+    def to_json(self) -> dict:
+        return asdict(self)
 
-@cache
-def providers_mark() -> str:
-    import providers
-    sources = [importlib.util.find_spec(f"providers.{module.name}") for module in sorted(pkgutil.iter_modules(providers.__path__), key=lambda found: found.name)]
-    return digest("\n".join(spec.loader.get_source(spec.name) or "" for spec in sources), 12)
 
 @dataclass
 class SkillWindows:
@@ -147,6 +134,7 @@ class Provider(ABC):
     session_variable: ClassVar[str] = ""
     session_markers: ClassVar[tuple[str, ...]] = ()
     name = ""
+    home = ""
     question_tools = frozenset()
     briefing_file = ""
     skill_home = ""
@@ -173,7 +161,13 @@ class Provider(ABC):
         selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
         if not selected:
             raise Refused(f"{cls.name or 'this agent'} does not support {action} {value!r}")
-        return {"action": action, **selected}
+        chosen = {"action": action, **selected}
+        commands = cls.commands_for(action, value, current_model)
+        return {**chosen, "commands": commands, "command": commands[0]} if commands else chosen
+
+    @classmethod
+    def commands_for(cls, action: str, value: str, current_model: str) -> list[str]:
+        return []
 
     @abstractmethod
     def config(self, project: Path) -> Path: ...
@@ -189,7 +183,7 @@ class Provider(ABC):
 
     def blocking(self, reason: str) -> dict:
         return {"decision": "block", "reason": reason,
-                "hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": reason}}
+                "hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, "permissionDecision": "deny", "permissionDecisionReason": reason}}
 
     def refused(self, response: dict) -> bool:
         return Decision.from_json(response).decision == "block"
@@ -249,90 +243,25 @@ class Provider(ABC):
         return ""
 
     def recent(self, path: Path | None) -> list[dict]:
-        try:
-            size = Path(path).stat().st_size
-        except (OSError, TypeError):
-            return []
-        held = RECENT.get(str(path))
-        if held and held[0] == size:
-            return held[1]
-        incremental = bool(held and held[0] < size <= held[0] + RECENT_BYTES)
-        if incremental:
-            start, rows = held
-        else:
-            start = max(0, size - RECENT_BYTES)
-            rows = []
-        with Path(path).open("rb") as source:
-            source.seek(start)
-            raw = source.read(size - start)
-        if not incremental and start:
-            skipped = raw.find(b"\n") + 1
-            start += skipped
-            raw = raw[skipped:]
-        whole = raw[:raw.rfind(b"\n") + 1]
-        added = [self.row_of(row) for row in (parsed(line, dict) for line in whole.decode(errors="replace").splitlines()) if row is not None]
-        rows = (rows + added)[-RECENT_ROWS:]
-        RECENT[str(path)] = (start + len(whole), rows)
-        return rows
-
-    def entries(self, path: Path | None) -> list[tuple[int, dict]]:
-        try:
-            raw = Path(path).read_text().splitlines()
-        except (OSError, TypeError):
-            return []
-        found = []
-        for i, line in enumerate(raw, 1):
-            try:
-                row = json.loads(line)
-            except ValueError:
-                continue
-            if isinstance(row, dict):
-                found.append((i, self.row_of(row)))
-        return found
+        return CACHE.recent(path, self.row_of)
 
     def settling(self, path: Path) -> bool:
         return False
 
     def transcript(self, path: Path) -> list:
-        try:
-            size = Path(path).stat().st_size
-        except (OSError, TypeError):
-            return []
-        key = ("transcript", str(path))
-        kept = None if str(path) in TRANSCRIPTS else kept_fold(key)
-        held = TRANSCRIPTS.get(str(path)) or (kept and (kept[0], *kept[1]))
-        offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")
-        with Path(path).open("rb") as source:
-            source.seek(max(0, offset - len(seam)))
-            if source.read(len(seam)) != seam:
-                offset, count, turns, seam = 0, 0, [], b""
-            source.seek(offset)
-            raw = source.read(size - offset)
-        if raw:
-            whole = raw[:raw.rfind(b"\n") + 1]
-            lines = whole.split(b"\n")[:-1]
-            turns = self.refine(turns + self.read_turns(lines, count))
-            count += len(lines)
-            TRANSCRIPTS[str(path)] = (offset + len(whole), count, turns, (seam + whole)[-SEAM:])
-            keep_fold(key, offset + len(whole), (count, turns, (seam + whole)[-SEAM:]), KEEP_TRANSCRIPT_EVERY)
-        return turns
+        return CACHE.transcript(path, self.extended)
+
+    def extended(self, turns: list[Turn], lines: list[bytes], count: int) -> list[Turn]:
+        return self.refine(turns + self.read_turns(lines, count))
 
     def tail(self, path: Path, span: int = RECENT_BYTES) -> list:
-        try:
-            with Path(path).open("rb") as source:
-                start = max(0, source.seek(0, 2) - span)
-                source.seek(start)
-                raw = source.read()
-        except (OSError, TypeError):
-            return []
-        lines = raw[:raw.rfind(b"\n") + 1].split(b"\n")[:-1]
-        return self.refine(self.read_turns(lines[1:] if start else lines, 0))
+        lines, _ = last_lines(path, span)
+        return self.refine(self.read_turns(lines, 0))
 
     def read_turns(self, lines: list[bytes], count: int) -> list:
         turns = []
-        for i, line in enumerate(lines, count + 1):
-            row = parsed(line.decode(errors="replace"), dict)
-            turn = self.turn(self.row_of(row)) if row is not None else None
+        for i, found in enumerate((parsed_row(line, self.row_of) for line in lines), count + 1):
+            turn = self.turn(found) if found is not None else None
             if turn:
                 turns.append(Turn(i, *turn))
         return turns
@@ -345,9 +274,6 @@ class Provider(ABC):
 
     def turn(self, row: dict) -> tuple[str, str] | None:
         return None
-
-    def tools(self, path: Path) -> list[dict]:
-        return [use for _, row in self.entries(path) for use in self.tool_uses(row)]
 
     def tool_uses(self, row: dict) -> list[dict]:
         return []
@@ -371,20 +297,20 @@ class Provider(ABC):
         return [], offset
 
     def status(self, hook) -> str:
-        return "idle" if hook.tool.name in self.sleeping_tools else STATUS[hook.event]
+        return IDLE if hook.tool.name in self.sleeping_tools else STATUS[hook.event]
 
     def facts(self, row, hook, root: Path) -> dict:
         context = self.context(hook)
         return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.paths[0] if hook.tool.paths else "",
                 "cwd": hook.cwd or row.cwd or "", "at": time.time(),
-                "provider": self.name, "uses": int(row.uses) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
+                "provider": self.name, "uses": int(row.uses) + (hook.event == HookEvent.PRE_TOOL_USE), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
                 "context": row.context or 0 if context is None else context, "asking": asking_row(self.asking(hook)),
                 "last_message": hook.last_message or row.last_message or "", "loops": self.loops(row, hook), "prompted": self.prompted(row, hook)}
 
     def prompted(self, row, hook) -> str:
-        if hook.event != "UserPromptSubmit":
+        if hook.event != HookEvent.USER_PROMPT_SUBMIT:
             return row.prompted
         return JOURNAL if self.journal_typed(hook.prompt) else PERSON
 
@@ -393,9 +319,9 @@ class Provider(ABC):
 
     def loops(self, row, hook) -> dict:
         kept, call = dict(row.loops or {}), hook.tool
-        if hook.event == "PostToolUse" and isinstance(call, LoopCall) and call.loop:
+        if hook.event == HookEvent.POST_TOOL_USE and isinstance(call, LoopCall) and call.loop:
             kept[call.loop] = {"schedule": call.schedule, "prompt": call.prompt, "at": time.time()}
-        if hook.event == "PostToolUse" and isinstance(call, LoopEndCall):
+        if hook.event == HookEvent.POST_TOOL_USE and isinstance(call, LoopEndCall):
             kept.pop(call.loop, None)
         return kept
 
@@ -429,7 +355,7 @@ class Provider(ABC):
         used = self.tokens_of(row)
         if used is not None:
             windows.used = used
-        for skill in (use.skill_loaded for use in self.tool_uses(row) if use.skill_loaded):
+        for skill in self.skills_in(self.tool_uses(row)):
             windows.loaded(skill)
         return windows
 
@@ -437,38 +363,44 @@ class Provider(ABC):
         if self.starts_window(row):
             loads.clear()
         for use in self.tool_uses(row):
-            if use.skill_loaded:
-                loads[use.skill_loaded] = use.at
+            if use.loaded_skill:
+                loads[use.loaded_skill] = use.at
         return loads
 
+    def skills_in(self, uses: list) -> list[str]:
+        return sorted({use.loaded_skill for use in uses} - {""})
+
+    def skills(self, session: Path | None) -> list[str]:
+        if session is None or not session.is_file():
+            return []
+        return sorted(self.folded(session, self.skill_names, set))
+
+    def skill_names(self, names: set, row) -> set:
+        names.update(self.skills_in(self.tool_uses(row)))
+        return names
+
     def folded(self, path: Path, fold, start):
-        key = (str(path), fold.__name__, providers_mark(), *getattr(start, "__dataclass_fields__", ()))
-        try:
-            size = Path(path).stat().st_size
-        except (OSError, TypeError):
-            return start()
-        offset, state = FOLDS.get(key) or kept_fold(key) or (0, start())
-        if size < offset:
-            offset, state = 0, start()
-        if size > offset:
-            with Path(path).open("rb") as source:
-                source.seek(offset)
-                raw = source.read(size - offset)
-            whole = raw[:raw.rfind(b"\n") + 1]
-            for line in whole.decode(errors="replace").splitlines():
-                row = parsed(line, dict)
-                if row is not None:
-                    state = fold(state, self.row_of(row))
-            offset += len(whole)
-            keep_fold(key, offset, state)
-        FOLDS[key] = (offset, state)
-        return state
+        return CACHE.folded(path, fold, start, self.row_of)
 
     @abstractmethod
     def present(self, project: Path) -> bool: ...
 
+    @abstractmethod
+    def agent_file(self, project: Path, name: str) -> Path: ...
+
+    @abstractmethod
+    def agent_text(self, kind, model: str) -> str: ...
+
     def agent_types(self, project: Path, chosen: list) -> list[Path]:
-        return []
+        written = []
+        for kind, model in chosen:
+            text = self.agent_text(kind, model)
+            target = self.agent_file(project, kind.name)
+            if not target.is_file() or target.read_text() != text:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                write_text(target, text)
+                written.append(target)
+        return written
 
     def settings(self, project: Path) -> dict:
         return read_json(self.config(project), dict, {})
@@ -506,13 +438,17 @@ class Provider(ABC):
         return f
 
     def wire(self, project: Path, command: str) -> Path:
+        hook = HookCommand.parse(command)
         had = self.settings(project)
         hooks = had.setdefault("hooks", {})
-        name, root = command.split("/hook.", 1)[1].split()[1:3]
-        ours = f" {name} {root}"
         for event, blocks in self.wiring(command)["hooks"].items():
-            mine = [b for b in hooks.get(event, []) if command in json.dumps(b) or not (("/hook." in json.dumps(b) and ours in json.dumps(b)) or LEGACY in json.dumps(b))]
-            if not any(command in json.dumps(b) for b in mine):
-                mine.extend(blocks)
-            hooks[event] = mine
-        return self.save(project, had)
+            kept = [b for b in hooks.get(event, []) if not hook.replaces(b)]
+            if not any(hook.wired_in(b) for b in kept):
+                kept.extend(blocks)
+            hooks[event] = kept
+        saved = self.save(project, had)
+        self.finish_wiring(project, hook)
+        return saved
+
+    def finish_wiring(self, project: Path, hook: HookCommand) -> None:
+        return None

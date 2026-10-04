@@ -2,21 +2,33 @@ import json
 import re
 from dataclasses import dataclass, field, replace
 from datetime import datetime
+from enum import StrEnum
 from typing import ClassVar
 from pathlib import Path
 
 from engine.fields import Loaded
 
-STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working", "PreToolUse": "working",
-          "PostToolUse": "working", "PreCompact": "compacting", "SubagentStart": "",
-          "SubagentStop": "", "SessionEnd": "stopped", "PermissionRequest": ""}
-PERMISSION = "PermissionRequest"
-DISPLAYED = "MessageDisplay"
+
+class HookEvent(StrEnum):
+    SESSION_START = "SessionStart"
+    STOP = "Stop"
+    USER_PROMPT_SUBMIT = "UserPromptSubmit"
+    PRE_TOOL_USE = "PreToolUse"
+    POST_TOOL_USE = "PostToolUse"
+    PRE_COMPACT = "PreCompact"
+    SUBAGENT_START = "SubagentStart"
+    SUBAGENT_STOP = "SubagentStop"
+    SESSION_END = "SessionEnd"
+    PERMISSION_REQUEST = "PermissionRequest"
+    MESSAGE_DISPLAY = "MessageDisplay"
+
+
+STATUS = {HookEvent.SESSION_START: "idle", HookEvent.STOP: "idle", HookEvent.USER_PROMPT_SUBMIT: "working", HookEvent.PRE_TOOL_USE: "working",
+          HookEvent.POST_TOOL_USE: "working", HookEvent.PRE_COMPACT: "compacting", HookEvent.SUBAGENT_START: "",
+          HookEvent.SUBAGENT_STOP: "", HookEvent.SESSION_END: "stopped", HookEvent.PERMISSION_REQUEST: ""}
+PERMISSION = HookEvent.PERMISSION_REQUEST
+DISPLAYED = HookEvent.MESSAGE_DISPLAY
 EVENTS = tuple(STATUS)
-
-
-
-
 OUTPUT_KEYS = ("stdout", "stderr", "content", "result", "text", "output")
 SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/(journal(?:-[\w-]+)?)/SKILL\.md")
 
@@ -123,7 +135,7 @@ class ToolCall(Loaded):
         return self.ws.url
 
     @property
-    def skill_loaded(self) -> str:
+    def loaded_skill(self) -> str:
         return self.skill if self.name == "Skill" else ""
 
 
@@ -452,7 +464,6 @@ def call_of(raw: dict, kinds: dict) -> ToolUse:
 class Hook(Loaded):
     aliases = {"event": ("hook_event_name",), "session": ("session_id",), "transcript": ("transcript_path",),
                "last_message": ("last_assistant_message",), "agent": ("agent_id",)}
-    agent_type: str = ""
     event: str = ""
     session: str = ""
     transcript: Path | None = None
