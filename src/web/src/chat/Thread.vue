@@ -1,4 +1,5 @@
 <script setup>
+import {openQuestion, questionView, updateView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -25,9 +26,7 @@ import UpdateOverlay from "./UpdateOverlay.vue";
 import ReportDock from "./ReportDock.vue";
 import DumpDock from "./DumpDock.vue";
 import {dockedDump, dockedReport} from "../domain/docks.js";
-import {updateView} from "./updateView.js";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {openQuestion, questionView} from "./questionView.js";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
@@ -429,7 +428,7 @@ watch(
         <template v-if="questionView.n && questionView.owner === threadRoot">
             <QuestionOverlay :key="questionView.n" />
         </template>
-        <template v-if="updateView.n && threadRoot?.contains(updateView.from)">
+        <template v-if="updateView.n && threadRoot?.contains(updateView.owner)">
             <UpdateOverlay :key="updateView.n" />
         </template>
         <template v-if="chatOpen">

@@ -1,14 +1,14 @@
 <script setup>
+import {waitingInOrder} from "./waiting.js";
 import PhoneNavRow from "./PhoneNavRow.vue";
 import {computed} from "vue";
 import {ago} from "../format/time.js";
 import {kindWaiting} from "./kinds.js";
-import {ordered} from "./waiting.js";
 import PhoneSheet from "./PhoneSheet.vue";
 
 const props = defineProps({waiting: {type: Array, required: true}});
 const emit = defineEmits(["open", "close"]);
-const sorted = computed(() => ordered(props.waiting));
+const sorted = computed(() => waitingInOrder(props.waiting));
 </script>
 
 <template>

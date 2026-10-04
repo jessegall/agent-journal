@@ -1,4 +1,6 @@
 <script setup>
+import {waitingInOrder} from "./waiting.js";
+import {scrollIntoRoom} from "./reveal.js";
 import {ui} from "../state/ui.js";
 import {plainText} from "../text/words.js";
 import {copyText} from "../platform/clipboard.js";
@@ -16,14 +18,12 @@ import PhoneNeeds from "./PhoneNeeds.vue";
 import PhoneAgentSheet from "./PhoneAgentSheet.vue";
 import Icon from "../kit/Icon.vue";
 import {chipOpener} from "./peeked.js";
-import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
 import PhoneNotices from "./PhoneNotices.vue";
 import {useFades} from "./fades.js";
-import {reveal} from "./reveal.js";
 import {wanted} from "./wanted.js";
 import {lastLooked, looked} from "./looked.js";
 import {useBubbles} from "./bubbles.js";
@@ -390,7 +390,7 @@ let flashing = "";
 function flashTo(key) {
     const el = list.value?.querySelector(`[data-hold="${key}"]`);
     if (!el) return;
-    reveal(list.value, el, true);
+    scrollIntoRoom(list.value, el, true);
     el.dataset.flash = "";
     setTimeout(() => delete el.dataset.flash, FLASH);
 }
@@ -415,10 +415,10 @@ const edge = useEdgeBack(stack, {depth: () => pages.value.length, back});
 
 const SPOKEN_AFTER = 300;
 
-const nextAfter = (target) => ordered(feed.value.waiting).find((item) => item.ref !== target) || null;
+const nextAfter = (target) => waitingInOrder(feed.value.waiting).find((item) => item.ref !== target) || null;
 
 function next() {
-    const left = ordered(feed.value.waiting).filter((item) => item.ref !== reading.value);
+    const left = waitingInOrder(feed.value.waiting).filter((item) => item.ref !== reading.value);
     if (!left.length) return back();
     const stay = [...pages.value.slice(0, -1), entry(left[0].ref)];
     direction.value = "push";

@@ -1,4 +1,5 @@
 <script setup>
+import {openUpdate} from "../state/overlays.js";
 import {meta, types} from "../domain/spec.js";
 import {store} from "../state/store.js";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -13,7 +14,6 @@ import TurnPeer from "./TurnPeer.vue";
 import TurnText from "./TurnText.vue";
 import TurnActions from "./TurnActions.vue";
 import TurnReactions from "./TurnReactions.vue";
-import {openUpdate} from "./updateView.js";
 import {useTurnLinks} from "./turnLinks.js";
 import {useTurnText} from "./turnText.js";
 import {quoted} from "../format/quote.js";

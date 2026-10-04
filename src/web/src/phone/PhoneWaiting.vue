@@ -1,12 +1,12 @@
 <script setup>
+import {waitingInOrder} from "./waiting.js";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {ordered} from "./waiting.js";
 
 const props = defineProps({waiting: {type: Array, required: true}});
 const emit = defineEmits(["open", "list"]);
 const review = () => (props.waiting.length > 1 ? emit("list") : emit("open", sorted.value[0].ref));
-const sorted = computed(() => ordered(props.waiting));
+const sorted = computed(() => waitingInOrder(props.waiting));
 const summary = computed(() => {
     const count = `${props.waiting.length} ${props.waiting.length === 1 ? "needs" : "need"} you`;
     return props.waiting.some((item) => item.type === "plan") ? `${count}, including a plan` : count;
