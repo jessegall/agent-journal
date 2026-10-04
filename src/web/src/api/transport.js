@@ -1,5 +1,5 @@
 const WAIT_MS = 20000;
-const READ_WAIT_MS = 5000;
+const OFFLINE_AFTER_MS = 15000;
 const UPLOAD_WAIT_MS = 300000;
 export const LONG_WAIT_MS = 600000;
 const RELOAD_TRIES = 6;
@@ -12,10 +12,27 @@ class Transport {
         this.written = () => {};
         this.watcher = () => {};
         this.health = () => {};
+        this.failing = 0;
     }
 
     onHealth(fn) {
         this.health = fn;
+    }
+
+    unreached(url) {
+        if (!this.own(url)) return;
+        this.failing ||= Date.now();
+        if (Date.now() - this.failing >= OFFLINE_AFTER_MS) this.health(false);
+    }
+
+    reached(url) {
+        if (!this.own(url)) return;
+        this.failing = 0;
+        this.health(true);
+    }
+
+    own(url) {
+        return new URL(url, location.origin).origin === location.origin;
     }
 
     watch(fn) {
@@ -33,12 +50,12 @@ class Transport {
                 method,
                 headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
                 body: body === undefined || raw ? body : JSON.stringify(body),
-                signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : method === "GET" ? READ_WAIT_MS : WAIT_MS)),
+                signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : WAIT_MS)),
             });
         } catch (error) {
             const unreached = error instanceof TypeError || error.name === "TimeoutError";
             if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) {
-                if (unreached && new URL(url, location.origin).origin === location.origin) this.health(false);
+                if (unreached) this.unreached(url);
                 throw error;
             }
             await new Promise((resolve) => setTimeout(resolve, RELOAD_PAUSE_MS));
@@ -49,7 +66,7 @@ class Transport {
     async send(method, url, body, wait = 0) {
         this.watcher("sent", method, url, body);
         const res = await this.reach(method, url, body, wait, RELOAD_TRIES).finally(() => this.watcher("answered", method, url, body));
-        if (new URL(url, location.origin).origin === location.origin) this.health(true);
+        this.reached(url);
         if (!res.ok) {
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error || `${res.status} ${res.statusText}`);

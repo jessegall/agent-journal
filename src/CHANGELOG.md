@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.3 — the viewer stays calm when the server is slow
+
+**The "server is not answering" bar no longer flashes on a slow server.** It shows only once nothing has answered for
+fifteen seconds, and a read waits as long as a write before the viewer gives up on it. Giving up after five seconds
+also sent the next read while the server was still working on the first, so a busy server collected a queue.
+**Installing a plugin from the viewer no longer times out**: looking a repository over before the install may take as
+long as the install itself.
+
 ## 2.249.2 — no long stall after an upgrade
 
 **An upgrade no longer reads every agent transcript again from the start.** What the journal knows about a transcript
