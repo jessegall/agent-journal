@@ -60,6 +60,7 @@ class Identity(Loaded):
     root: str = ""
     project: str = ""
     version: str = ""
+    pid: int = 0
 
     def serves(self, root: Path) -> bool:
         return Path(self.root).resolve() == root.resolve()
@@ -197,7 +198,7 @@ def last(root: Path) -> ViewerMark:
 
 def restart(root: Path, project: Path) -> str:
     was = last(root)
-    if was.pid and running(root):
+    if was.pid and (reply := identity(was.url, timeout=0.2)) and reply.serves(root) and reply.pid == was.pid and alive(was.pid):
         os.kill(was.pid, signal.SIGTERM)
         waited(was.port)
     return start(root, project)
@@ -205,7 +206,7 @@ def restart(root: Path, project: Path) -> str:
 
 def elsewhere(root: Path) -> str:
     was = last(root)
-    if not was.pid or was.pid == os.getpid() or not alive(was.pid):
+    if not was.pid or was.pid == os.getpid() or not alive(was.pid) or time.time() - was.at > RESTARTING:
         return ""
     until = time.time() + RESTARTING
     while time.time() < until and alive(was.pid):
@@ -213,7 +214,7 @@ def elsewhere(root: Path) -> str:
         if reply is not None and reply.serves(root):
             return was.url if reply.version == version() else ""
         time.sleep(0.2)
-    return was.url if alive(was.pid) else ""
+    return ""
 
 
 def start(root: Path, project: Path) -> str:

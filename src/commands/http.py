@@ -299,7 +299,7 @@ def post_update(req: Request) -> Reply:
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).summaries() if not row["deleted"]]
-    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "environments": names})
+    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "pid": os.getpid(), "environments": names})
 
 
 @route("POST", "/api/identity")

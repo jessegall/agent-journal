@@ -23,7 +23,7 @@ TAIL_BYTES = 262144
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
 SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
-SPAWNED = re.compile(r'"agent_id":"([^"]+)"(?:,"nickname":"([^"]*)")?')
+SPAWNED = re.compile(r'"agent_id"\s*:\s*"([^"]+)"(?:\s*,\s*"nickname"\s*:\s*"([^"]*)")?')
 CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"},
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
 FAST_CONTROLS = {"key": "fast", "label": "Fast mode", "choices": [{"value": "switch", "label": "Turn fast mode on or off", "command": "/fast"}]}
@@ -53,6 +53,7 @@ def script_field(text: str, key: str, index: int) -> str:
 @dataclass(frozen=True)
 class Spawned(Loaded):
     task_name: str = "subagent"
+    agent_type: str = ""
     model: str = ""
 
 
@@ -413,7 +414,7 @@ class Codex(Provider):
         for index, found in enumerate(SPAWNED.finditer(output)):
             running, ended = self.subagent_state(path, found[1])
             rows.append({"task": script_field(script, "task_name", index) or found[2] or "subagent", "type": script_field(script, "agent_type", index),
-                         "model": script_field(script, "model", index), "session": found[1], "running": running, "at": at, "ended": ended,
+                         "model": script_field(script, "model", index), "id": found[1], "session": found[1], "running": running, "at": at, "ended": ended,
                          "status": "" if running else "finished"})
         return rows
 
@@ -423,31 +424,50 @@ class Codex(Provider):
         skills = sorted({use.skill for use in uses if use.name == "Skill"} - {""})
         subagent_rows = []
         shell_rows = []
-        shells = 0
         compacting = False
-        pending, spawning = {}, {}
+        pending, spawning, direct, waits = {}, {}, {}, {}
         for row in rows:
-            payload = row.payload
-            if row.type == "response_item":
-                name, key, text = payload.name, payload.key, payload.argument_text
-                if name == "exec" and SPAWN_IN_SCRIPT.search(text):
-                    spawning[key] = text
-                elif name.endswith("spawn_agent"):
-                    asked = Spawned.from_json(arguments_of(payload.arguments))
-                    subagent_rows.append({"task": asked.task_name, "model": asked.model})
-                elif name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
-                    pending[key] = text
-                script = spawning.pop(key, None) if payload.type == "custom_tool_call_output" else None
-                if script:
-                    subagent_rows += self.spawned(path, script, payload.output, row.at)
-                if payload.type == "custom_tool_call_output" and payload.output.startswith("Script running with cell ID"):
-                    shells += 1
-                    command = pending.get(key, "")
-                    shell_rows.append({"command": command[:160] if command else "background shell", "cell": payload.output.split("ID", 1)[-1].strip()})
             if row.type == "compacted":
                 compacting = True
-            elif row.type == "response_item" and (payload.role == "assistant" or payload.type in ("reasoning", "function_call", "custom_tool_call")):
+                continue
+            if row.type != "response_item":
+                continue
+            payload = row.payload
+            name, key, script = payload.name, payload.key, payload.argument_text
+            is_call = payload.type in ("function_call", "custom_tool_call")
+            if is_call and name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
+                pending[key] = script
+            if is_call and name == "exec" and SPAWN_IN_SCRIPT.search(script):
+                spawning[key] = script
+            elif is_call and name.endswith("spawn_agent"):
+                direct[key] = Spawned.from_json(arguments_of(payload.arguments))
+            elif payload.type == "function_call" and name.endswith("wait"):
+                cell = CELL_ID.search(script)
+                if cell:
+                    waits[key] = cell[1]
+            output = payload.output_text if payload.type in ("function_call_output", "custom_tool_call_output") else ""
+            script = spawning.pop(key, None) if output else None
+            if script:
+                subagent_rows += self.spawned(path, script, output, row.at)
+            asked = direct.pop(key, None) if output else None
+            if asked:
+                found = SPAWNED.search(output)
+                session = found[1] if found else ""
+                running, ended = self.subagent_state(path, session) if session else (True, 0.0)
+                subagent_rows.append({"task": asked.task_name, "type": asked.agent_type, "model": asked.model, "id": session, "session": session,
+                                      "running": running, "at": row.at, "ended": ended, "status": "" if running else "finished"})
+            cell = CELL_RUNNING.search(output)
+            if cell:
+                command = pending.get(key, "")
+                shell_rows.append({"command": command[:160] if command else "background shell", "cell": cell[1], "running": True})
+            finished = waits.pop(key, "") if output else ""
+            if finished and not output.startswith("Script running"):
+                shell = next((shell for shell in shell_rows if shell["cell"] == finished), None)
+                if shell:
+                    shell.update(running=False, ended=row.at, status="completed" if output.startswith("Script completed") else "failed")
+            if payload.role == "assistant" or payload.type in ("reasoning", "function_call", "custom_tool_call"):
                 compacting = False
+        shells = sum(shell.get("running", False) for shell in shell_rows)
         return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: len(subagent_rows),
                 AgentRow.shell_rows: recent(shell_rows), AgentRow.subagent_rows: recent(subagent_rows), AgentRow.compacting: compacting}
 

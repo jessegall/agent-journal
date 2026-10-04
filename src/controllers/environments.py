@@ -159,7 +159,7 @@ class Environments(Controller):
         if not archive:
             raise Refused(f"no archived environment {name!r} in attic/")
         self.unused(name, ": rename it before bringing the archived one back")
-        attic.unpack(archive, Record(self.record.root, name).home)
+        attic.unpack(archive, self.record.root / "environments" / name)
         return self.create(name)
 
     def rename(self, n: int, name: str):
@@ -194,6 +194,9 @@ class Environments(Controller):
         return self.update(n, holder=self.session, claimed={"from": holder, "why": why})
 
     def leave(self, n: int):
+        env = self.load(n)
+        if self.sessions().environment(self.session) != env.title:
+            self._refuse(f"session {self.session} does not hold environment {env.title!r}")
         self.sessions().unbind(self.session)
         return self.update(n, holder="")
 

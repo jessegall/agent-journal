@@ -72,16 +72,18 @@ class Files:
         return [str(contained(folder, name).resolve()) for name in self.files(n)]
 
     def detach(self, n: int, name: str, why: str = "") -> Resource:
-        r = self.load(n)
-        if name not in r.files:
-            raise Refused(f"{self.type} {n} has no file {name}")
-        target = contained(self.folder(n), name)
-        struck = self.folder(n) / "struck"
-        struck.mkdir(exist_ok=True)
-        shutil.move(str(target), str(contained(struck, name)))
-        r.files.pop(name)
-        r.pictures.pop(name, None)
-        return self.save(r, "updated", detached=name, why=why)
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            if name not in r.files:
+                raise Refused(f"{self.type} {n} has no file {name}")
+            target = contained(self.folder(n), name)
+            struck = contained(self.folder(n) / "struck", name)
+            r.files.pop(name)
+            r.pictures.pop(name, None)
+            saved = self.save(r, "updated", detached=name, why=why)
+            struck.parent.mkdir(exist_ok=True)
+            shutil.move(str(target), str(struck))
+            return saved
 
     def index(self, n: int) -> Resource:
         r = self.load(n)

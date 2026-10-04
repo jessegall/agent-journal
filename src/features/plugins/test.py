@@ -272,8 +272,8 @@ def test_stopping_a_service_stops_every_process_it_forked():
         busy.listen()
         port = busy.getsockname()[1]
         status_file(record.root, "own.web").write_text(json.dumps({"state": "stopped", "port": port}))
-        assert allocate(record.root, "own.web", None, set())[0] == port, \
-            "a service restarting keeps its port while its old run still holds it, so the tunnel and the server never part"
+        assert allocate(record.root, "own.web", None, set())[0] != port, \
+            "a held port cannot be assigned to a service without proving which process owns it"
         status_file(record.root, "own.web").write_text(json.dumps({"state": "exited", "port": port}))
         assert allocate(record.root, "own.web", None, set())[0] != port, "one whose run broke with its port taken gets another"
     holding = subprocess.Popen(["sleep", "30"], start_new_session=True)
