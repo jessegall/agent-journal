@@ -107,7 +107,7 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
 def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it():
     from controllers.types import Plugins
     from features import load
-    from features.plugins.source import folder, home
+    from features.plugins.paths import folder, home
     from resources.base import SYSTEM
     load()
     record = fresh()

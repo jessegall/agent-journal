@@ -1,10 +1,18 @@
 from dataclasses import dataclass, field, replace
 
 from engine.fields import Loaded
+from resources.base import Refused
+
+REFUSE_SECONDS = 1.5
+LONGEST_REFUSE = 3.0
 
 
 def command_text(command) -> str:
     return command if isinstance(command, str) else " ".join(command)
+
+
+def shell_args(command) -> list[str]:
+    return ["/bin/sh", "-c", command] if isinstance(command, str) else list(command)
 
 
 @dataclass(frozen=True)
@@ -99,6 +107,14 @@ class Setting(Loaded):
             return f"reads {self.env}"
         return self.title if self.title else self.key
 
+    def check(self, value: str) -> None:
+        if self.kind == "flag" and value not in ("true", "false"):
+            raise Refused(f"{self.key} is a switch: true or false")
+        if self.kind == "number" and not value.lstrip("-").replace(".", "", 1).isdigit():
+            raise Refused(f"{self.key} is a number, not {value!r}")
+        if self.kind == "options" and value not in [str(option) for option in self.options]:
+            raise Refused(f"{self.key} is one of {', '.join(map(str, self.options))}")
+
 
 @dataclass(frozen=True)
 class Card(Loaded):
@@ -158,6 +174,10 @@ class Manifest(Loaded):
     def heading(self) -> str:
         return self.title if self.title else self.name
 
+    @property
+    def refuse_budget(self) -> float:
+        return min(self.refuse_seconds if self.refuse_seconds else REFUSE_SECONDS, LONGEST_REFUSE)
+
     def event(self, name: str) -> DeclaredEvent | None:
         return next((event for event in self.events if event.name == name), None)
 
@@ -181,6 +201,14 @@ def declared(row) -> Manifest:
     return MANIFESTS[key]
 
 
+def called(row) -> str:
+    return declared(row).name
+
+
+def named(plugins, name: str):
+    return next((row for row in plugins._standing() if called(row) == name), None)
+
+
 @dataclass(frozen=True)
 class PluginSettings(Loaded):
     ports: dict = field(default_factory=dict)
@@ -198,3 +226,7 @@ class PluginSettings(Loaded):
 
 def settings_of(row) -> PluginSettings:
     return PluginSettings.of(row.settings)
+
+
+def settings_with(row, **changes) -> dict:
+    return replace(settings_of(row), **changes).to_json()

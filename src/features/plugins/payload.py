@@ -22,8 +22,7 @@ def resource(record, event) -> dict | None:
 
 
 def agent(record, session: str) -> dict:
-    agents = Agents(record, actor=SYSTEM)
-    row = agents._titled(session) if session else agents.primary()
+    row = Agents(record, actor=SYSTEM)._session_or_primary(session)
     return {"session": row.title, "status": row.status, "model": row.model, "cwd": row.cwd} if row else {}
 
 

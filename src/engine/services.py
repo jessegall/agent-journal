@@ -99,6 +99,17 @@ def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     return 0, f"no port free from {PORTS.start} through {PORTS.stop - 1}"
 
 
+def claimed(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
+    port, blocked = allocate(root, sid, wants, taken)
+    if port:
+        taken.add(port)
+    return port, blocked
+
+
+def local_url(port: int) -> str:
+    return f"http://127.0.0.1:{port}" if port else ""
+
+
 SOURCES: list = []
 
 
@@ -111,6 +122,10 @@ class ServiceFiles(TypedDict):
 
 def files_for(root: Path, sid: str) -> ServiceFiles:
     return {"lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid)), "spec": str(spec_file(root, sid))}
+
+
+def service_spec(root: Path, sid: str, **fields) -> ServiceSpec:
+    return ServiceSpec(id=sid, **fields, **files_for(root, sid))
 
 
 def specs(root: Path, sources) -> list[ServiceSpec]:

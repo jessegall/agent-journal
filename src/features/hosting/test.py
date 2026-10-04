@@ -2,7 +2,7 @@ import time
 
 import features
 from controllers.base import COMMANDS
-from features.hosting.apps import ticket_apps
+from features.hosting.services import ticket_apps
 from engine.services import specs
 from features.tickets.controller import Tickets
 from resources.base import USER

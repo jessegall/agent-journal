@@ -2,27 +2,25 @@ import json
 import re
 import time
 from dataclasses import asdict, dataclass
-from pathlib import Path
-from typing import ClassVar, NamedTuple
+from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Plugins
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
-from features.plugins.lifecycle import called, changed_on_disk, clear, reread
-from features.plugins.declared import declared, settings_of
-from features.plugins.manifest import fill
+from engine.wording import fill
+from features.plugins.lifecycle import changed_on_disk, clear, reread
+from features.plugins.declared import called, declared, named
+from features.plugins.environment import placed
+from features.plugins.paths import folder, logged, plugin_socket
 from features.plugins.payload import refusal
 from features.plugins.run import PluginReply, asked, call
 from features.plugins.skills import withdrawn
-from features.plugins.source import environment, folder, logged, plugin_socket
 from engine import command_effects
 from resources.base import OWNER, PLUGIN, SYSTEM
 from engine.reach import Reach
 
-EACH = 1.5
-LONGEST_EACH = 3.0
 ALTOGETHER = 5.0
 
 
@@ -61,17 +59,6 @@ class PluginChatRules(TextFormatter):
         return found
 
 
-class Placement(NamedTuple):
-    name: str
-    folder: Path
-    environ: dict
-
-
-def placed(record, row) -> Placement:
-    name = called(row)
-    return Placement(name, folder(record.root, name), environment(record.root, name, declared(row), row.token, chosen=settings_of(row).chosen, env=record.env))
-
-
 class AskPluginsToRefuse(ToolInterceptor):
     reach = Reach.MAIN
     def intercept(self, context: Context, call_) -> str:
@@ -86,7 +73,7 @@ class AskPluginsToRefuse(ToolInterceptor):
             if not writes and not manifest.reads:
                 continue
             name = called(row)
-            seconds = min(manifest.refuse_seconds if manifest.refuse_seconds else EACH, LONGEST_EACH, left)
+            seconds = min(manifest.refuse_budget, left)
             started = time.monotonic()
             payload = refusal(record, hook, name, folder(record.root, name), writes)
             served = manifest.refuse_socket and asked(plugin_socket(record.root, name), payload, seconds)
@@ -118,7 +105,7 @@ class AskPluginsToCancel(Canceler):
             if not row.enabled or row.completed or not asking:
                 continue
             name, where, env = placed(record, row)
-            ok, reply = call(fill(asking, env), where, env, {"event": self.event, "data": asdict(data)}, min(manifest.refuse_seconds if manifest.refuse_seconds else EACH, LONGEST_EACH))
+            ok, reply = call(fill(asking, env), where, env, {"event": self.event, "data": asdict(data)}, manifest.refuse_budget)
             cancelled = PluginReply.from_json(reply).cancel if ok else ""
             if cancelled:
                 logged(record.root, name, f"cancelled {self.event}: {cancelled}")
@@ -149,7 +136,7 @@ class ClearRemovedPlugin(Handler):
 
 
 def installed(record, name: str) -> bool:
-    return any(called(r) == name for r in Plugins(record, actor=SYSTEM)._standing())
+    return named(Plugins(record, actor=SYSTEM), name) is not None
 
 
 class KeepPluginRows(ActionInterceptor):

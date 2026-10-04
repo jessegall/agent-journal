@@ -16,7 +16,8 @@ from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
 from features.plugins.manifest import MANIFEST
-from features.plugins.source import alone, folder, home, log, plugin_socket
+from features.plugins.paths import folder, home, log, plugin_socket
+from features.plugins.staging import alone
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
@@ -140,7 +141,8 @@ def test_removing_a_plugin_stops_its_services_and_takes_its_folder():
 
 def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.commands import Configure
-    from features.plugins.source import CHOSEN, environment
+    from features.plugins.declared import settings_of
+    from features.plugins.environment import environment
     record = alone()
     row = installed(record, "linter", "exit 0", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
@@ -166,7 +168,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert (titles("other"), "Somewhere else" in titles(record.env)) == (["From the event"], False), \
         "what a plugin queues answering an event runs in that event's environment, and a queued --env is refused"
     Configure().run(None, plugins, row.n, "quiet", "SourceReminder")
-    chosen = (plugins.load(row.n).settings or {}).get(CHOSEN)
+    chosen = settings_of(plugins.load(row.n)).chosen
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
     assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
     from features.plugins.manifest import typed
@@ -178,7 +180,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
     from features.plugins.answer import apply
     apply(record, None, "typed", "", {"settings": {"level": "high", "made-up": "x"}})
-    assert (plugins.load(typed.n).settings or {}).get(CHOSEN) == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
+    assert settings_of(plugins.load(typed.n)).chosen == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
     from features import FEATURES
     from engine import bus
     heard = []
@@ -323,7 +325,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
     from tests.kit import dispatch
-    from features.plugins.source import data
+    from features.plugins.paths import data
     from controllers.types import Plugins
     row = Plugins(record, actor=SYSTEM).create("teacher", enabled=True, token="t0ken", settings={},
                                                manifest={"name": "teacher", "dashboards": [{"name": "sins", "title": "Sins"}]})

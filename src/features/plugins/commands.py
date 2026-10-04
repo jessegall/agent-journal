@@ -1,29 +1,19 @@
-import json
 import shutil
 
 from engine.version import version
 from features.parts import Command, Context
-from features.plugins.answer import Posting, apply, raised
-from features.plugins.declared import Manifest, Setting, declared, settings_of
-from features.plugins.lifecycle import called, difference, drop, place, reread, restarted
-from features.plugins.manifest import fill, read
-from features.plugins.run import SECONDS, call
-from features.plugins.source import alone, checked, data, environment, folder, log, logged, ports_for, prepared, preview, said_version, staged, token
+from features.plugins.answer import Posting, raised
+from features.plugins.declared import called, declared, named, settings_of, settings_with
+from features.plugins.environment import environment, ports_for
+from features.plugins.lifecycle import difference, fetched, install_staged, reread, restarted
+from features.plugins.manifest import read
+from features.plugins.paths import data, folder, log
+from features.plugins.preview import preview
+from features.plugins.setup import prepared
+from features.plugins.staging import alone, token
 from resources.base import Refused
-from dataclasses import replace
 
 VERSION = version()
-
-
-def welcomed(journal, plugins, manifest: Manifest, env: dict) -> None:
-    step = manifest.installed
-    if not step:
-        return
-    root, name = plugins.record.root, manifest.name
-    ok, reply = call(fill(step, env), folder(root, name), env, {"event": "plugin.installed"}, SECONDS)
-    logged(root, name, f"installed {json.dumps(reply, ensure_ascii=False) if ok else reply}")
-    if ok and isinstance(reply, dict):
-        apply(plugins.record, journal, name, "", reply)
 
 
 class Preview(Command):
@@ -31,11 +21,8 @@ class Preview(Command):
     network = True
 
     def run(self, context: Context, plugins, source: str, ref: str = "") -> str:
-        where, manifest, commit, linked = staged(plugins.record.root, source, ref, VERSION)
-        try:
-            return preview(manifest, source, commit)
-        finally:
-            drop(where, linked)
+        with fetched(plugins.record.root, source, ref) as stage:
+            return preview(stage.manifest, source, stage.commit)
 
 
 class Install(Command):
@@ -44,31 +31,16 @@ class Install(Command):
 
     def run(self, context: Context, plugins, source: str, ref: str = "", yes: bool = False):
         root = plugins.record.root
-        where, manifest, commit, linked = staged(root, source, ref, VERSION)
-        name, kept, held = manifest.name, False, None
-        try:
-            taken = next((r for r in plugins._standing() if called(r) == name), None)
+        with fetched(root, source, ref) as stage:
+            name = stage.manifest.name
+            taken = named(plugins, name)
             if taken:
                 raise Refused(f"a plugin named {name} is installed from {taken.source}: remove it first")
             if not yes:
-                return f"{preview(manifest, source, commit)}\n\nNothing is installed yet. To install exactly this, run it again with --yes" + (f" --ref {commit}" if commit else "")
-            held = alone(root, name)
-            secret = token()
-            ports = ports_for(root, manifest)
-            env = environment(root, name, manifest, secret, ports)
-            checked(manifest, where, env)
-            data(root, name).mkdir(parents=True, exist_ok=True)
-            prepared(manifest, where, env, log(root, name))
-            made = place(plugins, where, linked, manifest, source, ref, commit, secret, ports=ports)
-            welcomed(context.journal, plugins, manifest, env)
-            restarted(root, manifest)
-            kept = True
-        finally:
-            if held:
-                held.close()
-            if not kept:
-                drop(where, linked)
-        context.journal.log("installed", name=name, source=source, commit=f" at {commit[:12]}" if commit else "", about=made.ref)
+                return f"{preview(stage.manifest, source, stage.commit)}\n\nNothing is installed yet. To install exactly this, run it again with --yes" + (f" --ref {stage.commit}" if stage.commit else "")
+            with alone(root, name):
+                made = install_staged(context.journal, plugins, stage, source, ref, token(), ports_for(root, stage.manifest))
+        context.journal.log("installed", name=name, source=source, commit=f" at {stage.commit[:12]}" if stage.commit else "", about=made.ref)
         return made
 
 
@@ -87,24 +59,14 @@ class Upgrade(Command):
                 ports = {**ports_for(root, manifest), **settings.ports}
                 prepared(manifest, where, environment(root, manifest.name, manifest, row.token, ports, settings.chosen), log(root, manifest.name))
             return reread(plugins, row)
-        where, manifest, commit, linked = staged(root, row.source, row.revision if ref is None else ref, VERSION)
-        kept = False
-        try:
+        with fetched(root, row.source, row.revision if ref is None else ref) as stage:
+            manifest, commit = stage.manifest, stage.commit
             if commit == row.commit and ref is None and not again:
                 return f"{called(row)} is already at {commit[:12]}; to run its setup again anyway, run it with --again --yes"
             if not yes:
                 return f"{preview(manifest, row.source, commit)}\n\n{difference(declared(row), manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
             ports = {**ports_for(root, manifest), **settings.ports}
-            env = environment(root, manifest.name, manifest, row.token, ports, settings.chosen)
-            checked(manifest, where, env)
-            prepared(manifest, where, env, log(root, manifest.name))
-            place(plugins, where, linked, manifest, row.source, "" if ref is None else ref, commit, row.token, row=row, ports=ports)
-            welcomed(context.journal, plugins, manifest, env)
-            restarted(root, manifest)
-            kept = True
-        finally:
-            if not kept:
-                drop(where, linked)
+            install_staged(context.journal, plugins, stage, row.source, "" if ref is None else ref, row.token, ports, settings.chosen, row)
         return plugins.load(n)
 
 
@@ -122,16 +84,6 @@ class Disable(Command):
         return plugins.update(n, enabled=False)
 
 
-def allowed(key: str, setting: Setting, value: str) -> None:
-    kind = setting.kind
-    if kind == "flag" and value not in ("true", "false"):
-        raise Refused(f"{key} is a switch: true or false")
-    if kind == "number" and not value.lstrip("-").replace(".", "", 1).isdigit():
-        raise Refused(f"{key} is a number, not {value!r}")
-    if kind == "options" and value not in [str(option) for option in setting.options]:
-        raise Refused(f"{key} is one of {', '.join(map(str, setting.options))}")
-
-
 class Configure(Command):
     name = "configure"
 
@@ -142,9 +94,8 @@ class Configure(Command):
         if setting is None:
             names = ", ".join(s.key for s in manifest.settings)
             raise Refused(f"{called(row)} has no setting {key!r}; it has {names if names else 'none'}")
-        allowed(key, setting, value)
-        settings = settings_of(row)
-        updated = plugins.update(row.n, settings=replace(settings, chosen={**settings.chosen, key: value}).to_json())
+        setting.check(value)
+        updated = plugins.update(row.n, settings=settings_with(row, chosen={**settings_of(row).chosen, key: value}))
         restarted(plugins.record.root, manifest)
         return updated
 

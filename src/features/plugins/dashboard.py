@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from features.plugins.manifest import unknown_keys
 from resources.base import Refused
 
 TONES = ("", "note", "good", "warn", "danger", "muted")
@@ -54,9 +55,7 @@ def node(given, where: str, pages: dict) -> None:
         raise Refused(f"{where}: a node is an object whose type is one of {', '.join(NODES)}")
     spec = NODES[given["type"]]
     known = {"type", "children", *spec.props}
-    for key in given:
-        if key not in known:
-            raise Refused(f"{where}: {given['type']} has no {key!r}; it takes {', '.join(sorted(known - {'type'}))}")
+    unknown_keys(given, sorted(known), f"{where}: {given['type']}")
     for key in spec.required:
         if key not in given:
             raise Refused(f"{where}: {given['type']} needs {key!r}")
@@ -74,9 +73,7 @@ def node(given, where: str, pages: dict) -> None:
 def entry(item, spec: NodeSpec, where: str, pages: dict) -> None:
     if not isinstance(item, dict):
         raise Refused(f"{where}: an item is an object with {', '.join(spec.items)}")
-    for key in item:
-        if key not in spec.items:
-            raise Refused(f"{where}: an item has no {key!r}; it takes {', '.join(spec.items)}")
+    unknown_keys(item, spec.items, f"{where}: an item")
     if item.get("tone", "") not in TONES:
         raise Refused(f"{where}: tone is one of {', '.join(t for t in TONES if t)}")
     opened(item.get("open"), where, pages)

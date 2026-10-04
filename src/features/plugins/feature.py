@@ -29,4 +29,4 @@ class Plugins(Feature):
 
     def host(self, root: Path) -> None:
         threading.Thread(target=watch, args=(Path(root), self.journal), daemon=True).start()
-        services.watch(Path(root), self)
+        threading.Thread(target=services.keep, args=(Path(root), self), daemon=True).start()

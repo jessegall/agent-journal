@@ -1,7 +1,8 @@
 import shutil
 from pathlib import Path
 
-from features.plugins.source import folder
+from engine.worktree import ignore
+from features.plugins.paths import folder
 from providers.base import LIBRARY
 from providers.skill_homes import LINKED, link, unlink
 
@@ -41,13 +42,8 @@ def shipped(root: Path, plugin: str, manifest) -> dict[str, Path]:
 
 def ignored(project: Path, names: list[str]) -> None:
     exclude = project / ".git" / "info" / "exclude"
-    if not exclude.parent.is_dir():
-        return
-    known = exclude.read_text().splitlines() if exclude.is_file() else []
-    wanted = [f"/{home}/{name}" for name in names for home in (LIBRARY, *LINKED.values())]
-    missing = [line for line in wanted if line not in known]
-    if missing:
-        exclude.write_text("\n".join([*known, *missing]) + "\n")
+    if exclude.parent.is_dir():
+        ignore(exclude, [f"/{home}/{name}" for name in names for home in (LIBRARY, *LINKED.values())])
 
 
 def published(root: Path, plugin: str, manifest) -> list[str]:
