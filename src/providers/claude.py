@@ -8,13 +8,13 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
-from providers.base import BackgroundTasks, Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
+from providers.base import BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
+from providers.jsonl import complete_lines, last_lines, parsed_row, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
-from engine.stored import read_json, tail, write_text
+from engine.stored import read_json, write_text
 
-ASKS = frozenset({"AskUserQuestion"})
 SENDS = "SendMessage"
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
@@ -69,8 +69,40 @@ def subagent_facts(rows: list[Row]) -> SubagentFacts:
     return SubagentFacts(tool, file, answers[-1][:2000] if answers else "")
 
 
+@dataclass(frozen=True)
+class ClaudeSubagentRow(SubagentRow):
+    task_id: str
+    refusal: str | None
+    skills: list[str]
+    facts: SubagentFacts | None
+
+    def to_json(self) -> dict:
+        fields = asdict(self)
+        facts = fields.pop("facts")
+        return {**fields, **(facts or {})}
+
+
+@dataclass(frozen=True)
+class CommandRow:
+    id: str
+    task_id: str
+    command: str
+    task: str
+    running: bool
+    at: float
+    ended: float
+    status: str
+
+    def to_json(self) -> dict:
+        return asdict(self)
+
+
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
+
+
+def message_row(raw: dict) -> Row | None:
+    return Row.from_payload(raw) if raw.get("message") else None
 
 
 def worth_opening(link: str) -> bool:
@@ -106,6 +138,7 @@ class Claude(Provider):
     session_variable = "CLAUDE_CODE_SESSION_ID"
     session_markers = ("CLAUDECODE", "CLAUDE_PID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_EXECPATH", "CLAUDE_CODE_CHILD_SESSION",
                        "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
+    home = ".claude"
     sleeping_tools = ("ScheduleWakeup",)
     echoes_typed = True
     background_wakes = True
@@ -156,7 +189,7 @@ class Claude(Provider):
 
     def setting(self, project: Path, key: str) -> str:
         found = ""
-        for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
+        for settings in (Path.home() / self.home / "settings.json", project / self.home / "settings.json", project / self.home / "settings.local.json"):
             saved = read_json(settings, dict, {})
             found = (saved.get(key) if isinstance(saved, dict) else "") or found
         return found
@@ -176,31 +209,28 @@ class Claude(Provider):
         configured = self.setting(Path(hook.cwd or "."), "model")
         return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
 
-    def channel(self, project: Path, command: str) -> None:
+    def channel(self, project: Path, hook: HookCommand) -> None:
         f = project / ".mcp.json"
         known = read_json(f, dict, {})
         servers = known.get("mcpServers") or {}
-        words = command.split()
-        servers[SERVER] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
+        servers[SERVER] = {"command": "python3", "args": [str(Path(hook.root) / "journal.py"), "-m", "channel", hook.root]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def journal_typed(self, prompt: str) -> bool:
         return CHANNEL_MARK in prompt or super().journal_typed(prompt)
 
-    def wire(self, project: Path, command: str) -> Path:
+    def finish_wiring(self, project: Path, hook: HookCommand) -> None:
         self.shared(project)
-        wired = super().wire(project, command)
-        self.channel(project, command)
+        self.channel(project, hook)
         settings = self.settings(project)
         if "statusLine" not in settings:
-            script = Path(command.split()[1]).with_name(STATUS_SCRIPT)
+            script = Path(hook.script).with_name(STATUS_SCRIPT)
             self.save(project, {**settings, "statusLine": {"type": "command", "command": f"sh {script}", "padding": 0}})
         settings = self.settings(project)
         permissions = settings.get("permissions") or {}
         deny = list(permissions.get("deny") or [])
         if any(rule not in deny for rule in RECORD_FILES):
             self.save(project, {**settings, "permissions": {**permissions, "deny": deny + [r for r in RECORD_FILES if r not in deny]}})
-        return wired
 
     def usage(self, path: Path, now: float | None = None) -> list[UsageWindow] | None:
         limits = self.reported(path, "rate_limits")
@@ -222,29 +252,23 @@ class Claude(Provider):
             return int(float(value))
         return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
 
-    def agent_types(self, project: Path, chosen: list) -> list[Path]:
-        folder = project / ".claude" / "agents"
-        written = []
-        for kind, model in chosen:
-            text = f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.instructions}\n"
-            target = folder / f"{kind.name}.md"
-            if not target.is_file() or target.read_text() != text:
-                folder.mkdir(parents=True, exist_ok=True)
-                write_text(target, text)
-                written.append(target)
-        return written
+    def agent_file(self, project: Path, name: str) -> Path:
+        return project / self.home / "agents" / f"{name}.md"
+
+    def agent_text(self, kind, model: str) -> str:
+        return f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.instructions}\n"
 
     def present(self, project: Path) -> bool:
-        return (project / ".claude").is_dir() or shutil.which("claude") is not None
+        return (project / self.home).is_dir() or shutil.which("claude") is not None
 
     def config(self, project: Path) -> Path:
-        return project / ".claude" / "settings.local.json"
+        return project / self.home / "settings.local.json"
 
     def hook_files(self, project: Path) -> list[Path]:
-        return [Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", self.config(project)]
+        return [Path.home() / self.home / "settings.json", project / self.home / "settings.json", self.config(project)]
 
     def shared(self, project: Path) -> None:
-        f = project / ".claude" / "settings.json"
+        f = project / self.home / "settings.json"
         had = read_json(f, dict, None)
         if had is None:
             return
@@ -350,7 +374,7 @@ class Claude(Provider):
         if results and not text.strip():
             text = "\n".join(block.result for block in results)
         uses = [ToolCall.from_payload(block.id, block.name, row.at, block.input) for block in row.of_type("tool_use")]
-        questions = [self.question_text(use) for use in uses if use.name in ASKS]
+        questions = [self.question_text(use) for use in uses if use.name in self.question_tools]
         if questions:
             text = "\n".join(part for part in (text, *questions) if part)
         tools = [f"Skill:{use.skill}" if use.name == "Skill" else use.name for use in uses]
@@ -363,7 +387,7 @@ class Claude(Provider):
         sent = next((use for use in uses if use.name == SENDS and use.to), None)
         if sent:
             kind, who, text = PEER, f"{SENT}:{sent.to}", sent.message if sent.message else text
-        asked = [use.id for use in uses if use.name in ASKS]
+        asked = [use.id for use in uses if use.name in self.question_tools]
         answered = [block.tool_use_id for block in results]
         return who, text, kind, row.at, tools, row.parent, asked, answered
 
@@ -417,18 +441,6 @@ class Claude(Provider):
     def refused_by_hook(self, block: Block) -> bool:
         return block.is_error and "hook error" in block.result
 
-    def loaded(self, uses: list[ToolCall]) -> list[str]:
-        return sorted({u.skill for u in uses if u.name == "Skill"} - {""})
-
-    def skills(self, session: Path | None) -> list[str]:
-        if session is None or not session.is_file():
-            return []
-        return sorted(self.folded(session, self.skill_names, set))
-
-    def skill_names(self, names: set, row: Row) -> set:
-        names.update(use.skill_loaded for use in self.tool_uses(row) if use.skill_loaded)
-        return names
-
     def crew_rows(self, crew: "Crew", row: Row) -> "Crew":
         if self.starts_window(row):
             crew.window.clear()
@@ -472,61 +484,53 @@ class Claude(Provider):
             writing = now - written <= QUIET_SUBAGENT
             behind = use.background or use.id in held.moved_to_background
             running = not status or writing and (status == "returned" and behind or written > done)
-            facts = asdict(subagent_facts(self.recent(session))) if session else {}
-            subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
-                              "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
-                              "status": "" if running else status, "refusal": held.errors.get(use.id),
-                              "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session), **facts})
+            subagents.append(ClaudeSubagentRow(id=use.id, task=use.description if use.description else "subagent", type=use.subagent_type, model=use.model,
+                                               running=running, at=use.at, ended=0.0 if running else done, status="" if running else status,
+                                               session=session.stem.removeprefix("agent-") if session else "", task_id=ids.get(use.id, ""),
+                                               refusal=held.errors.get(use.id), skills=self.skills(session),
+                                               facts=subagent_facts(self.recent(session)) if session else None).to_json())
         shells = []
         for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):
             status, done = ended.get(use.id, ("", 0.0))
             finished = status not in ("", "returned")
-            shells.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": use.command[:160], "task": use.description,
-                           "running": not finished, "at": use.at, "ended": done if finished else 0.0, "status": status if finished else ""})
+            shells.append(CommandRow(use.id, ids.get(use.id, ""), use.command[:160], use.description, not finished, use.at,
+                                     done if finished else 0.0, status if finished else "").to_json())
         monitors = []
         for use in (u for u in uses if u.name == "Monitor"):
             status, done = ended.get(use.id, ("", 0.0))
             notified = status not in ("", "returned")
             deadline = use.at + min((use.timeout_ms if use.timeout_ms else MONITOR_DEFAULT) / 1000, MONITOR_LONGEST)
             finished = notified or now > deadline
-            monitors.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": (use.command if use.command else use.url)[:160],
-                             "task": use.description if use.description else "monitor", "running": not finished, "at": use.at,
-                             "ended": monitor_end(finished, notified, done, deadline),
-                             "status": monitor_status(finished, notified, status)})
-        return {AgentRow.skills: self.loaded(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
-                AgentRow.monitors: len(monitors), AgentRow.shell_rows: recent(shells), AgentRow.subagent_rows: recent(subagents),
-                AgentRow.monitor_rows: recent(monitors)}
+            monitors.append(CommandRow(use.id, ids.get(use.id, ""), (use.command if use.command else use.url)[:160], use.description if use.description else "monitor",
+                                       not finished, use.at, monitor_end(finished, notified, done, deadline), monitor_status(finished, notified, status)).to_json())
+        return {AgentRow.skills: self.skills_in(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
+                AgentRow.monitors: len(monitors), AgentRow.shell_rows: running_and_latest(shells),
+                AgentRow.subagent_rows: running_and_latest(subagents), AgentRow.monitor_rows: running_and_latest(monitors)}
 
     def stop_instruction(self, task: str) -> str:
         return f"run TaskStop with task_id {task} now"
 
     def conversation_file(self, conversation: str) -> Path | None:
-        return next(iter(sorted((Path.home() / ".claude" / "projects").glob(f"*/{conversation}.jsonl"))), None)
+        return next(iter(sorted((Path.home() / self.home / "projects").glob(f"*/{conversation}.jsonl"))), None)
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
         return found if found.is_file() else None
 
     def settling(self, path: Path) -> bool:
-        for line in reversed(tail(path, SETTLE_BYTES)):
-            raw = parsed(line, dict)
-            row = Row.from_payload(raw) if raw is not None and raw.get("message") else None
-            if row and row.type in ("user", "assistant"):
+        lines, _ = last_lines(path, SETTLE_BYTES)
+        for row in rows(reversed(lines), message_row):
+            if row.type in ("user", "assistant"):
                 return row.type == "user" or (bool(row.blocks) and all(block.type == "thinking" for block in row.blocks))
         return False
 
     def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
-        try:
-            with open(transcript, "rb") as f:
-                f.seek(offset)
-                lines = f.read().split(b"\n")
-        except OSError:
-            return [], offset
+        lines, _ = complete_lines(transcript, offset)
         blocks: dict[str, list[Block]] = {}
         ends, at, done = [], offset, offset
-        for line in lines[:-1]:
+        for line in lines:
             at += len(line) + 1
-            row = parsed(line.decode(errors="replace"), Row.from_payload)
+            row = parsed_row(line, Row.from_payload)
             if row is None:
                 continue
             if row.type == "assistant" and row.blocks:

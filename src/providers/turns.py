@@ -16,27 +16,34 @@ def settled(provider, path: Path, agent) -> None:
         time.sleep(SETTLE_STEP)
 
 
+def _settled_provider(agent):
+    kind = PROVIDERS.get(agent.provider)
+    if not kind or not agent.transcript:
+        return None
+    provider = kind()
+    settled(provider, Path(agent.transcript), agent)
+    return provider
+
+
 def turns(record, agent) -> list:
-    provider = PROVIDERS.get(agent.provider)
-    if not provider or not agent.transcript:
+    provider = _settled_provider(agent)
+    if not provider:
         return []
     try:
-        settled(provider(), Path(agent.transcript), agent)
         size = Path(agent.transcript).stat().st_size
     except OSError:
         return []
     held = TURNS.get(agent.transcript)
     if not held or held[0] != size:
-        held = TURNS[agent.transcript] = (size, [t for t in provider().transcript(agent.transcript) if t.has_agent_text])
+        held = TURNS[agent.transcript] = (size, [t for t in provider.transcript(agent.transcript) if t.has_agent_text])
     return held[1]
 
 
 def last_turn(record, agent):
-    provider = PROVIDERS.get(agent.provider)
-    if not provider or not agent.transcript:
+    provider = _settled_provider(agent)
+    if not provider:
         return None
-    settled(provider(), Path(agent.transcript), agent)
-    recent = [t for t in provider().tail(agent.transcript) if t.has_agent_text] or turns(record, agent)
+    recent = [t for t in provider.tail(agent.transcript) if t.has_agent_text] or turns(record, agent)
     return recent[-1] if recent else None
 
 
