@@ -5,7 +5,7 @@ from controllers.types import Features, Notifications
 from engine import runtime
 from engine.timing import measured
 from features import FEATURES
-from features.dev_faults.feature import Faults
+from features.dev_faults.feature import DevFaults
 from resources.base import SYSTEM
 from tests.conftest import fresh
 
@@ -76,7 +76,7 @@ def test_the_budget_is_tunable_per_environment():
     with measured(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == [], "a budget of 0 drops that budget"
-    assert Faults().reports.milliseconds(record, "command") == 50
+    assert DevFaults().reports.milliseconds(record, "command") == 50
 
 
 def test_what_the_viewer_throws_is_filed_under_the_same_switch():
@@ -141,7 +141,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
     from commands.http import dispatch
     from controllers.types import Messages
     from runner.hooks import answer
-    from features.dev_faults.counting import counted
+    from tests.kit import counted
     from providers import PROVIDERS
     from resources.base import USER
     from tests.kit import report
@@ -169,7 +169,7 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     from engine.record import Record
     from engine.settings_file import SETTINGS
     from engine.stored import write_json
-    from features.dev_faults.counting import counted
+    from tests.kit import counted
     record = fresh()
     record.set_setting("delivery", {"mode": "one"})
     stats = []
