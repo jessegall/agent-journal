@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from engine.events.engine import ClockTicked
-from engine.gates import LONG_COMMAND, cancelled
+from engine.gates import LONG_COMMAND, HookCall, cancelled
 from engine.sessions import alive
 from engine.wording import clipped
 from features.long_commands.details import KEPT, MOVED
@@ -34,8 +34,8 @@ class MoveLongCommands(Handler):
         seconds = int(time.time() - float(started))
         if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or not context.once("asked", started):
             return
-        reason = cancelled(LONG_COMMAND, PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row.title,
-                           {"command": last.command, "seconds": seconds}, row.subagent)
+        reason = cancelled(LONG_COMMAND, HookCall(PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row),
+                           {"command": last.command, "seconds": seconds})
         if reason:
             context.agent.say(KEPT, reason=reason)
             return

@@ -2,7 +2,9 @@ import json
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from runner.hooks import displayed, handle
+from providers.payload import Chunk
+from runner.chat_mirror import displayed
+from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
 from features.format import VIEWER, formatted
@@ -139,7 +141,7 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     for piece in ({"index": 0, "final": False, "delta": "first "}, {"message_id": "b", "index": 0, "final": True, "delta": "second"}, {"index": 1, "final": True, "delta": "whole"}):
-        displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", **piece})
+        displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", **piece}))
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
     assert chat() == ["second", "first whole"], "a message that finishes never drops the pieces of one still being shown"
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
@@ -147,16 +149,16 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
     engine.tick()
     assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 0, "final": False, "delta": "The summary "})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 0, "final": False, "delta": "The summary "}))
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "The summary of the turn"})
     assert chat().count("The summary of the turn") == 1, "a message whose last pieces never came is sent whole when the turn stops"
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 1, "final": True, "delta": "of the turn"})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 1, "final": True, "delta": "of the turn"}))
     assert chat().count("The summary of the turn") == 1 and "of the turn" not in chat(), "a piece arriving after that does not send it again"
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "d", "index": 0, "final": False, "delta": "Cut short "})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "d", "index": 0, "final": False, "delta": "Cut short "}))
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Cut short by the next prompt"}]}}) + "\n")
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "claude-1", "prompt": "next"})
     assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
-    displayed(record.root, {"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
     assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
 
 

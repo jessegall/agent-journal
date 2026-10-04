@@ -31,6 +31,24 @@ class Growth:
         return True
 
 
+class JsonFiles:
+    def __init__(self):
+        self.held: dict[Path, tuple] = {}
+
+    def read(self, path: Path, into: Callable[[Any], T], default: T) -> T:
+        try:
+            found = path.stat()
+        except OSError:
+            return default
+        stamp = (found.st_mtime_ns, found.st_size)
+        held = self.held.get(path)
+        if held is not None and held[0] == stamp:
+            return held[1]
+        value = read_json(path, into, default)
+        self.held[path] = (stamp, value)
+        return value
+
+
 def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
     try:
         return into(json.loads(Path(path).read_text()))

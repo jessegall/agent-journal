@@ -15,7 +15,6 @@ from providers import DRIVERS, PROVIDERS
 from commands.menu import Choice, choices_of, pick
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
-from engine.stored import write_text
 from engine import runtime
 from engine.wording import plural
 from engine.stored import last_lines
@@ -73,12 +72,10 @@ def search_text(record, term: str, page: int) -> str:
     return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
 
 def switched(ctx, on: bool) -> str:
-    f = runtime.off_file(ctx["record"].root)
     if on:
-        f.unlink(missing_ok=True)
+        runtime.OFF.lower_flag(ctx["record"].root)
         return "the journal is in force"
-    f.parent.mkdir(parents=True, exist_ok=True)
-    write_text(f, str(time.time()))
+    runtime.OFF.raise_flag(ctx["record"].root)
     return "the journal is off: the hooks report nothing and hold nothing until journal enable"
 
 def verify(ctx) -> str:

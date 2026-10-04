@@ -2,6 +2,7 @@ import fcntl
 import os
 import time
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 
 from engine.fields import Loaded
@@ -80,6 +81,7 @@ def live(session: SessionRecord) -> bool:
     return time.time() - session.last_heard < RECENT
 
 
+@lru_cache(maxsize=256)
 def agent_pid(pid: int) -> int:
     for _ in range(4):
         try:
@@ -185,6 +187,21 @@ class Sessions:
 
     def granted(self, session: str, env: str) -> bool:
         return env in self.read(session).grants
+
+
+class SessionsSnapshot(Sessions):
+    def __init__(self, root: Path):
+        super().__init__(root)
+        self.held: dict[str, SessionRecord] | None = None
+
+    def all(self) -> dict[str, SessionRecord]:
+        if self.held is None:
+            self.held = super().all()
+        return self.held
+
+    def write(self, session: str, **fields) -> SessionRecord:
+        self.held = None
+        return super().write(session, **fields)
 
 
 def allowed(sessions: Sessions, session: str, env: str, actor_id: str, type_: str) -> str:

@@ -20,7 +20,7 @@ RETIRED = "slow"
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
 SERVED: set[str] = set()
-PROFILING = "profile-requests"
+PROFILING = runtime.flag("profile-requests")
 
 
 
@@ -79,7 +79,7 @@ class FaultReports:
             self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000, (time.thread_time() - working) * 1000)
 
     def profiler(self, root) -> cProfile.Profile | None:
-        return cProfile.Profile() if (runtime.folder(root) / PROFILING).exists() else None
+        return cProfile.Profile() if PROFILING.is_raised(root) else None
 
     def kept(self, root, name: str, took: float, profile: cProfile.Profile) -> None:
         out = io.StringIO()

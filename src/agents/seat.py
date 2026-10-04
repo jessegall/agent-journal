@@ -1,11 +1,16 @@
 import time
+from functools import cached_property
 from pathlib import Path
 from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS
+from engine import runtime
+from engine.record import Record
+from engine.sessions import SessionsSnapshot, agent_pid, alive
 from engine.stored import Growth, write_json
 from engine.proc import git
 from engine.seats import seat_file
-from controllers.types import Agents
+from engine.worktree import checkout, environment
+from controllers.types import Agents, Environments
 from resources.base import SYSTEM
 from resources.types import AgentRow
 from engine.fields import Loaded
@@ -113,3 +118,48 @@ class SeatReport:
                                  "why": why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
 
+
+class HookBinding:
+    def __init__(self, root: Path, provider, pid: int):
+        self.root = root
+        self.provider = provider
+        self.pid = agent_pid(pid)
+        self.sessions = SessionsSnapshot(root)
+
+    @cached_property
+    def owned(self) -> set[str]:
+        return {r.title for r in Environments(Record(self.root, runtime.env(self.root)), actor=SYSTEM).all() if r.owner}
+
+    def environment(self, hook, prefer: str) -> str:
+        session = hook.session
+        held = self.sessions.read(session)
+        worked = "" if self.provider.is_subagent(hook) else environment(checkout(Path(hook.cwd)) if hook.cwd else None)
+        stays = bool(held.environment and held.provider) and not self.moving(session, held.environment, worked)
+        env = held.environment if stays else self.bound(session, worked, prefer)
+        if stays and not alive(held.pid):
+            self.relaunched(session, held.pid)
+        self.sessions.touch(session)
+        return env
+
+    def moving(self, session: str, env: str, worked: str) -> bool:
+        if not worked or worked == env or worked in self.owned:
+            return False
+        own = {session, self.sessions.terminal(self.provider.name, self.pid)}
+        return not set(self.sessions.holders(worked)) - own
+
+    def bound(self, session: str, worked: str, prefer: str) -> str:
+        env = worked or prefer or self.sessions.choose(session, self.provider.name, runtime.default_env(self.root), self.owned)
+        self.sessions.bind(session, env, pid=self.pid, provider=self.provider.name)
+        environments = Environments(Record(self.root, env), actor=SYSTEM)
+        environments._seat(env, session)
+        terminal = self.sessions.terminal(self.provider.name, self.pid)
+        if worked and terminal:
+            self.sessions.bind(terminal, env)
+            environments._seat(env, terminal)
+        return env
+
+    def relaunched(self, session: str, old: int) -> None:
+        terminal = self.sessions.terminal(self.provider.name, old)
+        self.sessions.write(session, pid=self.pid)
+        if terminal:
+            self.sessions.write(terminal, pid=self.pid)

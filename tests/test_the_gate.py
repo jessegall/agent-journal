@@ -4,8 +4,9 @@ import json
 
 import features
 from controllers.types import Agents, Works
-from runner.hooks import gated, handle
-from engine.gates import AFTERWARDS, CANCELERS, LONG_COMMAND, POLICIES, cancelled, gate_file
+from runner.gate import gated
+from runner.hooks import handle
+from engine.gates import AFTERWARDS, CANCELERS, LONG_COMMAND, POLICIES, HookCall, cancelled, gate_file
 from engine.gates import held
 from engine.wording import APPENDS
 from providers import PROVIDERS
@@ -86,12 +87,12 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
             Notices(record, actor=SYSTEM).complete(notice.n, "fixed")
     monkeypatch.undo()
     from engine import runtime
-    (runtime.folder(record.root) / "hook-failures.log").write_text("1790000000 000 claude\n1790000001 500 claude\n")
-    dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
+    runtime.hook_failures(record.root).write_text("1790000000 000 claude\n1790000001 500 claude\n")
+    commands.http.unanswered(record.root, record.env)
     lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
     assert any("no answer from the server 2 times (codes 000, 500)" in line for line in lines), \
         "hooks the server never answered are told once it answers again"
-    assert not (runtime.folder(record.root) / "hook-failures.log").exists(), "and are told only once"
+    assert not runtime.hook_failures(record.root).exists(), "and are told only once"
     monkeypatch.setattr(runtime, "STARTED", [1790000100.0])
     (runtime.folder(record.root) / "hook-failures.log").write_text("1790000095 000 claude\n")
     dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
@@ -164,8 +165,9 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
             asked.clear()
             called = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Agent", "tool_input": dispatch}
             hook = Hook.read({**called, "agent_id": "helper"} if subagent else called, provider.tool_kinds)
-            gated(provider, record, hook, "claude-1")
-            cancelled(LONG_COMMAND, provider, record, hook, "claude-1", {}, subagent)
+            call = HookCall(provider, record, hook, main)
+            gated(call)
+            cancelled(LONG_COMMAND, call, {})
             wanted = sorted((g for g in every if g.reaches(subagent)), key=repr)
             assert sorted(asked, key=repr) == wanted, f"a {'subagent' if subagent else 'main agent'}'s call asks exactly the guards that reach it"
     finally:

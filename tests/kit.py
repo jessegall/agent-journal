@@ -23,7 +23,7 @@ from features.tickets.controller import Tickets  # noqa: F401
 from runner import engine as engine_module  # noqa: F401
 from runner import engines  # noqa: F401
 from runner.engine import Engine  # noqa: F401
-from runner.hooks import PAUSED  # noqa: F401
+from runner.gate import PAUSED  # noqa: F401
 from runner.hooks import answer  # noqa: F401
 from runner.hooks import handle  # noqa: F401
 

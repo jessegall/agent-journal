@@ -7,13 +7,13 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
-from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
+from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from providers.base import BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
 from providers.jsonl import complete_lines, last_lines, parsed_row, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
-from engine.stored import read_json, write_text
+from engine.stored import JsonFiles, read_json, write_text
 
 SENDS = "SendMessage"
 SESSIONS = "uds:"
@@ -33,6 +33,7 @@ KEPT_LINKS = 10
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
+SETTINGS_FILES = JsonFiles()
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
 TASK_ID = re.compile(r"\b(?:ID:|task|agentId:) (\w+)")
@@ -190,7 +191,7 @@ class Claude(Provider):
     def setting(self, project: Path, key: str) -> str:
         found = ""
         for settings in (Path.home() / self.home / "settings.json", project / self.home / "settings.json", project / self.home / "settings.local.json"):
-            saved = read_json(settings, dict, {})
+            saved = SETTINGS_FILES.read(settings, dict, {})
             found = (saved.get(key) if isinstance(saved, dict) else "") or found
         return found
 
@@ -198,7 +199,7 @@ class Claude(Provider):
         return self.reported(transcript, "effort").get("level", "") or self.setting(project, "effortLevel")
 
     def reported(self, transcript: Path | None, key: str) -> dict:
-        status = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), dict, {}) if transcript else {}
+        status = SETTINGS_FILES.read(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), dict, {}) if transcript else {}
         found = status.get(key) if isinstance(status, dict) else None
         return found if isinstance(found, dict) else {}
 
@@ -286,6 +287,11 @@ class Claude(Provider):
 
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
+
+    @classmethod
+    def display_chunk(cls, raw: dict) -> Chunk | None:
+        chunk = Chunk.from_json(raw)
+        return chunk if chunk.event == DISPLAYED else None
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}

@@ -34,6 +34,17 @@ SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/
 
 
 @dataclass(frozen=True)
+class Chunk(Loaded):
+    aliases = {"event": ("hook_event_name",), "session": ("session_id",), "message": ("message_id",)}
+    event: str = ""
+    session: str = ""
+    message: str = ""
+    index: int = 0
+    delta: str = ""
+    final: bool = False
+
+
+@dataclass(frozen=True)
 class AskedOption(Loaded):
     string_key = "label"
     label: str = ""
