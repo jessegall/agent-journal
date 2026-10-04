@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.250.0 — round nine
+
+**The API runs only an action a type really has**: a name starting with an underscore, or any other method that is
+not a registered action, is refused, so no request can reach a controller's internals. **An agent can no longer act
+as the user**: a command that claims the user's name is refused, and only the user opens or changes a share.
+**Hidden and secret files stay hidden everywhere**: the diff, commit and edit-feed views no longer show `.env`, keys
+or anything in a secrets folder, and a plugin log name cannot leave its folder. **Every line of a visitor's comment is
+held** until you let the agent act on it.
+
+Also fixed: unarchiving an environment, leaving another environment, detaching a file from a protected row, a viewer
+or service mistaken for one that is long gone, Codex subagents and exec cells in the agent's facts, a busy button
+pressed twice, rows lost while older ones load, the phone feed frozen by one failing message, an ended share link that
+kept polling, a chat send that lost its quote, and section and shared titles that skipped the formatters.
+
 ## 2.249.1 — a quicker agent list
 
 **The viewer's list of agents, polled every second, answers in a few milliseconds again after an agent changes.** A

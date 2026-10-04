@@ -1,6 +1,5 @@
 import json
 import threading
-import time
 import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
@@ -332,10 +331,9 @@ def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only
 
 
 
-def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text(monkeypatch):
+def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     from features.sharing.page import Page
-    import features.format as formatting
-    from features.format import FORMATTERS, SHARED, formatted
+    from features.format import FORMATTERS, SHARED
     import features
     page = Page("/s/key", {"doc:1", "todo:12"})
     linked = page.refs("See docs 1 and doc 16, to-do 12, 13 and to-do 12 in elsewhere.")
@@ -351,7 +349,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text(monke
         page = Page("/s/key", {doc.ref}, record)
         assert "Draft" in page.title("Heading")
         Docs(record, actor=USER).update(doc.n, title="Final")
-        assert "Final" in page.title("Heading"), "a row change expires formatted text"
+        assert "Final" in page.title("Heading"), "a changed row changes its formatted text"
         Docs(record, actor=USER).section(doc.n, "Heading", "Body")
         row = Docs(record, actor=USER).load(doc.n)
         assert "<h2>Final</h2>" in page.row(row), "shared section titles pass through formatters"
@@ -360,11 +358,3 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text(monke
         assert shared["title"] == "Final" and shared["sections"][0]["title"] == "Final"
     finally:
         FORMATTERS.remove(marker)
-    formatting.FORMATTED.clear()
-    monkeypatch.setattr(formatting, "FORMATTED_KEPT", 2)
-    formatting.FORMATTED[("expired",)] = (time.monotonic() - formatting.FORMATTED_FOR - 1, "expired")
-    formatting.FORMATTED[("current",)] = (time.monotonic(), "current")
-    formatted("another title", record, SHARED)
-    assert ("current",) in formatting.FORMATTED and ("expired",) not in formatting.FORMATTED, \
-        "the cache cap removes expired text while keeping live entries"
-    formatting.FORMATTED.clear()
