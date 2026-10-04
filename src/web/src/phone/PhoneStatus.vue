@@ -12,7 +12,7 @@ const queue = ref([]);
 
 usePoll(
     "phone-bar",
-    () => phone.bar().catch(() => null),
+    () => phone.bar(),
     () => (props.working ? BUSY_EVERY : CALM_EVERY),
     (got) => got && Array.isArray(got.queue) && (queue.value = got.queue)
 );

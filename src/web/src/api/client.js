@@ -513,7 +513,6 @@ export class ApiClient {
 }
 
 export const api = new ApiClient();
-export const onHealth = (fn) => transport.onHealth(fn);
 export const onWrite = (fn) =>
     transport.onWrite((url) => {
         const where = new URL(url, location.origin);
