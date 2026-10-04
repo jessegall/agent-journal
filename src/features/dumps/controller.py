@@ -1,31 +1,21 @@
-import controllers.types as types_module
-import resources.types as resources_module
-from engine.given import given
-from controllers.base import CONTROLLERS, Controller
-from features.message_buttons.shaping import Button, LABEL, one, whole
 import json
-from dataclasses import dataclass, replace
 import time
 
-from features.dumps.resource import ENTRY, ITEM, Dump
-from resources.base import AGENT, SYSTEM, Refused, titled
+import controllers.types as types_module
+import resources.types as resources_module
+from controllers.base import CONTROLLERS, Controller, controller_of
+from controllers.types import Messages
+from engine.given import given
+from features.collections.controller import Collections
+from features.dumps.resource import ENTRY, ITEM, Dump, Offer, entry
+from features.message_buttons.shaping import LABEL, one
+from resources.base import AGENT, Ref, Refused, titled
 
-TEXT = "text"
 LOG_KEPT = 20
 ANSWER = 600
 OFFERED = 4
 OWN_WORDS = -2
 
-
-
-@dataclass(frozen=True)
-class Offer(Button):
-    ask: str = ""
-
-    @classmethod
-    def from_payload(cls, raw: dict) -> "Offer":
-        offer = cls.from_json(raw)
-        return replace(offer, label=offer.label.strip(), ask=offer.ask.strip(), n=whole(offer.n))
 
 class Dumps(Controller):
     resource = Dump
@@ -42,10 +32,10 @@ class Dumps(Controller):
         return super().attach(n, path, description)
 
     def _collections(self):
-        return CONTROLLERS["collection"](self.record, actor=self.actor)
+        return Collections(self.record, actor=self.actor)
 
     def _collection(self, dump) -> int:
-        return next((int(ref.split(":")[1]) for ref in dump.refs if ref.startswith("collection:")), 0)
+        return next((ref.n for ref in map(Ref.parse, dump.refs) if ref.type == Collections.resource.type), 0)
 
     def _collect(self, dump, refs: list[str]):
         collections = self._collections()
@@ -54,10 +44,6 @@ class Dumps(Controller):
         collections.add(collection.n, refs)
         if not found:
             self.link(dump.n, collection.ref)
-
-    def _controller(self, ref: str, actor: str = ""):
-        type_, n = ref.split(":")
-        return CONTROLLERS[type_](self.record, actor=actor or self.actor), int(n)
 
     def _made(self, dump) -> list[str]:
         items = (dump.data.get("items") or {}).values()
@@ -75,12 +61,12 @@ class Dumps(Controller):
         gone = []
         for ref in self._made(dump):
             try:
-                controller, m = self._controller(ref)
-                row = controller.load(m)
-            except (KeyError, ValueError, Refused):
+                controller = controller_of(self.record, ref, self.actor)
+                row = controller.load(Ref.parse(ref).n)
+            except Refused:
                 continue
             if row.created >= dump.created and not row.deleted:
-                controller.delete(m, why=f"removed with dump {dump.n}")
+                controller.delete(row.n, why=f"removed with dump {dump.n}")
                 gone.append(ref)
         found = self._collection(dump)
         if found and not self._collections().load(found).deleted:
@@ -135,9 +121,8 @@ class Dumps(Controller):
             self._refuse("say what should happen next: journal dump direct <n> \"<what to do>\"")
         r = self._choosing(n)
         said = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
-        types_module.CONTROLLERS["message"](self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(how), brief=how.strip(), about=r.ref, window=r.ref)
-        return self.update(r.n, chosen=said, said=[*(r.data.get("said") or []), said][-LOG_KEPT:])
+        Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(titled(how), brief=how.strip(), about=r.ref, window=r.ref)
+        return self._appended(r, "said", said, LOG_KEPT, chosen=said)
 
     def _choosing(self, n: int):
         if self.actor == AGENT:
@@ -165,21 +150,17 @@ class Dumps(Controller):
         self._retitle(n, title)
         return self._collections().update(found, title=title.strip())
 
-    def _names(self, r) -> list[str]:
-        return ((r.data.get("parts") or [TEXT]) if r.brief.strip() else []) + sorted(r.files)
-
     def _item(self, r, item: str) -> dict:
-        if item not in self._names(r):
-            raise Refused(f"dump {r.n} has no item {item!r}; its items are {', '.join(self._names(r)) or 'none yet'}")
+        if item not in r.item_names:
+            raise Refused(f"dump {r.n} has no item {item!r}; its items are {', '.join(r.item_names) or 'none yet'}")
         return dict((r.data.get("items") or {}).get(item) or {})
 
     def _write(self, n: int, item: str, **values):
         r = self.load(n)
-        items = {**(r.data.get("items") or {}), item: {**self._item(r, item), **values}}
-        written = self.update(r.n, items=items)
-        settled = [items.get(name, {}) for name in self._names(written)]
-        if not written.completed and settled and all(i.get(ITEM.outcome) or i.get(ITEM.failed) for i in settled):
-            failed = sum(bool(i.get(ITEM.failed)) for i in settled)
+        written = self.update(r.n, items={**(r.data.get("items") or {}), item: {**self._item(r, item), **values}})
+        settled = [written.item(name) for name in written.item_names]
+        if not written.completed and settled and all(i.settled for i in settled):
+            failed = sum(bool(i.failed) for i in settled)
             return self.complete(r.n, how=f"{len(settled) - failed} filed" + (f", {failed} failed" if failed else ""))
         return written
 
@@ -205,11 +186,9 @@ class Dumps(Controller):
         r = self.load(n)
         if r.completed:
             self._refuse(f"dump {r.n} is already closed")
-        names = self._names(r)
-        items = r.data.get("items") or {}
-        filed = sum(1 for name in names if (items.get(name) or {}).get(ITEM.outcome))
+        filed = sum(1 for name in r.item_names if r.item(name).outcome)
         self.update(r.n, stopped=True)
-        return self.complete(r.n, how=f"stopped, {filed} filed, {len(names) - filed} left out")
+        return self.complete(r.n, how=f"stopped, {filed} filed, {len(r.item_names) - filed} left out")
 
     def failed(self, n: int, item: str, why: str):
         if not why.strip():
@@ -224,8 +203,7 @@ class Dumps(Controller):
             raise Refused(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
         if r.completed and not r.data.get("options") and not r.data.get("chosen"):
             raise Refused(f"dump {r.n} is closed")
-        entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip(), ENTRY.making: making.strip(), ENTRY.detail: detail.strip()}]
-        return self.update(r.n, log=entries[-LOG_KEPT:])
+        return self._appended(r, "log", entry(status, on, making, detail), LOG_KEPT)
 
     def say(self, n: int, text: str):
         r = self.load(n)
@@ -233,8 +211,7 @@ class Dumps(Controller):
             raise Refused("say the answer: journal dump say <n> \"<text>\"")
         if len(text.strip()) > ANSWER:
             raise Refused(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
-        entry = {ENTRY.at: time.time(), ENTRY.text: text.strip(), ENTRY.on: "", ENTRY.making: "", ENTRY.detail: "", "answer": True}
-        return self.update(r.n, log=[*(r.data.get("log") or []), entry][-LOG_KEPT:])
+        return self._appended(r, "log", entry(text, answer=True), LOG_KEPT)
 
     def ask(self, n: int, question: str, guesses: str = ""):
         r = self.load(n)
@@ -266,15 +243,7 @@ class Dumps(Controller):
 
     def items(self, n: int) -> list[str]:
         r = self.load(n)
-        return [f"{name}: {standing(self._item(r, name))}" for name in self._names(r)]
-
-
-def standing(item: dict) -> str:
-    if item.get(ITEM.failed):
-        return f"failed - {item[ITEM.failed]}"
-    if item.get(ITEM.outcome):
-        return f"filed - {item[ITEM.outcome]}"
-    return f"noted - {item[ITEM.insight]}" if item.get(ITEM.insight) else "not read yet"
+        return [f"{name}: {r.item(name).standing}" for name in r.item_names]
 
 
 resources_module.register(Dump)
