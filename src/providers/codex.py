@@ -28,10 +28,11 @@ CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"v
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
 FAST_CONTROLS = {"key": "fast", "label": "Fast mode", "choices": [{"value": "switch", "label": "Turn fast mode on or off", "command": "/fast"}]}
 EXITS_KEPT = 200
+UNREAD_SCRIPT = "a script"
 CELL_RUNNING = re.compile(r"^Script running with cell ID (\d+)")
 CELL_ID = re.compile(r'"cell_id"\s*:\s*"?(\d+)')
 DETACHED = re.compile(r"^(.*?)\s*(?:>\S*\s*(?:2>&1)?\s*)?&\s*(?:echo \$!)?\s*$", re.S)
-EXEC_COMMAND = re.compile(r'exec_command\(\{\s*"?cmd"?\s*:\s*"((?:[^"\\]|\\.)*)"')
+EXEC_COMMAND = re.compile(r'exec_command\(\{\s*["\']?cmd["\']?\s*:\s*(["\'`])((?:(?!\1)[^\\]|\\.)*)\1')
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
 
@@ -107,9 +108,16 @@ class CodexTasks(BackgroundTasks):
         self.started[session] = at
         self.commands[session] = command
         if session in self.exits:
-            self.ended[session], failed = self.exits.pop(session)
-            if failed:
-                self.failed.add(session)
+            self.end(session, *self.exits.pop(session))
+
+    def open_sessions(self, text: str, at: float, command: str) -> None:
+        for session in [s for s in running_sessions(text) if s not in self.started]:
+            self.opened(session, at, command)
+
+    def end(self, key: str, at: float, failed: bool) -> None:
+        self.ended.setdefault(key, at)
+        if failed:
+            self.failed.add(key)
 
 
 @dataclass(frozen=True)
@@ -342,7 +350,7 @@ class Codex(Provider):
         if found.type == "custom_tool_call" and found.call == "exec":
             command = EXEC_COMMAND.search(found.argument_text)
             if command:
-                tasks.scripts[found.key] = command[1]
+                tasks.scripts[found.key] = command[2]
         if found.type == "function_call" and found.call == "wait":
             cell = CELL_ID.search(found.argument_text)
             if cell:
@@ -361,9 +369,9 @@ class Codex(Provider):
         running = CELL_RUNNING.search(found.output_text)
         if running:
             tasks.started.setdefault(f"cell:{running[1]}", at)
-            tasks.commands[f"cell:{running[1]}"] = script or "a script"
-        for session in [s for s in running_sessions(found.output_text) if script and s not in tasks.started]:
-            tasks.opened(session, at, script)
+            tasks.commands[f"cell:{running[1]}"] = script or UNREAD_SCRIPT
+        if script:
+            tasks.open_sessions(found.output_text, at, script)
         for chunk in [c for c in polled(found.output_text) if c.session_id in tasks.started and c.output]:
             tasks.printed[chunk.session_id] = at
 
@@ -371,14 +379,12 @@ class Codex(Provider):
     def cell_answer(tasks: CodexTasks, cell: str, text: str, at: float) -> None:
         if cell not in tasks.started:
             return
-        for session in [s for s in running_sessions(text) if tasks.commands[cell] != "a script" and s not in tasks.started]:
-            tasks.opened(session, at, tasks.commands[cell])
+        if tasks.commands[cell] != UNREAD_SCRIPT:
+            tasks.open_sessions(text, at, tasks.commands[cell])
         if text.startswith("Script running"):
             tasks.printed[cell] = at
             return
-        tasks.ended.setdefault(cell, at)
-        if not text.startswith("Script completed"):
-            tasks.failed.add(cell)
+        tasks.end(cell, at, not text.startswith("Script completed"))
 
     @staticmethod
     def command_ended(tasks: CodexTasks, found, at: float) -> None:
@@ -394,9 +400,7 @@ class Codex(Provider):
             while len(tasks.exits) > EXITS_KEPT:
                 tasks.exits.pop(next(iter(tasks.exits)))
             return
-        tasks.ended.setdefault(found.item.process_id, ended)
-        if failed:
-            tasks.failed.add(found.item.process_id)
+        tasks.end(found.item.process_id, ended, failed)
 
     def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
         found = self.subagent_transcript(path, session)

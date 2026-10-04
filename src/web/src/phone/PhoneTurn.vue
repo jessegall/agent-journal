@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
-import {liveButtons} from "../domain/buttons.js";
+import {allButtons} from "../domain/buttons.js";
 import PhoneActions from "./PhoneActions.vue";
 import {splitQuote} from "./quoted.js";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -28,7 +28,7 @@ const props = defineProps({
     continues: {type: Boolean, default: false},
 });
 const files = computed(() => Object.keys(props.item.files || {}));
-const buttons = computed(() => (props.item.data ? liveButtons(props.item) : []));
+const buttons = computed(() => (props.item.data ? allButtons(props.item) : []));
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
 const FILED_REF = /\b([a-z_]+)[ :](\d+)\b/g;
 const filedAs = computed(
@@ -116,7 +116,7 @@ function pressed(event) {
                 </template>
                 <template v-if="buttons.length">
                     <div class="turn-buttons">
-                        <PhoneButtons :target="`${item.type}:${item.n}`" :buttons="buttons" />
+                        <PhoneButtons :row="item" />
                     </div>
                 </template>
                 <template v-if="filed.length">

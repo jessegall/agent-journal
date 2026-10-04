@@ -23,13 +23,14 @@ SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/
 
 @dataclass(frozen=True)
 class AskedOption(Loaded):
+    string_key = "label"
     label: str = ""
     description: str = ""
 
 
 @dataclass(frozen=True)
 class AskedQuestion(Loaded):
-    aliases = {"choices": ("options",)}
+    aliases = {"question": ("question", "title"), "choices": ("options",)}
     question: str = ""
     choices: tuple[AskedOption, ...] = ()
 

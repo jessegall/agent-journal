@@ -177,7 +177,7 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c1",
                                                                              "output": [{"type": "input_text", "text": '{"chunk_id":"a","session_id":42,"output":""}'}]}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c3", "name": "exec",
-                                                                             "input": 'const r=await tools.exec_command({cmd:"npm run watch"});text(r);'}},
+                                                                             "input": "const r=await tools.exec_command({cmd:'npm run watch'});text(r);"}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c3",
                                                                              "output": [{"type": "input_text", "text": '{"chunk_id":"b","session_id":50,"output":""}'}]}},
         {"timestamp": stamp(time.time() - 60), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c4",
@@ -191,7 +191,7 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
     tick(record)
     tick(record)
     assert [any("npm run watch" in n for n in nudges(record) if "still runs" in n), any("nothing new" in n and "npm run watch" in n for n in nudges(record))] == \
-        [True, False], "a command that printed a minute ago is open but not stalled"
+        [True, False], "a command that printed a minute ago is open but not stalled, single quotes or double"
     assert lines() == ["a command you left running has shown nothing new for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
         "a run open past ten minutes and an agent stopped while it runs are each told once"
     with transcript.open("a") as more:

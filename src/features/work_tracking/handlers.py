@@ -11,7 +11,7 @@ from features.nudges import MINUTE, Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
-from features.work_tracking.next import asked, named_rows, ready, waiting_rows
+from features.work_tracking.next import asked, carried_on, named_rows, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
 from features.status_bar.runs import command_runs
@@ -243,12 +243,12 @@ def next_row(standing: bool):
 
 def stopped_with_work(context, agent) -> list[Sent]:
     every = float(context.feature.cadence(context.record, "carry on").every) * MINUTE
-    unwaited = [w for w in working(context) if not w.awaiting][:1]
+    carried = carried_on(context.record)[:1]
     late = agent.idle_for - FIRST_AFTER * MINUTE
-    if not unwaited or late < 0 or late // every >= CARRY_ON_TIMES:
+    if not carried or late < 0 or late // every >= CARRY_ON_TIMES:
         return []
-    work = unwaited[0]
-    return [Sent(f"{work.n}:{work.updated}:{agent.uses}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]
+    work = carried[0]
+    return [Sent(f"{work.n}:{work.updated}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]
 
 
 def nothing_ready(context, agent) -> list[Sent]:

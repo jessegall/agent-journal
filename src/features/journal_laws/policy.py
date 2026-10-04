@@ -133,7 +133,7 @@ def brief(project: Path, record) -> Briefing:
 def instructions_hash(project: Path, record) -> str:
     names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
     texts = [CURRENT.sub("", (project / name).read_text()) for name in names if (project / name).is_file()]
-    return digest("\0".join((*texts, *injected(record)))) if texts else ""
+    return digest("\0".join((*texts, *injected(record), carry(record)))) if texts else ""
 
 
 def untouchable(text: str) -> str:

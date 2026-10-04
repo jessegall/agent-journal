@@ -2,6 +2,7 @@
 import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
+import Notice from "../kit/Notice.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
@@ -19,7 +20,7 @@ import {cached, remember} from "./cache.js";
 import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
-import {announce, tell} from "./announce.js";
+import {announce, tell, tryAgain} from "./announce.js";
 import {tick} from "./haptic.js";
 import PhoneReaderApprove from "./PhoneReaderApprove.vue";
 import PhoneReaderBar from "./PhoneReaderBar.vue";
@@ -45,7 +46,7 @@ const size = ref(0);
 const progress = ref(0);
 const confirming = ref(false);
 const approving = ref(false);
-const told = ref("");
+const notice = ref("");
 const edge = ref(null);
 const heading = ref(null);
 const root = ref(null);
@@ -60,13 +61,13 @@ const ready = computed(() => row.value && row.value.type === "plan" && row.value
 const buttons = computed(() => (row.value ? liveButtons(row.value) : []));
 
 async function pressed() {
-    told.value = "";
+    notice.value = "";
     try {
         row.value = await phone.row(props.target);
         refresh();
     } catch (error) {
         if (ended(error)) failed(error);
-        else tell(told, error.message);
+        else tell(notice, error.message);
     }
 }
 
@@ -81,7 +82,7 @@ async function review() {
         `plan:${row.value.n}`
     );
     reviewing.value = false;
-    tell(told, "Asked for a review. The findings come back as a report linked to this plan.");
+    tell(notice, "Asked for a review. The findings come back as a report linked to this plan.");
     try {
         await flush();
         refresh();
@@ -94,12 +95,12 @@ const chipped = chipOpener((target) => emit("open", target));
 
 async function load() {
     try {
-        told.value = "";
+        notice.value = "";
         row.value = remember(ROW, await phone.row(props.target));
     } catch (error) {
         if (ended(error)) failed(error);
         else if (error.status === 404) missing.value = true;
-        else told.value = error.message;
+        else notice.value = error.message;
     }
 }
 
@@ -121,7 +122,7 @@ const comments = computed(() => [
 async function commented(text) {
     const local = {key: `local-${Date.now()}`, who: "user", text, created: Date.now() / 1000, waiting: true};
     justCommented.value = [...justCommented.value, local];
-    told.value = "";
+    notice.value = "";
     try {
         const went = await perform({kind: "comment", ref: myRef.value, text});
         justCommented.value = justCommented.value.filter((one) => one !== local);
@@ -135,7 +136,7 @@ async function commented(text) {
         if (ended(error)) failed(error);
         else
             tell(
-                told,
+                notice,
                 error.status === 422
                     ? `A ${kindWord(row.value.type)} takes no comments.`
                     : `That comment didn't go through: ${error.message}`
@@ -149,7 +150,7 @@ async function approve() {
     try {
         const went = await perform({kind: "approve", n: row.value.n, updated: row.value.updated});
         tell(
-            told,
+            notice,
             went === "held"
                 ? "No connection right now: the approval goes as soon as the phone reaches your computer, if the plan is unchanged."
                 : "Approved. The agent starts it."
@@ -157,9 +158,9 @@ async function approve() {
         refresh();
         if (went !== "held") finished.value = true;
     } catch (error) {
-        if (error.status === 409) tell(told, "This plan changed since you opened it. Look at it again.");
+        if (error.status === 409) tell(notice, "This plan changed since you opened it. Look at it again.");
         else if (ended(error)) failed(error);
-        else tell(told, `That didn't go through: ${error.message}. Try again.`);
+        else tell(notice, tryAgain(error));
         await load();
     } finally {
         approving.value = false;
@@ -236,10 +237,10 @@ onMounted(async () => {
                         <Btn large @click="emit('close')">Back to {{ back }}</Btn>
                     </template>
                 </template>
-                <template v-if="told">
-                    <p class="reader-told">{{ told }}</p>
+                <template v-if="notice">
+                    <Notice>{{ notice }}</Notice>
                 </template>
-                <PhoneButtons :target="`${row.type}:${row.n}`" :buttons="buttons" large @pressed="pressed" />
+                <PhoneButtons :row="row" large @pressed="pressed" />
                 <template v-if="ready && !finished">
                     <PhoneReaderApprove
                         v-model:confirming="confirming"
@@ -268,8 +269,8 @@ onMounted(async () => {
                 @back="emit('close')"
             />
         </template>
-        <template v-else-if="told">
-            <PhoneMissing title="This couldn't be loaded" :words="told" :back="back" @back="emit('close')">
+        <template v-else-if="notice">
+            <PhoneMissing title="This couldn't be loaded" :words="notice" :back="back" @back="emit('close')">
                 <button type="button" @click="load">Try again</button>
             </PhoneMissing>
         </template>
@@ -388,10 +389,5 @@ onMounted(async () => {
     flex: 1;
     align-items: center;
     justify-content: center;
-}
-
-.reader-told {
-    margin: 0;
-    color: var(--text-2);
 }
 </style>

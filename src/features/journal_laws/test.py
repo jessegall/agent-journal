@@ -54,7 +54,7 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     from features.journal_laws.policy import instructions_hash
     seen = instructions_hash(project, record)
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text().replace("cannot be switched off", "ship with every journal"))
-    assert instructions_hash(project, record) == seen, "the laws changing in a release start no check"
+    assert instructions_hash(project, record) == seen, "the block's own wording changing starts no check; its laws and injected rules do"
     seen = record.state("journal_laws").get("instructions")
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Mondays.\n")
     started()

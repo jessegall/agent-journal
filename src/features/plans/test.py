@@ -11,7 +11,7 @@ from features.plans.progress import catch_up
 from tests.kit import Tickets
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
-from features.work_tracking.next import next, ready
+from features.work_tracking.next import ready
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import idle
@@ -68,7 +68,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
 
     assert refused(lambda: by_agent.approve(plan.n)) == "only the user can approve a plan: they do it in the viewer", "not the agent"
     assert refused(lambda: by_agent.start(plan.n)) == f"plan {plan.n} waits for the user to approve it", "nor start one not approved"
-    assert next(record) is None, "a plan not yet started holds its rows: next skips them"
+    assert ready(record) == [], "a plan not yet started holds its rows: next skips them"
     by_user.approve(plan.n)
     by_agent.start(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
@@ -83,14 +83,14 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
             [e for e in record.events() if e.type == "plan"][-1].data) == \
         (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False, "cause": AGENT}), \
         "every row done: the next phase is current, by the feature, as SYSTEM, caused by the agent"
-    assert next(record).n == 3, "next offers the new phase's row"
+    assert ready(record)[0].n == 3, "next offers the new phase's row"
     todos.complete(3, "done")
     assert (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"]) == ("waiting", 2), \
         "a checkpoint phase complete: the plan waits, the phase stays current"
-    assert next(record) is None, "waiting: nothing of the plan is offered"
+    assert ready(record) == [], "waiting: nothing of the plan is offered"
     assert refused(lambda: by_agent.resume(plan.n)) == "only the user can continue a plan: they do it in the viewer", "nor continue"
     by_user.resume(plan.n)
-    assert (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"], next(record).n) == ("active", 3, 4), \
+    assert (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"], ready(record)[0].n) == ("active", 3, 4), \
         "the user continued: the last phase is current"
     for n in (4, 5):
         todos.complete(n, "done")

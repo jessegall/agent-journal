@@ -42,6 +42,9 @@ def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():
     actor.delivered([Event(1, 0.0, "message", 7, "created", SYSTEM)])
     actor.delivered([Event(2, 0.0, "nudge", 3, "created", SYSTEM)])
     assert agents.load(row.n).delivered == ["message:7", "nudge:3"], "a nudge delivered while the turn runs keeps the message it answers"
+    agents.update(row.n, status="compacting")
+    actor.delivered([Event(4, 0.0, "nudge", 5, "created", SYSTEM)])
+    assert agents.load(row.n).delivered == ["message:7", "nudge:3", "nudge:5"], "and so does one delivered while the turn compacts"
     agents.update(row.n, status="idle")
     actor.delivered([Event(3, 0.0, "nudge", 4, "created", SYSTEM)])
     assert agents.load(row.n).delivered == ["nudge:4"], "a new turn starts with only what it was handed"
