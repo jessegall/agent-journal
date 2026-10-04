@@ -4,4 +4,4 @@ Read waiting messages with `journal message unread` and mark one seen with `mess
 
 A message whose every paragraph has been processed into a part closes itself; otherwise finish with `message processed --how`. A message that asks something (a question, a request to relay or reply, your opinion) closes only on your written reply, and answer it first: neither a to-do filed from it nor a reaction answers it. A status sentence is not a link, and a link is not an answer. File attachments through `message file`; archive only when the message needs no action.
 
-A message whose data carries `sent_to` was written in a subagent's inspector, to that subagent: pass its words on with SendMessage to that subagent, word for word, and react 👍; the inspector's chat shows the subagent's answer as it works.
+A message whose data carries `sent_to` was written in a subagent's inspector, to that subagent: pass its words on to that subagent, word for word, with your tool for messaging a running subagent (Claude's SendMessage, Codex's message to the agent it spawned), and react 👍; the inspector's chat shows the subagent's answer as it works.
