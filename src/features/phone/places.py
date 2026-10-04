@@ -8,6 +8,8 @@ from engine.color import identity
 from engine.record import Record
 from engine.sessions import Sessions, alive
 from engine.viewer import known, last
+from features.message_buttons.pressing import unspent
+from features.plans.resource import READY
 from features.status_bar.bar import current
 from resources.base import SYSTEM, USER
 from surfaces.agent_state import agent_state
@@ -27,8 +29,8 @@ class Detail(TypedDict):
 
 def owed(row) -> bool:
     if row.type == "plan":
-        return row.status == "ready"
-    return row.type == "question" or USER not in row.seen
+        return row.status == READY
+    return row.type == "question" or USER not in row.seen or bool(unspent(row))
 
 
 def detail(root: Path, name: str) -> Detail:
