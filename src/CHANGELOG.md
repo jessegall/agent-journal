@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.244.3 — the instruction check waits for a real change
+
+**A project's first start no longer runs the instruction-file check.** It only records the files as seen, and the
+check runs at the next start after the project's own text in AGENTS.md or CLAUDE.md changes. The chat also no longer
+shows "Answer on its way" under your message, on the desktop or the phone.
+
 ## 2.244.2 — the phone watchdog probes the tunnel server itself
 
 **2.244.1 probed a made-up address to tell whether the tunnel server was down, but the server refuses any address

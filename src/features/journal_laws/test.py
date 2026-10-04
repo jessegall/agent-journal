@@ -42,13 +42,13 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     checking = lambda: next(r for r in Sequences(record).all() if r.title == "Checking the instruction files")
     started()
     first = record.state("journal_laws").get("instructions")
-    assert (bool(first), len(checking().runs)) == (True, 1), "a start that finds the instruction files new or changed starts the check"
+    assert (bool(first), len(checking().runs)) == (True, 0), "the first start only records the files as seen"
     brief(project, record)
     started()
-    assert record.state("journal_laws").get("instructions") == first, "the journal's own block changing is not a change to check"
+    assert (record.state("journal_laws").get("instructions"), len(checking().runs)) == (first, 0), "the journal's own block changing is not a change to check"
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Fridays.\n")
     started()
-    assert record.state("journal_laws").get("instructions") != first, "the project's own text changing is checked again at the next start"
+    assert len(checking().runs) == 1, "the project's own text changing starts the check at the next start"
 
 
 def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():

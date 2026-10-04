@@ -35,9 +35,12 @@ class CheckChangedInstructions(Handler):
         if in_background(context.record):
             return
         state, seen = context.record.state(context.feature.name), project_text(context.record.root.parent)
-        if not seen or state.get("instructions") == seen:
+        known = state.get("instructions")
+        if not seen or known == seen:
             return
         state.set("instructions", seen)
+        if not known:
+            return
         sequences = context.journal.sequences
         found = sequences._titled(CHECKING_THE_INSTRUCTION_FILES.title)
         if found is not None:
