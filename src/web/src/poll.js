@@ -73,25 +73,31 @@ export function wakePolls() {
 
 document.addEventListener("visibilitychange", () => polls.forEach((held) => (document.hidden ? clearTimeout(held.timer) : later(held, staggered()))));
 
-export function usePoll(key, ask, every, take = () => {}, active = () => true) {
+function leave(key, token) {
+    const held = polls.get(key);
+    if (!held) return;
+    held.users.delete(token);
+    if (held.users.size) return;
+    clearTimeout(held.timer);
+    polls.delete(key);
+}
+
+export function startPoll(key, ask, every, take = () => {}, active = () => true) {
     const token = Symbol(String(key));
-    onMounted(() => {
-        const held = polls.get(key);
-        if (held) {
-            held.users.set(token, {every, take});
-            return;
-        }
+    const held = polls.get(key);
+    if (held) {
+        held.users.set(token, {every, take});
+    } else {
         const fresh = {key, ask, active, users: new Map([[token, {every, take}]]), timer: 0, failures: 0, took: 0};
         polls.set(key, fresh);
         round(fresh);
-    });
-    onUnmounted(() => {
-        const held = polls.get(key);
-        if (!held) return;
-        held.users.delete(token);
-        if (held.users.size) return;
-        clearTimeout(held.timer);
-        polls.delete(key);
-    });
+    }
+    return () => leave(key, token);
+}
+
+export function usePoll(key, ask, every, take = () => {}, active = () => true) {
+    let stop = () => {};
+    onMounted(() => (stop = startPoll(key, ask, every, take, active)));
+    onUnmounted(() => stop());
     return () => polls.has(key) && round(polls.get(key));
 }
