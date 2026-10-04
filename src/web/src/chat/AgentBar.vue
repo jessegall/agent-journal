@@ -2,7 +2,7 @@
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
-import {loadedSkills, usageWindows} from "../agents.js";
+import {loadedSkills, usageWindows} from "../domain/agents.js";
 import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import AgentAppoint from "./AgentAppoint.vue";

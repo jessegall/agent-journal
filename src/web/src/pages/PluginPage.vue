@@ -6,7 +6,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {pollNow} from "../poll.js";
+import {pollNow} from "../composables/poll.js";
 import {RUNNING} from "../domain/services.js";
 import {useServiceAction} from "../composables/service.js";
 

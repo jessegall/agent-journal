@@ -1,7 +1,7 @@
 <script setup>
 import {useAnchoredAction} from "../composables/anchored.js";
 import {api} from "../api/client.js";
-import {PROVIDER_CHOICES} from "../agents.js";
+import {PROVIDER_CHOICES} from "../domain/agents.js";
 import {demo, unlessDemo} from "../platform/demo.js";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";

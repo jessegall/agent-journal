@@ -1,6 +1,6 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
-import {ink, project, tint} from "../identity.js";
+import {ink, project, tint} from "../state/identity.js";
 import {ui} from "../state/ui.js";
 import {route} from "../route.js";
 

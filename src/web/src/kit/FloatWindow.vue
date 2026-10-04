@@ -1,6 +1,6 @@
 <script setup>
 import Icon from "./Icon.vue";
-import {follow} from "../composables/pointer.js";
+import {follow} from "../platform/pointer.js";
 
 const props = defineProps({
     x: {type: Number, required: true},

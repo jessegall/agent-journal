@@ -9,7 +9,7 @@ import PhoneHome from "./PhoneHome.vue";
 import {waitingActions, waitingToSend} from "./outbox.js";
 import {wanted} from "./wanted.js";
 import {useKeyboard} from "./keyboard.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 
 const OPEN = "open=";
 

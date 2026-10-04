@@ -4,7 +4,7 @@ import {computed, nextTick, onMounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import UpdateReport from "../resource/UpdateReport.vue";
-import {EASE, hydrate, still} from "../composables/hydrate.js";
+import {EASE, hydrate, still} from "../platform/hydrate.js";
 import {closeUpdate, updateView} from "./updateView.js";
 import {markSeen} from "../sync/seen.js";
 import {rows} from "../sync/rows.js";

@@ -1,6 +1,6 @@
 import {api} from "../api/client.js";
 import {startOutbox} from "../chat/outbox.js";
-import {wakePolls} from "../poll.js";
+import {wakePolls} from "../composables/poll.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {reload, takeEvents} from "./rows.js";

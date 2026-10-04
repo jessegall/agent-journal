@@ -1,6 +1,6 @@
 import {createApp} from "vue";
 import App from "./App.vue";
-import {watchConsole} from "./faults.js";
+import {watchConsole} from "./platform/faults.js";
 import "./tokens.css";
 
 watchConsole();

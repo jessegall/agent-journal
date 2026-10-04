@@ -1,5 +1,5 @@
 <script setup>
-import {fitLines} from "../composables/fitLines.js";
+import {fitLines} from "../platform/fitLines.js";
 import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "./Btn.vue";
 

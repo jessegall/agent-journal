@@ -7,7 +7,7 @@ import Icon from "../kit/Icon.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import PaneGrid from "../kit/PaneGrid.vue";
 import PaneTabs from "../kit/PaneTabs.vue";
-import PaneMenu from "../pages/PaneMenu.vue";
+import PaneMenu from "../panes/PaneMenu.vue";
 import {useInspectorLayout} from "../composables/paneLayout.js";
 import {
     INSPECTOR_SHAPE,

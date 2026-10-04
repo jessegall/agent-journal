@@ -3,7 +3,7 @@ import UsageMeter from "./UsageMeter.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";
-import {pendingChoice} from "../agents.js";
+import {pendingChoice} from "../domain/agents.js";
 import {age} from "../format/time.js";
 
 const props = defineProps({control: String, agent: Object});

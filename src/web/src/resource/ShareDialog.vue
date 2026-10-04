@@ -8,7 +8,7 @@ import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
 import {KINDS, approveShare, checkTunnel, sharesOf, stopShare, tunnelStatus, waitingOf} from "../composables/shares.js";
-import TunnelProblem from "./TunnelProblem.vue";
+import TunnelProblem from "../pages/TunnelProblem.vue";
 import OpenShareList from "./OpenShareList.vue";
 import ShareMadeLink from "./ShareMadeLink.vue";
 import ShareOpens from "./ShareOpens.vue";

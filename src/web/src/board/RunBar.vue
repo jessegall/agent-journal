@@ -7,7 +7,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import StateDot from "../kit/StateDot.vue";
 import Stepper from "../kit/Stepper.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import WorkingAgents from "./WorkingAgents.vue";
+import WorkingAgents from "../agents/WorkingAgents.vue";
 import {peek} from "../route.js";
 
 const props = defineProps({

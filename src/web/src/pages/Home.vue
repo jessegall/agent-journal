@@ -11,7 +11,7 @@ import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
 import DumpWindow from "../chat/DumpWindow.vue";
 import {ORCHESTRATOR} from "../domain/modes.js";
-import PaneMenu from "./PaneMenu.vue";
+import PaneMenu from "../panes/PaneMenu.vue";
 import HintBubble from "../kit/HintBubble.vue";
 import {useMenuHint} from "../composables/menuHint.js";
 import Btn from "../kit/Btn.vue";

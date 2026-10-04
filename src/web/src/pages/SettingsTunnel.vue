@@ -5,7 +5,7 @@ import {store} from "../state/store.js";
 import Btn from "../kit/Btn.vue";
 import ListBox from "../kit/ListBox.vue";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
-import TunnelLogin from "../resource/TunnelLogin.vue";
+import TunnelLogin from "./TunnelLogin.vue";
 import TunnelDomain from "./TunnelDomain.vue";
 import TunlerVersion from "./TunlerVersion.vue";
 

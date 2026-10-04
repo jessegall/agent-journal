@@ -3,7 +3,7 @@ import {Terminal} from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
-import {pollKey, usePoll} from "../poll.js";
+import {pollKey, usePoll} from "../composables/poll.js";
 
 const props = defineProps({session: String});
 const box = ref(null);

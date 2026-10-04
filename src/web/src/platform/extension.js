@@ -1,4 +1,4 @@
-import {follow} from "../composables/pointer.js";
+import {follow} from "./pointer.js";
 import {store} from "../state/store.js";
 
 export function tellExtension(kind, extra = {}) {

@@ -1,5 +1,5 @@
 <script setup>
-import {copyText} from "../kit/copy.js";
+import {copyText} from "../platform/clipboard.js";
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import Icon from "../kit/Icon.vue";

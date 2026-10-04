@@ -1,7 +1,7 @@
 <script setup>
 import {ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {PROVIDER_CHOICES} from "../agents.js";
+import {PROVIDER_CHOICES} from "../domain/agents.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Segmented from "../kit/Segmented.vue";

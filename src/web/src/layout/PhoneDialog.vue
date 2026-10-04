@@ -6,11 +6,11 @@ import Dialog from "../kit/Dialog.vue";
 import QrCode from "../kit/QrCode.vue";
 import Segmented from "../kit/Segmented.vue";
 import Spinner from "../kit/Spinner.vue";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
 import {connectedPhones} from "../composables/phones.js";
 import PhoneRow from "./PhoneRow.vue";
-import TunnelProblem from "../resource/TunnelProblem.vue";
+import TunnelProblem from "../pages/TunnelProblem.vue";
 
 const emit = defineEmits(["close"]);
 const DAYS = [

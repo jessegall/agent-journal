@@ -1,7 +1,7 @@
 <script setup>
 import CloseButton from "./CloseButton.vue";
 import TextDisplay from "./TextDisplay.vue";
-import {closing} from "./closing.js";
+import {closing} from "../composables/closing.js";
 
 const props = defineProps({
     title: {type: String, default: ""},

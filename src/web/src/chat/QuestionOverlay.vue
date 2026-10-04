@@ -3,7 +3,7 @@ import {useEscape} from "../composables/windowEvent.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
-import {EASE, still} from "../composables/hydrate.js";
+import {EASE, still} from "../platform/hydrate.js";
 import {closeQuestion, questionView} from "./questionView.js";
 import {answered} from "./answers.js";
 import {holding, rows} from "../sync/rows.js";

@@ -1,6 +1,6 @@
 <script setup>
 import {withoutChips as plain} from "../text/words.js";
-import {copyText} from "../kit/copy.js";
+import {copyText} from "../platform/clipboard.js";
 import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ReplyTool from "./ReplyTool.vue";

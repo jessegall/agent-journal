@@ -6,7 +6,7 @@ import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
-import RailWaiting from "../pages/RailWaiting.vue";
+import RailWaiting from "../rail/RailWaiting.vue";
 import PhoneDialog from "./PhoneDialog.vue";
 import ShareTunnel from "./ShareTunnel.vue";
 import {href, route} from "../route.js";
@@ -16,7 +16,7 @@ import {connectedPhones} from "../composables/phones.js";
 import {useOutside} from "../composables/outside.js";
 import {activityShown, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
-import {project, tint} from "../identity.js";
+import {project, tint} from "../state/identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
 import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js";
 

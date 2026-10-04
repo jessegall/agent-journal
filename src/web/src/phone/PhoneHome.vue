@@ -1,10 +1,10 @@
 <script setup>
 import {ui} from "../state/ui.js";
 import {plainText} from "../text/words.js";
-import {copyText} from "../kit/copy.js";
+import {copyText} from "../platform/clipboard.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
 import PhoneReader from "./PhoneReader.vue";

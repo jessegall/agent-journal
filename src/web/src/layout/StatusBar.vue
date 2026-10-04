@@ -21,7 +21,7 @@ import {peek, route} from "../route.js";
 import Segmented from "../kit/Segmented.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
-import {useHelpers} from "../chat/helpers.js";
+import {useHelpers} from "../composables/helpers.js";
 import {helperState} from "../domain/helpers.js";
 import {MODES, modeOf} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";

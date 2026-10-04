@@ -2,7 +2,7 @@
 import {cache, cached} from "./cache.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {CARDS, kindCard} from "./kinds.js";
 import {reveal} from "./reveal.js";

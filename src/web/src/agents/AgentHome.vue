@@ -13,7 +13,7 @@ import FileFeed from "../chat/FileFeed.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import Thread from "../chat/Thread.vue";
-import RailTodos from "../pages/RailTodos.vue";
+import RailTodos from "../rail/RailTodos.vue";
 import PlanPage from "../resource/PlanPage.vue";
 import TaskList from "../resource/TaskList.vue";
 import TranscriptLog from "../resource/TranscriptLog.vue";
@@ -24,7 +24,7 @@ import {useTranscript} from "../composables/transcript.js";
 import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {age} from "../format/time.js";
-import {pollKey, usePoll} from "../poll.js";
+import {pollKey, usePoll} from "../composables/poll.js";
 import {PAGE, holding, rows} from "../sync/rows.js";
 import {route} from "../route.js";
 
