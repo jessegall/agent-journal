@@ -9,6 +9,7 @@ from pathlib import Path
 from controllers.types import Agents, Notifications
 from engine import runtime
 from engine.record import Record
+from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
 
 OVER = "is slower than its budget"
@@ -63,6 +64,8 @@ class FaultReports:
                   kind=kind, target=name, worst=took)
 
     def threw(self, record, message: str, where: str, stack: str, kind: str = "threw") -> None:
+        if self.feature.on(record, "log"):
+            logged(record.root, f"{kind} {where}: {message}")
         title = {"overlap": f"the viewer sent {where} twice at once",
                  "page": f"the viewer asked {where} for more than a page", "refetch": f"the viewer refetched {where} with nothing changed"}.get(kind, f"{THREW} {message}")
         self.file(record, title[:80], f"{message}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
@@ -90,6 +93,8 @@ class FaultReports:
             return
         try:
             record = Record(Path(root), env)
+            if self.feature.on(record, "log") and 0 < self.milliseconds(record, kind) < took:
+                logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else ""))
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
                 self.slow(record, kind, name, took, working, garbage)
                 if profile:
