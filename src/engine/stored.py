@@ -6,7 +6,7 @@ import time
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
-from typing import Any, Callable, TypeVar
+from typing import IO, Any, Callable, TypeVar
 
 from engine import waits
 
@@ -101,15 +101,37 @@ def journal_roots(path: Path) -> tuple[Path, ...]:
     return tuple(parent for parent in path.parents if parent.name == ".journal")
 
 
-SHARED: dict[Path, tuple] = {}
+class SharedWrites:
+    def __init__(self, held: IO):
+        self.held = held
+        self.guard = waits.Lock("writes")
+        self.writers = 0
+
+    @contextmanager
+    def joined(self):
+        with self.guard:
+            if not self.writers:
+                with waits.waited("writes"):
+                    acquire(self.held, fcntl.LOCK_SH)
+            self.writers += 1
+        try:
+            yield
+        finally:
+            with self.guard:
+                self.writers -= 1
+                if not self.writers:
+                    fcntl.flock(self.held, fcntl.LOCK_UN)
+
+
+SHARED: dict[Path, SharedWrites] = {}
 SHARING = threading.Lock()
 
 
-def shared_lock(root: Path) -> tuple:
+def shared_writes(root: Path) -> SharedWrites:
     with SHARING:
         if root not in SHARED:
             root.mkdir(parents=True, exist_ok=True)
-            SHARED[root] = ((root / MIGRATION_LOCK).open("a"), waits.Lock("writes"))
+            SHARED[root] = SharedWrites((root / MIGRATION_LOCK).open("a"))
         return SHARED[root]
 
 
@@ -149,13 +171,8 @@ def writing(path: Path):
     if not guarded(path, roots):
         yield
         return
-    held, guard = shared_lock(roots[0])
-    with guard, waits.waited("writes"):
-        acquire(held, fcntl.LOCK_SH)
-        try:
-            yield
-        finally:
-            fcntl.flock(held, fcntl.LOCK_UN)
+    with shared_writes(roots[0]).joined():
+        yield
 
 
 def write_text(path: Path, text: str) -> None:
