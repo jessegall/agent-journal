@@ -13,7 +13,7 @@ from engine.seats import seats
 from engine.sessions import Sessions
 from controllers.faults import threw
 from controllers.types import Messages, Notices
-from resources.base import SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER
 from runner.engine import TICK, Engine
 from engine.package import CODE, ZIPPED
 
@@ -21,6 +21,19 @@ ENDING = 5.0
 UNHEARD_AFTER = 120.0
 LOOKED_EVERY = 30.0
 CHILD = "import commands.cli; from runner.engines import child"
+
+
+def always() -> bool:
+    return True
+
+
+def keep_ticking(stopping, tick, fault, going=always) -> None:
+    while not stopping.is_set() and going():
+        try:
+            tick()
+        except Exception:
+            fault()
+        stopping.wait(TICK)
 
 
 class Engines:
@@ -54,15 +67,11 @@ class Engines:
                 engine.step()
 
     def run(self, stopping) -> None:
-        with (self.root / "runtime" / f"engines-{self.env}.lock").open("a") as held:
+        with (runtime.folder(self.root) / f"engines-{self.env}.lock").open("a") as held:
             while not stopping.is_set() and current(self.root) and not self.owned(held):
                 stopping.wait(TICK)
-            while not stopping.is_set() and os.getppid() == self.parent and current(self.root):
-                try:
-                    self.tick()
-                except Exception:
-                    threw(self.root, self.env, f"the engines of {self.env}")
-                stopping.wait(TICK)
+            keep_ticking(stopping, self.tick, lambda: threw(self.root, self.env, f"the engines of {self.env}"),
+                         lambda: os.getppid() == self.parent and current(self.root))
 
     def owned(self, held) -> bool:
         try:
@@ -125,7 +134,7 @@ class Children:
     def unheard(self, env: str) -> None:
         record = Record(self.root, env)
         messages = Messages(record, actor=SYSTEM)
-        waiting = [row["n"] for row in messages.summaries() if not row["deleted"] and not row["completed"] and "agent" not in row["seen"]
+        waiting = [row["n"] for row in messages.summaries() if not row["deleted"] and not row["completed"] and AGENT not in row["seen"]
                    and f"{env}:{row['n']}" not in self.alarmed]
         for row in [messages.load(n) for n in waiting]:
             if row.seen[:1] != [USER] or row.data.get("delivered") or time.time() - row.created < UNHEARD_AFTER:
@@ -137,7 +146,7 @@ class Children:
             return
 
     def spawn(self, env: str) -> subprocess.Popen:
-        log = self.root / "runtime" / f"engine-{env}.log"
+        log = runtime.folder(self.root) / f"engine-{env}.log"
         log.parent.mkdir(parents=True, exist_ok=True)
         with log.open("a") as output:
             return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(CODE)!r}); {CHILD}; child(sys.argv[1], sys.argv[2])",
@@ -157,9 +166,4 @@ class Children:
             self.end(env)
 
     def run(self, stopping) -> None:
-        while not stopping.is_set():
-            try:
-                self.tick()
-            except Exception:
-                threw(self.root, runtime.env(self.root), "starting the engines")
-            stopping.wait(TICK)
+        keep_ticking(stopping, self.tick, lambda: threw(self.root, runtime.env(self.root), "starting the engines"))

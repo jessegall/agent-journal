@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS
-from engine.stored import write_json
+from engine.stored import Growth, write_json
 from engine.proc import git
 from engine.seats import seat_file
 from controllers.types import Agents
@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 DISPATCHED, RETURNED = "dispatched", "returned"
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
+LOOK_EVERY = 10.0
 
 
 def web_remote(url: str) -> str:
@@ -42,11 +43,21 @@ class SubagentRow(Loaded):
     ended: float = 0.0
     status: str = ""
 
-class Seat:
+class SeatReport:
+    def __init__(self, record, agent):
+        self.record = record
+        self.agent = agent
+        self.branched_at = 0.0
+        self.branch_name = ""
+        self.branch_stamp = None
+        self.crewed_at = 0.0
+        self.crew_growth = Growth()
+        self.subagents_ended: dict | None = None
+
     def branch(self) -> str:
         last = self.agent.driver.last_report()
         cwd = (last and last.cwd) or str(self.record.root.parent)
-        if time.time() - self.branched_at < 10:
+        if time.time() - self.branched_at < LOOK_EVERY:
             return self.branch_name
         self.branched_at = time.time()
         try:
@@ -66,20 +77,15 @@ class Seat:
     def crew(self) -> None:
         last = self.agent.driver.last_report()
         path = last and last.title and last.transcript
-        if not path or time.time() - self.crewed_at < 10:
+        if not path or time.time() - self.crewed_at < LOOK_EVERY:
             return
         self.crewed_at = time.time()
-        try:
-            size = Path(path).stat().st_size
-        except OSError:
+        if not self.crew_growth.grew(Path(path)):
             return
-        if size == self.crewed_size:
-            return
-        self.crewed_size = size
         facts = PROVIDERS[last.provider]().crew(Path(path)) if last.provider in PROVIDERS else {}
         self.subagents_moved(last, facts.get(AgentRow.subagent_rows))
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
-            compacting = facts.get("compacting")
+            compacting = facts.get(AgentRow.compacting)
             status = status_after(compacting, last.status)
             self.agent.mark(status, last.event, at=last.at, **facts)
 
@@ -99,10 +105,11 @@ class Seat:
                 agents.subagent(last.n, RETURNED, **data, status=sub.status)
         self.subagents_ended = {sub.id: sub.ended for sub in rows}
 
-    def seat(self) -> None:
+    def write(self, why: str) -> None:
         self.branch()
         self.crew()
         last = self.agent.driver.last_report()
         write_json(seat_file(self.record.root, self.agent.driver.session), {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
-                                 "why": self.why, "printed": self.agent.driver.last_printed(),
+                                 "why": why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
+

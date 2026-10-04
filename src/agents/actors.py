@@ -10,7 +10,7 @@ from engine.wording import counted
 
 
 def settled(record: Record, event: Event) -> bool:
-    rows = spoken_data(record, event).get("rows") or []
+    rows = event_data(record, event).get("rows") or []
     return bool(rows) and all(finished(record, ref) for ref in rows)
 
 
@@ -22,7 +22,7 @@ def finished(record: Record, ref: str) -> bool:
         return False
 
 
-def spoken_data(record: Record, event: Event) -> dict:
+def event_data(record: Record, event: Event) -> dict:
     if not TYPES[event.type].typed_as_title:
         return {}
     try:
@@ -115,7 +115,7 @@ class Agent(Actor):
         for e in [e for e in self.pending if settled(self.record, e)]:
             self.pending.remove(e)
             self.notified(e)
-        yielding = [e for e in self.pending if spoken_data(self.record, e).get("yields")]
+        yielding = [e for e in self.pending if event_data(self.record, e).get("yields")]
         line, groups = render([e for e in self.pending if e not in yielding], self.record)
         sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
         done = list(self.pending) if sent else []

@@ -206,15 +206,14 @@ def test_a_compaction_is_recorded_once_on_the_agent():
 
 
 def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():
-    from types import SimpleNamespace
-    from agents.seat import Seat
+    from agents.seat import SeatReport
     record = fresh()
     row = Agents(record, actor=AGENT).create("s-1", subagent_rows=[{"id": "old", "task": "earlier", "type": "Explore", "model": "haiku", "ended": 5.0}])
-    seat = SimpleNamespace(record=record, subagents_ended=None)
+    seat = SeatReport(record, agent=None)
     last = Agents(record, actor=AGENT).load(row.n)
     running = {"id": "t1", "task": "audit the hooks", "type": "auditor", "model": "sonnet", "ended": 0.0}
     for subagents in ([last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}]):
-        Seat.subagents_moved(seat, last, subagents)
+        seat.subagents_moved(last, subagents)
     heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
     assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
     import json

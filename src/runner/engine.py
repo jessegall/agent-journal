@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
 from engine import bus, chat, clock, ran, runtime
-from agents.actors import Actor, Agent, System, User, spoken_data
+from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.base import asking_row
 from providers.drivers import AGENT_COMMAND
@@ -14,14 +14,15 @@ from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take,
 from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
+from providers.base import Provider
 from providers.payload import HookEvent
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
-from agents.seat import Seat
+from agents.seat import SeatReport
 from engine.wording import plural
 from engine.transcript import PEER, SENT
 from providers.turns import turns
-from engine.stored import read_json, write_json
+from engine.stored import Growth, read_json, write_json
 from engine.fields import Loaded
 
 CLOCK_EVERY = 5.0
@@ -64,23 +65,26 @@ class PeerLog(Loaded):
     at: float = 0.0
     names: dict = field(default_factory=dict)
 
-class Engine(Seat):
+
+@dataclass(frozen=True)
+class Reading:
+    row: object
+    provider: Provider
+    transcript: Path
+
+
+class Engine:
     def __init__(self, record: Record, driver):
         self.record = record
         self.agent = Agent(record, driver)
         driver.waiting = self.waiting
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
+        self.report = SeatReport(record, self.agent)
         self.running = False
         self.born = time.time()
-        self.branched_at = 0.0
-        self.branch_name = ""
-        self.branch_stamp = None
-        self.crewed_at = 0.0
-        self.crewed_size = -1
-        self.subagents_ended: dict | None = None
         self.relayed = None
-        self.peer_size = -1
-        self.failure_size = -1
+        self.peer_growth = Growth()
+        self.failure_growth = Growth()
         self.typed_at = 0.0
         self.ticked_at = 0.0
         self.probed_at = 0.0
@@ -112,12 +116,18 @@ class Engine(Seat):
         self.screen_asks()
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
-        self.seat()
+        self.report.write(self.why)
         self.clock()
         return self.why
 
+    def reading(self) -> Reading | None:
+        row = self.agent.driver.last_report()
+        provider = PROVIDERS.get(row.provider) if row else None
+        if provider is None or not row.transcript:
+            return None
+        return Reading(row, provider(), Path(row.transcript))
+
     def relay(self) -> None:
-        f"engine-{self.agent.driver.session}"
         if self.relayed is None:
             self.relayed = self.record.last_event()
         for e in self.record.events(self.relayed):
@@ -127,21 +137,14 @@ class Engine(Seat):
                 bus.emit(e, self.record)
 
     def relay_peers(self) -> None:
-        row = self.agent.driver.last_report()
-        if not row or not row.title:
+        reading = self.reading()
+        if reading is None or not reading.row.title or not self.peer_growth.grew(reading.transcript):
             return
-        provider = PROVIDERS.get(row.provider)
-        try:
-            size = Path(row.transcript).stat().st_size if provider and row.transcript else -1
-        except OSError:
-            return
-        if size < 0 or size == self.peer_size:
-            return
-        self.peer_size = size
+        row = reading.row
         f = runtime.session_file(self.record.root, row.title, "peers.json")
         seen = read_json(f, dict, None)
         log = PeerLog.from_json(seen)
-        recent = sorted((t for t in provider().tail(row.transcript) if t.kind == PEER and t.who.startswith((f"{PEER}:", f"{SENT}:"))), key=lambda t: t.at)
+        recent = sorted((t for t in reading.provider.tail(reading.transcript) if t.kind == PEER and t.who.startswith((f"{PEER}:", f"{SENT}:"))), key=lambda t: t.at)
         newest = max([t.at for t in recent] + [log.at])
         names = dict(log.names)
         for t in recent if seen is not None else []:
@@ -178,23 +181,15 @@ class Engine(Seat):
             chat.send(self.record, row, text)
 
     def elsewhere(self, e) -> bool:
-        meant = spoken_data(self.record, e).get("session")
+        meant = event_data(self.record, e).get("session")
         return bool(meant) and meant not in self.names()
 
     def failed(self) -> str:
-        row = self.agent.driver.last_report()
-        provider = PROVIDERS.get(row.provider) if row else None
-        if not provider or not row.transcript or self.agent.state() not in (BUSY, WORKING):
+        reading = self.reading()
+        if reading is None or self.agent.state() not in (BUSY, WORKING) or not self.failure_growth.grew(reading.transcript):
             return ""
-        try:
-            size = Path(row.transcript).stat().st_size
-        except OSError:
-            return ""
-        if size == self.failure_size:
-            return ""
-        self.failure_size = size
-        failure = provider().failure(Path(row.transcript))
-        if failure is None or failure.at < float(row.at):
+        failure = reading.provider.failure(reading.transcript)
+        if failure is None or failure.at < float(reading.row.at):
             return ""
         self.agent.mark(IDLE, FAILED, failure=failure.message)
         self.noted(f"The turn ended in an error: {failure.message}")
@@ -230,7 +225,7 @@ class Engine(Seat):
         actor.notified(e)
 
     def addressed(self, e) -> bool:
-        return spoken_data(self.record, e).get("session") in self.names()
+        return event_data(self.record, e).get("session") in self.names()
 
     def names(self) -> set[str]:
         return {self.agent.driver.session, self.agent.driver.last_title()} - {""}
@@ -286,11 +281,11 @@ class Engine(Seat):
             ran.announce(self.record, row.n, ran.TYPED, command)
 
     def echoed(self) -> None:
-        row = self.agent.driver.last_report()
-        provider = PROVIDERS.get(row.provider) if row else None
-        if not provider or not provider.echoes_typed or not row.transcript:
+        reading = self.reading()
+        if reading is None or not reading.provider.echoes_typed:
             return
-        for run in provider().typed_runs(Path(row.transcript)):
+        row = reading.row
+        for run in reading.provider.typed_runs(reading.transcript):
             if run.at <= self.echoed_at:
                 continue
             if run.output is None and time.time() - run.at < OUTPUT_WAIT:
@@ -315,10 +310,10 @@ class Engine(Seat):
     def ran(self) -> None:
         row = self.agent.driver.last_report()
         waiting = waiting_commands(row)
-        provider = PROVIDERS.get(row.provider) if row else None
-        if not any(c.typed for c in waiting) or not provider or not row.transcript:
+        reading = self.reading()
+        if not any(c.typed for c in waiting) or reading is None:
             return
-        runs = provider().shell_runs(Path(row.transcript))
+        runs = reading.provider.shell_runs(reading.transcript)
         left = []
         for c in waiting:
             run = next((r for r in runs if c.typed and r[1] == c.command and r[0] >= c.typed - 1), None)
@@ -368,7 +363,7 @@ class Engine(Seat):
         if not stopped and time.time() - self.controlled_at < TICK:
             return ""
         last = self.agent.driver.last_report()
-        at_once = PROVIDERS[self.agent.driver.name].applies_at_once if self.agent.driver.name in PROVIDERS else ()
+        at_once = PROVIDERS.get(self.agent.driver.name, Provider).applies_at_once
         idle = stopped or self.agent.state() == IDLE
         if not idle and (not at_once or asking(last)):
             return ""
