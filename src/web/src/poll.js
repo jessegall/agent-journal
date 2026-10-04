@@ -5,10 +5,13 @@ let instance = 0;
 
 export const pollKey = () => ++instance;
 
+const interval = (user) => (typeof user.every === "function" ? user.every() : user.every);
+const fastest = (held) => Math.min(...[...held.users.values()].map(interval));
+
 function next(held) {
     clearTimeout(held.timer);
     if (document.hidden || polls.get(held.key) !== held || !held.active()) return;
-    held.timer = setTimeout(() => round(held), typeof held.every === "function" ? held.every() : held.every);
+    held.timer = setTimeout(() => round(held), fastest(held));
 }
 
 function round(held) {
@@ -27,7 +30,7 @@ async function rounds(held) {
         clearTimeout(held.timer);
         try {
             const got = await held.ask();
-            held.takers.forEach((take) => take(got));
+            held.users.forEach((user) => user.take(got));
         } catch (e) {}
     } while (held.again && polls.get(held.key) === held && held.active());
     next(held);
@@ -36,24 +39,24 @@ async function rounds(held) {
 document.addEventListener("visibilitychange", () => polls.forEach((held) => (document.hidden ? clearTimeout(held.timer) : round(held))));
 
 export function usePoll(key, ask, every, take = () => {}, active = () => true) {
+    const token = Symbol(String(key));
     onMounted(() => {
         const held = polls.get(key);
         if (held) {
-            held.takers.add(take);
+            held.users.set(token, {every, take});
             return;
         }
-        const fresh = {key, ask, every, active, takers: new Set([take]), timer: 0};
+        const fresh = {key, ask, active, users: new Map([[token, {every, take}]]), timer: 0};
         polls.set(key, fresh);
         round(fresh);
     });
     onUnmounted(() => {
         const held = polls.get(key);
         if (!held) return;
-        held.takers.delete(take);
-        if (!held.takers.size) {
-            clearTimeout(held.timer);
-            polls.delete(key);
-        }
+        held.users.delete(token);
+        if (held.users.size) return;
+        clearTimeout(held.timer);
+        polls.delete(key);
     });
     return () => polls.has(key) && round(polls.get(key));
 }
