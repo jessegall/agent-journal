@@ -1,7 +1,12 @@
+import time
+
 from controllers.faults import threw
 from resources.base import SECTION
 
 FORMATTERS: list = []
+FORMATTED: dict[tuple, tuple[float, str]] = {}
+FORMATTED_FOR = 60.0
+FORMATTED_KEPT = 20000
 DOWNLOAD = "download"
 VIEWER = "viewer"
 SHARED = "shared"
@@ -9,6 +14,17 @@ SHARED = "shared"
 
 def formatted(text: str, record=None, surface: str = "") -> str:
     text = "" if text is None else str(text)
+    key, now = (text, str(record.home) if record is not None else "", surface), time.monotonic()
+    held = FORMATTED.get(key)
+    if held is not None and now - held[0] < FORMATTED_FOR:
+        return held[1]
+    if len(FORMATTED) >= FORMATTED_KEPT:
+        FORMATTED.clear()
+    FORMATTED[key] = (now, shaped := shaping(text, record, surface))
+    return shaped
+
+
+def shaping(text: str, record, surface: str) -> str:
     for fn, where in FORMATTERS:
         if where and surface not in where:
             continue
