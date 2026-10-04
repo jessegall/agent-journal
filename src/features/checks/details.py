@@ -9,7 +9,7 @@ class ChecksDetails(FeatureDetails):
 
 
     abstract = """
-        Scripts that say pass or fail about the project, run on demand or on their own timer; a
+        Scripts that say pass or fail about the project, run on demand or on a schedule of their own; a
         failure is filed and told to the agent
     """
 

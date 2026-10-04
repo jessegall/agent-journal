@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.247.2 — skills say what to do, not how the journal works
+
+**The journal's main skill no longer describes its engine or its time budgets**, and the checks skill speaks of a
+schedule rather than a timer: a skill tells the agent what it can do and what to run. Nothing you use changes.
+
 ## 2.247.1 — the open-work reminder stops repeating
 
 **"Work N is still open" is said three times at most while nothing about the work changes**, instead of at every

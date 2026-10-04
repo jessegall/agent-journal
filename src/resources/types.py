@@ -302,7 +302,7 @@ class AgentRow(Shape, Resource):
         Field(default=dict, name="asking"),
         Field(default="", name="last_message"),
         Field(default="", name="prompted"),
-        Field(default=list, name="handed"),
+        Field(default=list, name="delivered"),
         Field(default="", name="failure"),
         Field(name="started"),
         Field(default=0, name="context"),
