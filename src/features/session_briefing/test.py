@@ -5,11 +5,8 @@ from runner.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh
-from controllers.types import Works
 from features.session_briefing.block import COMPACTED
-from runner.hooks import handle
 from engine.gates import start_file
-from resources.base import AGENT
 
 
 def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
