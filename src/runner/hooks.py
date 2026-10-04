@@ -68,6 +68,8 @@ SENT = "_sent"
 MATCHED = "_matched"
 FINALS = "_finals"
 KEPT_DONE = 50
+KEPT_SENT = 500
+LINE_KEY = re.compile(r"transcript:\d+")
 CATCH_UP = 600.0
 REPLAYING = threading.Lock()
 
@@ -158,6 +160,9 @@ def unfinished(root: Path, session: str, row) -> None:
         sent = [*held.get(SENT, [])]
         streamed = [*held.get(MATCHED, [])]
         pending = []
+        if any(LINE_KEY.fullmatch(key) for key in sent):
+            sent = [turn.key for turn in turns]
+            turns = []
         for turn in turns:
             key = turn.key
             if key in sent:
@@ -172,7 +177,7 @@ def unfinished(root: Path, session: str, row) -> None:
                 sent.append(key)
                 continue
             pending.append(turn)
-        write_json(f, {**held, SENT: sent[-KEPT_DONE:], MATCHED: streamed[-KEPT_DONE:]})
+        write_json(f, {**held, SENT: sent[-KEPT_SENT:], MATCHED: streamed[-KEPT_SENT:]})
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)
 
@@ -192,7 +197,7 @@ def send_to_chat(root: Path, session: str, text: str, turn: str | None = None, s
             return
         chat.send(record, row, text, turn=turn)
         matched = [*held.get(MATCHED, []), fingerprint(text)] if streamed else held.get(MATCHED, [])
-        write_json(f, {**held, SENT: [*held.get(SENT, []), mark][-KEPT_DONE:], MATCHED: matched[-KEPT_DONE:]})
+        write_json(f, {**held, SENT: [*held.get(SENT, []), mark][-KEPT_SENT:], MATCHED: matched[-KEPT_SENT:]})
 
 
 def owned_environments(root: Path) -> set[str]:

@@ -136,9 +136,12 @@ def running(root: Path) -> str:
 def lately_running(root: Path) -> str:
     key, now = str(Path(root).resolve()), time.monotonic()
     held = RUNNING.get(key)
-    if held is None or now - held[0] > RUNNING_FOR:
-        held = RUNNING[key] = (now, running(root))
-    return held[1]
+    if held is not None and now - held[0] <= RUNNING_FOR:
+        return held[1]
+    url = running(root)
+    if url:
+        RUNNING[key] = (now, url)
+    return url
 
 
 def marked(root: Path) -> str:

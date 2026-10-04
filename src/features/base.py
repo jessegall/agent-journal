@@ -5,6 +5,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import ClassVar
 
+from controllers.stored import CHANGES
 from controllers.types import Agents, Environments, Features
 from features import trigger
 from features.trigger import NEVER, Trigger
@@ -74,19 +75,26 @@ class Line:
         return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders(), "reach": self.reach}
 
 
-SWITCHES: dict[str, dict[str, bool]] = {}
+SWITCHES: dict[str, tuple[int, dict[str, bool]]] = {}
 GENERATION = [0]
+
+
+def written(record) -> int:
+    try:
+        return (Features(record, actor=SYSTEM)._folder() / CHANGES).stat().st_size
+    except OSError:
+        return 0
 
 
 def booted(record) -> dict[str, bool]:
     rows = Features(record, actor=SYSTEM)
-    SWITCHES[str(record.home)] = {row.title: bool(row.enabled) for row in rows._every() if not row.deleted}
-    return SWITCHES[str(record.home)]
+    SWITCHES[str(record.home)] = (written(record), {row.title: bool(row.enabled) for row in rows._every() if not row.deleted})
+    return SWITCHES[str(record.home)][1]
 
 
 def switches(record) -> dict[str, bool]:
     held = SWITCHES.get(str(record.home))
-    return held if held is not None else booted(record)
+    return held[1] if held is not None and held[0] == written(record) else booted(record)
 
 
 def rebooted(event=None, record=None) -> None:

@@ -319,7 +319,7 @@ class Shares(Controller):
 
     def _user_only(self, what: str) -> None:
         if self.actor != USER:
-            raise Refused(f"only the user may {what}, from the viewer's Tunnel settings")
+            raise Refused(f"only the user may {what}, from the viewer")
 
     def reachable(self, n: int) -> dict:
         return {"reachable": answers(self.load(n).abstract)}
