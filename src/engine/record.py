@@ -3,7 +3,9 @@ import os
 import threading
 import time
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
+from typing import Callable
 
 from engine import bus, runtime, waits
 from engine.event_log import EventLog
@@ -56,6 +58,8 @@ class Record:
         self.home.mkdir(parents=True, exist_ok=True)
         self._held: dict[Path, int] = {}
         self._threads = waits.Lock("record", threading.RLock())
+        self._depth = 0
+        self._pending: list[Callable[[], None]] = []
         self.memo = {} if memo else None
         self._made: set[Path] = set()
         self.event_log = EventLog(self.home, self.locked)
@@ -75,24 +79,40 @@ class Record:
     @contextmanager
     def locked(self, scope: str = ""):
         path = (self.root / RESOURCES if scope == PROJECT else self.home) / ".lock"
-        with self._threads:
-            if self._held.get(path):
-                self._held[path] += 1
+        pending: list[Callable[[], None]] = []
+        try:
+            with self._threads:
+                self._depth += 1
                 try:
-                    yield
+                    with self._flocked(path):
+                        yield
                 finally:
-                    self._held[path] -= 1
-                return
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open("a+") as fh:
-                with waits.waited("record"):
-                    fcntl.flock(fh, fcntl.LOCK_EX)
-                self._held[path] = 1
-                try:
-                    yield
-                finally:
-                    self._held[path] = 0
-                    fcntl.flock(fh, fcntl.LOCK_UN)
+                    self._depth -= 1
+                    if not self._depth:
+                        pending, self._pending = self._pending, []
+        finally:
+            for announce in pending:
+                announce()
+
+    @contextmanager
+    def _flocked(self, path: Path):
+        if self._held.get(path):
+            self._held[path] += 1
+            try:
+                yield
+            finally:
+                self._held[path] -= 1
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a+") as fh:
+            with waits.waited("record"):
+                fcntl.flock(fh, fcntl.LOCK_EX)
+            self._held[path] = 1
+            try:
+                yield
+            finally:
+                self._held[path] = 0
+                fcntl.flock(fh, fcntl.LOCK_UN)
 
     def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
@@ -108,12 +128,9 @@ class Record:
             with self.locked():
                 e = stamped(self.event_log.last_id() + 1, quiet or bus.listening())
                 self.event_log.append(e)
-            if self.memo is not None:
-                self.memo.clear()
-            if quiet:
-                bus.tell_watchers(e, self)
-            else:
-                bus.emit(e, self)
+                self._pending.append(partial(bus.tell_watchers if quiet else bus.emit, e, self))
+                if self.memo is not None:
+                    self.memo.clear()
             return e
         if held_back(release):
             if self.memo is not None:
