@@ -13,7 +13,7 @@ export const pollKey = () => ++instance;
 const interval = (user) => (typeof user.every === "function" ? user.every() : user.every);
 const fastest = (held) => Math.min(...[...held.users.values()].map(interval));
 const jittered = (ms) => ms / 2 + (Math.random() * ms) / 2;
-const live = (held) => polls.get(held.key) === held && held.active();
+const kept = (held) => polls.get(held.key) === held;
 const staggered = () => Math.random() * WAKE_SPREAD_MS;
 
 function pause(held) {
@@ -24,12 +24,12 @@ function pause(held) {
 
 function later(held, ms) {
     clearTimeout(held.timer);
-    if (document.hidden || !live(held)) return;
+    if (document.hidden || !kept(held)) return;
     held.timer = setTimeout(() => round(held), ms);
 }
 
 function round(held) {
-    if (!live(held)) return Promise.resolve();
+    if (!kept(held)) return Promise.resolve();
     if (held.running) {
         held.again = true;
         return held.running;
@@ -55,11 +55,12 @@ async function rounds(held) {
     do {
         held.again = false;
         clearTimeout(held.timer);
+        if (!held.active()) continue;
         try {
             const got = await answer(held);
             held.users.forEach((user) => user.take(got));
         } catch (e) {}
-    } while (held.again && live(held));
+    } while (held.again && kept(held));
     later(held, pause(held));
 }
 

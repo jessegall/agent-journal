@@ -247,11 +247,11 @@ export function recallEvents() {
 
 const owedBy = (e) => (e.data && e.data.setting ? "settings" : e.type);
 
-export async function heardEvents(events) {
+export async function takeEvents(events) {
     if (!store.spec || events.some((e) => !store.spec.types[e.type])) store.spec = await api.manifest();
     keepEvents([...store.events, ...events]);
     refresh([...new Set(events.map(owedBy))].filter((type) => type !== "agent"));
 }
 
-onWrite((type) => refresh([type]));
+onWrite((type) => store.streamOpen || refresh([type]));
 onOutboxChange(() => refresh(["message"]));

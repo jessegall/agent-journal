@@ -25,7 +25,7 @@ export const store = reactive({
     ticketTodos: [],
     offline: false,
     bar: null,
-    stream: null,
+    streamOpen: false,
     booted: false,
     activity: remembered("journal.activity", true),
     wide: false,
