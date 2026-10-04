@@ -4,7 +4,6 @@ from controllers.types import Agents
 from engine import bus, command_effects, files, ran
 from engine.record import Record
 from providers import skill_folders
-from providers.base import asking_row
 from providers.payload import Hook, HookEvent, HookFacts, LoopCall, LoopEndCall
 from resources.base import AGENT, SYSTEM
 from resources.types import IDLE
@@ -26,7 +25,7 @@ def merged(provider, row, hook: Hook, facts: HookFacts) -> dict:
     return {"event": facts.event, "tool": facts.tool, **facts.transcript_facts, "file": facts.file, "cwd": facts.cwd or row.cwd or "", "at": time.time(),
             "provider": provider.name, "uses": int(row.uses) + (hook.event == HookEvent.PRE_TOOL_USE), "transcript": facts.transcript or row.transcript,
             "inbox": facts.inbox or row.inbox or "", "model": facts.model or row.model or "", "effort": facts.effort, "started": row.started or time.time(),
-            "context": row.context or 0 if facts.context is None else facts.context, "asking": asking_row(facts.asking),
+            "context": row.context or 0 if facts.context is None else facts.context, "asking": facts.asking,
             "last_message": facts.last_message or row.last_message or "", "loops": loops_after(row, hook), "prompted": facts.prompted or row.prompted}
 
 
