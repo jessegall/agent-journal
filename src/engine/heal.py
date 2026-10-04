@@ -1,6 +1,7 @@
 import time
 from pathlib import Path
 
+from engine import runtime
 from engine.package import point
 from engine.stored import read_json, write_json
 
@@ -9,7 +10,7 @@ REFUSED_FOR = 12 * 3600
 
 
 def ledger(root: Path) -> Path:
-    return Path(root) / "runtime" / "broken.json"
+    return runtime.folder(root) / "broken.json"
 
 
 def broken(root: Path) -> list[str]:

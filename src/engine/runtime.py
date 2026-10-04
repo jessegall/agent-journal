@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from engine.stored import read_json, write_json, write_text
+from engine.stored import RUNTIME, read_json, write_json, write_text
 
 DEFAULT_ENV = "main"
 WARM_UP = 20.0
@@ -9,7 +9,7 @@ STARTED: list[float] = [0.0]
 
 
 def folder(root: Path) -> Path:
-    return Path(root) / "runtime"
+    return Path(root) / RUNTIME
 
 
 def env_file(root: Path) -> Path:
@@ -44,6 +44,18 @@ def builds(root: Path) -> Path:
     return folder(root) / "builds"
 
 
+def inputs(root: Path) -> Path:
+    return folder(root) / "inputs"
+
+
+def viewer_log(root: Path) -> Path:
+    return folder(root) / "viewer.log"
+
+
+def upstream_cache(root: Path) -> Path:
+    return folder(root) / "upstream.cache"
+
+
 def session_file(root: Path, session: str, name: str) -> Path:
     return sessions(root) / session / name
 
@@ -68,7 +80,7 @@ def set_env(root: Path, name: str) -> None:
 
 
 def renames_file(root: Path) -> Path:
-    return Path(root) / "runtime" / "renamed.json"
+    return folder(root) / "renamed.json"
 
 
 def renamed(root: Path, name: str) -> str:
@@ -103,10 +115,13 @@ UPGRADE_MARK = "upgrading"
 UPGRADE_LONGEST = 600
 
 
+def upgrade_mark(root: Path) -> Path:
+    return folder(root) / UPGRADE_MARK
+
+
 def upgrading(root: Path) -> bool:
-    mark = Path(root) / "runtime" / UPGRADE_MARK
     try:
-        return time.time() - mark.stat().st_mtime < UPGRADE_LONGEST
+        return time.time() - upgrade_mark(root).stat().st_mtime < UPGRADE_LONGEST
     except OSError:
         return False
 

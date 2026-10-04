@@ -13,5 +13,5 @@ def send(record, row, text: str, turn: str | None = None) -> bool:
     bus.run(Event(id=0, at=time.time(), type="agent", n=row.n, action=SENDING, actor=AGENT, data=data), record)
     if data["stopped"] or not str(data["text"]).strip():
         return False
-    bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action=SENT, actor=AGENT, data={"text": data["text"], "turn": data["turn"]}), record)
+    bus.announce(record, "agent", row.n, SENT, AGENT, {"text": data["text"], "turn": data["turn"]})
     return True

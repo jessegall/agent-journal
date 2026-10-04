@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from engine import bus
+from engine import bus, runtime
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.stored import append_text, held_back, read_json, write_json, write_text
@@ -109,9 +109,12 @@ class Record:
             data = {**data, "cause": bus.cause()}
         if bus.command(type) and "by" not in data:
             data = {**data, "by": bus.command(type)}
+        def stamped(id: int, handled: bool = False) -> Event:
+            return Event(id=id, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=handled)
+
         def release() -> Event:
             with self.locked():
-                e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=quiet or bus.listening())
+                e = stamped(self.last_event() + 1, quiet or bus.listening())
                 append_text(self.home / "events.jsonl", json.dumps(asdict(e)) + "\n")
             if self.memo is not None:
                 self.memo.clear()
@@ -123,7 +126,7 @@ class Record:
         if held_back(release):
             if self.memo is not None:
                 self.memo.clear()
-            return Event(id=0, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid())
+            return stamped(0)
         return release()
 
     def events(self, since: int = 0, last: int = 0) -> list[Event]:
@@ -198,22 +201,24 @@ class Record:
             if len(lines) <= keep:
                 return 0
             ids = [json.loads(line).get("id", 0) for line in lines]
-            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in (self.home / "runtime").glob("cursor-*")
+            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in runtime.folder(self.home).glob("cursor-*")
                           if f.stat().st_mtime >= readers_since and self.cursor_text(f.name.removeprefix("cursor-")).isdigit()), default=ids[-1])
             floor = min(ids[-keep], unread + 1)
             kept = [line for line, n in zip(lines, ids) if n >= floor]
             write_text(log, "".join(kept))
             return len(lines) - len(kept)
 
+    def cursor_file(self, name: str) -> Path:
+        return runtime.folder(self.home) / f"cursor-{name}"
+
     def cursor_text(self, name: str) -> str:
-        f = self.home / "runtime" / f"cursor-{name}"
         try:
-            return f.read_text().strip()
+            return self.cursor_file(name).read_text().strip()
         except OSError:
             return ""
 
     def set_cursor_text(self, name: str, text: str) -> None:
-        f = self.home / "runtime" / f"cursor-{name}"
+        f = self.cursor_file(name)
         f.parent.mkdir(parents=True, exist_ok=True)
         write_text(f, text)
 
@@ -228,7 +233,7 @@ class Record:
         self.set_cursor_text(name, str(n))
 
     def state(self, owner: str, session: str | None = None) -> State:
-        folder = self.home / "state" if session is None else self.root / "runtime" / "sessions" / session
+        folder = self.home / "state" if session is None else runtime.sessions(self.root) / session
         return State(folder / f"{owner}.json")
 
     def setting(self, key: str, default=None):

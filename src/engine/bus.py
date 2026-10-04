@@ -1,4 +1,5 @@
 import threading
+import time
 from functools import wraps
 from collections import defaultdict
 from contextlib import contextmanager
@@ -45,6 +46,10 @@ def emit(event: Event, record=None) -> None:
         queue.append((event, record))
         return
     run(event, record)
+
+
+def announce(record, type: str, n: int, action: str, actor: str, data: dict | None = None, at: float | None = None) -> None:
+    emit(Event(0, time.time() if at is None else at, type, n, action, actor, data or {}), record)
 
 
 def commanded(type_: str, name: str, fn):

@@ -25,7 +25,7 @@ def cancelled(name: str, provider, record, hook, session: str, data: dict, subag
 
 
 def start_file(root: Path, env: str, compacted: bool = False) -> Path:
-    return root / "runtime" / f"{'compact' if compacted else 'start'}-{env}.md"
+    return runtime.folder(root) / f"{'compact' if compacted else 'start'}-{env}.md"
 
 
 def gate_file(root: Path, env: str, session: str) -> Path:

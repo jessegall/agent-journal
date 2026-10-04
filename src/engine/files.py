@@ -8,7 +8,7 @@ from pathlib import Path
 from engine import bus
 from engine.proc import git, git_objects
 from engine.project_files import readable_path
-from resources.base import SYSTEM, Event, names
+from resources.base import SYSTEM, names
 
 KIND = names("edited", "created", "deleted")
 EDITED = "edited"
@@ -217,5 +217,5 @@ def announce(record, agent: int, homes: tuple[str, ...]) -> None:
     counts = line_counts(project, list(changed.values()))
     for path, (before, after) in changed.items():
         count = counts[(before, after)]
-        bus.emit(Event(0, at, "file", agent, EDITED, SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
-                                                             "after": after, "added": count.added, "removed": count.removed}), record)
+        bus.announce(record, "file", agent, EDITED, SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
+                                                            "after": after, "added": count.added, "removed": count.removed}, at=at)

@@ -1,6 +1,5 @@
 import os
 import signal
-import socket
 import subprocess
 import time
 from dataclasses import asdict, dataclass, replace
@@ -10,6 +9,8 @@ from engine.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
 from engine.package import entry
+from engine.ports import free
+from engine.runtime import folder
 from engine.sessions import alive
 from typing import TypedDict
 
@@ -24,12 +25,8 @@ KEEPER_EXIT = 3.0
 CRASHES, WITHIN = 5, 60.0
 
 
-def runtime(root: Path, name: str) -> Path:
-    return Path(root) / "runtime" / name
-
-
 def status_file(root: Path, sid: str) -> Path:
-    return runtime(root, f"service-{sid}.json")
+    return folder(root) / f"service-{sid}.json"
 
 
 def holder(root: Path, sid: str) -> int:
@@ -41,7 +38,7 @@ def holder(root: Path, sid: str) -> int:
 
 
 def lock_file(root: Path, sid: str) -> Path:
-    return runtime(root, f"service-{sid}.lock")
+    return folder(root) / f"service-{sid}.lock"
 
 
 def current_build(root: Path) -> str:
@@ -49,15 +46,15 @@ def current_build(root: Path) -> str:
 
 
 def spec_file(root: Path, sid: str) -> Path:
-    return runtime(root, f"spec-{sid}.json")
+    return folder(root) / f"spec-{sid}.json"
 
 
 def want_file(root: Path, sid: str) -> Path:
-    return runtime(root, f"service-{sid}.want")
+    return folder(root) / f"service-{sid}.want"
 
 
 def log_file(root: Path, sid: str) -> Path:
-    return runtime(root, f"service-{sid}.log")
+    return folder(root) / f"service-{sid}.log"
 
 
 @dataclass(frozen=True)
@@ -75,7 +72,7 @@ def status(root: Path, sid: str) -> ServiceState:
 
 
 def states(root: Path) -> dict[str, ServiceState]:
-    home = runtime(root, "")
+    home = folder(root)
     found = sorted(home.glob("service-*.json")) if home.is_dir() else []
     return {p.stem.removeprefix("service-"): ServiceState.read(p) for p in found}
 
@@ -88,16 +85,6 @@ def want(root: Path, sid: str, state: str, nonce: float = 0.0) -> dict:
     asked = {"want": state if state in (UP, DOWN) else UP, "nonce": nonce}
     write_json(want_file(root, sid), asked)
     return asked
-
-
-def free(port: int) -> bool:
-    with socket.socket() as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        try:
-            sock.bind(("127.0.0.1", port))
-        except OSError:
-            return False
-    return True
 
 
 def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:

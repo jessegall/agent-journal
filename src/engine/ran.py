@@ -1,7 +1,7 @@
 import time
 
 from engine import bus
-from resources.base import SYSTEM, Event
+from resources.base import SYSTEM
 
 COMMAND_RAN = "command.ran"
 SHELL, TYPED, NOTED, DELIVERED = "Bash", "Typed", "Journal", "Delivered"
@@ -9,7 +9,7 @@ SHELL, TYPED, NOTED, DELIVERED = "Bash", "Typed", "Journal", "Delivered"
 
 def announce(record, agent: int, tool: str, command: str, output: str = "", at: float | None = None) -> None:
     when = time.time() if at is None else at
-    bus.emit(Event(0, when, "agent", agent, COMMAND_RAN, SYSTEM, {"at": when, "tool": tool, "command": command, "output": output}), record)
+    bus.announce(record, "agent", agent, COMMAND_RAN, SYSTEM, {"at": when, "tool": tool, "command": command, "output": output}, at=when)
 
 
 def tool_ran(record, agent: int, provider, tool) -> None:

@@ -15,7 +15,7 @@ ESCALATE = 5.0
 
 
 def flag(root: Path) -> Path:
-    return Path(root) / "runtime" / "stop"
+    return runtime.folder(root) / "stop"
 
 
 def at(root: Path) -> float:
