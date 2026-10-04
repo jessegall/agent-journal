@@ -1,13 +1,11 @@
 import inspect
 import re
-import os
 import shutil
 from pathlib import Path
 
 import features
 from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
-from providers import PROVIDERS
 from providers.base import LIBRARY
 from engine.package import data
 from engine.reach import Reach
@@ -15,6 +13,7 @@ from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_
 
 HERE = data()
 
+FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.S)
 
 def signature(controller: type, name: str) -> str:
     words = []
@@ -117,11 +116,16 @@ def feature_skill(f) -> str:
             + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
 
 
+def frontmatter(text: str) -> dict:
+    front = FRONTMATTER.match(text)
+    return dict(re.findall(r"^(\w+):\s*(.*)$", front.group(1), re.M)) if front else {}
+
+
 def subject_skill(source: Path) -> str:
     folded = folded_into(source.stem)
     text = source.read_text()
-    front = re.match(r"\A---\n(.*?)\n---\n", text, re.S)
-    fields = dict(re.findall(r"^(\w+):\s*(.*)$", front.group(1), re.M))
+    front = FRONTMATTER.match(text)
+    fields = frontmatter(text)
     when = moments([g.when for g in folded])
     description = f"{fields.get('description', '')} Load it when {when}." if when else fields.get("description", "")
     keywords = [*(w.strip() for w in fields.get("keywords", "").split(",") if w.strip()), *(w for g in folded for w in g.keywords)]

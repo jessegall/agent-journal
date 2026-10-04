@@ -185,7 +185,7 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
 
 def test_a_skills_keyword_makes_the_agent_load_it():
     from features.skill_loading.catalogue import keywords, set_keywords
-    from features.skill_loading.interceptors import require_named
+    from features.skill_loading.required import require_named
     from features.skill_loading.required import outstanding
     record = fresh()
     report(record, "working", "PreToolUse")

@@ -3,7 +3,7 @@ from features.settings import Setting
 from features.trigger import Trigger, USES
 
 
-class SkillsDetails(FeatureDetails):
+class SkillLoadingDetails(FeatureDetails):
     name = "skill_loading"
     has_skill = False
 
