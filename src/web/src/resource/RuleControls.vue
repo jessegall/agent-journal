@@ -21,7 +21,7 @@ async function toggle(on) {
 async function pin() {
     error.value = "";
     try {
-        await api.act("rule", props.resource.n, "pin");
+        await api.pinRule(props.resource.n);
     } catch (e) {
         error.value = e.message;
     }

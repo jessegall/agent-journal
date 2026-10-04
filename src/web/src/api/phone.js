@@ -1,3 +1,5 @@
+import {answered as checked} from "./transport.js";
+
 const HEADERS = {"Content-Type": "application/json", "X-Phone": "1"};
 
 export class PhoneError extends Error {
@@ -7,10 +9,12 @@ export class PhoneError extends Error {
     }
 }
 
-async function answered(got) {
-    const body = await got.json().catch(() => ({}));
-    if (!got.ok) throw new PhoneError(got.status, body.error || "Your computer did not answer");
-    return body;
+const answered = (got) => checked(got, "Your computer did not answer", (status, message) => new PhoneError(status, message));
+
+async function fetchedFile(path, failText) {
+    const answer = await fetch(path, {cache: "no-cache"});
+    if (!answer.ok) throw new PhoneError(answer.status, (await answer.text().catch(() => "")) || failText);
+    return answer;
 }
 
 async function sent(path, body) {
@@ -30,14 +34,11 @@ export const phone = {
     bar: () => got("./bar"),
     places: () => got("./places"),
     source: (q) => got(`./source?q=${encodeURIComponent(q)}`),
-    attached: async (path) => {
-        const answer = await fetch(`./file/${path}`, {cache: "no-cache"});
-        if (!answer.ok) throw new PhoneError(answer.status, (await answer.text().catch(() => "")) || "The file could not be loaded");
-        return answer.text();
-    },
+    fileAt: (path) => `./file/${path}`,
+    fileUrl: (type, n, name) => phone.fileAt(`${type}/${n}/${encodeURIComponent(name)}`),
+    attached: async (path) => (await fetchedFile(phone.fileAt(path), "The file could not be loaded")).text(),
     picture: async (path, name) => {
-        const answer = await fetch(`./file/${path}`, {cache: "no-cache"});
-        if (!answer.ok) throw new PhoneError(answer.status, "The picture could not be loaded");
+        const answer = await fetchedFile(phone.fileAt(path), "The picture could not be loaded");
         const blob = await answer.blob();
         return new File([blob], name, {type: blob.type});
     },
@@ -76,11 +77,10 @@ export const phone = {
     helperStop: (n) => sent("./helper/stop", {n}),
     exportUrl: (ref) => `./export/${ref.replace(":", "/")}`,
     exported: async (ref, fallback) => {
-        const answer = await fetch(`./export/${ref.replace(":", "/")}`, {cache: "no-cache"});
-        if (!answer.ok) throw new PhoneError(answer.status, "The document could not be made");
-        const told = answer.headers.get("Content-Disposition") || "";
-        const coded = told.match(/filename\*=UTF-8''([^;]+)/i);
-        const plain = told.match(/filename="?([^";]+)"?/i);
+        const answer = await fetchedFile(phone.exportUrl(ref), "The document could not be made");
+        const disposition = answer.headers.get("Content-Disposition") || "";
+        const coded = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+        const plain = disposition.match(/filename="?([^";]+)"?/i);
         const name = coded ? decodeURIComponent(coded[1]) : plain ? plain[1] : fallback;
         const blob = await answer.blob();
         return new File([blob], name, {type: blob.type || "application/octet-stream"});

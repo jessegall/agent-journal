@@ -25,7 +25,7 @@ const accepting = ref(false);
 
 async function acceptAll() {
     accepting.value = true;
-    for (const card of proposing.value) await api.act("ticket", card.n, "accept_dependencies");
+    for (const card of proposing.value) await api.acceptDependencies(card.n);
     accepting.value = false;
     board.refresh();
 }

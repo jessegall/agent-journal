@@ -97,7 +97,7 @@ watch(
 
 async function save(field, text) {
     editing.value = "";
-    if (text && text !== props.ticket[field]) await api.act("ticket", props.ticket.n, "update", {[field]: text});
+    if (text && text !== props.ticket[field]) await api.updateTicket(props.ticket.n, {[field]: text});
 }
 </script>
 

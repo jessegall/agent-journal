@@ -18,7 +18,7 @@ const stages = computed(() =>
         choices: MEANINGS.map((m) => ({...m, current: (meanings.value[stage] || "") === m.value})),
     }))
 );
-const mark = (stage, meaning) => api.act("board", props.board.n, "meaning", {stage, meaning});
+const mark = (stage, meaning) => api.markStage(props.board.n, stage, meaning);
 </script>
 
 <template>

@@ -11,7 +11,7 @@ const asking = ref(false);
 
 async function stop() {
     if (!asking.value) return (asking.value = true);
-    await api.act("ticket", props.card.n, "stop");
+    await api.stopTicket(props.card.n);
     emit("stopped");
     emit("close");
 }

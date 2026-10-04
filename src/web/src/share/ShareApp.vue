@@ -1,6 +1,6 @@
 <script setup>
 import SwitchCase from "../kit/SwitchCase.vue";
-import {sharedData} from "../api/shared.js";
+import {sharedData, sharedFileUrl} from "../api/shared.js";
 import {computed, provide, reactive, ref, watch} from "vue";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
@@ -64,7 +64,7 @@ const reconnecting = ref(false);
 const drafts = reactive({});
 const errors = reactive({});
 
-provide("fileUrl", (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`);
+provide("fileUrl", sharedFileUrl);
 
 function shareRow(reference, given) {
     const [type, n] = reference.split(":");

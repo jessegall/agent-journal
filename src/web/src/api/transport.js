@@ -4,6 +4,14 @@ export const LONG_WAIT_MS = 600000;
 const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
 
+const failure = (status, message) => Object.assign(new Error(message), {status});
+
+export async function answered(response, fallback, failed = failure) {
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw failed(response.status, body.error || fallback);
+    return body;
+}
+
 class Transport {
     constructor() {
         this.flying = new Map();
@@ -49,11 +57,7 @@ class Transport {
     async send(method, url, body, wait = 0, tries = RELOAD_TRIES) {
         this.watcher("sent", method, url, body);
         const res = await this.reach(method, url, body, wait, tries).finally(() => this.watcher("answered", method, url, body));
-        if (!res.ok) {
-            const body = await res.json().catch(() => ({}));
-            throw new Error(body.error || `${res.status} ${res.statusText}`);
-        }
-        return res.json();
+        return answered(res, `${res.status} ${res.statusText}`);
     }
 
     request(method, url, body, wait = 0) {

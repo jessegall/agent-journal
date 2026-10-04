@@ -87,7 +87,7 @@ async function archive(board) {
         await patched(
             board,
             (row) => (row.completed = Date.now() / 1000),
-            () => api.act("board", board.n, "complete")
+            () => api.archiveBoard(board.n)
         );
         settle([...others.slice(at), ...others.slice(0, at).reverse()]);
         toast.value = {text: `Archived ${board.title}`, label: "Undo", action: () => restore(board)};
@@ -102,7 +102,7 @@ async function restore(board) {
         await patched(
             board,
             (row) => (row.completed = 0),
-            () => api.act("board", board.n, "reopen", {why: "Restored from the board menu"})
+            () => api.restoreBoard(board.n)
         );
         lens({board: board.n});
     } catch (e) {
@@ -184,7 +184,7 @@ async function setLimit(n) {
 async function startBoard() {
     starting.value = true;
     try {
-        await api.act("board", current.value.n, "start");
+        await api.startBoard(current.value.n);
         toast.value = {text: `The main agent runs ${current.value.title}`};
     } catch (e) {
         refuse(e);
@@ -244,7 +244,7 @@ function move(card, lane) {
 
 async function stopAndMove({card, lane}) {
     stopping.value = null;
-    await api.act("ticket", card.n, "stop");
+    await api.stopTicket(card.n);
     shift(card, lane, {});
 }
 

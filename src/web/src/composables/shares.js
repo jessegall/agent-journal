@@ -32,14 +32,14 @@ export function endsOf(share) {
 
 export const viewsOf = (share) => `${share.data.views || 0} ${share.data.views === 1 ? "view" : "views"}`;
 
-export const stopShare = (share) => api.act("share", share.n, "stop");
+export const stopShare = (share) => api.stopShare(share.n);
 
-export const approveShare = (share) => api.act("share", share.n, "approve");
+export const approveShare = (share) => api.approveShare(share.n);
 
 export const tunnelStatus = computed(() => store.tunnel);
 
 export async function checkTunnel() {
-    store.tunnel = await api.command("share", "tunnel").catch(() => null);
+    store.tunnel = await api.tunnelStatus().catch(() => null);
     return store.tunnel;
 }
 

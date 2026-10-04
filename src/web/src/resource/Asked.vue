@@ -15,7 +15,7 @@ watch(
     () => props.resource.ref,
     async (about) => {
         earlier.value = [];
-        const found = await api.command("question", "linked_to", {ref: about}).catch(() => []);
+        const found = await api.questionsLinkedTo(about).catch(() => []);
         if (about === props.resource.ref) earlier.value = found;
     },
     {immediate: true}

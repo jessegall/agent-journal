@@ -19,7 +19,7 @@ const failed = inject("phoneFailed");
 const [kind, rest] = [props.target.split(":")[0], props.target.slice(props.target.indexOf(":") + 1)];
 const [asked, wanted] = rest.split("#L");
 const name = decodeURIComponent(asked.split("/").pop());
-const url = kind === "attachment" ? `./file/${asked}` : "";
+const url = kind === "attachment" ? phone.fileAt(asked) : "";
 const text = ref(null);
 const path = ref(name);
 const told = ref("");
@@ -34,7 +34,9 @@ const edge = ref(null);
 const title = ref(null);
 const under = useUnder(edge);
 const picture = computed(() => kind === "attachment" && PICTURE.test(name));
-const lines = computed(() => (text.value === null ? [] : highlight(text.value, languageOf(path.value)).map((html, i) => ({n: i + 1, html}))));
+const lines = computed(() =>
+    text.value === null ? [] : highlight(text.value, languageOf(path.value)).map((html, i) => ({n: i + 1, html}))
+);
 const line = Number(wanted) || 0;
 
 const ZOOM = 2.5;
@@ -125,7 +127,10 @@ onMounted(() => {
 <template>
     <section class="viewer">
         <header :class="['viewer-bar', {under}]">
-            <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')"><PhoneChevron facing="left" :size="18" /> {{ back }}</button>
+            <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')">
+                <PhoneChevron facing="left" :size="18" />
+                {{ back }}
+            </button>
             <span ref="title" :class="['viewer-name', {plain: picture}]" tabindex="-1">{{ path }}</span>
             <template v-if="shared">
                 <button type="button" class="viewer-action" @click="share">Share</button>
@@ -137,16 +142,32 @@ onMounted(() => {
         <div ref="body" :class="['viewer-body', {dark: picture}]" data-scroller>
             <span ref="edge" class="viewer-edge" />
             <template v-if="told">
-                <PhoneMissing :title="missing ? &quot;This file isn't available&quot; : &quot;This file couldn't be loaded&quot;" :words="missing ? `${name} could not be found on your computer.` : told" :back="back" @back="emit('close')">
+                <PhoneMissing
+                    :title="missing ? 'This file isn\'t available' : 'This file couldn\'t be loaded'"
+                    :words="missing ? `${name} could not be found on your computer.` : told"
+                    :back="back"
+                    @back="emit('close')"
+                >
                     <template v-if="!missing">
                         <button type="button" @click="retry">Try again</button>
                     </template>
                 </PhoneMissing>
             </template>
             <template v-else-if="picture">
-                <div ref="stage" :class="['viewer-stage', {zoomed, pulling}]" :style="{transform: pulled ? `translateY(${pulled}px)` : '', opacity: pulled ? Math.max(0.3, 1 - pulled / 400) : ''}">
-                    <button type="button" class="viewer-zoom" :aria-pressed="zoomed" :aria-label="zoomed ? 'Zoom out' : 'Zoom in'" :style="{width: zoomed ? `${ZOOM * 100}%` : '100%'}" @click="tapped">
-                        <img class="viewer-picture" :src="url" :alt="name" @error="(missing = true), (told = 'Not found')" />
+                <div
+                    ref="stage"
+                    :class="['viewer-stage', {zoomed, pulling}]"
+                    :style="{transform: pulled ? `translateY(${pulled}px)` : '', opacity: pulled ? Math.max(0.3, 1 - pulled / 400) : ''}"
+                >
+                    <button
+                        type="button"
+                        class="viewer-zoom"
+                        :aria-pressed="zoomed"
+                        :aria-label="zoomed ? 'Zoom out' : 'Zoom in'"
+                        :style="{width: zoomed ? `${ZOOM * 100}%` : '100%'}"
+                        @click="tapped"
+                    >
+                        <img class="viewer-picture" :src="url" :alt="name" @error="((missing = true), (told = 'Not found'))" />
                     </button>
                 </div>
             </template>
@@ -257,7 +278,9 @@ onMounted(() => {
 }
 
 .viewer-stage {
-    transition: transform 300ms var(--spring), opacity 200ms ease-out;
+    transition:
+        transform 300ms var(--spring),
+        opacity 200ms ease-out;
 }
 
 .viewer-stage.pulling {

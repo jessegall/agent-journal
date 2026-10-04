@@ -86,7 +86,7 @@ function edit(c) {
 async function save() {
     editing.error = "";
     try {
-        await scope.api.act("comment", editing.n, "update", {brief: editing.text.trim()});
+        await scope.api.updateComment(editing.n, editing.text.trim());
         editing.n = 0;
     } catch (e) {
         editing.error = e.message;
@@ -94,7 +94,7 @@ async function save() {
 }
 
 async function remove(c) {
-    await scope.api.act("comment", c.n, "delete", {why: "deleted from the viewer"});
+    await scope.api.deleteComment(c.n);
 }
 
 const replying = reactive({n: 0, text: ""});

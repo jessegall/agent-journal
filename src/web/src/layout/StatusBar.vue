@@ -1,4 +1,5 @@
 <script setup>
+import {stopAgentNamed} from "../actions/agents.js";
 import {barPlan, otherPlans} from "../domain/plans.js";
 import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
 import {silentIn} from "../domain/journals.js";
@@ -148,7 +149,7 @@ async function runBar(p) {
                 class="statusbar-stop"
                 :environment="route.env"
                 :work="state === 'working' && current ? current.title : ''"
-                :stop="() => api.stopAgentNamed(route.env)"
+                :stop="() => stopAgentNamed(api, route.env)"
             />
         </template>
         <span class="statusbar-tools">
