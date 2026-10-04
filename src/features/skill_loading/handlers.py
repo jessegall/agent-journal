@@ -3,7 +3,8 @@ import time
 from engine.events.agents import AgentReported, SessionStarted, ToolFinished
 from engine.events.resources import MessageCreated
 from features import trigger
-from features.parts import AgentContext, Context, Handler, refusals
+from features.parts import AgentContext, Context, Handler
+from features.wiring import refusals
 from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, recent_before_compaction, skills
 from features.skill_loading.interceptors import RefuseUntilLoaded, require_named
 from features.skill_loading.required import require, require_only

@@ -6,7 +6,8 @@ from engine.gates import LONG_COMMAND, cancelled
 from engine.sessions import alive
 from engine.wording import clipped
 from features.long_commands.details import KEPT, MOVED
-from features.nudges import DAY, MINUTE, Sent
+from features.nudges import Sent
+from features.trigger import DAY, MINUTE
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS
 from providers.base import BackgroundTasks

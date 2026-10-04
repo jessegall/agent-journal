@@ -19,35 +19,62 @@ def names() -> list[str]:
 
 
 def load(root: Path | None = None) -> list[str]:
-    from features.base import REGISTRY
-    from features.renames import rename
+    discover()
+    if root:
+        rename_aliases(root)
+    wire()
+    subscribe()
+    if root:
+        sync_rows(root)
+    return sorted(FEATURES)
+
+
+def discover() -> None:
     for name in names():
         importlib.import_module(f"features.{name}.feature")
-    if root and str(root) not in RENAMED:
-        RENAMED.add(str(root))
-        for name, cls in REGISTRY.items():
-            for alias in cls.aliases:
-                old, key = alias if isinstance(alias, tuple) else (alias, "")
-                rename(root, old, f"{name}.{key}" if key else name)
-    from features.base import environments_changed, rebooted
+
+
+def rename_aliases(root: Path) -> None:
+    from features.base import REGISTRY
+    from features.renames import rename
+    if str(root) in RENAMED:
+        return
+    RENAMED.add(str(root))
+    for cls in REGISTRY.values():
+        for old, now in cls.renamed_from().items():
+            rename(root, old, now)
+
+
+def wire() -> None:
+    from features.base import REGISTRY
     for name, cls in REGISTRY.items():
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
         FEATURES[name].wire()
+
+
+def subscribe() -> None:
+    from features.switches import environments_changed, rebooted
     if not SWITCHED:
         SWITCHED.extend([*(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
-    from features.base import generation
-    if root and SEATED.get(str(root)) != generation():
+
+
+def sync_rows(root: Path) -> None:
+    from features.switches import generation
+    if SEATED.get(str(root)) != generation():
         seat(root)
         SEATED[str(root)] = generation()
-    return sorted(FEATURES)
+
+
+def running(feature: type):
+    return FEATURES.get(feature.name)
 
 
 def seat(root: Path) -> None:
     from controllers.types import Features
     from engine.record import Record
-    from features.base import booted
+    from features.switches import booted
     from resources.base import SYSTEM
     for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
         record = Record(root, home.name)
@@ -66,7 +93,8 @@ def seat(root: Path) -> None:
 
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
-    from features.base import clear_global_entries, rebooted
+    from features.base import clear_global_entries
+    from features.switches import rebooted
     from engine.gates import AFTERWARDS, CANCELERS, POLICIES
     from features.format import FORMATTERS
     from engine.wording import APPENDS
@@ -90,7 +118,7 @@ def describe() -> dict:
 
 
 def passed(event, record) -> None:
-    from features.base import rebooted
+    from features.switches import rebooted
     if event.data.get("setting"):
         record.reread_settings()
     elif event.type in CHANGE_SWITCHES:

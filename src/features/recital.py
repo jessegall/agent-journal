@@ -9,6 +9,7 @@ from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 from engine.reach import Reach
+from engine.wording import plural
 
 WHISPER = "whisper"
 
@@ -99,7 +100,7 @@ class RepeatStanding(Handler):
         resources = getattr(context.journal, self.resources)
         rows = [r for r in resources._standing() if r.data.get(WHOM, context.agent.session) == context.agent.session]
         if rows:
-            context.agent.say("standing", count=context.feature.plural(len(rows), resources.type),
+            context.agent.say("standing", count=plural(len(rows), resources.type),
                               rows="; ".join(f"{r.n}. {r.title}" for r in rows))
 
 

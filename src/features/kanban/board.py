@@ -8,7 +8,7 @@ DONE_SHOWN = 50
 from features.kanban.shifts import targets
 from features.plans.controller import ACTIVE
 from typing import TypedDict
-from features.nudges import DAY
+from features.trigger import DAY
 
 
 @dataclass

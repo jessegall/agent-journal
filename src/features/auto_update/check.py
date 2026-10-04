@@ -15,7 +15,7 @@ from agents.terminal import LAUNCH, relaunch
 from engine.package import entry
 from engine.version import version
 from features import FEATURES
-from features.trigger import spec
+from features.trigger import saved
 from resources.base import SYSTEM
 from surfaces.updates import newer, stale, upstream
 
@@ -82,7 +82,7 @@ class UpdateCheck:
 
     def tick(self) -> str:
         record, feature = self.agent.record, FEATURES.get("auto_update")
-        every = spec(record, feature.name, feature.trigger).every * 60 if feature else 0
+        every = saved(record, feature.name, feature.trigger).every * 60 if feature else 0
         if not feature or time.time() - self.checked_at < every:
             return ""
         root = Path(record.root)

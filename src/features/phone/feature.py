@@ -27,6 +27,6 @@ class PhoneFeature(Feature):
     details = PhoneDetails
 
     def register(self, journal: Journal) -> None:
-        self.register_global(ROUTES, PhoneRoutes(), None, ROUTE)
+        self.register_switched(ROUTES, ROUTE, PhoneRoutes())
         self.register_global(KEEP_UP, phones_live, lambda: False)
         self.register_global(TICKS, phones_told, lambda: None)

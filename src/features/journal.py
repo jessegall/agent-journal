@@ -4,7 +4,7 @@ from functools import cached_property
 from controllers.base import NAMED, Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.wording import appended
-from features.parts import AgentHooks, Client, Commands, Events
+from features.wiring import AgentHooks, Client, Commands, Events
 from resources.base import SYSTEM, titled
 
 
@@ -77,7 +77,7 @@ class Journal:
         return AgentHooks(self.feature)
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, **values):
-        spec = self.feature.lines[line]
+        spec = self.feature.declared_line(line)
         if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
         lead, yields = spec.lead, not spec.while_waiting
@@ -103,12 +103,12 @@ class Journal:
         CONTROLLERS[row.type](record, actor=SYSTEM).complete(row.n, how=how)
 
     def message(self, kind: type, line: str, values: dict, actor: str = SYSTEM, **data) -> Message:
-        spec = self.feature.lines.get(line)
-        filled = set(spec.placeholders()) if spec else set()
-        title, brief = self.feature.line(line, {key: value for key, value in values.items() if key in filled})
+        spec = self.feature.declared_line(line)
+        filled = set(spec.placeholders())
+        title, brief = spec.filled({key: value for key, value in values.items() if key in filled})
         kept = {key: value for key, value in values.items() if key not in filled}
         abstract = str(kept.pop("abstract", ""))
-        if spec and spec.label:
+        if spec.label:
             kept["label"] = spec.label
         return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data})
 

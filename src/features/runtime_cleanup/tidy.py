@@ -8,7 +8,7 @@ from providers.base import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
-from features.nudges import DAY
+from features.trigger import DAY
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "channels/*.jsonl": 1024 * 1024}
 EVENTS_KEPT = 100

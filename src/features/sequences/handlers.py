@@ -21,7 +21,7 @@ from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 from engine.reach import Reach
 from engine.wording import clipped
-from features.nudges import MINUTE
+from features.trigger import MINUTE
 from providers import dispatch_model
 
 STEP = "step"

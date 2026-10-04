@@ -5,7 +5,8 @@ from controllers.types import Works
 from engine.events.agents import AgentReported
 from engine.events.resources import AnyEvent, ResourceEvent
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
-from features.nudges import MINUTE, Sent
+from features.nudges import Sent
+from features.trigger import MINUTE
 from features.plans.progress import catch_up, current_phase
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import passes_checkpoints

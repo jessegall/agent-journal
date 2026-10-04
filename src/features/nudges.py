@@ -6,9 +6,6 @@ from engine.events.engine import ClockTicked
 from features import trigger
 from features.parts import AgentContext, Handler
 
-MINUTE = 60.0
-DAY = 24 * 60 * MINUTE
-
 
 @dataclass(frozen=True)
 class Sent:
@@ -32,19 +29,19 @@ class Nudge:
             raise ValueError(f"nudge {self.line} offers the first row under a cap, so it needs most")
 
     def cadence(self, context) -> trigger.Trigger:
-        spec = context.feature.cadence(context.record, self.behaviour)
-        return spec if self.pace is None else replace(spec, every=self.pace(context))
+        cadence = context.feature.cadence(context.record, self.behaviour)
+        return cadence if self.pace is None else replace(cadence, every=self.pace(context))
 
     def due(self, context, agent) -> list[Sent]:
         if not context.feature.on(context.record, self.behaviour):
             return []
         if self.once:
             return [found for found in self.about(context, agent) if context.once(self.line, found.key)]
-        spec = self.cadence(context)
+        cadence = self.cadence(context)
         found = self.about(context, agent)
         if self.first:
             found = [one for one in found if not context.used_up(self.line, one.key, self.most)][:1]
-        due = [one for one in found if context.every(self.behaviour, f"{self.line}:{one.key}", spec)]
+        due = [one for one in found if context.every(self.behaviour, f"{self.line}:{one.key}", cadence)]
         return self.capped(context, due) if self.most and due else due
 
     def capped(self, context, due: list[Sent]) -> list[Sent]:
@@ -52,12 +49,11 @@ class Nudge:
 
 
 def send(context, nudges: tuple) -> None:
-    agent = context.journal.agents.primary()
-    if not agent:
+    speaking = context.to_primary()
+    if not speaking:
         return
-    speaking = context.speaking_to(agent)
     for nudge in nudges:
-        for found in nudge.due(speaking, agent):
+        for found in nudge.due(speaking, speaking.agent.row):
             speaking.agent.say(nudge.line, private=nudge.private, **found.values)
 
 
