@@ -42,6 +42,21 @@ class MessageCreated(ResourceEvent):
 
 
 @dataclass(frozen=True)
+class RuleCreated(ResourceEvent):
+    on: ClassVar[str] = "rule.created"
+
+
+@dataclass(frozen=True)
+class CommentCreated(ResourceEvent):
+    on: ClassVar[str] = "comment.created"
+
+
+@dataclass(frozen=True)
+class WorkCreated(ResourceEvent):
+    on: ClassVar[str] = "work.created"
+
+
+@dataclass(frozen=True)
 class MessageUpdated(ResourceEvent):
     on: ClassVar[str] = "message.updated"
     numbers: tuple = ()

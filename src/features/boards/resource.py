@@ -53,6 +53,9 @@ class Board(Shape, Resource):
               "plan_reviewer": "Who reviews a ticket's plan: orchestrator, or subagent"}
     shown_fields = ("stages", "branch", "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts", "plan_reviewer")
 
+    def stage_for(self, meaning: str) -> str:
+        return next((stage for stage, given in self.meanings.items() if given == meaning), "")
+
     @property
     def asked(self) -> list[str]:
         return self.drafting.get("asked") or []

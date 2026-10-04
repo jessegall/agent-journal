@@ -7,7 +7,7 @@ from controllers.types import Messages, Questions
 from engine.worktree import current_branch
 from features.boards.resource import DONE, MEANINGS, Board
 from features.work_modes.modes import ORCHESTRATOR, pick
-from resources.base import COMMISSIONED, PAUSED, REQUESTED, RESUMED, REVISED, Refused, Resource, STARTED, SYSTEM, titled
+from resources.base import COMMISSIONED, FINISHED, PAUSED, REQUESTED, RESUMED, REVISED, Refused, Resource, STARTED, SYSTEM, titled
 
 
 READING = 120
@@ -73,6 +73,19 @@ class Boards(Controller):
     @internal
     def cancelled_lately(self, n: int) -> bool:
         return time.time() - self.load(n).drafting.get("cancelled", 0) < CANCEL_HOLDS
+
+    @internal
+    def paused(self) -> set[int]:
+        return {board.n for board in self._standing() if board.paused}
+
+    @internal
+    def of_message(self, message) -> int:
+        return next((int(ref.split(":")[1]) for ref in message.refs if ref.startswith("board:")), 0)
+
+    @internal
+    def finish(self, n: int) -> None:
+        self.update(n, finished=time.time())
+        self.record.emit("board", n, FINISHED, SYSTEM)
 
     def _stop_drafting(self, board) -> None:
         from features.sequences.controller import Sequences

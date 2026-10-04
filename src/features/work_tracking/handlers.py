@@ -5,7 +5,7 @@ from typing import ClassVar
 from engine import bus
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
-from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
+from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted, WorkCreated
 from features import trigger
 from features.nudges import Sent
 from features.trigger import MINUTE
@@ -18,11 +18,6 @@ from resources.types import Work
 from engine.command_runs import command_runs
 
 ASKED_AGAIN_AFTER = 60
-
-
-@dataclass(frozen=True)
-class WorkCreated(ResourceEvent):
-    on: ClassVar[str] = "work.created"
 
 
 @dataclass(frozen=True)

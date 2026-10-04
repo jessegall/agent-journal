@@ -233,7 +233,7 @@ class Feature(ABC):
     def line(self, name: str, values: dict) -> tuple[str, str]:
         return self.declared_line(name).filled(values)
 
-    def line_text(self, name: str, **values) -> str:
+    def spoken(self, name: str, **values) -> str:
         return " - ".join(self.line(name, values))
 
     def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:

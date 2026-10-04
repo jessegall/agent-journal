@@ -4,8 +4,6 @@ import json
 import re
 import secrets
 import time
-import urllib.error
-import urllib.request
 import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -14,6 +12,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.messages import Messages
+from engine.ports import REACH_SECONDS, answers
 from engine.record import Record
 from engine.stored import read_json
 from features import FEATURES
@@ -31,7 +30,6 @@ TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 SPANS = {"h": DAY / 24, "d": DAY}
 NEVER = ("", "0", "never")
 HASH_ROUNDS = 200_000
-REACH_SECONDS = 3
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 UNLOCKED: dict[int, str] = {}
@@ -79,24 +77,6 @@ class SharedComment:
 
 def scoped(text: str, scope: set[str]) -> str:
     return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
-
-
-def status_of(url: str, wait: float = REACH_SECONDS) -> int:
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=wait) as answer:
-            return answer.status
-    except urllib.error.HTTPError as error:
-        return error.code
-    except (OSError, ValueError):
-        return 0
-
-
-def answers(url: str, wait: float = REACH_SECONDS) -> bool:
-    return 0 < status_of(url, wait) < 500
-
-
-def reached(url: str, wait: float = REACH_SECONDS) -> bool:
-    return status_of(url, wait) > 0
 
 
 def until(expires: str) -> float:
