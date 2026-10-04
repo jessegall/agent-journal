@@ -24,7 +24,7 @@ async function addToCollection() {
     try {
         const found =
             open("collection").find((c) => c.title.toLowerCase() === name.toLowerCase()) || (await api.create("collection", {title: name}));
-        await api.act("collection", found.n, "add", {refs: [props.resource.ref]});
+        await api.addToCollection(found.n, [props.resource.ref]);
         collecting.value = false;
         text.value = "";
     } catch (e) {
@@ -44,7 +44,7 @@ const plannable = computed(
 async function makePlan() {
     error.value = "";
     try {
-        const plan = await api.command("plan", "from_doc", {doc: props.resource.n});
+        const plan = await api.planFromDoc(props.resource.n);
         peek("plan", plan.n);
     } catch (e) {
         error.value = e.message;

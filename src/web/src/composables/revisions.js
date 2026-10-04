@@ -87,7 +87,7 @@ export function useRevisions(resource) {
     async function keep() {
         error.value = "";
         try {
-            await api.act("doc", resource().n, "keep");
+            await api.keepDoc(resource().n);
         } catch (e) {
             error.value = e.message;
         }

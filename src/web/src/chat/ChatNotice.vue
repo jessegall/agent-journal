@@ -32,7 +32,7 @@ const armed = ref(false);
 onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
 
 async function close() {
-    if (armed.value) await run(() => api.act("notice", props.notice.n, "close"));
+    if (armed.value) await run(() => api.closeNotice(props.notice.n));
 }
 </script>
 

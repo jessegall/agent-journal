@@ -53,7 +53,7 @@ async function save() {
     draft.error = "";
     try {
         const given = draft.steps.map((s, i) => ({title: trimmed.value[i], body: s.body}));
-        await api.act("sequence", props.resource.n, "steps", {steps: given});
+        await api.setSteps(props.resource.n, given);
         draft.open = false;
     } catch (e) {
         draft.error = e.message;

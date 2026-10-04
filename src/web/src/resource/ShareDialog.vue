@@ -36,7 +36,7 @@ async function awaitLink(share) {
     const until = Date.now() + WAIT_FOR;
     tunnel.value = "starting";
     while (tunnel.value === "starting") {
-        const got = await api.command("share", "reachable", {n: share.n}).catch(() => ({}));
+        const got = await api.shareReachable(share.n).catch(() => ({}));
         if (tunnel.value !== "starting") return;
         if (got.reachable) tunnel.value = "ready";
         else if (Date.now() > until) tunnel.value = "late";
@@ -61,7 +61,7 @@ const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.instal
 onMounted(async () => {
     checkTunnel();
     try {
-        opens.value = await api.command("share", "opens", {ref: ref_.value});
+        opens.value = await api.shareOpens(ref_.value);
     } catch (e) {
         error.value = e.message;
         opens.value = [];

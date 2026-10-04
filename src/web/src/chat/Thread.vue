@@ -341,7 +341,7 @@ function watchScroll() {
 
 async function post(text, files) {
     if (editing.value) {
-        await scope.api.act("message", editing.value.n, "edit", {text: withQuote(editing.value.quote, text)});
+        await scope.api.editMessage(editing.value.n, withQuote(editing.value.quote, text));
         editing.value = null;
         return;
     }

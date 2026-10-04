@@ -37,10 +37,9 @@ watch(
     }
 );
 
-
 async function save(key, value) {
     if (String(value) === String(props.resource.data[key] ?? "")) return;
-    await api.act("check", props.resource.n, "set", {key, value: String(value)});
+    await api.setCheck(props.resource.n, key, value);
 }
 </script>
 

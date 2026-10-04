@@ -1,4 +1,5 @@
 <script setup>
+import {phone} from "../api/phone.js";
 import Icon from "../kit/Icon.vue";
 
 const props = defineProps({
@@ -8,7 +9,7 @@ const props = defineProps({
 });
 const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
 const picture = (name) => PICTURES.test(name);
-const fileUrl = (name) => `./file/${props.type}/${props.n}/${encodeURIComponent(name)}`;
+const fileUrl = (name) => phone.fileUrl(props.type, props.n, name);
 </script>
 
 <template>

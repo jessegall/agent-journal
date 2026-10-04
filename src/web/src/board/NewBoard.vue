@@ -64,7 +64,7 @@ function clear() {
 async function build() {
     const made = await api.create("board", {title: name.value.trim() || stem(document.value), stages: []});
     await api.upload("board", made.n, document.value);
-    await api.act("board", made.n, "build", {name: name.value.trim(), steer: steer.value.trim()});
+    await api.buildBoard(made.n, name.value.trim(), steer.value.trim());
     return made;
 }
 

@@ -46,7 +46,7 @@ async function change() {
 const actions = computed(() => Object.entries(MOMENTS).map(([value, label]) => ({value, label, current: chosenAction.value === value})));
 
 function save(value) {
-    return api.act("sequence", props.resource.n, "set", {key: "starts_on", value});
+    return api.setStartsOn(props.resource.n, value);
 }
 </script>
 

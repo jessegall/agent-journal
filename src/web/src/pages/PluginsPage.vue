@@ -177,12 +177,12 @@ async function remove(everything) {
 }
 
 async function configure(p, key, value) {
-    await api.act("plugin", p.n, "configure", {key, value});
+    await api.configurePlugin(p.n, key, value);
 }
 
 async function clearLog() {
     const p = plugins.value.find((row) => row.name === reading.value);
-    if (p) await api.act("plugin", p.n, "clear_log");
+    if (p) await api.clearPluginLog(p.n);
     await readLog();
 }
 

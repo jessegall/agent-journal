@@ -218,7 +218,7 @@ let appliedPicks = 0;
 let flashTimer = 0;
 const toggle = (n) => added.value || (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
-const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
+const drop = (tickets) => Promise.all(tickets.map((t) => api.deleteTicket(t.n, "not picked in New work")));
 const say = (mine, text, id = `line-${lines.value.length}`, kind = "") =>
     (lines.value = [...lines.value, {id, mine, kind, text, at: (conversation.value.at(-1)?.at || 0) + 0.001}]);
 
@@ -392,7 +392,7 @@ const retrying = ref(false);
 async function retry() {
     retrying.value = true;
     try {
-        await api.act("board", props.board.n, "retry");
+        await api.retryBoard(props.board.n);
         lastSent.value = Date.now() / 1000;
     } finally {
         retrying.value = false;
@@ -417,15 +417,13 @@ async function add() {
     adding.value = true;
     const drafted = [...drafts.value];
     const keep = drafted.map((t) => t.n).filter((n) => picked.value.includes(n));
-    for (const n of keep) await api.act("ticket", n, "confirm");
+    for (const n of keep) await api.confirmTicket(n);
     for (const t of drafted.filter((d) => keep.includes(d.n) && proposed(d).length)) {
         const only = proposed(t).filter((n) => keep.includes(n) || !drafted.some((d) => d.n === n));
-        await (only.length
-            ? api.act("ticket", t.n, "accept_dependencies", {only: only.join(",")})
-            : api.act("ticket", t.n, "decline_dependencies"));
+        await (only.length ? api.acceptDependencies(t.n, only) : api.declineDependencies(t.n));
     }
     if (props.starts || first.value !== props.board.data.stages[0]) for (const n of keep) await api.moveTicket(n, first.value);
-    if (keep.length) await api.act("board", props.board.n, "added", {tickets: keep.join(",")});
+    if (keep.length) await api.addedToBoard(props.board.n, keep);
     adding.value = false;
     added.value = keep.length;
     await pause(HELD);
@@ -510,13 +508,7 @@ function startAnew() {
         >
             <div class="stage">
                 <div class="talk">
-                    <ChatPanel
-                        ref="panel"
-                        v-model="words"
-                        :locked="adding || added > 0"
-                        :placeholder="placeholder"
-                        @send="send"
-                    >
+                    <ChatPanel ref="panel" v-model="words" :locked="adding || added > 0" :placeholder="placeholder" @send="send">
                         <template #head>
                             <NewWorkHead
                                 :title="board.title"

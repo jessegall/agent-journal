@@ -1,4 +1,5 @@
 <script setup>
+import {stopAgentNamed} from "../actions/agents.js";
 import {planButton} from "../domain/plans.js";
 import {
     countsOf,
@@ -107,7 +108,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                     quiet
                     :environment="lead.name"
                     :work="state === 'working' && lead.work ? lead.work.title : ''"
-                    :stop="() => server.in(lead.name).stopAgentNamed(lead.name)"
+                    :stop="() => stopAgentNamed(server.in(lead.name), lead.name)"
                     @stopped="emit('changed')"
                 />
             </template>

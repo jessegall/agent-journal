@@ -1,4 +1,5 @@
 <script setup>
+import {stopAgentNamed} from "../actions/agents.js";
 import {planButton} from "../domain/plans.js";
 import {agentLine, countsOf, envState, focusOf, idleNote, isActive, planMeter, STATE_WORDS} from "../domain/journals.js";
 import {computed} from "vue";
@@ -59,7 +60,7 @@ const now = useNow(30000);
                     quiet
                     :environment="env.name"
                     :work="envState(env) === 'working' && env.work ? env.work.title : ''"
-                    :stop="() => server.in(env.name).stopAgentNamed(env.name)"
+                    :stop="() => stopAgentNamed(server.in(env.name), env.name)"
                     @stopped="emit('changed')"
                 />
             </template>

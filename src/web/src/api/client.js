@@ -294,6 +294,150 @@ export class ApiClient {
         return this.act("ticket", n, "move", {stage});
     }
 
+    stopTicket(n) {
+        return this.act("ticket", n, "stop");
+    }
+
+    confirmTicket(n) {
+        return this.act("ticket", n, "confirm");
+    }
+
+    updateTicket(n, fields) {
+        return this.act("ticket", n, "update", fields);
+    }
+
+    deleteTicket(n, why) {
+        return this.act("ticket", n, "delete", {why});
+    }
+
+    acceptDependencies(n, only = []) {
+        return this.act("ticket", n, "accept_dependencies", only.length ? {only: only.join(",")} : {});
+    }
+
+    declineDependencies(n) {
+        return this.act("ticket", n, "decline_dependencies");
+    }
+
+    buildBoard(n, name, steer) {
+        return this.act("board", n, "build", {name, steer});
+    }
+
+    startBoard(n) {
+        return this.act("board", n, "start");
+    }
+
+    retryBoard(n) {
+        return this.act("board", n, "retry");
+    }
+
+    archiveBoard(n) {
+        return this.act("board", n, "complete");
+    }
+
+    restoreBoard(n) {
+        return this.act("board", n, "reopen", {why: "Restored from the board menu"});
+    }
+
+    addedToBoard(n, tickets) {
+        return this.act("board", n, "added", {tickets: tickets.join(",")});
+    }
+
+    markStage(board, stage, meaning) {
+        return this.act("board", board, "meaning", {stage, meaning});
+    }
+
+    stopShare(n) {
+        return this.act("share", n, "stop");
+    }
+
+    approveShare(n) {
+        return this.act("share", n, "approve");
+    }
+
+    tunnelStatus() {
+        return this.command("share", "tunnel");
+    }
+
+    shareReachable(n) {
+        return this.command("share", "reachable", {n});
+    }
+
+    shareOpens(ref) {
+        return this.command("share", "opens", {ref});
+    }
+
+    questionsLinkedTo(ref) {
+        return this.command("question", "linked_to", {ref});
+    }
+
+    planFromDoc(doc) {
+        return this.command("plan", "from_doc", {doc});
+    }
+
+    keepDoc(n) {
+        return this.act("doc", n, "keep");
+    }
+
+    runCheck(n) {
+        return this.act("check", n, "run");
+    }
+
+    setCheck(n, key, value) {
+        return this.act("check", n, "set", {key, value: String(value)});
+    }
+
+    closeNotice(n) {
+        return this.act("notice", n, "close");
+    }
+
+    editMessage(n, text) {
+        return this.act("message", n, "edit", {text});
+    }
+
+    stopTask(agent, task, description) {
+        return this.act("agent", agent, "stop_task", {task, description});
+    }
+
+    updateComment(n, brief) {
+        return this.act("comment", n, "update", {brief});
+    }
+
+    deleteComment(n) {
+        return this.act("comment", n, "delete", {why: "deleted from the viewer"});
+    }
+
+    addToCollection(n, refs) {
+        return this.act("collection", n, "add", {refs});
+    }
+
+    setStartsOn(n, value) {
+        return this.act("sequence", n, "set", {key: "starts_on", value});
+    }
+
+    setSteps(n, steps) {
+        return this.act("sequence", n, "steps", {steps});
+    }
+
+    pinRule(n) {
+        return this.act("rule", n, "pin");
+    }
+
+    configurePlugin(n, key, value) {
+        return this.act("plugin", n, "configure", {key, value});
+    }
+
+    clearPluginLog(n) {
+        return this.act("plugin", n, "clear_log");
+    }
+
+    removeEnvironment(n, forced) {
+        return this.act("environment", n, "remove", {how: "removed from the viewer", ...(forced ? {yes: true} : {})});
+    }
+
+    sweepEnvironment(n, now) {
+        return this.act("environment", n, "sweep", now ? {yes: true} : {});
+    }
+
     readAll(type, numbers) {
         return this.post(this.here(`/${type}/read-all`), {numbers});
     }
@@ -386,13 +530,6 @@ export class ApiClient {
 
     stopAgentIn(n) {
         return this.act("environment", n, "stop");
-    }
-
-    async stopAgentNamed(name) {
-        const got = await this.list("environment");
-        const row = (got.rows || []).find((e) => e.title === name && !e.completed && !e.deleted);
-        if (!row) throw new Error(`There is no environment called ${name}.`);
-        return this.stopAgentIn(row.n);
     }
 
     appoint(session) {

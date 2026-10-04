@@ -77,7 +77,7 @@ async function remove(row) {
     const e = row.env;
     if (!confirming(e)) return say(e, "remove", removeWords(row));
     try {
-        await api.act("environment", e.n, "remove", {how: "removed from the viewer", ...(kindOf(e) === "refused" ? {yes: true} : {})});
+        await api.removeEnvironment(e.n, kindOf(e) === "refused");
         say(e);
     } catch (error) {
         say(e, "refused", error.message);
@@ -87,7 +87,7 @@ async function remove(row) {
 async function sweep(e) {
     const now = kindOf(e) === "sweep";
     try {
-        const reply = await api.act("environment", e.n, "sweep", now ? {yes: true} : {});
+        const reply = await api.sweepEnvironment(e.n, now);
         say(e, now ? "done" : "sweep", now ? sentence(reply) : sweepWords(reply));
     } catch (error) {
         say(e, "failed", error.message);
