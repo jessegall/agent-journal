@@ -317,8 +317,8 @@ class Codex(Provider):
             command = EXEC_COMMAND.search(found.argument_text)
             if command:
                 tasks.scripts[found.key] = command[1]
-        if found.type == "custom_tool_call_output":
-            script = tasks.scripts.pop(found.key, "")
+        script = tasks.scripts.pop(found.key, "") if found.type == "custom_tool_call_output" else ""
+        if script:
             for session in [s for s in SESSION_OPEN.findall(found.output_text) if s not in tasks.started]:
                 tasks.started[session] = row.at
                 tasks.commands[session] = script
