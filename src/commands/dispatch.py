@@ -16,7 +16,7 @@ from features.shaping import shaped
 from resources.base import USER, Refused
 from engine.package import data
 from engine.fields import Loaded
-from engine.paths import contained
+from engine.paths import contained, environment_path
 
 
 WEB = data("web", "dist")
@@ -133,6 +133,13 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tup
     return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", name, took, working, profile, garbage))
 
 
+def known_environment(root: Path, env: str) -> bool:
+    try:
+        return environment_path(Path(root) / "environments", env).is_dir()
+    except Refused:
+        return False
+
+
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
     found = resolve(method, path)
     if not found:
@@ -143,6 +150,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         except Refused as error:
             return Reply(400, {"error": str(error)})
     r, params = found
+    if method == "GET" and "env" in params and not known_environment(root, params["env"]):
+        return Reply(404, {"error": f"no environment {params['env']}"})
     faults = features.FEATURES.get("dev_faults")
     profile = faults.reports.profiler(root) if faults else None
     began = (time.perf_counter(), time.thread_time(), collecting())

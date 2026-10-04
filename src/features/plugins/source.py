@@ -12,7 +12,7 @@ from pathlib import Path
 from engine.proc import streamed
 
 from engine.runtime import default_env
-from engine.viewer import running
+from engine.viewer import lately_running
 from features.plugins.declared import Manifest, command_text
 from features.plugins.manifest import fill, read
 from install import fetch
@@ -75,7 +75,7 @@ def queue_path(root: Path, name: str, env: str | None = None) -> Path:
 
 def values(root: Path, name: str, token: str, ports: dict | None = None, env: str | None = None) -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)), "project": str(Path(root).parent),
-            "journal.url": running(Path(root)) or "", "journal.env": default_env(Path(root)) if env is None else env, "token": token,
+            "journal.url": lately_running(Path(root)) or "", "journal.env": default_env(Path(root)) if env is None else env, "token": token,
             "queue": str(queue_path(root, name, env)),
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 

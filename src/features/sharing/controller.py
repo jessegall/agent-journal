@@ -15,13 +15,14 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.messages import Messages
 from engine.record import Record
+from engine.stored import read_json
 from features import FEATURES
 from features.shaping import shaping
 from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import SHARED, formatted
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
@@ -306,6 +307,15 @@ class Shares(Controller):
         if failed:
             raise Refused(failed)
         return owned()
+
+    def readdress(self) -> str:
+        self._user_only("choose a new tunnel address")
+        from engine.services import UP, want
+        from features.sharing.services import TUNNEL
+        kept = read_json(self.record.root / TUNNEL_FILE, dict, {})
+        name = addressed(self.record.root, {key: value for key, value in kept.items() if key != "subdomain"})
+        want(self.record.root, TUNNEL, UP, nonce=time.time())
+        return name
 
     def _user_only(self, what: str) -> None:
         if self.actor != USER:
