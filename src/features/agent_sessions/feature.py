@@ -1,11 +1,11 @@
-from features.agent_sessions.details import AgentsDetails
+from features.agent_sessions.details import AgentSessionsDetails
 from features.agent_sessions.handlers import AskToStop, ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, MarkSilentStopped, RecordCompactions
 from features.base import Feature
 from features.journal import Journal
 
 
-class AgentsFeature(Feature):
-    details = AgentsDetails
+class AgentSessions(Feature):
+    details = AgentSessionsDetails
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(HoldEvicted())

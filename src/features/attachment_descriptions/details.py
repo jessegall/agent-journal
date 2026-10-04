@@ -1,7 +1,7 @@
 from features.base import Behaviour, FeatureDetails, Line
 
 
-class AttachmentsDetails(FeatureDetails):
+class AttachmentDescriptionsDetails(FeatureDetails):
     name = "attachment_descriptions"
     has_skill = False
 
