@@ -1,5 +1,7 @@
-from providers.claude import Claude, ClaudeDriver
-from providers.codex import Codex, CodexDriver
+from providers.claude import Claude
+from providers.claude_driver import ClaudeDriver
+from providers.codex import Codex
+from providers.codex_driver import CodexDriver
 from providers.base import LIBRARY
 
 PROVIDERS = {p.name: p for p in (Claude, Codex)}

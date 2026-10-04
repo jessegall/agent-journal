@@ -79,7 +79,7 @@ def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tm
         "a session that only looks into a worktree another agent holds stays where it was, and the holder keeps it"
     from agents.terminal import launch_spec
     from unittest import mock
-    with mock.patch("providers.claude.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("agents.terminal.share_journal"):
+    with mock.patch("providers.claude_driver.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("agents.terminal.share_journal"):
         spec = launch_spec(record.root, tmp_path / "feature-y", record.env, "claude", [])
     assert spec["env"] == "feature-y-2", "a second agent started in a worktree another agent works gets an environment of its own"
 
@@ -123,7 +123,7 @@ def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
 def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside_it(tmp_path, monkeypatch):
     import subprocess
     import pytest
-    from providers.claude import ClaudeDriver
+    from providers.claude_driver import ClaudeDriver
     project = tmp_path / "project"
     project.mkdir()
     for command in (["git", "init", "-q"], ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "start"]):
@@ -219,7 +219,7 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
 def test_continuing_names_the_folders_latest_conversation(tmp_path, monkeypatch):
     import os
     import re
-    from providers.claude import ClaudeDriver
+    from providers.claude_driver import ClaudeDriver
     monkeypatch.setenv("HOME", str(tmp_path))
     project = tmp_path / "my.project"
     folder = tmp_path / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(project))
