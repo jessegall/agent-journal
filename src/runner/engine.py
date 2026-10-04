@@ -163,7 +163,7 @@ class Engine:
         row = self.agent.driver.last_report()
         if not row or not row.title:
             return
-        written = turns(self.record, row)
+        written = turns(row)
         f = runtime.announced_file(self.record.root, row.title)
         announced = read_json(f, dict, None)
         now = {"line": written[-1].line if written else -1, "last_message": row.last_message or ""}

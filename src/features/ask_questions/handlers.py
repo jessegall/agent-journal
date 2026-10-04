@@ -26,7 +26,7 @@ class AskInsteadOfProse(Handler):
     behaviour = ASKING
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if offers_choices(last_text(context.record, context.agent.row)):
+        if offers_choices(last_text(context.agent.row)):
             context.agent.say("prose")
             context.hold("prose held", ASKING)
 
