@@ -1,27 +1,13 @@
 from dataclasses import dataclass, field
 
-from features.plans.controller import ACTIVE, ENDED
-from features.plans.progress import current_phase
-from features.plans.resource import PHASE
+from features.plans.resource import Placement
+from resources.base import Ref
+from surfaces.board import Lane
 
 TODO, HELD, DOING, ASKED, DONE = "todo", "held", "doing", "asked", "done"
 
 
-@dataclass(frozen=True)
-class Lane:
-    key: str
-    title: str
-
-
 LANES = (Lane(TODO, "To do"), Lane(HELD, "Held"), Lane(DOING, "Doing"), Lane(ASKED, "Needs you"), Lane(DONE, "Done"))
-
-
-@dataclass(frozen=True)
-class Placement:
-    n: int
-    title: str
-    phase: int
-    holds: bool
 
 
 @dataclass
@@ -32,14 +18,7 @@ class Sources:
     plans: list = field(default_factory=list)
 
     def placement(self, todo) -> Placement | None:
-        for plan in self.plans:
-            if plan.status in ENDED or not any(todo.n in phase[PHASE.todos] for phase in plan.phases):
-                continue
-            number = next((i for i, phase in enumerate(plan.phases, 1) if todo.n in phase[PHASE.todos]), 0)
-            phase = current_phase(plan)
-            holds = plan.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
-            return Placement(plan.n, plan.title, number, holds)
-        return None
+        return next((found for found in (plan.placement(todo) for plan in self.plans) if found), None)
 
     def holding(self, todo) -> Placement | None:
         placement = self.placement(todo)
@@ -66,7 +45,7 @@ def reason_of(sources: Sources, todo) -> str:
         return f"blocked: {todo.blocked}"
     waits = sources.todos.waits(todo)
     if waits:
-        return "waits on " + ", ".join(ref.replace(":", " ") for ref in waits)
+        return "waits on " + ", ".join(Ref.parse(ref).spoken for ref in waits)
     placement = sources.holding(todo)
     if placement:
         return f"plan {placement.n} holds it until phase {placement.phase}"

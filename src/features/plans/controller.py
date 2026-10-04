@@ -5,17 +5,18 @@ from dataclasses import asdict, dataclass
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Docs, Environments
-from features.plans.resource import PHASE, Plan, rows_of
+from controllers.types import Docs, Environments, Todos, Works
+from features.plans.resource import (
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, PARKED, PHASE, PHASE_FIELDS, READY, RUNNING, WAITING, Plan,
+)
+from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
+from resources.shapes import LEVELS
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
-
-BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, DONE, ABANDONED = (
-    "building", "draft", "ready", "approved", "active", "waiting", "parked", "done", "abandoned"
-)
-RUNNING = (ACTIVE, WAITING)
-ENDED = (DONE, ABANDONED)
+PHASE_ROWS: dict = {}
+PHASE_STARTS: list = []
+PLAN_STARTS: list = []
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
 DEPTHS = {
@@ -41,6 +42,14 @@ class Moment:
 def logged_at(part: dict, fallback: float) -> float:
     stamp = LOGGED.search(part[SECTION.title])
     return time.mktime(time.strptime(stamp[0], "%Y-%m-%d %H:%M")) if stamp else fallback
+
+
+def status_after(last: bool, waits: bool) -> str:
+    if last:
+        return DONE
+    if waits:
+        return WAITING
+    return ACTIVE
 
 
 class Plans(Controller):
@@ -93,18 +102,19 @@ class Plans(Controller):
         return self.save(r, "updated", phase=int(p))
 
     def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
-        return self._placed(n, p, PHASE.todos, "todo", todos, move, off)
+        return self._placed(n, p, "todo", todos, move, off)
 
     def tickets(self, n: int, p: int, tickets: list, move: bool = False, off: bool = False):
-        return self._placed(n, p, PHASE.tickets, "ticket", tickets, move, off)
+        return self._placed(n, p, "ticket", tickets, move, off)
 
-    def _placed(self, n: int, p: int, key: str, kind: str, numbers: list, move: bool, off: bool):
+    def _placed(self, n: int, p: int, kind: str, numbers: list, move: bool, off: bool):
         r = self.load(n)
         phase = self._phase(r, p)
+        key = PHASE_FIELDS[kind]
         for ph in r.phases:
             ph.setdefault(key, [])
         for t in (int(x) for x in numbers):
-            elsewhere = next((i + 1 for i, ph in enumerate(r.phases) if t in ph[key]), 0)
+            elsewhere = r.phase_of(kind, t)
             if off:
                 phase[key] = [x for x in phase[key] if x != t]
                 continue
@@ -123,9 +133,9 @@ class Plans(Controller):
 
     def ready(self, n: int):
         r = self.load(n)
-        for i, ph in enumerate(r.phases, 1):
-            if not rows_of(ph):
-                self._refuse(f"plan {n} cannot be ready: phase {i} has no to-dos or tickets")
+        empty = r.empty_phases()
+        if empty:
+            self._refuse(f"plan {n} cannot be ready: phase {empty[0]} has no to-dos or tickets")
         return self._status(r, READY, BUILDING, DRAFT)
 
     def approve(self, n: int):
@@ -142,10 +152,10 @@ class Plans(Controller):
             if other.n != r.n and other.status in RUNNING:
                 self._status(other, PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
-        from features.plans.worker import start_phase_tickets, start_worker
         if first_start:
-            start_worker(self.record, started)
-        start_phase_tickets(self.record, started)
+            for begin in PLAN_STARTS:
+                begin(self.record, started)
+        self._start_phase(started)
         return started
 
     def dismiss(self, n: int):
@@ -164,11 +174,10 @@ class Plans(Controller):
         return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
 
     def progress(self, n: int) -> str:
-        from features.plans.progress import phase_rows
         r = self.load(n)
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
         for i, phase in enumerate(r.phases, 1):
-            rows = phase_rows(self.record, phase, self.actor)
+            rows = self._members(phase)
             closed = sum(1 for row in rows if row.completed)
             lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {closed} of {len(rows)} done")
             if i == r.current:
@@ -178,7 +187,6 @@ class Plans(Controller):
         return "\n".join(lines)
 
     def timeline(self, n: int) -> list[dict]:
-        from controllers.types import Todos, Works
         r = self.load(n)
         numbers = {t for phase in r.phases for t in phase[PHASE.todos]}
         todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).load, numbers)}
@@ -205,10 +213,58 @@ class Plans(Controller):
     def _phase(self, r, p: int) -> dict:
         if not 1 <= int(p) <= len(r.phases):
             raise Refused(f"plan {r.n} has no phase {p}")
-        try:
-            return r.phases[int(p) - 1]
-        except IndexError as error:
-            raise Refused(f"plan {r.n} has no phase {p}") from error
+        return r.phases[int(p) - 1]
+
+    def _running(self) -> list:
+        return [p for p in self._every() if p.status in RUNNING]
+
+    def _active(self) -> list:
+        return [p for p in self._every() if p.status == ACTIVE]
+
+    def _members(self, phase: dict) -> list:
+        found = []
+        for key, kind in {PHASE.todos: Todos, **PHASE_ROWS}.items():
+            rows = kind(self.record, actor=self.actor)
+            found += [rows.load(n) for n in phase.get(key, []) if rows._exists(int(n))]
+        return found
+
+    def _complete(self, phase: dict) -> bool:
+        return all(row.completed for row in self._members(phase))
+
+    def _first_open(self, plan) -> int:
+        return next((p for p, phase in enumerate(plan.phases, 1) if not self._complete(phase)), 0)
+
+    def _holds(self, todo) -> bool:
+        plans = self._every()
+        placements = [found for found in (plan.placement(todo) for plan in plans) if found]
+        if placements:
+            return all(found.holds for found in placements)
+        return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
+
+    def _start_phase(self, plan) -> None:
+        for start in PHASE_STARTS:
+            start(self.record, plan)
+
+    def _step(self, plan) -> bool:
+        phase = plan.current_phase
+        if plan.status != ACTIVE or phase is None or not self._complete(phase):
+            return False
+        i = plan.current
+        last = i == len(plan.phases)
+        waits = bool(phase[PHASE.checkpoint]) and not passes_checkpoints(self.record)
+        plan.status = status_after(last, waits)
+        plan.current = i if last or waits else i + 1
+        self.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
+        if last:
+            self.complete(plan.n, how="every row in every phase is done")
+        elif not waits:
+            self._start_phase(plan)
+        return not (last or waits)
+
+    def _catch_up(self) -> None:
+        for plan in self._running():
+            while self._step(plan):
+                pass
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:
@@ -216,9 +272,9 @@ class Plans(Controller):
 
     def _orchestrator_route(self, word: str) -> str:
         place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
-        if place is None or not place.owner.startswith("ticket:"):
+        n = place.owned_by("ticket") if place else 0
+        if not n:
             return ""
-        n = place.owner.partition(":")[2]
         return f". This is the plan of ticket {n}: the agent orchestrating its board does it with journal ticket {word}_plan {n}"
 
 

@@ -7,7 +7,6 @@ import features
 
 from features.plans.controller import Plans  # noqa: E402
 from features.boards.controller import Boards
-from features.plans.progress import catch_up
 from tests.kit import Tickets
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
@@ -302,7 +301,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     record = fresh()
     started = []
     monkeypatch.setattr(Tickets, "start", lambda self, n, agent=None: started.append(n))
-    monkeypatch.setattr("features.plans.worker.start_agent_in", lambda record, name, worktree, abstract, owner, prompt: started.append(name))
+    monkeypatch.setattr("features.tickets.worker.start_agent_in", lambda record, name, worktree, abstract, owner, prompt: started.append(name))
     board = Boards(record, actor=USER).create("Product")
     tickets = Tickets(record, actor=USER)
     first, second = (tickets.create(title, board=board.n) for title in ("Search", "Share"))
@@ -318,7 +317,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 1 and f"ticket:{first.n}" in plans.load(plan.n).refs, "a phase holds tickets and the plan links them"
     assert started == [f"plan-{plan.n}", first.n], "starting the plan starts its worker agent and the first phase's tickets"
     tickets.complete(first.n, how="merged", yes=True)
-    catch_up(record)
+    Plans(record, actor=SYSTEM)._catch_up()
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"
@@ -334,7 +333,7 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
         Environments(record, actor=SYSTEM).create(name, owner=owner)
         launched.append(prompt)
 
-    monkeypatch.setattr("features.plans.worker.start_agent_in", start_agent_in)
+    monkeypatch.setattr("features.tickets.worker.start_agent_in", start_agent_in)
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: handed.append(n))
     monkeypatch.setattr("agents.terminal.detached", lambda *args, **kwargs: launched.append("a ticket agent"))
     board = Boards(record, actor=USER).create("Product")

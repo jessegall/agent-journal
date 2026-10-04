@@ -1,13 +1,24 @@
+from dataclasses import dataclass
 from typing import ClassVar
 
 from resources.base import DOCUMENT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, Field, Shape, names
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos", "tickets")
+PHASE_FIELDS = {"todo": PHASE.todos, "ticket": PHASE.tickets}
+BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, DONE, ABANDONED = (
+    "building", "draft", "ready", "approved", "active", "waiting", "parked", "done", "abandoned"
+)
+RUNNING = (ACTIVE, WAITING)
+ENDED = (DONE, ABANDONED)
 
 
-def rows_of(phase: dict) -> list:
-    return [*phase[PHASE.todos], *phase.get(PHASE.tickets, [])]
+@dataclass(frozen=True)
+class Placement:
+    n: int
+    title: str
+    phase: int
+    holds: bool
 
 
 class Plan(Shape, Resource):
@@ -41,3 +52,22 @@ class Plan(Shape, Resource):
     listed_under = SIDEBAR
     command_names = {"complete": "finish", "place": "todos", "resume": "continue"}
     view = DOCUMENT
+
+    @property
+    def current_phase(self) -> dict | None:
+        return self.phases[self.current - 1] if 0 < self.current <= len(self.phases) else None
+
+    def phase_of(self, kind: str, n: int) -> int:
+        field = PHASE_FIELDS[kind]
+        return next((i for i, phase in enumerate(self.phases, 1) if n in phase.get(field, [])), 0)
+
+    def empty_phases(self) -> list[int]:
+        return [i for i, phase in enumerate(self.phases, 1) if not any(phase.get(field) for field in PHASE_FIELDS.values())]
+
+    def placement(self, todo) -> Placement | None:
+        number = self.phase_of("todo", todo.n)
+        if self.status in ENDED or not number:
+            return None
+        phase = self.current_phase
+        holds = self.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
+        return Placement(self.n, self.title, number, holds)

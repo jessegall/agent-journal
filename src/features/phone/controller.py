@@ -27,8 +27,7 @@ from features.phone.places import MAIN, Place, places
 from surfaces.agent_state import agent_state
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
-from features.plans.controller import WAITING as PLAN_WAITS
-from features.plans.progress import phase_rows, running as running_plans
+from features.plans.controller import WAITING as PLAN_WAITS, Plans
 from features.plans.resource import PHASE
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
@@ -496,11 +495,12 @@ class Phones(Controller):
                     running=self._running(home, phone.environment), plan=self._plan(home))
 
     def _plan(self, home: Record) -> PlanStrip | None:
-        plan = next(iter(running_plans(home)), None)
+        plans = Plans(home, actor=SYSTEM)
+        plan = next(iter(plans._running()), None)
         if plan is None:
             return None
         phases = [PlanPhase(title=formatted(phase[PHASE.title], home, VIEWER), checkpoint=bool(phase[PHASE.checkpoint]),
-                            todos=[PlanTodo(n=row.n, title=formatted(row.title, home, VIEWER), done=bool(row.completed)) for row in phase_rows(home, phase)])
+                            todos=[PlanTodo(n=row.n, title=formatted(row.title, home, VIEWER), done=bool(row.completed)) for row in plans._members(phase)])
                   for phase in plan.phases]
         return PlanStrip(n=plan.n, title=formatted(plan.title, home, VIEWER), abstract=formatted(plan.abstract, home, VIEWER), status=plan.status,
                          current=plan.current, updated=plan.updated, phases=phases, hold=dict(FEATURES["ask_questions"].values(home))["hold"])

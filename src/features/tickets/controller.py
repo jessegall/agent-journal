@@ -21,8 +21,7 @@ from features.boards.controller import Boards
 from features.boards.resource import DONE, REVIEW, START
 from features.checks.controller import tail
 from engine.proc import streamed
-from features.kanban.board import BoardLanes, Card
-from features.kanban.lanes import Lane
+from surfaces.board import BoardLanes, Card, Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Bases, Ticket, card_back
 from controllers.types import Agents, Comments, Messages, Questions, Todos, Works
