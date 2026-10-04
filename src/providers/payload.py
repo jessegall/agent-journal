@@ -187,6 +187,14 @@ class ToolUse(Loaded):
         return ()
 
     @property
+    def path(self) -> str:
+        return self.paths[0] if self.paths else ""
+
+    @property
+    def shell_command(self) -> str | None:
+        return None
+
+    @property
     def words(self) -> tuple:
         return ()
 
@@ -254,6 +262,10 @@ class BashCall(ToolUse):
     @property
     def words(self) -> tuple:
         return (self.command,)
+
+    @property
+    def shell_command(self) -> str | None:
+        return self.command
 
     @property
     def commands(self) -> tuple:
@@ -492,7 +504,3 @@ class Hook(Loaded):
     def read(cls, raw: dict, kinds: dict) -> "Hook":
         hook = cls.from_json(raw)
         return replace(hook, session=hook.transcript.stem if hook.transcript else hook.session, tool=call_of(raw, kinds))
-
-    @property
-    def shell(self) -> str | None:
-        return self.tool.command if isinstance(self.tool, BashCall) else None

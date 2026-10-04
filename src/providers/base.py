@@ -196,9 +196,6 @@ class Provider(ABC):
     def dispatch(self, tool) -> Dispatch | None:
         return None
 
-    def shell_command(self, tool) -> str | None:
-        return tool.command if isinstance(tool, BashCall) else None
-
     def shell_wrapper(self, script: Path) -> dict:
         return {}
 
@@ -300,7 +297,7 @@ class Provider(ABC):
 
     def facts(self, row, hook, root: Path) -> dict:
         context = self.context(hook)
-        return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.paths[0] if hook.tool.paths else "",
+        return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.path,
                 "cwd": hook.cwd or row.cwd or "", "at": time.time(),
                 "provider": self.name, "uses": int(row.uses) + (hook.event == HookEvent.PRE_TOOL_USE), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",

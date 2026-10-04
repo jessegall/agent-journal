@@ -23,7 +23,7 @@ class RefuseHelperInSolo(ToolInterceptor):
     reach = Reach.MAIN
 
     def intercept(self, context: AgentContext, call) -> str:
-        shell = context.provider.shell_command(call)
+        shell = call.shell_command
         return REFUSED if shell and HELPER_DISPATCH.search(shell) and mode_of(context.record) == SOLO else ""
 
 
