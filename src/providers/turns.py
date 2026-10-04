@@ -25,7 +25,7 @@ def _settled_provider(agent):
     return provider
 
 
-def turns(record, agent) -> list:
+def turns(agent) -> list:
     try:
         provider = _settled_provider(agent)
         if not provider:
@@ -39,16 +39,16 @@ def turns(record, agent) -> list:
     return held[1]
 
 
-def last_turn(record, agent):
+def last_turn(agent):
     provider = _settled_provider(agent)
     if not provider:
         return None
-    recent = [t for t in provider.tail(agent.transcript) if t.has_agent_text] or turns(record, agent)
+    recent = [t for t in provider.tail(agent.transcript) if t.has_agent_text] or turns(agent)
     return recent[-1] if recent else None
 
 
-def last_text(record, agent) -> str:
-    written = last_turn(record, agent)
+def last_text(agent) -> str:
+    written = last_turn(agent)
     return written.text if written else ""
 
 

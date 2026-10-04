@@ -14,7 +14,7 @@ class NameRunTogether(Handler):
     behaviour = "paragraphs"
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        last = last_text(context.record, context.agent.row).strip()
+        last = last_text(context.agent.row).strip()
         if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
             context.agent.whisper("paragraphs")
 
