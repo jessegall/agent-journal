@@ -1,8 +1,8 @@
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import CONTROLLERS, Controller
+from controllers.base import Controller, row_of
 from features.collections.resource import Collection
-from resources.base import SYSTEM, Refused
+from resources.base import Refused
 
 
 class Collections(Controller):
@@ -38,10 +38,7 @@ class Collections(Controller):
         return found
 
     def _member(self, ref: str):
-        kind, _, number = ref.partition(":")
-        if kind not in CONTROLLERS or not number.isdigit():
-            raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
-        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(number)
+        row = row_of(self.record, ref)
         if row.data.get("system"):
             raise Refused(f"{ref} ships with the journal and cannot be put in a collection")
         return row
