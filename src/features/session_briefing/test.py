@@ -200,7 +200,7 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
-    import providers.claude as claude
+    import providers.claude_driver as claude
     from engine import runtime
     from providers import DRIVERS
     record = fresh()
