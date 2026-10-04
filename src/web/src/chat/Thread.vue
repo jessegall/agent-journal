@@ -14,7 +14,7 @@ import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
 import {agent, feedOn, store} from "../state/store.js";
 import {cardPlan, waitsFor} from "../layout/statusline.js";
-import {earlier, paging} from "../sync/rows.js";
+import {earlier} from "../sync/rows.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
@@ -31,7 +31,7 @@ import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
 import {tellExtension} from "../platform/extension.js";
-import {flash} from "../platform/visibility.js";
+import {ui} from "../state/ui.js";
 
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
@@ -201,7 +201,7 @@ const thread = computed(() => {
         },
         pending.value,
         scope.env || route.value.env,
-        here && !!paging.more.message,
+        here && !!store.paging.more.message,
         props.hidden
     );
     return made;
@@ -225,7 +225,7 @@ function toBottom(smooth = false) {
 }
 
 watch(
-    () => flash.at,
+    () => ui.flash.at,
     () => nextTick(() => toBottom(settledOnce.value))
 );
 

@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {store} from "../state/store.js";
 import Btn from "../kit/Btn.vue";
 import ListBox from "../kit/ListBox.vue";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
@@ -22,7 +23,7 @@ async function logOut() {
     leaving.value = true;
     failure.value = "";
     try {
-        tunnelStatus.value = await api.tunnelLogout();
+        store.tunnel = await api.tunnelLogout();
         domains.value = [];
     } catch (e) {
         failure.value = e.message;
@@ -51,7 +52,11 @@ onMounted(load);
                 </template>
                 <template v-else-if="tunnelStatus.logged_in && !switching">
                     <p class="tunnel-line">
-                        Connected as <b>{{ tunnelStatus.account }}</b> on <b>{{ tunnelStatus.host }}</b>. Every journal on this machine uses this login.
+                        Connected as
+                        <b>{{ tunnelStatus.account }}</b>
+                        on
+                        <b>{{ tunnelStatus.host }}</b>
+                        . Every journal on this machine uses this login.
                     </p>
                     <div class="tunnel-actions">
                         <Btn small @click="switching = true">Use another account</Btn>

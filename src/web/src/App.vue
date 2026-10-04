@@ -7,7 +7,7 @@ import {activityShown, closeOverlays} from "./actions/panels.js";
 import {computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
 import {project} from "./identity.js";
-import {away} from "./platform/visibility.js";
+import {ui} from "./state/ui.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";
 import {polled, usePolled} from "./sync/polled.js";
@@ -255,7 +255,7 @@ watch(
                 <Transition name="quick">
                     <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>
-                <template v-if="away.open">
+                <template v-if="ui.away.open">
                     <AwayCard />
                 </template>
                 <template v-if="store.skill">

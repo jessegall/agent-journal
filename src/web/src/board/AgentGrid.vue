@@ -8,7 +8,7 @@ import TicketAgent from "./TicketAgent.vue";
 import {hiddenBy, hiddenSummary, orchestraOf, ordered} from "../domain/orchestra.js";
 import {store} from "../state/store.js";
 import {peekThere} from "../route.js";
-import {agentView} from "../composables/agentsShown.js";
+import {ui} from "../state/ui.js";
 
 const summary = computed(() => store.summary);
 const every = computed(() =>
@@ -16,15 +16,15 @@ const every = computed(() =>
 );
 const entries = computed(() =>
     ordered(
-        every.value.filter((entry) => !hiddenBy(entry, agentView)),
-        agentView.order
+        every.value.filter((entry) => !hiddenBy(entry, ui.agentView)),
+        ui.agentView.order
     )
 );
 const LEAST = 9;
 const ROW = 3;
 const empties = computed(() => Math.max(LEAST, Math.ceil(entries.value.length / ROW) * ROW) - entries.value.length);
 const hidden = computed(() => every.value.length - entries.value.length);
-const why = computed(() => hiddenSummary(every.value, agentView).join(", "));
+const why = computed(() => hiddenSummary(every.value, ui.agentView).join(", "));
 const openedKey = ref("");
 const opened = computed(() => entries.value.find((e) => e.key === openedKey.value) || null);
 const terminal = ref(null);

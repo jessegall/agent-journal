@@ -1,10 +1,11 @@
-import {ref} from "vue";
+import {computed} from "vue";
+import {ui} from "../state/ui.js";
 
-const dragged = ref(null);
+const dragged = computed(() => ui.dragged);
 
 export function useCardDrag() {
-    const start = (card) => (dragged.value = card);
-    const end = () => (dragged.value = null);
-    const takes = (lane) => !!dragged.value && dragged.value.targets.includes(lane);
+    const start = (card) => (ui.dragged = card);
+    const end = () => (ui.dragged = null);
+    const takes = (lane) => !!ui.dragged && ui.dragged.targets.includes(lane);
     return {dragged, start, end, takes};
 }

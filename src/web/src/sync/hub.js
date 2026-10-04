@@ -1,4 +1,4 @@
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, reactive, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {startPoll} from "../poll.js";
@@ -152,19 +152,17 @@ export const projectPath = (j) => j.root.replace(/\/\.journal$/, "");
 
 export const stoppedNote = (j) => (j.running ? "its viewer stopped answering" : `last seen ${ago(j.at)}`);
 
-const journals = ref([]);
-const loaded = ref(false);
-const running = computed(() => journals.value.filter((j) => j.running));
+const running = computed(() => store.hub.journals.filter((j) => j.running));
 const waitsOnYou = (j) => Number(countsOf(totalsOf(j)).some((c) => c.hot));
 
 const online = computed(() =>
-    journals.value
+    store.hub.journals
         .filter((j) => j.running && !j.gone && (j.summary || j.unreadable))
         .sort(
             (a, b) => RANK[journalState(a)] - RANK[journalState(b)] || waitsOnYou(b) - waitsOnYou(a) || a.project.localeCompare(b.project)
         )
 );
-const stopped = computed(() => journals.value.filter((j) => !j.running || j.gone));
+const stopped = computed(() => store.hub.journals.filter((j) => !j.running || j.gone));
 const needs = computed(() =>
     online.value
         .flatMap((j) => environmentsOf(j).map((e) => ({key: `${j.root}:${e.name}`, journal: j, env: e, asks: asksOf(j, e)})))
@@ -218,7 +216,10 @@ const due = (j) => j.changed || Date.now() - (j.fresh || 0) > STALE_AFTER;
 
 function pollSummary(j) {
     if (j.current || summaryPolls.has(j.root)) return;
-    summaryPolls.set(j.root, startPoll(`summary:${j.root}`, () => due(j) && refresh(j), SUMMARY_EVERY));
+    summaryPolls.set(
+        j.root,
+        startPoll(`summary:${j.root}`, () => due(j) && refresh(j), SUMMARY_EVERY)
+    );
 }
 
 function listenTo(j) {
@@ -244,7 +245,7 @@ function drop(root) {
     streams.delete(root);
     summaryPolls.get(root)?.();
     summaryPolls.delete(root);
-    journals.value = journals.value.filter((j) => j.root !== root);
+    store.hub.journals = store.hub.journals.filter((j) => j.root !== root);
 }
 
 async function forget(j) {
@@ -260,10 +261,10 @@ async function rescan() {
         (got) => got.current || !listed.some((other) => other.root === got.root && (other.current || other.port < got.port))
     );
     for (const got of found) {
-        let j = journals.value.find((x) => x.port === got.port);
+        let j = store.hub.journals.find((x) => x.port === got.port);
         if (!j) {
             j = reactive({...got, summary: null, gone: 0, unreadable: false});
-            journals.value.push(j);
+            store.hub.journals.push(j);
             await refresh(j);
         } else {
             const changed = got.version !== j.version;
@@ -273,13 +274,13 @@ async function rescan() {
         listenTo(j);
         pollSummary(j);
     }
-    for (const j of [...journals.value]) {
+    for (const j of [...store.hub.journals]) {
         if (found.some((got) => got.port === j.port)) continue;
         j.gone = j.gone || Date.now();
         if (Date.now() - j.gone > LINGER) drop(j.root);
     }
-    journals.value.sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0) || a.project.localeCompare(b.project));
-    loaded.value = true;
+    store.hub.journals.sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0) || a.project.localeCompare(b.project));
+    store.hub.loaded = true;
 }
 
 async function scan() {
@@ -299,7 +300,7 @@ export function useHub() {
     watch(
         () => store.summary,
         (summary) => {
-            const mine = journals.value.find((j) => j.current);
+            const mine = store.hub.journals.find((j) => j.current);
             if (mine) mine.summary = summary;
         }
     );
@@ -311,9 +312,11 @@ export function useHub() {
     onUnmounted(() => {
         users--;
         if (users) return;
-        for (const j of [...journals.value]) drop(j.root);
-        loaded.value = false;
+        for (const j of [...store.hub.journals]) drop(j.root);
+        store.hub.loaded = false;
     });
 
+    const journals = computed(() => store.hub.journals);
+    const loaded = computed(() => store.hub.loaded);
     return {journals, loaded, running, online, stopped, needs, tally, refresh, forget};
 }
