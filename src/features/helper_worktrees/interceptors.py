@@ -14,13 +14,8 @@ class TellDrift(ToolInterceptor):
         subagent = context.provider.is_subagent(hook)
         here = Path(hook.cwd) if hook.cwd else Path.cwd()
         places = tuple((here / given).resolve() for given in (str(here), *(call.paths if subagent else ())))
-        worktrees = Worktrees(context.record, actor=SYSTEM)
-        for row in worktrees._touched(places, tuple(call.commands) if subagent else ()):
-            if not worktrees._has_new_tip(row):
-                continue
-            found = worktrees._drift(row)
-            if found.current:
-                continue
-            worktrees._told(row, found.tip)
-            return context.feature.line("drifted", {"working": row.working, "commits": found.told, "path": row.path})[0]
-        return ""
+        drifted = Worktrees(context.record, actor=SYSTEM)._drifted(places, tuple(call.commands) if subagent else ())
+        if drifted is None:
+            return ""
+        row, found = drifted
+        return context.feature.line("drifted", {"working": row.working, "commits": found.commits, "path": row.path})[0]

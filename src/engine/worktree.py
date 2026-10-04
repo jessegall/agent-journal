@@ -234,6 +234,10 @@ def git(project: Path, *args: str) -> subprocess.CompletedProcess:
     return ran(["git", *args], cwd=project, timeout=GIT_WAIT) or subprocess.CompletedProcess(["git", *args], 1, "", failed)
 
 
+def lines(project: Path, *args: str) -> list[str]:
+    return [line for line in git(project, *args).stdout.splitlines() if line.strip()]
+
+
 JOURNAL_FOLDER = ".journal"
 JOURNAL_MARKS = (ENVIRONMENTS, ARCHIVE)
 
