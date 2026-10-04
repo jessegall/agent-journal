@@ -67,8 +67,10 @@ class Critiques(Controller):
     def recheck(self, n: int, revised: str) -> str:
         row = self._unfinished(n, "finished")
         names = ", ".join(c["name"] for c in row.critics)
+        briefs = ", ".join(c["brief"] for c in row.critics)
         return (f"send the same critics of round {n} back ({names}): continue each subagent with \"The designer revised it: {revised}. "
-                f"Look again through your lens and answer with your findings.\", and add their new findings to report {row.report}")
+                f"Look again through your lens and answer with your findings.\" A critic you can no longer reach, as after a new "
+                f"session, is dispatched afresh with its brief ({briefs}) and the same words. Add their new findings to report {row.report}.")
 
     def complete(self, n: int, how: str = "", **data):
         self._unfinished(n, "finished")

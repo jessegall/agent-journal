@@ -4,6 +4,7 @@ import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "../format/time.js";
 import {atThisPlace, ended, flush, hold, perform, waitingActions} from "./outbox.js";
@@ -58,25 +59,20 @@ const fade = useFades(body);
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
 
 const buttons = computed(() => (row.value ? liveButtons(row.value) : []));
-const pressing = ref("");
 const chosen = ref("");
 
-async function press(button) {
-    pressing.value = button.label;
+async function pressed(label) {
     told.value = "";
-    try {
-        await phone.press(`${row.value.type}:${row.value.n}`, button.label);
-        chosen.value = button.label;
-        announce(`You chose: ${button.label}`);
-        tick();
-        row.value = await phone.row(props.target);
-        refresh();
-    } catch (error) {
-        if (ended(error)) failed(error);
-        else tell(told, error.message);
-    } finally {
-        pressing.value = "";
-    }
+    chosen.value = label;
+    announce(`You chose: ${label}`);
+    tick();
+    row.value = await phone.row(props.target);
+    refresh();
+}
+
+function pressFailed(error) {
+    if (ended(error)) failed(error);
+    else tell(told, error.message);
 }
 
 const reviewing = ref(false);
@@ -254,17 +250,7 @@ onMounted(async () => {
                 <template v-if="told">
                     <p class="reader-told">{{ told }}</p>
                 </template>
-                <template v-for="(button, i) in buttons" :key="button.label">
-                    <Btn
-                        :kind="i === 0 ? 'primary' : ''"
-                        large
-                        :busy="pressing === button.label"
-                        :disabled="Boolean(pressing)"
-                        @click="press(button)"
-                    >
-                        {{ button.label }}
-                    </Btn>
-                </template>
+                <PhoneButtons :target="`${row.type}:${row.n}`" :buttons="buttons" large @pressed="pressed" @failed="pressFailed" />
                 <template v-if="ready && !finished">
                     <PhoneReaderApprove
                         v-model:confirming="confirming"
