@@ -690,7 +690,7 @@ class Phones(Controller):
         return notices.complete(n, how="closed on the phone")
 
     def _export(self, phone: Phone, ref: str) -> Export:
-        return export(self._reached(phone, ref))
+        return export(self._reached(phone, ref), self._home(phone))
 
     def _share(self, phone: Phone, ref: str) -> str:
         row = self._reached(phone, ref)

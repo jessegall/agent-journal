@@ -19,6 +19,7 @@ def names() -> list[str]:
 
 
 def load(root: Path | None = None) -> list[str]:
+    from controllers.base import CONTROLLERS
     from features.base import REGISTRY
     from features.renames import rename
     for name in names():
@@ -30,13 +31,15 @@ def load(root: Path | None = None) -> list[str]:
                 old, key = alias if isinstance(alias, tuple) else (alias, "")
                 rename(root, old, f"{name}.{key}" if key else name)
     from features.base import environments_changed, rebooted
+    from features.format import FORMATTED
     for name, cls in REGISTRY.items():
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
         FEATURES[name].wire()
     if not SWITCHED:
-        SWITCHED.extend([*(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
+        SWITCHED.extend([*(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed),
+                         bus.on("*", lambda event, record: FORMATTED.clear() if event.type in CONTROLLERS else None)])
     from features.base import generation
     if root and SEATED.get(str(root)) != generation():
         seat(root)
@@ -68,11 +71,12 @@ def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
     from features.base import clear_global_entries, rebooted
     from engine.gates import AFTERWARDS, CANCELERS, POLICIES
-    from features.format import FORMATTERS
+    from features.format import FORMATTERS, FORMATTED
     from engine.wording import APPENDS
     COMMANDS.clear()
     HANDLERS.clear()
     FORMATTERS.clear()
+    FORMATTED.clear()
     bus.clear()
     POLICIES.clear()
     AFTERWARDS.clear()

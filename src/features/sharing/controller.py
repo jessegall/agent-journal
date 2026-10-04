@@ -406,8 +406,8 @@ class Shares(Controller):
             shaped = shaping(row, record, SHARED)
             rows[ref] = {
                 "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
-                "title": row.title, "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
-                "sections": [{"title": s.get("title", ""), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
+                "title": scoped(shaped.get("title", ""), scope), "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
+                "sections": [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
                 "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
                 "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope],
                 "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},

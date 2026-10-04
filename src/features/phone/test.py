@@ -151,6 +151,7 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
     assert call(base, "/p/message", words, key, **{"X-Phone": ""})[0] == 403, "a write needs the phone page's header"
     assert call(base, "/p/message", words, key, **{"Content-Type": "text/plain"})[0] == 403, "a form post is refused"
     assert call(base, "/p/message", words, "not-a-key")[0] == 401, "a guessed key opens nothing"
+    assert call(base, "/p/", {}, key)[0] == 404, "a phone post without an action has no route"
     assert not [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "x"]
 
 

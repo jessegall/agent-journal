@@ -20,8 +20,8 @@ class Export:
     body: bytes
 
 
-def export(row) -> Export:
-    page, stem = exported(row), UNSAFE.sub("", row.title).strip()[:80] or f"{row.type} {row.n}"
+def export(row, record) -> Export:
+    page, stem = exported(row, record), UNSAFE.sub("", row.title).strip()[:80] or f"{row.type} {row.n}"
     converter = shutil.which("textutil")
     if converter is None:
         return Export(f"{stem}.html", PAGE, page.encode())
