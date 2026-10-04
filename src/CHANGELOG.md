@@ -4,6 +4,32 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.0 — seven review rounds, and what they found
+
+**The journal's local server answers only its own address, and its file readers keep to the project's visible
+files.** A request naming another host, an environment or attachment outside the journal, or a hidden or secret file
+(`.env`, keys, tokens, credentials) is refused, and the viewer no longer reads files from other repositories on disk.
+**An answer reaches the chat once**: answers are keyed by their time and text rather than their line in the
+transcript, so a long session no longer posts the same answer again and again.
+
+**Reviewers found and fixed about ninety more things**, among them:
+
+- **Phone and share links:** a message the server refuses is marked as not sent instead of blocking the feed; an ended
+  link says so; drafts survive a reload; Continue cannot be pressed twice; a visitor's answer on a link without a
+  password waits for you; the tunnel address never changes by itself, and an alert offers a button to choose a new one.
+- **The chat and the viewer:** the chat keeps your place while you read older messages; polls, busy states and search
+  results no longer stick or arrive out of order; a pressed button in the phone chat says what happened.
+- **Features and nudges:** switching a feature off takes it out everywhere at once, the share server and the worker
+  included; the carry-on and plan lines stop after three rounds and leave a row that waits on a question alone; a
+  short reply to your own message is never hidden.
+- **Codex:** async questions, single-quoted exec commands and exec cells are read; nothing is typed into its approval
+  prompt.
+- **Instruction files:** AGENTS.md and CLAUDE.md keep every byte outside the journal's block, their links and their
+  byte-order mark, and a file that is not UTF-8 is left alone.
+- **Demo data:** no real project or journal names.
+
+Hooks are faster too: a hook no longer asks every known journal over HTTP whether it runs.
+
 ## 2.248.0 — Codex's approval prompt in the chat
 
 **When a Codex agent asks to run a command, the chat now shows it with Allow and Deny, as it does for Claude.** Codex

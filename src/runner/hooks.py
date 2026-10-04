@@ -161,8 +161,9 @@ def unfinished(root: Path, session: str, row) -> None:
         streamed = [*held.get(MATCHED, [])]
         pending = []
         if any(LINE_KEY.fullmatch(key) for key in sent):
-            sent = [turn.key for turn in turns]
-            turns = []
+            ledger = f.stat().st_mtime
+            sent = [turn.key for turn in turns if turn.at <= ledger]
+            turns = [turn for turn in turns if turn.at > ledger]
         for turn in turns:
             key = turn.key
             if key in sent:

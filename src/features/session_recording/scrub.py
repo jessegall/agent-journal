@@ -26,7 +26,7 @@ def dictionary() -> frozenset:
 
 def word(name: str) -> bool:
     lowered = name.lower()
-    return lowered in DICTIONARY or lowered.removesuffix("s") in DICTIONARY
+    return not DICTIONARY or lowered in DICTIONARY or lowered.removesuffix("s") in DICTIONARY
 
 
 def private(name: str) -> bool:
