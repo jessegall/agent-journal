@@ -12,8 +12,8 @@ def announce(record, agent: int, tool: str, command: str, output: str = "", at: 
     bus.announce(record, "agent", agent, COMMAND_RAN, SYSTEM, {"at": when, "tool": tool, "command": command, "output": output}, at=when)
 
 
-def tool_ran(record, agent: int, provider, tool) -> None:
-    shell = provider.shell_command(tool)
+def tool_ran(record, agent: int, tool) -> None:
+    shell = tool.shell_command
     if shell is not None:
         announce(record, agent, SHELL, shell, tool.output)
         return

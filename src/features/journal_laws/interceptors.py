@@ -59,7 +59,7 @@ def lines_in(path: Path) -> int:
 class RefuseWholeLongReads(ToolInterceptor):
     reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
-        shell = context.provider.shell_command(call)
+        shell = call.shell_command
         cat = CAT.search(shell) if shell else None
         whole = isinstance(call, ReadCall) and call.whole
         printed = cat.group(1) if cat else ""
