@@ -36,7 +36,7 @@ async function create() {
 </script>
 
 <template>
-    <Dialog title="New environment" fixed small @close="emit('close')">
+    <Dialog title="New environment" small @close="emit('close')">
         <div class="new-env">
             <label class="new-env-label" for="new-env-name">A short name</label>
             <TextInput

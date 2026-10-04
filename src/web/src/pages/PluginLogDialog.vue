@@ -8,7 +8,7 @@ const emit = defineEmits(["close", "clear"]);
 </script>
 
 <template>
-    <Dialog :title="`${name} log`" follow fixed @close="emit('close')">
+    <Dialog :title="`${name} log`" follow @close="emit('close')">
         <Console fill :text="logged || (busy ? 'Starting…' : 'Nothing is logged yet.')" />
         <template #foot>
             <Btn small :disabled="!logged" @click="emit('clear')">Clear</Btn>

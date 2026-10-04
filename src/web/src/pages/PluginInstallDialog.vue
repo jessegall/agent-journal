@@ -14,7 +14,7 @@ const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listen
 </script>
 
 <template>
-    <Dialog :title="shown.title" fixed @close="emit('close')">
+    <Dialog :title="shown.title" @close="emit('close')">
         <template v-if="outcome">
             <p :class="['shown-result', {failed: !outcome.ok}]">
                 {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}

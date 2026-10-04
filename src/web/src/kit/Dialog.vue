@@ -6,7 +6,7 @@ import {closing} from "./closing.js";
 const props = defineProps({
     title: {type: String, default: ""},
     follow: {type: Boolean, default: false},
-    fixed: {type: Boolean, default: false},
+    fits: Boolean,
     small: Boolean,
     tall: Boolean,
     closable: {type: Boolean, default: true},
@@ -30,7 +30,7 @@ onUnmounted(() => watcher.disconnect());
 <template>
     <Transition name="dialog" appear @after-leave="closed">
         <div v-if="shown" class="dialog" @click.self="closable && close()">
-            <section :class="['dialog-panel', {fixed, small, tall}]">
+            <section :class="['dialog-panel', {fixed: !fits, small, tall}]">
                 <header class="dialog-head">
                     <h3>{{ title }}</h3>
                     <template v-if="closable">
