@@ -65,11 +65,13 @@ class SharedComment:
     replies: tuple = ()
     options: tuple = ()
     answer: str = ""
+    handled: str | None = None
 
     @classmethod
-    def of(cls, comment, about: str, replies: tuple = ()) -> "SharedComment":
+    def of(cls, comment, about: str, record, replies: tuple = ()) -> "SharedComment":
         name = "Agent" if comment.seen[:1] == [AGENT] else comment.data["visitor"]
-        return cls(comment.n, about, name, comment.brief, comment.created, replies, tuple(comment.data.get("options", ())), comment.data.get("answer", ""))
+        return cls(comment.n, about, name, comment.brief, comment.created, replies, tuple(comment.data.get("options", ())), comment.data.get("answer", ""),
+                   formatted(comment.outcome, record, SHARED) if comment.completed else None)
 
 
 def scoped(text: str, scope: set[str]) -> str:
@@ -230,7 +232,7 @@ class Shares(Controller):
         threads = []
         for c in top:
             on = next(ref for ref in c.refs if ref in scope)
-            threads.append(SharedComment.of(c, on, tuple(SharedComment.of(r, on) for r in agents if c.ref in r.refs)))
+            threads.append(SharedComment.of(c, on, comments.record, tuple(SharedComment.of(r, on, comments.record) for r in agents if c.ref in r.refs)))
         return threads
 
     def _ask_to_open(self, share, target) -> None:

@@ -1,4 +1,5 @@
 <script setup>
+import HandledNote from "../kit/HandledNote.vue";
 import CommentByline from "./CommentByline.vue";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import {useScope} from "../composables/scope.js";
@@ -127,7 +128,11 @@ function answer() {
 }
 
 async function send(text) {
-    const made = comment({type: props.resource.type, n: props.resource.n, action: "comment"}, [props.resource.ref], withQuote(props.quote, text));
+    const made = comment(
+        {type: props.resource.type, n: props.resource.n, action: "comment"},
+        [props.resource.ref],
+        withQuote(props.quote, text)
+    );
     emit("sent");
     await nextTick();
     const row = list.value?.querySelector(`[data-comment="${made.ref}"]`);
@@ -203,13 +208,11 @@ async function send(text) {
                             </p>
                         </template>
                         <template v-if="c.completed">
-                            <div class="handled-note">
-                                <Icon name="check" :size="12" />
-                                <span class="handled-label">Handled</span>
+                            <HandledNote>
                                 <template v-if="c.outcome">
-                                    <TextDisplay class="handled-text" :text="c.outcome" />
+                                    <TextDisplay :text="c.outcome" />
                                 </template>
-                            </div>
+                            </HandledNote>
                         </template>
                         <template v-if="answersTo(c).length">
                             <div class="answers">
@@ -437,37 +440,6 @@ async function send(text) {
 .comment.handled .said,
 .comment.handled .comment-quote {
     opacity: 0.72;
-}
-
-.handled-note {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    padding: 6px 8px;
-    border-radius: 7px;
-    background: color-mix(in srgb, var(--tone-good) 10%, transparent);
-    color: var(--tone-good);
-    font-size: 12px;
-}
-
-.handled-note .ico {
-    flex: none;
-    align-self: center;
-}
-
-.handled-label {
-    flex: none;
-    font-weight: 500;
-}
-
-.handled-text {
-    min-width: 0;
-    color: var(--text-2);
-}
-
-.handled-text :deep(p) {
-    display: inline;
-    margin: 0;
 }
 
 .answers {
