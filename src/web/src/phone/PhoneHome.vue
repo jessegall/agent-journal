@@ -380,8 +380,7 @@ function loaded() {
 const toBottom = () => nextTick(() => list.value && (list.value.scrollTop = list.value.scrollHeight));
 watch(list, (el) => el && toBottom());
 
-const made = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
-const entry = (target) => ({id: made(), ref: target});
+const entry = (target) => ({id: crypto.randomUUID(), ref: target});
 const saved = (list) => ({pages: list.map(({id, ref}) => ({id, ref}))});
 const FLASH = 1200;
 let flashing = "";

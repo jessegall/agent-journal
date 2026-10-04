@@ -47,10 +47,15 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
                     <h3>Waiting for you</h3>
                     <p>
                         Phase {{ at }} is done.
-                        <template v-if="next">{{ next.title }} is next, with {{ unfinished }} {{ unfinished === 1 ? "to-do" : "to-dos" }}.</template>
+                        <template v-if="next">
+                            {{ next.title }} is next, with {{ unfinished }} {{ unfinished === 1 ? "to-do" : "to-dos" }}.
+                        </template>
                     </p>
                     <template v-if="go.sent">
                         <p class="plan-sheet-note">Sent</p>
+                    </template>
+                    <template v-else-if="go.sendingNow">
+                        <p class="plan-sheet-note">Continuing…</p>
                     </template>
                     <template v-else-if="go.waits">
                         <p class="plan-sheet-note">Continuing when you're back online</p>
@@ -74,12 +79,19 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
             <ol class="plan-sheet-phases">
                 <template v-for="(phase, index) in plan.phases" :key="index">
                     <li :class="['plan-sheet-phase', kind(index + 1)]">
-                        <button type="button" class="plan-sheet-phase-head" :aria-expanded="opened.has(index + 1)" @click="toggle(index + 1)">
+                        <button
+                            type="button"
+                            class="plan-sheet-phase-head"
+                            :aria-expanded="opened.has(index + 1)"
+                            @click="toggle(index + 1)"
+                        >
                             <span class="plan-sheet-phase-name">
                                 <strong>{{ phase.title }}</strong>
                                 <small>{{ tag(index + 1) }} · Phase {{ index + 1 }}</small>
                             </span>
-                            <span class="plan-sheet-phase-count">{{ phase.todos.length ? `${closed(phase)} of ${phase.todos.length}` : "No to-dos yet" }}</span>
+                            <span class="plan-sheet-phase-count">
+                                {{ phase.todos.length ? `${closed(phase)} of ${phase.todos.length}` : "No to-dos yet" }}
+                            </span>
                             <PhoneChevron :size="12" :facing="opened.has(index + 1) ? 'down' : 'right'" />
                         </button>
                         <template v-if="opened.has(index + 1)">

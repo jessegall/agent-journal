@@ -21,7 +21,7 @@ const SENDING = {completed: 0, seen: [], data: {}};
         <template v-if="line.lost">
             <p class="home-held">
                 {{ line.brief }}
-                <span>The attached file was lost, so this was not sent. Attach it again in a new message.</span>
+                <span>{{ line.reason || "This was not sent. Write it again in a new message." }}</span>
                 <button type="button" class="home-drop" @click="emit('discard', line.idempotency)">Remove</button>
             </p>
         </template>

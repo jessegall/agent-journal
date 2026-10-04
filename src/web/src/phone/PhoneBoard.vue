@@ -13,7 +13,11 @@ const LIST_EVERY = 15000;
 const SHOWN = 5;
 const WAITING = "waiting";
 const DEFAULT = [WAITING, "todo", "question", "plan", "report", "doc", "agent"];
-const props = defineProps({home: {type: Array, required: true}, waiting: {type: Array, required: true}, place: {type: String, default: ""}});
+const props = defineProps({
+    home: {type: Array, required: true},
+    waiting: {type: Array, required: true},
+    place: {type: String, default: ""},
+});
 const CACHE = `board:${props.place}`;
 const emit = defineEmits(["open", "under"]);
 const heading = ref(null);
@@ -29,11 +33,14 @@ const missing = computed(() => CARDS.filter((kind) => !cards.value.includes(kind
 
 async function fetched() {
     const kinds = cards.value.filter((kind) => kind !== WAITING);
-    const got = await Promise.all(kinds.map((kind) => phone.list(kind).catch(() => ({rows: [], total: 0}))));
-    return Object.fromEntries(kinds.map((kind, i) => [kind, got[i]]));
+    const got = await Promise.allSettled(kinds.map((kind) => phone.list(kind)));
+    if (got.every((result) => result.status === "rejected")) return null;
+    return Object.fromEntries(
+        kinds.map((kind, i) => [kind, got[i].status === "fulfilled" ? got[i].value : lists.value[kind]]).filter(([, rows]) => rows)
+    );
 }
 
-const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = remember(CACHE, got)));
+const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = remember(CACHE, {...lists.value, ...got})));
 
 const newRefs = computed(() => new Set(props.waiting.map((item) => item.ref)));
 const board = ref(null);
@@ -43,10 +50,8 @@ onMounted(() => {
     nextTick(() => reveal(board.value, board.value?.querySelector('[data-card="waiting"]')));
 });
 const listed = (kind) => lists.value[kind]?.rows || [];
-const rows = (kind) =>
-    kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind);
-const total = (kind) =>
-    kind === WAITING ? props.waiting.length : Math.max(lists.value[kind]?.total || 0, rows(kind).length);
+const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind));
+const total = (kind) => (kind === WAITING ? props.waiting.length : Math.max(lists.value[kind]?.total || 0, rows(kind).length));
 const removed = ref(null);
 let removedTimer = 0;
 
@@ -115,9 +120,25 @@ function moved(i, by) {
                             </template>
                             <template v-if="editing">
                                 <span class="board-tools">
-                                    <button type="button" :aria-label="`Move ${kindCard(kind)} up`" :disabled="i === 0" @click="moved(i, -1)"><Icon name="up" :size="16" /></button>
-                                    <button type="button" :aria-label="`Move ${kindCard(kind)} down`" :disabled="i === cards.length - 1" @click="moved(i, 1)"><Icon name="down" :size="16" /></button>
-                                    <button type="button" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)"><Icon name="close" :size="16" /></button>
+                                    <button
+                                        type="button"
+                                        :aria-label="`Move ${kindCard(kind)} up`"
+                                        :disabled="i === 0"
+                                        @click="moved(i, -1)"
+                                    >
+                                        <Icon name="up" :size="16" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        :aria-label="`Move ${kindCard(kind)} down`"
+                                        :disabled="i === cards.length - 1"
+                                        @click="moved(i, 1)"
+                                    >
+                                        <Icon name="down" :size="16" />
+                                    </button>
+                                    <button type="button" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)">
+                                        <Icon name="close" :size="16" />
+                                    </button>
                                 </span>
                             </template>
                         </header>
@@ -143,7 +164,10 @@ function moved(i, by) {
                 </header>
                 <div class="board-kinds">
                     <template v-for="kind in missing" :key="kind">
-                        <button type="button" class="board-kind" @click="arranged([...cards, kind])"><Icon name="plus" :size="12" /> {{ kindCard(kind) }}</button>
+                        <button type="button" class="board-kind" @click="arranged([...cards, kind])">
+                            <Icon name="plus" :size="12" />
+                            {{ kindCard(kind) }}
+                        </button>
                     </template>
                 </div>
             </section>
@@ -222,7 +246,9 @@ function moved(i, by) {
 
 .card-enter-active,
 .card-leave-active {
-    transition: opacity 200ms ease-out, transform 200ms ease-out;
+    transition:
+        opacity 200ms ease-out,
+        transform 200ms ease-out;
 }
 
 .card-enter-from,
