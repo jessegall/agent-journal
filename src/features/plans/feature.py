@@ -12,7 +12,6 @@ from features.plans.handlers import (
     TellParkedAndPickedUp,
     blocked_plans,
     still_plans,
-    stuck_plans,
 )
 from features.nudges import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
@@ -22,8 +21,7 @@ from features.work_tracking.next import ROW_HOLDS
 
 class PlansFeature(Feature):
     details = PlansDetails
-    nudges = (Nudge("still", behaviour="still", about=still_plans), Nudge("blocked", behaviour="blocked", about=blocked_plans),
-              Nudge("stuck", behaviour="still", about=stuck_plans, most=3))
+    nudges = (Nudge("still", behaviour="still", about=still_plans), Nudge("blocked", behaviour="blocked", about=blocked_plans))
 
     def register(self, journal: Journal) -> None:
         if held not in ROW_HOLDS:

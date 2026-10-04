@@ -159,6 +159,15 @@ class WorkDetails(FeatureDetails):
             """,
         ),
         Line(
+            name="nothing ready",
+            reply_kept=True,
+            title="nothing is ready: every open row waits",
+            brief="""
+                {{rows}}. For each that waits on a person or a decision, put it to them now with journal todo ask <n>
+                "<who decides what>"; unblock any that can go on and work it. Stop only when each one waits on a question.
+            """,
+        ),
+        Line(
             name="carry on",
             reply_kept=True,
             title="you stopped {{minutes}} minutes ago with work {{n}}, {{title}}, in hand",
