@@ -26,11 +26,23 @@ LONGEST = 65536
 INBOX = 1 << 20
 TYPED_EVERY = 1.0
 HEADLESS_SIZE = (40, 120)
+PRINTED, SCREEN, SCREEN_SHAPE, TYPED, LAUNCHED = "printed", "screen", "screen.json", "typed", "launched.json"
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
 
 
 def typing(data: bytes) -> bool:
     return any(byte >= 0x20 for byte in ESCAPES.sub(b"", data))
+
+
+def waited(pid: int, seconds: float, drain) -> int | None:
+    until = time.time() + seconds
+    while time.time() < until:
+        drain()
+        ended, status = os.waitpid(pid, os.WNOHANG)
+        if ended:
+            return status
+        time.sleep(STEP)
+    return None
 
 
 def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
@@ -39,13 +51,9 @@ def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
             os.kill(pid, sent)
         except ProcessLookupError:
             break
-        until = time.time() + grace
-        while time.time() < until:
-            drain()
-            ended, status = os.waitpid(pid, os.WNOHANG)
-            if ended:
-                return status
-            time.sleep(STEP)
+        status = waited(pid, grace, drain)
+        if status is not None:
+            return status
     try:
         return os.waitpid(pid, 0)[1]
     except ChildProcessError:
@@ -120,8 +128,8 @@ class Supervisor:
         os.set_inheritable(self.alive, True)
         self.folder = self.root / "runtime" / "sessions" / self.session
         self.folder.mkdir(parents=True, exist_ok=True)
-        self.printed = (self.folder / "printed").open("ab")
-        self.screen = (self.folder / "screen").open("ab")
+        self.printed = (self.folder / PRINTED).open("ab")
+        self.screen = (self.folder / SCREEN).open("ab")
         self.inbox = self.listen()
         self.sources = [self.fd, self.inbox] if self.headless else [self.fd, self.inbox, self.stdin]
         self.typed_at = 0.0
@@ -130,9 +138,9 @@ class Supervisor:
         self.resize(self.fd)
 
     def record_launch(self) -> None:
-        written = self.folder / "launched.json.writing"
+        written = self.folder / f"{LAUNCHED}.writing"
         written.write_text(json.dumps({"pid": self.pid, "command": self.command, "args": self.args, "cwd": str(self.cwd), "launch": self.launch}))
-        os.replace(written, self.folder / "launched.json")
+        os.replace(written, self.folder / LAUNCHED)
 
     def spawn(self, command: list[str], environ: dict) -> tuple[int, int]:
         pid, fd = pty.fork()
@@ -169,7 +177,7 @@ class Supervisor:
             rows, cols = struct.unpack("HHHH", size)[:2]
         except OSError:
             return
-        (self.folder / "screen.json").write_text(json.dumps({"rows": rows, "cols": cols, "at": self.screen.tell(), "printed": self.printed.tell()}))
+        (self.folder / SCREEN_SHAPE).write_text(json.dumps({"rows": rows, "cols": cols, "at": self.screen.tell(), "printed": self.printed.tell()}))
 
     def start_worker(self) -> None:
         command = [*self.worker_command, str(self.root), str(self.cwd), self.env, self.agent, self.session, str(self.alive)]
@@ -194,14 +202,7 @@ class Supervisor:
             os.write(self.fd, b"\r")
         except OSError:
             return None
-        until = time.time() + EXITING
-        while time.time() < until:
-            self.drain()
-            ended, status = os.waitpid(self.pid, os.WNOHANG)
-            if ended:
-                return status
-            time.sleep(STEP)
-        return None
+        return waited(self.pid, EXITING, self.drain)
 
     def drain(self) -> None:
         while select.select([self.fd], [], [], 0)[0]:
@@ -274,7 +275,7 @@ class Supervisor:
         self.printed.flush()
 
     def typing(self, data: bytes) -> None:
-        typed = self.folder / "typed"
+        typed = self.folder / TYPED
         if b"\r" in data or b"\n" in data:
             typed.unlink(missing_ok=True)
         elif typing(data) and time.time() - self.typed_at >= TYPED_EVERY:

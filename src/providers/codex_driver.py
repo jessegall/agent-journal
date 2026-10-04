@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from providers.base import Asking
-from providers.drivers import ANSI, Driver
+from providers.drivers import Driver, plain, squeezed
 
 
 class CodexDriver(Driver):
@@ -23,7 +23,7 @@ class CodexDriver(Driver):
     SEND_NOW = b"\x1b"
     TRUSTING = re.compile(rb"(?:Doyoutrustthecontentsofthisdirectory|Trustthisfolder\?).*?(\d)\.(?:Yes,continue|Trustandcontinue)", re.S)
     UPDATING = re.compile(rb"Updateavailable.*?(\d)\.Skip(?!until)", re.S)
-    SCREEN_TAIL = 8192
+    PROMPT_TAIL = 8192
     OPENING = "The journal started this session."
     CONFIRM_AFTER = 3.0
     RESUME = "resume"
@@ -32,12 +32,11 @@ class CodexDriver(Driver):
 
     @classmethod
     def opening(cls, printed: bytes) -> str:
-        plain = b"".join(ANSI.sub(b"", printed).split())
-        return cls.OPENING if cls.READY in plain and not cls.consent(printed) else ""
+        return cls.OPENING if cls.READY in squeezed(printed) and not cls.consent(printed) else ""
 
     @classmethod
     def consent(cls, printed: bytes) -> bytes:
-        plain = b"".join(ANSI.sub(b"", printed).split())
+        plain = squeezed(printed)
         asked = max((*cls.TRUSTING.finditer(plain), *cls.UPDATING.finditer(plain)), key=lambda match: match.start(), default=None)
         return asked.group(1) + b"\r" if asked and asked.start() > plain.rfind(cls.READY) else b""
 
@@ -62,16 +61,13 @@ class CodexDriver(Driver):
         return b"".join(self._printed_tail().split())
 
     def _printed_tail(self) -> bytes:
-        try:
-            tail = self.printed.read_bytes()[-self.SCREEN_TAIL:]
-        except OSError:
-            return b""
-        return ANSI.sub(b"", tail)
+        return plain(self.printed_tail(self.PROMPT_TAIL))
 
-    def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
+    @classmethod
+    def command(cls, args: list[str], cwd: Path | None = None) -> list[str]:
         trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []
-        trust = [] if self.TRUSTS_HOOKS in args else [self.TRUSTS_HOOKS]
-        return ["codex", *trust, *trusted, *self.carried_on(args)]
+        trust = [] if cls.TRUSTS_HOOKS in args else [cls.TRUSTS_HOOKS]
+        return ["codex", *trust, *trusted, *cls.carried_on(args)]
 
     @classmethod
     def carried_on(cls, args: list[str]) -> list[str]:

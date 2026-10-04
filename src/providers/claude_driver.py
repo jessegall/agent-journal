@@ -7,12 +7,11 @@ from pathlib import Path
 
 from engine import runtime
 from engine.fields import Loaded
-from engine.sessions import Sessions
 from engine.stored import read_json, write_json
 from engine.worktree import WORKTREES
 from providers.claude import CHANNEL_MARK, SERVER, Claude
 from providers.claude_rows import Row
-from providers.drivers import ANSI, CHOICE, LINE_START, Driver, joined
+from providers.drivers import CHOICE, LINE_START, Driver, joined, squeezed
 
 ASKS_BEFORE = ("/model",)
 CONFIRM_PROMPT = b"Entertoconfirm"
@@ -66,8 +65,9 @@ class ClaudeDriver(Driver):
     ELSEWHERE = "Message @"
     name = "claude"
 
-    def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
-        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
+    @classmethod
+    def command(cls, args: list[str], cwd: Path | None = None) -> list[str]:
+        return ["claude", *(() if cls.TAKES_OURS[0] in args else cls.TAKES_OURS), *cls.CHANNEL, *args]
 
     @classmethod
     def trusted(cls, folder: Path) -> None:
@@ -87,39 +87,32 @@ class ClaudeDriver(Driver):
 
     @classmethod
     def consent(cls, printed: bytes) -> bytes:
-        plain = b"".join(ANSI.sub(b"", printed).split())
+        plain = squeezed(printed)
         asking = cls.CHANNEL[0].encode() in plain and CHOICE.search(plain)
         return b"\r" if asking and plain.rfind(cls.INPUT_MARK) == plain.rfind(cls.INPUT_MARK + b"1.") else b""
 
     def run_command(self, command: str) -> bool:
-        screen = runtime.session_file(self.record.root, self.session, "screen")
-        start = screen.stat().st_size if screen.is_file() else 0
+        start = self._shown_size()
         typed = super().run_command(command)
         if typed and command.strip().startswith(ASKS_BEFORE):
-            self._confirm_after(screen, start)
+            self._confirm_after(start)
         return typed
 
-    def _confirm_after(self, screen: Path, start: int) -> None:
+    def _confirm_after(self, start: int) -> None:
         until = time.time() + CONFIRM_WAIT
         while time.time() < until:
             time.sleep(CONFIRM_POLL)
-            with screen.open("rb") as shown:
-                shown.seek(start)
-                plain = b"".join(ANSI.sub(b"", shown.read()).split())
-            if CONFIRM_PROMPT in plain:
+            if CONFIRM_PROMPT in self._shown_since(start):
                 self._entered()
                 return
 
-    def _post(self, line: str, by: str) -> bool:
-        return self._handed(line, by)
-
     def owns(self, row) -> bool:
-        pid = Sessions(self.record.root).read(self.session).pid
+        pid = self.pid()
         return bool(pid) and Path(row.inbox).stem == str(pid)
 
-    def _handed(self, line: str, by: str) -> bool:
+    def _post(self, line: str, by: str) -> bool:
         root = self.record.root
-        pid = Sessions(root).read(self.session).pid
+        pid = self.pid()
         try:
             if not pid or not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root, pid).stat().st_mtime > self.LISTENING:
                 return False
@@ -127,9 +120,8 @@ class ClaudeDriver(Driver):
                 return False
             with runtime.channel_queue(root, pid).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": by}}) + "\n")
-            handed = runtime.session_file(root, self.session, HANDED)
-            held = read_json(handed, Handed.from_json, Handed.from_json({}))
-            write_json(handed, replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
+            held = self._held()
+            write_json(self._handed_file(), replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
             return True
         except OSError:
             return False
@@ -154,9 +146,14 @@ class ClaudeDriver(Driver):
             return False
         return any(row.at >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent(Path(last.transcript)))
 
+    def _handed_file(self) -> Path:
+        return runtime.session_file(self.record.root, self.session, HANDED)
+
+    def _held(self) -> Handed:
+        return read_json(self._handed_file(), Handed.from_json, Handed.from_json({}))
+
     def _delivering(self) -> bool:
-        handed = runtime.session_file(self.record.root, self.session, HANDED)
-        held = read_json(handed, Handed.from_json, Handed.from_json({}))
+        held = self._held()
         if time.time() < held.typed_until:
             return False
         last = self.last_report()
@@ -168,5 +165,5 @@ class ClaudeDriver(Driver):
         times = [row.at for row in rows]
         lost = [h for h in waiting if not any(h.line in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]
         kept = tuple(h for h in waiting if not any(h.line in text for text in arrived) and h not in lost)
-        write_json(handed, (Handed(typed_until=time.time() + TYPED_FOR) if lost else Handed(lines=kept)).to_json())
+        write_json(self._handed_file(), (Handed(typed_until=time.time() + TYPED_FOR) if lost else Handed(lines=kept)).to_json())
         return not lost

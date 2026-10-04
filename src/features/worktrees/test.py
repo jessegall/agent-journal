@@ -111,11 +111,11 @@ def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_pa
 
 def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
     from engine.sessions import Sessions
-    from agents.terminal import Seat, seated
+    from agents.terminal import TerminalSession, seated
     record = fresh()
-    first = seated(Seat(record.root, record.env, "claude", "claude-7171"))
+    first = seated(TerminalSession(record.root, record.env, "claude", "claude-7171"))
     Sessions(record.root).bind("claude-7171", "elsewhere")
-    again = seated(Seat(record.root, record.env, "claude", "claude-7171"))
+    again = seated(TerminalSession(record.root, record.env, "claude", "claude-7171"))
     assert (first.env, again.env, Sessions(record.root).environment("claude-7171")) == (record.env, "elsewhere", "elsewhere"), \
         "a new build restarts the worker, and the terminal stays where it was moved"
 
