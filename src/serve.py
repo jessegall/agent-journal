@@ -24,7 +24,7 @@ from providers.turns import read_transcripts  # noqa: E402
 from runner.chat_mirror import replay  # noqa: E402
 from engine.runtime import default_env
 from engine.record import Record  # noqa: E402
-from engine.package import CODE, ZIPPED, entry
+from engine.package import CODE, ZIPPED, build_file, code_stamp, entry
 
 DEFAULT_PORT = 8430
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
@@ -129,30 +129,14 @@ SETTLE_SECONDS = 1.5
 STOP_SECONDS = 0.2
 FREEZE_SECONDS = 10.0
 LATE_STOP = 5.0
-IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
-
-
-def code_snapshot(package: Path) -> tuple[tuple[str, int], ...]:
-    if package.is_file():
-        return ((str(package.resolve()), package.stat().st_mtime_ns),)
-    files = []
-    for path in package.rglob("*.py"):
-        relative = path.relative_to(package)
-        if any(part.startswith(".") or part in IGNORED_CODE_FOLDERS for part in relative.parts[:-1]):
-            continue
-        try:
-            files.append((str(path), path.stat().st_mtime_ns))
-        except OSError:
-            continue
-    return tuple(sorted(files))
 
 
 def watch_code(package: Path, server: ThreadingHTTPServer, changed: threading.Event) -> None:
-    before = code_snapshot(package)
+    before = code_stamp(package)
     last_change = 0.0
     while not changed.is_set():
         time.sleep(WATCH_SECONDS)
-        now = code_snapshot(package)
+        now = code_stamp(package)
         if now != before:
             before = now
             last_change = time.monotonic()
@@ -207,7 +191,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     warm_viewer(root, default_env(root))
     read_transcripts(root)
     gc.freeze()
-    threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
+    threading.Thread(target=watch_code, args=(build_file(root) if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()

@@ -15,7 +15,7 @@ from controllers.faults import threw
 from controllers.types import Messages, Notices
 from resources.base import AGENT, SYSTEM, USER
 from runner.engine import TICK, Engine
-from engine.package import CODE, ZIPPED
+from engine.package import CODE, ZIPPED, build_file
 
 ENDING = 5.0
 UNHEARD_AFTER = 120.0
@@ -82,7 +82,7 @@ class Engines:
 
 
 def current(root: Path) -> bool:
-    return not ZIPPED or (Path(root) / "journal.pyz").resolve() == CODE
+    return not ZIPPED or build_file(root) == CODE
 
 
 def leftovers(root: Path) -> list[int]:

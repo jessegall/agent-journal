@@ -10,7 +10,7 @@ from pathlib import Path
 from engine import runtime
 from engine.sessions import ACTIVE_ENV, agent_pid
 from engine.fields import Loaded
-from engine.package import ARCHIVE
+from engine.package import build_file
 
 PROTOCOL = "2025-06-18"
 NAME = "journal"
@@ -70,12 +70,8 @@ def contents(lines: list[str]) -> list[str]:
     return [s for s in texts if s]
 
 
-def build(root: Path) -> Path:
-    return (root / ARCHIVE).resolve()
-
-
 def renewed(root: Path, began: Path) -> bool:
-    return build(root) != began and build(root).is_file()
+    return build_file(root) != began and build_file(root).is_file()
 
 
 def starts() -> bool:
@@ -89,12 +85,12 @@ def starts() -> bool:
 def push(root: Path, pid: int) -> None:
     f = queue(root, pid)
     at = start(f)
-    began = build(root)
+    began = build_file(root)
     while True:
         time.sleep(WAIT)
         if renewed(root, began):
             if not starts():
-                began = build(root)
+                began = build_file(root)
                 continue
             sys.stdout.flush()
             os.environ[READ_AT] = str(at)
