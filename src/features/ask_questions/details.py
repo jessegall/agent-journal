@@ -1,4 +1,4 @@
-from features.trigger import IDLE, Trigger
+from features.trigger import IDLE, MINUTES, Trigger
 from features.ask_questions.interceptors import FILED
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
@@ -66,9 +66,23 @@ class QuestionsDetails(FeatureDetails):
             abstract="Choices offered in a message hold the writes until they are asked as a question",
             trigger=Trigger(on=IDLE),
         ),
+        Behaviour(
+            name="settled",
+            title="Ask whether a question open for a day is still needed",
+            abstract="Once a day for each question still open after a day, the agent checks whether the project or the code has settled it",
+            trigger=Trigger(every=1440, unit=MINUTES),
+        ),
     ]
 
     lines = [
+        Line(
+            name="settled",
+            title="question {{n}}, {{title}}, has waited a day for an answer",
+            brief="""
+                if the project or the code has settled it since, dismiss it with journal question dismiss {{n}} --why
+                "<what settled it>"; if it still needs the user, leave it as it is.
+            """,
+        ),
         Line(
             name=FILED,
             title="asked in the journal as question {{numbers}}",

@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.247.0 — questions that settle themselves
+
+**A question about a to-do, a plan or a ticket is dismissed by itself when that row closes**, with the row named as
+the reason, the way a to-do waits on another. **A question left open for a day is put to the agent once a day**: when
+the project or the code has settled it since, the agent dismisses it and says what settled it; when it still needs
+you, it stays.
+
 ## 2.246.0 — a handled comment shows as handled on the shared page
 
 **When the agent handles a visitor's comment, the shared page now shows it as Handled, with the agent's note**, the

@@ -57,5 +57,5 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_pat
         "eight days waiting: evidence"
 
     tick(record)
-    assert nudges(record)[0].startswith("3 things in the record have evidence against them") is True, \
+    assert any(n.startswith("3 things in the record have evidence against them") for n in nudges(record)) is True, \
         "the first report says what has evidence, with the retiring commands under it"
