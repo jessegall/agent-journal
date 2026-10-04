@@ -7,7 +7,7 @@ from engine.files import announce, blobs
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
-from features.status_bar.commands import writes
+from engine.command_effects import writes
 from providers.codex import Codex
 from providers.payload import Hook
 from tests.conftest import fresh

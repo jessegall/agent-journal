@@ -1,6 +1,7 @@
 from dataclasses import dataclass, replace
 
 from engine.fields import Loaded
+from resources.types import AgentRow
 
 COUNTED = ("edited", "created", "deleted", "added", "removed")
 
@@ -84,3 +85,14 @@ def current_run(row) -> CommandRun:
 
 def command_runs(row) -> list[CommandRun]:
     return [CommandRun.from_json(one) for one in row.commands]
+
+
+def counted_runs(row, ran: float, delta: Delta, touched: list, made: list) -> dict:
+    running = current_run(row)
+    late = running.at != ran
+    edited = running.before if late else running
+    if not ran or edited is None or edited.at != ran:
+        return {}
+    edited = edited.counted(delta, touched, made)
+    runs = [replace(one, files=edited.files, made=edited.made, changed=edited.changed) if one.at == ran and one.could_write else one for one in command_runs(row)]
+    return {AgentRow.running: (replace(running, before=edited) if late else edited).to_json(), AgentRow.commands: [one.to_json() for one in runs]}

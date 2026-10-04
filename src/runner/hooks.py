@@ -15,7 +15,7 @@ from engine.stored import read_json, write_json
 from providers import PROVIDERS, skill_folders
 from providers.base import asking_row
 from providers.payload import PERMISSION, STATUS, HookEvent
-from features.status_bar import commands
+from engine import command_effects
 from engine.fields import Loaded
 from engine.gates import AFTERWARDS, CANCELABLE, CANCELERS, DISPATCHING, LONG_COMMAND, POLICIES, cancelled, gate_file, start_file
 from engine.reach import Reach
@@ -269,9 +269,9 @@ def handle(provider, root: Path, env: str, hook) -> dict:
             return {}
         why = PAUSED if paused(row, subagent) else gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(why)
-    wrote = hook.event == HookEvent.POST_TOOL_USE and commands.writes(hook)
+    wrote = hook.event == HookEvent.POST_TOOL_USE and command_effects.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
-               status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook), wrote=wrote)
+               status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **command_effects.shell(row, hook), wrote=wrote)
     if hook.event == HookEvent.POST_TOOL_USE:
         bus.defer(lambda: ran.tool_ran(record, row.n, provider, hook.tool))
     if wrote:

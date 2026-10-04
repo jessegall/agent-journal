@@ -15,7 +15,7 @@ from engine.transcript import IDLE
 from features.work_tracking.next import asked, carried_on, named_rows, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
-from features.status_bar.runs import command_runs
+from engine.command_runs import command_runs
 
 ASKED_AGAIN_AFTER = 60
 
