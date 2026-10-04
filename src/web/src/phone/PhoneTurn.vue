@@ -1,6 +1,8 @@
 <script setup>
 import {computed} from "vue";
+import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
+import {liveButtons} from "../domain/buttons.js";
 import PhoneActions from "./PhoneActions.vue";
 import {splitQuote} from "./quoted.js";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -26,6 +28,7 @@ const props = defineProps({
     continues: {type: Boolean, default: false},
 });
 const files = computed(() => Object.keys(props.item.files || {}));
+const buttons = computed(() => (props.item.data ? liveButtons(props.item) : []));
 const elsewhere = computed(() => props.item.who === "user" && !String(props.item.data?.via || "").startsWith("phone:"));
 const FILED_REF = /\b([a-z_]+)[ :](\d+)\b/g;
 const filedAs = computed(
@@ -111,6 +114,11 @@ function pressed(event) {
                 <template v-if="files.length">
                     <PhoneFiles :type="item.type" :n="item.n" :files="files" />
                 </template>
+                <template v-if="buttons.length">
+                    <div class="turn-buttons">
+                        <PhoneButtons :target="`${item.type}:${item.n}`" :buttons="buttons" />
+                    </div>
+                </template>
                 <template v-if="filed.length">
                     <span class="turn-filed">
                         Filed
@@ -141,6 +149,13 @@ function pressed(event) {
 </template>
 
 <style scoped>
+.turn-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
 .turn {
     position: relative;
     max-width: 78%;

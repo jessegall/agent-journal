@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import TextInput from "../kit/TextInput.vue";
 import {sendAnswer} from "../api/shared.js";
@@ -9,7 +9,8 @@ import {NAME_KEY} from "./visitor.js";
 const props = defineProps({n: {type: Number, required: true}, options: {type: Array, required: true}, answer: {type: String, default: ""}});
 const known = remembered(NAME_KEY, "");
 const name = ref(known);
-const picked = ref(props.answer);
+const chosen = ref("");
+const picked = computed(() => props.answer || chosen.value);
 const sending = ref("");
 const error = ref("");
 
@@ -20,7 +21,7 @@ async function pick(choice) {
     try {
         await sendAnswer(props.n, name.value.trim(), choice);
         remember(NAME_KEY, name.value.trim());
-        picked.value = choice;
+        chosen.value = choice;
     } catch (e) {
         error.value = e.message;
     } finally {
@@ -40,7 +41,9 @@ async function pick(choice) {
             </template>
             <div class="options">
                 <template v-for="option in options" :key="option">
-                    <Btn small :disabled="!name.trim() || !!sending" @click="pick(option)">{{ sending === option ? "Sending…" : option }}</Btn>
+                    <Btn small :disabled="!name.trim() || !!sending" @click="pick(option)">
+                        {{ sending === option ? "Sending…" : option }}
+                    </Btn>
                 </template>
             </div>
             <template v-if="error">

@@ -89,6 +89,7 @@ function stock(rows, types = {}) {
 function take(got) {
     stock(got.rows || {}, got.types || {});
     data.value = got;
+    failed.value = false;
 }
 
 function ask() {
