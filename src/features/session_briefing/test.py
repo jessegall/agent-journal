@@ -77,7 +77,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     agents.update(agents.by_session("claude-1").n, event="SessionStart", status="idle", uses=0)
     time.sleep(0.01)
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time())
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time(), asking={})
     sent = []
     engine.agent.driver.send = lambda text="", **rest: sent.extend([text, rest.get("yielding", "")]) or True
     engine.deliver()
@@ -90,7 +90,7 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     ticket_agents = Agents(ticket, actor="system")
     ticket_agents.saw(ticket_agents.by_session("claude-5").n, {"hook": "SessionStart"}, event="SessionStart", status="idle")
     engine = Engine(ticket, DRIVERS["claude"](ticket, "claude-98"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-5", at=time.time())
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-5", at=time.time(), asking={})
     quiet = []
     engine.agent.driver.send = lambda text="", **rest: quiet.append(text) or True
     engine.deliver()
@@ -155,7 +155,7 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     driver = DRIVERS["claude"](fresh(), "claude-99")
     written = []
     driver._wrote = lambda raw: written.append(raw) or True
-    driver._report = lambda: SimpleNamespace(at=time.time()) if written.count(b"\r") >= 2 else None
+    driver._report = lambda: SimpleNamespace(at=time.time(), asking={}) if written.count(b"\r") >= 2 else None
     assert (driver.send("hello", now=True), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
 
@@ -176,7 +176,7 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     alive.touch()
     transcript = tmp_path / "t.jsonl"
     transcript.write_text("")
-    driver.last_report = lambda: SimpleNamespace(transcript=str(transcript))
+    driver.last_report = lambda: SimpleNamespace(transcript=str(transcript), asking={})
     stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
     assert driver._handed("todo 5 next", "journal") is True, "a live channel takes the line"
@@ -261,7 +261,7 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     screen.write_bytes(f"❯ {note}\n".encode())
     transcript = record.root / "t.jsonl"
     transcript.write_text(json.dumps({"type": "user", "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "message": {"content": note}}) + "\n")
-    monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(transcript=str(transcript)))
+    monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(transcript=str(transcript), asking={}))
     assert driver.send(note, now=True, by="ticket-8") and pressed.count(b"\r") == 1, \
         "a note already in the agent's transcript has landed, though a freshly started agent's screen still shows it last"
     pressed.clear()

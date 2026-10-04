@@ -97,8 +97,10 @@ class Agent(Actor):
     def delivered(self, done: list[Event]) -> None:
         reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)
         row = agents._titled(reported.title) if reported is not None else None
-        if row is not None:
-            agents.update(row.n, delivered=[f"{e.type}:{e.n}" for e in done])
+        if row is None:
+            return
+        earlier = list(row.delivered) if row.status == WORKING else []
+        agents.update(row.n, delivered=list(dict.fromkeys([*earlier, *(f"{e.type}:{e.n}" for e in done)])))
 
     def flush(self) -> str:
         if not self.pending or not self.driver.ready():

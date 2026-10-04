@@ -12,6 +12,7 @@ from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispa
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 from engine.wording import digest
+from engine.version import version
 
 RECENT: dict[str, tuple] = {}
 FOLDS: dict[tuple, tuple] = {}
@@ -427,7 +428,7 @@ class Provider(ABC):
         return loads
 
     def folded(self, path: Path, fold, start):
-        key = (str(path), fold.__name__, *getattr(start, "__dataclass_fields__", ()))
+        key = (str(path), fold.__name__, version(), *getattr(start, "__dataclass_fields__", ()))
         try:
             size = Path(path).stat().st_size
         except (OSError, TypeError):

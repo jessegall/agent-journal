@@ -81,6 +81,7 @@ class Source(Loaded):
 
 @dataclass(frozen=True)
 class Chunk(Loaded):
+    chunk_id: str = ""
     session_id: str = ""
     output: str = ""
 

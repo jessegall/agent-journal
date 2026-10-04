@@ -35,5 +35,5 @@ class HideBareAcknowledgements(Handler):
         if not bare(text) or reply_kept(context.record, row.delivered):
             return
         event.stop()
-        if text and context.once("acknowledged", text):
+        if text and context.once("acknowledged", f"{','.join(row.delivered)}:{text}"):
             context.journal.acting(AGENT).messages.create(titled(text), brief=text, acknowledgement=True)

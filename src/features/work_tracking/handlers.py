@@ -11,7 +11,7 @@ from features.nudges import MINUTE, Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
-from features.work_tracking.next import asked, named_rows, next, ready, waiting_rows
+from features.work_tracking.next import asked, named_rows, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
 from features.status_bar.runs import command_runs
@@ -233,10 +233,9 @@ class ResetEditsOnLog(Handler):
 def next_row(standing: bool):
     def about(context, agent) -> list[Sent]:
         open_work = working(context)
-        row = next(context.record)
-        if not row or bool(open_work) != standing or (open_work and open_work[0].awaiting):
+        if bool(open_work) != standing or (open_work and open_work[0].awaiting):
             return []
-        return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n} if standing else {"n": row.n})]
+        return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n} if standing else {"n": row.n}) for row in ready(context.record)]
     return about
 
 
@@ -249,7 +248,7 @@ def stopped_with_work(context, agent) -> list[Sent]:
     if not unwaited or late < 0 or late // every >= CARRY_ON_TIMES:
         return []
     work = unwaited[0]
-    return [Sent(f"{work.n}:{agent.uses}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]
+    return [Sent(f"{work.n}:{work.updated}:{agent.uses}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]
 
 
 def nothing_ready(context, agent) -> list[Sent]:

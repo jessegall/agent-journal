@@ -25,6 +25,7 @@ class Nudge:
     pace: Callable | None = None
     once: bool = False
     most: int = 0
+    first: bool = False
 
     def cadence(self, context) -> trigger.Trigger:
         spec = context.feature.cadence(context.record, self.behaviour)
@@ -36,7 +37,10 @@ class Nudge:
         if self.once:
             return [found for found in self.about(context, agent) if context.once(self.line, found.key)]
         spec = self.cadence(context)
-        due = [found for found in self.about(context, agent) if context.every(self.behaviour, f"{self.line}:{found.key}", spec)]
+        found = self.about(context, agent)
+        if self.first:
+            found = [one for one in found if not context.used_up(self.line, one.key, self.most)][:1]
+        due = [one for one in found if context.every(self.behaviour, f"{self.line}:{one.key}", spec)]
         return self.capped(context, due) if self.most and due else due
 
     def capped(self, context, due: list[Sent]) -> list[Sent]:

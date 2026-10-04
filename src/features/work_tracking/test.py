@@ -55,6 +55,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     for _ in range(4):
         idle(record)
     assert nudges(record).count("todo 1 next") == 3, "a row the agent keeps passing is offered three times at most"
+    assert "todo 2 next" in nudges(record), "once the top row is offered three times, the next ready row is offered"
     from controllers.types import Environments
     from engine.record import Record
     from features.work_tracking.auto import automatic
@@ -105,9 +106,10 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     assert idle_for(4) == [], "four minutes after it stopped is not yet standing still"
     assert idle_for(6) == ["you stopped 6 minutes ago with work 1, the release, in hand"], "five minutes after it stopped with work in hand it is told to carry on"
     assert (len(idle_for(8)), len(idle_for(16)), len(idle_for(50))) == (1, 2, 2), "again after ten minutes, and not past three rounds in one idle spell"
+    assert (len(idle_for(6)), len(idle_for(16)), len(idle_for(26))) == (2, 2, 3), "a reply that runs nothing starts no new rounds"
     report(stopped, "working", "PreToolUse")
     works.action("await")("the CI run on main")
-    assert len(idle_for(6)) == 2, "work it declared a wait on is left to the wait"
+    assert len(idle_for(6)) == 3, "work it declared a wait on is left to the wait"
 
 
 def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_ready():
@@ -264,7 +266,7 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
         Works(place, actor=AGENT).create("the release")
         for i in range(1, 4):
             report(place, "working", "PostToolUse", commands=[check] * i, provider=provider)
-        wakes[provider] = [("tells you itself when it ends" in n.brief, "does not wake you" in n.brief) for n in Nudges(place).all() if "same check" in n.title]
+        wakes[provider] = [("tells you itself when it ends" in n.brief, "tells you when a" in n.brief) for n in Nudges(place).all() if "same check" in n.title]
     assert wakes == {"claude": [(True, False)], "codex": [(False, True)]}, "each provider is told what wakes it"
     works.action("await")("the CI run on main")
     Todos(record, actor=USER).create("next up")

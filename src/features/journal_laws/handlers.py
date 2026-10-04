@@ -46,7 +46,7 @@ class CheckChangedInstructions(Handler):
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         if in_background(context.record):
             return
-        state, seen = context.record.state(context.feature.name), instructions_hash(context.record.root.parent)
+        state, seen = context.record.state(context.feature.name), instructions_hash(context.record.root.parent, context.record)
         known = state.get("instructions")
         if not seen or known == seen:
             return

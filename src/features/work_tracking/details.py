@@ -38,8 +38,8 @@ class WorkDetails(FeatureDetails):
         are told every five minutes (work.ask_awaiting_every) to check the thing you wait
         on and carry on or wait again.
 
-        Auto mode is off by default: turning it on is the user's word to work the list and
-        decide without blocking questions. The next ready row by priority is offered on idle
+        Auto mode is on by default: it is the user's word to work the list and decide without
+        blocking questions, and switching it off stops the offers. The next ready row by priority is offered on idle
         while nothing is open. Stopping with work open while another row is ready earns the
         same offer: a row that waits on the user gets its question with todo ask and the next
         row is taken, so the agent stops only when nothing ready is left. Five minutes quiet
@@ -56,7 +56,7 @@ class WorkDetails(FeatureDetails):
         Behaviour(
             name="auto",
             title="Work the list without asking",
-            abstract="The next ready row is offered on idle, and blocking questions are refused",
+            abstract="The next ready row is offered on idle, and the agent decides rather than waiting on the user",
             default=True,
             trigger=Trigger(on=IDLE),
         ),
@@ -191,8 +191,8 @@ class WorkDetails(FeatureDetails):
             title="you ran the same check {{times}} times in a row - {{command}}",
             brief="""
                 if you are waiting for something to change, say journal work await "<what you wait for>" and end
-                your turn: the journal types to you every five minutes to look again. A background command ending
-                does not wake you, so that look is when you see whether it is done.
+                your turn: the journal types to you every five minutes to look again, and tells you when a
+                background command you left running ends.
             """,
         ),
         Line(

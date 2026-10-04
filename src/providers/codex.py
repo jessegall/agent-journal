@@ -27,9 +27,11 @@ SPAWNED = re.compile(r'"agent_id":"([^"]+)"(?:,"nickname":"([^"]*)")?')
 CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"},
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
 FAST_CONTROLS = {"key": "fast", "label": "Fast mode", "choices": [{"value": "switch", "label": "Turn fast mode on or off", "command": "/fast"}]}
-SESSION_OPEN = re.compile(r'"session_id":\s*(\d+)')
+EXITS_KEPT = 200
+CELL_RUNNING = re.compile(r"^Script running with cell ID (\d+)")
+CELL_ID = re.compile(r'"cell_id"\s*:\s*"?(\d+)')
 DETACHED = re.compile(r"^(.*?)\s*(?:>\S*\s*(?:2>&1)?\s*)?&\s*(?:echo \$!)?\s*$", re.S)
-EXEC_COMMAND = re.compile(r'exec_command\(\{\s*cmd:\s*"((?:[^"\\]|\\.)*)"')
+EXEC_COMMAND = re.compile(r'exec_command\(\{\s*"?cmd"?\s*:\s*"((?:[^"\\]|\\.)*)"')
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
 
@@ -87,12 +89,27 @@ class CodexModel:
 
 
 def polled(text: str) -> list[Chunk]:
-    return [found for found in (parsed(line, Chunk.from_json) for line in text.splitlines() if line.startswith("{")) if found is not None]
+    chunks = (parsed(line, Chunk.from_json) for line in text.splitlines() if line.startswith("{"))
+    return [chunk for chunk in chunks if chunk is not None and chunk.chunk_id]
+
+
+def running_sessions(text: str) -> list[str]:
+    return [chunk.session_id for chunk in polled(text) if chunk.session_id]
 
 
 @dataclass
 class CodexTasks(BackgroundTasks):
     scripts: dict[str, str] = field(default_factory=dict)
+    waits: dict[str, str] = field(default_factory=dict)
+    exits: dict[str, tuple[float, bool]] = field(default_factory=dict)
+
+    def opened(self, session: str, at: float, command: str) -> None:
+        self.started[session] = at
+        self.commands[session] = command
+        if session in self.exits:
+            self.ended[session], failed = self.exits.pop(session)
+            if failed:
+                self.failed.add(session)
 
 
 @dataclass(frozen=True)
@@ -129,9 +146,9 @@ class ModelControls(TypedDict):
 
 class Codex(Provider):
     name = "codex"
-    question_tools = frozenset({"request_user_input"})
+    question_tools = frozenset({"request_user_input", "request_user_input_async"})
     tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "apply_patch": CodexShell, "spawn_agent": AgentCall,
-                  "request_user_input": AskCall}
+                  "request_user_input": AskCall, "request_user_input_async": AskCall}
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
     retired_skill_homes = (".codex/skills",)
@@ -326,25 +343,60 @@ class Codex(Provider):
             command = EXEC_COMMAND.search(found.argument_text)
             if command:
                 tasks.scripts[found.key] = command[1]
-        script = tasks.scripts.pop(found.key, "") if found.type == "custom_tool_call_output" else ""
-        if script:
-            for session in [s for s in SESSION_OPEN.findall(found.output_text) if s not in tasks.started]:
-                tasks.started[session] = row.at
-                tasks.commands[session] = script
+        if found.type == "function_call" and found.call == "wait":
+            cell = CELL_ID.search(found.argument_text)
+            if cell:
+                tasks.waits[found.key] = f"cell:{cell[1]}"
         if found.type == "custom_tool_call_output":
-            for chunk in [c for c in polled(found.output_text) if c.session_id in tasks.started and c.output]:
-                tasks.printed[chunk.session_id] = row.at
-        detached = DETACHED.match(found.item.command_line) if found.type == "item_completed" and found.item.type == "CommandExecution" else None
+            self.exec_output(tasks, found, row.at)
+        if found.type == "function_call_output" and found.key in tasks.waits:
+            self.cell_answer(tasks, tasks.waits.pop(found.key), found.output_text, row.at)
+        if found.type == "item_completed" and found.item.type == "CommandExecution":
+            self.command_ended(tasks, found, row.at)
+        return tasks
+
+    @staticmethod
+    def exec_output(tasks: CodexTasks, found, at: float) -> None:
+        script = tasks.scripts.pop(found.key, "")
+        running = CELL_RUNNING.search(found.output_text)
+        if running:
+            tasks.started.setdefault(f"cell:{running[1]}", at)
+            tasks.commands[f"cell:{running[1]}"] = script or "a script"
+        for session in [s for s in running_sessions(found.output_text) if script and s not in tasks.started]:
+            tasks.opened(session, at, script)
+        for chunk in [c for c in polled(found.output_text) if c.session_id in tasks.started and c.output]:
+            tasks.printed[chunk.session_id] = at
+
+    @staticmethod
+    def cell_answer(tasks: CodexTasks, cell: str, text: str, at: float) -> None:
+        if cell not in tasks.started:
+            return
+        for session in [s for s in running_sessions(text) if tasks.commands[cell] != "a script" and s not in tasks.started]:
+            tasks.opened(session, at, tasks.commands[cell])
+        if text.startswith("Script running"):
+            tasks.printed[cell] = at
+            return
+        tasks.ended.setdefault(cell, at)
+        if not text.startswith("Script completed"):
+            tasks.failed.add(cell)
+
+    @staticmethod
+    def command_ended(tasks: CodexTasks, found, at: float) -> None:
+        detached = DETACHED.match(found.item.command_line)
         if detached and found.item.stdout.strip().isdigit():
             key = f"pid:{found.item.stdout.strip()}"
-            tasks.started.setdefault(key, row.at)
+            tasks.started.setdefault(key, at)
             tasks.commands[key] = detached[1].strip("() ")
             tasks.detached[key] = int(found.item.stdout.strip())
-        if found.type == "item_completed" and found.item.type == "CommandExecution" and found.item.process_id in tasks.started:
-            tasks.ended.setdefault(found.item.process_id, found.completed_at_ms / 1000 if found.completed_at_ms else row.at)
-            if found.item.status == "failed":
-                tasks.failed.add(found.item.process_id)
-        return tasks
+        ended, failed = found.completed_at_ms / 1000 if found.completed_at_ms else at, found.item.status == "failed"
+        if found.item.process_id not in tasks.started:
+            tasks.exits[found.item.process_id] = (ended, failed)
+            while len(tasks.exits) > EXITS_KEPT:
+                tasks.exits.pop(next(iter(tasks.exits)))
+            return
+        tasks.ended.setdefault(found.item.process_id, ended)
+        if failed:
+            tasks.failed.add(found.item.process_id)
 
     def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
         found = self.subagent_transcript(path, session)

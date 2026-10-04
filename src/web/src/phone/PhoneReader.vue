@@ -2,7 +2,6 @@
 import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
-import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
@@ -59,20 +58,16 @@ const fade = useFades(body);
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
 
 const buttons = computed(() => (row.value ? liveButtons(row.value) : []));
-const chosen = ref("");
 
-async function pressed(label) {
+async function pressed() {
     told.value = "";
-    chosen.value = label;
-    announce(`You chose: ${label}`);
-    tick();
-    row.value = await phone.row(props.target);
-    refresh();
-}
-
-function pressFailed(error) {
-    if (ended(error)) failed(error);
-    else tell(told, error.message);
+    try {
+        row.value = await phone.row(props.target);
+        refresh();
+    } catch (error) {
+        if (ended(error)) failed(error);
+        else tell(told, error.message);
+    }
 }
 
 const reviewing = ref(false);
@@ -241,16 +236,10 @@ onMounted(async () => {
                         <Btn large @click="emit('close')">Back to {{ back }}</Btn>
                     </template>
                 </template>
-                <template v-if="chosen">
-                    <p class="reader-chosen">
-                        <Icon name="tick" :size="18" />
-                        You chose: {{ chosen }}
-                    </p>
-                </template>
                 <template v-if="told">
                     <p class="reader-told">{{ told }}</p>
                 </template>
-                <PhoneButtons :target="`${row.type}:${row.n}`" :buttons="buttons" large @pressed="pressed" @failed="pressFailed" />
+                <PhoneButtons :target="`${row.type}:${row.n}`" :buttons="buttons" large @pressed="pressed" />
                 <template v-if="ready && !finished">
                     <PhoneReaderApprove
                         v-model:confirming="confirming"
@@ -388,23 +377,6 @@ onMounted(async () => {
 .reader-foot :deep(.btn.primary) {
     background: var(--accent);
     color: #fff;
-}
-
-.reader-chosen {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 50px;
-    margin: 0;
-    padding: 0 16px;
-    border-radius: 12px;
-    background: color-mix(in oklab, var(--tone-good) 16%, transparent);
-    color: var(--text);
-    font-weight: 600;
-}
-
-.reader-chosen :deep(.ico) {
-    color: var(--tone-good);
 }
 
 .reader-foot:empty {
