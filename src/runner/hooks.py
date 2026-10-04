@@ -150,29 +150,30 @@ def unfinished(root: Path, session: str, row) -> None:
     provider = PROVIDERS.get(row.provider)
     if provider is None or not row.transcript:
         return
-    said = [turn.text for turn in provider().tail(row.transcript) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
+    answers = [turn.text for turn in provider().tail(row.transcript) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        first = SENT not in held
-        write_json(f, {DONE: held.get(DONE, []), SENT: [*held.get(SENT, []), *(map(fingerprint, said) if first else [])][-KEPT_DONE:]})
-    if first:
-        return
-    for text in said:
+        write_json(f, {DONE: held.get(DONE, []), SENT: held.get(SENT, [])})
+    for text in answers:
         send_to_chat(root, session, text)
 
 
 def send_to_chat(root: Path, session: str, text: str) -> None:
+    if not text.strip():
+        return
+    record = Record(root, Sessions(root).environment(session) or runtime.env(root))
+    row = Agents(record, actor=SYSTEM)._titled(session)
+    if row is None:
+        return
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, dict, {})
-        if fingerprint(text) in held.get(SENT, []):
+        mark = fingerprint(text)
+        if mark in held.get(SENT, []):
             return
-        write_json(f, {**held, SENT: [*held.get(SENT, []), fingerprint(text)][-KEPT_DONE:]})
-    record = Record(root, Sessions(root).environment(session) or runtime.env(root))
-    row = Agents(record, actor=SYSTEM)._titled(session)
-    if row and text.strip():
         chat.send(record, row, text)
+        write_json(f, {**held, SENT: [*held.get(SENT, []), mark][-KEPT_DONE:]})
 
 
 def owned_environments(root: Path) -> set[str]:
