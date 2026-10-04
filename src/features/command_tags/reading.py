@@ -1,9 +1,6 @@
 import re
 from dataclasses import dataclass
 
-from controllers.types import Messages
-from features.messages.answering import acknowledges
-from resources.base import SYSTEM
 
 REPLY_WITH = "reply_with"
 REPLY = "reply"
@@ -51,8 +48,12 @@ def pattern(names) -> re.Pattern:
 ANY = pattern(dict.fromkeys((*RETIRED, *RUNS)))
 
 
-def visible(text: str) -> str:
-    return ANY.sub(lambda found: found.expand(r"\1"), text)
+def visible(text: str, tags: re.Pattern = ANY) -> str:
+    return tags.sub(lambda found: found.expand(r"\1"), text)
+
+
+def removed(text: str, tags: re.Pattern) -> str:
+    return CARRIED.sub("", tags.sub("", text))
 
 
 def runs(settings) -> dict:
@@ -61,10 +62,6 @@ def runs(settings) -> dict:
 
 def reader(settings: dict) -> re.Pattern:
     return pattern(dict.fromkeys((*RETIRED, *runs(settings))))
-
-
-def stripped(text: str, settings: dict) -> str:
-    return reader(settings).sub(lambda found: found.expand(r"\1"), text)
 
 
 def waits(text: str) -> bool:
@@ -82,23 +79,6 @@ def named(extras: str) -> dict[str, str]:
 
 def tag_spelling(text: str) -> str:
     return SETTING.sub(r"\1=", text)
-
-
-def answered(numbers: list, record, **_) -> str:
-    messages = Messages(record, actor=SYSTEM)
-    rows = [messages.load(n) for n in numbers if messages._exists(n)]
-    panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
-    told = [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
-    acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
-    told += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in acknowledging]
-    here = [n for n in numbers if n not in panel and n not in acknowledging]
-    if here:
-        told.append(tagged(here))
-    return "; ".join(told)
-
-
-def tagged(numbers: list) -> str:
-    return f"answer by opening your turn with [!reply:{numbers[0]}]" if len(numbers) == 1 else "answer each by opening a turn with [!reply:<n>]"
 
 
 def tag_for(command: str) -> Tag | None:
