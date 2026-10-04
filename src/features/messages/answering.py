@@ -18,7 +18,7 @@ def acknowledges(message) -> bool:
 
 
 def theirs(message) -> bool:
-    return message.seen[:1] != [AGENT]
+    return message.author != AGENT
 
 
 def asks(message) -> bool:
@@ -26,7 +26,7 @@ def asks(message) -> bool:
 
 
 def replied(journal, message) -> bool:
-    return any(r.seen[:1] == [AGENT] for r in journal.comments.linked_to(message.ref))
+    return any(r.author == AGENT for r in journal.comments.linked_to(message.ref))
 
 
 def answered(journal, message) -> bool:
@@ -34,7 +34,7 @@ def answered(journal, message) -> bool:
         return replied(journal, message)
     if message.refs or message.sections:
         return True
-    return replied(journal, message) or any(r.seen[:1] == [AGENT] for r in journal.reactions.linked_to(message.ref))
+    return replied(journal, message) or any(r.author == AGENT for r in journal.reactions.linked_to(message.ref))
 
 
 def read_and_open(journal) -> list:

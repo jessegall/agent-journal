@@ -2,8 +2,11 @@ from features.base import Feature
 from features.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
-from features.messages.handlers import (CloseAnswered, CloseHandled, CloseSeenByUser, LinkToMessageInHand, NameBareNumbers, NameRunTogether,
-                                        NameUnanswered, NameUnread, ResetCountsOnArrival, SaveAgentMessage)
+from features.messages.closing import CloseAnswered, CloseHandled, CloseSeenByUser
+from features.messages.inbox import NameUnanswered, NameUnread, ResetCountsOnArrival
+from features.messages.linking import LinkToMessageInHand
+from features.messages.prose import NameBareNumbers, NameRunTogether
+from features.messages.saving import SaveAgentMessage
 
 
 class MessagesFeature(Feature):
