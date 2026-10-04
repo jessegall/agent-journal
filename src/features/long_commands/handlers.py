@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine.events.engine import ClockTicked
 from engine.gates import LONG_COMMAND, cancelled
+from engine.sessions import alive
 from engine.wording import clipped
 from features.long_commands.details import KEPT, MOVED
 from features.nudges import MINUTE, Sent
@@ -66,7 +67,11 @@ def unwatched_runs(agent) -> BackgroundTasks:
     provider = PROVIDERS.get(agent.provider)
     if not provider or provider.background_wakes or not agent.transcript:
         return BackgroundTasks()
-    return provider().background_tasks(Path(agent.transcript))
+    tasks = provider().background_tasks(Path(agent.transcript))
+    for key, pid in tasks.detached.items():
+        if key not in tasks.ended and not alive(pid):
+            tasks.ended[key] = time.time()
+    return tasks
 
 
 def described(tasks: BackgroundTasks, session: str) -> dict:

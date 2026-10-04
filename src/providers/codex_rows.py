@@ -84,6 +84,12 @@ class Item(Loaded):
     type: str = ""
     process_id: str = ""
     status: str = ""
+    command: tuple = ()
+    stdout: str = ""
+
+    @property
+    def command_line(self) -> str:
+        return str(self.command[-1]) if self.command else ""
 
 
 @dataclass(frozen=True)

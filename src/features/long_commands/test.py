@@ -188,5 +188,11 @@ def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time(
     tick(record)
     tick(record)
     assert told()[2:] == ["the command you left running failed - make test"], "its end is told once"
+    with transcript.open("a") as more:
+        more.write(json.dumps({"timestamp": stamp(time.time()), "type": "event_msg", "payload": {
+            "type": "item_completed", "item": {"type": "CommandExecution", "process_id": "43", "status": "completed",
+                                               "command": ["/bin/zsh", "-lc", "(make test) >/dev/null 2>&1 & echo $!"], "stdout": "999999"}}}) + "\n")
+    tick(record)
+    assert told()[3:] == ["the command you left running finished - make test"], "a command it detached is followed by its pid, and told once it is gone"
     report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
-    assert len(told()) == 3, "a provider that wakes its agent itself is left to do so"
+    assert len(told()) == 4, "a provider that wakes its agent itself is left to do so"
