@@ -2,7 +2,6 @@ import gc
 import json
 import os
 import re
-import secrets
 import sys
 import threading
 import time
@@ -15,7 +14,7 @@ import features
 from surfaces import updates  # noqa: E402
 import migrations  # noqa: E402
 import commands.cli  # noqa: E402,F401
-from commands.http import dispatch, Reply  # noqa: E402
+from commands.http import dispatch  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
@@ -47,10 +46,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.send_header("Access-Control-Allow-Origin", origin)
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Journal-Token")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Vary", "Origin")
 
-    def allowed_request(self, method: str) -> bool:
+    def allowed_request(self) -> bool:
         host = self.headers.get("Host")
         port = self.server.server_port
         if host not in (f"127.0.0.1:{port}", f"localhost:{port}"):
@@ -60,27 +59,20 @@ class Handler(BaseHTTPRequestHandler):
         if origin is not None and not self.trusted_origin(origin):
             self.send_error(403)
             return False
-        if method == "POST":
-            token = self.headers.get("X-Journal-Token")
-            if token is None or not secrets.compare_digest(token, self.server.token):
-                self.send_error(403)
-                return False
         return True
 
     def handle_one(self, method: str) -> None:
-        if not self.allowed_request(method):
+        if not self.allowed_request():
             return
         url = urlparse(self.path)
         length = self.headers["Content-Length"]
         raw = self.rfile.read(int(length)) if length else b""
         kind = self.headers.get("Content-Type") or ""
         body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") or kind.startswith("text/plain") else json.loads(raw or b"{}")
-        reply = Reply(200, {"token": self.server.token}) if method == "GET" and url.path == "/api/session-token" else dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
+        reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
         self.send_response(reply.code)
         self.sibling()
         self.send_header("Content-Type", reply.kind)
-        if url.path == "/api/session-token":
-            self.send_header("Cache-Control", "no-store")
         if reply.chunks is None:
             data = reply.bytes()
             self.send_header("Content-Length", str(len(data)))
@@ -108,7 +100,7 @@ class Handler(BaseHTTPRequestHandler):
         self.handle_one("POST")
 
     def do_OPTIONS(self):
-        if not self.allowed_request("OPTIONS"):
+        if not self.allowed_request():
             return
         self.send_response(204)
         self.sibling()
@@ -126,7 +118,6 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     updates.announce(root)
     features.FEATURES["plugins"].host(root)
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    server.token = secrets.token_urlsafe(32)
     remember(root, server.server_address[1])
     heartbeat(root, server.server_address[1])
     return server

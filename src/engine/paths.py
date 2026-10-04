@@ -16,6 +16,4 @@ def contained(folder: Path, name: str, nested: bool = False) -> Path:
 
 
 def environment_path(folder: Path, name: str) -> Path:
-    if isinstance(name, str) and "." in name:
-        raise Refused(f"environment name {name!r} cannot contain a dot")
     return contained(folder, name)
