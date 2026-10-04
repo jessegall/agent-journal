@@ -361,7 +361,8 @@ def ended(ctx) -> str:
 
 def kept_work(cwd: Path) -> None:
     from engine.worktree import checkout, git, keep, main_checkout, repositories
-    top = checkout(cwd)
+    from providers import workspace_folders
+    top = checkout(cwd, workspace_folders())
     if not top:
         return
     for place in [top] if (top / ".git").exists() else repositories(top):

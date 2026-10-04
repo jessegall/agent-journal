@@ -1,10 +1,9 @@
-from providers.claude import Claude
 from providers.claude_driver import ClaudeDriver
-from providers.codex import Codex
 from providers.codex_driver import CodexDriver
 from providers.base import LIBRARY
+from providers.catalogue import PROVIDER_TYPES, workspace_folders  # noqa: F401
 
-PROVIDERS = {p.name: p for p in (Claude, Codex)}
+PROVIDERS = {p.name: p for p in PROVIDER_TYPES}
 
 DRIVERS = {d.name: d for d in (ClaudeDriver, CodexDriver)}
 

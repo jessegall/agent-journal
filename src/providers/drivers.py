@@ -14,6 +14,7 @@ from engine import runtime
 from engine.sessions import Sessions
 from supervisor import PRINTED, SCREEN, TYPED
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
+from providers.catalogue import workspace_folders
 
 ENTER_AFTER = 0.3
 AGENT_COMMAND = "/"
@@ -162,7 +163,7 @@ class Driver(ABC):
         anchor = main_checkout(project)
         made = linked(anchor).get(name)
         if spread(anchor):
-            made = workspace(anchor, anchor.joinpath(*cls.WORKTREES, name))
+            made = workspace(anchor, anchor.joinpath(*cls.WORKTREES, name), workspace_folders())
         elif not made or made.resolve() == anchor.joinpath(*cls.WORKTREES, name).resolve():
             made = opened(anchor, anchor.joinpath(*cls.WORKTREES, name), cls.branch(name))
         cls.trusted(made)

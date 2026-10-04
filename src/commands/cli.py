@@ -9,7 +9,7 @@ from controllers.base import networked
 from controllers.types import CONTROLLERS
 import features
 import migrations
-from providers import DRIVERS
+from providers import DRIVERS, workspace_folders
 from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions, allowed
@@ -46,7 +46,7 @@ def context(args: dict) -> CommandContext:
     sessions = Sessions(root)
     session = args.pop("as_session")
     fallback = runtime.renamed(root, args.pop("fallback"))
-    top = checkout(Path(args.pop("cwd") or os.getcwd()))
+    top = checkout(Path(args.pop("cwd") or os.getcwd()), workspace_folders())
     worked = top.name if top and (environments(root) / top.name).is_dir() else ""
     env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)
     session = session or sessions.holder(env)

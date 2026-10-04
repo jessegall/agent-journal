@@ -97,7 +97,8 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     cut = Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree))
     assert calls[0][0] == Path(cut.path) and cut.helper == "Rhea", "a code-changing helper works in a worktree cut for it"
     from engine.worktree import checkout, environment
-    assert environment(checkout(Path(cut.path))) == row.environment, "its worktree is named after its environment, so its session binds there and nowhere else"
+    from providers import workspace_folders
+    assert environment(checkout(Path(cut.path), workspace_folders())) == row.environment, "its worktree is named after its environment, so its session binds there and nowhere else"
     import os
     from engine.sessions import Sessions
     from providers import PROVIDERS

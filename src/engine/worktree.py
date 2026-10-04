@@ -4,6 +4,7 @@ import os
 import random
 import shutil
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine.package import ARCHIVE
@@ -14,13 +15,29 @@ from resources.base import Refused, check_title
 
 INCLUDED = ".worktreeinclude"
 BRANCHED = "worktree-"
-WORKTREES = (".claude", "worktrees")
 KEPT = "refs/journal/worktrees"
 GIT_WAIT = 60
 
 
-def checkout(start: Path) -> Path | None:
-    spanning = next((here for here in (start, *start.parents) if here.parent.parts[-2:] == WORKTREES and not (here / ".git").exists()), None)
+@dataclass(frozen=True)
+class WorkspaceFolders:
+    homes: tuple[str, ...] = ()
+    shared: tuple[str, ...] = ()
+    shared_if_ignored: tuple[str, ...] = ()
+    shared_in: tuple[str, ...] = ()
+    worktrees: tuple[tuple[str, ...], ...] = ()
+
+    @property
+    def managed(self) -> tuple[str, ...]:
+        return tuple(f"/{folder}/" for folder in self.shared_in)
+
+    @property
+    def worktree_home(self) -> tuple[str, ...]:
+        return self.worktrees[0]
+
+
+def checkout(start: Path, folders: WorkspaceFolders) -> Path | None:
+    spanning = next((here for here in (start, *start.parents) if here.parent.parts[-2:] in folders.worktrees and not (here / ".git").exists()), None)
     if spanning:
         return spanning
     for here in (start, *start.parents):
@@ -98,21 +115,23 @@ def changed(project: Path, branch: str, base: str) -> bool:
     return present(project, ref) and tip(project, ref) != base
 
 
-def workspace(project: Path, folder: Path) -> Path:
+def workspace(project: Path, folder: Path, folders: WorkspaceFolders) -> Path:
     name = folder.name
     found = repositories(project)
     for repo in found:
         opened(repo, folder / repo.relative_to(project), f"{BRANCHED}{name}", name)
     if project in found:
-        excluded(folder, [f"/{repo.name}/" for repo in found if repo != project])
+        excluded(folder, [f"/{repo.name}/" for repo in found if repo != project], folders)
         return folder
     folder.mkdir(parents=True, exist_ok=True)
+    nested = dict(folders.worktrees)
     for entry in project.iterdir():
-        if entry not in found and entry.name not in (".git", ".claude"):
+        if entry not in found and entry.name != ".git" and entry.name not in nested:
             linked_to(folder / entry.name, entry.resolve())
-    for entry in (project / ".claude").iterdir() if (project / ".claude").is_dir() else ():
-        if entry.name != "worktrees":
-            linked_to(folder / ".claude" / entry.name, entry.resolve())
+    for home, kept_out in nested.items():
+        for entry in (project / home).iterdir() if (project / home).is_dir() else ():
+            if entry.name != kept_out:
+                linked_to(folder / home / entry.name, entry.resolve())
     return folder
 
 
@@ -215,28 +234,26 @@ def git(project: Path, *args: str) -> subprocess.CompletedProcess:
     return ran(["git", *args], cwd=project, timeout=GIT_WAIT) or subprocess.CompletedProcess(["git", *args], 1, "", failed)
 
 
-SHARED = (".journal", ".claude/settings.local.json")
+JOURNAL_FOLDER = ".journal"
 JOURNAL_MARKS = (ENVIRONMENTS, ARCHIVE)
-SHARED_IF_IGNORED = (".codex/hooks.json",)
-SHARED_IN = (".claude/skills", ".agents/skills")
 
 
-def share_journal(top: Path, root: Path) -> None:
+def share_journal(top: Path, root: Path, folders: WorkspaceFolders) -> None:
     project = root.resolve().parent
     if top.resolve() == project or not (top / ".git").is_file() or not belongs(top, project):
         return
-    skills = [Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
-    hooks = [Path(path) for path in SHARED_IF_IGNORED if (project / path).exists()]
+    skills = [Path(folder) / entry.name for folder in folders.shared_in if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
+    hooks = [Path(path) for path in folders.shared_if_ignored if (project / path).exists()]
     linked_hooks = [path for path in hooks if is_linked(top / path, project / path)]
     linked_skills = [path for path in skills if is_linked(top / path, project / path)]
     pending_hooks = [path for path in hooks if path not in linked_hooks and ((top / path).is_symlink() or not (top / path).exists())]
     pending_skills = [path for path in skills if path not in linked_skills and ((top / path).is_symlink() or not (top / path).exists())]
-    wanted = [Path(path) for path in SHARED] + linked_hooks + ignored(project, pending_hooks) + linked_skills + untracked(project, pending_skills)
-    excluded(top, [f"/{path}" for path in wanted])
-    cleared(top, Path(SHARED[0]))
+    wanted = [Path(path) for path in (JOURNAL_FOLDER, *folders.shared)] + linked_hooks + ignored(project, pending_hooks, folders) + linked_skills + untracked(project, pending_skills)
+    excluded(top, [f"/{path}" for path in wanted], folders)
+    cleared(top, Path(JOURNAL_FOLDER))
     for path in wanted:
         linked_to(top / path, project / path)
-    unshared(top, project, set(wanted))
+    unshared(top, project, set(wanted), folders)
 
 
 def cleared(top: Path, path: Path) -> None:
@@ -259,12 +276,12 @@ def belongs(top: Path, project: Path) -> bool:
     return (gitdir / common).resolve() == (project / ".git").resolve()
 
 
-def ignored(project: Path, paths: list[Path]) -> list[Path]:
+def ignored(project: Path, paths: list[Path], folders: WorkspaceFolders) -> list[Path]:
     if not paths:
         return []
     asked = subprocess.run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], input="\n".join(map(str, paths)),
                            capture_output=True, text=True, timeout=30)
-    managed = tuple(f"/{folder}/" for folder in SHARED_IN)
+    managed = folders.managed
     named = {path for source, path in (line.split("\t", 1) for line in asked.stdout.splitlines() if "\t" in line)
              if not (source.split(":", 2)[0].endswith("info/exclude") and source.split(":", 2)[2].startswith(managed))}
     return [path for path in paths if str(path) in named]
@@ -298,8 +315,8 @@ def is_linked(place: Path, target: Path) -> bool:
     return Path(os.path.abspath(linked if linked.is_absolute() else place.parent / linked)) == target
 
 
-def unshared(top: Path, project: Path, wanted: set[Path]) -> None:
-    for folder in SHARED_IN:
+def unshared(top: Path, project: Path, wanted: set[Path], folders: WorkspaceFolders) -> None:
+    for folder in folders.shared_in:
         here = top / folder
         if not here.is_dir():
             continue
@@ -309,14 +326,14 @@ def unshared(top: Path, project: Path, wanted: set[Path]) -> None:
                 entry.unlink()
 
 
-def excluded(top: Path, patterns: list[str]) -> None:
+def excluded(top: Path, patterns: list[str], folders: WorkspaceFolders) -> None:
     gitdir = Path((top / ".git").read_text().split(":", 1)[1].strip())
     exclude = (gitdir if gitdir.is_absolute() else top / gitdir).resolve().parents[1] / "info" / "exclude"
     exclude.parent.mkdir(parents=True, exist_ok=True)
     with (exclude.parent / "exclude.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         held = exclude.read_text().splitlines() if exclude.is_file() else []
-        managed = tuple(f"/{folder}/" for folder in SHARED_IN)
+        managed = folders.managed
         kept = [line for line in held if not line.startswith(managed) or line in patterns]
         lines = kept + [pattern for pattern in patterns if pattern not in kept]
         if lines == held:

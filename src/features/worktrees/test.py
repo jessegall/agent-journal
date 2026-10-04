@@ -3,6 +3,7 @@ from controllers.types import Agents
 from engine.events.agents import SessionStarted
 from features.parts import AgentContext
 from features.worktrees.handlers import LinkWorktreeJournal
+from providers import workspace_folders
 from tests.conftest import fresh
 
 
@@ -30,7 +31,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     git("commit", "-q", "-m", "start")
     worktree = project / ".claude" / "worktrees" / "wt"
     git("worktree", "add", "-q", str(worktree))
-    runs = [threading.Thread(target=share_journal, args=(worktree, record.root)) for _ in range(4)]
+    runs = [threading.Thread(target=share_journal, args=(worktree, record.root, workspace_folders())) for _ in range(4)]
     for run in runs:
         run.start()
     for run in runs:
@@ -45,7 +46,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     git("init", "-q", where=other)
     git("commit", "-q", "--allow-empty", "-m", "start", where=other)
     git("worktree", "add", "-q", str(tmp_path / "other-wt"), where=other)
-    share_journal(tmp_path / "other-wt", record.root)
+    share_journal(tmp_path / "other-wt", record.root, workspace_folders())
     assert not (tmp_path / "other-wt" / ".journal").exists(), "another repository's worktree is never linked to this journal"
 
 def worktree_of(tmp_path, name: str):
@@ -199,7 +200,7 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     assert "site work" in subprocess.run(["git", "log", "-1", "--format=%s", "refs/journal/worktrees/calm-river"], cwd=folder / "site", capture_output=True, text=True, timeout=30).stdout, \
         "leaving it keeps each repository's work under the worktree's name"
     from engine.worktree import checkout
-    assert (checkout(made / "site"), environment(checkout(made / "chronos"))) == (made, "calm-river"), \
+    assert (checkout(made / "site", workspace_folders()), environment(checkout(made / "chronos", workspace_folders()))) == (made, "calm-river"), \
         "an agent anywhere in it works the worktree's own environment, never the project's or one repository's"
 
 
@@ -261,25 +262,25 @@ def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_
     (project / ".claude" / "skills" / "journal-boards").mkdir()
     (project / ".claude" / "skills" / "journal-boards" / "SKILL.md").write_text("never committed nor ignored")
     assert (worktree / ".journal" / "README.md").is_file(), "the checkout brings the committed journal files"
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").is_symlink() and (worktree / ".journal").resolve() == record.root.resolve(), \
         "committed journal files are not a journal: the worktree still gets the project's own"
     assert (worktree / ".claude" / "skills" / "journal-boards").is_symlink(), "a skill git neither tracks nor ignores is linked"
     assert not (worktree / ".claude" / "skills" / "mine").is_symlink(), "a skill the branch carries stays its own"
     assert git("status", "--porcelain", where=worktree) == "", "and git sees no change in the worktree"
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").resolve() == record.root.resolve(), "linking again changes nothing"
     (worktree / ".journal").unlink()
     (worktree / ".journal").symlink_to(tmp_path / "gone")
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").resolve() == record.root.resolve(), "a link to a journal that is gone is replaced"
     (worktree / ".journal").unlink()
     git("update-index", "--no-skip-worktree", ".journal/README.md", where=worktree)
     git("checkout", "--", ".journal/README.md", where=worktree)
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").resolve() == record.root.resolve(), "committed files checked out again do not win either"
     own = project / ".claude" / "worktrees" / "own"
     git("worktree", "add", "-q", str(own))
     (own / ".journal" / "environments").mkdir()
-    share_journal(own, record.root)
+    share_journal(own, record.root, workspace_folders())
     assert not (own / ".journal").is_symlink(), "a worktree with a journal record of its own keeps it"
