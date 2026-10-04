@@ -16,10 +16,6 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
     m = Messages(record, actor=USER).create("how is it going?")
-    assert Messages(record).load(m.n).data.get("asks") is True, "a message that asks is marked so the chat can say an answer is on its way"
-    assert not Messages(record).load(Messages(record, actor=USER).create("carry on").n).data.get("asks"), "one that asks nothing is not"
-    assert [bool(Messages(record).load(Messages(record, actor=USER).create(text).n).data.get("asks")) for text in ("Wat vind je van het ontwerp", "Ga maar door")] \
-        == [True, False], "a Dutch message that asks is marked the same way, and one that asks nothing is not"
     Messages(record, actor=AGENT).read(m.n)
 
     def text():

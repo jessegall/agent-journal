@@ -5,7 +5,6 @@ import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import TurnHeader from "./TurnHeader.vue";
-import TurnOwed from "./TurnOwed.vue";
 import TurnQuote from "./TurnQuote.vue";
 import TurnParent from "./TurnParent.vue";
 import TurnPeer from "./TurnPeer.vue";
@@ -263,7 +262,6 @@ async function drop() {
             <TurnReactions :faces="faces" @react="react" />
         </template>
         <TurnHeader :turn="turn" />
-        <TurnOwed :turn="turn" />
     </div>
 </template>
 
