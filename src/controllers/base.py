@@ -48,6 +48,18 @@ def actions(controller: type) -> tuple[str, ...]:
                   if not name.startswith("_") and not getattr(f, "internal", False)))
 
 
+def word_names(controller: type) -> set[str]:
+    return {*actions(controller), *COMMANDS.get(controller.resource.type, {})}
+
+
+def word_function(controller: type, name: str):
+    return COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
+
+
+def word_parameters(controller: type, name: str) -> list[inspect.Parameter]:
+    return list(inspect.signature(word_function(controller, name)).parameters.values())[1:]
+
+
 class Controller(Stored, Files, Links, Discussed):
     resource = Resource
     actor = "user"
@@ -288,7 +300,7 @@ class Controller(Stored, Files, Links, Discussed):
 
     @internal
     def action(self, name: str):
-        if name.startswith("_") or name not in {*actions(type(self)), *COMMANDS.get(self.type, {}), *self.resource.command_names.values()}:
+        if name.startswith("_") or name not in {*word_names(type(self)), *self.resource.command_names.values()}:
             raise Refused(f"{self.type} has no action {name!r}")
         command = COMMANDS.get(self.type, {}).get(name)
         if command:

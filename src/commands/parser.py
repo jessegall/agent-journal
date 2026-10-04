@@ -3,7 +3,7 @@ import contextvars
 from functools import cache
 import inspect
 import os
-from controllers.base import COMMANDS, actions
+from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
 import features
 from features.switches import generation
@@ -21,7 +21,7 @@ argparse._ = str
 @cache
 def words(type_: str) -> set[str]:
     controller = CONTROLLERS[type_]
-    return {controller.resource.command_names.get(name, name) for name in {*actions(controller), *COMMANDS.get(type_, {})}}
+    return {controller.resource.command_names.get(name, name) for name in word_names(controller)}
 
 def truthy(word: str) -> bool:
     return word.strip().lower() in ("true", "yes", "on", "1")
@@ -29,8 +29,7 @@ def truthy(word: str) -> bool:
 def add_method(acts, controller: type, name: str) -> None:
     a = acts.add_parser(controller.resource.command_names.get(name, name))
     a.set_defaults(method=name)
-    fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
-    for p in list(inspect.signature(fn).parameters.values())[1:]:
+    for p in word_parameters(controller, name):
         required = p.default is inspect.Parameter.empty
         flag = p.name if required else f"--{p.name}"
         if p.kind is inspect.Parameter.VAR_KEYWORD:
@@ -95,11 +94,10 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--agent", dest="as_agent", default=os.environ.get("JOURNAL_AGENT", ""))
     top.add_argument("--plugin", dest="as_plugin", default=os.environ.get("JOURNAL_PLUGIN", ""), help=argparse.SUPPRESS)
     cmds = top.add_subparsers(dest="command", required=True)
-    features.load()
     for type_, controller in CONTROLLERS.items():
         t = cmds.add_parser(type_, help=controller.resource.details.abstract, description=controller.resource.details.help)
         acts = t.add_subparsers(dest="action", required=True)
-        for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}) if not only or only == type_ else ():
+        for name in sorted(word_names(controller)) if not only or only == type_ else ():
             add_method(acts, controller, name)
     add_query(cmds, "status", "where things stand", lambda ctx: briefing.status(ctx["record"]))
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: briefing.carry(ctx["record"]))

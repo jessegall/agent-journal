@@ -9,17 +9,15 @@ from controllers.types import CONTROLLERS
 import features
 import migrations
 from providers import DRIVERS, workspace_folders
-from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions, allowed
 from resources.base import OWNER, Refused
 from resources.shapes import typed
-from engine import runtime
 from commands.invoke import invoked
 from commands.parser import PRINTED, QUERIES, Misused, parser, words
 from features.command_line import CommandLine, wire
 from engine.timing import measured
-from engine.paths import environments
+from engine.binding import bound_environment
 from engine.worktree import checkout
 from typing import TypedDict
 
@@ -37,18 +35,20 @@ class CommandContext(TypedDict):
     sessions: Sessions
 
 
-def context(args: dict) -> CommandContext:
-    root = Path(args.pop("root")).resolve()
+def bootstrap(root: Path) -> None:
     if root not in MIGRATED:
         migrations.run(root)
         MIGRATED.add(root)
     features.load(root)
+
+
+def context(args: dict) -> CommandContext:
+    root = Path(args.pop("root")).resolve()
+    bootstrap(root)
     sessions = Sessions(root)
     session = args.pop("as_session")
-    fallback = runtime.renamed(root, args.pop("fallback"))
     top = checkout(Path(args.pop("cwd") or os.getcwd()), workspace_folders())
-    worked = top.name if top and (environments(root) / top.name).is_dir() else ""
-    env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)
+    env = bound_environment(root, sessions, session, args.pop("bound"), top, args.pop("fallback"))
     session = session or sessions.holder(env)
     return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("as_agent"),
             "plugin": args.pop("as_plugin"), "force": "", "sessions": sessions}

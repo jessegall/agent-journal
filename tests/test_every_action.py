@@ -2,7 +2,7 @@ import inspect
 import time
 
 import features
-from commands.parser import actions
+from controllers.base import actions
 from controllers.types import CONTROLLERS
 from resources.base import Refused, SYSTEM, USER
 from resources.types import TYPES
