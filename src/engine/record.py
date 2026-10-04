@@ -55,7 +55,6 @@ class Record:
         self.root = Path(root)
         self.env = env
         self.home = environment_home(self.root, env)
-        self.home.mkdir(parents=True, exist_ok=True)
         self._held: dict[Path, int] = {}
         self._threads = waits.Lock("record", threading.RLock())
         self._depth = 0

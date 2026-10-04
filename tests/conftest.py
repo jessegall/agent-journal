@@ -18,7 +18,9 @@ from engine.runtime import TESTS_RUNNING  # noqa: E402
 
 
 def fresh(env: str = "t") -> Record:
-    return Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", env)
+    record = Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", env)
+    record.home.mkdir(parents=True)
+    return record
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
