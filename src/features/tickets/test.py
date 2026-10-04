@@ -161,7 +161,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert (card["state"], card["reason"].startswith(f"under review ({merging.title})")) == ("running", True), \
         "a ticket the orchestrator is reviewing waits on that review; it is never stuck"
-    from features.tickets.controller import WAITS_ON_PEOPLE
+    from features.tickets.calls import WAITS_ON_PEOPLE
     assert [bool(WAITS_ON_PEOPLE.search(text)) for text in ("waits for your approval", "wacht op goedkeuring", "de build draait")] == [True, True, False], \
         "a wait on a person is read in Dutch as well as English"
     Sequences(record, actor=SYSTEM).abandon(merging.n, about=ticket.ref, why="only a check", sure=True)
@@ -430,9 +430,6 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     tick(record)
     assert any("Reviewing a ticket's plan, step 1 of 3" in line for line in nudges(record)), \
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
-    assert "Review it yourself" in tickets._review(tickets.load(ticket.n)), "by default the orchestrator reviews the plan itself"
-    Boards(record, actor=USER).update(board.n, plan_reviewer="subagent")
-    assert "Dispatch a reviewer subagent" in tickets._review(tickets.load(ticket.n)), "a board can hand the review to a reviewer subagent"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
     from features.plans.controller import ACTIVE, WAITING

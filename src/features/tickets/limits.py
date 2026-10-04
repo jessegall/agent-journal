@@ -1,7 +1,7 @@
-from features.boards.controller import PANEL_REPLY
+from features.boards.controller import PANEL_REPLY, Boards
 from features.parts import ActionInterceptor, Context
 from features.sequences.exploration import FILLER
-from resources.base import AGENT, Refused
+from resources.base import AGENT, SYSTEM, Refused
 
 CARD_LINE = 140
 CARD_TITLE = 60
@@ -32,7 +32,7 @@ class PanelRepliesStayShort(ActionInterceptor):
         if controller.type != "comment" or controller.actor != AGENT or not about.startswith("message:"):
             return None
         message = context.journal.messages.load(about.split(":")[1])
-        if not any(ref.startswith("board:") for ref in message.refs):
+        if not Boards(context.record, actor=SYSTEM).of_message(message):
             return None
         text = "\n".join(line for line in (args.get("brief") or "").split("\n") if not line.startswith(">")).strip()
         if len(text) > PANEL_REPLY:

@@ -1,114 +1,46 @@
-import re
 import time
-from pathlib import Path
-from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
 from controllers.types import Environments, Features
 from engine.record import Record
-from resources.types import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, changed, contains, current_branch, git, keep, linked, merged, merged_into, present, roots, spread, tip
-from engine.sessions import Sessions, live
+from engine.worktree import branched, changed, current_branch, merged_into, present, tip
+from engine.sessions import Sessions
 from features.permission_prompts.skipping import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, internal
 from controllers.prioritised import Prioritised
 from engine.given import given
 from features.boards.controller import Boards
-from features.boards.resource import DONE, REVIEW, START
+from features.boards.resource import DONE, START
 from features.checks.controller import tail
 from engine.proc import streamed
-from surfaces.board import BoardLanes, Card, Lane
+from features.tickets.cards import CardState, TicketCards
 from features.tickets.details import TicketsDetails
-from features.tickets.resource import Bases, Ticket, card_back
-from controllers.types import Agents, Comments, Messages, Questions, Todos, Works
-from features.plans.controller import ACTIVE, DONE, READY, WAITING, Plans
+from features.tickets.landing import TicketLanding
+from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestration
+from features.tickets.resource import CONFIRMED, PROPOSED, Ticket, card_back
+from controllers.types import Comments
+from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
-from resources.shapes import LEVELS, rank_before
-from engine.wording import clipped
+from resources.shapes import rank_before
 
-
-PROPOSED, CONFIRMED = "proposed", "confirmed"
 LAUNCHING_FOR = 60.0
-SILENT_AFTER = 300.0
 RETURNS_BEFORE_ESCALATING = 2
 RELEASE_TIMEOUT = 600
-CARD_EXTRAS: list = []
-REPOSITORY_STATES: dict = {}
-PEOPLE: dict = {}
-WAITS_ON_PEOPLE = re.compile(r"\b(?:orchestrator|user|you|your|approv\w*|decision|decide\w*|answer\w*|review\w*"
-                             r"|gebruiker|jij|jouw|goedkeur\w*|goedgekeurd|beslissing|beslis\w*|antwoord\w*|beoordel\w*)\b", re.IGNORECASE)
-LOOK_AGAIN_AFTER = 30
-STATES_KEPT = 500
 HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
 CARRY_ON = "Carry on with {ref} where you left off."
 HANDED = ("{ref}, {title}, is yours to do in this worktree, after the tickets you already have: {brief} Read it with journal "
           "ticket show {n}, commit it on this branch, and say when it is done.")
 MOST_RESTARTS = 1
-REVIEWED_BY_SUBAGENT = "subagent"
-PLANS, WAITS, DRAFTS = "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts"
 SCREEN_LINES, SCREEN_BYTES = 40, 32768
 NEEDS_A_LOOK = ("you", "stopped")
 
 
-def ordinal(n: int) -> str:
-    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
-
-
-def ago(seconds: float) -> str:
-    if seconds < 60:
-        return f"{int(seconds)}s"
-    return f"{int(seconds // 60)}m" if seconds < 3600 else f"{int(seconds // 3600)}h"
-
-
-@dataclass(frozen=True)
-class CardState:
-    kind: str
-    text: str
-    session: str = ""
-    age: str = ""
-
-    @classmethod
-    def plain(cls) -> "CardState":
-        return cls("", "")
-
-
-@dataclass(frozen=True)
-class Slots:
-    running: list
-    limit: int
-    queued: int
-    waiting: int
-
-
-RUN_TEXT = 60
-REVIEW_MOMENTS = ("ticket.plan_waits", "ticket.checkpoint", "ticket.finished")
-
-
-@dataclass(frozen=True)
-class Landing:
-    place: Path
-    branch: str
-    base: str
-    into: str
-
-    def merged(self) -> bool:
-        return merged(self.place, self.branch, self.base, self.into)
-
-    def changed(self) -> bool:
-        return changed(self.place, self.branch, self.base)
-
-    def state(self) -> str:
-        if self.merged():
-            return "merged"
-        return "changed" if self.changed() else "untouched"
-
-
-class Tickets(Prioritised, Controller):
+class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Controller):
     resource = Ticket
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
@@ -136,122 +68,36 @@ class Tickets(Prioritised, Controller):
             raise Refused(f"board {r.board} has no stage {r.stage!r}")
         return super().save(r, action, **event)
 
-    def board(self, n: int) -> dict:
-        stages = self._stages(n)
-        tickets = sorted((r for r in self._standing(closed_since=1) if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
-        sessions = Sessions(self.record.root).all()
-        running = self._running()
-        lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
-                            for stage in stages], [])
-        board = Boards(self.record, actor=self.actor).load(n)
-        asked = Questions(self.record, actor=self.actor).about(board.ref)
-        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles(), "questions": asked,
-                "drafting": board.drafting, "expected": board.expected}
-
-    def _roles(self) -> list:
-        from engine.organization import organization
-        try:
-            found = organization(self.record.root.parent)
-        except Refused:
-            return []
-        working = self._role_work()
-        return [{"name": f"{domain.name}/{role.name}", "title": role.title or role.name, "domain": domain.name, "domain_title": domain.title or domain.name,
-                 "tickets": working.get((domain.name, role.name), [])} for domain in found.domains for role in domain.roles]
-
-    def _role_work(self) -> dict:
-        working: dict = {}
-        for place, ticket in {ticket.work_environment: ticket for ticket in self._running()}.items():
-            plan = self._plan_owner(place)
-            shown = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
-            todos = Todos(Record(self.record.root, place), actor=SYSTEM)
-            for row in todos.summaries():
-                if row["completed"] or row["deleted"]:
-                    continue
-                todo = todos.load(row["n"])
-                if todo.data.get("role") and todo.data.get("status") == "started":
-                    working.setdefault((todo.data["domain"], todo.data["role"]), []).append(
-                        {"n": ticket.n, **shown, "env": todo.data.get("role_environment", ""), "worktree": place})
-        return working
-
-    def _slots(self, running: list, sessions: dict) -> Slots:
-        kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self._standing()]
-        return Slots([{"n": ticket.n, "title": ticket.title, "board": int(ticket.board)} for ticket in running],
-                     self._limit(), kinds.count("queued"), kinds.count("you"))
-
     def _limit(self) -> int:
         return max(0, int(TicketsDetails.values(self.record).running))
 
-    def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
-        extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
-        state = self._runtime(ticket, sessions, running)
-        return Card(ticket.n, ticket.title, int(ticket.priority or LEVELS["default"]), stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
-                    updated=ticket.updated, completed=ticket.completed, type=self.type,
-                    actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
-                    link=next((more.link for more in extras if more.link), ""),
-                    link_label=next((more.link_label for more in extras if more.link_label), ""),
-                    repositories=self._repository_states(ticket))
-
-    def _repository_states(self, ticket) -> list:
-        if not ticket.work_environment or ticket.completed or not spread(self.record.root.parent):
-            return []
-        key = (str(self.record.root), ticket.n, ticket.updated, int(time.time() // LOOK_AGAIN_AFTER))
-        if key not in REPOSITORY_STATES:
-            if len(REPOSITORY_STATES) > STATES_KEPT:
-                REPOSITORY_STATES.clear()
-            branch, into = self._branch(ticket), self._into(ticket)
-            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": Landing(place, branch, base, into).state()}
-                                      for name, place, base in self._repositories(ticket)]
-        return REPOSITORY_STATES[key]
-
-    def _actions(self, ticket, session: str) -> list:
-        proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
-        waits = self._plan_waits(ticket)
-        reviewed = bool(session) and self._meaning(ticket) == REVIEW
-        offers = (
-            (ticket.draft, [{"label": "Confirm", "action": "confirm"}]),
-            (proposed, [{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}]),
-            (waits, [{"label": "Approve plan", "action": "approve_plan"}, {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}]),
-            (waits and session, [{"label": "Ask for changes", "action": "tell", "note": True}]),
-            (reviewed, [{"label": "Send back", "action": "send_back", "note": True}]),
-            (ticket.queued and not self._waiting_on(ticket), [{"label": "Start next", "action": "start_next"}]),
-        )
-        return [action for applies, actions in offers if applies for action in actions]
-
-    def _meaning(self, ticket) -> str:
-        return Boards(self.record, actor=self.actor).load(ticket.board).meanings.get(ticket.stage, "") if ticket.board else ""
-
     def tell(self, n: int, note: str):
         ticket = self.load(n)
-        session = self.agent_session(ticket.n)
-        if not session:
-            self._refuse(f"{self.type} {ticket.n} has no agent running to tell")
-        from providers import DRIVERS
-        driver = DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
-        if not driver.send(note.strip(), now=True, by=self.record.env):
+        if not self._driver(ticket, "tell").send(note.strip(), now=True, by=self.record.env):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return self.update(ticket.n, told=time.time())
 
     def screen(self, n: int, lines: int = SCREEN_LINES) -> str:
-        from providers import DRIVERS
         ticket = self.load(n)
+        shown = [line.rstrip() for line in self._driver(ticket, "look at").screen(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
+        return "\n".join(shown[-int(lines):])
+
+    def _driver(self, ticket, doing: str):
+        from providers import DRIVERS
         session = self.agent_session(ticket.n)
         if not session:
-            self._refuse(f"{self.type} {ticket.n} has no agent running to look at")
-        driver = DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
-        shown = [line.rstrip() for line in driver.screen(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
-        return "\n".join(shown[-int(lines):])
+            self._refuse(f"{self.type} {ticket.n} has no agent running to {doing}")
+        return DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+
+    def _ask_to_stop(self, session: str) -> None:
+        ask_session(self.record.root, terminal_of(self.record.root, session))
 
     def send_back(self, n: int, note: str):
         ticket = self.tell(n, note)
-        meanings = Boards(self.record, actor=self.actor).load(ticket.board).meanings
-        started = next((stage for stage, meaning in meanings.items() if meaning == START), None)
-        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **given(stage=started))
+        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **given(stage=self._board(ticket).stage_for(START)))
         if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
             self.record.emit(self.type, ticket.n, ESCALATED, self.actor)
         return ticket
-
-    def _plan_waits(self, ticket) -> bool:
-        return self._plan_status(ticket) == READY
 
     def _plans(self, ticket) -> Plans:
         return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)
@@ -285,7 +131,7 @@ class Tickets(Prioritised, Controller):
         if not ticket.plan:
             return ""
         plan = self._plans(ticket).load(ticket.plan)
-        if plan.status == DONE and first_open_phase(Record(self.record.root, ticket.work_environment), plan):
+        if plan.status == PLAN_DONE and first_open_phase(Record(self.record.root, ticket.work_environment), plan):
             return ACTIVE
         return plan.status
 
@@ -300,136 +146,11 @@ class Tickets(Prioritised, Controller):
         return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._plan_waits(ticket)] + \
                [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
 
-    def _off_branch(self, ticket) -> str:
-        into = self._into(ticket)
-        off = [(name, base) for name, place, base in self._repositories(ticket) if into != "HEAD" and base and not contains(place, base, into)]
-        if not off:
-            return ""
-        name, base = off[0]
-        where = "" if name == "." else f" in {name}"
-        return (f"its branch {self._branch(ticket)}{where} started at {base[:9]}, which is not on {into}; tell its agent to rebase "
-                f"onto {into} (git rebase --onto {into} {base[:9]}) before it is merged")
-
-    def _repositories(self, ticket) -> list[tuple[str, Path, str]]:
-        return [(name, place, ticket.base_of(name)) for name, place in roots(self.record.root.parent).items()]
-
-    def _started_at(self, ticket, into: str) -> dict:
-        branch = self._branch(ticket)
-        return {name: tip(place, into) if not base or not present(place, f"refs/heads/{branch}") else base
-                for name, place, base in self._repositories(ticket)}
-
-    def _based(self, ticket, tips: dict[str, str]):
-        bases = Bases.of(tips)
-        return self.update(ticket.n, base=bases.root, bases=bases.nested)
-
     def _revive(self, ticket) -> bool:
         if ticket.restarts >= MOST_RESTARTS or ticket.queued:
             return False
         self.update(ticket.n, restarts=ticket.restarts + 1)
         return not self.start(ticket.n).queued
-
-    def _why_not(self, ticket) -> str:
-        board = Boards(self.record, actor=SYSTEM).load(ticket.board)
-        return "; ".join([
-            f"board {board.n} has {PLANS} {'set' if board.data.get(PLANS) else 'unset'}",
-            f"{self.record.env} {'orchestrates' if board.n in self._orchestrating() else 'does not orchestrate'} board {board.n}"
-            + ("" if board.n in self._orchestrating() else f" (Play marks the environment that runs it; journal board update {board.n} --set orchestrator={self.record.env} takes it)"),
-        ])
-
-    def _orchestrating(self) -> list[int]:
-        from features.boards.details import BoardsDetails
-        from features.sequences.controller import Sequences
-        if not BoardsDetails.values(self.record).orchestrating:
-            return []
-        from features.sequences.orchestration import ORCHESTRATION
-        sequence = Sequences(self.record, actor=SYSTEM)._titled(ORCHESTRATION.title)
-        running = {int(key.rsplit(":", 1)[1]) for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|board:")}
-        held = {board.n for board in Boards(self.record, actor=SYSTEM)._standing()
-                if not board.finished and board.orchestrator == self.record.env}
-        return sorted(running | held)
-
-    def _awaiting_orchestrator(self) -> list:
-        boards = self._orchestrating()
-        return [ticket for ticket in self._standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
-                and self._orchestrator_may(ticket, PLANS) and self._plan_status(ticket) in (READY, WAITING)]
-
-    def _review(self, ticket) -> str:
-        read = f"journal --env {ticket.work_environment} plan read {ticket.plan}"
-        if Boards(self.record, actor=SYSTEM).load(ticket.board).plan_reviewer == REVIEWED_BY_SUBAGENT:
-            return f"Dispatch a reviewer subagent to check it against the ticket's card; it reads it with {read}."
-        return f"Review it yourself against the ticket's card: {read}."
-
-    def _orchestrator_may(self, ticket, permission: str) -> bool:
-        return bool(ticket.board) and bool(getattr(Boards(self.record, actor=SYSTEM).load(ticket.board), permission))
-
-    def _awaiting_decisions(self) -> list:
-        boards = self._orchestrating()
-        on_board = [ticket for ticket in self._standing() if ticket.board and int(ticket.board) in boards]
-        return [(ticket, WAITS) for ticket in on_board if PROPOSED in ticket.dependencies.values() and self._orchestrator_may(ticket, WAITS)] + \
-               [(ticket, DRAFTS) for ticket in on_board if ticket.draft and self._orchestrator_may(ticket, DRAFTS)]
-
-    def _reviewing(self, ticket) -> str:
-        from features.sequences.controller import Sequences
-        return next((row["title"] for row in Sequences(self.record, actor=SYSTEM).summaries()
-                     if not row["completed"] and not row["deleted"] and row.get("starts_on") in REVIEW_MOMENTS
-                     and any(key.endswith(f"|{ticket.ref}") for key in row.get("runs") or {})), "")
-
-    def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
-        if ticket.completed:
-            return CardState("done", ticket.outcome or "done")
-        place = ticket.work_environment
-        proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
-        if proposed:
-            return CardState("you", f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}")
-        if not place:
-            return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState.plain()
-        reviewing = self._reviewing(ticket)
-        if reviewing:
-            return CardState("running", f"under review ({reviewing}) in {place}")
-        row = self._reporting(place, sessions)
-        session = row.title if row else ""
-        state = self._agent_state(ticket, row, running)
-        if self._plan_waits(ticket):
-            return CardState("you", f"{state.text} in {place}; its plan waits for your approval", session)
-        return CardState(state.kind, f"{state.text} in {place}" + (f" · {state.age}" if state.age else ""), session)
-
-    def _waited_run(self, row, place: str) -> str:
-        awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM)._standing() if w.awaiting), "")
-        text = awaited or row.background_run
-        return clipped(text, RUN_TEXT)
-
-    def _reporting(self, place: str, sessions: dict):
-        agents = Agents(Record(self.record.root, place), actor=SYSTEM)
-        rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents._titled(name))]
-        return max(rows, key=lambda row: float(row.at), default=None)
-
-    def _agent_state(self, ticket, row, running: int) -> CardState:
-        if row:
-            return self._live_state(row, ticket.work_environment)
-        waits = self._waiting_on(ticket)
-        if waits:
-            return CardState("blocked", f"waiting on {', '.join(ref.replace(':', ' ') for ref in waits)}")
-        if ticket.queued:
-            position = ordinal(self._queue().index(ticket.n) + 1)
-            return CardState("queued", f"{position} in the queue, starts when one of {self._limit()} agents finishes" if self._limit()
-                             else f"{position} in the queue, starts with the next minute's check")
-        return CardState("stopped", "stopped")
-
-    def _live_state(self, row, place: str) -> CardState:
-        if row.asking:
-            return CardState("you", "waiting for you")
-        if not float(row.at):
-            return CardState("running", "starting")
-        quiet = row.quiet_for
-        if row.status != IDLE and quiet > SILENT_AFTER:
-            return CardState("you", f"silent for {int(quiet // 60)}m")
-        if row.status == IDLE and quiet > SILENT_AFTER and not row.background_run:
-            return CardState("you", f"idle for {int(quiet // 60)}m with nothing running in the background")
-        waiting = self._waited_run(row, place) if row.status == IDLE else ""
-        if waiting:
-            return CardState("running", f"waiting on its run: {waiting}", age=ago(quiet))
-        step = f"{row.tool} {Path(row.file).name}".strip() if row.tool else row.status
-        return CardState("running", step, age=ago(quiet))
 
     def bind(self, n: int):
         ticket = self.load(n)
@@ -457,43 +178,6 @@ class Tickets(Prioritised, Controller):
         owner = str(place.owner) if place else ""
         return int(owner.split(":")[1]) if owner.startswith(f"{kind}:") else 0
 
-    def _handed_in(self, ticket) -> bool:
-        from surfaces.agent_state import WORKING_STATE, agent_state
-        working = agent_state(self.record, ticket.work_environment) == WORKING_STATE
-        return self._plan_status(ticket) == "done" and self._clean(ticket) and not working
-
-    def _calls(self, ticket) -> list[tuple[str, str, dict, int]]:
-        place = Record(self.record.root, ticket.work_environment)
-        settings = TicketsDetails.values(self.record)
-        soon = int(settings.remind_every)
-        asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}, soon) for q in Questions(place, actor=SYSTEM)._standing()]
-        awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}, soon)
-                  for w in Works(place, actor=SYSTEM)._standing() if w.awaiting and self._waits_on_people(w.awaiting)]
-        messages = Messages(place, actor=SYSTEM)
-        written = [messages.load(row["n"]) for row in messages.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
-        replies = [("ticket_replied", message.ref, {"text": message.title}, 0) for message in written if message.created > ticket.told]
-        done = [("ticket_plan_done", f"plan:{ticket.plan}", {"ahead": self._ahead(ticket)}, soon)] if self._handed_in(ticket) else []
-        return asks + awaits + replies + done
-
-    def _waits_on_people(self, text: str) -> bool:
-        return bool(WAITS_ON_PEOPLE.search(text)) or any(name in text.lower() for name in self._people())
-
-    def _people(self) -> list[str]:
-        root = str(self.record.root)
-        if root not in PEOPLE:
-            named = git(self.record.root.parent, "config", "user.name").stdout.strip().lower()
-            PEOPLE[root] = named.split()[:1]
-        return PEOPLE[root]
-
-    def _ahead(self, ticket) -> int:
-        branch, into = self._branch(ticket), self._into(ticket)
-        counts = [git(place, "rev-list", "--count", f"{into}..refs/heads/{branch}").stdout.strip() for _, place, _ in self._repositories(ticket)]
-        return sum(int(count) for count in counts if count.isdigit())
-
-    def _clean(self, ticket) -> bool:
-        folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
-        return all(folder and not git(folder, "status", "--porcelain").stdout.strip() for folder in folders)
-
     def _in_plan_worktree(self, ticket) -> bool:
         return bool(self._plan_owner(ticket.work_environment))
 
@@ -506,7 +190,7 @@ class Tickets(Prioritised, Controller):
         for env in Environments(self.record, actor=SYSTEM)._every():
             session = Sessions(self.record.root).holder(env.title) if env.title == place or env.launched_from == place else ""
             if session:
-                ask_session(self.record.root, terminal_of(self.record.root, session))
+                self._ask_to_stop(session)
         self._plans_here().update(self._plan_owner(place), merged=time.time())
 
     def _hand_to_plan(self, ticket):
@@ -542,6 +226,10 @@ class Tickets(Prioritised, Controller):
         return closed
 
     @internal
+    def raise_moment(self, n: int, moment: str, **data) -> None:
+        self.record.emit(self.type, n, moment, SYSTEM, **data)
+
+    @internal
     def hold(self, type_: str, n: int) -> None:
         owner = Environments(self.record, actor=self.actor)._titled(self.record.env)
         if owner and owner.owner.startswith(f"{self.type}:"):
@@ -558,13 +246,8 @@ class Tickets(Prioritised, Controller):
                  if not env.deleted and env.owner.startswith(f"{self.type}:") and env.owner not in kept]
         stopped = [place for place in owned if Sessions(self.record.root).holder(place)]
         for place in stopped:
-            ask_session(self.record.root, terminal_of(self.record.root, Sessions(self.record.root).holder(place)))
+            self._ask_to_stop(Sessions(self.record.root).holder(place))
         return stopped
-
-    def keep_branches(self) -> None:
-        for ticket in (r for r in self._standing() if r.work_environment):
-            for _, place, _ in self._repositories(ticket):
-                keep(place, ticket.work_environment, self._branch(ticket))
 
     @internal
     def close_merged(self) -> list:
@@ -572,28 +255,20 @@ class Tickets(Prioritised, Controller):
 
     def _closed(self, merged: list) -> list:
         for ticket in merged:
-            finished = [stage for stage, meaning in (Boards(self.record, actor=self.actor).load(ticket.board).meanings.items() if ticket.board else ()) if meaning == DONE]
+            board = self._board(ticket)
+            finished = board.stage_for(DONE) if board else ""
             try:
                 self.complete(ticket.n, how=f"its branch {self._branch(ticket)} was merged")
             except Refused:
                 continue
             if finished:
-                self.update(ticket.n, stage=finished[0])
+                self.update(ticket.n, stage=finished)
         for place in {ticket.work_environment for ticket in merged if self._in_plan_worktree(ticket)}:
             self._close_plan_worktree(place)
         return merged
 
     def _ran(self, ticket) -> bool:
         return not ticket.queued and not self._waiting_on(ticket) and bool(ticket.agent_seen or ticket.launched or self._in_plan_worktree(ticket))
-
-    def _branch(self, ticket) -> str:
-        from providers import DRIVERS
-        return DRIVERS[ticket.provider].branch(ticket.work_environment)
-
-    def _merged(self, ticket) -> bool:
-        branch, into = self._branch(ticket), self._into(ticket)
-        states = [(landing.merged(), landing.changed()) for landing in (Landing(place, branch, base, into) for _, place, base in self._repositories(ticket))]
-        return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 
     def merge(self, n: int):
         ticket = self.load(n)
@@ -616,15 +291,11 @@ class Tickets(Prioritised, Controller):
         return self.load(ticket.n)
 
     def _released(self, ticket) -> None:
-        board = Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None
+        board = self._board(ticket)
         if not board or not board.after_merge.strip():
             return
         code, output = streamed(["/bin/sh", "-c", board.after_merge], self.record.root.parent, RELEASE_TIMEOUT, lambda _: None)
         self.comment(ticket.n, f"After the merge, {board.after_merge} {'ran' if code == 0 else 'failed'}:\n{tail(output)}")
-
-    def _into(self, ticket) -> str:
-        board = Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None
-        return board.branch if board and board.branch else "HEAD"
 
     def stop(self, n: int):
         ticket = self.load(n)
@@ -634,7 +305,7 @@ class Tickets(Prioritised, Controller):
     def _stop(self, ticket) -> None:
         session = self.agent_session(ticket.n)
         if session and not self._in_plan_worktree(ticket):
-            ask_session(self.record.root, terminal_of(self.record.root, session))
+            self._ask_to_stop(session)
 
     def comments(self, n: int) -> list[Resource]:
         ticket = self.load(n)
@@ -646,7 +317,8 @@ class Tickets(Prioritised, Controller):
 
     def move(self, n: int, stage: str, model: str | None = None):
         ticket = self.load(n)
-        starting = bool(ticket.board) and Boards(self.record, actor=self.actor).load(ticket.board).meanings.get(stage.strip()) == START
+        board = self._board(ticket)
+        starting = bool(board) and board.meanings.get(stage.strip()) == START
         if starting:
             self._confirmed(ticket)
             self._modelled(ticket, model, f"journal ticket move {ticket.n} \"{stage.strip()}\" --model <model>")
@@ -708,19 +380,11 @@ class Tickets(Prioritised, Controller):
         self._as_orchestrator(ticket, DRAFTS, f"confirms a drafted {self.type}, with its button or in the viewer", "Confirmed the draft", why)
         return self.update(ticket.n, draft=False)
 
-    def _as_orchestrator(self, ticket, permission: str, gate: str, done: str, why: str) -> None:
-        if self.actor != AGENT:
-            return
-        if not (ticket.board and int(ticket.board) in self._orchestrating() and self._orchestrator_may(ticket, permission)):
-            self._refuse(f"only the user {gate}, or the agent orchestrating its board when the board has {permission} set")
-        if not why.strip():
-            self._refuse("say why, as the board's orchestrator: --why \"<reason>\"")
-        self.comment(ticket.n, f"{done} as the board's orchestrator: {why.strip()}")
-
     def start(self, n: int, provider: str | None = None, model: str | None = None):
         from agents.terminal import detached
         from providers import DRIVERS, PROVIDERS
         self._confirmed(self.load(n))
+        self.mark_seen()
         ticket = self.bind(int(n))
         into = self._into(self.load(n))
         missing = [name for name, place, _ in self._repositories(self.load(n)) if into != "HEAD" and not present(place, into)]
@@ -813,11 +477,13 @@ class Tickets(Prioritised, Controller):
         return [r for r in self._standing() if r.work_environment and self._live(r)]
 
     def _live(self, ticket) -> bool:
-        if self.agent_session(ticket.n):
-            if ticket.launched or not ticket.agent_seen:
+        return bool(self.agent_session(ticket.n)) or time.time() - ticket.launched < LAUNCHING_FOR
+
+    @internal
+    def mark_seen(self) -> None:
+        for ticket in self._standing():
+            if ticket.work_environment and (ticket.launched or not ticket.agent_seen) and self.agent_session(ticket.n):
                 self.update(ticket.n, launched=0.0, agent_seen=time.time())
-            return True
-        return time.time() - ticket.launched < LAUNCHING_FOR
 
     def _confirmed(self, ticket) -> None:
         if ticket.draft:
@@ -832,6 +498,9 @@ class Tickets(Prioritised, Controller):
         except Refused:
             domains = []
         return {"board": boards, "stage": [{"key": stage, "label": stage} for stage in self._stages(r.board)], "owner": domains}
+
+    def _board(self, ticket):
+        return Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None
 
     def _stages(self, board) -> list:
         return Boards(self.record, actor=self.actor).load(board).stages if board else []

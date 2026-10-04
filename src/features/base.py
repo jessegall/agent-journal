@@ -158,12 +158,7 @@ class Feature(ABC):
             record = Record(source, env(source)) if isinstance(source, Path) else getattr(source, "record", source)
             return callback(*args, **kwargs) if self.enabled(record) else empty()
 
-        if isinstance(container, list):
-            container.append(enabled)
-            GLOBAL_ENTRIES.append((container, enabled))
-            return
-        container[key] = enabled
-        GLOBAL_ENTRIES.append((container, key))
+        self.register_always(container, enabled, key)
 
     def register_switched(self, container: dict, key, target) -> None:
         container[key] = Switched(self, target)

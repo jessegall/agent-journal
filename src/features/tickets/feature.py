@@ -4,11 +4,11 @@ from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
 from features.tickets.details import TicketsDetails
 from features.nudges import Nudge
-from features.tickets.controller import DRAFTS, WAITS
+from features.tickets.orchestration import DRAFTS, WAITS
 from features.tickets.handlers import (
     FinishTheBoardWithItsLastTicket,
     HoldTicketKnowledge,
-    LookAfterTicketBranches,
+    LookAfterTickets,
     WakeTheTicketAgent,
     boards_to_check,
     decisions,
@@ -18,7 +18,7 @@ from features.tickets.limits import DraftsCarryOneLine, FillerKeepsToTheBoard, P
 from features.boards.controller import CARD_ROWS
 from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from features.plans.resource import PHASE
-from features.tickets.phases import start_phase_tickets
+from features.tickets.phases import start_tickets_of_phase
 from features.tickets.worker import start_worker
 
 __all__ = ["Tickets"]
@@ -37,10 +37,10 @@ class TicketsFeature(Feature):
     def register(self, journal: Journal) -> None:
         self.register_always(PHASE_ROWS, Tickets, PHASE.tickets)
         self.register_always(CARD_ROWS, Tickets)
-        self.register_global(PHASE_STARTS, start_phase_tickets, list)
+        self.register_global(PHASE_STARTS, start_tickets_of_phase, list)
         self.register_global(PLAN_STARTS, start_worker, str)
         journal.commands.add("ticket", ShowTicketTodos())
-        journal.events.handler(LookAfterTicketBranches())
+        journal.events.handler(LookAfterTickets())
         journal.events.handler(WakeTheTicketAgent())
         journal.events.handler(FinishTheBoardWithItsLastTicket())
         journal.events.handler(HoldTicketKnowledge())
