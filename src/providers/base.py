@@ -384,6 +384,9 @@ class Provider(ABC):
             kept.pop(call.loop, None)
         return kept
 
+    def dispatch_model(self, chosen: str) -> str:
+        return chosen
+
     def asking(self, hook) -> Asking | None:
         return Asking(hook.tool.name, hook.tool.text[:300], time.time()) if hook.event == PERMISSION else None
 

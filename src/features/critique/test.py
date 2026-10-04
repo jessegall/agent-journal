@@ -25,5 +25,9 @@ def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_
     assert all("round.md" in b and "Your findings are your answer" in b and "journal" not in b.split("round.md")[1] for b in briefs), \
         "each brief names the round's page and asks for findings as the answer, with no journal command"
     assert "continue each subagent" in critiques.recheck(row.n, "the empty state has a line now"), "a recheck goes back to the same critics"
+    from tests.kit import report
+    report(record, "working", "PreToolUse", session="codex-1", provider="codex")
+    by_codex = Critiques(record, actor=AGENT, session="codex-1").round("the helper list", lenses="words")
+    assert "model sonnet" not in by_codex, "a Codex agent is told a model it can dispatch, not Claude's"
     critiques.complete(row.n)
     assert critiques.load(row.n).completed > 0, "finishing closes the round"

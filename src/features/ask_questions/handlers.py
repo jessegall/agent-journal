@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from engine.events.agents import AgentReported
 from controllers.types import Questions
-from engine.events.resources import MessageCreated, QuestionAnswered, ResourceCompleted, ResourceEvent
+from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
 from features.nudges import DAY, Sent
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
@@ -13,6 +13,7 @@ from resources.base import SYSTEM, USER
 
 ASKING = "asking"
 WAITED_ON = ("todo", "plan", "ticket")
+GONE = {"completed": "closed", "deleted": "deleted"}
 
 
 @dataclass(frozen=True)
@@ -52,12 +53,12 @@ class MarkTheAnswer(Handler):
 
 
 class DismissSettledQuestions(Handler):
-    def handle(self, context: Context, event: ResourceCompleted) -> None:
-        if event.type not in WAITED_ON:
+    def handle(self, context: Context, event: AnyEvent) -> None:
+        if event.type not in WAITED_ON or event.action not in GONE:
             return
         ref, questions = f"{event.type}:{event.n}", Questions(context.record, actor=SYSTEM)
         for question in [q for q in questions._standing() if ref in q.refs]:
-            questions.dismiss(question.n, why=f"{ref.replace(':', ' ')}, which it was about, is closed")
+            questions.dismiss(question.n, why=f"{ref.replace(':', ' ')}, which it was about, is {GONE[event.action]}")
 
 
 def open_a_day(context, agent) -> list[Sent]:

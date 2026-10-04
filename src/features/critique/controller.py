@@ -3,13 +3,14 @@ import subprocess
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Reports
+from controllers.types import Agents, Reports
+from providers import dispatch_model
 from engine import runtime
 from features.critique.details import CritiqueDetails
 from features.critique.lenses import DEFAULT, LENSES
 from features.critique.resource import Critique
 from features.sharing.controller import answers
-from resources.base import Refused
+from resources.base import SYSTEM, Refused
 
 SEED_SECONDS = 300
 
@@ -50,6 +51,8 @@ class Critiques(Controller):
         folder = runtime.folder(self.record.root) / "critiques" / str(row.n)
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "round.md").write_text(page(settings.app, settings.login, settings.browsers))
+        caller = Agents(self.record, actor=SYSTEM)._titled(self.session) if self.session else None
+        model = dispatch_model(caller.provider, model) if caller else model
         sent = []
         for name in chosen:
             lens = LENSES[name]

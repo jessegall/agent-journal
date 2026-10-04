@@ -156,6 +156,10 @@ def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day
     todos.complete(row.n, how="the price came from the supplier's list")
     assert (questions.load(asked.n).completed > 0, questions.load(asked.n).data.get("dismissed"), questions.load(other.n).completed) == (True, True, 0.0), \
         "closing the row a question is about dismisses it, and leaves the others"
+    gone = todos.create("the colour")
+    about_gone = questions.create("Which colour?", about=gone.ref)
+    todos.delete(gone.n, "not needed")
+    assert questions.load(about_gone.n).data.get("dismissed") is True, "deleting the row a question is about dismisses it too"
     old = questions.load(other.n)
     old.created = 1.0
     questions.save(old, "updated")

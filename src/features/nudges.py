@@ -36,7 +36,7 @@ class Nudge:
         if self.once:
             return [found for found in self.about(context, agent) if context.once(self.line, found.key)]
         spec = self.cadence(context)
-        due = [found for found in self.about(context, agent) if context.every(self.behaviour, found.key, spec)]
+        due = [found for found in self.about(context, agent) if context.every(self.behaviour, f"{self.line}:{found.key}", spec)]
         return self.capped(context, due) if self.most and due else due
 
     def capped(self, context, due: list[Sent]) -> list[Sent]:

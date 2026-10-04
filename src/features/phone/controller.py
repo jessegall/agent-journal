@@ -294,6 +294,10 @@ def hashed(secret: str) -> str:
     return hashlib.sha256(secret.encode()).hexdigest()
 
 
+def in_feed(kind: str, row) -> bool:
+    return kind != "message" or not (row.data.get("window") or row.data.get("acknowledgement"))
+
+
 class Phones(Controller):
     resource = Phone
 
@@ -543,11 +547,9 @@ class Phones(Controller):
     def _latest(self, home: Record, kind: str, before: float) -> list:
         rows = CONTROLLERS[kind](home, actor=SYSTEM)
         loaded = (rows.load(row["n"]) for row in reversed(rows.summaries()) if not row["deleted"])
-        return list(islice((row for row in loaded if row.created < before), FEED))[::-1]
+        return list(islice((row for row in loaded if row.created < before and in_feed(kind, row)), FEED))[::-1]
 
-    def _said(self, home: Record, kind: str, row) -> dict | None:
-        if kind == "message" and (row.data.get("window") or row.data.get("acknowledgement")):
-            return None
+    def _said(self, home: Record, kind: str, row) -> dict:
         said = {**shaped(row, home, VIEWER), "who": row.seen[0] if kind != "question" and row.seen else "agent", "files": dict(row.files)}
         if kind != "question":
             return said

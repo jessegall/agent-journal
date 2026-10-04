@@ -201,6 +201,11 @@ class Codex(Provider):
                 found["doc_limit"] = int(limit.group(1))
         return CodexConfig(**found)
 
+    def dispatch_model(self, chosen: str) -> str:
+        if chosen in {model.slug for model in self.catalog()}:
+            return chosen
+        return self.configuration().model or chosen
+
     @classmethod
     @cache
     def briefing_limit(cls) -> int:

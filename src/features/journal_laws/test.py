@@ -206,16 +206,18 @@ def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band
     record = fresh()
     agents_md = record.root.parent / "AGENTS.md"
     agents_md.write_text("x" * 200_000)
-    report(record, "working", "PostToolUse")
-    report(record, "working", "PostToolUse")
+    report(record, "working", "PostToolUse", provider="claude")
+    assert not [n for n in nudges(record) if n.startswith("AGENTS.md is")], "a Claude agent is not told about Codex's file"
+    report(record, "working", "PostToolUse", provider="codex")
+    report(record, "working", "PostToolUse", provider="codex")
     assert [n for n in nudges(record) if n.startswith("AGENTS.md is")] == [f"AGENTS.md is 200,000 bytes and Codex reads only its first {PROVIDERS['codex'].briefing_limit():,}"], \
         "the file past Codex's limit is told once"
     agents_md.write_text("x" * 210_000)
-    report(record, "working", "PostToolUse")
+    report(record, "working", "PostToolUse", provider="codex")
     assert len([n for n in nudges(record) if n.startswith("AGENTS.md is")]) == 2, "growing by another band tells it again"
     agents_md.write_text("x" * 100)
     (record.root.parent / "app").mkdir()
     (record.root.parent / "app" / "AGENTS.md").write_text("y" * 200_000)
-    report(record, "working", "PostToolUse", cwd=str(record.root.parent / "app"))
+    report(record, "working", "PostToolUse", cwd=str(record.root.parent / "app"), provider="codex")
     assert any(n.startswith("AGENTS.md with app/AGENTS.md is 200,100 bytes") for n in nudges(record)), \
         "every AGENTS.md Codex reads on the way to its working folder counts against the one budget"
