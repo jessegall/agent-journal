@@ -45,6 +45,7 @@ def kept(record, session: str, line: CommandRan) -> None:
         held["lines"] = [*held.get("lines", []), {**asdict(line), "output": capped(line.output.strip()), "level": level}][-KEPT:]
 
 
-def lines(record, session: str, level: str) -> list[dict]:
+def lines(record, session: str, level: str, after: float = 0.0) -> list[dict]:
     included = LEVELS[:LEVELS.index(level) + 1]
-    return sorted((line for name in included for line in record.state(f"{LOG}-{name}", session).get("lines", [])), key=lambda line: line["at"])[-KEPT:]
+    found = (line for name in included for line in record.state(f"{LOG}-{name}", session).get("lines", []) if line["at"] > after)
+    return sorted(found, key=lambda line: line["at"])[-KEPT:]

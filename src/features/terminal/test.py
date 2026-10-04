@@ -22,3 +22,11 @@ def test_shell_commands_are_kept_with_their_output_and_journal_calls_are_left_ou
                                                                               "tail -3 .journal/runtime/engine.log"], "the journal level adds them back"
     printed = kept[0]["output"].splitlines()
     assert (printed[0], len(printed), printed[-1]) == ("1", MOST_LINES + 1, f"… {100 - MOST_LINES} more lines were not kept"), "the output is cut to its first lines"
+
+
+def test_a_poll_after_the_last_line_gets_only_the_newer_ones():
+    record = fresh()
+    ran(record, "ls", "a")
+    seen = lines(record, "claude-1", COMMANDS)[-1]["at"]
+    ran(record, "pwd", "/tmp")
+    assert [line["command"] for line in lines(record, "claude-1", COMMANDS, seen)] == ["pwd"], "only the line after the last one seen comes back"

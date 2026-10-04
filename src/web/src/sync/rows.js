@@ -244,8 +244,14 @@ export function recallEvents() {
 
 const owedBy = (e) => (e.data && e.data.setting ? "settings" : e.type);
 
+const notResources = new Set();
+const unknown = (e) => !store.spec.types[e.type] && !notResources.has(e.type);
+
 export async function takeEvents(events) {
-    if (!store.spec || events.some((e) => !store.spec.types[e.type])) store.spec = await api.manifest();
+    if (!store.spec || events.some(unknown)) {
+        store.spec = await api.manifest();
+        events.filter((e) => !store.spec.types[e.type]).forEach((e) => notResources.add(e.type));
+    }
     keepEvents([...store.events, ...events]);
     refresh([...new Set(events.map(owedBy))].filter((type) => type !== "agent"));
 }

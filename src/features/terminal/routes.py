@@ -9,12 +9,14 @@ from resources.base import Refused, USER
 @dataclass(frozen=True)
 class TerminalQuery(Loaded):
     level: str = EVERYTHING
+    after: float = 0.0
 
 
 @handles("GET", "/api/{env}/agent/{n}/terminal")
 def get_terminal(req: Request) -> Reply:
-    level = req.query_as(TerminalQuery).level
+    asked = req.query_as(TerminalQuery)
+    level = asked.level
     if level not in TERMINAL_LEVELS:
         raise Refused(f"level is one of {', '.join(TERMINAL_LEVELS)}")
     record = req.record()
-    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(req.params["n"]).title, level)})
+    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(req.params["n"]).title, level, asked.after)})
