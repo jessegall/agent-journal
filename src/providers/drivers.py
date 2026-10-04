@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
-from providers.base import JOURNAL, MARK, Asking
+from providers.base import JOURNAL, MARK
+from providers.payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted

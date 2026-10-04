@@ -8,7 +8,7 @@ from typing import ClassVar
 from engine.fields import Loaded
 from engine.transcript import Turn
 from providers.jsonl import last_lines, parsed_row
-from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
 from resources.base import Refused
 from resources.types import IDLE
@@ -98,13 +98,6 @@ class TypedRun:
 @dataclass
 class TypedRuns:
     runs: list[TypedRun] = field(default_factory=list)
-
-
-@dataclass(frozen=True)
-class Asking:
-    tool: str
-    call: str
-    at: float
 
 
 def asking_row(asked: Asking | None) -> dict:
