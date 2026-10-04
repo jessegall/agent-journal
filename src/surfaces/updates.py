@@ -9,13 +9,13 @@ from engine.record import Record
 from resources.base import SYSTEM
 from engine.stored import write_text
 from engine.version import version as package_version
-from install import counted, released
+from install import released, version_key
 
 KIND = "update"
 
 
 def newer(version: str, than: str) -> bool:
-    return bool(version) and (not than or than == "0" or counted(version) > counted(than))
+    return bool(version) and (not than or than == "0" or version_key(version) > version_key(than))
 
 
 def announce(root: Path, version: str = "") -> str:

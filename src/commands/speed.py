@@ -15,6 +15,8 @@ from engine.viewer import last
 from providers.drivers import Driver
 from runner.engine import Engine
 from engine.record import Record
+from engine.sessions import ACTIVE_ENV
+from providers.base import JOURNAL
 from serve import serve
 from engine.stored import write_text
 
@@ -47,13 +49,13 @@ def copy(root: Path) -> Path:
 
 def cli(root: Path, env: str, argv: tuple, runs: int) -> float:
     command = [sys.executable, str(HERE / "journal.py"), "--root", str(root), "--env", env, *argv]
-    return timed(lambda: subprocess.run(command, capture_output=True, timeout=120, env={**os.environ, "AGENT_JOURNAL_ACTIVE": ""}), runs)
+    return timed(lambda: subprocess.run(command, capture_output=True, timeout=120, env={**os.environ, ACTIVE_ENV: ""}), runs)
 
 
 def hook(root: Path, env: str, runs: int, command: list[str]) -> float:
     payload = json.dumps({"hook_event_name": "PreToolUse", "session_id": "speed-probe", "tool_name": "Read", "tool_input": {"file_path": "README.md"}})
     return timed(lambda: subprocess.run([*command, "claude", str(root)], input=payload, capture_output=True, text=True, timeout=120, cwd=root.parent,
-                                        env={**os.environ, "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": env}), runs)
+                                        env={**os.environ, ACTIVE_ENV: "1", "JOURNAL_ENV": env}), runs)
 
 
 def served(base: str, argv: tuple, runs: int) -> float:
@@ -64,14 +66,15 @@ def served(base: str, argv: tuple, runs: int) -> float:
 class Quiet(Driver):
     name = "quiet"
 
-    def command(self, args: list[str], cwd=None) -> list[str]:
+    @classmethod
+    def command(cls, args: list[str], cwd=None) -> list[str]:
         return ["true"]
 
     def alive(self) -> bool:
         return True
 
-    def send(self, text: str) -> None:
-        return None
+    def send(self, text: str = "", groups: dict | None = None, yielding: str = "", now: bool = False, by: str = JOURNAL) -> str:
+        return ""
 
     def last_report(self):
         return None

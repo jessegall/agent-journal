@@ -115,7 +115,7 @@ def help_text(word: str) -> str:
     return f"no command {word!r}"
 
 def speed(ctx) -> str:
-    from runner.speed import measure
+    from commands.speed import measure
     return measure(ctx["record"].root, ctx["record"].env, ctx["runs"], ctx["url"], ctx["out"])
 
 def upgrade_here(ctx) -> str:
