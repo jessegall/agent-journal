@@ -1,23 +1,20 @@
 <script setup>
-import {computed, inject, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {computed, inject, nextTick, ref} from "vue";
+import {useHeldSend} from "../composables/heldSend.js";
 import {ended, perform} from "./outbox.js";
 import {phone} from "../api/phone.js";
 import PhoneSending from "./PhoneSending.vue";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {ago} from "../format/time.js";
-import {announce, tell} from "./announce.js";
+import {announce, HELD, tell, tryAgain} from "./announce.js";
 import {tick} from "./haptic.js";
 
-const HOLD_SECONDS = 3;
 const card = ref(null);
-const HELD = "No connection right now: this goes as soon as the phone reaches your computer again.";
 const props = defineProps({question: {type: Object, required: true}});
-const seconds = computed(() => Number(props.question.hold ?? HOLD_SECONDS));
 const emit = defineEmits(["done"]);
 const failed = inject("phoneFailed");
 const refresh = inject("phoneRefresh", () => {});
-const choice = ref("");
 const typed = ref(false);
 const OWN = "own-words";
 const rows = computed(() => [
@@ -28,19 +25,25 @@ const rows = computed(() => [
     })),
     {key: OWN, own: true, sending: Boolean(choice.value) && typed.value},
 ]);
-const left = ref(0);
 const own = ref("");
-const said = ref("");
+const answered = ref("");
 const trouble = ref("");
 const options = computed(() => props.question.data.options || []);
 const outcome = computed(() =>
-    props.question.data.dismissed || said.value === "Dismissed" ? "Dismissed" : `Answered: ${props.question.outcome || said.value}`
+    props.question.data.dismissed || answered.value === "Dismissed" ? "Dismissed" : `Answered: ${props.question.outcome || answered.value}`
 );
-let timer = 0;
+const {
+    left,
+    length: seconds,
+    value: held,
+    start,
+    undo,
+    sendNow,
+} = useHeldSend({seconds: () => props.question.hold, send, sendOnUnmount: true, sendWhenHidden: true});
+const choice = computed(() => held.value ?? "");
 
 function stop() {
-    clearInterval(timer);
-    choice.value = "";
+    undo();
     typed.value = false;
 }
 
@@ -51,16 +54,10 @@ function pickOwn() {
     pick(words);
 }
 
-function leaving() {
-    if (choice.value && !said.value) send(choice.value);
-}
-
-const hidden = () => document.hidden && leaving();
-
 async function send(answer) {
     stop();
     trouble.value = "";
-    said.value = answer;
+    answered.value = answer;
     try {
         const went = await perform({kind: "answer", n: props.question.n, answer});
         if (went === "held") tell(trouble, HELD);
@@ -78,7 +75,7 @@ async function reconciled(mine) {
         const real = await phone.row(`question:${props.question.n}`);
         const theirs = real.data?.dismissed ? "Dismissed" : real.outcome || "";
         if (!theirs) return;
-        said.value = theirs;
+        answered.value = theirs;
         if (theirs !== mine) tell(trouble, `Already answered on the computer: ${theirs}`);
     } catch (error) {
         if (ended(error)) failed(error);
@@ -87,14 +84,14 @@ async function reconciled(mine) {
 
 function missed(error, mine) {
     if (error.status === 409) return reconciled(mine);
-    said.value = "";
+    answered.value = "";
     if (ended(error)) failed(error);
-    else tell(trouble, `That didn't go through: ${error.message}. Try again.`);
+    else tell(trouble, tryAgain(error));
 }
 
 async function dismiss() {
     stop();
-    said.value = "Dismissed";
+    answered.value = "Dismissed";
     try {
         const went = await perform({kind: "dismiss", n: props.question.n});
         if (went === "held") tell(trouble, HELD);
@@ -107,27 +104,12 @@ async function dismiss() {
 }
 
 function pick(answer) {
-    if (said.value) return;
+    if (answered.value) return;
     tick();
-    if (choice.value === answer) return send(answer);
-    clearInterval(timer);
-    choice.value = answer;
-    left.value = seconds.value;
+    if (choice.value === answer) return sendNow();
+    start(answer);
     nextTick(() => card.value?.querySelector(".sending-undo")?.focus({preventScroll: true}));
-    timer = setInterval(() => (left.value -= 1) <= 0 && send(answer), 1000);
 }
-
-onMounted(() => {
-    window.addEventListener("pagehide", leaving);
-    document.addEventListener("visibilitychange", hidden);
-});
-
-onUnmounted(() => {
-    window.removeEventListener("pagehide", leaving);
-    document.removeEventListener("visibilitychange", hidden);
-    leaving();
-    clearInterval(timer);
-});
 </script>
 
 <template>
@@ -137,14 +119,14 @@ onUnmounted(() => {
         <template v-if="question.abstract">
             <TextDisplay class="question-abstract" :text="question.abstract" />
         </template>
-        <template v-if="question.completed || said">
+        <template v-if="question.completed || answered">
             <p class="question-answer">{{ outcome }}</p>
         </template>
         <template v-else>
             <div class="question-options">
                 <template v-for="row in rows" :key="row.key">
                     <template v-if="row.sending">
-                        <PhoneSending :answer="choice" :left="left" :seconds="seconds" @now="send(choice)" @undo="stop" />
+                        <PhoneSending :answer="choice" :left="left" :seconds="seconds" @now="sendNow" @undo="stop" />
                     </template>
                     <template v-else-if="row.own">
                         <form class="question-own" @submit.prevent="pickOwn">

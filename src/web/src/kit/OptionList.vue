@@ -1,9 +1,8 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
-import {store} from "../state/store.js";
+import {computed, ref} from "vue";
+import {useHeldSend} from "../composables/heldSend.js";
 import Btn from "./Btn.vue";
 
-const HOLD_SECONDS = 3;
 const props = defineProps({
     options: {type: Array, default: () => []},
     chosen: {type: String, default: ""},
@@ -17,6 +16,7 @@ const props = defineProps({
     steady: Boolean,
     multiple: Boolean,
     chosenMany: {type: Array, default: () => []},
+    holdSeconds: {type: Number, default: undefined},
 });
 const emit = defineEmits(["pick", "picks"]);
 const ticked = ref([]);
@@ -28,10 +28,14 @@ const settle = () =>
         "picks",
         [...ticked.value].sort((a, b) => a - b)
     );
-const holding = ref(-1);
 const pressed = ref(-1);
-let timer = 0;
-const held = computed(() => Number(store.settings?.ask_questions?.hold ?? HOLD_SECONDS) * 1000);
+const {
+    value: holding,
+    length,
+    start,
+    undo,
+} = useHeldSend({seconds: () => props.holdSeconds, send: (i) => emit("pick", i), sendOnUnmount: true});
+const held = computed(() => length.value * 1000);
 
 function choose(i) {
     if (props.multiple) return tick(i);
@@ -40,23 +44,9 @@ function choose(i) {
         pressed.value = i;
         return emit("pick", i);
     }
-    clearTimeout(timer);
-    if (holding.value === i) {
-        holding.value = -1;
-        return;
-    }
-    holding.value = i;
-    timer = setTimeout(save, held.value);
+    if (holding.value === i) return undo();
+    start(i);
 }
-
-function save() {
-    const i = holding.value;
-    clearTimeout(timer);
-    holding.value = -1;
-    if (i >= 0) emit("pick", i);
-}
-
-onUnmounted(save);
 </script>
 
 <template>
