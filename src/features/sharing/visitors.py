@@ -43,9 +43,9 @@ def count_sent(token: str) -> None:
 
 def index_comment(record, comment, path) -> None:
     state = record.state("sharing")
-    first = next((line.strip() for line in comment.brief.splitlines() if line.strip()), "")
+    snippets = [line.strip()[:SNIPPET] for line in comment.brief.splitlines() if len(line.strip()) >= SHORTEST_SNIPPET]
     kept = [entry for entry in state.get(INDEX, []) if entry["n"] != comment.n]
-    state.set(INDEX, [*kept, {"n": comment.n, "snippet": first[:SNIPPET], "path": f"{path.parent.name}/{path.name}"}])
+    state.set(INDEX, [*kept, *({"n": comment.n, "snippet": snippet, "path": f"{path.parent.name}/{path.name}"} for snippet in (snippets or [""]))])
 
 
 def unindex_comment(record, n: int) -> None:
@@ -69,4 +69,4 @@ def shown(entry: Visit, command: str, output: str) -> bool:
 
 
 def read_now(record, command: str, output: str) -> list[int]:
-    return [entry["n"] for entry in record.state("sharing").get(INDEX, []) if shown(entry, command, output)]
+    return sorted({entry["n"] for entry in record.state("sharing").get(INDEX, []) if shown(entry, command, output)})

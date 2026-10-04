@@ -10,6 +10,16 @@ from resources.base import SYSTEM
 from engine.reach import Reach
 
 PLAIN = re.compile(r"[\w .:@/+-]+")
+USER_ACTOR = re.compile(r"(?:^|[\s?&])(?:--as(?:=|\s+)|JOURNAL_ACTOR\s*=|actor\s*=)\s*['\"]?user\b", re.I)
+
+
+class RefuseClaimedUser(ToolInterceptor):
+    reach = Reach.BOTH
+
+    def intercept(self, context: AgentContext, call) -> str:
+        if any(USER_ACTOR.search(command) for command in call.commands):
+            return "An agent cannot claim to be the user. Ask the user to make this change in the viewer."
+        return ""
 
 
 def only_agree(command: str) -> bool:

@@ -5,6 +5,7 @@ import socket
 from pathlib import Path
 
 from engine.viewer import known
+from engine.proc import git
 
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[A-Za-z]{2,}\b")
 SESSION = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b")
@@ -40,7 +41,9 @@ class Scrubber:
     def __init__(self, folders: list[str] | None = None):
         self.sessions: dict[str, str] = {}
         self.paths = {str(Path.home()): HOME, **dict.fromkeys(folders or [], PROJECT)}
+        git_name = git(["config", "user.name"], Path(folders[0]) if folders else Path.cwd()).strip()
         self.names = {name: "demo" for name in (getpass.getuser(), Path.home().name) if len(name) >= SHORTEST_NAME}
+        self.names.update({name: "demo" for name in (git_name, *git_name.split()) if name})
         self.names.update({name: "demo" for journal in known() for name in (journal.project, Path(journal.root).parent.name) if private(name)})
         host = socket.gethostname().split(".")[0]
         if len(host) >= SHORTEST_NAME:
@@ -52,8 +55,8 @@ class Scrubber:
         raw = TUNNEL.sub("demo.example.com", raw)
         raw = EMAIL.sub(KEPT_EMAIL, raw)
         raw = SESSION.sub(lambda found: self.sessions.setdefault(found.group(), f"session-{len(self.sessions) + 1:04d}"), raw)
-        for name, stands_for in self.names.items():
-            raw = re.sub(rf"\b{re.escape(name)}\b", stands_for, raw)
+        for name in sorted(self.names, key=len, reverse=True):
+            raw = re.sub(rf"\b{re.escape(name)}\b", self.names[name], raw)
         return raw
 
     def leaks(self, raw: str) -> list[str]:

@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import time
+import pytest
 
 from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
@@ -17,7 +18,7 @@ from features.plugins.declared import Manifest
 from features.plugins.manifest import MANIFEST
 from features.plugins.source import alone, folder, home, log, plugin_socket
 from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
 
 
@@ -84,6 +85,10 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
     guardian = Plugins(record, actor=SYSTEM)._titled("guardian")
     assert "src/Generated is generated" in log(record.root, "guardian").read_text(), "every answer the plugin gives is written to its log"
+    with pytest.raises(Refused):
+        log(record.root, "..%2Foutside")
+    with pytest.raises(Refused):
+        log(record.root, "../outside")
     ClearLog().run(None, Plugins(record, actor=SYSTEM), guardian.n)
     assert not log(record.root, "guardian").exists(), "and the log can be emptied"
     served = alone("served")

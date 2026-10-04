@@ -100,7 +100,9 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     assert (read_source(project, "tokens.css").text, sorted(path.name for path in walk(project)[0])) == ("tokens", ["tokens.css", "visible.txt"]), \
         "visible files are read and listed, a word like tokens in a name included"
     (project / "api_token.json").write_text("secret")
-    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt", "api_token.json"):
+    (project / "credentials").mkdir()
+    (project / "credentials" / "prod.json").write_text("secret")
+    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt", "api_token.json", "credentials/prod.json"):
         with pytest.raises(Refused):
             read_source(project, asked)
     for handler, query in ((get_file_text, {"path": ".env"}), (get_file_diff, {"path": ".env"}), (get_project_files, {"folder": ".journal"}), (get_file_text, {"path": str(other / "note.txt")})):
@@ -123,6 +125,37 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
+    import subprocess
+    import pytest
+    from commands.dispatch import Request
+    from commands.http import get_commit, get_file_diff
+    from resources.base import Refused
+    project = tmp_path / "project"
+    (project / ".journal").mkdir(parents=True)
+    (project / "credentials").mkdir()
+    (project / ".env").write_text("hidden secret")
+    (project / "credentials" / "prod.json").write_text("folder secret")
+    (project / "star*.txt").write_text("visible star")
+    (project / "star-other.txt").write_text("other visible")
+    def run(*args):
+        return subprocess.run(["git", *args], cwd=project, check=True, capture_output=True, text=True).stdout.strip()
+    run("init", "-q")
+    run("add", ".env", "credentials/prod.json", "star*.txt", "star-other.txt")
+    run("-c", "user.name=Example", "-c", "user.email=example@example.com", "commit", "-qm", "seed")
+    sha = run("rev-parse", "HEAD")
+    body = get_commit(Request(project / ".journal", {"env": "main", "sha": sha}, {}, {})).body
+    assert "visible star" in body["diff"] and "hidden secret" not in body["diff"] and "folder secret" not in body["diff"]
+    assert ".env" not in body["stat"] and "credentials/prod.json" not in body["stat"]
+    (project / "star*.txt").write_text("changed star")
+    (project / "star-other.txt").write_text("changed other")
+    diff = get_file_diff(Request(project / ".journal", {"env": "main"}, {"path": "star*.txt"}, {})).body["diff"]
+    assert "changed star" in diff and "changed other" not in diff
+    for path in (".", "credentials", ".env", "credentials/prod.json"):
+        with pytest.raises(Refused):
+            get_file_diff(Request(project / ".journal", {"env": "main"}, {"path": path}, {}))
 
 
 def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):

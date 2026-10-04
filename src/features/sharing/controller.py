@@ -40,6 +40,7 @@ LAYOUT_FILE = "layout.json"
 HEALTH = "health"
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
+USER_SHARE_FIELDS = {"approved", "target", "password", "comments", "expires"}
 
 
 def member_refs(row) -> list[str]:
@@ -112,6 +113,8 @@ class Shares(Controller):
     resource = Share
 
     def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str = "", **data):
+        if self.actor != USER and (USER_SHARE_FIELDS.intersection(data) or expires != "7d" or password):
+            raise Refused("only the user may set a share's approval, target, password, comments or expiry")
         if not SHAREABLE.match(title.strip()):
             return super().create(title, abstract, brief, **data)
         target = self._target(title)
@@ -122,6 +125,11 @@ class Shares(Controller):
         if not made.approved:
             self._ask_to_open(made, target)
         return made
+
+    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
+        if self.actor != USER and USER_SHARE_FIELDS.intersection(data):
+            raise Refused("only the user may change a share's approval, target, password, comments or expiry")
+        return super().update(n, title, abstract, brief, outcome, **data)
 
     def share_layout(self, name: str, layout: str, expires: str = "7d", once: bool = False):
         if self.actor != USER:
@@ -169,12 +177,7 @@ class Shares(Controller):
             Nudges(record, actor=SYSTEM)._to_primary(titled(f"{name} answered your question in comment {n}: {choice}"),
                                                      "they picked it on the shared page; carry on with that answer")
         else:
-            index_comment(record, made, comments.path(n))
-            Messages(record, actor=AGENT).create(
-                titled(f"{name} answered your question in comment {n} through a shared link"),
-                brief=f"{choice}\n\nThe link has no password, so the agent does not act on this unless you let it.",
-                buttons=[{"label": "Let the agent act on it", "type": "share", "n": n, "action": "allow"}],
-            )
+            self._hold_visitor_comment(record, made, comments.path(n), f"{name} answered your question in comment {n} through a shared link", choice)
         return made
 
     def agree(self, n: int, words: str) -> str:
@@ -198,17 +201,17 @@ class Shares(Controller):
         comments = Comments(record, actor=SYSTEM)
         made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n, trusted=bool(share.password))
         if not made.data["trusted"]:
-            index_comment(record, made, comments.path(made.n))
-            self._show_visitor_comment(record, made, ref)
+            self._hold_visitor_comment(record, made, comments.path(made.n), f"{name} commented on {ref.replace(':', ' ')} through a shared link", text)
         kind, _, n = ref.partition(":")
         about = CONTROLLERS[kind](record, actor=SYSTEM)
         about.save(about.load(n), "commented", comment=made.n)
         return made
 
-    def _show_visitor_comment(self, record, comment, ref: str) -> None:
+    def _hold_visitor_comment(self, record, comment, path: Path, title: str, text: str) -> None:
+        index_comment(record, comment, path)
         Messages(record, actor=AGENT).create(
-            titled(f"{comment.data['visitor']} commented on {ref.replace(':', ' ')} through a shared link"),
-            brief=f"{comment.brief}\n\nThe link has no password, so the agent does not act on this unless you let it.",
+            titled(title),
+            brief=f"{text}\n\nThe link has no password, so the agent does not act on this unless you let it.",
             buttons=[{"label": "Let the agent act on it", "type": "share", "n": comment.n, "action": "allow"}],
         )
 

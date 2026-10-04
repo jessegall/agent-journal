@@ -3,7 +3,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.sharing.controller import Shares
 from features.sharing.details import SharingDetails
-from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseUntilAgreed
+from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseClaimedUser, RefuseUntilAgreed
 from features.sharing.services import share_services
 from features.sharing.watchdog import KeepTunnelAnswering
 
@@ -19,3 +19,4 @@ class SharingFeature(Feature):
         journal.events.handler(NameVisitorComment())
         journal.events.handler(KeepTunnelAnswering())
         journal.agent.interceptor(RefuseUntilAgreed())
+        journal.agent.interceptor(RefuseClaimedUser())

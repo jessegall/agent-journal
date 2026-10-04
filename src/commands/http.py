@@ -901,10 +901,14 @@ def get_commit(req: Request) -> Reply:
     head = ran(["git", "show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], req.root.parent)
     if head is None:
         raise Missing("git did not answer")
-    stat = git(["show", "--stat=120", "--format=", sha], req.root.parent)
-    diff = git(["show", "--format=", "--no-color", sha], req.root.parent, timeout=10)
     if head.returncode:
         raise Missing(f"no commit {sha}")
+    from engine.project_files import readable_path
+    project = req.root.parent.resolve()
+    changed = git(["diff-tree", "--root", "--no-commit-id", "--name-only", "-r", "-z", sha], project).split("\0")
+    allowed = [path for path in changed if readable_path(project, project / path)]
+    stat = git(["--literal-pathspecs", "show", "--stat=120", "--format=", sha, "--", *allowed], project) if allowed else ""
+    diff = git(["--literal-pathspecs", "show", "--format=", "--no-color", sha, "--", *allowed], project, timeout=10) if allowed else ""
     full, author, at, subject, body = (head.stdout.rstrip("\n").split("\x1f", 4) + ["", "", "", ""])[:5]
     return Reply(200, {"sha": full, "author": author, "at": float(at) if at else 0.0, "subject": subject, "body": body, "stat": stat, "diff": diff[:200000]})
 
@@ -925,10 +929,12 @@ def get_file_diff(req: Request) -> Reply:
     project = req.root.parent.resolve()
     asked = req.query_as(FileQuery).path
     target = project_path(project, asked)
+    if not target.is_file():
+        raise Refused(f"{asked!r} is not a file in the project that may be read")
     relative = str(target.relative_to(project))
-    diff = git(["diff", "--no-color", "HEAD", "--", relative], project, timeout=10)
-    if not diff and target.is_file() and not git(["ls-files", "--", relative], project):
-        diff = git(["diff", "--no-color", "--no-index", "--", "/dev/null", relative], project, timeout=10)
+    diff = git(["--literal-pathspecs", "diff", "--no-color", "HEAD", "--", relative], project, timeout=10)
+    if not diff and not git(["--literal-pathspecs", "ls-files", "--", relative], project):
+        diff = git(["--literal-pathspecs", "diff", "--no-color", "--no-index", "--", "/dev/null", relative], project, timeout=10)
     return Reply(200, {"path": relative, "diff": diff[:200000]})
 
 

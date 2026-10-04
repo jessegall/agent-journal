@@ -47,6 +47,8 @@ def plugin_socket(root: Path, name: str) -> Path:
 
 
 def log(root: Path, name: str) -> Path:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", name) or name in (".", ".."):
+        raise Refused("a plugin log name is a single file name")
     return Path(root) / "runtime" / LOGS / f"{name}.log"
 
 
