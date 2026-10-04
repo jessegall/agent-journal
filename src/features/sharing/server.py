@@ -12,8 +12,10 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
-from features import FEATURES  # noqa: E402
-from features.sharing.controller import HEALTH, LAYOUT_FILE, SharedComment  # noqa: E402
+from features import running  # noqa: E402
+from features.sharing.controller import HEALTH, LAYOUT_FILE  # noqa: E402
+from features.sharing.passwords import unlocked  # noqa: E402
+from features.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from features.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
@@ -26,6 +28,8 @@ APP_DIR = data("web", "dist")
 TICK_EVERY = 15
 READ_SECONDS = 15
 BODY_LIMIT = 8192
+OPEN = 200
+GONE_ON_POST = {410: 404}
 PACKED_FROM = 1024
 PACKED = ("text/", "application/javascript", "image/svg+xml")
 COMMENT_HEADER = "X-Shared-Comment"
@@ -93,7 +97,23 @@ class ShareHandler(BaseHTTPRequestHandler):
         return
 
     def sharing(self) -> bool:
-        return FEATURES["sharing"].enabled(self.shares.record)
+        from features.sharing.feature import SharingFeature
+        return running(SharingFeature).enabled(self.shares.record)
+
+    def opened(self, token: str):
+        share = self.shares._by_token(token)
+        if share is None or not share.approved:
+            return share, 404
+        if share.ended:
+            return share, 410
+        if not unlocked(share, self.password()):
+            return share, 401
+        return share, OPEN
+
+    def closed(self, code: int) -> None:
+        if code == 401:
+            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        return self.page(code, unshared())
 
     def do_HEAD(self) -> None:
         self.do_GET()
@@ -106,13 +126,9 @@ class ShareHandler(BaseHTTPRequestHandler):
             return route.get(self, parts[1:])
         if len(parts) < 2 or parts[0] != "s" or not self.sharing():
             return self.page(404, unshared())
-        share = self.shares._by_token(parts[1])
-        if share is None or not share.approved:
-            return self.page(404, unshared())
-        if share.ended:
-            return self.page(410, unshared())
-        if not self.shares._unlocked(share, self.password()):
-            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        share, code = self.opened(parts[1])
+        if code != OPEN:
+            return self.closed(code)
         rest = parts[2:]
         if share.layout:
             if rest != [LAYOUT_FILE]:
@@ -148,11 +164,9 @@ class ShareHandler(BaseHTTPRequestHandler):
             return route.post(self, parts[1:])
         if len(parts) != 3 or parts[0] != "s" or parts[2] not in VISITOR_POSTS or not self.sharing():
             return self.refused()
-        share = self.shares._by_token(parts[1])
-        if share is None or not share.approved or share.ended:
-            return self.page(404, unshared())
-        if not self.shares._unlocked(share, self.password()):
-            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        share, code = self.opened(parts[1])
+        if code != OPEN:
+            return self.closed(GONE_ON_POST.get(code, code))
         if self.headers.get(COMMENT_HEADER) != "1" or not self.headers.get("Content-Type", "").startswith("application/json"):
             return self.answer(403, "refused")
         length = self.headers.get("Content-Length", "")
@@ -262,7 +276,7 @@ def main(argv: list[str]) -> None:
     import features
     from engine import runtime
     from engine.record import Record
-    from features.sharing.controller import LAYOUT_FILE, Shares
+    from features.sharing.controller import Shares
     from features.switches import watch_change_log
     from resources.base import SYSTEM
     root = Path(argv[0])

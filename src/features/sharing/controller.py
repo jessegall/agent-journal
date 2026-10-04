@@ -1,12 +1,7 @@
-import hashlib
-import hmac
 import json
 import re
-import secrets
 import time
 import uuid
-from dataclasses import asdict, dataclass
-from pathlib import Path
 
 import controllers.types as types_module
 import resources.types as resources_module
@@ -14,14 +9,13 @@ from controllers.base import CONTROLLERS, Controller
 from controllers.messages import Messages
 from engine.ports import REACH_SECONDS, answers
 from engine.record import Record
-from engine.stored import read_json
-from features import FEATURES
-from controllers.described import described_types
-from engine.markers import MARKER
-from features.format import SHARED, formatted, shape
+from features.sharing.details import ALLOWED, SharingDetails
+from features.sharing.page_data import SharePages
+from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
-from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
+from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, new_address, owned, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.visiting import ShareVisits, sharing_feature
+from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
 from features.trigger import DAY
@@ -29,54 +23,12 @@ from features.trigger import DAY
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
 NEVER = ("", "0", "never")
-HASH_ROUNDS = 200_000
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
-UNLOCKED: dict[int, str] = {}
 LAYOUT_FILE = "layout.json"
 HEALTH = "health"
-SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
 USER_SHARE_FIELDS = {"approved", "target", "password", "comments", "expires"}
-
-
-def member_refs(row) -> list[str]:
-    if row.type == "plan":
-        return [f"todo:{n}" for phase in row.data.get("phases") or [] for n in phase.get("todos", [])]
-    return list(row.refs) if row.type == "collection" else []
-
-
-def hashed(password: str) -> str:
-    salt = secrets.token_hex(16)
-    return f"{salt}${hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex()}"
-
-
-def matches(password: str, kept: str) -> bool:
-    salt, _, digest = kept.partition("$")
-    return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex(), digest)
-
-
-@dataclass(frozen=True)
-class SharedComment:
-    n: int
-    about: str
-    name: str
-    text: str
-    created: float
-    replies: tuple = ()
-    options: tuple = ()
-    answer: str = ""
-    handled: str | None = None
-
-    @classmethod
-    def of(cls, comment, about: str, record, replies: tuple = ()) -> "SharedComment":
-        name = "Agent" if comment.seen[:1] == [AGENT] else comment.data["visitor"]
-        return cls(comment.n, about, name, comment.brief, comment.created, replies, tuple(comment.data.get("options", ())), comment.data.get("answer", ""),
-                   formatted(comment.outcome, record, SHARED) if comment.completed else None)
-
-
-def scoped(text: str, scope: set[str]) -> str:
-    return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
 
 
 def until(expires: str) -> float:
@@ -88,7 +40,7 @@ def until(expires: str) -> float:
     return time.time() + int(given[:-1]) * SPANS[given[-1]]
 
 
-class Shares(Controller):
+class Shares(ShareVisits, SharePages, Controller):
     resource = Share
 
     def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str = "", **data):
@@ -139,65 +91,18 @@ class Shares(Controller):
         comments = Comments(self.record, actor=self.actor)
         return comments.create(titled(question), brief=question, about=comments.load(n).ref, options=chosen)
 
-    def _visitor_answer(self, share, n: int, name: str, choice: str):
-        from controllers.types import Comments, Nudges
-        asked = next((comment for c in self._shared_comments(share, self._scope(share)) for comment in (c, *c.replies) if comment.n == n), None)
-        if asked is None or not asked.options:
-            raise Refused("that question is not on this link")
-        if asked.answer:
-            raise Refused("that question is answered")
-        if choice not in asked.options:
-            raise Refused("pick one of the question's options")
-        name = visitor_name(name)
-        record = self._home(share)
-        comments = Comments(record, actor=SYSTEM)
-        made = comments.update(n, answer=choice, answered_by=name)
-        if share.password:
-            Nudges(record, actor=SYSTEM)._to_primary(titled(f"{name} answered your question in comment {n}: {choice}"),
-                                                     "they picked it on the shared page; carry on with that answer")
-        else:
-            self._hold_visitor_comment(record, made, comments.path(n), f"{name} answered your question in comment {n} through a shared link", choice)
-        return made
-
     def agree(self, n: int, words: str) -> str:
         if " ".join(str(words).split()) != AGREEMENT:
             raise Refused(f'the words must be exactly: "{AGREEMENT}"')
         from controllers.types import Agents
         agents = Agents(self.record, actor=SYSTEM)
-        row = agents.by_session(self.session)
-        agents.update(row.n, **{UNAGREED: [held for held in row.data.get(UNAGREED, []) if held != int(n)]})
+        unhold(agents, agents.by_session(self.session), n)
         return f"agreed on comment {int(n)}: tell the user about it if they should know, and act only on their own word"
-
-    def _visitor_comment(self, share, ref: str, name: str, text: str):
-        if not share.comments:
-            raise Refused("this link does not take comments")
-        if ref not in self._scope(share):
-            raise Refused("that is not part of this link")
-        name, text = visitor_name(name), visitor_text(text)
-        count_sent(share.token)
-        from controllers.types import Comments
-        record = self._home(share)
-        comments = Comments(record, actor=SYSTEM)
-        made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n, trusted=bool(share.password))
-        if not made.data["trusted"]:
-            self._hold_visitor_comment(record, made, comments.path(made.n), f"{name} commented on {ref.replace(':', ' ')} through a shared link", text)
-        kind, _, n = ref.partition(":")
-        about = CONTROLLERS[kind](record, actor=SYSTEM)
-        about.save(about.load(n), "commented", comment=made.n)
-        return made
-
-    def _hold_visitor_comment(self, record, comment, path: Path, title: str, text: str) -> None:
-        index_comment(record, comment, path)
-        Messages(record, actor=AGENT).create(
-            titled(title),
-            brief=f"{text}\n\nThe link has no password, so the agent does not act on this unless you let it.",
-            buttons=[{"label": "Let the agent act on it", "type": "share", "n": comment.n, "action": "allow"}],
-        )
 
     def allow(self, n: int):
         if self.actor != USER:
             raise Refused("only the user lets the agent act on a visitor's comment: it waits for their button in the chat")
-        from controllers.types import Agents, Comments, Nudges
+        from controllers.types import Agents, Comments
         comments = Comments(self.record, actor=SYSTEM)
         comment = comments.load(int(n))
         visitor = comment.data.get("visitor") or comment.data.get("answered_by")
@@ -207,28 +112,9 @@ class Shares(Controller):
         agents = Agents(self.record, actor=SYSTEM)
         agent = agents.primary()
         if agent:
-            agents.update(agent.n, **{UNAGREED: [held for held in agent.data.get(UNAGREED, []) if held != comment.n]})
-        Nudges(self.record, actor=SYSTEM)._to_primary(titled(f"the user let you act on comment {comment.n} from {visitor}"),
-                                                       f"read it with journal comment show {comment.n} and act on it as the user's own request")
+            unhold(agents, agent, comment.n)
+        sharing_feature().to_primary(self.record, ALLOWED, n=comment.n, visitor=visitor)
         return comments.update(comment.n, allowed=True)
-
-    def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
-        from controllers.types import Comments
-        comments = Comments(self._home(share), actor=SYSTEM)
-        rows = [row for row in comments.summaries() if not row["deleted"]]
-
-        def about(refs: set[str]) -> list:
-            return [comments.load(row["n"]) for row in rows if refs.intersection(row["refs"])]
-
-        visitors = [c for c in about(scope) if c.data.get("share") == share.n]
-        asked = {c.ref for c in visitors}
-        agents = [c for c in about(scope | asked) if share.agent_replies and c.seen[:1] == [AGENT]]
-        top = sorted([*visitors, *(c for c in agents if scope.intersection(c.refs))], key=lambda c: c.created)
-        threads = []
-        for c in top:
-            on = next(ref for ref in c.refs if ref in scope)
-            threads.append(SharedComment.of(c, on, comments.record, tuple(SharedComment.of(r, on, comments.record) for r in agents if c.ref in r.refs)))
-        return threads
 
     def _ask_to_open(self, share, target) -> None:
         opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
@@ -278,7 +164,7 @@ class Shares(Controller):
         return updated()
 
     def _host(self) -> str:
-        return FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
+        return SharingDetails.values(self.record).host
 
     def domains(self) -> list[str]:
         return owned()
@@ -294,8 +180,7 @@ class Shares(Controller):
         self._user_only("choose a new tunnel address")
         from engine.services import UP, want
         from features.sharing.services import TUNNEL
-        kept = read_json(self.record.root / TUNNEL_FILE, dict, {})
-        name = addressed(self.record.root, {key: value for key, value in kept.items() if key != "subdomain"})
+        name = new_address(self.record.root)
         want(self.record.root, TUNNEL, UP, nonce=time.time())
         return name
 
@@ -332,82 +217,6 @@ class Shares(Controller):
 
     def _home(self, share) -> Record:
         return Record(self.record.root, share.data.get("environment") or self.record.env)
-
-    def _shared_row(self, share, ref: str):
-        kind, _, n = ref.partition(":")
-        return CONTROLLERS[kind](self._home(share), actor=SYSTEM).load(n)
-
-    def _loaded_members(self, record: Record, row) -> list:
-        members = []
-        for ref in member_refs(row):
-            kind, _, n = ref.partition(":")
-            if kind not in CONTROLLERS or not n.isdigit():
-                continue
-            try:
-                row = CONTROLLERS[kind](record, actor=SYSTEM).load(n)
-            except Refused:
-                continue
-            if not row.deleted and not row.data.get("system"):
-                members.append(row)
-        return members
-
-    def _members(self, share, collection) -> list:
-        return self._loaded_members(self._home(share), collection)
-
-    def _scope(self, share) -> set[str]:
-        target = self._shared_row(share, share.target)
-        if target.deleted:
-            return set()
-        return {share.target, *(f"{m.type}:{m.n}" for m in self._members(share, target))}
-
-    def _shared_file(self, share, ref: str, name: str) -> Path | None:
-        row = self._shared_row(share, ref)
-        if name not in row.files:
-            return None
-        folder = self._home(share).folder(row.type, row.scope).joinpath(f"{row.n:03d}").resolve()
-        found = folder.joinpath(name).resolve()
-        return found if found.parent == folder and found.is_file() else None
-
-    def _unlocked(self, share, password: str) -> bool:
-        if not share.password:
-            return True
-        known = UNLOCKED.get(share.n)
-        if known and hmac.compare_digest(known, password):
-            return True
-        if not matches(password, share.password):
-            return False
-        UNLOCKED[share.n] = password
-        return True
-
-    def _shared_data(self, share) -> dict:
-        scope = self._scope(share)
-        record = self._home(share)
-        rows = {}
-        for ref in scope:
-            row = self._shared_row(share, ref)
-            shaped = shape(row, record, SHARED)
-            rows[ref] = {
-                "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
-                "title": scoped(shaped.get("title", ""), scope), "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
-                "sections": [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
-                "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
-                "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope],
-                "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},
-            }
-        described = described_types()
-        kinds = {ref.partition(":")[0] for ref in rows}
-        return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
-                "comments": [asdict(c) for c in self._shared_comments(share, scope)] if share.comments else [],
-                "timeline": self._timeline(share, scope),
-                "types": {kind: described[kind] for kind in kinds if kind in described}}
-
-    def _timeline(self, share, scope: set[str]) -> list[dict]:
-        kind, _, n = share.target.partition(":")
-        if kind != "plan":
-            return []
-        record = self._home(share)
-        return [{**moment, "text": scoped(formatted(moment["text"], record, SHARED), scope)}
-                for moment in CONTROLLERS["plan"](record, actor=SYSTEM).timeline(int(n)) if f"todo:{moment['todo']}" in scope]
 
     def _count_view(self, n: int) -> None:
         count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))

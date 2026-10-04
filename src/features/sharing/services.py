@@ -1,4 +1,3 @@
-import time
 from pathlib import Path
 
 from engine import runtime
@@ -7,6 +6,7 @@ from engine.package import entry
 from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for
 from features.sharing.controller import Shares
+from features.sharing.resource import ended
 from features.sharing.tunnel import subdomain, tunler
 from resources.base import Refused, SYSTEM
 
@@ -15,16 +15,17 @@ KEEP_UP: list = []
 
 
 def open_shares(root: Path) -> list:
-    now = time.time()
     shares = Shares(Record(root, runtime.env(root)), actor=SYSTEM)
-    return [row for row in shares.summaries() if row.get("token") and row.get("approved") and not row["completed"] and not row["deleted"]
-            and not (row.get("expires") and row["expires"] < now)]
+    return [row for row in shares.summaries() if row.get("token") and row.get("approved") and not row["deleted"]
+            and not ended(row["completed"], row.get("expires"))]
 
 
 def wanted(root: Path) -> bool:
-    from features import FEATURES
+    from features import running
+    from features.sharing.feature import SharingFeature
     record = Record(root, runtime.env(root))
-    sharing = "sharing" in FEATURES and FEATURES["sharing"].enabled(record)
+    feature = running(SharingFeature)
+    sharing = bool(feature) and feature.enabled(record)
     return (sharing and bool(open_shares(root))) or any(keep(root) for keep in KEEP_UP)
 
 

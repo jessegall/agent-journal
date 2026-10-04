@@ -1,4 +1,5 @@
 from engine.services import SOURCES
+from controllers.agents import Agents
 from features.base import Feature
 from features.journal import Journal
 from features.sharing.controller import Shares
@@ -6,6 +7,7 @@ from features.sharing.details import SharingDetails
 from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseClaimedUser, RefuseUntilAgreed
 from features.sharing.services import share_services
 from features.sharing.watchdog import KeepTunnelAnswering
+from resources.base import SYSTEM
 
 __all__ = ["Shares"]
 
@@ -20,3 +22,8 @@ class SharingFeature(Feature):
         journal.events.handler(KeepTunnelAnswering())
         journal.agent.interceptor(RefuseUntilAgreed())
         journal.agent.interceptor(RefuseClaimedUser())
+
+    def to_primary(self, record, line: str, **values) -> None:
+        agent = Agents(record, actor=SYSTEM).primary()
+        if agent:
+            self.journal.say(record, agent, line, **values)

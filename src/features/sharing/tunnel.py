@@ -3,12 +3,12 @@ import os
 import platform
 import secrets
 import shutil
-import subprocess
 import time
 import urllib.request
 from pathlib import Path
 
-from engine.stored import read_json, write_json
+from engine.proc import ran as ran_command
+from engine.stored import write_json
 from typing import TypedDict
 from engine.given import given
 from engine.wording import slugged
@@ -22,20 +22,31 @@ ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
 DOWNLOAD_SECONDS = 60
 
 
-def subdomain(root: Path) -> str:
+def kept_address(root: Path) -> dict:
     path = Path(root) / TUNNEL_FILE
-    kept = {}
-    if path.exists():
-        unreadable = f"cannot read the tunnel address in {path}; the address has not changed"
-        try:
-            kept = json.loads(path.read_text())
-        except (OSError, ValueError) as error:
-            raise Refused(unreadable) from error
-        if not isinstance(kept, dict):
-            raise Refused(unreadable)
-    if kept.get("subdomain"):
-        return kept["subdomain"]
-    return addressed(root, kept)
+    if not path.exists():
+        return {}
+    unreadable = f"cannot read the tunnel address in {path}; the address has not changed"
+    try:
+        kept = json.loads(path.read_text())
+    except (OSError, ValueError) as error:
+        raise Refused(unreadable) from error
+    if not isinstance(kept, dict):
+        raise Refused(unreadable)
+    return kept
+
+
+def subdomain(root: Path) -> str:
+    kept = kept_address(root)
+    return kept.get("subdomain") or addressed(root, kept)
+
+
+def new_address(root: Path) -> str:
+    try:
+        kept = kept_address(root)
+    except Refused:
+        kept = {}
+    return addressed(root, {key: value for key, value in kept.items() if key != "subdomain"})
 
 
 def addressed(root: Path, kept: dict) -> str:
@@ -88,9 +99,10 @@ def asked_status() -> TunnelStatus:
     command = tunler()
     if not command:
         return TunnelStatus(installed=False, logged_in=False, account="", host="")
+    done = ran_command([command, "status", "--json"], timeout=STATUS_SECONDS)
     try:
-        told = json.loads(subprocess.run([command, "status", "--json"], capture_output=True, text=True, timeout=STATUS_SECONDS).stdout or "{}")
-    except (OSError, subprocess.TimeoutExpired, ValueError):
+        told = json.loads(done.stdout if done else "{}") or {}
+    except ValueError:
         told = {}
     return TunnelStatus(installed=True, logged_in=bool(told.get("logged_in") and told.get("auth_ok")), account=told.get("user") or told.get("email", ""),
                         host=told.get("host", ""))
@@ -103,11 +115,9 @@ def ran(*words: str, hidden: dict | None = None) -> tuple[bool, str]:
     command = tunler()
     if not command:
         return False, "tunler isn't installed on this machine"
-    try:
-        done = subprocess.run([command, *words], capture_output=True, text=True, timeout=LOGIN_SECONDS, env={**os.environ, **(hidden or {})},
-                              stdin=subprocess.DEVNULL)
-    except (OSError, subprocess.TimeoutExpired) as error:
-        return False, f"tunler {words[0]} did not finish: {error}"
+    done = ran_command([command, *words], timeout=LOGIN_SECONDS, stdin="", env={**os.environ, **(hidden or {})})
+    if done is None:
+        return False, f"tunler {words[0]} did not finish"
     KEPT_STATUS.clear()
     return done.returncode == 0, (done.stdout if done.returncode == 0 else done.stderr or done.stdout).strip()
 
