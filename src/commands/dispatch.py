@@ -87,9 +87,11 @@ class Route:
     pattern: str
     handler: Callable[[Request], Reply]
     regex: re.Pattern = field(init=False)
+    rank: tuple[bool, ...] = field(init=False)
 
     def __post_init__(self):
         self.regex = re.compile("^" + re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", self.pattern) + "$")
+        self.rank = tuple(segment.startswith("{") for segment in self.pattern.split("/"))
 
 
 ROUTES: list[Route] = []
@@ -97,6 +99,7 @@ ROUTES: list[Route] = []
 def route(method: str, pattern: str):
     def register(fn):
         ROUTES.append(Route(method, pattern, fn))
+        ROUTES.sort(key=lambda r: r.rank)
         return fn
     return register
 
