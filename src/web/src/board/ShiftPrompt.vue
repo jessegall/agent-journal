@@ -20,7 +20,7 @@ function send() {
 </script>
 
 <template>
-    <Dialog :title="question.title" @close="emit('close')">
+    <Dialog :title="question.title" fits @close="emit('close')">
         <p class="card">#{{ ask.card.n }} {{ ask.card.title }}</p>
         <input
             v-model="text"

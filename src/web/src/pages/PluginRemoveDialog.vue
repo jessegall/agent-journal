@@ -7,7 +7,7 @@ const emit = defineEmits(["close", "remove"]);
 </script>
 
 <template>
-    <Dialog :title="`Remove ${title}`" @close="emit('close')">
+    <Dialog :title="`Remove ${title}`" fits @close="emit('close')">
         <p class="shown-lead">
             Its services stop, its hooks and refusals no longer run, and its folder is taken away. What it kept of its own — settings,
             caches, anything it wrote in its data folder — can stay, in case you install it again, or go with it.

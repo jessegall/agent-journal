@@ -121,7 +121,7 @@ async function stop(share) {
 </script>
 
 <template>
-    <Dialog small fixed tall title="Share" @close="emit('close')">
+    <Dialog small tall title="Share" @close="emit('close')">
         <div class="share">
             <div class="tabs-row">
                 <TabBar v-model="tab" :tabs="tabs" />

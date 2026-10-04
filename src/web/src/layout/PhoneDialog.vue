@@ -79,7 +79,7 @@ onMounted(checkTunnel);
 </script>
 
 <template>
-    <Dialog title="Connect your phone" small @close="emit('close')">
+    <Dialog title="Connect your phone" small tall @close="emit('close')">
         <div class="phone-dialog">
             <template v-if="tunnelStatus && !ready">
                 <TunnelProblem :status="tunnelStatus" @ready="checkTunnel" />
