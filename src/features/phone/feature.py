@@ -7,6 +7,8 @@ from features.sharing.routes import ROUTES, TICKS
 from features.sharing.services import KEEP_UP
 
 
+ROUTE = "p"
+
 def phones_live(root) -> bool:
     from engine import runtime
     from engine.record import Record
@@ -25,8 +27,6 @@ class PhoneFeature(Feature):
     details = PhoneDetails
 
     def register(self, journal: Journal) -> None:
-        ROUTES["p"] = PhoneRoutes()
-        if phones_live not in KEEP_UP:
-            KEEP_UP.append(phones_live)
-        if phones_told not in TICKS:
-            TICKS.append(phones_told)
+        self.register_global(ROUTES, PhoneRoutes(), None, ROUTE)
+        self.register_global(KEEP_UP, phones_live, lambda: False)
+        self.register_global(TICKS, phones_told, lambda: None)

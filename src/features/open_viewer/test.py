@@ -96,8 +96,11 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     (project / ".private" / "note.txt").write_text("private")
     (other / "note.txt").write_text("other")
     (project / "linked.txt").symlink_to(other / "note.txt")
-    assert (read_source(project, "visible.txt").text, [path.name for path in walk(project)[0]]) == ("visible", ["visible.txt"]), "a visible file is read and listed"
-    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt"):
+    (project / "tokens.css").write_text("tokens")
+    assert (read_source(project, "tokens.css").text, sorted(path.name for path in walk(project)[0])) == ("tokens", ["tokens.css", "visible.txt"]), \
+        "visible files are read and listed, a word like tokens in a name included"
+    (project / "api_token.json").write_text("secret")
+    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt", "api_token.json"):
         with pytest.raises(Refused):
             read_source(project, asked)
     for handler, query in ((get_file_text, {"path": ".env"}), (get_file_diff, {"path": ".env"}), (get_project_files, {"folder": ".journal"}), (get_file_text, {"path": str(other / "note.txt")})):
@@ -115,8 +118,8 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
             return error.code
 
     try:
-        assert [status({}), status({"Host": f"evil.example:{server.server_port}"}), status({"Origin": "http://localhost:9999"})] == [404, 403, 403], \
-            "its own host is answered; another host or an unknown origin is refused"
+        assert [status({}), status({"Origin": f"http://localhost:{server.server_port}"}), status({"Host": f"evil.example:{server.server_port}"}),
+                status({"Origin": "http://localhost:9999"})] == [404, 404, 403, 403], "its own host and a journal's origin by either loopback name are answered; another host or an unknown origin is refused"
     finally:
         server.shutdown()
         server.server_close()

@@ -171,7 +171,7 @@ class Engine(Seat):
         stopped = [row.last_message] if row.last_message and row.event == "Stop" and row.last_message != announced.get("last_message") else []
         known = next((i for i, turn in enumerate(written) if turn.line == announced["line"]), None)
         for turn in (written[known + 1:] if known is not None else written[-1:]):
-            chat.send(self.record, row, turn.text, turn=f"transcript:{turn.line}")
+            chat.send(self.record, row, turn.text, turn=turn.key)
         for text in stopped:
             chat.send(self.record, row, text)
 
