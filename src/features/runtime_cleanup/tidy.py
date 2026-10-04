@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from engine.runtime import profiles
+from engine.runtime import folder, profiles, sessions
 from providers.transcript_cache import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
@@ -45,34 +45,27 @@ def tidy(root: Path, days: float) -> Tidied:
 
 def tidy_files(root: Path, days: float) -> Tidied:
     left = leftovers(root)
-    runtime = root / "runtime"
-    if not runtime.is_dir():
+    kept = folder(root)
+    if not kept.is_dir():
         return Tidied(leftovers=left)
     quiet = time.time() - days * DAY
-    removed = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < quiet]
+    removed = [d for d in sessions(root).glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < quiet]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)
-    trimmed = [f for pattern, keep in TAILS.items() for f in runtime.glob(pattern) if f.is_file() and trim(f, keep)]
+    trimmed = [f for pattern, keep in TAILS.items() for f in kept.glob(pattern) if f.is_file() and trim(f, keep)]
     return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left)
-
-
-def stamp(path: Path) -> float:
-    try:
-        return path.stat().st_mtime
-    except OSError:
-        return 0.0
 
 
 def older(paths, age: float) -> list[Path]:
     now = time.time()
-    return [path for path in paths if stamp(path) and now - stamp(path) > age]
+    return [path for path in paths if mtime(path) and now - mtime(path) / 1e9 > age]
 
 
 def leftovers(root: Path) -> int:
     staged = [d for d in older((root / "plugins").glob(".staging-*"), STAGING_FOR) if d.is_dir()]
     archived = [f for f in older((root / "attic").glob("*.tar.gz"), ARCHIVES_FOR) if not f.name.startswith("before-")]
-    unkept = older((root / "runtime" / "outputs").glob("output-*"), OUTPUTS_FOR)
-    profiled = sorted(profiles(root).glob("*.txt"), key=stamp, reverse=True)[PROFILES_KEPT:]
+    unkept = older((folder(root) / "outputs").glob("output-*"), OUTPUTS_FOR)
+    profiled = sorted(profiles(root).glob("*.txt"), key=mtime, reverse=True)[PROFILES_KEPT:]
     folds = older(FOLD_CACHE.glob("*.pickle"), FOLDS_FOR)
     for d in staged:
         shutil.rmtree(d, ignore_errors=True)

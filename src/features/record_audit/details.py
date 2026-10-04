@@ -2,7 +2,7 @@ from features.base import FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 
 
-class CleanupDetails(FeatureDetails):
+class RecordAuditDetails(FeatureDetails):
     name = "record_audit"
     has_skill = False
 

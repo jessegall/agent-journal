@@ -4,7 +4,7 @@ from engine.events.engine import AgentMessageSent
 from engine.project_files import matching
 from features.parts import AgentContext, Handler
 from features.row_links.details import AMBIGUOUS
-from features.row_links.formatters import EXT, a_file
+from features.row_links.paths import EXT, a_file
 
 NAME = re.compile(rf"(?<![\w./-])([\w.-]+\.(?:{EXT}))(?![\w/-])")
 

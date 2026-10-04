@@ -3,7 +3,7 @@ from features.base import FeatureDetails
 from features.settings import Setting
 
 
-class HousekeepingDetails(FeatureDetails):
+class RuntimeCleanupDetails(FeatureDetails):
     name = "runtime_cleanup"
     has_skill = False
 
@@ -19,7 +19,7 @@ class HousekeepingDetails(FeatureDetails):
     help = """
         Once an hour: each session keeps its files in runtime/sessions/<session>; its printed
         capture keeps its last 64 KB and every log its last 1 MB, and a session's folder untouched
-        for housekeeping.days (2) is removed whole.
+        for runtime_cleanup.days (2) is removed whole.
     """
 
     fixed = True
