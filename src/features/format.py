@@ -13,13 +13,18 @@ SHARED = "shared"
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
+    from features.shaping import settled
     text = "" if text is None else str(text)
-    key, now = (text, str(record.home) if record is not None else "", surface), time.monotonic()
+    key, now = (text, str(record.home) if record is not None else "", surface,
+                settled(record) if record is not None else ()), time.monotonic()
     held = FORMATTED.get(key)
     if held is not None and now - held[0] < FORMATTED_FOR:
         return held[1]
     if len(FORMATTED) >= FORMATTED_KEPT:
-        FORMATTED.clear()
+        for entry in [entry for entry, held in FORMATTED.items() if now - held[0] >= FORMATTED_FOR]:
+            FORMATTED.pop(entry)
+        if len(FORMATTED) >= FORMATTED_KEPT:
+            FORMATTED.pop(next(iter(FORMATTED)))
     FORMATTED[key] = (now, shaped := shaping(text, record, surface))
     return shaped
 

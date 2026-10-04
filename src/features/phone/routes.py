@@ -312,6 +312,8 @@ class PhoneRoutes:
         return handler.send(200, json.dumps(body).encode(), {"Content-Type": "application/manifest+json", "Cache-Control": "no-store"})
 
     def post(self, handler, rest: list[str]) -> None:
+        if not rest:
+            return handler.answer(404, "no such action")
         if rest[:1] == ["attach"]:
             return self.attach(handler, rest[1:])
         if not self.trusted(handler):

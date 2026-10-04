@@ -15,6 +15,7 @@ from engine.package import data  # noqa: E402
 from features import FEATURES  # noqa: E402
 from features.sharing.controller import HEALTH, LAYOUT_FILE, SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
+from features.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
 from features.sharing.routes import ROUTES, TICKS  # noqa: E402
 from controllers.faults import threw  # noqa: E402
@@ -183,12 +184,13 @@ class ShareHandler(BaseHTTPRequestHandler):
         scope = self.shares._scope(share)
         if ref not in scope:
             return self.page(404, unshared())
-        page = Page(f"/s/{share.token}", scope)
+        record = self.shares._home(share)
+        page = Page(f"/s/{share.token}", scope, record)
         row = self.shares._shared_row(share, ref)
         members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
         body = page.collection(row, members) if members else page.row(row)
         back = None if ref == share.target else f"/s/{share.token}"
-        self.page(200, document(row.title, body, share.expires, back))
+        self.page(200, document(formatted(row.title, record, SHARED), body, share.expires, back))
 
     def preview(self, share) -> str:
         row = self.shares._shared_row(share, share.target)
@@ -196,7 +198,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         page = f"{'http' if host.startswith(('127.0.0.1', 'localhost')) else 'https'}://{host}/s/{share.token}"
         picture = next((name for name in row.files if Path(name).suffix.lower() in PICTURES), "")
         image = f"{page}/files/{row.type}/{row.n}/{quote(picture)}" if picture else f"{page}/{PREVIEW}"
-        return tags(row.title, row.abstract or row.brief, image, f"{page}/", identity(self.shares.record.root)["project"])
+        return tags(formatted(row.title, self.shares._home(share), SHARED), row.abstract or row.brief, image, f"{page}/", identity(self.shares.record.root)["project"])
 
     def file(self, share, ref: str, name: str) -> None:
         if ref not in self.shares._scope(share):

@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
@@ -316,10 +317,39 @@ def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only
 
 
 
-def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
+def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text(monkeypatch):
     from features.sharing.page import Page
+    import features.format as formatting
+    from features.format import FORMATTERS, SHARED, formatted
+    import features
     page = Page("/s/key", {"doc:1", "todo:12"})
     linked = page.refs("See docs 1 and doc 16, to-do 12, 13 and to-do 12 in elsewhere.")
     assert '<a href="/s/key/doc/1">docs 1</a>' in linked and '<a href="/s/key/todo/12">to-do 12, 13</a>' in linked, \
         "a row the page holds is linked, however its mention is spelled"
     assert "doc 16" in linked and "/doc/16" not in linked, "a row outside the page stays text"
+    features.load()
+    record = fresh()
+    doc = Docs(record, actor=USER).create("Draft", brief="Words")
+    marker = (lambda text, _: text.replace("Heading", Docs(record, actor=USER).load(doc.n).title), (SHARED,))
+    FORMATTERS.append(marker)
+    try:
+        page = Page("/s/key", {doc.ref}, record)
+        assert "Draft" in page.title("Heading")
+        Docs(record, actor=USER).update(doc.n, title="Final")
+        assert "Final" in page.title("Heading"), "a row change expires formatted text"
+        Docs(record, actor=USER).section(doc.n, "Heading", "Body")
+        row = Docs(record, actor=USER).load(doc.n)
+        assert "<h2>Final</h2>" in page.row(row), "shared section titles pass through formatters"
+        share = Shares(record, actor=USER).create(doc.ref)
+        shared = Shares(record, actor=USER)._shared_data(share)["rows"][doc.ref]
+        assert shared["title"] == "Final" and shared["sections"][0]["title"] == "Final"
+    finally:
+        FORMATTERS.remove(marker)
+    formatting.FORMATTED.clear()
+    monkeypatch.setattr(formatting, "FORMATTED_KEPT", 2)
+    formatting.FORMATTED[("expired",)] = (time.monotonic() - formatting.FORMATTED_FOR - 1, "expired")
+    formatting.FORMATTED[("current",)] = (time.monotonic(), "current")
+    formatted("another title", record, SHARED)
+    assert ("current",) in formatting.FORMATTED and ("expired",) not in formatting.FORMATTED, \
+        "the cache cap removes expired text while keeping live entries"
+    formatting.FORMATTED.clear()
