@@ -19,7 +19,7 @@ export function standing(doc) {
     return {key: "draft", label: "Draft", by: 0, hint: "Still being written; not marked final yet", said: true};
 }
 
-export const words = (query) => query.toLowerCase().split(/\s+/).filter(Boolean);
+export const searchTerms = (query) => query.toLowerCase().split(/\s+/).filter(Boolean);
 
 const has = (text, all) => all.some((w) => (text || "").toLowerCase().includes(w));
 const WEIGHTS = {title: 8, number: 8, abstract: 3, brief: 2, section: 1, file: 1};

@@ -1,4 +1,5 @@
 <script setup>
+import {replayBlocks} from "../platform/demo.js";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,8 +9,6 @@ import {prefill} from "../state/prefill.js";
 import {remember, remembered} from "../composables/remembered.js";
 
 const MOST_LINES = 5;
-const REPLAY = __DEMO__;
-const hinted = () => window.dispatchEvent(new CustomEvent("replay-hint"));
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
 const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused"]);
 const SHORT = 420;
@@ -75,7 +74,7 @@ function grow() {
 
 async function send() {
     if (!ready.value || sending.value) return;
-    if (REPLAY && messageText.value !== prefill.value.trim()) return hinted();
+    if (replayBlocks(messageText.value, prefill.value.trim())) return;
     sending.value = true;
     const text = messageText.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
     const line = hold(text, props.about, files.value);

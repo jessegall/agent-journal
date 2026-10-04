@@ -1,9 +1,9 @@
 <script setup>
+import {withoutChips as plain} from "../text/words.js";
 import {copyText} from "../kit/copy.js";
 import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ReplyTool from "./ReplyTool.vue";
-import {words as plain} from "../text/words.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const props = defineProps({

@@ -1,6 +1,7 @@
 <script setup>
+import {agentCounts, agentsInOrder, FINISHED_STATES} from "../domain/helpers.js";
+import {counted} from "../format/number.js";
 import {computed, nextTick, ref, watch} from "vue";
-import {FINISHED_STATES, agentCounts, agentsInOrder, counted} from "../domain/helpers.js";
 import PhoneAtWorkRow from "./PhoneAtWorkRow.vue";
 import PhoneHelperDetail from "./PhoneHelperDetail.vue";
 import PhoneSheet from "./PhoneSheet.vue";
@@ -11,12 +12,16 @@ const emit = defineEmits(["close", "changed", "read"]);
 const helpers = computed(() => props.live.helpers || []);
 const subagents = computed(() => props.live.subagents || []);
 const counts = computed(() => agentCounts(helpers.value, subagents.value));
-const summary = computed(() => [
-    counts.value.needs ? counted(counts.value.needs, "needs you", "need you") : "",
-    counts.value.working ? `${counts.value.working} at work` : "",
-    counts.value.reported ? counted(counts.value.reported, "reported", "reported") : "",
-    counts.value.finished ? counted(counts.value.finished, "finished", "finished") : "",
-].filter(Boolean).join(" · "));
+const summary = computed(() =>
+    [
+        counts.value.needs ? counted(counts.value.needs, "needs you", "need you") : "",
+        counts.value.working ? `${counts.value.working} at work` : "",
+        counts.value.reported ? counted(counts.value.reported, "reported", "reported") : "",
+        counts.value.finished ? counted(counts.value.finished, "finished", "finished") : "",
+    ]
+        .filter(Boolean)
+        .join(" · ")
+);
 const all = computed(() => [
     ...helpers.value.map((row) => ({...row, key: `helper:${row.n}`, kind: "helper"})),
     ...subagents.value.map((row) => ({...row, key: `subagent:${row.id || row.session}`, kind: "subagent"})),
@@ -68,7 +73,10 @@ function read(target) {
                     </template>
                     <template v-if="listedHelpers.length">
                         <section class="at-work-group">
-                            <header><h3>Helpers</h3><span>Separate agents, one job each</span></header>
+                            <header>
+                                <h3>Helpers</h3>
+                                <span>Separate agents, one job each</span>
+                            </header>
                             <div class="at-work-rows">
                                 <template v-for="row in listedHelpers" :key="row.key">
                                     <PhoneAtWorkRow :row="row" kind="helper" @open="selected = $event.n" @read="read" />
@@ -78,7 +86,10 @@ function read(target) {
                     </template>
                     <template v-if="listedSubagents.length">
                         <section class="at-work-group">
-                            <header><h3>Subagents</h3><span>Short errands for the main agent</span></header>
+                            <header>
+                                <h3>Subagents</h3>
+                                <span>Short errands for the main agent</span>
+                            </header>
                             <div class="at-work-rows">
                                 <template v-for="row in listedSubagents" :key="row.key">
                                     <PhoneAtWorkRow :row="row" kind="subagent" @read="read" />

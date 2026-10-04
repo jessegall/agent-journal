@@ -1,4 +1,5 @@
 <script setup>
+import {clamp} from "../format/number.js";
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {useOutside} from "../composables/outside.js";
 
@@ -27,7 +28,6 @@ const windowOf = (anchor) => {
     const win = anchor.closest(".pane, .float-window");
     return win ? onScreen(win.getBoundingClientRect()) : viewport();
 };
-const clampTo = (value, low, high) => Math.max(low, Math.min(high, value));
 const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : room)}px`;
 
 function room(bounds, edge) {
@@ -52,7 +52,7 @@ const place = computed(() => {
     const space = room(bounds, edge);
     const {w, h} = drawn.value;
     const leftward = props.align === "auto" ? edge.left + edge.right > bounds.left + bounds.right : props.align === "right";
-    const x = clampTo(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
+    const x = clamp(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
     const up = h > space.below && space.above > space.below;
     const vertical = up
         ? {bottom: `${window.innerHeight - edge.top + props.gap}px`, maxHeight: within(props.maxHeight, space.above)}

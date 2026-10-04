@@ -1,5 +1,5 @@
+import {withoutChips} from "../text/words.js";
 import {meta} from "../state/store.js";
-import {words} from "../text/words.js";
 import {shownIn} from "./chatShown.js";
 
 const PROMISED_WITHIN = 5;
@@ -129,7 +129,7 @@ const madeByAgent = (docs, env) =>
 const promisedFor = (p, m) =>
     p.data.idempotency && m.data?.idempotency
         ? p.data.idempotency === m.data.idempotency
-        : words(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
+        : withoutChips(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 

@@ -1,4 +1,5 @@
 <script setup>
+import {plainText} from "../text/words.js";
 import {copyText} from "../kit/copy.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
@@ -6,7 +7,6 @@ import {usePoll} from "../poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import {prefill} from "../state/prefill.js";
 import PhoneHold from "./PhoneHold.vue";
-import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
 import PhoneViewer from "./PhoneViewer.vue";
@@ -159,7 +159,7 @@ const items = computed(() => {
     return [...earlier.value.filter((item) => !known.has(keyOf(item))), ...newest];
 });
 const briefs = computed(
-    () => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plain(item.brief || item.title)]))
+    () => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plainText(item.brief || item.title)]))
 );
 
 function measure() {
@@ -281,7 +281,7 @@ function announceArrivals(coming) {
     if (coming.length > 1) return announce(`${coming.length} new messages`);
     const item = coming[0];
     const who = item.type === "question" ? "Question" : "Agent";
-    announce(`${who}: ${plain(item.label || item.brief || item.title || "").slice(0, 80)}`);
+    announce(`${who}: ${plainText(item.label || item.brief || item.title || "").slice(0, 80)}`);
 }
 const BURST = 600;
 const STAGGER = 90;
@@ -532,7 +532,7 @@ watch(
 );
 
 function quoteIt(item) {
-    quote.value = plain(item.brief || item.title)
+    quote.value = plainText(item.brief || item.title)
         .split("\n")
         .filter((line) => !line.startsWith(">"))
         .join(" ")
@@ -545,7 +545,7 @@ function quoteIt(item) {
 }
 
 function copy() {
-    copyText(plain(held.value.item.brief || held.value.item.title));
+    copyText(plainText(held.value.item.brief || held.value.item.title));
     held.value = null;
     setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }

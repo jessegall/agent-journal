@@ -1,4 +1,5 @@
 <script setup>
+import {wait} from "../platform/timing.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -410,8 +411,6 @@ function again() {
     panel.value.focus();
 }
 
-const pause = (ms) => new Promise((done) => setTimeout(done, ms));
-
 async function add() {
     if (adding.value || added.value) return;
     adding.value = true;
@@ -426,7 +425,7 @@ async function add() {
     if (keep.length) await api.addedToBoard(props.board.n, keep);
     adding.value = false;
     added.value = keep.length;
-    await pause(HELD);
+    await wait(HELD);
     if (keep.length) openChat();
     emit("added", keep.length);
     finish();

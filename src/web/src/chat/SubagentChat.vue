@@ -1,6 +1,6 @@
 <script setup>
+import {standingLink} from "../domain/links.js";
 import {computed, nextTick, ref, watch} from "vue";
-import {standing} from "../composables/agentLinks.js";
 import {chatTurns} from "../domain/transcript.js";
 import {useScope} from "../composables/scope.js";
 import Compose from "./Compose.vue";
@@ -20,7 +20,7 @@ const sentTexts = computed(() => new Set(sent.value.map((m) => m.brief.trim())))
 const transcriptLines = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && sentTexts.value.has(t.brief.trim()))));
 const lines = computed(() => [...transcriptLines.value, ...sent.value].sort((a, b) => a.created - b.created));
 const pins = computed(() =>
-    rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && !standing(notice))
+    rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && !standingLink(notice))
 );
 const send = (text) => api.create("message", {brief: text, sent_to: props.session});
 watch(

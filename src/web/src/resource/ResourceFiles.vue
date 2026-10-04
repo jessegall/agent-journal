@@ -1,4 +1,5 @@
 <script setup>
+import {isPicture} from "../format/files.js";
 import {computed, inject} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -7,9 +8,8 @@ import {openPictures} from "../platform/view.js";
 
 const props = defineProps({resource: {type: Object, required: true}, files: {type: Array, required: true}});
 const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
-const PICTURE = /\.(png|jpe?g|gif|webp)$/i;
 const pictures = computed(() =>
-    props.files.filter(([name]) => PICTURE.test(name)).map(([name]) => ({name, url: fileUrl(props.resource.type, props.resource.n, name)}))
+    props.files.filter(([name]) => isPicture(name)).map(([name]) => ({name, url: fileUrl(props.resource.type, props.resource.n, name)}))
 );
 const showPicture = (name) =>
     openPictures(
@@ -30,7 +30,7 @@ const showPicture = (name) =>
                     </template>
                 </span>
             </a>
-            <template v-if="PICTURE.test(name)">
+            <template v-if="isPicture(name)">
                 <button type="button" class="file-preview" :title="`Show ${name}`" @click="showPicture(name)">
                     <img :src="fileUrl(resource.type, resource.n, name)" :alt="name" loading="lazy" />
                 </button>

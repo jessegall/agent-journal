@@ -1,7 +1,8 @@
 <script setup>
+import {linkKind, standingLink} from "../domain/links.js";
+import {useAgentLinks} from "../composables/agentLinks.js";
 import {computed} from "vue";
 import LinkCard from "../kit/LinkCard.vue";
-import {kindOf, standing, useAgentLinks} from "../composables/agentLinks.js";
 import {useScope} from "../composables/scope.js";
 
 const props = defineProps({agent: {type: Number, required: true}, session: {type: String, default: ""}});
@@ -13,9 +14,9 @@ const pinned = computed(() =>
 );
 const cards = computed(() => {
     const held = new Set(pinned.value.map((notice) => bare(notice.data.link)));
-    const told = pinned.value.filter(standing).map((notice) => ({href: notice.data.link, label: notice.title}));
+    const pinnedLinks = pinned.value.filter(standingLink).map((notice) => ({href: notice.data.link, label: notice.title}));
     const written = links.value.filter((href) => !held.has(bare(href))).map((href) => ({href, label: ""}));
-    return [...told, ...written];
+    return [...pinnedLinks, ...written];
 });
 </script>
 
@@ -23,7 +24,7 @@ const cards = computed(() => {
     <template v-if="cards.length">
         <div class="agent-links">
             <template v-for="card in cards" :key="card.href">
-                <LinkCard :href="card.href" :kind="kindOf(card.href)" :label="card.label" />
+                <LinkCard :href="card.href" :kind="linkKind(card.href)" :label="card.label" />
             </template>
         </div>
     </template>

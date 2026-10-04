@@ -1,4 +1,5 @@
 <script setup>
+import {withoutChips} from "../text/words.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
@@ -7,7 +8,6 @@ import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek} from "../route.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
-import {words} from "../text/words.js";
 import {openUpdate} from "./updateView.js";
 
 const props = defineProps({report: Object, folded: Boolean});
@@ -19,7 +19,7 @@ const facts = computed(() =>
         .map((c) => `${c.n} ${c.label}`)
         .join(" · ")
 );
-const lead = computed(() => words(props.report.abstract || String(props.report.brief || "").split("\n")[0]));
+const lead = computed(() => withoutChips(props.report.abstract || String(props.report.brief || "").split("\n")[0]));
 
 function open() {
     if (update.value) openUpdate(props.report.n, dock.value.card);
@@ -38,7 +38,7 @@ function open() {
                 <span class="report-dock-facts">{{ facts }}</span>
             </template>
             <template v-else>
-                <span class="report-dock-title">· {{ words(report.title) }}</span>
+                <span class="report-dock-title">· {{ withoutChips(report.title) }}</span>
             </template>
             <span class="report-dock-acts chat-dock-acts">
                 <Btn small @click="open">{{ update ? "Open update" : "Open report" }}</Btn>
