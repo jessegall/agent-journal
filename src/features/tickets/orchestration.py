@@ -22,7 +22,7 @@ class TicketOrchestration:
         from features.sequences.controller import Sequences
         if not BoardsDetails.values(self.record).orchestrating:
             return []
-        from features.sequences.orchestration import ORCHESTRATION
+        from features.boards.orchestrating import ORCHESTRATION
         sequence = Sequences(self.record, actor=SYSTEM)._titled(ORCHESTRATION.title)
         keys = [RunKey.of(key) for key in (sequence.runs if sequence else {})]
         running = {int(key.about.split(":")[1]) for key in keys if key.here(self.record.env) and key.about.startswith("board:")}

@@ -140,7 +140,7 @@ class Boards(Controller):
         self._set_orchestrating(mode == "on")
         if mode == "off":
             from features.sequences.controller import Sequences
-            from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
+            from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
             from features.sequences.resource import RunKey
             sequences = Sequences(self.record, actor=SYSTEM)
             for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
@@ -242,8 +242,8 @@ class Boards(Controller):
 
     def score(self, n: int, score: str, reading: str = "", goal: str = "", done: str = ""):
         from features.sequences.controller import Sequences
-        from features.sequences.drafting import DRAFTING
-        from features.sequences.exploration import EXPLORATION
+        from features.boards.drafting import DRAFTING
+        from features.boards.exploration import EXPLORATION
         board = self._drafting(n)
         if not str(score).isdigit() or not 1 <= int(score) <= 5:
             raise Refused(f"the score is how well you understand what they want, a whole number from 1 to 5; not {score!r}")

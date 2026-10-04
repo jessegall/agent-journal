@@ -3,7 +3,7 @@ from engine.wording import clipped
 from features.boards.controller import Boards
 from features.parts import Context
 from features.sequences.details import DISPATCH
-from features.sequences.exploration import FILLER
+from features.boards.exploration import FILLER
 from features.sequences.resource import RunKey
 from providers import dispatch_model
 from resources.base import SYSTEM
