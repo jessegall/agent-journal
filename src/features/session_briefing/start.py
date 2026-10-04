@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Works
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
 
@@ -12,7 +12,7 @@ def counts(record) -> dict[str, int]:
 
 
 def open_work(record) -> list:
-    return standing(record, "work")
+    return Works(record, actor=SYSTEM)._standing()
 
 
 def lines(rows: list, how=lambda r: r.title) -> str:
@@ -28,14 +28,6 @@ def status(record) -> str:
 
 def handed(record, type_: str) -> list:
     return [r for r in standing(record, type_) if r.data.get("status", "active") in ("active", "waiting") and not r.data.get(WHOM)]
-
-
-def describe(r) -> str:
-    if r.type == "plan":
-        i = r.current
-        phase = r.phases[i - 1]["title"] if 0 < i <= len(r.phases) else ""
-        return f"{r.title} is {r.status} — phase {i}, {phase}"
-    return f"{r.title}  ({r.abstract})" if r.abstract else r.title
 
 
 QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's work. Never mention the journal's notifications, "
@@ -55,7 +47,7 @@ def start_block(record) -> str:
         rows = handed(record, type_) if kind.start_heading else []
         if not rows:
             continue
-        parts.append(f"{len(rows)} {kind.start_heading}." if kind.start_as_count else f"{kind.start_heading} ({len(rows)}):\n{lines(rows, describe)}")
+        parts.append(f"{len(rows)} {kind.start_heading}." if kind.start_as_count else f"{kind.start_heading} ({len(rows)}):\n{lines(rows, lambda r: r.start_line())}")
     return "\n\n".join(p for p in parts if p) + "\n"
 
 

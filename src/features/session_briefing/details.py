@@ -1,7 +1,7 @@
 from features.base import FeatureDetails, Line
 
 
-class StartDetails(FeatureDetails):
+class SessionBriefingDetails(FeatureDetails):
     name = "session_briefing"
     has_skill = False
 

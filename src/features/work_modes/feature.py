@@ -10,7 +10,7 @@ class WorkModes(Feature):
     details = WorkModesDetails
 
     def register(self, journal: Journal) -> None:
-        START_PARTS[MODE] = carried
+        self.register_global(START_PARTS, carried, str, MODE)
         journal.agent.canceler(RefuseDispatchInSolo())
         journal.agent.interceptor(RefuseHelperInSolo())
         journal.agent.interceptor(RemindOrchestrator())
