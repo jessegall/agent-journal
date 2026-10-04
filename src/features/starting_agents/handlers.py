@@ -1,10 +1,10 @@
 import time
 
-from agents.terminal import detached
 from controllers.types import Agents, Environments, Messages
 from engine.events.resources import MessageCreated
 from engine.sessions import Sessions
 from features.parts import Context, Handler
+from features.starting_agents.launch import launch
 from providers import DRIVERS
 from resources.base import SYSTEM, USER
 
@@ -31,5 +31,4 @@ class WakeOnMessage(Handler):
         last = last_conversation(record)
         if last is None:
             return
-        detached(record.root, record.root.parent, record.env, last.provider, [*DRIVERS[last.provider].AUTO_ARGS], conversation=last.title)
-        environments.update(place.n, launched=time.time(), launched_agent=last.provider)
+        launch(environments, place, last.provider, last.title)

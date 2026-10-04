@@ -6,7 +6,8 @@ from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from engine.worktree import current_branch
 from features.boards.resource import DONE, MEANINGS, Board
-from features.work_modes.modes import ORCHESTRATOR, pick
+from features.work_modes.details import ORCHESTRATOR
+from features.work_modes.modes import pick
 from resources.base import COMMISSIONED, FINISHED, PAUSED, REQUESTED, RESUMED, REVISED, Refused, Resource, STARTED, SYSTEM, titled
 
 

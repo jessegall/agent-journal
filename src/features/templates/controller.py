@@ -1,7 +1,7 @@
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller
+from controllers.base import Controller, internal
 from features.templates.resource import Template, TemplateField
 from resources.base import Refused
 from engine.wording import slugged
@@ -12,6 +12,15 @@ KINDS = ("text", "number", "choice")
 
 class Templates(Controller):
     resource = Template
+
+    @internal
+    def chosen(self, given):
+        if not given:
+            return None
+        try:
+            return self.load(given)
+        except (ValueError, Refused):
+            raise Refused(f"template {given} does not exist: journal template all lists them") from None
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         self._known(data.get("applies_to"))

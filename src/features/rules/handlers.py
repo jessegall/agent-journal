@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events.resources import ResourceCreated, ResourceEvent
+from engine.events.resources import ResourceEvent, RuleCreated
 from features.journal_laws.briefing import brief
 from features.parts import Context, Handler
 from resources.base import AGENT
@@ -19,8 +19,8 @@ class InjectRules(Handler):
 
 
 class ReviewNewRule(Handler):
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        if event.actor != AGENT or event.type != "rule":
+    def handle(self, context: Context, event: RuleCreated) -> None:
+        if event.actor != AGENT:
             return
         agent = context.journal.agents.primary()
         if agent:

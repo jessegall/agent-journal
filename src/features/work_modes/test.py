@@ -1,7 +1,8 @@
 import features
 from controllers.types import Agents, Nudges, Works
 from features.session_briefing.start import start_block
-from features.work_modes.modes import NAME, mode_of, pick
+from features.work_modes.details import NAME
+from features.work_modes.modes import mode_of, pick
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from runner.hooks import handle

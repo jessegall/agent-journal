@@ -30,8 +30,7 @@ class Suggestions(Controller):
     def complete(self, n: int, how: str = "", **data):
         word = how.strip().split(":", 1)[0].strip().lower()
         decision = word if word in (ACCEPT.lower(), DECLINE.lower()) else adjusted(how)
-        self.update(n, decision=decision)
-        return super().complete(n, how, **data)
+        return super().complete(n, how, decision=decision, **data)
 
 
 types_module.register(Suggestions)

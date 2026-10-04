@@ -20,11 +20,11 @@ def firing(context, text_of, from_user: bool = False) -> list:
 def fire(context, agent, row, done: str = "", about: str = "") -> None:
     if row.does != START:
         context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
-                                                   tone="danger" if row.does == DENY else "note", title=row.text or row.brief, ref=row.ref)
+                                                   tone="danger" if row.does == DENY else "note", title=row.wording, ref=row.ref)
     if row.does == MESSAGE:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text, trigger=row.n)
     elif row.does in (NUDGE, INSTRUCT):
-        context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.text or row.brief)
+        context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.wording)
     Triggers(context.record, actor=SYSTEM).fired(row.n, about)
 
 
@@ -36,7 +36,7 @@ class WatchWhatTheAgentDoes(ToolInterceptor):
         for row in firing(context, lambda scope: searched(call, scope)):
             fire(context, context.agent.row, row)
             if row.does == DENY:
-                return f"{row.title} - {row.text or row.brief or 'this call is denied by a trigger'}"
+                return f"{row.title} - {row.wording or 'this call is denied by a trigger'}"
         return ""
 
 
@@ -47,7 +47,7 @@ class WatchWhatTheAgentWrites(Handler):
         for row in firing(context, lambda scope: "" if scope == COMMANDS else event.text):
             fire(context, context.agent.row, row, CHAT_DENIED if row.does == DENY else "")
             if row.does == DENY:
-                context.agent.whisper("denied", title=row.title, text=row.text or row.brief)
+                context.agent.whisper("denied", title=row.title, text=row.wording)
 
 
 class WatchWhatTheUserWrites(Handler):

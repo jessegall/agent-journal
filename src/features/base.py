@@ -231,6 +231,11 @@ class Feature(ABC):
     def spoken(self, name: str, **values) -> str:
         return " - ".join(self.line(name, values))
 
+    def to_primary(self, record, line: str, actor: str = SYSTEM, **values) -> None:
+        agent = Agents(record, actor=SYSTEM).primary()
+        if agent:
+            self.journal.say(record, agent, line, actor=actor, **values)
+
     def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:
         self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach), key, agent)
 
