@@ -15,7 +15,8 @@ import pytest
 from controllers.base import Controller
 from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
-from features.phone.controller import SAID, Phones
+from features.phone.controller import Phones
+from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
 from features.sharing.server import ShareHandler
@@ -136,7 +137,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     spoken = {"message": lambda: Messages(record, actor=AGENT).create("the build is green"),
               "question": lambda: Questions(record, actor=AGENT).create("Which port should it use"),
               "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"])}
-    assert set(spoken) == set(SAID), "every kind the phone's chat speaks is checked below"
+    assert set(spoken) == set(POSTED), "every kind the phone's chat speaks is checked below"
     for kind, make in spoken.items():
         row = make()
         fed = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
@@ -238,7 +239,7 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
 
 
 def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, monkeypatch):
-    from features.phone import controller, push
+    from features.phone import controller, feed, push
     record, base = served
     _, key = paired(record, base)
     assert call(base, "/p/push", {"endpoint": "https://example.com/steal"}, key).status == 422, "only a real push service is ever called"
@@ -326,7 +327,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     CONTROLLERS["agent"](helper_record, actor=SYSTEM).create("codex-rhea", status="working", at=now, started=now - 60,
                                                              tool="Edit", file="src/web/src/phone/PhoneHome.vue")
     from surfaces.summary import summarize
-    monkeypatch.setattr(controller, "lately_summarized", summarize)
+    monkeypatch.setattr(feed, "lately_summarized", summarize)
     fed = call(base, "/p/feed", key=key).body
     assert fed["agent"] == "offline", "the phone sees no agent running"
     assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"
