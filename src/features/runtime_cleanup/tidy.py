@@ -7,6 +7,7 @@ from engine.runtime import profiles
 from providers.base import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
+from controllers.stored import mtime
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "channels/*.jsonl": 1024 * 1024}
 EVENTS_KEPT = 100
@@ -47,7 +48,7 @@ def tidy_files(root: Path, days: float) -> Tidied:
     if not runtime.is_dir():
         return Tidied(leftovers=left)
     quiet = time.time() - days * 86400
-    removed = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((f.stat().st_mtime for f in d.iterdir()), default=0) < quiet]
+    removed = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < quiet]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)
     trimmed = [f for pattern, keep in TAILS.items() for f in runtime.glob(pattern) if f.is_file() and trim(f, keep)]
