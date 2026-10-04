@@ -87,9 +87,9 @@ class Stored:
         p = self.path(r.n)
         if self.resource.own_folder:
             p.parent.mkdir(parents=True, exist_ok=True)
-        write_text(p, r.dump())
-        if not self.resource.own_folder:
+        else:
             self._note(r.n)
+        write_text(p, r.dump())
         if self.resource.own_folder:
             os.utime(self._folder())
 
