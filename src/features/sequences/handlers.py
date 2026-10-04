@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from controllers.types import Questions
-from engine.events.engine import AgentMessageSending, ClockTicked
+from engine.events.engine import AgentMessageSending
 from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
@@ -11,7 +11,7 @@ from features.journal import waiting
 from features.nudges import Sent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.work_tracking.details import WorkDetails
-from features.sequences.details import IN_CHAT, STEP, STEP_HELD, WAITING
+from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
 from features.sequences.resource import RunKey
 from features.triggers.controller import Triggers
@@ -103,22 +103,11 @@ class EndWithItsRow(Handler):
                 sequences.update(sequence.n, runs=sequences.without(sequence, key))
 
 
-def unfinished_steps(context, agent) -> list[Sent]:
-    found = context.journal.sequences.in_hand() if agent.status == IDLE else None
-    if not found or found[0].lasting:
-        return []
-    sequence, key, _ = found
-    run = sequence.run(key)
-    left = context.journal.sequences.left(sequence, key)
-    return [Sent(f"{sequence.n}|{key}|{run.step}", {"n": sequence.n, "title": sequence.title, "step": run.step,
-                                                     "count": len(context.journal.sequences.steps_of(sequence)), "about": about_flag(key), "left": "; ".join(left)})]
-
-
 def step_values(context: Context, sequence, key: str, run: dict) -> dict:
     steps = context.journal.sequences.steps_of(sequence)
     part = steps[run["step"] - 1]
     return {"n": sequence.n, "title": sequence.title, "step": run["step"], "count": len(steps), "name": part[SECTION.title],
-            "body": filled(context, sequence.n, key, part[SECTION.body]), "about": about_flag(key), "then": then_next(sequence.n, key, part[SECTION.body])}
+            "body": filled(context, sequence.n, key, part[SECTION.body]), "then": then_next(sequence.n, key, part[SECTION.body])}
 
 
 class HandStepToAgent(Handler):
@@ -141,7 +130,7 @@ class HandStepToAgent(Handler):
             return
         speaking.hold(STEP_HELD, STEP, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
         speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run.get('stepped', run['at'])}", lambda: speaking.agent.say(
-            STEP, **step_values(context, sequence, key, run), chat_rule=chat_rule(sequence)))
+            STEP, **step_values(context, sequence, key, run), about=about_flag(key), chat_rule=chat_rule(sequence)))
 
 
 def then_next(n: int, key: str, body: str) -> str:
@@ -163,14 +152,10 @@ class KeepOutOfTheChat(Handler):
             context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
-def pace(context: AgentContext, own) -> int:
+def step_pace(context: AgentContext) -> int:
     if waiting(context.record, context.agent.row):
         return minutes(WorkDetails.values(context.record).ask_awaiting_every)
-    return minutes(own)
-
-
-def unfinished_pace(context: AgentContext) -> int:
-    return pace(context, context.feature.cadence(context.record, "unfinished").every)
+    return minutes(context.feature.cadence(context.record, UNFINISHED).every)
 
 
 def minutes(value) -> int:
@@ -182,18 +167,16 @@ def asked_since(context: AgentContext, at: float, about: set) -> bool:
                for row in context.journal.questions.summaries())
 
 
-class NudgeWaitingStep(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        found = context.journal.sequences.in_hand()
-        if not found or found[0].lasting:
-            return
-        sequence, key, run = found
-        handed = run.get("stepped", run["at"])
-        waited = int((time.time() - handed) // (pace(context, context.settings.nudge_every) * MINUTE))
-        if waited < 1 or asked_since(context, handed, {sequence.ref, RunKey.of(key).about}):
-            return
-        context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{handed}|{waited}", lambda: context.agent.say(
-            WAITING, **step_values(context, sequence, key, run)))
+def standing_steps(context: AgentContext, agent) -> list[Sent]:
+    found = context.journal.sequences.in_hand()
+    if not found or found[0].lasting:
+        return []
+    sequence, key, run = found
+    handed = run.get("stepped", run["at"])
+    standing = time.time() - handed >= step_pace(context) * MINUTE
+    if not (agent.status == IDLE or standing) or asked_since(context, handed, {sequence.ref, RunKey.of(key).about}):
+        return []
+    return [Sent(f"{sequence.n}|{key}|{run['step']}", step_values(context, sequence, key, run))]
 
 
 def free_while_held(found: JournalCall) -> bool:

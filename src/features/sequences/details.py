@@ -1,13 +1,11 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
-from features.settings import Setting
 
 STEP = "step"
 STEP_HELD = "step held"
 DISPATCH = "dispatch"
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
-WAITING = "waiting"
 
 
 class SequencesDetails(FeatureDetails):
@@ -48,8 +46,8 @@ class SequencesDetails(FeatureDetails):
         sequence's starts_on=trigger:<its n>. Sequences nest like function calls: one that starts
         while another runs is handed to you first, and the one it interrupted comes back when it
         ends; starting one already running about the same row starts it again. Finishing a sequence
-        comes before anything else you do. A step standing still is nudged every minute, and
-        stopping with a run unfinished sends you back to it. journal sequence abandon <n> --about
+        comes before anything else you do. Stopping with a step in hand, or leaving it standing
+        still, earns a reminder every minute until it moves on. journal sequence abandon <n> --about
         <ref> --why "<why>" gives one up that no longer applies: it names the steps it would skip,
         and takes --sure once you have read them. Some sequences ship
         with the journal; they are system sequences and cannot be changed or removed.
@@ -57,19 +55,11 @@ class SequencesDetails(FeatureDetails):
 
     behaviours = [
         Behaviour(
-            name="unfinished",
+            name=UNFINISHED,
             title="Remind the agent of a sequence step left unfinished",
-            abstract="Said when the agent stops with a step in hand, then this often while it stays there; while the agent waits on something, as often as work tracking asks about a wait",
+            abstract="Said when the agent stops with a step in hand or the step stands still this long, then this often while it stays there; "
+                     "while the agent waits on something, as often as work tracking asks about a wait",
             trigger=Trigger(every=1, unit=MINUTES),
-        ),
-    ]
-
-    settings = [
-        Setting(
-            name="nudge_every",
-            default=1,
-            title="Nudge the agent about a sequence step standing still every",
-            unit="minutes",
         ),
     ]
 
@@ -96,16 +86,7 @@ class SequencesDetails(FeatureDetails):
             while_waiting=True,
             title="sequence {{n}}, {{title}}, is still at step {{step}} of {{count}} - carry on with it",
             brief="""
-                finishing it comes before anything else. Still to do: {{left}}. Finish the step and
-                journal sequence next {{n}}{{about}}
-            """,
-        ),
-        Line(
-            name=WAITING,
-            while_waiting=True,
-            title="you have a sequence going: {{title}}, step {{step}} of {{count}}, {{name}} - how is it going?",
-            brief="""
-                finishing it comes before anything else; do the step now. {{body}}{{then}}
+                finishing it comes before anything else; do the step now, {{name}}: {{body}}{{then}}
             """,
         ),
         Line(
