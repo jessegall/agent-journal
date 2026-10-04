@@ -9,7 +9,8 @@ from pathlib import Path
 
 from engine import runtime, typist
 from engine.record import Record
-from engine.seats import seats
+from engine.seats import Seat, seat_file
+from engine.stored import read_json
 from engine.sessions import Sessions
 from controllers.faults import threw
 from controllers.types import Messages, Notices
@@ -109,15 +110,14 @@ class Children:
 
     def wanted(self) -> set[str]:
         sessions = Sessions(self.root)
-        seated = {seat.terminal: seat.env for seat in seats(self.root)}
-        return {env for session in typist.live(self.root) if (env := sessions.environment(session) or self.healed(sessions, session, seated))}
+        return {env for session in typist.live(self.root) if (env := sessions.environment(session) or self.healed(sessions, session))}
 
-    def healed(self, sessions: Sessions, session: str, seated: dict[str, str]) -> str | None:
-        found = sessions.read(session)
-        if session not in seated or found.evicted_since_start:
+    def healed(self, sessions: Sessions, session: str) -> str | None:
+        seat = Seat.of(read_json(seat_file(self.root, session), dict, {}), session)
+        if not seat.env or sessions.read(session).evicted_since_start:
             return None
-        sessions.write(session, environment=seated[session])
-        return seated[session]
+        sessions.write(session, environment=seat.env)
+        return seat.env
 
     def tick(self) -> None:
         wanted = self.wanted()
