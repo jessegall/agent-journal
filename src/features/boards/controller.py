@@ -140,11 +140,13 @@ class Boards(Controller):
         if mode == "off":
             from features.sequences.controller import Sequences
             from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
+            from features.sequences.resource import RunKey
             sequences = Sequences(self.record, actor=SYSTEM)
             for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
                 sequence = sequences._titled(shipped.title)
-                for key in [key for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|")]:
-                    sequences._finish(sequence.n, key.split("|", 1)[1])
+                for key in [RunKey.of(key) for key in (sequence.runs if sequence else {})]:
+                    if key.here(self.record.env):
+                        sequences.finish(sequence.n, key.about)
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
 
     def _cards(self, actor: str):
@@ -251,14 +253,14 @@ class Boards(Controller):
         exploring = sequences._titled(EXPLORATION.title)
         handed = 0
         if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
-            sequences._finish(exploring.n, about)
+            sequences.finish(exploring.n, about)
             handed = sequences.run(sequences._titled(DRAFTING.title).n, about=about).n
             phase = DRAFTING_PHASE
         elif turns >= MOST_TURNS:
-            sequences._finish(exploring.n, about)
+            sequences.finish(exploring.n, about)
             phase, rated = LOST, 0
         else:
-            sequences._jump(exploring.n, about, rated + 1)
+            sequences.jump(exploring.n, about, rated + 1)
             handed, phase = exploring.n, EXPLORING
         read = reading.strip()[:READING] or board.drafting.get("reading", "")
         board = self._goal_set(board, goal, done)
@@ -291,16 +293,15 @@ class Boards(Controller):
         if board.drafting.get("phase") != STALLED:
             raise Refused(f"board {board.n} is not stalled: nothing to retry")
         from features.sequences.controller import Sequences
+        from features.sequences.resource import RunKey
         asked = board.asked
         sequences = Sequences(self.record, actor=SYSTEM)
-        for row in sequences.summaries():
-            if row["completed"] or row["deleted"]:
-                continue
+        for row in sequences.open_rows():
             sequence = sequences.load(row["n"])
             if not sequence.dispatch:
                 continue
             for key, run in sequence.runs.items():
-                if key.split("|", 1)[1] not in asked:
+                if RunKey.of(key).about not in asked:
                     continue
                 handed = {k: v for k, v in run.items() if k != "agent"}
                 sequences.update_run(sequence, key, {**handed, "retried": time.time()})

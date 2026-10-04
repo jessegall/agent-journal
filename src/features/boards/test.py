@@ -41,7 +41,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
     filler = Sequences(record, actor=AGENT, agent="board-filler")
     filler.follow(exploring.n, about=made.ref)
-    assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT)._in_hand() is None, \
+    assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT).in_hand() is None, \
         "the filler's run is its own: the main agent never has it in hand"
     asked = Boards(record, actor=AGENT, agent="board-filler").ask(board.n, "Which goal?", options=[{"title": "A"}, {"title": "B"}])
     before = sum("board-filler" in n for n in nudges(record))

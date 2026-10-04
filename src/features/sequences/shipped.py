@@ -273,12 +273,14 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
            WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
 
+SHIPPED_FIELDS = ("brief", "starts_on", "started_by", "only_when_idle", "talks_in", "lasting", "unless", "dispatch")
+
 
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
-    standing = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
+    numbers = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
     retire(sequences, {shipped.title for shipped in SHIPPED})
-    return [shipped.title for shipped in SHIPPED if in_step(sequences, shipped, standing.get(shipped.title))]
+    return [shipped.title for shipped in SHIPPED if in_step(sequences, shipped, numbers)]
 
 
 def retire(sequences: Sequences, titles: set[str]) -> None:
@@ -292,22 +294,22 @@ def watched(record, shipped: ShippedSequence) -> str:
 
 
 def unwatched(record, shipped: ShippedSequence) -> None:
-    Triggers(record, actor=SYSTEM).unwatch(shipped.title, f"{shipped.title} now starts on {shipped.start_moment}")
+    Triggers(record, actor=SYSTEM).unwatch(shipped.title, f"{shipped.title} now starts on {shipped.starts_on}")
 
 
-def in_step(sequences: Sequences, shipped: ShippedSequence, n: int | None) -> bool:
+def in_step(sequences: Sequences, shipped: ShippedSequence, numbers: dict[str, int]) -> bool:
     if shipped.words:
         shipped = shipped.started_on(watched(sequences.record, shipped))
     else:
         unwatched(sequences.record, shipped)
-    numbers = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
     steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped.steps]
-    row = sequences.load(n) if n else sequences.create(shipped.title, starts_on=shipped.start_moment, system=True)
-    shape = (shipped.brief, shipped.start_moment, shipped.starter, shipped.only_when_idle, shipped.talks_in, shipped.lasting,
-             shipped.unless, shipped.dispatch, steps)
-    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless,
-                                 row.dispatch, row.sections) == shape):
+    n = numbers.get(shipped.title)
+    row = sequences.load(n) if n else sequences.create(shipped.title, starts_on=shipped.starts_on, system=True)
+    numbers[shipped.title] = row.n
+    shape = {**{name: getattr(shipped, name) for name in SHIPPED_FIELDS}, "sections": steps}
+    if n and (not row.system or {name: getattr(row, name) for name in shape} == shape):
         return False
-    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.lasting, row.unless, row.dispatch, row.sections = shape
+    for name, value in shape.items():
+        setattr(row, name, value)
     sequences.save(row, "updated")
     return True

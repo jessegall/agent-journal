@@ -3,9 +3,9 @@ from features.journal import Journal
 from features.nudges import Nudge
 from features.sequences.controller import Sequences
 from features.sequences.details import SequencesDetails
+from features.sequences.details import UNFINISHED
 from features.sequences.handlers import (DispatchAgainOnAnswer, EndWithItsRow, HandStepToAgent, HoldJournalWritesForTheStep, KeepOutOfTheChat,
-                                         NudgeWaitingStep, StartOnMoment, StartOnTrigger, UNFINISHED, unfinished_pace,
-                                         unfinished_steps)
+                                         NudgeWaitingStep, StartOnMoment, StartOnTrigger, unfinished_pace, unfinished_steps)
 
 __all__ = ["Sequences"]
 

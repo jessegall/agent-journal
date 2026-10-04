@@ -1,7 +1,13 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 from features.settings import Setting
-from features.sequences.handlers import DISPATCH, IN_CHAT, STEP, STEP_HELD, UNFINISHED, WAITING
+
+STEP = "step"
+STEP_HELD = "step held"
+DISPATCH = "dispatch"
+IN_CHAT = "in_chat"
+UNFINISHED = "unfinished"
+WAITING = "waiting"
 
 
 class SequencesDetails(FeatureDetails):
