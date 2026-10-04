@@ -1,7 +1,8 @@
 from features.base import Feature
 from features.journal import Journal
 from features.row_links.details import RowLinksDetails
-from features.row_links.formatters import MarkPaths, MarkRows, UnwrapChips
+from features.row_links.formatters import MarkRows, UnwrapChips
+from features.row_links.paths import MarkPaths
 from features.row_links.handlers import NameAmbiguousFiles
 
 

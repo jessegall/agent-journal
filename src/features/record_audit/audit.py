@@ -1,5 +1,6 @@
 import re
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from argparse import _SubParsersAction
 
@@ -45,27 +46,38 @@ def unknown_verbs(text: str, words: dict[str, set[str]]) -> list[str]:
     return sorted(found)
 
 
-def evidence(record) -> list[dict]:
-    project = record.root.parent
-    words = command_words()
+@dataclass(frozen=True)
+class Evidence:
+    ref: str
+    evidence: str
+    retire: str
+
+
+def retiring(controller, r) -> str:
+    return f"journal {controller.type} {r.n} {controller.named('complete')} \"<why>\""
+
+
+def claim_evidence(record) -> list[Evidence]:
+    project, words = record.root.parent, command_words()
     found = []
     for claims in CLAIMS:
         controller = claims(record, actor=SYSTEM)
-        type_, close = controller.type, controller.named("complete")
-        for r in controller._every():
-            if r.completed:
-                continue
+        for r in controller._standing():
             text = f"{r.title}\n{r.brief}"
-            retire = f"journal {type_} {r.n} {close} \"<why>\""
-            for what in missing_paths(project, text):
-                found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which is gone", "retire": retire})
-            for what in unknown_verbs(text, words):
-                found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which the CLI does not answer to", "retire": retire})
-    questions = Questions(record, actor=SYSTEM)
-    for t in Todos(record, actor=SYSTEM)._every():
-        if t.completed:
-            continue
-        waiting = [q for q in questions._standing() if t.ref in q.refs]
-        if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * DAY:
-            found.append({"ref": t.ref, "title": t.title, "evidence": f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", "retire": f"journal todo {t.n} done \"<why>\""})
+            found += [Evidence(r.ref, f"names {what}, which is gone", retiring(controller, r)) for what in missing_paths(project, text)]
+            found += [Evidence(r.ref, f"names {what}, which the CLI does not answer to", retiring(controller, r)) for what in unknown_verbs(text, words)]
     return found
+
+
+def waiting_evidence(record) -> list[Evidence]:
+    questions, todos = Questions(record, actor=SYSTEM)._standing(), Todos(record, actor=SYSTEM)
+    found = []
+    for t in todos._standing():
+        waiting = [q for q in questions if t.ref in q.refs]
+        if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * DAY:
+            found.append(Evidence(t.ref, f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", retiring(todos, t)))
+    return found
+
+
+def evidence(record) -> list[Evidence]:
+    return claim_evidence(record) + waiting_evidence(record)

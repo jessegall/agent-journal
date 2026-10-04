@@ -10,4 +10,4 @@ class SayEvidence(Handler):
         found = evidence(context.record)
         if found:
             context.agent.say("evidence", count=context.feature.plural(len(found), "thing"),
-                              found="; ".join(f"{f['ref']} {f['evidence']} — {f['retire']}" for f in found))
+                              found="; ".join(f"{f.ref} {f.evidence} — {f.retire}" for f in found))

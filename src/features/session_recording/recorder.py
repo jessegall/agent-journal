@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from engine.record import Record
 from engine.wording import digest
 from providers import workspace_folders
 
@@ -24,8 +25,8 @@ class Recorder:
         self.frames = folder / "frames.jsonl"
         self.blobs = folder / "blobs"
         self.blobs.mkdir(parents=True, exist_ok=True)
-        self.read: dict[Path, tuple[int, int]] = {}
-        self.newest: dict[Path, int] = {}
+        self.records: dict[str, Record] = {}
+        self.newest: dict[str, int] = {}
         self.stamps: dict[Path, tuple[int, int, str]] = {}
         self.last: dict[str, str] = {}
 
@@ -45,26 +46,13 @@ class Recorder:
     def _events(self) -> list[dict]:
         events = []
         for log in sorted((self.root / "environments").glob("*/events.jsonl")):
-            with log.open("rb") as handle:
-                inode = os.fstat(handle.fileno()).st_ino
-                start = self._resumed(log, inode, handle)
-                handle.seek(start)
-                fresh = handle.read()
-            whole = fresh[:fresh.rfind(b"\n") + 1]
-            self.read[log] = (inode, start + len(whole))
-            newest = self.newest.get(log, 0)
-            arrived = [event for event in map(json.loads, filter(bytes.strip, whole.splitlines())) if event["id"] > newest]
+            env = log.parent.name
+            record = self.records.setdefault(env, Record(self.root, env))
+            arrived = [event.to_json() for event in record.events(since=self.newest.get(env, 0))]
             if arrived:
-                self.newest[log] = arrived[-1]["id"]
+                self.newest[env] = arrived[-1]["id"]
             events += arrived
         return events
-
-    def _resumed(self, log: Path, inode: int, handle) -> int:
-        was, start = self.read.get(log, (0, 0))
-        if start == 0 or inode != was or os.fstat(handle.fileno()).st_size < start:
-            return 0
-        handle.seek(start - 1)
-        return start if handle.read(1) == b"\n" else 0
 
     def _snapshot(self) -> dict[str, str]:
         now = {}
