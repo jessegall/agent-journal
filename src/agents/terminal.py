@@ -8,7 +8,7 @@ from engine.sessions import ACTIVE_ENV, Sessions, hold_build
 from engine.package import code
 from engine import runtime
 from engine.stored import read_json, write_json
-from engine.package import CODE, entry
+from engine.package import ARCHIVE, CODE, entry
 from engine.fields import Loaded
 from engine.worktree import checkout, environment, share_journal
 from typing import TypedDict
@@ -39,7 +39,7 @@ class Launched(Loaded):
 
 def watched(root: Path) -> tuple:
     files = sorted(code(root).rglob("*.py"))
-    return (str((root / "journal.pyz").resolve()), *((str(f), f.stat().st_mtime_ns) for f in files if f.is_file()))
+    return (str((root / ARCHIVE).resolve()), *((str(f), f.stat().st_mtime_ns) for f in files if f.is_file()))
 
 
 def agent_environment(base: dict | None = None, env: str | None = None, capped: dict | None = None) -> dict:

@@ -73,10 +73,11 @@ def running(feature: type):
 
 def seat(root: Path) -> None:
     from controllers.types import Features
+    from engine.paths import environments
     from engine.record import Record
     from features.switches import booted
     from resources.base import SYSTEM
-    for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
+    for home in sorted(p for p in environments(root).glob("*") if p.is_dir()):
         record = Record(root, home.name)
         rows = Features(record, actor=SYSTEM)
         known = {r.title: r for r in rows._every()}

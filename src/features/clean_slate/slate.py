@@ -3,6 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.wording import plural
@@ -14,7 +15,7 @@ KEY = "clean_slate"
 
 
 def place(record: Record) -> Path:
-    return record.root / "runtime" / "set-aside"
+    return runtime.folder(record.root) / "set-aside"
 
 
 def state(record: Record) -> dict:

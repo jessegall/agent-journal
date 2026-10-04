@@ -1,6 +1,8 @@
 import json
+from contextlib import AbstractContextManager
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Callable
 
 from engine import runtime
 from engine.stored import append_text, write_text
@@ -28,9 +30,9 @@ def parsed(lines):
 
 
 class EventLog:
-    def __init__(self, home: Path, locked):
+    def __init__(self, home: Path, locked: Callable[[], AbstractContextManager]):
         self.file = home / "events.jsonl"
-        self.cursors = runtime.folder(home)
+        self.cursor_folder = runtime.folder(home)
         self.locked = locked
 
     def append(self, event: Event) -> None:
@@ -101,7 +103,7 @@ class EventLog:
             if len(lines) <= keep:
                 return 0
             ids = [json.loads(line).get("id", 0) for line in lines]
-            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in self.cursors.glob("cursor-*")
+            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in self.cursor_folder.glob("cursor-*")
                           if f.stat().st_mtime >= readers_since and self.cursor_text(f.name.removeprefix("cursor-")).isdigit()), default=ids[-1])
             floor = min(ids[-keep], unread + 1)
             kept = [line for line, n in zip(lines, ids) if n >= floor]
@@ -109,7 +111,7 @@ class EventLog:
             return len(lines) - len(kept)
 
     def cursor_file(self, name: str) -> Path:
-        return self.cursors / f"cursor-{name}"
+        return self.cursor_folder / f"cursor-{name}"
 
     def cursor_text(self, name: str) -> str:
         try:

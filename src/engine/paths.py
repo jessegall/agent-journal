@@ -17,10 +17,6 @@ def contained(folder: Path, name: str, nested: bool = False) -> Path:
     return target
 
 
-def environment_path(folder: Path, name: str) -> Path:
-    return contained(folder, name)
-
-
 def environments(root: Path) -> Path:
     return Path(root) / ENVIRONMENTS
 

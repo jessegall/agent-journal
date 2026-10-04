@@ -8,7 +8,7 @@ from pathlib import Path
 
 from engine.package import ARCHIVE
 from engine.paths import ENVIRONMENTS
-from engine.proc import ran, run
+from engine.proc import ran
 from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
 
@@ -211,7 +211,8 @@ def included(project: Path, folder: Path) -> None:
 
 
 def git(project: Path, *args: str) -> subprocess.CompletedProcess:
-    return ran(["git", *args], cwd=project, timeout=GIT_WAIT) or subprocess.CompletedProcess(["git", *args], 1, "", f"git {args[0]} did not finish within {GIT_WAIT} seconds or could not start")
+    failed = f"git {args[0]} did not finish within {GIT_WAIT} seconds or could not start"
+    return ran(["git", *args], cwd=project, timeout=GIT_WAIT) or subprocess.CompletedProcess(["git", *args], 1, "", failed)
 
 
 SHARED = (".journal", ".claude/settings.local.json")
@@ -261,9 +262,10 @@ def belongs(top: Path, project: Path) -> bool:
 def ignored(project: Path, paths: list[Path]) -> list[Path]:
     if not paths:
         return []
-    asked = run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], timeout=30, stdin="\n".join(map(str, paths)))
+    asked = subprocess.run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], input="\n".join(map(str, paths)),
+                           capture_output=True, text=True, timeout=30)
     managed = tuple(f"/{folder}/" for folder in SHARED_IN)
-    named = {path for source, path in (line.split("\t", 1) for line in asked.splitlines() if "\t" in line)
+    named = {path for source, path in (line.split("\t", 1) for line in asked.stdout.splitlines() if "\t" in line)
              if not (source.split(":", 2)[0].endswith("info/exclude") and source.split(":", 2)[2].startswith(managed))}
     return [path for path in paths if str(path) in named]
 

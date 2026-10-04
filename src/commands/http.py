@@ -272,10 +272,10 @@ def get_changelog(req: Request) -> Reply:
     log = code(req.root) / "CHANGELOG.md"
     if not log.is_file():
         return Reply(404, {"error": "this install carries no changelog"})
-    cache = req.root / "runtime" / "upstream.cache"
+    cache = runtime.upstream_cache(req.root)
     latest = cache.read_text().strip() if cache.is_file() else ""
     return Reply(200, {"version": version(), "changelog": log.read_text(), "latest": latest, "newer": newer(latest, version()),
-                       "checking": FETCHING.locked(), "updating": (req.root / "runtime" / "upgrading").exists(),
+                       "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
                        "repository": journal_repository(req.root.parent)})
 
 
