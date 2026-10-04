@@ -57,6 +57,10 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     driver.printed.write_bytes(f"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nesc to interrupt\r\n{screen}".encode())
     assert (driver.asked().tool, driver.asked().call, codex.ALLOW) == ("exec_command", "printf 'hi' > hello.txt", b"y"), \
         "Codex's approval prompt is read off its screen with its command, and Allow presses y"
+    driver.last_report = lambda: None
+    driver.send("todo 5 next")
+    assert driver.held == ["todo 5 next"], "nothing is typed into Codex while its approval prompt waits on the user; the line waits too"
+    del driver.last_report
     driver.printed.write_bytes(f"{screen}\r\n\x1b[2m> Ask Codex to do anything\x1b[0m".encode())
     assert driver.asked() is None, "once the prompt is gone, nothing is asked"
     from runner.engine import Engine

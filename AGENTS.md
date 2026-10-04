@@ -32,6 +32,17 @@ A name is how the user and the chat tell subagents apart and how they are messag
 
 <!-- END: agent-journal, form 2 -->
 
+## Dispatching subagents
+
+Every subagent dispatch names its model: the fast model for mechanical known-answer work,
+the general model for careful work without invention, the strongest only for judgement.
+Unset means the orchestrator's own model, which is the wrong default. The journal carries this as a rule
+(`journal rules`); this file carries it so it is read before the first dispatch.
+
+## Controllers by reference
+
+A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` from `controllers.types` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only.
+
 ## Skills
 
 A skill is read by the agent, so it exists only when it tells the agent what to do: a command to run or a decision to make at a moment it would otherwise get wrong. A feature that runs by itself gets no skill; its help lives on the Settings page, and anything the agent must act on travels in the nudge the feature sends. Before adding a skill, fold it into the skill of the subject it belongs to (memory, reports, to-dos, messages, tickets) rather than starting another.
@@ -40,4 +51,4 @@ A skill is read by the agent, so it exists only when it tells the agent what to 
 
 The default commands carry no hand-written tests. `tests/test_every_action.py` loops over every registered resource type and every action on its controller, and `tests/test_the_gate.py` loops over every provider; between them they cover create, read, update, complete and the rest for every type.
 
-A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, under 150 lines — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
+A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.

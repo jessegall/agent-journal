@@ -120,10 +120,14 @@ class ReopenPlansWithTheirRows(Handler):
 
 def still_plans(context, agent) -> list[Sent]:
     quiet = agent.idle_for
-    if quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE:
+    if quiet < float(context.feature.cadence(context.record, "still").every) * MINUTE or carrying_on(context.record):
         return []
     found = [(plan, doable(context.record, plan)) for plan in Plans(context.record, actor=SYSTEM)._every() if plan.status == ACTIVE]
-    return [Sent(str(plan.n), {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]
+    return [Sent(f"{plan.n}:{agent.uses}", {"n": plan.n, "title": plan.title, "minutes": int(quiet // MINUTE), "rows": rows}) for plan, rows in found if rows]
+
+
+def carrying_on(record) -> bool:
+    return any(not w.parked and not w.awaiting for w in Works(record, actor=SYSTEM)._standing())
 
 
 def doable(record, plan) -> str:

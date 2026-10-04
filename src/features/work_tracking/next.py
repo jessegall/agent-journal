@@ -19,8 +19,7 @@ def asked(record, todo) -> bool:
 
 
 def waiting_rows(record, numbers: set | None = None) -> list:
-    todos = Todos(record, actor=SYSTEM)
-    return [t for t in todos._standing() if (numbers is None or t.n in numbers) and (t.blocked or todos.waits(t)) and not asked(record, t)]
+    return [t for t in Todos(record, actor=SYSTEM)._standing() if (numbers is None or t.n in numbers) and t.blocked and not asked(record, t)]
 
 
 def named_rows(rows: list) -> str:

@@ -28,7 +28,7 @@ def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
     report(record, "working", "PreToolUse", session="conversation-1", provider="claude", commands=[{"command": "sleep 40", "tool": "Bash", "at": time.time() - 31}])
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1")
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1", asking={})
     engine.clock()
     assert moved, "the launcher's seat is claude-99, the hooks report on conversation-1: the clock ticks for the one with the command"
 
@@ -179,9 +179,9 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c3", "name": "exec",
                                                                              "input": 'const r=await tools.exec_command({cmd:"npm run watch"});text(r);'}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c3",
-                                                                             "output": [{"type": "input_text", "text": '{"session_id":50,"output":""}'}]}},
+                                                                             "output": [{"type": "input_text", "text": '{"chunk_id":"b","session_id":50,"output":""}'}]}},
         {"timestamp": stamp(time.time() - 60), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c4",
-                                                                                      "output": [{"type": "input_text", "text": '{"session_id":50,"output":"compiled"}'}]}},
+                                                                                      "output": [{"type": "input_text", "text": '{"chunk_id":"c","session_id":50,"output":"compiled"}'}]}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c2", "name": "exec",
                                                                              "input": 'const r=await tools.list_files({path:"."});text(r);'}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c2",
@@ -190,7 +190,8 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
     report(record, "idle", "Stop", provider="codex", transcript=str(transcript))
     tick(record)
     tick(record)
-    assert not [n for n in nudges(record) if "nothing new" in n and "npm run watch" in n], "a command that printed a minute ago is not stalled"
+    assert [any("npm run watch" in n for n in nudges(record) if "still runs" in n), any("nothing new" in n and "npm run watch" in n for n in nudges(record))] == \
+        [True, False], "a command that printed a minute ago is open but not stalled"
     assert lines() == ["a command you left running has shown nothing new for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
         "a run open past ten minutes and an agent stopped while it runs are each told once"
     with transcript.open("a") as more:

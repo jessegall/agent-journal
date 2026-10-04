@@ -87,12 +87,18 @@ class Context:
         return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", spec)
 
     def at_most(self, kind: str, key: str, times: int) -> bool:
-        store, name = self.record.state("counts", self.agent.session), f"{kind}.{digest(key.strip())}"
-        count = int(store.get(name, 0))
-        if count >= times:
+        if self.used_up(kind, key, times):
             return False
-        store.set(name, count + 1)
+        store, name = self._count(kind, key)
+        store.set(name, int(store.get(name, 0)) + 1)
         return True
+
+    def used_up(self, kind: str, key: str, times: int) -> bool:
+        store, name = self._count(kind, key)
+        return int(store.get(name, 0)) >= times
+
+    def _count(self, kind: str, key: str) -> tuple:
+        return self.record.state("counts", self.agent.session), f"{kind}.{digest(key.strip())}"
 
     def once(self, kind: str, key: str, then=None) -> bool:
         store, name = self.record.state("once", self.agent.session), f"{kind}.{digest(key.strip())}"

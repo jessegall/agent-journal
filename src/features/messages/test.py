@@ -124,7 +124,7 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     from providers import DRIVERS
     record = fresh()
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", asking={})
     since = record.last_event()
     Nudges(record).create("for this session", session="claude-1", private=True)
     Nudges(record).create("for another", session="claude-2", private=True)

@@ -237,6 +237,8 @@ class Driver(ABC):
             self.yielding = []
         if not (self.held or self.yielding or self.groups) or time.time() - self.sent_at < BETWEEN:
             return ""
+        if not self.TAKES_CHANNEL and self.awaits_answer():
+            return ""
         self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.groups, self.record))))
@@ -247,6 +249,8 @@ class Driver(ABC):
     def _deliver(self, line: str, by: str) -> bool:
         if self.TAKES_CHANNEL and self._post(line, by):
             return True
+        if self.awaits_answer():
+            return False
         return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=False)
 
     def _post(self, line: str, by: str) -> bool:
@@ -378,6 +382,10 @@ class Driver(ABC):
 
     def asking(self) -> bool:
         return False
+
+    def awaits_answer(self) -> bool:
+        report = self.last_report()
+        return self.asking() or bool(report and report.asking)
 
     def last_report(self):
         if time.monotonic() - self.reported[0] >= REPORT_FOR:
