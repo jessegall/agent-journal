@@ -1,4 +1,5 @@
-import {onMounted, onUnmounted} from "vue";
+import {onMounted} from "vue";
+import {useWindowEvent} from "../composables/windowEvent.js";
 
 const UP = 80;
 
@@ -18,15 +19,9 @@ function measured() {
 }
 
 export function useKeyboard() {
-    onMounted(() => {
-        window.visualViewport?.addEventListener("resize", measured);
-        window.visualViewport?.addEventListener("scroll", measured);
-        window.addEventListener("scroll", measured, {passive: true});
-        measured();
-    });
-    onUnmounted(() => {
-        window.visualViewport?.removeEventListener("resize", measured);
-        window.visualViewport?.removeEventListener("scroll", measured);
-        window.removeEventListener("scroll", measured);
-    });
+    const viewport = () => window.visualViewport;
+    useWindowEvent("resize", measured, undefined, viewport);
+    useWindowEvent("scroll", measured, undefined, viewport);
+    useWindowEvent("scroll", measured, {passive: true});
+    onMounted(measured);
 }

@@ -1,5 +1,6 @@
 <script setup>
-import {computed, onMounted, onUnmounted} from "vue";
+import {useWindowEvent} from "../composables/windowEvent.js";
+import {computed} from "vue";
 import Icon from "./Icon.vue";
 import {ui} from "../state/ui.js";
 
@@ -14,8 +15,7 @@ function keys(e) {
     if (e.key === "ArrowLeft") step(-1);
 }
 
-onMounted(() => window.addEventListener("keydown", keys));
-onUnmounted(() => window.removeEventListener("keydown", keys));
+useWindowEvent("keydown", keys);
 </script>
 
 <template>

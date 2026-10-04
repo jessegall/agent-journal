@@ -1,4 +1,5 @@
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, ref} from "vue";
+import {useEscape} from "../composables/windowEvent.js";
 
 export function closing(emit, props = {}) {
     const led = () => props.open !== undefined && props.open !== null;
@@ -8,8 +9,6 @@ export function closing(emit, props = {}) {
         if (!led()) dismissed.value = true;
         emit("dismiss");
     };
-    const onEscape = (e) => e.key === "Escape" && !led() && props.closable !== false && close();
-    onMounted(() => window.addEventListener("keydown", onEscape));
-    onUnmounted(() => window.removeEventListener("keydown", onEscape));
+    useEscape(close, () => !led() && props.closable !== false);
     return {shown, close, closed: () => emit("close")};
 }

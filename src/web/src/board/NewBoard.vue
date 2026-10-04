@@ -1,5 +1,7 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {useFileHandIn} from "../composables/fileHandIn.js";
+import {useWindowEvent} from "../composables/windowEvent.js";
+import {computed, nextTick, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import FocusStage from "../kit/FocusStage.vue";
@@ -96,26 +98,8 @@ function onKey(e) {
     pick(shortcut - 1);
 }
 
-function dropped(e) {
-    const file = e.dataTransfer && e.dataTransfer.files[0];
-    if (!props.open || !file) return;
-    e.preventDefault();
-    take(file);
-}
-
-function pasted(e) {
-    if (!props.open || !e.clipboardData) return;
-    const file = e.clipboardData.files[0];
-    const text = e.clipboardData.getData("text");
-    if (!file && (e.target.closest("input,textarea,[contenteditable]") || !text.trim())) return;
-    e.preventDefault();
-    take(file || new File([text], "Pasted document.md", {type: "text/markdown"}));
-}
-
-const hovering = (e) => props.open && e.preventDefault();
-const LISTENERS = {keydown: onKey, dragover: hovering, drop: dropped, paste: pasted};
-onMounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener)));
-onUnmounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.removeEventListener(event, listener)));
+useWindowEvent("keydown", onKey);
+useFileHandIn({active: () => props.open, take, pastedText: true});
 </script>
 
 <template>

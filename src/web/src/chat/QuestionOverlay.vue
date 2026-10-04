@@ -1,4 +1,5 @@
 <script setup>
+import {useEscape} from "../composables/windowEvent.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
@@ -93,15 +94,9 @@ watch(
     (done, before) => done && !before && setTimeout(leave, ANSWERED_BEAT)
 );
 
-const onKey = (e) => e.key === "Escape" && !route.value.open && leave();
-onMounted(() => {
-    window.addEventListener("keydown", onKey);
-    arrive();
-});
-onUnmounted(() => {
-    window.removeEventListener("keydown", onKey);
-    sized.disconnect();
-});
+useEscape(leave, () => !route.value.open);
+onMounted(arrive);
+onUnmounted(() => sized.disconnect());
 </script>
 
 <template>

@@ -1,6 +1,7 @@
 <script setup>
+import {useEscape} from "../composables/windowEvent.js";
 import CloseButton from "../kit/CloseButton.vue";
-import {computed, onUnmounted} from "vue";
+import {computed} from "vue";
 import {go, peek, route} from "../route.js";
 import {missed} from "../domain/records.js";
 import {age, span} from "../format/time.js";
@@ -18,11 +19,10 @@ function toInbox() {
     ui.away.open = false;
     go(route.value.env);
 }
-const onEscape = (e) => {
-    if (e.key === "Escape" && ui.away.open) ui.away.open = false;
-};
-window.addEventListener("keydown", onEscape);
-onUnmounted(() => window.removeEventListener("keydown", onEscape));
+useEscape(
+    () => (ui.away.open = false),
+    () => ui.away.open
+);
 </script>
 
 <template>

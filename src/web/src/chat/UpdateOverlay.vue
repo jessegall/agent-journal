@@ -1,5 +1,6 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {useEscape} from "../composables/windowEvent.js";
+import {computed, nextTick, onMounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import UpdateReport from "../resource/UpdateReport.vue";
@@ -134,12 +135,8 @@ function all() {
     location.hash = href.reportUpdates(route.value.env);
 }
 
-const onKey = (e) => e.key === "Escape" && !route.value.open && shrink();
-onMounted(() => {
-    window.addEventListener("keydown", onKey);
-    grow();
-});
-onUnmounted(() => window.removeEventListener("keydown", onKey));
+useEscape(shrink, () => !route.value.open);
+onMounted(grow);
 </script>
 
 <template>
