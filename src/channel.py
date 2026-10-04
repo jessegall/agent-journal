@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import runtime  # noqa: E402
 from engine.sessions import ACTIVE_ENV, agent_pid  # noqa: E402
 from engine.fields import Loaded  # noqa: E402
+from engine.package import ARCHIVE  # noqa: E402
 
 PROTOCOL = "2025-06-18"
 NAME = "journal"
@@ -71,7 +72,7 @@ def contents(lines: list[str]) -> list[str]:
 
 
 def build(root: Path) -> Path:
-    return (root / "journal.pyz").resolve()
+    return (root / ARCHIVE).resolve()
 
 
 def renewed(root: Path, began: Path) -> bool:

@@ -6,6 +6,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from engine.package import ARCHIVE
+from engine.paths import ENVIRONMENTS
+from engine.proc import ran, run
 from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
 
@@ -13,6 +16,7 @@ INCLUDED = ".worktreeinclude"
 BRANCHED = "worktree-"
 WORKTREES = (".claude", "worktrees")
 KEPT = "refs/journal/worktrees"
+GIT_WAIT = 60
 
 
 def checkout(start: Path) -> Path | None:
@@ -112,16 +116,6 @@ def workspace(project: Path, folder: Path) -> Path:
     return folder
 
 
-def workspace_removed(project: Path, folder: Path) -> None:
-    name = folder.name
-    for repo in reversed(repositories(project)):
-        place = folder / repo.relative_to(project)
-        keep(repo, name, f"{BRANCHED}{name}")
-        if place.resolve() in {path.resolve() for path in linked(repo).values()}:
-            git(repo, "worktree", "remove", "--force", str(place))
-    shutil.rmtree(folder, ignore_errors=True)
-
-
 def keep(project: Path, name: str, branch: str) -> None:
     if present(project, f"refs/heads/{branch}"):
         git(project, "update-ref", f"{KEPT}/{name}", f"refs/heads/{branch}")
@@ -217,14 +211,11 @@ def included(project: Path, folder: Path) -> None:
 
 
 def git(project: Path, *args: str) -> subprocess.CompletedProcess:
-    try:
-        return subprocess.run(["git", *args], cwd=project, capture_output=True, text=True, timeout=60)
-    except (OSError, subprocess.TimeoutExpired) as failed:
-        return subprocess.CompletedProcess(["git", *args], 1, "", str(failed))
+    return ran(["git", *args], cwd=project, timeout=GIT_WAIT) or subprocess.CompletedProcess(["git", *args], 1, "", f"git {args[0]} did not finish within {GIT_WAIT} seconds or could not start")
 
 
 SHARED = (".journal", ".claude/settings.local.json")
-JOURNAL_MARKS = ("environments", "journal.pyz")
+JOURNAL_MARKS = (ENVIRONMENTS, ARCHIVE)
 SHARED_IF_IGNORED = (".codex/hooks.json",)
 SHARED_IN = (".claude/skills", ".agents/skills")
 
@@ -270,10 +261,9 @@ def belongs(top: Path, project: Path) -> bool:
 def ignored(project: Path, paths: list[Path]) -> list[Path]:
     if not paths:
         return []
-    asked = subprocess.run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], input="\n".join(map(str, paths)),
-                           capture_output=True, text=True, timeout=30)
+    asked = run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], timeout=30, stdin="\n".join(map(str, paths)))
     managed = tuple(f"/{folder}/" for folder in SHARED_IN)
-    named = {path for source, path in (line.split("\t", 1) for line in asked.stdout.splitlines() if "\t" in line)
+    named = {path for source, path in (line.split("\t", 1) for line in asked.splitlines() if "\t" in line)
              if not (source.split(":", 2)[0].endswith("info/exclude") and source.split(":", 2)[2].startswith(managed))}
     return [path for path in paths if str(path) in named]
 

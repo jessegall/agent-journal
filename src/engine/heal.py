@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from engine import runtime
-from engine.package import point
+from engine.package import ARCHIVE, point
 from engine.stored import read_json, write_json
 
 
@@ -24,7 +24,7 @@ def refused(root: Path, version: str) -> bool:
 
 def heal(root: Path) -> str:
     root = Path(root)
-    current = (root / "journal.pyz").resolve()
+    current = (root / ARCHIVE).resolve()
     bad = sorted({*broken(root), current.name})
     kept = [build for build in root.glob("journal-*.pyz") if build.name not in bad]
     if not kept:

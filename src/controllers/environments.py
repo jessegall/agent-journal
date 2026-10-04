@@ -3,6 +3,7 @@ import shutil
 import signal
 import time
 from collections import Counter
+from functools import cached_property
 from controllers.base import CONTROLLERS, Controller, internal
 from engine import attic
 from engine.record import Record
@@ -10,9 +11,9 @@ from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from resources import types
-from resources.base import AGENT, ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
+from resources.base import ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
 from engine import runtime
-from engine.paths import environment_path
+from engine.paths import environment_home, environments
 from engine.wording import plural
 from controllers.facts import Facts
 from controllers.messages import Messages
@@ -51,7 +52,7 @@ class Environments(Controller):
         return name
 
     def vacant(self, title: str, mine: str = "") -> None:
-        holder = Sessions(self.record.root).holder(title)
+        holder = self._sessions.holder(title)
         if holder and holder != mine:
             found = self._titled(title)
             ending = f"journal environment stop {found.n} ends its agent" if found else "its agent ends"
@@ -59,15 +60,14 @@ class Environments(Controller):
 
     def stop(self, n: int):
         env = self.load(n)
-        sessions = Sessions(self.record.root)
-        holder = sessions.holder(env.title)
+        holder = self._sessions.holder(env.title)
         if not holder:
             self._refuse(f"no agent holds environment {env.title!r}")
         terminal = terminal_of(self.record.root, holder)
         if terminal:
             ask_session(self.record.root, terminal)
             return self._stopping(env.n, session=holder)
-        running = sessions.read(holder)
+        running = self._sessions.read(holder)
         if not running.pid or not alive(running.pid):
             self._refuse(f"the agent in {env.title} runs outside the journal's terminals and its process is not found; end it where it runs")
         os.kill(running.pid, signal.SIGTERM)
@@ -77,17 +77,24 @@ class Environments(Controller):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
-        environment_path(self.record.root / "environments", name)
+        home = environment_home(self.record.root, name)
         made = super().create(name, abstract, brief, **data)
-        Record(self.record.root, name)
+        home.mkdir(parents=True, exist_ok=True)
         runtime.forget_rename(self.record.root, name)
         return made
+
+    @cached_property
+    def _sessions(self) -> Sessions:
+        return Sessions(self.record.root)
+
+    def _record_of(self, env) -> Record:
+        return Record(self.record.root, env.title)
 
     @internal
     def sessions(self) -> Sessions:
         if not self.session:
             raise Refused("no session to bind: say which with --session")
-        return Sessions(self.record.root)
+        return self._sessions
 
     def switch(self, n: int, project: bool = False, move: str = "", back: bool = False):
         who = move or self.session
@@ -114,7 +121,7 @@ class Environments(Controller):
 
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         env = self.load(n)
-        record = Record(self.record.root, env.title)
+        record = self._record_of(env)
         held = {c.resource.type: len(c(record, actor=SYSTEM)._standing()) for c in self.OPEN_BEFORE_REMOVING}
         self.vacant(env.title)
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
@@ -127,7 +134,7 @@ class Environments(Controller):
 
     def sweep(self, n: int, yes: bool = False):
         env = self.load(n)
-        record = Record(self.record.root, env.title)
+        record = self._record_of(env)
         chosen = [(rows, row["n"]) for rows in self._sweepable(record) for row in rows.summaries()
                   if rows.type in SWEPT or row["completed"] or row["deleted"]]
         counted = Counter(rows.type for rows, _ in chosen)
@@ -137,7 +144,7 @@ class Environments(Controller):
         if not chosen:
             return f"environment {env.title!r} has nothing to sweep"
         stamp = int(time.time())
-        stage = self.record.root / "environments" / f".swept-{env.title}-{stamp}"
+        stage = environments(self.record.root) / f".swept-{env.title}-{stamp}"
         for rows, number in chosen:
             kept = stage / rows.type
             kept.mkdir(parents=True, exist_ok=True)
@@ -154,20 +161,20 @@ class Environments(Controller):
                 if controller.resource.scope == ENVIRONMENT and controller.resource.type not in KEPT]
 
     def unarchive(self, name: str):
-        environment_path(self.record.root / "environments", name)
+        home = environment_home(self.record.root, name)
         archive = attic.latest(self.record.root, name)
         if not archive:
             raise Refused(f"no archived environment {name!r} in attic/")
         self.unused(name, ": rename it before bringing the archived one back")
-        attic.unpack(archive, self.record.root / "environments" / name)
+        attic.unpack(archive, home)
         return self.create(name)
 
     def rename(self, n: int, name: str):
         env = self.load(n)
         new = self.unused(check_title(name))
-        environment_path(self.record.root / "environments", new)
+        environment_home(self.record.root, new)
         self.vacant(env.title, self.session)
-        old = Record(self.record.root, env.title).home
+        old = self._record_of(env).home
         taken = old.with_name(new)
         if taken.is_dir() and not seeded(taken):
             self._refuse(f"a folder for {new!r} already holds rows at {taken}; remove that environment first or choose another name")
@@ -175,12 +182,12 @@ class Environments(Controller):
             attic.pack(taken, f"{new}-seed-{int(time.time())}")
         if old.is_dir():
             old.rename(taken)
-        Sessions(self.record.root).rebind(env.title, new)
+        self._sessions.rebind(env.title, new)
         return super().update(n, title=new)
 
     def pickup(self, n: int) -> dict:
         env = self.load(n)
-        record = Record(self.record.root, env.title)
+        record = self._record_of(env)
         return {"environment": env.title, "holder": self.sessions().holder(env.title),
                 **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM)._standing()][:10] for c in self.PICKED_UP},
                 "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM)._standing()][:10]}
