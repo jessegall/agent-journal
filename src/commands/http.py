@@ -50,7 +50,7 @@ from features.plugins.declared import declared
 from features.plugins.lifecycle import called
 from features.plugins.source import data
 from engine.proc import git, ran
-from engine.project_files import UNLISTED, matching
+from engine.project_files import UNLISTED, matching, project_path, read_source
 from engine.paths import contained
 from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
 from features.shaping import KEEP_SHAPED, settled, shaped
@@ -673,12 +673,17 @@ def get_plugin_dashboard(req: Request) -> Reply:
 @route("GET", "/api/{env}/project-files")
 def get_project_files(req: Request) -> Reply:
     project = req.root.parent.resolve()
-    folder = (project / req.query.get("folder", "")).resolve()
-    if not folder.is_dir() or (folder != project and project not in folder.parents):
-        raise Missing(f"no folder {req.query.get('folder', '')} in the project")
+    asked = req.query.get("folder", "")
+    folder = project_path(project, asked) if asked else project
+    if not folder.is_dir():
+        raise Missing(f"no folder {asked} in the project")
     out = []
     for entry in os.scandir(folder):
         if entry.name.startswith(".") or entry.name in UNLISTED:
+            continue
+        try:
+            project_path(project, str(Path(entry.path).relative_to(project)))
+        except Refused:
             continue
         inside = entry.is_dir()
         listed = {"path": str(Path(entry.path).relative_to(project)), "name": entry.name, "folder": inside}
@@ -690,7 +695,16 @@ def get_project_files(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/project-files/find")
 def get_project_files_found(req: Request) -> Reply:
-    return Reply(200, [asdict(found) for found in found_files(req.root.parent.resolve(), req.query_as(FindQuery).q)])
+    project = req.root.parent.resolve()
+    asked = req.query_as(FindQuery).q
+    files = []
+    for found in found_files(project, asked):
+        try:
+            project_path(project, found.path)
+        except Refused:
+            continue
+        files.append(asdict(found))
+    return Reply(200, files)
 
 
 @dataclass(frozen=True)
@@ -899,37 +913,18 @@ def get_commit(req: Request) -> Reply:
 def get_file_text(req: Request) -> Reply:
     project = req.root.parent.resolve()
     asked = req.query_as(FileQuery).path
-    candidate = Path(asked).expanduser() if Path(asked).is_absolute() else project / asked
-    target = candidate.resolve()
-    if asked and not Path(asked).is_absolute() and not target.is_file():
+    if asked and not Path(asked).is_absolute() and not (project / asked).is_file():
         matches = matching(project, asked)
         if len(matches) > 1:
             return Reply(200, {"matches": matches})
-        target = project / matches[0] if matches else target
-    home = project if project in target.parents else other_project(target)
-    if not asked or not home or not target.is_file():
-        raise Missing(f"no file {asked} in the project")
-    raw = target.read_bytes()[:400000]
-    kind = mimetypes.guess_type(target.name)[0] or ""
-    text = "" if kind.startswith("image/") else raw.decode("utf-8", errors="replace")
-    elsewhere = {} if home == project else {"project": home.name, "root": str(home)}
-    return Reply(200, {"path": str(target.relative_to(home)), "size": target.stat().st_size, "kind": kind, "text": text, "lines": len(text.splitlines()), **elsewhere})
-
-
-def other_project(target: Path) -> Path | None:
-    home = next((folder for folder in target.parents if (folder / ".git").exists()), None)
-    if not home or any(part.startswith(".") for part in target.relative_to(home).parts):
-        return None
-    return home
+    return Reply(200, asdict(read_source(project, asked)))
 
 
 @route("GET", "/api/{env}/diff")
 def get_file_diff(req: Request) -> Reply:
     project = req.root.parent.resolve()
     asked = req.query_as(FileQuery).path
-    target = (project / asked).resolve()
-    if not asked or project not in target.parents:
-        raise Missing(f"no file {asked} in the project")
+    target = project_path(project, asked)
     relative = str(target.relative_to(project))
     diff = git(["diff", "--no-color", "HEAD", "--", relative], project, timeout=10)
     if not diff and target.is_file() and not git(["ls-files", "--", relative], project):
