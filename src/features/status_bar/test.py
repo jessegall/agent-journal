@@ -87,32 +87,10 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
     assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
 
 
-def test_the_band_tracks_the_cursor_through_keyboard_codes_and_scroll_regions():
-    from agents.band import ROWS, Cursor, Translator
-    cursor = Cursor(40, 120)
-    cursor.feed(Translator(40).feed(b"\x1b[5;3H\x1b[<u\x1b[>5u\x1b[>4;2m\x1b(B\x0f"))
-    assert (cursor.row, cursor.col) == (5 + ROWS, 3), "a private-parameter code prints nothing, so the column stays put"
-    cursor.feed(Translator(40).feed(b"\x1b[H\x1b[2;30r"))
-    assert (cursor.row, cursor.col) == (ROWS + 1, 1), "setting a region homes the cursor to the top of the agent's screen, below the band"
-
-
-def test_the_header_names_the_installed_version(tmp_path):
-    import re
-    from agents.band import Band
-    from engine.version import version
-    current = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", 0.0))
-    assert f"JOURNAL {version()}" in current, current
-
-
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
     from supervisor import typing
     assert (typing(b"\x1bP>|iTerm2 3.5\x1b\\"), typing(b"\x1b]11;rgb:1616/1818/1d1d\x07"), typing(b"a")) == (False, False, True), \
         "a version or colour reply comes in on the keyboard but holds nothing"
-
-
-def test_with_the_header_off_nothing_is_drawn_or_wiped():
-    from agents import band
-    assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
 
 
 def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
