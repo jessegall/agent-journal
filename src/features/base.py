@@ -103,8 +103,6 @@ def switches(record) -> dict[str, bool]:
 
 
 def rebooted(event=None, record=None) -> None:
-    from features.format import FORMATTED
-    FORMATTED.clear()
     GENERATION[0] += 1
     if record is None:
         SWITCHES.clear()
