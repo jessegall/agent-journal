@@ -19,6 +19,7 @@ from engine import runtime
 from commands.parser import PRINTED, QUERIES, Misused, parser, words
 from features.command_line import CommandLine, wire
 from engine.stored import undoable
+from engine.paths import environments
 from engine.worktree import checkout
 from typing import TypedDict
 
@@ -46,7 +47,7 @@ def context(args: dict) -> CommandContext:
     session = args.pop("as_session")
     fallback = runtime.renamed(root, args.pop("fallback"))
     top = checkout(Path(args.pop("cwd") or os.getcwd()))
-    worked = top.name if top and (root / "environments" / top.name).is_dir() else ""
+    worked = top.name if top and (environments(root) / top.name).is_dir() else ""
     env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)
     session = session or sessions.holder(env)
     return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("as_agent"),

@@ -4,6 +4,7 @@ import traceback
 from pathlib import Path
 
 from controllers.types import Notices
+from engine import runtime
 from engine.record import Record
 from resources.base import SYSTEM
 
@@ -20,7 +21,7 @@ SAID = "journal: the engine stopped the moment it started, so nothing is being d
 
 
 def log_file(root: Path) -> Path:
-    return Path(root) / "runtime" / "engine.log"
+    return runtime.folder(root) / "engine.log"
 
 
 def why(root: Path, lines: int = SHOWN) -> str:

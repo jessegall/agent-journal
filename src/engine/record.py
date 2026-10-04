@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine import bus, runtime
 from engine.event_log import EventLog
-from engine.settings_file import SETTINGS, SettingsFile
+from engine.settings_file import SettingsFile
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.stored import held_back

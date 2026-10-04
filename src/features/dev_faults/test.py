@@ -165,7 +165,8 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
 
 def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_its_event(monkeypatch):
     from pathlib import Path
-    from engine.record import Record, SETTINGS
+    from engine.record import Record
+    from engine.settings_file import SETTINGS
     from engine.stored import write_json
     from features.dev_faults.counting import counted
     record = fresh()

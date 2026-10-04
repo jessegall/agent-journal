@@ -2,7 +2,6 @@ import difflib
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 
 from engine import bus
@@ -74,14 +73,20 @@ class FoundFile:
 INDEXES: dict[Path, Indexed] = {}
 HASHED: dict[Path, Hashed] = {}
 UNTRACKED: dict[Path, tuple[str, ...]] = {}
+REPOSITORIES: dict[Path, tuple[float, tuple[Path, ...]]] = {}
 MOST_FOUND = 50
+RESCAN_SECONDS = 300
 REPOSITORY_DEPTH = 2
 SKIPPED = {"node_modules", "vendor", "dist", "build"}
 
 
-@cache
 def project_repositories(project: Path) -> tuple[Path, ...]:
-    return (project,) if (project / ".git").exists() else tuple(sorted(nested_repositories(project, REPOSITORY_DEPTH)))
+    held = REPOSITORIES.get(project)
+    if held and time.time() - held[0] < RESCAN_SECONDS:
+        return held[1]
+    found = (project,) if (project / ".git").exists() else tuple(sorted(nested_repositories(project, REPOSITORY_DEPTH)))
+    REPOSITORIES[project] = (time.time(), found)
+    return found
 
 
 def nested_repositories(folder: Path, depth: int) -> list[Path]:

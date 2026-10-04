@@ -1,3 +1,4 @@
+from engine.paths import environments
 from engine.record import Record
 from engine.organization import GLOBAL, WORKTREE, Domain, Role
 from resources.base import SYSTEM
@@ -17,7 +18,7 @@ def queued_behind(todos, domain: Domain, role: Role):
 
 def everywhere(root, domain: str, role: str) -> list[tuple[str, object]]:
     from controllers.types import Todos
-    home = root / "environments"
+    home = environments(root)
     found = []
     for folder in sorted(home.iterdir()) if home.is_dir() else []:
         todos = Todos(Record(root, folder.name), actor=SYSTEM)

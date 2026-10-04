@@ -16,7 +16,7 @@ from features.format import shaped
 from resources.base import USER, Refused
 from engine.package import data
 from engine.fields import Loaded
-from engine.paths import contained, environment_path
+from engine.paths import contained, environment_home
 
 
 WEB = data("web", "dist")
@@ -135,7 +135,7 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tup
 
 def known_environment(root: Path, env: str) -> bool:
     try:
-        return environment_path(Path(root) / "environments", env).is_dir()
+        return environment_home(root, env).is_dir()
     except Refused:
         return False
 

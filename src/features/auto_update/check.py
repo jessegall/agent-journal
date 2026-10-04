@@ -66,7 +66,7 @@ def installed(root: Path) -> str:
     except subprocess.TimeoutExpired:
         os.killpg(started.pid, signal.SIGKILL)
         started.communicate()
-        (root / "runtime" / "upgrading").unlink(missing_ok=True)
+        runtime.upgrade_mark(root).unlink(missing_ok=True)
         return f"journal upgrade was stopped after {INSTALL_WAIT // 60} minutes"
     lines = out.splitlines()
     if started.returncode:

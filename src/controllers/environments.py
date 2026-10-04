@@ -4,7 +4,7 @@ import signal
 import time
 from collections import Counter
 from functools import cached_property
-from controllers.base import CONTROLLERS, Controller, internal
+from controllers.base import CONTROLLERS, Controller
 from engine import attic
 from engine.record import Record
 from engine.seats import terminal_of
@@ -90,31 +90,31 @@ class Environments(Controller):
     def _record_of(self, env) -> Record:
         return Record(self.record.root, env.title)
 
-    @internal
-    def sessions(self) -> Sessions:
+    def _bound_session(self) -> str:
         if not self.session:
             raise Refused("no session to bind: say which with --session")
-        return self._sessions
+        return self.session
 
     def switch(self, n: int, project: bool = False, move: str = "", back: bool = False):
-        who = move or self.session
+        bound = self._bound_session()
+        who = move or bound
         if back:
-            was = self.sessions().read(who).get("before", "")
+            was = self._sessions.read(who).get("before", "")
             if not was:
                 raise Refused("this session came from nowhere: no environment to go back to")
             return self.switch(self.find(was).n, move=who)
         env = self.load(n)
-        holder = self.sessions().holder(env.title)
+        holder = self._sessions.holder(env.title)
         if holder and holder != who:
             self._refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
-        before = self.sessions().environment(who)
-        self.sessions().bind(who, env.title)
-        running = self.sessions().read(who)
-        terminal = self.sessions().terminal(running.provider, running.pid) if running.pid else ""
+        before = self._sessions.environment(who)
+        self._sessions.bind(who, env.title)
+        running = self._sessions.read(who)
+        terminal = self._sessions.terminal(running.provider, running.pid) if running.pid else ""
         if terminal and terminal != who:
-            self.sessions().bind(terminal, env.title)
+            self._sessions.bind(terminal, env.title)
         if before and before != env.title:
-            self.sessions().write(who, before=before)
+            self._sessions.write(who, before=before)
         if project:
             runtime.set_env(self.record.root, env.title)
         return self.update(n, holder=who)
@@ -188,25 +188,28 @@ class Environments(Controller):
     def pickup(self, n: int) -> dict:
         env = self.load(n)
         record = self._record_of(env)
-        return {"environment": env.title, "holder": self.sessions().holder(env.title),
+        self._bound_session()
+        return {"environment": env.title, "holder": self._sessions.holder(env.title),
                 **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM)._standing()][:10] for c in self.PICKED_UP},
                 "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM)._standing()][:10]}
 
     def claim(self, n: int, why: str):
         env = self.load(n)
-        holder = self.sessions().holder(env.title)
-        if holder and holder != self.session:
-            self.sessions().evict(holder, self.session, env.title, why)
-        self.sessions().bind(self.session, env.title)
-        return self.update(n, holder=self.session, claimed={"from": holder, "why": why})
+        session = self._bound_session()
+        holder = self._sessions.holder(env.title)
+        if holder and holder != session:
+            self._sessions.evict(holder, session, env.title, why)
+        self._sessions.bind(session, env.title)
+        return self.update(n, holder=session, claimed={"from": holder, "why": why})
 
     def leave(self, n: int):
         env = self.load(n)
-        if self.sessions().environment(self.session) != env.title:
-            self._refuse(f"session {self.session} does not hold environment {env.title!r}")
-        self.sessions().unbind(self.session)
+        session = self._bound_session()
+        if self._sessions.environment(session) != env.title:
+            self._refuse(f"session {session} does not hold environment {env.title!r}")
+        self._sessions.unbind(session)
         return self.update(n, holder="")
 
     def grant(self, n: int, off: bool = False):
         env = self.load(n)
-        return self.sessions().grant(self.session, env.title, on=not off)
+        return self._sessions.grant(self._bound_session(), env.title, on=not off)

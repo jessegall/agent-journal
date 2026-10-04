@@ -7,6 +7,7 @@ from pathlib import Path
 
 from controllers.types import Plugins
 from engine.bus import patterns
+from engine import runtime
 from engine.runtime import default_env
 from engine.record import Record
 from controllers.faults import threw
@@ -58,7 +59,7 @@ def post(url: str, payload: dict, token: str) -> tuple[bool, dict | str]:
 
 
 def watch(root: Path, journal) -> None:
-    lock = Path(root) / "runtime" / "plugins.lock"
+    lock = runtime.folder(root) / "plugins.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with lock.open("w") as held:
         try:
@@ -84,8 +85,7 @@ class Host:
         self.turn = 0
 
     def environments(self) -> list[Record]:
-        home = self.root / "environments"
-        return [Record(self.root, p.name) for p in sorted(home.iterdir()) if p.is_dir()] if home.is_dir() else []
+        return Record.every(self.root)
 
     def installed(self, record) -> list:
         return Plugins(record, actor=SYSTEM)._installed()
