@@ -1,5 +1,5 @@
+import {withoutChips} from "./words.js";
 import {register} from "./index.js";
-import {words} from "./words.js";
 
 const HEAD =
     /(?:(?<![\w/])[\w.\/-]+\.[a-z]{1,4}:\d+\s+)?(?:Uncaught(?: \(in promise\))?\s+)?\b[A-Z][\w$]*(?:Error|Exception|Warning)\b:?\s/g;
@@ -58,7 +58,7 @@ function python(text) {
 }
 
 register((text) => {
-    const plain = words(text);
+    const plain = withoutChips(text);
     const found = python(plain) || browser(plain);
     if (!found) return null;
     return [

@@ -1,6 +1,6 @@
+import {withoutChips} from "./words.js";
 import {escape, register} from "./index.js";
 import {rows} from "../sync/rows.js";
-import {words} from "./words.js";
 import {age} from "../format/time.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 import "./cards.css";
@@ -20,15 +20,15 @@ function updateCard(row, standalone = false) {
     const facts = updateCounts(row)
         .map((c) => `${c.n} ${escape(c.label)}`)
         .join(" · ");
-    return `<a class="row-card update-card${standalone ? " standalone" : ""}" href="#" data-peek="report:${row.n}" data-update="${row.n}"><span class="update-card-head"><span>${escape(updateLabel(row))}</span><span>${escape(age(row.created))}</span></span><span class="row-card-title">${escape(words(row.title))}</span>${row.abstract ? `<span class="update-card-lead">${escape(words(row.abstract))}</span>` : ""}${facts ? `<span class="update-card-facts">${facts}</span>` : ""}</a>`;
+    return `<a class="row-card update-card${standalone ? " standalone" : ""}" href="#" data-peek="report:${row.n}" data-update="${row.n}"><span class="update-card-head"><span>${escape(updateLabel(row))}</span><span>${escape(age(row.created))}</span></span><span class="row-card-title">${escape(withoutChips(row.title))}</span>${row.abstract ? `<span class="update-card-lead">${escape(withoutChips(row.abstract))}</span>` : ""}${facts ? `<span class="update-card-facts">${facts}</span>` : ""}</a>`;
 }
 
 function card(type, n, label, context) {
     const row = rows(type).find((r) => r.n === n);
     if (isUpdate(row)) return updateCard(row);
     const kind = context.types.find((t) => t.name === type);
-    const title = words(row ? row.title : label);
-    const line = row ? words(row.abstract || String(row.brief || "").split("\n")[0]).slice(0, 160) : "";
+    const title = withoutChips(row ? row.title : label);
+    const line = row ? withoutChips(row.abstract || String(row.brief || "").split("\n")[0]).slice(0, 160) : "";
     return `<a class="row-card" href="#" data-peek="${type}:${n}"><span class="row-card-kind">${escape(kind ? kind.title : type)} ${n}</span><span class="row-card-title">${escape(title)}</span>${line ? `<span class="row-card-line">${escape(line)}</span>` : ""}</a>`;
 }
 

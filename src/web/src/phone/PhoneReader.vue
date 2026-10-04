@@ -1,4 +1,5 @@
 <script setup>
+import {cache, cached} from "./cache.js";
 import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
@@ -16,7 +17,6 @@ import {todoFacts} from "./todo.js";
 import {kindTitle, kindWord} from "./kinds.js";
 import PhoneMissing from "./PhoneMissing.vue";
 import PhoneSkeletonPage from "./PhoneSkeletonPage.vue";
-import {cached, remember} from "./cache.js";
 import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
@@ -96,7 +96,7 @@ const chipped = chipOpener((target) => emit("open", target));
 async function load() {
     try {
         notice.value = "";
-        row.value = remember(ROW, await phone.row(props.target));
+        row.value = cache(ROW, await phone.row(props.target));
     } catch (error) {
         if (ended(error)) failed(error);
         else if (error.status === 404) missing.value = true;

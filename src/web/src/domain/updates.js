@@ -1,6 +1,6 @@
+import {withoutChips} from "../text/words.js";
 import {href} from "../route.js";
 import {clock} from "../format/time.js";
-import {words} from "../text/words.js";
 
 const SECTIONS = [
     {key: "need", title: "Needs you", past: "Needed you"},
@@ -20,7 +20,7 @@ export const isUpdate = (r) => r?.data?.kind === "update";
 
 export const updateLabel = (r) => `Update ${r.data.number || r.n}`;
 
-const itemsOf = (r) => (r.data.items || []).map((i) => ({...i, title: words(i.title), note: words(i.note || "")}));
+const itemsOf = (r) => (r.data.items || []).map((i) => ({...i, title: withoutChips(i.title), note: withoutChips(i.note || "")}));
 
 export const neighbour = (r, reports, step) =>
     reports.find((p) => isUpdate(p) && !p.deleted && p.data.number === r.data.number + step) || null;

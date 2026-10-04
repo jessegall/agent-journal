@@ -1,11 +1,11 @@
 <script setup>
+import {found, searchTerms, standing} from "../domain/documents.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Segmented from "../kit/Segmented.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import DocumentRow from "../resource/DocumentRow.vue";
-import {found, standing, words} from "../domain/documents.js";
 import {rows} from "../sync/rows.js";
 import {ageGroups} from "../format/time.js";
 
@@ -47,7 +47,7 @@ const sorted = computed(() =>
         props.order === "title" ? a.title.localeCompare(b.title) : replacedLast(a, b) || changed(b) - changed(a)
     )
 );
-const searched = computed(() => words(props.query));
+const searched = computed(() => searchTerms(props.query));
 const hits = computed(() =>
     sorted.value
         .map((doc) => ({doc, hit: found(doc, searched.value)}))

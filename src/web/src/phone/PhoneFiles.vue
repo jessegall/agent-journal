@@ -1,4 +1,5 @@
 <script setup>
+import {isPicture} from "../format/files.js";
 import {phone} from "../api/phone.js";
 import Icon from "../kit/Icon.vue";
 
@@ -7,8 +8,6 @@ const props = defineProps({
     n: {type: Number, required: true},
     files: {type: Array, default: () => []},
 });
-const PICTURES = /\.(png|jpe?g|gif|webp)$/i;
-const picture = (name) => PICTURES.test(name);
 const fileUrl = (name) => phone.fileUrl(props.type, props.n, name);
 </script>
 
@@ -16,7 +15,7 @@ const fileUrl = (name) => phone.fileUrl(props.type, props.n, name);
     <span class="turn-files">
         <template v-for="name in files" :key="name">
             <a class="turn-file" :href="fileUrl(name)" :data-peek="`attachment:${type}/${n}/${encodeURIComponent(name)}`">
-                <template v-if="picture(name)">
+                <template v-if="isPicture(name)">
                     <img class="turn-picture" :src="fileUrl(name)" :alt="name" loading="lazy" />
                 </template>
                 <template v-else>

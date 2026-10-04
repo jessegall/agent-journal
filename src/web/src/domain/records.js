@@ -81,8 +81,6 @@ export const state = (r) =>
                   ? "started"
                   : "open";
 
-export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notified.includes("user");
-
 export function happened(r) {
     const kind = meta(r.type);
     const action = r.completed ? "completed" : "created";

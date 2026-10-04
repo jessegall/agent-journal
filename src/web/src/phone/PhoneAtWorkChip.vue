@@ -1,7 +1,8 @@
 <script setup>
+import {agentCounts} from "../domain/helpers.js";
+import {counted} from "../format/number.js";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {agentCounts, counted} from "../domain/helpers.js";
 
 const props = defineProps({live: {type: Object, default: () => ({})}});
 const emit = defineEmits(["open"]);

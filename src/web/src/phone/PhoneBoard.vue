@@ -1,10 +1,10 @@
 <script setup>
+import {cache, cached} from "./cache.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
 import {CARDS, kindCard} from "./kinds.js";
-import {cached, remember} from "./cache.js";
 import {reveal} from "./reveal.js";
 import PhoneBoardList from "./PhoneBoardList.vue";
 import {useUnder} from "./under.js";
@@ -40,7 +40,7 @@ async function fetched() {
     );
 }
 
-const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = remember(CACHE, {...lists.value, ...got})));
+const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = cache(CACHE, {...lists.value, ...got})));
 
 const newRefs = computed(() => new Set(props.waiting.map((item) => item.ref)));
 const board = ref(null);

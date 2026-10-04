@@ -1,4 +1,5 @@
 <script setup>
+import {searchTerms} from "../domain/documents.js";
 import {computed, onMounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -12,7 +13,6 @@ import {href, route} from "../route.js";
 import {ageGroups} from "../format/time.js";
 import {openPictures} from "../platform/view.js";
 import {meta} from "../state/store.js";
-import {words} from "../domain/documents.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 
 const files = ref([]);
@@ -47,7 +47,7 @@ const shelves = computed(() => {
             .map(([type, n]) => ({key: type, label: `${meta(type)?.title || type}s ${n}`})),
     ];
 });
-const searched = computed(() => words(query.value));
+const searched = computed(() => searchTerms(query.value));
 const text = (f) => `${f.name} ${f.description || ""} ${f.title || ""} ${meta(f.type).title} ${f.n}`.toLowerCase();
 const shown = computed(() =>
     ofKind.value

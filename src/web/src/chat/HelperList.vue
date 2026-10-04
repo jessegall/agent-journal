@@ -1,11 +1,11 @@
 <script setup>
+import {HELPER_WORDS, helperLine, helpersInOrder, helperState} from "../domain/helpers.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import TicketAgent from "../board/TicketAgent.vue";
 import AgentStopButton from "./AgentStopButton.vue";
-import {HELPER_WORDS, helperLine, helperState, helpersInOrder} from "../domain/helpers.js";
 
 const props = defineProps({rows: {type: Array, default: () => []}});
 const emit = defineEmits(["changed"]);

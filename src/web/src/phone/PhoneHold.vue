@@ -1,15 +1,19 @@
 <script setup>
+import {plainText} from "../text/words.js";
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import {firstTime} from "./once.js";
-import {plain} from "./plain.js";
 import {useTrap} from "./trap.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const MARGIN = 12;
 const LOW = 0.3;
 const TOP = 56;
-const props = defineProps({item: {type: Object, required: true}, rect: {type: Object, default: null}, source: {type: Object, default: null}});
+const props = defineProps({
+    item: {type: Object, required: true},
+    rect: {type: Object, default: null},
+    source: {type: Object, default: null},
+});
 const preview = ref(null);
 
 function cloned() {
@@ -83,15 +87,29 @@ onUnmounted(() => {
 <template>
     <div class="hold-root">
         <button type="button" class="hold-backdrop" aria-hidden="true" tabindex="-1" @click="emit('close')" />
-        <div ref="box" :class="['hold-box', {mine}]" role="dialog" aria-modal="true" aria-label="Message actions" tabindex="-1" :style="{top: `${top}px`, ...side}">
+        <div
+            ref="box"
+            :class="['hold-box', {mine}]"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Message actions"
+            tabindex="-1"
+            :style="{top: `${top}px`, ...side}"
+        >
             <template v-if="source">
-                <p class="phone-hidden">{{ plain(item.brief || item.title) }}</p>
+                <p class="phone-hidden">{{ plainText(item.brief || item.title) }}</p>
                 <div ref="preview" class="hold-clone" :style="{width}" />
             </template>
             <template v-else>
-                <p :class="['hold-preview', {mine}]" :style="{width}">{{ plain(item.brief || item.title) }}</p>
+                <p :class="['hold-preview', {mine}]" :style="{width}">{{ plainText(item.brief || item.title) }}</p>
             </template>
-            <div ref="strip" :class="['hold-faces', {'fade-left': edges.left, 'fade-right': edges.right}]" role="group" aria-label="React" @scroll.passive="scrolled">
+            <div
+                ref="strip"
+                :class="['hold-faces', {'fade-left': edges.left, 'fade-right': edges.right}]"
+                role="group"
+                aria-label="React"
+                @scroll.passive="scrolled"
+            >
                 <template v-for="face in FACES" :key="face">
                     <button type="button" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</button>
                 </template>
