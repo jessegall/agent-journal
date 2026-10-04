@@ -6,9 +6,10 @@ import shutil
 import time
 from pathlib import Path
 from engine.package import modules
-from engine.stored import hold_record_writes, read_json, write_text
+from engine.stored import hold_record_writes, write_text
 from engine.fields import Loaded
 from dataclasses import dataclass
+from resources.base import Refused
 
 
 
@@ -28,7 +29,16 @@ def ledger(root: Path) -> Path:
 
 
 def applied(root: Path) -> dict:
-    return read_json(ledger(root), dict, {})
+    path = ledger(root)
+    if not path.exists():
+        return {}
+    try:
+        value = json.loads(path.read_text())
+    except (OSError, ValueError) as error:
+        raise Refused(f"damaged migrations ledger: {path}") from error
+    if not isinstance(value, dict):
+        raise Refused(f"damaged migrations ledger: {path}")
+    return value
 
 
 @dataclass(frozen=True)

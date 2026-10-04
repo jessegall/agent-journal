@@ -16,6 +16,7 @@ from features.shaping import shaped
 from resources.base import USER, Refused
 from engine.package import data
 from engine.fields import Loaded
+from engine.paths import contained
 
 
 WEB = data("web", "dist")
@@ -58,7 +59,8 @@ class Request:
         type_ = self.params["type"]
         if type_ not in CONTROLLERS:
             raise Missing(f"no type {type_}")
-        return CONTROLLERS[type_](self.record(), actor=self.body.pop("actor", USER))
+        self.body.pop("actor", None)
+        return CONTROLLERS[type_](self.record(), actor=USER)
 
 
 @dataclass
@@ -134,7 +136,12 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tup
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
     found = resolve(method, path)
     if not found:
-        return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
+        if method != "GET":
+            return Reply(404, {"error": "no such route"})
+        try:
+            return static(path)
+        except Refused as error:
+            return Reply(400, {"error": str(error)})
     r, params = found
     faults = features.FEATURES.get("dev_faults")
     profile = faults.reports.profiler(root) if faults else None
@@ -195,7 +202,7 @@ def rendered(got, record):
 
 
 def static(path: str) -> Reply:
-    f = WEB / (path.strip("/") or "index.html")
+    f = contained(WEB, path.lstrip("/") or "index.html", nested=True)
     if not f.is_file():
         f = WEB / "index.html"
     if not f.is_file():

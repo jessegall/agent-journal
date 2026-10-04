@@ -11,6 +11,7 @@ from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.stored import append_text, held_back, read_json, write_json, write_text
+from engine.paths import environment_path
 
 RESOURCES = "project"
 KEPT_EVENTS = 2000
@@ -66,7 +67,7 @@ class Record:
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
         self.env = env
-        self.home = self.root / "environments" / env
+        self.home = environment_path(self.root / "environments", env)
         self.home.mkdir(parents=True, exist_ok=True)
         self._held: dict[Path, int] = {}
         self._threads = threading.RLock()
