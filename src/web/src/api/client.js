@@ -604,8 +604,8 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}/edits/file${query({id, side})}`));
     }
 
-    terminal(agent, level) {
-        return this.get(this.here(`/agent/${agent}/terminal${query({level})}`));
+    terminal(agent, level, after = 0) {
+        return this.get(this.here(`/agent/${agent}/terminal${query({level, after: after || undefined})}`));
     }
 
     stream() {
