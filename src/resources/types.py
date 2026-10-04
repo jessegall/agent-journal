@@ -1,7 +1,7 @@
 import time
 from typing import ClassVar
 
-from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Resource, ResourceDetails
+from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
@@ -382,7 +382,7 @@ class Notification(Shape, Resource):
     takes_comments = False
     event_labels = {"completed": "Notification cleared", "updated.read": "Notification read"}
     kept = 100
-    pruned_when = "seen"
+    pruned_when = Pruned.SEEN
     needs_attention = True
     icon = "bell"
     in_sidebar = False
@@ -398,7 +398,7 @@ class Notice(Shape, Resource):
     type = "notice"
     takes_comments = False
     kept = 100
-    pruned_when = "closed"
+    pruned_when = Pruned.CLOSED
     event_labels = {"created": "Notice", "completed": "Notice closed", "updated.read": "Notice read"}
     icon = "band"
     command_names = {"complete": "close"}
@@ -527,7 +527,7 @@ class Ask(Shape, Resource):
     type = "browser"
     takes_comments = False
     kept = 50
-    pruned_when = "closed"
+    pruned_when = Pruned.CLOSED
     nested = True
     icon = "open"
     in_sidebar = False

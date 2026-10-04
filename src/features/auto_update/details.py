@@ -2,7 +2,7 @@ from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails, Line
 
 
-class UpdatesDetails(FeatureDetails):
+class AutoUpdateDetails(FeatureDetails):
     name = "auto_update"
     has_skill = False
 

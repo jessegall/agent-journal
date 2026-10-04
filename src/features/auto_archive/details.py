@@ -2,7 +2,7 @@ from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails
 
 
-class RetentionDetails(FeatureDetails):
+class AutoArchiveDetails(FeatureDetails):
     name = "auto_archive"
     has_skill = False
 

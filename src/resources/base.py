@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass, field, asdict, replace
+from enum import Enum
 from types import SimpleNamespace
 from typing import ClassVar
 
@@ -134,6 +135,15 @@ class Event:
         return f"{self.type}:{self.n}"
 
 
+class Pruned(Enum):
+    ANY = ""
+    SEEN = "seen"
+    CLOSED = "closed"
+
+    def admits(self, r: "Resource") -> bool:
+        return {Pruned.ANY: True, Pruned.SEEN: USER in r.seen, Pruned.CLOSED: bool(r.completed)}[self]
+
+
 @dataclass
 class Resource:
     details: ClassVar[ResourceDetails] = ResourceDetails()
@@ -170,7 +180,7 @@ class Resource:
     stamped_when_notified: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
     kept: ClassVar[int] = 0     # how many prunable rows are kept, newest first; older ones are pruned; 0 keeps every row
-    pruned_when: ClassVar[str] = ""   # which rows may be pruned: any (""), those the user has "seen", or those "closed"
+    pruned_when: ClassVar[Pruned] = Pruned.ANY
     indexed: ClassVar[tuple] = ()
     shown_fields: ClassVar[tuple] = ()   # data fields its panel shows and edits
     fixed_fields: ClassVar[tuple] = ()   # shown fields the journal sets, which the panel shows but never edits

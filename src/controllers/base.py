@@ -316,6 +316,11 @@ class Controller(Stored, Files, Links, Discussed):
         r.deleted = 0.0
         return self.save(r, "updated", restored=True)
 
+    def _prune(self) -> None:
+        prunable = sorted((r for r in self._every(deleted=True) if self.resource.pruned_when.admits(r)), key=lambda r: r.created, reverse=True)
+        for r in prunable[self.resource.kept:]:
+            self.force_delete(r.n)
+
     def force_delete(self, n: int) -> None:
         self.load(n)
         self._remove(n)

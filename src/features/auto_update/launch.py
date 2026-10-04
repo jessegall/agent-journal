@@ -6,8 +6,9 @@ from controllers.types import Notices
 from engine import runtime
 from engine.heal import refused
 from engine.version import version
-from features import FEATURES
-from features.auto_update.check import journal_repository
+from features import running
+from features.auto_update.check import failure_in, journal_repository
+from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from surfaces.updates import fetched, newer
 from migrations import ran
@@ -44,7 +45,7 @@ def repaired(record) -> str:
 
 def latest_first(record) -> str:
     root = Path(record.root)
-    feature = FEATURES.get("auto_update")
+    feature = running(AutoUpdate)
     if journal_repository(root.parent):
         return ""
     try:
@@ -58,7 +59,7 @@ def latest_first(record) -> str:
             return notice
         from install import upgrade
         print(f"journal: installing {latest} before it starts", flush=True)
-        failed = next((line for line in upgrade(root.parent, root) if "not refreshed" in line or "failed" in line), "")
+        failed = failure_in(upgrade(root.parent, root))
         if failed:
             return failed
         restart(root)
