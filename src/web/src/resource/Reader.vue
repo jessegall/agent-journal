@@ -2,7 +2,7 @@
 import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, route, swap, unpeek} from "../route.js";
+import {go, href, route, swap, unpeek} from "../route.js";
 import {meta, store} from "../state/store.js";
 import {holding, rows} from "../sync/rows.js";
 import {api} from "../api/client.js";
@@ -76,7 +76,7 @@ const panelWidth = computed(() => WIDTHS[shape.value] || "page");
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 const stepTo = (n) => (route.value.open ? swap("report", n) : go(route.value.env, "report", n));
-const allUpdates = () => (location.hash = `#/${route.value.env}/report?sub=updates`);
+const allUpdates = () => (location.hash = href.reportUpdates(route.value.env));
 const swapping = ref(false);
 let settle = 0;
 watch(

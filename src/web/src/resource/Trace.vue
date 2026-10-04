@@ -1,7 +1,7 @@
 <script setup>
 import SectionHeading from "../kit/SectionHeading.vue";
 import {computed} from "vue";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 
 const props = defineProps({resource: Object});
 const files = computed(() => props.resource.data.changed || []);
@@ -18,7 +18,7 @@ const commits = computed(() => props.resource.data.commits || []);
             <div class="trace-files">
                 <template v-for="f in files" :key="f.path">
                     <div class="trace-file" :title="f.path">
-                        <a class="trace-path" :href="`#/${route.env}/file?q=${encodeURIComponent(f.path)}`" :title="`Open ${f.path}`">
+                        <a class="trace-path" :href="href.file(route.env, f.path)" :title="`Open ${f.path}`">
                             {{ f.path }}
                         </a>
                         <template v-if="f.created">
@@ -40,7 +40,7 @@ const commits = computed(() => props.resource.data.commits || []);
             <div class="trace-commits">
                 <template v-for="c in commits" :key="c.sha">
                     <div class="trace-commit">
-                        <a class="trace-sha" :href="`#/${route.env}/commit/${c.sha}`">{{ c.sha.slice(0, 7) }}</a>
+                        <a class="trace-sha" :href="href.commit(route.env, c.sha)">{{ c.sha.slice(0, 7) }}</a>
                         <span class="trace-subject">{{ c.subject }}</span>
                     </div>
                 </template>

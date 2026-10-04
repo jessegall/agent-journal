@@ -8,7 +8,7 @@ import TextInput from "../kit/TextInput.vue";
 import FileTile from "../resource/FileTile.vue";
 import FileRow from "../resource/FileRow.vue";
 import {api} from "../api/client.js";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {ageGroups} from "../format/time.js";
 import {openPictures} from "../platform/view.js";
 import {meta} from "../state/store.js";
@@ -86,7 +86,7 @@ const pickKind = (key) => {
             />
             <Segmented class="kinds" :options="kinds" :value="kind" @pick="pickKind" />
             <span class="grow" />
-            <a class="flat" :href="`#/${route.env}/doc`">Documents</a>
+            <a class="flat" :href="href.page(route.env, 'doc')">Documents</a>
         </div>
         <template v-if="loaded && !files.length">
             <EmptyState class="none">

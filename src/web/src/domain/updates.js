@@ -1,3 +1,4 @@
+import {href} from "../route.js";
 import {clock} from "../format/time.js";
 import {words} from "../text/words.js";
 
@@ -51,4 +52,4 @@ export function carriedOver(r, reports) {
 
 export const refLabel = (ref) => (ref.startsWith("commit:") ? ref.slice(7, 14) : ref.replace(/^todo:/, "to-do ").replace(":", " "));
 
-export const commitHref = (ref, env) => (ref.startsWith("commit:") ? `#/${env}/commit/${ref.slice(7)}` : "");
+export const commitHref = (ref, env) => (ref.startsWith("commit:") ? href.commit(env, ref.slice(7)) : "");

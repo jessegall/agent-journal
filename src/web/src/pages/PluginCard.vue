@@ -6,7 +6,7 @@ import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import StateDot from "../kit/StateDot.vue";
 import Switch from "../kit/Switch.vue";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {span} from "../format/time.js";
 import {useNow} from "../composables/now.js";
 import {dotOf, isFailing, isRunning, stateWord} from "../domain/services.js";
@@ -81,7 +81,7 @@ function pick(event) {
             <div class="pages">
                 <span class="label">Pages</span>
                 <template v-for="page in pages" :key="page.name">
-                    <a class="page" :href="`#/${route.env}/page/${page.plugin}.${page.name}`">
+                    <a class="page" :href="href.pluginPage(route.env, page)">
                         {{ page.title }}
                         <Icon name="arrow" :size="11" />
                     </a>

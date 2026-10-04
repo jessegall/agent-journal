@@ -1,8 +1,7 @@
 <script setup>
 import {computed} from "vue";
-import {route} from "../route.js";
 
-const props = defineProps({text: String});
+const props = defineProps({text: String, fileHref: {type: Function, required: true}});
 
 const KINDS = [
     [(line) => line.startsWith("+") && !line.startsWith("+++"), "add"],
@@ -20,14 +19,12 @@ const lines = computed(() =>
         path: (line.match(HEADER) || [])[1] || "",
     }))
 );
-
-const opens = (path) => `#/${route.value.env}/file?q=${encodeURIComponent(path)}`;
 </script>
 
 <template>
     <pre
         class="diff"
-    ><template v-for="(l, i) in lines" :key="i"><template v-if="l.path"><a :class="['line', l.kind]" :href="opens(l.path)" :title="`Open ${l.path}`">{{ l.line }}
+    ><template v-for="(l, i) in lines" :key="i"><template v-if="l.path"><a :class="['line', l.kind]" :href="fileHref(l.path)" :title="`Open ${l.path}`">{{ l.line }}
 </a></template><template v-else><span :class="['line', l.kind]">{{ l.line }}
 </span></template></template></pre>
 </template>

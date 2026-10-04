@@ -6,7 +6,7 @@ import Icon from "../kit/Icon.vue";
 import RailWaiting from "../pages/RailWaiting.vue";
 import PhoneDialog from "./PhoneDialog.vue";
 import ShareTunnel from "./ShareTunnel.vue";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
 import {connectedPhones} from "../composables/phones.js";
@@ -29,8 +29,8 @@ const owner = computed(() => (place.value && place.value.data.owner) || "");
 const from = computed(() => (place.value && place.value.data.launched_from) || "");
 const envLink = computed(() =>
     owner.value && from.value
-        ? `#/${from.value}${owner.value.startsWith("ticket:") ? "/kanban" : ""}?open=${owner.value}`
-        : `#/${route.value.env}`
+        ? href.opened(from.value, owner.value.startsWith("ticket:") ? "kanban" : "", owner.value)
+        : href.page(route.value.env)
 );
 const {floatingChat, toggleChat} = useFloatingChat();
 const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
@@ -45,9 +45,13 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 </button>
             </template>
             <template v-if="full">
-                <a class="icon-btn back" :href="`#/${route.env}`" title="Back to Home"><Icon name="back" /></a>
+                <a class="icon-btn back" :href="href.page(route.env)" title="Back to Home"><Icon name="back" /></a>
             </template>
-            <a class="crumb-link crumb-project" :href="demo ? `#/${route.env}` : `#/${route.env}/hub`" :title="demo ? '' : 'The journals running on this machine'">
+            <a
+                class="crumb-link crumb-project"
+                :href="href.page(route.env, demo ? '' : 'hub')"
+                :title="demo ? '' : 'The journals running on this machine'"
+            >
                 <span class="crumb-tint" :style="{background: tint}" />
                 <span class="crumb-name">{{ project }}</span>
             </a>
@@ -97,7 +101,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     <PhoneDialog @close="phoneShown = false" />
                 </template>
             </template>
-            <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
+            <a class="icon-btn" :href="href.page(route.env, 'search')" title="Search"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
                 <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
                     <Icon name="bell" />

@@ -1,7 +1,7 @@
 <script setup>
 import NavTile from "../kit/NavTile.vue";
 import {useNavigation} from "../composables/navigation.js";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 
 const {groups} = useNavigation();
 </script>
@@ -14,7 +14,7 @@ const {groups} = useNavigation();
                 <div class="resources-tiles">
                     <template v-for="link in g.links" :key="link.key">
                         <NavTile
-                            :href="`#/${route.env}/${link.page}`"
+                            :href="href.page(route.env, link.page)"
                             :icon="link.icon"
                             :title="link.title"
                             :text="link.text"

@@ -7,7 +7,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, route} from "../route.js";
+import {go, href, route} from "../route.js";
 import {groupOf, GROUPS, open} from "../domain/records.js";
 import {counted, meta, store, word} from "../state/store.js";
 import {earlier, rows} from "../sync/rows.js";
@@ -133,7 +133,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
             </template>
             <template v-if="kind.view === 'document'">
                 <span class="sep" />
-                <a class="flat" :href="`#/${route.env}/files`">Files</a>
+                <a class="flat" :href="href.page(route.env, 'files')">Files</a>
             </template>
             <span class="grow" />
             <template v-if="kind.created_in_viewer">
