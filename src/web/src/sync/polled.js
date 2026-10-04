@@ -1,6 +1,6 @@
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
-import {heardEvents} from "./rows.js";
+import {takeEvents} from "./rows.js";
 
 const LIVE = 5;
 const newest = () => (store.events.length ? store.events[store.events.length - 1].id : 0);
@@ -11,10 +11,10 @@ function pollEvents() {
     return api.events(polledTo.id);
 }
 
-function heardPolled(fresh) {
+function takePolled(fresh) {
     if (!fresh.length) return;
     polledTo.id = fresh[fresh.length - 1].id;
-    heardEvents(fresh);
+    takeEvents(fresh);
 }
 
 export const polled = {
@@ -27,5 +27,5 @@ export const polled = {
     summary: ["summary", () => api.summary(), 4000, (got) => (store.summary = got)],
     journals: ["journals", () => api.journals(), 10000, (got) => (store.journals = got)],
     manifest: ["manifest", () => api.manifest(), 30000, (got) => (store.spec = got)],
-    events: ["events", pollEvents, 5000, heardPolled],
+    events: ["events", pollEvents, 5000, takePolled, () => !store.streamOpen],
 };
