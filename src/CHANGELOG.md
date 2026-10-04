@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.247.3 — the hourly tidy no longer trips over a vanishing file
+
+**The hourly housekeeping no longer stops with an error when a session file disappears while it looks at it**; it
+reads the file's time as missing and carries on.
+
 ## 2.247.2 — skills say what to do, not how the journal works
 
 **The journal's main skill no longer describes its engine or its time budgets**, and the checks skill speaks of a
