@@ -10,7 +10,7 @@ from engine.fields import Loaded
 from engine.transcript import Turn
 from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from resources.base import Refused
-from engine.stored import read_json, tail, write_text
+from engine.stored import read_json, write_text
 from engine.wording import digest
 from engine.version import version
 
@@ -248,17 +248,23 @@ class Provider(ABC):
         held = RECENT.get(str(path))
         if held and held[0] == size:
             return held[1]
-        if held and held[0] < size <= held[0] + RECENT_BYTES:
-            with Path(path).open("rb") as source:
-                source.seek(held[0])
-                raw = source.read(size - held[0])
-            whole = raw[:raw.rfind(b"\n") + 1]
-            added = [self.row_of(row) for row in (parsed(line, dict) for line in whole.decode(errors="replace").splitlines()) if row is not None]
-            rows = (held[1] + added)[-RECENT_ROWS:]
-            RECENT[str(path)] = (held[0] + len(whole), rows)
-            return rows
-        rows = [self.row_of(row) for row in (parsed(line, dict) for line in tail(path, RECENT_BYTES)) if row is not None][-RECENT_ROWS:]
-        RECENT[str(path)] = (size, rows)
+        incremental = bool(held and held[0] < size <= held[0] + RECENT_BYTES)
+        if incremental:
+            start, rows = held
+        else:
+            start = max(0, size - RECENT_BYTES)
+            rows = []
+        with Path(path).open("rb") as source:
+            source.seek(start)
+            raw = source.read(size - start)
+        if not incremental and start:
+            skipped = raw.find(b"\n") + 1
+            start += skipped
+            raw = raw[skipped:]
+        whole = raw[:raw.rfind(b"\n") + 1]
+        added = [self.row_of(row) for row in (parsed(line, dict) for line in whole.decode(errors="replace").splitlines()) if row is not None]
+        rows = (rows + added)[-RECENT_ROWS:]
+        RECENT[str(path)] = (start + len(whole), rows)
         return rows
 
     def entries(self, path: Path | None) -> list[tuple[int, dict]]:
