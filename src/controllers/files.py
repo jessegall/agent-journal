@@ -1,7 +1,11 @@
+import os
 import shutil
+import tempfile
 from pathlib import Path
 from resources.base import Refused, Resource
 from resources.pictures import dimensions
+from engine.paths import contained
+from engine.stored import undoable
 
 REVISIONS = "revisions"
 
@@ -19,17 +23,36 @@ class Files:
         source = Path(path)
         if not source.exists():
             raise Refused(f"no such file: {path}")
-        target = self.folder(n) / source.name
-        if source.is_dir():
-            shutil.copytree(source, target, dirs_exist_ok=True)
-        else:
-            shutil.copy2(source, target)
-        r = self.load(n)
-        r.files[source.name] = description
-        size = dimensions(target) if target.is_file() else None
-        if size:
-            r.pictures[source.name] = list(size)
-        return self.save(r, "updated", file=source.name, description=description)
+        with self.record.locked(self.resource.scope):
+            folder = self.folder(n)
+            target = contained(folder, source.name)
+            r = self.load(n)
+            r.files[source.name] = description
+            self._shipped(r, "updated")
+            self._guarded(r, "updated")
+            with tempfile.TemporaryDirectory(dir=folder) as scratch:
+                staging = Path(scratch) / "staging"
+                staging.mkdir()
+                staged = staging / source.name
+                if source.is_dir():
+                    shutil.copytree(source, staged)
+                else:
+                    shutil.copy2(source, staged)
+                size = dimensions(staged) if staged.is_file() else None
+                if size:
+                    r.pictures[source.name] = list(size)
+                with undoable():
+                    saved = self.save(r, "updated", file=source.name, description=description)
+                    previous = Path(scratch) / "previous"
+                    if target.exists():
+                        os.replace(target, previous)
+                    try:
+                        os.replace(staged, target)
+                    except OSError:
+                        if previous.exists():
+                            os.replace(previous, target)
+                        raise
+                    return saved
 
     def tag(self, n: int, name: str, tags: str) -> Resource:
         r = self.load(n)
@@ -45,15 +68,17 @@ class Files:
         return {f"{self.type}.md", REVISIONS} if self.resource.own_folder else set()
 
     def paths(self, n: int) -> list[str]:
-        return [str((self.folder(n) / name).resolve()) for name in self.files(n)]
+        folder = self.folder(n)
+        return [str(contained(folder, name).resolve()) for name in self.files(n)]
 
     def detach(self, n: int, name: str, why: str = "") -> Resource:
         r = self.load(n)
         if name not in r.files:
             raise Refused(f"{self.type} {n} has no file {name}")
+        target = contained(self.folder(n), name)
         struck = self.folder(n) / "struck"
         struck.mkdir(exist_ok=True)
-        shutil.move(str(self.folder(n) / name), str(struck / name))
+        shutil.move(str(target), str(contained(struck, name)))
         r.files.pop(name)
         r.pictures.pop(name, None)
         return self.save(r, "updated", detached=name, why=why)

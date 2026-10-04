@@ -51,6 +51,7 @@ from features.plugins.lifecycle import called
 from features.plugins.source import data
 from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching
+from engine.paths import contained
 from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
 from features.shaping import KEEP_SHAPED, settled, shaped
 from features.format import VIEWER, formatted
@@ -624,7 +625,18 @@ class AttachedFile(TypedDict):
 def attached_file(record, type_: str, r, name: str, f: Path) -> AttachedFile:
     return {"type": type_, "n": r.n, "title": r.title, "name": name, "description": r.files.get(name, ""), "size": f.stat().st_size,
             "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
-            "url": f"/api/{record.env}/{type_}/{r.n}/files/{name}"}
+            "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
+
+
+def listed_attachments(record, type_: str, controller) -> list[AttachedFile]:
+    files = []
+    for row in controller._attached():
+        folder = controller.folder(row.n)
+        for name in row.files:
+            file = contained(folder, name)
+            if file.is_file():
+                files.append(attached_file(record, type_, row, name, file))
+    return files
 
 
 @route("GET", "/api/{env}/files")
@@ -637,7 +649,7 @@ def get_files(req: Request) -> Reply:
         return Reply(200, held[1])
     out = []
     for type_, c in controllers:
-        out += [attached_file(record, type_, r, name, c.folder(r.n) / name) for r in c._attached() for name in r.files if (c.folder(r.n) / name).is_file()]
+        out.extend(listed_attachments(record, type_, c))
     files = sorted(out, key=lambda x: -x["at"])
     ATTACHED[str(record.home)] = (summaries, files)
     return Reply(200, files)
@@ -935,7 +947,7 @@ def get_search(req: Request) -> Reply:
     out = []
     for type_ in listed_types():
         for r in CONTROLLERS[type_](record, actor=USER).search(term):
-            matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name)}"}
+            matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
             out.append({**shaped(r, req.record(), VIEWER), "matches": matches})
     return Reply(200, out)
@@ -1117,7 +1129,7 @@ def get_markdown(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/{type}/{n}/files/{name}")
 def get_file(req: Request) -> Reply:
-    f = req.controller().folder(int(req.params["n"])) / req.params["name"]
+    f = contained(req.controller().folder(int(req.params["n"])), req.params["name"])
     if not f.is_file():
         raise Missing(f"no file {req.params['name']}")
     return Reply(200, f.read_bytes(), mimetypes.guess_type(str(f))[0] or "application/octet-stream")
@@ -1134,7 +1146,7 @@ def post_upload(req: Request) -> Reply:
             name = part.get_filename()
             if not name:
                 continue
-            f = Path(folder) / Path(name).name
+            f = contained(Path(folder), name)
             f.write_bytes(part.get_payload(decode=True))
             controller.attach(n, str(f))
             names.append(f.name)

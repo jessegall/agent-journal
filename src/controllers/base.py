@@ -199,57 +199,59 @@ class Controller(Stored, Files, Links):
             return self.save(r, "updated", fields=[*(k for k, v in given.items() if v is not None), *data])
 
     def stamp(self, n: int, **data) -> Resource:
-        r = self.load(n)
-        r.data.update(self._shaped(data))
-        r.updated = time.time()
-        self._write_file(r)
-        self.record.emit(self.type, r.n, "stamped", self.actor, quiet=True, fields=sorted(data))
-        return r
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            r.data.update(self._shaped(data))
+            return self.save(r, "stamped", quiet=True, fields=sorted(data))
 
     def set(self, n: int, key: str, value: str) -> Resource:
         return self.update(n, **{key: typed(value)})
 
     def section(self, n: int, title: str, body: str) -> Resource:
-        r = self.load(n)
-        for s in r.sections:
-            if s[SECTION.title] == title:
-                s[SECTION.body] = body
-                break
-        else:
-            r.sections.append({SECTION.title: title, SECTION.body: body})
-        return self.save(r, "updated", section=title)
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            for s in r.sections:
+                if s[SECTION.title] == title:
+                    s[SECTION.body] = body
+                    break
+            else:
+                r.sections.append({SECTION.title: title, SECTION.body: body})
+            return self.save(r, "updated", section=title)
 
     def delete(self, n: int, why: str = "") -> Resource:
         taken = self._handled("delete", n=n, why=why)
         if taken is not None:
             return taken
-        r = self.load(n)
-        r.deleted = time.time()
-        return self.save(r, "deleted", why=why)
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            r.deleted = time.time()
+            return self.save(r, "deleted", why=why)
 
     def complete(self, n: int, how: str = "", **data) -> Resource:
         taken = self._handled("complete", n=n, how=how, **data)
         if taken is not None:
             return taken
-        r = self.load(n)
-        if r.completed:
-            self._refuse(f"{self.type} {n} is already closed")
-        r.completed = time.time()
-        r.outcome = how
-        r.data.update(self._shaped(data))
-        if self.resource.lists_completed_unread and self.actor != USER:
-            r.seen = [who for who in r.seen if who != USER]
-        return self.save(r, "completed", how=how, **data)
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            if r.completed:
+                self._refuse(f"{self.type} {n} is already closed")
+            r.completed = time.time()
+            r.outcome = how
+            r.data.update(self._shaped(data))
+            if self.resource.lists_completed_unread and self.actor != USER:
+                r.seen = [who for who in r.seen if who != USER]
+            return self.save(r, "completed", how=how, **data)
 
     def reopen(self, n: int, why: str) -> Resource:
-        r = self.load(n)
-        if r.deleted:
-            self._refuse(f"{self.type} {n} is archived; restore it before reopening it")
-        if not r.completed:
-            self._refuse(f"{self.type} {n} is not {self.named('complete')}")
-        r.completed = 0.0
-        r.outcome = ""
-        return self.save(r, "reopened", why=why)
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            if r.deleted:
+                self._refuse(f"{self.type} {n} is archived; restore it before reopening it")
+            if not r.completed:
+                self._refuse(f"{self.type} {n} is not {self.named('complete')}")
+            r.completed = 0.0
+            r.outcome = ""
+            return self.save(r, "reopened", why=why)
 
     @internal
     def named(self, method: str) -> str:
@@ -286,10 +288,11 @@ class Controller(Stored, Files, Links):
         self.record.emit(self.type, n, "deleted", self.actor, force=True)
 
     def move(self, n: int, env: str) -> Resource:
-        from engine.record import Record
         r = self.load(n)
+        self._shipped(r, "deleted")
+        self._guarded(r, "deleted")
         there = type(self)(Record(self.record.root, env), actor=self.actor)
-        with there.record.locked():
+        with there.record.locked(self.resource.scope):
             m = (there.numbers() or [0])[-1] + 1
             moved = self.resource(**{**asdict(r), "n": m})
             if any(self.folder(n).iterdir()):

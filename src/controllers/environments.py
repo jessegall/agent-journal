@@ -12,6 +12,7 @@ from engine.stop import ask_session
 from resources import types
 from resources.base import AGENT, ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
 from engine import runtime
+from engine.paths import environment_path
 from engine.wording import plural
 from controllers.facts import Facts
 from controllers.messages import Messages
@@ -34,6 +35,11 @@ class Environments(Controller):
     OPEN_BEFORE_REMOVING = (Todos, Facts, Reminders, Messages, Questions)
     PICKED_UP = (Works, Todos, Questions, Messages)
     resource = types.Environment
+
+    def update(self, n: int, title: str | None = None, **data):
+        if title is not None:
+            raise Refused("rename an environment with journal environment rename")
+        return super().update(n, **data)
 
     def _seat(self, name: str, session: str):
         row = self._titled(name) or self.create(name)
@@ -71,6 +77,7 @@ class Environments(Controller):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
+        environment_path(self.record.root / "environments", name)
         made = super().create(name, abstract, brief, **data)
         Record(self.record.root, name)
         runtime.forget_rename(self.record.root, name)
@@ -147,6 +154,7 @@ class Environments(Controller):
                 if controller.resource.scope == ENVIRONMENT and controller.resource.type not in KEPT]
 
     def unarchive(self, name: str):
+        environment_path(self.record.root / "environments", name)
         archive = attic.latest(self.record.root, name)
         if not archive:
             raise Refused(f"no archived environment {name!r} in attic/")
@@ -157,6 +165,7 @@ class Environments(Controller):
     def rename(self, n: int, name: str):
         env = self.load(n)
         new = self.unused(check_title(name))
+        environment_path(self.record.root / "environments", new)
         self.vacant(env.title, self.session)
         old = Record(self.record.root, env.title).home
         taken = old.with_name(new)
@@ -167,7 +176,7 @@ class Environments(Controller):
         if old.is_dir():
             old.rename(taken)
         Sessions(self.record.root).rebind(env.title, new)
-        return self.update(n, title=new)
+        return super().update(n, title=new)
 
     def pickup(self, n: int) -> dict:
         env = self.load(n)
