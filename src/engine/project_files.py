@@ -29,9 +29,17 @@ class ProjectSource:
 def project_path(project: Path, asked: str) -> Path:
     project = project.resolve()
     target = (project / asked).resolve()
-    if not asked or project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts) or (SECRET.search(target.name) and not STYLE.search(target.name)):
+    if not asked or project not in target.parents or not readable_path(project, target):
         raise Refused(f"{asked!r} is not a file in the project that may be read")
     return target
+
+
+def readable_path(project: Path, target: Path) -> bool:
+    try:
+        parts = target.resolve().relative_to(project.resolve()).parts
+    except ValueError:
+        return False
+    return bool(parts) and all(not part.startswith(".") and (not SECRET.search(part) or index == len(parts) - 1 and STYLE.search(part)) for index, part in enumerate(parts))
 
 
 def read_source(project: Path, asked: str) -> ProjectSource:

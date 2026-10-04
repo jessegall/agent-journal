@@ -7,6 +7,7 @@ from pathlib import Path
 
 from engine import bus
 from engine.proc import git, git_objects
+from engine.project_files import readable_path
 from resources.base import SYSTEM, Event, names
 
 KIND = names("edited", "created", "deleted")
@@ -149,13 +150,13 @@ def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
     with ThreadPoolExecutor(max_workers=len(found) or 1) as pool:
         trees = list(pool.map(blobs_in, found))
     tree = {path: sha for repository, held in zip(found, trees) for path, sha in prefixed(project, repository, held).items()}
-    return {path: sha for path, sha in tree.items() if not journals_own(path, marks)}
+    return {path: sha for path, sha in tree.items() if not journals_own(path, marks) and readable_path(project, project / path)}
 
 
 def blobs_in(project: Path) -> dict:
     tree = dict(tracked_in(project))
     dirty = list(dict.fromkeys(p for p in git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0") if p))
-    present = [p for p in dirty if (project / p).is_file()]
+    present = [p for p in dirty if readable_path(project, project / p) and (project / p).is_file()]
     UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
         tree.pop(path, None)
@@ -174,7 +175,7 @@ def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
 
 
 def project_paths(project: Path) -> set[str]:
-    return {path for repository in repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository)))}
+    return {path for repository in repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository))) if readable_path(project, project / path)}
 
 
 def paths_in(project: Path) -> set[str]:
@@ -210,6 +211,7 @@ def announce(record, agent: int, homes: tuple[str, ...]) -> None:
         held["tree"] = now
     if last is None:
         return
+    last = {path: sha for path, sha in last.items() if readable_path(project, project / path)}
     at = time.time()
     changed = {path: (last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB)) for path in sorted(set(last) | set(now)) if last.get(path) != now.get(path)}
     counts = line_counts(project, list(changed.values()))

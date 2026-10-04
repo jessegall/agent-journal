@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.files import announce
+from engine.files import announce, blobs
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
@@ -33,6 +33,19 @@ def project_with(files: dict[str, str]) -> Project:
     row = Agents(record, actor="system").by_session("claude-1")
     announce(record, row.n, skill_folders())
     return Project(record, project, row.n)
+
+
+def test_hidden_and_secret_files_never_enter_the_edit_feed_or_git_objects():
+    project = project_with({"visible.py": "visible\n"})
+    (project.root / ".env").write_text("untracked hidden credential")
+    (project.root / "credentials").mkdir()
+    (project.root / "credentials" / "prod.json").write_text("untracked folder credential")
+    project.changed()
+    assert set(blobs(project.record, project.root, skill_folders())) == {"visible.py"}
+    assert not edits_since(project.record, project.agent, 0, PAGE).edits
+    for path in (".env", "credentials/prod.json"):
+        sha = subprocess.run(["git", "hash-object", path], cwd=project.root, capture_output=True, text=True, check=True).stdout.strip()
+        assert subprocess.run(["git", "cat-file", "-e", sha], cwd=project.root, capture_output=True).returncode != 0
 
 
 def test_a_changed_file_becomes_a_card_and_the_cursor_reads_only_what_came_after():

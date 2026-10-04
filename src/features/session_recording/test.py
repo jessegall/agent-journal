@@ -129,6 +129,9 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     assert "private-other" in Scrubber().leaks(json.dumps(places)), "any other journal in the phone's places list is a leak"
     places["places"][1]["project"] = "demo"
     assert "private-other" in Scrubber().leaks(json.dumps(places)), "a renamed project cannot hide its journal path"
+    monkeypatch.setattr(scrub, "git", lambda *args: "First Last\n")
+    names = Scrubber()
+    assert names.text("Sir First Last; First; Last") == "Sir demo; demo; demo"
 
 
 def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path):
