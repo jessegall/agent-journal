@@ -6,7 +6,7 @@ from engine.gates import LONG_COMMAND, cancelled
 from engine.sessions import alive
 from engine.wording import clipped
 from features.long_commands.details import KEPT, MOVED
-from features.nudges import MINUTE, Sent
+from features.nudges import DAY, MINUTE, Sent
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS
 from providers.base import BackgroundTasks
@@ -15,7 +15,6 @@ from features.status_bar.runs import CommandRun, command_runs
 FOREGROUND = "Bash"
 RECENT = 10 * MINUTE
 STALLED_AFTER = 10 * MINUTE
-DAY = 24 * 60 * MINUTE
 
 
 class MoveLongCommands(Handler):

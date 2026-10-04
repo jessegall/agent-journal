@@ -154,8 +154,8 @@ def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_onc
     def wrote(raw: bytes) -> bool:
         typed.append(raw)
         if raw == b"\r":
-            with screen.open("ab") as shown:
-                shown.write(b"Messages to be submitted after next tool call\r\n  1 background terminal running")
+            with screen.open("ab") as printed:
+                printed.write(b"Messages to be submitted after next tool call\r\n  1 background terminal running")
         return True
     monkeypatch.setattr(driver, "_wrote", wrote)
     monkeypatch.setattr(drivers.time, "sleep", lambda seconds: None)
@@ -164,7 +164,7 @@ def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_onc
         "Esc sends it now, while the command runs on in its background terminal, and the engine can say so in the chat"
 
 
-def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time():
+def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running():
     import json
     from datetime import datetime, timezone
     record = fresh()
@@ -186,24 +186,24 @@ def test_a_codex_agent_is_told_about_the_command_it_left_running_once_each_time(
                                                                              "input": 'const r=await tools.list_files({path:"."});text(r);'}},
         {"timestamp": stamp(started), "type": "response_item", "payload": {"type": "custom_tool_call_output", "call_id": "c2",
                                                                              "output": [{"type": "input_text", "text": '{"session_id":77}'}]}})))
-    told = lambda: [n for n in nudges(record) if "make test" in n]
+    lines = lambda: [n for n in nudges(record) if "make test" in n]
     report(record, "idle", "Stop", provider="codex", transcript=str(transcript))
     tick(record)
     tick(record)
     assert not [n for n in nudges(record) if "nothing new" in n and "npm run watch" in n], "a command that printed a minute ago is not stalled"
-    assert told() == ["a command you left running has shown nothing new for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
+    assert lines() == ["a command you left running has shown nothing new for 11 minutes - make test", "you stopped while a command you started still runs - make test"], \
         "a run open past ten minutes and an agent stopped while it runs are each told once"
     with transcript.open("a") as more:
         more.write(json.dumps({"timestamp": stamp(time.time()), "type": "event_msg", "payload": {
             "type": "item_completed", "item": {"type": "CommandExecution", "process_id": "42", "status": "failed"}, "completed_at_ms": time.time() * 1000}}) + "\n")
     tick(record)
     tick(record)
-    assert told()[2:] == ["the command you left running failed - make test"], "its end is told once"
+    assert lines()[2:] == ["the command you left running failed - make test"], "its end is told once"
     with transcript.open("a") as more:
         more.write(json.dumps({"timestamp": stamp(time.time()), "type": "event_msg", "payload": {
             "type": "item_completed", "item": {"type": "CommandExecution", "process_id": "43", "status": "completed",
                                                "command": ["/bin/zsh", "-lc", "(make test) >/dev/null 2>&1 & echo $!"], "stdout": "999999"}}}) + "\n")
     tick(record)
-    assert told()[3:] == ["the command you left running finished - make test"], "a command it detached is followed by its pid, and told once it is gone"
+    assert lines()[3:] == ["the command you left running finished - make test"], "a command it detached is followed by its pid, and told once it is gone"
     report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
-    assert len(told()) == 4, "a provider that wakes its agent itself is left to do so"
+    assert len(lines()) == 4, "a provider that wakes its agent itself is left to do so"

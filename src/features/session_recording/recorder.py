@@ -1,9 +1,9 @@
-import hashlib
 import json
 import os
 import sys
 import time
 from pathlib import Path
+from engine.wording import digest
 
 POLL = 0.5
 PRUNED = {"runtime", "attic", "node_modules", "__pycache__", ".git"}
@@ -71,9 +71,9 @@ class Recorder:
                                       ("record/project", self.root / "project", set()),
                                       ("files", self.root.parent, LEFT_OUT)):
             for path in walked(base, left_out) if base.is_dir() else ():
-                digest = self._stored(path)
-                if digest:
-                    now[f"{where}/{path.relative_to(base)}"] = digest
+                stored = self._stored(path)
+                if stored:
+                    now[f"{where}/{path.relative_to(base)}"] = stored
         return now
 
     def _stored(self, path: Path) -> str:
@@ -85,12 +85,12 @@ class Recorder:
             raw = path.read_bytes()
         except OSError:
             return ""
-        digest = hashlib.sha1(raw).hexdigest()
-        blob = self.blobs / digest
+        stored = digest(raw)
+        blob = self.blobs / stored
         if not blob.exists():
             blob.write_bytes(raw)
-        self.stamps[path] = (stat.st_mtime_ns, stat.st_size, digest)
-        return digest
+        self.stamps[path] = (stat.st_mtime_ns, stat.st_size, stored)
+        return stored
 
 
 def main(argv: list[str]) -> int:

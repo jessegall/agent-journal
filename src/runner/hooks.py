@@ -1,4 +1,3 @@
-import hashlib
 import re
 import time
 from dataclasses import dataclass
@@ -21,6 +20,7 @@ from engine.fields import Loaded
 from engine.gates import AFTERWARDS, CANCELABLE, CANCELERS, DISPATCHING, LONG_COMMAND, POLICIES, cancelled, gate_file, start_file
 from engine.reach import Reach
 from engine.runtime import default_env
+from engine.wording import digest
 
 PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."
 PAUSE = Reach.BOTH
@@ -143,7 +143,7 @@ def stopped(root: Path, session: str, text: str) -> None:
 
 
 def fingerprint(text: str) -> str:
-    return hashlib.sha1(" ".join(text.split()).encode()).hexdigest()
+    return digest(" ".join(text.split()))
 
 
 def unfinished(root: Path, session: str, row) -> None:

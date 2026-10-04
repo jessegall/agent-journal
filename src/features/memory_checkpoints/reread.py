@@ -2,6 +2,7 @@ import time
 
 from controllers.types import Facts, Rules
 from resources.base import SYSTEM
+from features.nudges import DAY
 
 
 def standing(record) -> list:
@@ -11,4 +12,4 @@ def standing(record) -> list:
 def owed(record, days: int = 7) -> bool:
     events = record.events()
     since = float(record.cleanup_read_at) or (events[0].at if events else time.time())
-    return time.time() - since > days * 86400
+    return time.time() - since > days * DAY

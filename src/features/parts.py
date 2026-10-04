@@ -1,4 +1,3 @@
-import hashlib
 import inspect
 import time
 from dataclasses import dataclass, field
@@ -12,7 +11,7 @@ from engine.events.resources import AgentChanged
 from engine.gates import AFTERWARDS, CANCELERS, POLICIES
 from engine.reach import Guard, Reach
 from engine.state import State
-from engine.wording import APPENDS
+from engine.wording import APPENDS, digest
 from features.format import FORMATTERS
 from resources.base import SYSTEM, Refused
 
@@ -85,10 +84,18 @@ class Context:
 
     def every(self, kind: str, key: str, spec) -> bool:
         from features import trigger
-        return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()[:12]}", spec)
+        return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", spec)
+
+    def at_most(self, kind: str, key: str, times: int) -> bool:
+        store, name = self.record.state("counts", self.agent.session), f"{kind}.{digest(key.strip())}"
+        count = int(store.get(name, 0))
+        if count >= times:
+            return False
+        store.set(name, count + 1)
+        return True
 
     def once(self, kind: str, key: str, then=None) -> bool:
-        store, name = self.record.state("once", self.agent.session), f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}"
+        store, name = self.record.state("once", self.agent.session), f"{kind}.{digest(key.strip())}"
         if then and (store.get(name) is not None or not then()):
             return False
         return store.claim(name, time.time(), keep=ONCE_KEPT)

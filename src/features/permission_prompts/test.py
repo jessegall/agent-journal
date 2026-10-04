@@ -64,14 +64,14 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     record = driver.record
     report(record, "working", "PreToolUse", session="codex-ask", provider="codex")
     engine, row = Engine(record, driver), lambda: Agents(record, actor=SYSTEM).by_session("codex-ask")
-    shown = []
+    calls = []
     for command in ("printf 'hi' > hello.txt", "rm hello.txt"):
         asking_screen = screen.replace("printf 'hi' > hello.txt", command)
         driver.printed.write_bytes(f"esc to interrupt\r\n{asking_screen}".encode())
         driver.reported = (float("-inf"), None)
         engine.screen_asks()
-        shown.append(row().asking["call"])
-    assert shown == ["printf 'hi' > hello.txt", "rm hello.txt"], "a second approval right after the first replaces the command shown in the chat"
+        calls.append(row().asking["call"])
+    assert calls == ["printf 'hi' > hello.txt", "rm hello.txt"], "a second approval right after the first replaces the command shown in the chat"
     claude = DRIVERS["claude"]
     warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()

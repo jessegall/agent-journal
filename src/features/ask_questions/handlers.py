@@ -5,7 +5,7 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from controllers.types import Questions
 from engine.events.resources import MessageCreated, QuestionAnswered, ResourceCompleted, ResourceEvent
-from features.nudges import Sent
+from features.nudges import DAY, Sent
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
@@ -13,7 +13,6 @@ from resources.base import SYSTEM, USER
 
 ASKING = "asking"
 WAITED_ON = ("todo", "plan", "ticket")
-DAY = 24 * 3600.0
 
 
 @dataclass(frozen=True)

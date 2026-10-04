@@ -7,6 +7,7 @@ from features.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.project_files import matching
 from resources.base import SYSTEM
+from features.nudges import DAY
 
 CLAIMS = (Rules, Facts, Reminders)
 PATH = re.compile(r"(?<![\w/.~])(~/)?((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")
@@ -65,6 +66,6 @@ def evidence(record) -> list[dict]:
         if t.completed:
             continue
         waiting = [q for q in questions._standing() if t.ref in q.refs]
-        if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * 86400:
+        if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * DAY:
             found.append({"ref": t.ref, "title": t.title, "evidence": f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", "retire": f"journal todo {t.n} done \"<why>\""})
     return found

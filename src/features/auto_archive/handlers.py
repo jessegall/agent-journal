@@ -4,11 +4,11 @@ from engine.events.engine import ClockTicked
 from features.parts import WHOLE_FEATURE, AgentContext, Handler
 from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER
+from features.nudges import DAY
 
 KEEP = {"report": 14, "todo": 7}
 PACK_AFTER = 3
 UNPACKED = ("agent", "feature")
-DAY = 86400
 
 
 PRUNABLE = {"": lambda r: True, "seen": lambda r: USER in r.seen, "closed": lambda r: bool(r.completed)}
