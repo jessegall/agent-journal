@@ -10,6 +10,7 @@ from engine.markers import plain
 from engine.record import Record
 from resources.base import PART_OF, PROJECT, SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
+from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.files import Files
 from controllers.links import Links
 from controllers.marks import internal
@@ -25,7 +26,6 @@ def searchable(r: Resource) -> str:
     parts = [r.title, r.brief, r.abstract, *(f"{s[SECTION.title]} {s[SECTION.body]}" for s in r.sections),
              *(f"{name} {tags}" for name, tags in r.files.items())]
     return "\n".join(parts).lower()
-TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
 
 
@@ -48,7 +48,7 @@ def actions(controller: type) -> tuple[str, ...]:
                   if not name.startswith("_") and not getattr(f, "internal", False)))
 
 
-class Controller(Stored, Files, Links):
+class Controller(Stored, Files, Links, Discussed):
     resource = Resource
     actor = "user"
 
@@ -78,7 +78,7 @@ class Controller(Stored, Files, Links):
         self.forced = []
 
     def _guarded(self, r: Resource, action: str) -> None:
-        allowed = self.resource.editors.get((r.seen or [""])[0])
+        allowed = self.resource.editors.get(r.author)
         if allowed is None or self.actor in allowed or not self._exists(r.n):
             return
         stored = self.load(r.n)
@@ -108,12 +108,12 @@ class Controller(Stored, Files, Links):
         if self.actor not in r.seen:
             r.seen.append(self.actor)
         r.updated = time.time()
-        folder = self._folder()
-        before = self._moved(folder) if folder.is_dir() else None
-        self._write_file(r)
-        self._reindexed(r.n, before, r)
-        self.record.emit(self.type, r.n, action, self.actor, **event)
+        self._persist(r)
+        self._emit(r.n, action, **event)
         return r
+
+    def _emit(self, n: int, action: str, **event):
+        return self.record.emit(self.type, n, action, self.actor, **event)
 
     def _retitle(self, n: int, title: str) -> Resource:
         return self.update(int(n), title=title.strip())
@@ -141,6 +141,9 @@ class Controller(Stored, Files, Links):
         fields = self.resource.fields
         return {k: checked_field(fields, k, v) for k, v in data.items()}
 
+    def _given(self, data: dict) -> Resource:
+        return self.resource(data=self._shaped(data))
+
     def _twin(self, title: str, brief: str, about, idempotency: str = "") -> Resource | None:
         if not self.resource.deduplicates:
             return None
@@ -148,7 +151,7 @@ class Controller(Stored, Files, Links):
         lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]
         recent = (self.load(n) for n in reversed(lately[-20:]))
         return next((r for r in recent if r.created >= since and r.title == title and r.brief == brief
-                     and r.seen[:1] == [self.actor] and (not about or about in r.refs)
+                     and r.author == self.actor and (not about or about in r.refs)
                      and (not idempotency or r.data.get("idempotency") == idempotency)), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
@@ -172,10 +175,27 @@ class Controller(Stored, Files, Links):
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
                               data=fields, created=time.time(), seen=[self.actor], refs=[about] if about else [])
             r = self.save(r, "created")
-            if supersedes:
-                self.complete(int(supersedes), how=f"superseded by {self.type} {n}")
-                r = self.link(n, f"{self.type}:{int(supersedes)}")
-            return r
+            return self._supersede(int(supersedes), n) if supersedes else r
+
+    def _supersede(self, old: int, new: int) -> Resource:
+        self.complete(old, how=f"superseded by {self.type} {new}")
+        return self.link(new, f"{self.type}:{old}")
+
+    def _created_with_sections(self, title: str, abstract: str, brief: str, sections: list[tuple[str, str]], **data) -> Resource:
+        made = self.create(title, abstract, brief, **data)
+        for heading, body in sections:
+            made = self.section(made.n, heading, body)
+        return made
+
+    def _carried(self, n: int, into: "Controller", how: str) -> Resource:
+        r = self.load(n)
+        made = into._created_with_sections(r.title, r.abstract, r.brief, [(s[SECTION.title], s[SECTION.body]) for s in r.sections], **r.data)
+        self.complete(n, how=f"{how} {into.type} {made.n}")
+        return made
+
+    def _damaged(self, path: str, error: str) -> None:
+        from controllers.faults import damaged
+        damaged(self.record, path, error)
 
     def _stopping(self, n: int, **asked) -> Resource:
         return self.update(n, stopping={**asked, "at": time.time()})
@@ -199,10 +219,13 @@ class Controller(Stored, Files, Links):
             return self.save(r, "updated", fields=[*(k for k, v in given.items() if v is not None), *data])
 
     def stamp(self, n: int, **data) -> Resource:
+        return self._changed(n, "stamped", data, quiet=True, fields=sorted(data))
+
+    def _changed(self, n: int, action: str, data: dict, **event) -> Resource:
         with self.record.locked(self.resource.scope):
             r = self.load(n)
             r.data.update(self._shaped(data))
-            return self.save(r, "stamped", quiet=True, fields=sorted(data))
+            return self.save(r, action, **event)
 
     def set(self, n: int, key: str, value: str) -> Resource:
         return self.update(n, **{key: typed(value)})
@@ -263,13 +286,13 @@ class Controller(Stored, Files, Links):
             if alias == name:
                 return getattr(self, method)
         if name in self.resource.command_names:
-            self._refuse(f"a {self.type} calls that {self.resource.command_names[name]}")
+            raise Refused(f"a {self.type} calls that {self.resource.command_names[name]}")
         return self.action(name)
 
     @internal
     def action(self, name: str):
         if name.startswith("_") or name not in {*actions(type(self)), *COMMANDS.get(self.type, {}), *self.resource.command_names.values()}:
-            self._refuse(f"{self.type} has no action {name!r}")
+            raise Refused(f"{self.type} has no action {name!r}")
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
             return bus.commanded(self.type, name, partial(command, self))
@@ -284,10 +307,10 @@ class Controller(Stored, Files, Links):
     def force_delete(self, n: int) -> None:
         self.load(n)
         self._remove(n)
-        files = self._folder() / f"{n:03d}"
+        files = self._row_folder(n)
         if files.is_dir():
             shutil.rmtree(files)
-        self.record.emit(self.type, n, "deleted", self.actor, force=True)
+        self._emit(n, "deleted", force=True)
 
     def move(self, n: int, env: str) -> Resource:
         r = self.load(n)
@@ -323,10 +346,10 @@ class Controller(Stored, Files, Links):
                     continue
                 r.seen.append(self.actor)
                 r.updated = time.time()
-                self._write_file(r)
+                self._persist(r)
                 changed.append(r)
             if changed:
-                self.record.emit(self.type, changed[0].n, "updated", self.actor, numbers=[r.n for r in changed], seen=self.actor, by="read")
+                self._emit(changed[0].n, "updated", numbers=[r.n for r in changed], seen=self.actor, by="read")
         return rows
 
     def unread(self, actor: str | None = None) -> list[Resource]:
@@ -356,7 +379,7 @@ class Controller(Stored, Files, Links):
         self._texts()
 
     def _texts(self) -> dict[int, str]:
-        kept = SEARCHABLE.setdefault(str(self.record.folder(self.type, self.resource.scope)), {})
+        kept = SEARCHABLE.setdefault(str(self._folder()), {})
         for row in self.summaries():
             if row["deleted"] or kept.get(row["n"], (None,))[0] == row["updated"]:
                 continue

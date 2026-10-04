@@ -28,7 +28,4 @@ class Facts(Controller):
         return [*own, *Facts(Record(self.record.root, sent_from), actor=SYSTEM)._standing()] if sent_from else own
 
     def promote(self, n: int):
-        pin = self.load(n)
-        rule = Rules(self.record, actor=self.actor).create(pin.title, pin.abstract, pin.brief, **pin.data)
-        self.complete(n, how=f"promoted to rule {rule.n}")
-        return rule
+        return self._carried(n, Rules(self.record, actor=self.actor), "promoted to")

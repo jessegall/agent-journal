@@ -24,13 +24,11 @@ class Agents(Controller):
 
     @internal
     def saw(self, n: int, fact: dict, **data):
-        r = self.load(n)
-        r.data.update(self._shaped(data))
-        return self.save(r, "reported", **fact)
+        return self._changed(n, "reported", data, **fact)
 
     @internal
     def subagent(self, n: int, action: str, **data):
-        return self.record.emit(self.type, int(n), action, self.actor, **data)
+        return self._emit(int(n), action, **data)
 
     @internal
     def card(self, n: int, **card):

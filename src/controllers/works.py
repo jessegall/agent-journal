@@ -10,7 +10,7 @@ class Works(Controller):
         return next((w for w in self._standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        self._gate(int(self.resource(data=self._shaped(data)).todo))
+        self._gate(int(self._given(data).todo))
         return super().create(title, abstract, brief, **data)
 
     def _gate(self, todo: int = 0) -> None:
