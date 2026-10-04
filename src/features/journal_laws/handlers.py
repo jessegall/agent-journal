@@ -25,14 +25,15 @@ class NoticeLargestResult(Handler):
 
 
 def long_briefings(context, agent) -> list[Sent]:
-    project, found = context.record.root.parent.resolve(), []
-    for cls in [c for c in PROVIDERS.values() if c.briefing_limit()]:
-        files = read_on_the_way(project, Path(agent.cwd) if agent.cwd else project, cls.briefing_file)
-        size = sum(f.stat().st_size for f in files)
-        if size > cls.briefing_limit():
-            names = " with ".join(str(f.relative_to(project)) for f in files)
-            found.append(Sent(f"{names}:{size // BAND}", {"file": names, "size": f"{size:,}", "limit": f"{cls.briefing_limit():,}", "provider": cls.name.title()}))
-    return found
+    cls, project = PROVIDERS.get(agent.provider), context.record.root.parent.resolve()
+    if cls is None or not cls.briefing_limit():
+        return []
+    files = read_on_the_way(project, Path(agent.cwd) if agent.cwd else project, cls.briefing_file)
+    size = sum(f.stat().st_size for f in files)
+    if size <= cls.briefing_limit():
+        return []
+    names = " with ".join(str(f.relative_to(project)) for f in files)
+    return [Sent(f"{names}:{size // BAND}", {"file": names, "size": f"{size:,}", "limit": f"{cls.briefing_limit():,}", "provider": cls.name.title()})]
 
 
 def read_on_the_way(project: Path, cwd: Path, name: str) -> list[Path]:

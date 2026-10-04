@@ -101,6 +101,10 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     ticked = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
     assert ticked and "agent" in ticked[0]["seen"], "a read made in another process shows on the phone's next poll, so its ticks change"
     assert len([m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
+    nods = {Messages(record, actor=AGENT).create(f"Noted {i}.", brief=f"Noted {i}.", acknowledgement=True).ref for i in range(45)}
+    refs = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
+    assert (f"message:{made['n']}" in refs, refs & nods) == (True, set()), \
+        "hidden acknowledgements are left out before the feed counts its page, so they never push a real message out"
     upload = lambda n, kind="application/octet-stream": urllib.request.urlopen(urllib.request.Request(
         f"{base}/p/attach/{n}/photo.jpg", b"\xff\xd8picture", {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"},
         method="POST"), timeout=5).status

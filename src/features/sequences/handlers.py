@@ -22,6 +22,7 @@ from resources.types import TYPES
 from engine.reach import Reach
 from engine.wording import clipped
 from features.nudges import MINUTE
+from providers import dispatch_model
 
 STEP = "step"
 STEP_HELD = "step held"
@@ -151,7 +152,8 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=DISPATCH_MODELS.get(sequence.dispatch, DISPATCH_MODELS.get(FILLER, unchosen))(context.record), why=why, request=request_of(context, about)))
+        model=dispatch_model(agent.provider, DISPATCH_MODELS.get(sequence.dispatch, DISPATCH_MODELS.get(FILLER, unchosen))(context.record)), why=why,
+        request=request_of(context, about)))
 
 
 def request_of(context: Context, about: str) -> str:
