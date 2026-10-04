@@ -1,34 +1,19 @@
 import fcntl
-import json
 import os
 import threading
 import time
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from engine import bus, runtime
+from engine.event_log import EventLog
+from engine.settings_file import SETTINGS, SettingsFile
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
-from engine.stored import append_text, held_back, read_json, write_json, write_text
+from engine.stored import held_back
 from engine.paths import environment_home, environments
 
 RESOURCES = "project"
-KEPT_EVENTS = 2000
-
-
-@dataclass(frozen=True)
-class Recent:
-    file: int
-    read: int
-    events: list
-
-
-RECENT: dict[str, Recent] = {}
-
-
-SETTINGS: dict[str, tuple] = {}
-SETTINGS_VERSION = [0]
 
 
 class Setting:
@@ -73,6 +58,8 @@ class Record:
         self._threads = threading.RLock()
         self.memo = {} if memo else None
         self._made: set[Path] = set()
+        self.event_log = EventLog(self.home, self.locked)
+        self.settings_file = SettingsFile(self.home)
 
     @classmethod
     def every(cls, root: Path) -> list["Record"]:
@@ -118,8 +105,8 @@ class Record:
 
         def release() -> Event:
             with self.locked():
-                e = stamped(self.last_event() + 1, quiet or bus.listening())
-                append_text(self.home / "events.jsonl", json.dumps(asdict(e)) + "\n")
+                e = stamped(self.event_log.last_id() + 1, quiet or bus.listening())
+                self.event_log.append(e)
             if self.memo is not None:
                 self.memo.clear()
             if quiet:
@@ -134,107 +121,28 @@ class Record:
         return release()
 
     def events(self, since: int = 0, last: int = 0) -> list[Event]:
-        recent = self.recent_events()
-        newer = [e for e in recent if e.id > since]
-        if len(recent) < KEPT_EVENTS or (recent and recent[0].id <= since) or (last and len(newer) >= last):
-            return newer[-last:] if last else newer
-        return self.events_back(since, last)
+        return self.event_log.events(since, last)
 
     def recent_events(self) -> list[Event]:
-        log = self.home / "events.jsonl"
-        try:
-            stat = log.stat()
-        except OSError:
-            return []
-        size = stat.st_size
-        held = RECENT.get(str(log))
-        same = held is not None and held.file == stat.st_ino
-        if same and held.read == size:
-            return held.events
-        if same and held.read < size:
-            with log.open("rb") as fh:
-                fh.seek(held.read)
-                added = fh.read(size - held.read)
-            whole = added[:added.rfind(b"\n") + 1]
-            kept = (held.events + parsed(whole.split(b"\n")))[-KEPT_EVENTS:]
-            RECENT[str(log)] = Recent(stat.st_ino, held.read + len(whole), kept)
-            return kept
-        kept = self.events_back(0, KEPT_EVENTS)
-        RECENT[str(log)] = Recent(stat.st_ino, size, kept)
-        return kept
-
-    def events_back(self, since: int = 0, last: int = 0) -> list[Event]:
-        out = []
-        for raw in self.lines_back():
-            try:
-                e = Event(**json.loads(raw))
-            except (ValueError, TypeError):
-                continue
-            if e.id <= since or (last and len(out) == last):
-                break
-            out.append(e)
-        return out[::-1]
-
-    def lines_back(self, block: int = 65536):
-        log = self.home / "events.jsonl"
-        if not log.is_file():
-            return
-        with log.open("rb") as fh:
-            fh.seek(0, 2)
-            at, rest = fh.tell(), b""
-            while at > 0:
-                step = min(block, at)
-                at -= step
-                fh.seek(at)
-                lines = (fh.read(step) + rest).split(b"\n")
-                rest = lines.pop(0)
-                yield from (line for line in reversed(lines) if line.strip())
-            if rest.strip():
-                yield rest
+        return self.event_log.recent()
 
     def last_event(self) -> int:
-        got = self.events(last=1)
-        return got[-1].id if got else 0
+        return self.event_log.last_id()
 
     def trim_events(self, keep: int, readers_since: float) -> int:
-        log = self.home / "events.jsonl"
-        if not log.is_file():
-            return 0
-        with self.locked():
-            lines = log.read_text().splitlines(keepends=True)
-            if len(lines) <= keep:
-                return 0
-            ids = [json.loads(line).get("id", 0) for line in lines]
-            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in runtime.folder(self.home).glob("cursor-*")
-                          if f.stat().st_mtime >= readers_since and self.cursor_text(f.name.removeprefix("cursor-")).isdigit()), default=ids[-1])
-            floor = min(ids[-keep], unread + 1)
-            kept = [line for line, n in zip(lines, ids) if n >= floor]
-            write_text(log, "".join(kept))
-            return len(lines) - len(kept)
-
-    def cursor_file(self, name: str) -> Path:
-        return runtime.folder(self.home) / f"cursor-{name}"
+        return self.event_log.trim(keep, readers_since)
 
     def cursor_text(self, name: str) -> str:
-        try:
-            return self.cursor_file(name).read_text().strip()
-        except OSError:
-            return ""
+        return self.event_log.cursor_text(name)
 
     def set_cursor_text(self, name: str, text: str) -> None:
-        f = self.cursor_file(name)
-        f.parent.mkdir(parents=True, exist_ok=True)
-        write_text(f, text)
+        self.event_log.set_cursor_text(name, text)
 
     def cursor(self, name: str) -> int:
-        try:
-            text = self.cursor_text(name)
-            return int(text) if text else 0
-        except ValueError:
-            return 0
+        return self.event_log.cursor(name)
 
     def set_cursor(self, name: str, n: int) -> None:
-        self.set_cursor_text(name, str(n))
+        self.event_log.set_cursor(name, n)
 
     def state(self, owner: str, session: str | None = None) -> State:
         folder = self.home / "state" if session is None else runtime.sessions(self.root) / session
@@ -246,40 +154,21 @@ class Record:
     def settings(self) -> dict:
         if self.memo is not None and "settings" in self.memo:
             return self.memo["settings"]
-        found = self.settings_held()[1]
+        found = self.settings_file.held()[1]
         if self.memo is not None:
             self.memo["settings"] = found
         return found
 
-    def settings_held(self) -> tuple:
-        key = str(self.home / "settings.json")
-        if key not in SETTINGS:
-            self.reread_settings()
-        return SETTINGS[key]
-
     def settings_version(self) -> int:
-        return self.settings_held()[0]
+        return self.settings_file.held()[0]
 
     def reread_settings(self) -> None:
-        f = self.home / "settings.json"
-        SETTINGS_VERSION[0] += 1
-        SETTINGS[str(f)] = (SETTINGS_VERSION[0], read_json(f, dict, {}))
+        self.settings_file.reread()
         if self.memo is not None:
             self.memo.pop("settings", None)
 
     def set_setting(self, key: str, value) -> None:
-        f = self.home / "settings.json"
         with self.locked():
-            write_json(f, {**read_json(f, dict, {}), key: value}, indent=2)
+            self.settings_file.write(key, value)
         self.reread_settings()
         self.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting=key)
-
-
-def parsed(lines: list[bytes]) -> list[Event]:
-    out = []
-    for raw in lines:
-        try:
-            out.append(Event(**json.loads(raw)))
-        except (ValueError, TypeError):
-            continue
-    return out
