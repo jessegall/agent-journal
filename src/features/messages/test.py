@@ -173,7 +173,7 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"My reply to {asked.n} went through; parking {filed.n}, 2 revisions left, released 2.84.63")
     lines = [n for n in nudges(record) if "without saying what they are" in n]
     assert f"names {asked.n}, {filed.n} " in lines[-1], "any bare reference is named back, whatever word comes before it"
-    from features.messages.handlers import bare
+    from features.messages.prose import bare
     assert bare(f"Two steps:\n{asked.n}. first\n{filed.n}) second") == [], "the numbers of a numbered list are not row numbers"
     assert bare(f"down from 980 loose files to {asked.n}; it waited {filed.n} before") == [], "a small number with no handling verb before it is a count"
     assert bare("a number under 250 is a count, and so is more than 300") == [], "a quantity word before a number makes it a count"
