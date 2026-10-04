@@ -5,6 +5,8 @@ from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Shape
 
 START, REVIEW, DONE = "start", "review", "done"
 MEANINGS = (START, REVIEW, DONE)
+EXPLORING, DRAFTING_PHASE, LOST, WAITING, STALLED = "exploring", "drafting", "lost", "waiting", "stalled"
+PANEL_REPLY = 200
 
 
 class Board(Shape, Resource):
@@ -59,3 +61,15 @@ class Board(Shape, Resource):
     @property
     def asked(self) -> list[str]:
         return self.drafting.get("asked") or []
+
+    @property
+    def drafting_since(self) -> float:
+        return float(self.drafting.get("since", 0.0))
+
+    @property
+    def phase(self) -> str:
+        return self.drafting.get("phase", EXPLORING)
+
+    @property
+    def being_built(self) -> bool:
+        return bool(self.building.get("since")) and not self.building.get("done")

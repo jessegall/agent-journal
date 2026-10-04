@@ -15,7 +15,6 @@ from features.tickets.handlers import (
     ticket_calls,
 )
 from features.tickets.limits import DraftsCarryOneLine
-from features.boards.controller import CARD_ROWS
 from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from features.plans.resource import PHASE
 from features.tickets.phases import start_tickets_of_phase
@@ -36,7 +35,6 @@ class TicketsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         self.register_always(PHASE_ROWS, Tickets, PHASE.tickets)
-        self.register_always(CARD_ROWS, Tickets)
         self.register_global(PHASE_STARTS, start_tickets_of_phase, list)
         self.register_global(PLAN_STARTS, start_worker, str)
         journal.commands.add("ticket", ShowTicketTodos())

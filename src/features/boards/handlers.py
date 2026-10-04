@@ -4,9 +4,9 @@ from typing import ClassVar
 
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
-from features.boards.controller import DRAFTING_PHASE, Boards
+from features.boards.controller import Boards
+from features.boards.resource import DRAFTING_PHASE
 from features.nudges import Sent
-from features.trigger import MINUTE
 from features.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
 
@@ -23,24 +23,18 @@ class OfferToPlaceAddedCards(Handler):
     def handle(self, context: Context, event: BoardChanged) -> None:
         if event.action != "updated" or ADDED not in event.fields:
             return
-        board = context.journal.boards.load(event.n)
-        added, agent = board.added, context.journal.agents.primary()
-        if not agent or not added.get("tickets"):
+        boards = Boards(context.record, actor=SYSTEM)
+        board = boards.load(event.n)
+        added, speaking = board.added, context.to_primary()
+        if not speaking or not added.get("tickets"):
             return
-        speaking = context.speaking_to(agent)
         if speaking.once(ADDED, f"{board.n}:{added['at']}"):
             speaking.agent.say(ADDED, n=board.n, title=board.title, count=len(added["tickets"]),
-                               tickets=", ".join(f"ticket {t}" for t in added["tickets"]), uncovered=uncovered(context, board))
+                               tickets=", ".join(f"ticket {t}" for t in added["tickets"]), uncovered=uncovered(boards, board))
 
 
-def uncovered(context: Context, board) -> str:
-    if not board.done_when:
-        return ""
-    tickets = context.journal.of("ticket")
-    present = {row["n"] for row in tickets.summaries() if not row["deleted"]}
-    kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers
-            if str(number).isdigit()}
-    missing = [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]
+def uncovered(boards: Boards, board) -> str:
+    missing = boards._uncovered(board) if board.done_when else []
     return (" Name in the same line what the goal will miss without a card for it: " + "; ".join(missing) + ".") if missing else ""
 
 
@@ -51,7 +45,7 @@ class MarkQuietFillingStalled(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         boards = Boards(context.record, actor=SYSTEM)
         for board in boards._standing():
-            if board.drafting.get("phase") != DRAFTING_PHASE:
+            if board.phase != DRAFTING_PHASE:
                 continue
             quiet = time.time() - max([float(board.updated)] + [float(t.updated) for t in boards._drafts(board)])
             if quiet > QUIET_FILL:
@@ -59,6 +53,6 @@ class MarkQuietFillingStalled(Handler):
 
 
 def boards_wanting_ideas(context, agent) -> list[Sent]:
-    every = float(context.feature.cadence(context.record, "ideas").every) * MINUTE
+    every = context.feature.interval(context.record, "ideas")
     return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.boards._standing()
             if board.environment == context.record.env and not board.finished and time.time() - float(board.ideas_at) >= every]
