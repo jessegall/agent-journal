@@ -6,7 +6,7 @@ from features.boards.limits import BoardWorkStaysOnTheBoard
 from features.journal import Journal
 from features.nudges import Nudge
 from features.sequences.exploration import FILLER
-from features.sequences.handlers import DISPATCH_MODELS
+from features.sequences.dispatch import DISPATCH_MODELS
 from features.boards.orchestration import orchestration
 from features.session_briefing.start import ORCHESTRATION, START_PARTS
 

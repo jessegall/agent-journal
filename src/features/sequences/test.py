@@ -154,8 +154,8 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     ship(record)
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     titled = lambda title: sequences.load(next(r["n"] for r in sequences.summaries() if r["title"] == title))
-    closing = [s["title"] for s in sequences._steps(titled("Finishing what you wrote"))]
-    assert [s["title"] for s in sequences._steps(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
+    closing = [s["title"] for s in sequences.steps_of(titled("Finishing what you wrote"))]
+    assert [s["title"] for s in sequences.steps_of(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
         "a shipped sequence reuses the closing steps it shares"
     written = record.root / "written.md"
     written.write_text("# Routes\nHow routes are planned.\n\n## Stops\nEvery stop has a window.\n\n## Drivers\nOne van each.\n")
@@ -174,7 +174,7 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     outer = sequences.create("Outer")
     sequences.section(outer.n, "start", "begin")
     sequences.include(outer.n, base.n, steps="2-3")
-    assert [s["title"] for s in sequences._steps(sequences.load(outer.n))] == ["start", "two", "three"], "a range includes those steps"
+    assert [s["title"] for s in sequences.steps_of(sequences.load(outer.n))] == ["start", "two", "three"], "a range includes those steps"
     assert "never end" in refused(lambda: sequences.include(base.n, outer.n)), "including back would loop"
     sequences.run(outer.n)
     sequences.follow(outer.n)
@@ -309,7 +309,7 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
     first, second = messages.create("give me the tldr"), messages.create("tldr again please")
     runs = sequences.load(update.n).runs
     assert sorted(key.split("|", 1)[1] for key in runs) == [first.ref, second.ref], "each message that fires the trigger gets a run of its own"
-    assert sequences._in_hand()[1].endswith(second.ref), "the newest run is the one in hand"
+    assert sequences.in_hand()[1].endswith(second.ref), "the newest run is the one in hand"
     CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(update.n, about=second.ref, why="asked twice")
-    assert sequences._in_hand()[1].endswith(first.ref) and "followed" not in sequences._in_hand()[2], \
+    assert sequences.in_hand()[1].endswith(first.ref) and "followed" not in sequences.in_hand()[2], \
         "when the inner run ends, the one it interrupted is handed again, to be taken up anew"

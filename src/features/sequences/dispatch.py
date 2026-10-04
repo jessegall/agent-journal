@@ -1,0 +1,52 @@
+from engine.sessions import Sessions
+from engine.wording import clipped
+from features.boards.controller import Boards
+from features.parts import Context
+from features.sequences.details import DISPATCH
+from features.sequences.exploration import FILLER
+from features.sequences.resource import RunKey
+from providers import dispatch_model
+from resources.base import SYSTEM
+
+REQUEST_TEXT = 400
+DISPATCH_MODELS: dict = {}
+
+
+def unchosen(record) -> str:
+    return ""
+
+
+def board_of(context: Context, about: str) -> int:
+    kind, _, n = about.partition(":")
+    if kind == "board":
+        return int(n)
+    if kind != "message" or not n.isdigit():
+        return 0
+    return Boards(context.record, actor=SYSTEM).of_message(context.journal.messages.load(n))
+
+
+def request_of(context: Context, about: str) -> str:
+    kind, _, n = about.partition(":")
+    if kind != "message" or not n.isdigit():
+        return ""
+    message = context.journal.messages.load(n)
+    text = " ".join((message.brief or message.title).split())
+    return clipped(text, REQUEST_TEXT)
+
+
+def working_agent(context: Context):
+    holder = Sessions(context.record.root).holder(context.record.env)
+    return (context.journal.agents._titled(holder) if holder else None) or context.journal.agents.primary()
+
+
+def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) -> None:
+    about = RunKey.of(key).about
+    board = board_of(context, about)
+    if not board:
+        return
+    Sessions(context.record.root).grant(agent.title, context.record.env)
+    speaking = context.speaking_to(agent)
+    speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
+        DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
+        model=dispatch_model(agent.provider, DISPATCH_MODELS.get(sequence.dispatch, DISPATCH_MODELS.get(FILLER, unchosen))(context.record)), why=why,
+        request=request_of(context, about)))

@@ -11,7 +11,7 @@ HELD = ("plan", "question")
 def filling(controller) -> str:
     if controller.agent == FILLER:
         return FILLER
-    found = Sequences(controller.record, actor=controller.actor)._in_hand()
+    found = Sequences(controller.record, actor=controller.actor).in_hand()
     return found[0].title if found and found[0].title in BOARD_SEQUENCES else ""
 
 
