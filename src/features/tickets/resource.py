@@ -3,10 +3,11 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from resources.base import CHECKPOINT, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed, Shape
+from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed
 
 AGENT_CLI = "claude"
 ROOT = "."
+PROPOSED, CONFIRMED = "proposed", "confirmed"
 
 
 @dataclass(frozen=True)

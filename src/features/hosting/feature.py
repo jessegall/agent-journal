@@ -6,7 +6,7 @@ from features.hosting.details import HostingDetails
 from features.hosting.handlers import StopIdleApps
 from features.hosting.services import ticket_apps
 from features.journal import Journal
-from features.tickets.controller import CARD_EXTRAS
+from features.tickets.cards import CARD_EXTRAS
 
 
 class HostingFeature(Feature):
