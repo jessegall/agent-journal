@@ -14,13 +14,12 @@ from controllers.faults import threw
 from engine import runtime
 from engine.stored import claim, read_json
 from features.checks.output import progress, steps, tail
-from features.checks.resource import Check, CheckReport, CheckRun
+from features.checks.resource import TIMEOUT, Check, CheckReport, CheckRun
 from controllers.types import Nudges
 from engine.worktree import git
 from features.checks.touched import changed, covering
 from resources.base import SYSTEM, Refused, titled
 
-TIMEOUT = 600
 KEPT_RUNS = 20
 STAMP_EVERY = 1.0
 REPORTS = "check-reports"
@@ -53,8 +52,8 @@ class Checks(Controller):
     def _project(self):
         return self.record.root.resolve().parent
 
-    def _shell(self, command: str, on_output=lambda _: None, env: dict | None = None) -> tuple[int | None, str]:
-        return streamed(["/bin/sh", "-c", command], self._project, TIMEOUT, on_output, env=env)
+    def _shell(self, command: str, on_output=lambda _: None, env: dict | None = None, timeout: float = TIMEOUT) -> tuple[int | None, str]:
+        return streamed(["/bin/sh", "-c", command], self._project, timeout, on_output, env=env)
 
     @lasting
     def touched(self, n: int) -> str:
@@ -140,11 +139,15 @@ class Checks(Controller):
         report = runtime.folder(self.record.root) / REPORTS / f"{n}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
-        code, output = self._shell(check.command, on_output, env={**os.environ, REPORT: str(report)})
-        check = self.load(n)
+        timeout = float(check.timeout)
+        code, output = self._shell(check.command, on_output, env={**os.environ, REPORT: str(report)}, timeout=timeout)
+        check, took = self.load(n), time.time() - began
         kept = tail(output)
+        if code is None and took >= timeout:
+            kept = "\n".join(part for part in (kept, f"check {n} ran out of time: stopped after {timeout:g} seconds; "
+                                                      f"journal check set {n} timeout <seconds> gives it longer") if part)
         written = read_json(report, CheckReport.from_json, None)
-        run = CheckRun(ok=code == 0, code=-1 if code is None else code, at=began, took=round(time.time() - began, 2), steps=steps(output),
+        run = CheckRun(ok=code == 0, code=-1 if code is None else code, at=began, took=round(took, 2), steps=steps(output),
                        output=kept if kept or code is not None else "the command did not finish",
                        report=written)
         check.last = run.to_json()
