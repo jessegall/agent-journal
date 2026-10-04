@@ -1,6 +1,5 @@
 import {nextTick, ref} from "vue";
 import {api} from "../api/client.js";
-import {route} from "../route.js";
 import {pollKey, usePoll} from "../poll.js";
 
 const EVERY = 2000;
@@ -51,7 +50,7 @@ export function useFileFeed(agent, follow, client = api) {
     let oldest = null;
 
     usePoll(
-        pollKey(`edits:${client.env() || route.value.env}:${agent}`),
+        pollKey(),
         () => client.edits(agent, cursor, ready.value ? undefined : PAGE),
         EVERY,
         (got) => {

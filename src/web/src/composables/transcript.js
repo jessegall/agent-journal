@@ -89,7 +89,7 @@ export function useTranscript(agent, session, scroller, client = api) {
         fetchTurns();
     });
 
-    usePoll(pollKey(`transcript:${client.env()}:${agent()}:${unref(session)}`), fetchTurns, EVERY);
+    usePoll(pollKey(), fetchTurns, EVERY);
 
     return {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry};
 }

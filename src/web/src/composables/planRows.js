@@ -8,6 +8,6 @@ export function usePlanRows(plans) {
         const missing = plans()
             .flatMap(rowsOf)
             .filter((n) => !known.has(n));
-        if (missing.length) holding("todo", missing);
+        if (missing.length) holding("todo", missing).catch((error) => console.error(error));
     });
 }

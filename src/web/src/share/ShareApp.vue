@@ -15,6 +15,8 @@ import ShareStrip from "./ShareStrip.vue";
 import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import Lightbox from "../kit/Lightbox.vue";
+import Notice from "../kit/Notice.vue";
+import EmptyState from "../kit/EmptyState.vue";
 import {peek, route} from "../route.js";
 import {store} from "../state/store.js";
 
@@ -58,9 +60,9 @@ const FACTS = {
 const REFRESH_MS = 20000;
 const data = ref(null);
 const failed = ref(false);
+const reconnecting = ref(false);
 const drafts = reactive({});
 const errors = reactive({});
-let failures = 0;
 
 provide("fileUrl", (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`);
 
@@ -93,13 +95,13 @@ function take(got) {
     stock(got.rows || {}, got.types || {});
     data.value = got;
     failed.value = false;
-    failures = 0;
+    reconnecting.value = false;
 }
 
 function ask() {
     return sharedData().catch((e) => {
-        failures += 1;
-        if (!data.value || [404, 410].includes(e.status) || failures >= 3) failed.value = true;
+        if ([404, 410].includes(e.status)) failed.value = true;
+        else reconnecting.value = true;
         throw e;
     });
 }
@@ -161,6 +163,9 @@ watch(shownRef, () => (read.value = 0));
             </main>
         </template>
         <template v-else-if="currentRow">
+            <template v-if="reconnecting">
+                <Notice role="status">Reconnecting…</Notice>
+            </template>
             <ShareStrip
                 :icon="look.icon"
                 :noun="look.noun"
@@ -234,10 +239,15 @@ watch(shownRef, () => (read.value = 0));
             </div>
         </template>
         <template v-else>
-            <main class="loading">
-                <span class="loading-bar" />
-                <span class="loading-bar short" />
-            </main>
+            <template v-if="reconnecting">
+                <EmptyState title="Reconnecting…">The shared page will appear when the connection returns.</EmptyState>
+            </template>
+            <template v-else>
+                <main class="loading">
+                    <span class="loading-bar" />
+                    <span class="loading-bar short" />
+                </main>
+            </template>
         </template>
         <Lightbox />
     </div>

@@ -56,14 +56,13 @@ const scope = elsewhere ? scopeIn(props.env) : null;
 if (scope) provide("scope", scope);
 const there = scope ? scope.api : api;
 const state = computed(() => props.band.state);
-const keyed = (what) => pollKey(`agent-home:${props.env}:${props.session}:${props.band.label}:${what}`);
 const rowsHere = scope ? scope.rows : rows;
 
 const found = ref(null);
 const newest = (list) => [...list].sort((a, b) => b.updated - a.updated)[0] || null;
 const own = (list) => list.find((row) => row.title === props.chatSession) || newest(list.filter((row) => !row.deleted && !row.data.parent));
 usePoll(
-    keyed("agent"),
+    pollKey(),
     () => (!props.agent && elsewhere ? there.list("agent", {last: 20, completed: true}) : Promise.resolve(null)),
     EVERY,
     (got) => got && (found.value = own(got.rows))
@@ -73,7 +72,7 @@ const agent = computed(() => props.agent || found.value);
 const works = ref([]);
 const worked = (w) => (props.subagent ? w.data.agent === props.session : !w.data.agent);
 usePoll(
-    keyed("work"),
+    pollKey(),
     () => there.list("work", {last: HISTORY, completed: true}),
     EVERY,
     (got) => got && (works.value = [...got.rows].filter((w) => !w.deleted && worked(w)).sort((a, b) => b.created - a.created))
@@ -81,7 +80,7 @@ usePoll(
 
 const tasks = ref([]);
 usePoll(
-    keyed("tasks"),
+    pollKey(),
     () => (props.subagent ? there.tasks(props.session) : Promise.resolve(null)),
     EVERY,
     (got) => got && (tasks.value = got)
@@ -89,7 +88,7 @@ usePoll(
 
 const planRow = computed(() => (scope && props.plan ? scope.rows("plan").find((p) => p.n === props.plan) : null));
 usePoll(
-    keyed("rows"),
+    pollKey(),
     async () => {
         if (!scope) return null;
         if (props.plan) await scope.holding("plan", [props.plan]);

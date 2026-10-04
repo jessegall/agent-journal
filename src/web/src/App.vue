@@ -45,12 +45,13 @@ import ProjectFlash from "./layout/ProjectFlash.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import {usePoll} from "./poll.js";
+import {useJournalPoll} from "./sync/hub.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 
 const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
 usePoll(...polled.events);
-usePoll(...polled.journals);
+useJournalPoll();
 const bootError = ref("");
 let bootTimer = 0;
 function startBoot() {

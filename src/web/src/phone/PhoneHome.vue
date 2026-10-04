@@ -672,6 +672,7 @@ function pick(key) {
                             <div class="home-status-space" />
                         </template>
                         <PhoneCompose
+                            :key="placeKey"
                             ref="compose"
                             :about="about"
                             :quote="quote"

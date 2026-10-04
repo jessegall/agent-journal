@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import {ended, flush, hold, place, waitingToSend} from "./outbox.js";
 import {announce} from "./announce.js";
 import {prefill} from "../state/prefill.js";
-import {kept, remembered} from "../composables/remembered.js";
+import {remember, remembered} from "../composables/remembered.js";
 
 const MOST_LINES = 5;
 const REPLAY = __DEMO__;
@@ -15,8 +15,9 @@ const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused"]);
 const SHORT = 420;
 const SHORT_LINES = 2;
 const failed = inject("phoneFailed");
-const words = ref(remembered(`phone-compose:${place.value}`, ""));
-kept(`phone-compose:${place.value}`, words);
+const draftKey = `phone-compose:${place.value}`;
+const words = ref(remembered(draftKey, ""));
+watch(words, (value) => (value ? remember(draftKey, value) : localStorage.removeItem(draftKey)));
 const files = ref([]);
 const picker = ref(null);
 const box = ref(null);
@@ -90,7 +91,7 @@ async function send() {
         if (waiting?.lost) announce(waiting.reason);
         else if (waiting) announce("Message waits to send");
         else {
-            announce("Message sent");
+            announce(line.reason || "Message sent");
             emit("sent");
         }
     } catch (error) {

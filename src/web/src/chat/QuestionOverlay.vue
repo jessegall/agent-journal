@@ -52,7 +52,7 @@ function hold() {
 }
 
 watchEffect(() => {
-    if (!question.value) holding("question", [n]);
+    if (!question.value) holding("question", [n]).catch((error) => console.error(error));
 });
 
 async function arrive() {

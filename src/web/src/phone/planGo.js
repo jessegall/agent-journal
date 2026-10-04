@@ -1,4 +1,4 @@
-import {computed, onUnmounted, reactive, ref} from "vue";
+import {computed, onUnmounted, reactive, ref, watch} from "vue";
 import {ended, perform} from "./outbox.js";
 import {announce} from "./announce.js";
 import {tick} from "./haptic.js";
@@ -70,6 +70,18 @@ export function usePlanGo(plan, refresh, failed) {
         stale.value = false;
         refresh();
     }
+
+    watch(
+        () => [plan.value?.n, plan.value?.current, plan.value?.status],
+        ([n, current, status], [beforeN, beforeCurrent, beforeStatus]) => {
+            if (n === beforeN && current === beforeCurrent && status === beforeStatus) return;
+            stop();
+            sent.value = false;
+            waits.value = false;
+            stale.value = false;
+            trouble.value = "";
+        }
+    );
 
     onUnmounted(stop);
     return reactive({left, held, sent, waits, stale, trouble, sendingNow, seconds, start, undo: stop, now: send, again});

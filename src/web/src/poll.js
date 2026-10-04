@@ -3,7 +3,7 @@ import {onMounted, onUnmounted} from "vue";
 const polls = new Map();
 let instance = 0;
 
-export const pollKey = (name) => `${name}:${++instance}`;
+export const pollKey = () => ++instance;
 
 function next(held) {
     clearTimeout(held.timer);
