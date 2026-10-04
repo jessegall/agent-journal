@@ -9,10 +9,11 @@ from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at
 from features.skill_loading.interceptors import RefuseUntilLoaded, require_named
 from features.skill_loading.required import require, require_only
 from providers import PROVIDERS
+from providers.payload import HookEvent
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow
 
-WINDOWS = ("SessionStart", "PreCompact")
+WINDOWS = (HookEvent.SESSION_START, HookEvent.PRE_COMPACT)
 KEPT_LOADS = 50
 
 

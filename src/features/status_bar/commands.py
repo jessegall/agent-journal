@@ -4,7 +4,7 @@ from functools import singledispatch
 from pathlib import Path
 
 from engine.shell import without_scripts
-from providers.payload import AgentCall, BashCall, FetchCall, Hook, ReadCall, SearchCall, SkillCall, WriteCall
+from providers.payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, ReadCall, SearchCall, SkillCall, WriteCall
 from dataclasses import replace
 
 from features.status_bar.runs import CommandRun, Outcome, command_runs, current_run
@@ -73,9 +73,9 @@ def shell(row, hook: Hook) -> dict:
     running = current_run(row)
     before = CommandRun(command=running.command, tool=running.tool, at=running.at, done=running.done, effect=running.effect,
                         changed=running.changed, result=running.result)
-    if hook.event == "UserPromptSubmit":
+    if hook.event == HookEvent.USER_PROMPT_SUBMIT:
         return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: list(row.commands)}
-    if hook.event == "PreToolUse" and doing:
+    if hook.event == HookEvent.PRE_TOOL_USE and doing:
         now = time.time()
         kind = effect(hook)
         started = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, before=before if before.done else None)

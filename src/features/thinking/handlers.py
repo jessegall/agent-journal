@@ -6,13 +6,14 @@ from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
+from providers.payload import HookEvent
 from engine.fields import Loaded
 
 THINKING = "thinking"
 THOUGHTS = "thoughts"
 KEPT_THOUGHTS = 60
 THOUGHT_CHARS = 1200
-TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
+TURN_STARTS = (HookEvent.USER_PROMPT_SUBMIT, HookEvent.SESSION_END)
 
 
 @dataclass(frozen=True)
