@@ -26,7 +26,7 @@ from engine.runtime import default_env
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
 
-LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
+LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -36,9 +36,9 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def trusted_origin(self, origin: str) -> bool:
-        host = self.headers.get("Host")
-        trusted = {journal.url.rstrip("/") for journal in known()}
-        return bool(LOOPBACK.match(origin)) and (origin == f"http://{host}" or origin in trusted)
+        found = LOOPBACK.match(origin)
+        ports = {self.server.server_port, *(urlparse(journal.url).port for journal in known())}
+        return bool(found) and int(found.group(1) or 80) in ports
 
     def sibling(self) -> None:
         origin = self.headers.get("Origin")

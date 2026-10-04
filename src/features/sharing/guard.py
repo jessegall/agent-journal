@@ -1,3 +1,4 @@
+import re
 import shlex
 
 from controllers.types import Agents
@@ -8,6 +9,9 @@ from features.sharing.visitors import AGREEMENT, UNAGREED, read_now
 from resources.base import SYSTEM
 from engine.reach import Reach
 
+PLAIN = re.compile(r"[\w.:@/+-]+")
+
+
 def only_agree(command: str) -> bool:
     try:
         words = shlex.split(command)
@@ -17,10 +21,13 @@ def only_agree(command: str) -> bool:
         return False
     words = words[1:]
     while words and words[0].startswith("--"):
-        option, separator, _ = words[0].partition("=")
-        if option not in ("--env", "--agent", "--root"):
+        option, separator, value = words[0].partition("=")
+        taken = 1 if separator else 2
+        if not separator:
+            value = " ".join(words[1:2])
+        if option not in ("--env", "--agent", "--root") or not PLAIN.fullmatch(value):
             return False
-        words = words[1:] if separator else words[2:]
+        words = words[taken:]
     return len(words) == 4 and words[:2] == ["share", "agree"] and words[2].isdigit() and words[3] == AGREEMENT
 
 

@@ -14,8 +14,7 @@ class SharingFeature(Feature):
     details = SharingDetails
 
     def register(self, journal: Journal) -> None:
-        if share_services not in SOURCES:
-            SOURCES.append(share_services)
+        self.register_global(SOURCES, share_services, list)
         journal.events.handler(HoldOnVisitorComment())
         journal.events.handler(NameVisitorComment())
         journal.events.handler(KeepTunnelAnswering())

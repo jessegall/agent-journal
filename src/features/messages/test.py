@@ -241,6 +241,11 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
     assert all(hasattr(turn, "kind") for turn in PROVIDERS["codex"]().tail(codex)), "Codex's recent turns are parsed turns, as every provider's are"
     from providers.turns import last_text
     assert last_text(record, Agents(record).by_session("codex-1")) == "the response is complete", "and its last words are read from them"
+    from engine import chat
+    for session in ("claude-1", "codex-1"):
+        chat.send(record, Agents(record).by_session(session), f"answer from {session}", turn="transcript:1")
+    assert [m.brief for m in Messages(record, actor="system").all() if m.brief.startswith("answer from")] == ["answer from claude-1", "answer from codex-1"], \
+        "two sessions' answers on the same transcript line are both kept"
 
 
 def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update():

@@ -174,9 +174,13 @@ class Feature(ABC):
     def register_global(self, container, callback, empty, key=None) -> None:
         def enabled(*args, **kwargs):
             source = args[0]
-            record = Record(source, env(source)) if isinstance(source, Path) else source
+            record = Record(source, env(source)) if isinstance(source, Path) else getattr(source, "record", source)
             return callback(*args, **kwargs) if self.enabled(record) else empty()
 
+        if not callable(callback):
+            container[key] = callback
+            GLOBAL_ENTRIES.append((container, key))
+            return
         if isinstance(container, list):
             container.append(enabled)
             GLOBAL_ENTRIES.append((container, enabled))

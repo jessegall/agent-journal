@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TypedDict
 
+from engine.wording import digest
+
 from resources.types import IDLE
 
 HUMAN, AGENT, TOOL = "human", "agent", "tool"
@@ -21,6 +23,10 @@ class Turn:
     parent: str = ""
     asked: list[str] = field(default_factory=list)
     answered: list[str] = field(default_factory=list)
+
+    @property
+    def key(self) -> str:
+        return f"transcript:{self.at}:{digest(self.text, 12)}"
 
     @property
     def has_agent_text(self) -> bool:

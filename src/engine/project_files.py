@@ -13,7 +13,8 @@ WALKING: set[str] = set()
 WALK_FOR = 5.0
 UNLISTED = ("__pycache__", "node_modules")
 SOURCE_LIMIT = 400000
-SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|password|token|\.(pem|key|p12|pfx|keystore|jks|kdbx|env|p8|ppk|tfstate|gpg|asc)$", re.I)
+SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|passw|token|service-account|kubeconfig|^auth\.json$|^wp-config\.php$|\.(pem|key|p12|pfx|keystore|jks|kdbx|env|p8|ppk|tfstate|tfvars|gpg|asc)$", re.I)
+STYLE = re.compile(r"\.(css|scss|sass|less|svg)$", re.I)
 
 
 @dataclass(frozen=True)
@@ -28,7 +29,7 @@ class ProjectSource:
 def project_path(project: Path, asked: str) -> Path:
     project = project.resolve()
     target = (project / asked).resolve()
-    if not asked or project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts) or SECRET.search(target.name):
+    if not asked or project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts) or (SECRET.search(target.name) and not STYLE.search(target.name)):
         raise Refused(f"{asked!r} is not a file in the project that may be read")
     return target
 

@@ -92,6 +92,7 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
         assert hook(f'journal share agree {made.n} "{AGREEMENT}"').get("decision") != "block", "the agreement itself runs"
         assert hook(f'journal --env={record.env} --agent=helper share agree {made.n} "{AGREEMENT}"').get("decision") != "block", "a helper can agree in its environment"
         assert hook(f'journal share agree {made.n} "{AGREEMENT}"; ls').get("decision") == "block", "a chained command stays held"
+        assert hook(f'journal --env "$(touch /tmp/x)" share agree {made.n} "{AGREEMENT}"').get("decision") == "block", "a substitution in an option stays held"
         assert hook(f'ls; journal share agree {made.n} "{AGREEMENT}"').get("decision") == "block", "an agreement after another command stays held"
         agreeing = Shares(record, actor=AGENT, session="claude-share")
         try:
