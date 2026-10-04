@@ -1,5 +1,5 @@
+import {rowsOf} from "../domain/plans.js";
 import {watchEffect} from "vue";
-import {rowsOf} from "../layout/statusline.js";
 import {holding, rows} from "../sync/rows.js";
 
 export function usePlanRows(plans) {

@@ -1,8 +1,8 @@
 <script setup>
+import {line} from "../domain/statusQueue.js";
 import {computed, ref} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
-import {line} from "../layout/bar.js";
 import {useBarLine} from "../composables/barLine.js";
 
 const BUSY_EVERY = 1000;

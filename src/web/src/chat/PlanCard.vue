@@ -1,4 +1,5 @@
 <script setup>
+import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -12,7 +13,6 @@ import {flyToBar} from "../composables/planFlight.js";
 import {usePlanRows} from "../composables/planRows.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
-import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../layout/statusline.js";
 
 const SHOWN_PHASES = 5;
 const props = defineProps({plan: Object, folded: Boolean});

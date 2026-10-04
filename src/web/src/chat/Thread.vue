@@ -1,4 +1,6 @@
 <script setup>
+import {cardPlan} from "../domain/plans.js";
+import {waitsFor} from "../domain/agentState.js";
 import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
@@ -13,7 +15,6 @@ import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
 import {agent, feedOn, store} from "../state/store.js";
-import {cardPlan, waitsFor} from "../layout/statusline.js";
 import {earlier} from "../sync/rows.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";

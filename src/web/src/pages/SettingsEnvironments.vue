@@ -1,4 +1,5 @@
 <script setup>
+import {countsOf, envState, focusOf, isActive, STATE_WORDS} from "../domain/journals.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -8,7 +9,6 @@ import ListBox from "../kit/ListBox.vue";
 import SettingRow from "../kit/SettingRow.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {STATE_WORDS, countsOf, envState, focusOf} from "../sync/hub.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
@@ -108,7 +108,9 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
                     :alert="Boolean(askOf(row.env)) && kindOf(row.env) !== 'done'"
                 >
                     <template #sub>
-                        <StatusLabel :state="row.state" :note="workNote(row)">{{ STATE_WORDS[row.state] }}</StatusLabel>
+                        <StatusLabel :state="row.state" :lit="isActive(row.state)" :note="workNote(row)">
+                            {{ STATE_WORDS[row.state] }}
+                        </StatusLabel>
                     </template>
                     <template v-for="c in row.counts" :key="c.key">
                         <IconCount :icon="c.icon" :count="c.n" :label="c.n === 1 ? c.one : c.many" :hot="c.hot" />

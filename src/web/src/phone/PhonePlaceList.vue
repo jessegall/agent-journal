@@ -1,6 +1,6 @@
 <script setup>
+import {SILENT, SILENT_WORD} from "../domain/agentState.js";
 import PhoneChevron from "./PhoneChevron.vue";
-import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
 
 defineProps({places: {type: Array, required: true}, here: {type: Function, required: true}});
 const silent = (place, name) => place.details?.[name]?.agent === SILENT;
@@ -21,7 +21,13 @@ const emit = defineEmits(["pick"]);
                 <ul class="place-rows">
                     <template v-for="name in place.environments" :key="name">
                         <li>
-                            <button type="button" class="place-row" :data-place="`${place.root}:${name}`" :aria-current="here(place, name) ? 'true' : undefined" @click="emit('pick', place, name)">
+                            <button
+                                type="button"
+                                class="place-row"
+                                :data-place="`${place.root}:${name}`"
+                                :aria-current="here(place, name) ? 'true' : undefined"
+                                @click="emit('pick', place, name)"
+                            >
                                 <span :class="['place-state', {working: place.working.includes(name), silent: silent(place, name)}]" />
                                 <span class="place-env">{{ name }}</span>
                                 <template v-if="silent(place, name)">
