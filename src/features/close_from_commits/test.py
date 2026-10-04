@@ -8,14 +8,15 @@ from tests.kit import nudges, report
 
 
 def test_a_checkout_change_is_seen_in_each_environment(tmp_path):
+    from engine.git import checkout_of
     from features.close_from_commits.handlers import CloseRowsFromCommits
 
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start"], cwd=tmp_path, check=True)
     handler = CloseRowsFromCommits()
-    assert handler.moved(tmp_path, "main")
-    assert handler.moved(tmp_path, "helper")
-    assert not handler.moved(tmp_path, "main")
+    assert handler.moved(checkout_of(tmp_path), "main")
+    assert handler.moved(checkout_of(tmp_path), "helper")
+    assert not handler.moved(checkout_of(tmp_path), "main")
 
 
 def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):

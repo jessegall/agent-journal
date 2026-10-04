@@ -1,43 +1,19 @@
-from pathlib import Path
-
 from engine.events.agents import AgentReported
+from engine.git import checkout_of
 from features.parts import AgentContext, Handler
-
-MAIN = "the main checkout"
-DETACHED = "a detached head"
-
-
-def checkout_of(folder: Path) -> tuple[str, Path] | None:
-    for place in (folder, *folder.parents):
-        dot_git = place / ".git"
-        if dot_git.is_dir():
-            return MAIN, dot_git / "HEAD"
-        if dot_git.is_file():
-            return f"worktree {place.name}", Path(dot_git.read_text().removeprefix("gitdir:").strip()) / "HEAD"
-    return None
-
-
-def branch_in(head: Path) -> str:
-    try:
-        text = head.read_text().strip()
-    except OSError:
-        return ""
-    return text.removeprefix("ref: refs/heads/") if text.startswith("ref: refs/heads/") else DETACHED
 
 
 class MarkBranchSwitches(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        row = context.agent.row
-        found = checkout_of(Path(row.cwd) if row.cwd else context.record.root.parent)
-        if not found:
+        checkout = checkout_of(context.working_folder)
+        if not checkout:
             return
-        name, head = found
-        branch = branch_in(head)
-        before = context.state.get(name)
+        branch = checkout.branch
+        before = context.state.get(checkout.name)
         if not branch or before == branch:
             return
-        context.state.set(name, branch)
-        if before is None and name == MAIN:
+        context.state.set(checkout.name, branch)
+        if before is None and not checkout.linked:
             return
-        label = f"{name} started on `{branch}`" if before is None else f"{name} switched from `{before}` to `{branch}`"
-        context.journal.agents.card(row.n, label=label[:1].upper() + label[1:], icon="branch", tone="commit")
+        label = f"{checkout.name} started on `{branch}`" if before is None else f"{checkout.name} switched from `{before}` to `{branch}`"
+        context.journal.agents.card(context.agent.row.n, label=label[:1].upper() + label[1:], icon="branch", tone="commit")

@@ -1,5 +1,6 @@
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from controllers.types import Environments
@@ -110,6 +111,11 @@ class AgentContext(Context):
     @classmethod
     def of(cls, feature, record, row, provider=None, hook=None) -> "AgentContext":
         return cls(feature, record, Speaker(feature, record, row), provider, hook)
+
+    @property
+    def working_folder(self) -> Path:
+        cwd = Path(self.agent.row.cwd) if self.agent.row.cwd else None
+        return cwd if cwd and cwd.is_dir() else self.record.root.parent
 
 
 WHOLE_FEATURE = ""

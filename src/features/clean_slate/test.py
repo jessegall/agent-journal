@@ -51,6 +51,7 @@ def test_a_second_set_aside_keeps_the_original_hooks_until_the_last_session_ends
 
 def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
     import features.clean_slate.slate as slate
+    from migrations.m0062_clean_slate_moved_into_its_file import run
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     record = fresh()
     project = record.root.parent
@@ -58,6 +59,7 @@ def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everyt
     kept_at.mkdir(parents=True)
     home = project / ".claude" / "skills" / "graphify"
     record.set_setting(KEY, {**state(record), "moved": [{"from": str(home), "to": str(kept_at), "tracked": []}]})
+    run(record.root)
     put_back(record)
     assert (home.is_dir(), kept_at.exists()) == (True, False), "a skill set aside before this version is put back"
 
