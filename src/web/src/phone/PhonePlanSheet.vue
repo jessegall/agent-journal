@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import PhoneChevron from "./PhoneChevron.vue";
 import PhoneSheet from "./PhoneSheet.vue";
-import {closed, counted, here, WAITS} from "./planGo.js";
+import {closed, here, phaseProgress, WAITS} from "./planGo.js";
 
 const props = defineProps({plan: {type: Object, required: true}, go: {type: Object, required: true}});
 const emit = defineEmits(["close", "read"]);
@@ -95,7 +95,7 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
                             <PhoneChevron :size="12" :facing="opened.has(index + 1) ? 'down' : 'right'" />
                         </button>
                         <template v-if="opened.has(index + 1)">
-                            <ul class="plan-sheet-todos" :aria-label="counted(phase)">
+                            <ul class="plan-sheet-todos" :aria-label="phaseProgress(phase)">
                                 <template v-for="todo in phase.todos" :key="todo.n">
                                     <li :class="{done: todo.done}">{{ todo.title }}</li>
                                 </template>

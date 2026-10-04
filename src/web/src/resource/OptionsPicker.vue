@@ -4,7 +4,7 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
-import {word} from "../state/store.js";
+import {store, word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
 import {answer, answered, dismiss} from "../chat/answers.js";
 import {route} from "../route.js";
@@ -58,6 +58,8 @@ async function elaborate() {
         elaborated.value = false;
     }
 }
+
+const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
 </script>
 
 <template>
@@ -74,6 +76,7 @@ async function elaborate() {
             :steady="steady"
             :multiple="multiple"
             :chosen-many="chosenMany"
+            :hold-seconds="holdSeconds"
             @pick="(i) => submit(options[i].title)"
             @picks="(all) => submit(all.map((i) => options[i].title).join(MANY))"
         />
