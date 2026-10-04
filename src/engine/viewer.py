@@ -4,7 +4,6 @@ from dataclasses import asdict, dataclass
 import os
 import re
 import signal
-import socket
 import subprocess
 import sys
 import threading
@@ -13,11 +12,13 @@ import webbrowser
 from pathlib import Path
 from urllib.request import urlopen
 
+from engine import runtime
 from engine.focus import existing_tab
 from engine.stored import read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
 from engine.package import entry
+from engine.ports import free, url_of
 from engine.fields import Loaded
 
 PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
@@ -39,7 +40,7 @@ RESTARTING = 15.0
 
 
 def marker(root: Path) -> Path:
-    return root / "runtime" / "viewer.json"
+    return runtime.folder(root) / "viewer.json"
 
 
 @dataclass(frozen=True)
@@ -94,8 +95,8 @@ def remember(root: Path, port: int) -> str:
 
 
 def beat(root: Path, port: int) -> str:
-    url = f"http://127.0.0.1:{port}/"
-    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (root / "runtime" / "heartbeat", f"{int(time.time())} {url}\n")):
+    url = url_of(port)
+    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (runtime.folder(root) / "heartbeat", f"{int(time.time())} {url}\n")):
         write_text(target, text)
     return url
 
@@ -112,10 +113,10 @@ def candidates(root: Path) -> list[str]:
     found = []
     found.append(last(root).url)
     try:
-        found.extend(URL.findall((root / "runtime" / "viewer.log").read_text())[-1:])
+        found.extend(URL.findall(runtime.viewer_log(root).read_text())[-1:])
     except OSError:
         pass
-    found.extend(f"http://127.0.0.1:{port}/" for port in PORTS)
+    found.extend(url_of(port) for port in PORTS)
     return list(dict.fromkeys(url for url in found if url))
 
 
@@ -153,16 +154,6 @@ def marked(root: Path) -> str:
     return url[0] if url and answers(url[0], root, timeout=0.2) else ""
 
 
-def free(port: int) -> bool:
-    with socket.socket() as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        try:
-            sock.bind(("127.0.0.1", port))
-        except OSError:
-            return False
-        return True
-
-
 def waited(port: int, seconds: float = PORT_WAIT) -> bool:
     until = time.time() + seconds
     while not free(port):
@@ -173,7 +164,7 @@ def waited(port: int, seconds: float = PORT_WAIT) -> bool:
 
 
 def other_journal_on(port: int, root: Path) -> bool:
-    reply = identity(f"http://127.0.0.1:{port}/", 0.3)
+    reply = identity(url_of(port), 0.3)
     return reply is not None and Path(reply.root).resolve() != root.resolve()
 
 
@@ -226,9 +217,9 @@ def start(root: Path, project: Path) -> str:
 
 
 def launch(root: Path, project: Path) -> tuple[str, int | None]:
-    log = root / "runtime" / "viewer.log"
+    log = runtime.viewer_log(root)
     log.parent.mkdir(parents=True, exist_ok=True)
-    with (root / "runtime" / LAUNCHING).open("a") as held:
+    with (runtime.folder(root) / LAUNCHING).open("a") as held:
         fcntl.flock(held, fcntl.LOCK_EX)
         already = running(root) or elsewhere(root)
         if already:
