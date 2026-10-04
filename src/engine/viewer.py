@@ -10,6 +10,7 @@ import threading
 import time
 import webbrowser
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
 
 from engine import runtime
@@ -244,3 +245,26 @@ def show(url: str, env: str = "", opener=webbrowser.open, focuser=existing_tab) 
     if destination and not focuser(destination):
         opener(destination)
     return destination
+
+
+PROBED: list = [0.0, []]
+PROBE_FOR = 3.0
+PROBE_WAIT = 0.25
+
+
+def identity_at(port: int):
+    return identity(f"http://127.0.0.1:{port}/", PROBE_WAIT)
+
+
+def probe() -> None:
+    with ThreadPoolExecutor(len(PORTS)) as pool:
+        PROBED[:] = [time.time(), [(port, got) for port, got in zip(PORTS, pool.map(identity_at, PORTS)) if got]]
+
+
+def running_journals() -> list:
+    if not PROBED[0]:
+        probe()
+    elif time.time() - PROBED[0] >= PROBE_FOR:
+        PROBED[0] = time.time()
+        threading.Thread(target=probe, daemon=True).start()
+    return PROBED[1]

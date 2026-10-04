@@ -5,11 +5,12 @@ from pathlib import Path
 from controllers.types import Agents, Environments, Messages, Notices, Questions, Todos, Works
 from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
+from surfaces.listing import counts
 from surfaces.manifest import manifest
 from engine.record import Record
 from surfaces.agent_state import SILENT, agent_state
 from features.work_tracking.auto import automatic
-from resources.base import SYSTEM, USER
+from resources.base import SYSTEM
 from providers import PROVIDERS
 from engine.color import identity
 from typing import TypedDict
@@ -104,7 +105,7 @@ def environment(record: Record) -> dict:
         "silent": agent_state(record, record.env) == SILENT,
         "attention": attention,
         "counts": {
-            "messages": sum(USER not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()),
+            "messages": counts(Messages(record, actor=SYSTEM))["unread"],
             "questions": len(questions),
             "todos": len([n for n, done in todos.items() if not done]),
             "suggestions": len(Suggestions(record, actor=SYSTEM)._standing()),
