@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.244.2 — the phone watchdog probes the tunnel server itself
+
+**2.244.1 probed a made-up address to tell whether the tunnel server was down, but the server refuses any address
+without a tunnel, so the probe always failed and the watchdog wrongly said the server was down.** It now checks the
+server's own address, and restarts the phone's tunnel as before whenever the server answers.
+
 ## 2.244.1 — the phone watchdog knows when the tunnel server is down
 
 **When the tunnel server answers for no address at all, the journal no longer restarts the phone's tunnel every five

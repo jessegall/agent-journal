@@ -15,7 +15,6 @@ MISSES_BEFORE_RESTART = 3
 PATIENCE = 10.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
-PROBE = "journal-probe"
 
 
 class KeepTunnelAnswering(Handler):
@@ -38,7 +37,7 @@ class KeepTunnelAnswering(Handler):
         if misses < MISSES_BEFORE_RESTART or time.time() - float(state.get("restarted", 0)) < RESTART_EVERY:
             return
         state.set("misses", 0)
-        if not reached(f"https://{PROBE}.{shares._host()}/", PATIENCE):
+        if not reached(f"https://{shares._host()}/", PATIENCE):
             if not state.get("host_down"):
                 state.set("host_down", time.time())
                 Nudges(context.record, actor=SYSTEM)._to_primary(f"the tunnel server {shares._host()} answers for no address",
