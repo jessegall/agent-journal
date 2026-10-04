@@ -14,6 +14,7 @@ from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take,
 from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
+from providers.payload import HookEvent
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import Seat
@@ -168,7 +169,7 @@ class Engine(Seat):
         write_json(f, now)
         if announced is None:
             return
-        stopped = [row.last_message] if row.last_message and row.event == "Stop" and row.last_message != announced.get("last_message") else []
+        stopped = [row.last_message] if row.last_message and row.event == HookEvent.STOP and row.last_message != announced.get("last_message") else []
         known = next((i for i, turn in enumerate(written) if turn.line == announced["line"]), None)
         fresh = written[known + 1:] if known is not None else written[-1:]
         for turn in fresh:

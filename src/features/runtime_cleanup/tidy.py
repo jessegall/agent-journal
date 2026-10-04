@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.runtime import profiles
-from providers.base import FOLD_CACHE
+from providers.transcript_cache import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime

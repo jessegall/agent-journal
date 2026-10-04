@@ -2,12 +2,13 @@ from engine import viewer
 from engine.events.resources import AgentChanged
 from features import trigger
 from features.parts import AgentContext, Handler, in_background
+from providers.payload import HookEvent
 
 
 class ShowViewerTab(Handler):
     def handle(self, context: AgentContext, event: AgentChanged) -> None:
         row = context.agent.row
-        if not (event.written or event.action == "reported") or row.event != "SessionStart" or row.parent or in_background(context.record):
+        if not (event.written or event.action == "reported") or row.event != HookEvent.SESSION_START or row.parent or in_background(context.record):
             return
         if trigger.last(context.record, row.title, context.feature.name).viewer_opened:
             return

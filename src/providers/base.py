@@ -10,7 +10,6 @@ from engine.transcript import Turn
 from providers.jsonl import last_lines, parsed_row
 from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, Failure, FetchCall, Hook, HookEvent, LoopCall, LoopEndCall, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
-from providers.transcript_cache import FOLD_CACHE  # noqa: F401
 from resources.base import Refused
 from resources.types import IDLE
 from engine.stored import read_json, write_text

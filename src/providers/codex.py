@@ -8,7 +8,7 @@ from pathlib import Path
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
 from providers.base import BackgroundTasks, Provider, SubagentRow, running_and_latest
-from providers.jsonl import last_lines, parsed, parsed_row, rows
+from providers.jsonl import last_lines, parsed, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Row
 from engine.fields import Loaded
@@ -361,7 +361,7 @@ class Codex(Provider):
     def failure(self, path: Path) -> Failure | None:
         lines, _ = last_lines(path, TAIL_BYTES)
         ends = [line for line in lines if TASK_EVENTS.search(line)]
-        return parsed_row(ends[-1], Failure.from_turn_end) if ends else None
+        return parsed(ends[-1].decode(errors="replace"), Failure.from_turn_end) if ends else None
 
     def background_tasks(self, path: Path) -> BackgroundTasks:
         return self.folded(path, self.task_rows, CodexTasks)

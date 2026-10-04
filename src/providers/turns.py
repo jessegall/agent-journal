@@ -26,10 +26,10 @@ def _settled_provider(agent):
 
 
 def turns(record, agent) -> list:
-    provider = _settled_provider(agent)
-    if not provider:
-        return []
     try:
+        provider = _settled_provider(agent)
+        if not provider:
+            return []
         size = Path(agent.transcript).stat().st_size
     except OSError:
         return []

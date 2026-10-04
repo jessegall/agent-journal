@@ -33,7 +33,8 @@ def last_lines(path: Path, span: int) -> tuple[list[bytes], int]:
 
 
 def parsed_row(line: bytes, row_of: Callable[[dict], T]) -> T | None:
-    return parsed(line.decode(errors="replace"), lambda raw: row_of(dict(raw)))
+    raw = parsed(line.decode(errors="replace"), dict)
+    return row_of(raw) if raw is not None else None
 
 
 def rows(lines: Iterable[bytes], row_of: Callable[[dict], T]) -> Iterator[T]:

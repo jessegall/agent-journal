@@ -3,6 +3,7 @@ import pickle
 import pkgutil
 import time
 from functools import cache
+from threading import Lock
 from pathlib import Path
 from typing import Callable
 
@@ -38,6 +39,12 @@ class TranscriptCache:
         self.folds: dict[tuple, tuple] = {}
         self.transcripts: dict[str, tuple] = {}
         self.kept: dict[tuple, float] = {}
+        self.locks: dict[tuple, Lock] = {}
+        self.guard = Lock()
+
+    def lock(self, key: tuple) -> Lock:
+        with self.guard:
+            return self.locks.setdefault(key, Lock())
 
     def file(self, key: tuple) -> Path:
         return self.folder / f"{digest('|'.join(key), 20)}.pickle"
@@ -106,15 +113,16 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return start()
-        offset, state = self.folds.get(key) or self.stored(key) or (0, start())
-        if size < offset:
-            offset, state = 0, start()
-        if size > offset:
-            lines, offset = complete_lines(path, offset)
-            for found in rows(lines, row_of):
-                state = fold(state, found)
-            self.keep(key, offset, state, KEEP_EVERY)
-        self.folds[key] = (offset, state)
+        with self.lock(key):
+            offset, state = self.folds.pop(key, None) or self.stored(key) or (0, start())
+            if size < offset:
+                offset, state = 0, start()
+            if size > offset:
+                lines, offset = complete_lines(path, offset)
+                for found in rows(lines, row_of):
+                    state = fold(state, found)
+                self.keep(key, offset, state, KEEP_EVERY)
+            self.folds[key] = (offset, state)
         return state
 
 

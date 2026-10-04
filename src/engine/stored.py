@@ -153,23 +153,17 @@ def write_json(path: Path, data, indent: int | None = None) -> None:
     write_text(path, json.dumps(data, indent=indent))
 
 
-def tail(path, size: int) -> list[str]:
-    try:
-        with Path(path).open("rb") as source:
-            source.seek(0, 2)
-            end = source.tell()
-            start = max(0, end - size)
-            source.seek(start)
-            raw = source.read()
-    except (OSError, TypeError):
-        return []
-    if start:
-        raw = raw.split(b"\n", 1)[-1]
-    return raw.decode(errors="replace").splitlines()
-
-
 LOG_BYTES = 262144
 
 
 def last_lines(path, lines: int) -> str:
-    return "\n".join(tail(path, LOG_BYTES)[-lines:])
+    try:
+        with Path(path).open("rb") as source:
+            start = max(0, source.seek(0, 2) - LOG_BYTES)
+            source.seek(start)
+            raw = source.read()
+    except (OSError, TypeError):
+        return ""
+    if start:
+        raw = raw.split(b"\n", 1)[-1]
+    return "\n".join(raw.decode(errors="replace").splitlines()[-lines:])

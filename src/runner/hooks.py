@@ -14,7 +14,7 @@ from engine import bus, chat, files, ran, runtime
 from engine.stored import read_json, write_json
 from providers import PROVIDERS, skill_folders
 from providers.base import asking_row
-from providers.payload import PERMISSION, STATUS
+from providers.payload import PERMISSION, STATUS, HookEvent
 from features.status_bar import commands
 from engine.fields import Loaded
 from engine.gates import AFTERWARDS, CANCELABLE, CANCELERS, DISPATCHING, LONG_COMMAND, POLICIES, cancelled, gate_file, start_file
@@ -265,28 +265,28 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     if subagent:
         if hook.event == PERMISSION or row.asking:
             agents.update(row.n, asking=asking_row(provider.asking(hook)))
-        if hook.event != "PreToolUse":
+        if hook.event != HookEvent.PRE_TOOL_USE:
             return {}
         why = PAUSED if paused(row, subagent) else gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(why)
-    wrote = hook.event == "PostToolUse" and commands.writes(hook)
+    wrote = hook.event == HookEvent.POST_TOOL_USE and commands.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
                status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook), wrote=wrote)
-    if hook.event == "PostToolUse":
+    if hook.event == HookEvent.POST_TOOL_USE:
         bus.defer(lambda: ran.tool_ran(record, row.n, provider, hook.tool))
     if wrote:
         bus.defer(lambda: files.announce(record, row.n, skill_folders()))
-    if hook.event == "PreToolUse" and paused(row, subagent):
+    if hook.event == HookEvent.PRE_TOOL_USE and paused(row, subagent):
         return provider.blocking(PAUSED)
-    if hook.event == "PreToolUse":
+    if hook.event == HookEvent.PRE_TOOL_USE:
         why = gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(f"{why}{alongside(hook)}")
-    if hook.event == "SessionStart":
+    if hook.event == HookEvent.SESSION_START:
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
-    if hook.event == "Stop" and hook.last_message:
+    if hook.event == HookEvent.STOP and hook.last_message:
         stopped(root, hook.session, hook.last_message)
-    if hook.event in ("Stop", "UserPromptSubmit"):
+    if hook.event in (HookEvent.STOP, HookEvent.USER_PROMPT_SUBMIT):
         unfinished(root, hook.session, row)
-    if hook.event == "UserPromptSubmit":
+    if hook.event == HookEvent.USER_PROMPT_SUBMIT:
         next_turn(root, hook.session)
     return {}
