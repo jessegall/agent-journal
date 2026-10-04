@@ -52,6 +52,9 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     record.features = {**record.features, "work_tracking.auto": True}
     idle(record)
     assert nudges(record) == ["todo 1 next"], "auto on: the next row is offered once per idle stretch"
+    for _ in range(4):
+        idle(record)
+    assert nudges(record).count("todo 1 next") == 3, "a row the agent keeps passing is offered three times at most"
     from controllers.types import Environments
     from engine.record import Record
     from features.work_tracking.auto import automatic
@@ -61,7 +64,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
         "a ticket's environment is always in auto mode, with no switch to turn it off"
     work = Works(record, actor=AGENT).create("on it", todo=1)
     idle(record, shells=1, subagents=1, monitors=1)
-    assert nudges(record) == ["todo 1 next", "work 1 is still open, with nothing logged", "auto mode is on and work 1 stands still while todo 2 is ready"], \
+    assert nudges(record)[-2:] == ["work 1 is still open, with nothing logged", "auto mode is on and work 1 stands still while todo 2 is ready"], \
         "background tasks are no wait: the open work is named, and under auto the next ready row with it"
     Works(record, actor=AGENT).complete(work.n, "done", todo=True)
     idle(record)

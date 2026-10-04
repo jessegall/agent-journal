@@ -8,11 +8,13 @@ from features.work_tracking.handlers import (next_row, stopped_with_work, AskSti
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites
 
+OFFERS = 3
+
 
 class WorkFeature(Feature):
     details = WorkDetails
-    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False),
-              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False),
+    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=OFFERS),
+              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=OFFERS),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work))
 
     def chosen(self, record, key: str) -> bool:

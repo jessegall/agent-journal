@@ -7,6 +7,7 @@ from features import trigger
 from features.parts import AgentContext, Handler
 
 MINUTE = 60.0
+SENT_TIMES = "sent times"
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,7 @@ class Nudge:
     private: bool = True
     pace: Callable | None = None
     once: bool = False
+    most: int = 0
 
     def cadence(self, context) -> trigger.Trigger:
         spec = context.feature.cadence(context.record, self.behaviour)
@@ -34,7 +36,15 @@ class Nudge:
         if self.once:
             return [found for found in self.about(context, agent) if context.once(self.line, found.key)]
         spec = self.cadence(context)
-        return [found for found in self.about(context, agent) if context.every(self.behaviour, found.key, spec)]
+        due = [found for found in self.about(context, agent) if context.every(self.behaviour, found.key, spec)]
+        return self.capped(context, due) if self.most and due else due
+
+    def capped(self, context, due: list[Sent]) -> list[Sent]:
+        sent = context.state.get(SENT_TIMES, {})
+        kept = [found for found in due if sent.get(f"{self.line}:{found.key}", 0) < self.most]
+        if kept:
+            context.state.set(SENT_TIMES, {**sent, **{f"{self.line}:{found.key}": sent.get(f"{self.line}:{found.key}", 0) + 1 for found in kept}})
+        return kept
 
 
 def send(context, nudges: tuple) -> None:

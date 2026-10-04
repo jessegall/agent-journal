@@ -235,7 +235,7 @@ def next_row(standing: bool):
         row = next(context.record)
         if not row or bool(open_work) != standing or (open_work and open_work[0].awaiting):
             return []
-        return [Sent(str(row.n), {"n": row.n, "work": open_work[0].n} if standing else {"n": row.n})]
+        return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n} if standing else {"n": row.n})]
     return about
 
 
