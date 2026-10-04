@@ -1,6 +1,6 @@
 <script setup>
 import HandledNote from "../kit/HandledNote.vue";
-import CommentByline from "./CommentByline.vue";
+import Byline from "../kit/Byline.vue";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import {useScope} from "../composables/scope.js";
 import Btn from "../kit/Btn.vue";
@@ -171,7 +171,7 @@ async function send(text) {
                         @mouseenter="hover(c)"
                         @mouseleave="hover(null)"
                     >
-                        <CommentByline :side="c.seen[0]" :name="who(c)" :when="age(c.created)">
+                        <Byline :side="c.seen[0]" :name="who(c)" :when="age(c.created)">
                             <template v-if="!c.pending">
                                 <span class="tools">
                                     <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
@@ -182,7 +182,7 @@ async function send(text) {
                                     </button>
                                 </span>
                             </template>
-                        </CommentByline>
+                        </Byline>
                         <template v-if="c.quote">
                             <button type="button" class="comment-quote" title="Show this passage in the document" @click="show(c)">
                                 {{ plain(c.quote) }}
@@ -218,7 +218,7 @@ async function send(text) {
                             <div class="answers">
                                 <template v-for="a in answersTo(c)" :key="keyOf(a)">
                                     <div :class="['answer', {failed: a.failed}]" :data-comment="a.pending ? a.ref : a.n">
-                                        <CommentByline :side="a.seen[0]" :name="who(a)" :when="age(a.created)" small />
+                                        <Byline :side="a.seen[0]" :name="who(a)" :when="age(a.created)" small />
                                         <TextDisplay class="said" :text="a.brief" />
                                         <template v-if="a.failed">
                                             <p class="unsaved">

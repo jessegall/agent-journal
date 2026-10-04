@@ -1,5 +1,5 @@
 <script setup>
-import PhoneTicks from "./PhoneTicks.vue";
+import ReadTicks from "../kit/ReadTicks.vue";
 import {clock} from "../format/time.js";
 
 defineProps({sent: {type: Array, required: true}, held: {type: Array, required: true}, offline: {type: Boolean, default: false}});
@@ -13,7 +13,7 @@ const SENDING = {completed: 0, seen: [], data: {}};
             {{ line.brief }}
             <span>
                 {{ clock(line.at / 1000) }}
-                <PhoneTicks :message="SENDING" />
+                <ReadTicks :message="SENDING" tone="bubble" />
             </span>
         </p>
     </template>

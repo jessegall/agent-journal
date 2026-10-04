@@ -1,7 +1,7 @@
 <script setup>
 import {computed, inject, nextTick, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import {ended} from "./outbox.js";
 import {useUnder} from "./under.js";
@@ -128,7 +128,7 @@ onMounted(() => {
     <section class="viewer">
         <header :class="['viewer-bar', {under}]">
             <button type="button" class="viewer-back" :aria-label="`Back to ${back}`" @click="emit('close')">
-                <PhoneChevron facing="left" :size="18" />
+                <Icon name="chevronRight" bold facing="left" :size="18" />
                 {{ back }}
             </button>
             <span ref="title" :class="['viewer-name', {plain: picture}]" tabindex="-1">{{ path }}</span>
