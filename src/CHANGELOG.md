@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.246.0 — a handled comment shows as handled on the shared page
+
+**When the agent handles a visitor's comment, the shared page now shows it as Handled, with the agent's note**, the
+same way the viewer does. Shared pages only ever show plain text, so the note carries no links into the journal.
+
 ## 2.245.2 — auto mode stops repeating an offer that is passed
 
 **Auto mode offers the same ready row three times at most while the agent does not take it**, instead of at every

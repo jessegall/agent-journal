@@ -70,7 +70,7 @@ class VisitorAnswer:
 
 def posted_comment(shares, share, given: dict) -> dict:
     sent = VisitorComment.from_payload(given)
-    return asdict(SharedComment.of(shares._visitor_comment(share, sent.about, sent.name, sent.text), sent.about))
+    return asdict(SharedComment.of(shares._visitor_comment(share, sent.about, sent.name, sent.text), sent.about, shares._home(share)))
 
 
 def posted_answer(shares, share, given: dict) -> dict:

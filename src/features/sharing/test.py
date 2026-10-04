@@ -106,6 +106,9 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
     announce(record, agent.n, "Bash", "journal search delete", f"comment {made.n}: {WORDS}")
     assert (hook("ls").get("decision") != "block", any(f"the user let you act on comment {made.n} from Robin" in line for line in nudges(record))) == (True, True), \
         "the user's button lifts the hold for that comment and tells the agent"
+    Comments(record, actor=AGENT).complete(made.n, how="Added the night shift")
+    handled = [c.handled for c in Shares(record, actor=USER)._shared_comments(share, {f"doc:{doc.n}"}) if c.n == made.n]
+    assert handled == ["Added the night shift"], "a handled comment shows on the shared page as handled, with its note"
     locked = Shares(record, actor=USER).create(f"doc:{doc.n}", comments=True, password="tulip")
     trusted = Shares(record, actor=USER)._visitor_comment(locked, f"doc:{doc.n}", "Sam", "Please add the night shift")
     announce(record, agent.n, "Bash", "journal search night", f"comment {trusted.n}: Please add the night shift")
