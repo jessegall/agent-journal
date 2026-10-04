@@ -64,15 +64,6 @@ class PlansDetails(FeatureDetails):
             """,
         ),
         Line(
-            name="stuck",
-            reply_kept=True,
-            title="plan {{n}}, {{title}}, cannot go on: every row of its phase waits",
-            brief="""
-                {{rows}}. For each that waits on a person or a decision, put it to them now with journal todo ask <n>
-                "<who decides what>"; unblock any that can go on and work it. Stop only when each one waits on a question.
-            """,
-        ),
-        Line(
             name="blocked",
             reply_kept=True,
             title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",

@@ -11,7 +11,7 @@ from features.nudges import MINUTE, Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
-from features.work_tracking.next import asked, next
+from features.work_tracking.next import asked, named_rows, next, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
 from features.status_bar.runs import command_runs
@@ -255,3 +255,10 @@ def stopped_with_work(context, agent) -> list[Sent]:
         return []
     work = unwaited[0]
     return [Sent(f"{work.n}:{agent.uses}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]
+
+
+def nothing_ready(context, agent) -> list[Sent]:
+    if agent.idle_for < FIRST_AFTER * MINUTE or working(context) or ready(context.record):
+        return []
+    held = waiting_rows(context.record)
+    return [Sent(",".join(str(t.n) for t in held), {"rows": named_rows(held)})] if held else []

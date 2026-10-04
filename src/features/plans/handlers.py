@@ -9,7 +9,7 @@ from features.nudges import MINUTE, Sent
 from features.plans.progress import catch_up, current_phase
 from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import passes_checkpoints
-from features.work_tracking.next import asked, ready
+from features.work_tracking.next import asked, named_rows, ready, waiting_rows
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 
@@ -141,18 +141,6 @@ def doable(record, plan) -> str:
     return ", then ".join(parts)
 
 
-def stuck_plans(context, agent) -> list[Sent]:
-    if agent.idle_for < float(context.feature.cadence(context.record, "still").every) * MINUTE:
-        return []
-    found = []
-    for plan in [p for p in Plans(context.record, actor=SYSTEM)._every() if p.status == ACTIVE and not doable(context.record, p)]:
-        phase = current_phase(plan)
-        held = waiting_rows(context.record, set(phase[PHASE.todos]) if phase is not None else set())
-        if held:
-            found.append(Sent(f"{plan.n}:{','.join(str(t.n) for t in held)}", {"n": plan.n, "title": plan.title, "rows": named_rows(held)}))
-    return found
-
-
 def blocked_plans(context, agent) -> list[Sent]:
     found = []
     for plan in [p for p in Plans(context.record, actor=SYSTEM)._every() if p.status == ACTIVE]:
@@ -160,12 +148,3 @@ def blocked_plans(context, agent) -> list[Sent]:
         if held:
             found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": named_rows(held)}))
     return found
-
-
-def waiting_rows(record, numbers: set) -> list:
-    todos = Todos(record, actor=SYSTEM)
-    return [t for t in todos._standing() if t.n in numbers and (t.blocked or todos.waits(t)) and not asked(record, t)]
-
-
-def named_rows(rows: list) -> str:
-    return "; ".join(f"to-do {t.n}, {t.title}" for t in rows)

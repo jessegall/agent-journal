@@ -18,6 +18,15 @@ def asked(record, todo) -> bool:
     return any(todo.ref in q.refs for q in Questions(record, actor=SYSTEM)._standing())
 
 
+def waiting_rows(record, numbers: set | None = None) -> list:
+    todos = Todos(record, actor=SYSTEM)
+    return [t for t in todos._standing() if (numbers is None or t.n in numbers) and (t.blocked or todos.waits(t)) and not asked(record, t)]
+
+
+def named_rows(rows: list) -> str:
+    return "; ".join(f"to-do {t.n}, {t.title}" for t in rows)
+
+
 def worked(record) -> set:
     return {int(w.todo) for w in Works(record, actor=SYSTEM)._standing() if w.todo}
 
