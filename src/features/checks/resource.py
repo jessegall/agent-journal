@@ -69,3 +69,6 @@ class Check(Shape, Resource):
     @property
     def last_run(self) -> CheckRun:
         return CheckRun.from_json(self.last)
+
+    def failure_title(self, headline: str) -> str:
+        return (self.failure.replace("{summary}", headline) if self.failure else f"check {self.n} failed - {headline}")[:80]

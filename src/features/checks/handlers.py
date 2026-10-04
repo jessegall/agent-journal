@@ -1,14 +1,11 @@
-import fcntl
-import re
-import threading
 import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine import runtime
 from engine.command_runs import CommandRun
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceEvent
+from features.checks.output import summary
 from features.parts import AgentContext, Context, Handler
 
 
@@ -17,48 +14,15 @@ class CheckUpdated(ResourceEvent):
     on: ClassVar[str] = "check.updated"
     ran: bool = False
 
-    @classmethod
-    def read(cls, event) -> "CheckUpdated":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, ran=bool(event.data.get("ran")))
-
 
 TESTS = "tests"
-ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
 class RunDueChecks(Handler):
-    def __init__(self):
-        self.running: set[str] = set()
-
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         checks = context.journal.checks
         for check in checks._due(time.time()):
-            key = f"{context.record.root}:{check.n}"
-            if key in self.running:
-                continue
-            self.running.add(key)
-            threading.Thread(target=self.run, args=(checks, check.n, key, claim(context.record.root, check.n)), daemon=True).start()
-
-    def run(self, checks, n: int, key: str, claimed) -> None:
-        try:
-            if claimed:
-                checks.run(n, wait=True)
-        finally:
-            self.running.discard(key)
-            if claimed:
-                claimed.close()
-
-
-def claim(root, n: int):
-    lock = runtime.folder(root) / "check-reports" / f"{n}.lock"
-    lock.parent.mkdir(parents=True, exist_ok=True)
-    held = lock.open("w")
-    try:
-        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        held.close()
-        return None
-    return held
+            checks._in_background(check.n)
 
 
 class ReportCheckResult(Handler):
@@ -68,24 +32,16 @@ class ReportCheckResult(Handler):
         check = context.journal.checks.load(event.n)
         last = check.last_run
         output = last.output
-        found = summary(output)
-        headline = found if found else check.title
-        failure = check.failure.replace("{summary}", headline) if check.failure else ""
-        title = (failure if failure else f"check {check.n} failed - {headline}")[:80]
+        title = check.failure_title(summary(output) or check.title)
         if last.ok:
             for stale in context.journal.notifications.linked_to(check.ref):
                 if not stale.completed:
                     context.journal.clear(stale, "the check passes again")
             return
         context.journal.notify("failing", title=title, output=output if output else "it said nothing", about=check.ref)
-        agent = context.journal.agents.primary()
-        if agent:
-            context.speaking_to(agent).agent.say("failed", title=title, n=check.n)
-
-
-def summary(output: str) -> str:
-    lines = [ANSI.sub("", line).strip() for line in output.splitlines()]
-    return next((line for line in reversed(lines) if line and not line.startswith(("↳", "#"))), "")
+        speaking = context.to_primary()
+        if speaking:
+            speaking.agent.say("failed", title=title, n=check.n)
 
 
 class MarkTestRuns(Handler):

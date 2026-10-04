@@ -1,6 +1,5 @@
 import fcntl
 import os
-import re
 import subprocess
 import threading
 import time
@@ -13,53 +12,20 @@ from engine.package import entry
 from engine.proc import streamed
 from controllers.faults import threw
 from engine import runtime
-from engine.stored import read_json
+from engine.stored import claim, read_json
+from features.checks.output import progress, steps, tail
 from features.checks.resource import Check, CheckReport, CheckRun
 from controllers.types import Nudges
 from engine.worktree import git
 from features.checks.touched import changed, covering
 from resources.base import SYSTEM, Refused, titled
-from typing import TypedDict
 
 TIMEOUT = 600
-SAID_LINES = 40
 KEPT_RUNS = 20
 STAMP_EVERY = 1.0
 REPORTS = "check-reports"
 GATES = "gates.lock"
 REPORT = "JOURNAL_REPORT"
-PERCENT = re.compile(r"(\d{1,3})%")
-COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
-ITEMS = re.compile(r"\[(\d+) items?\]|collected (\d+) items?")
-STEPS = re.compile(r"^[.FEsxX]+(?=\s*(?:\[\s*\d+%\])?\s*$)", re.M)
-
-
-def tail(output: str) -> str:
-    return "\n".join(output.strip().splitlines()[-SAID_LINES:])
-
-
-def steps(output: str) -> int:
-    return sum(len(found) for found in STEPS.findall(output))
-
-
-class Progress(TypedDict, total=False):
-    done: int
-    total: int
-    percent: float | None
-
-
-def progress(output: str, last_steps: int = 0) -> Progress:
-    counted = COUNTED.findall(output[-2000:])
-    if counted and 0 < int(counted[-1][1]) and int(counted[-1][0]) <= int(counted[-1][1]):
-        done, total = int(counted[-1][0]), int(counted[-1][1])
-        return {"done": done, "total": total, "percent": round(done / total * 100, 1)}
-    listed = ITEMS.findall(output)
-    total = int(next(filter(None, listed[-1]))) if listed else last_steps
-    done = steps(output)
-    if done and total:
-        return {"done": min(done, total), "total": total, "percent": round(min(done, total) / total * 100, 1)}
-    printed = PERCENT.findall(output[-2000:])
-    return {"percent": min(100, int(printed[-1]))} if printed else {"percent": None}
 
 
 class Checks(Controller):
@@ -70,31 +36,41 @@ class Checks(Controller):
         return self.update(made.n, buttons=[{"label": "Run", "type": self.type, "action": "run", "n": made.n, "again": True}])
 
     def run(self, n: int, wait: bool = False):
+        self._runnable(n)
+        if wait:
+            return self._ran(n)
+        if not self._in_background(n):
+            return f"check {n} is already running; its result lands on the row"
+        return f"check {n} is running; its result lands on the row, and a failure is told to you"
+
+    def _runnable(self, n: int):
         check = self.load(n)
         if not check.command:
             raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
-        if not wait:
-            threading.Thread(target=self._ran_in_background, args=(n,), daemon=True).start()
-            return f"check {n} is running; its result lands on the row, and a failure is told to you"
-        return self._ran(n)
+        return check
+
+    @property
+    def _project(self):
+        return self.record.root.resolve().parent
+
+    def _shell(self, command: str, on_output=lambda _: None, env: dict | None = None) -> tuple[int | None, str]:
+        return streamed(["/bin/sh", "-c", command], self._project, TIMEOUT, on_output, env=env)
 
     @lasting
     def touched(self, n: int) -> str:
         check = self.load(n)
         if not check.touched:
             raise Refused(f"check {n} names no command for touched tests: journal check set {n} touched \"<command with {{tests}}>\"")
-        project = self.record.root.resolve().parent
-        found = covering(project, changed(project))
+        found = covering(self._project, changed(self._project))
         if not found.tests:
             return f"no test covers what changed ({found.uncovered or 'nothing changed'}); the full check is the gate"
-        code, output = streamed(["/bin/sh", "-c", check.touched.replace("{tests}", " ".join(found.tests))], project, TIMEOUT, lambda _: None)
+        code, output = self._shell(check.touched.replace("{tests}", " ".join(found.tests)))
         uncovered = f"\nno test covers {found.uncovered}; the full check is the gate for those" if found.bare else ""
         return f"{tail(output)}{uncovered}" if code == 0 else f"failed:\n{tail(output)}"
 
     @lasting
     def gate(self, n: int, message: str, paths: str = "", wait: bool = False):
-        if not self.load(n).command:
-            raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
+        self._runnable(n)
         named = [path.strip() for path in paths.split(",") if path.strip()]
         if not named:
             raise Refused("name the paths the commit takes: --paths <path>,<path>")
@@ -120,7 +96,7 @@ class Checks(Controller):
     def _landed(self, check, message: str, paths: list[str]) -> str:
         if not check.last_run.ok:
             return f"check {check.n} failed, nothing was committed\n{check.last_run.output}"
-        project = self.record.root.resolve().parent
+        project = self._project
         git(project, "reset", "-q")
         added = git(project, "add", "-A", "--", *paths)
         made = git(project, "commit", "-q", "-m", message) if not added.returncode else added
@@ -129,17 +105,26 @@ class Checks(Controller):
         head = git(project, "log", "--oneline", "-1").stdout.strip()
         if not check.then:
             return f"check {check.n} passed and {head} is committed"
-        code, output = streamed(["/bin/sh", "-c", check.then], project, TIMEOUT, lambda _: None)
+        code, output = self._shell(check.then)
         return f"check {check.n} passed and {head} is committed; then {'ran' if code == 0 else 'failed'}\n{tail(output)}"
 
     def sweep(self, wait: bool = False):
         return [self.run(check.n, wait=wait) for check in self._standing() if check.command]
 
-    def _ran_in_background(self, n: int) -> None:
+    def _in_background(self, n: int) -> bool:
+        held = claim(runtime.folder(self.record.root) / REPORTS / f"{n}.lock")
+        if not held:
+            return False
+        threading.Thread(target=self._ran_in_background, args=(n, held), daemon=True).start()
+        return True
+
+    def _ran_in_background(self, n: int, held) -> None:
         try:
             self._ran(n)
         except Exception:
             threw(self.record.root, self.record.env, f"running check {n}")
+        finally:
+            held.close()
 
     def _ran(self, n: int):
         check = self.load(n)
@@ -155,7 +140,7 @@ class Checks(Controller):
         report = runtime.folder(self.record.root) / REPORTS / f"{n}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
-        code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output, env={**os.environ, REPORT: str(report)})
+        code, output = self._shell(check.command, on_output, env={**os.environ, REPORT: str(report)})
         check = self.load(n)
         kept = tail(output)
         written = read_json(report, CheckReport.from_json, None)

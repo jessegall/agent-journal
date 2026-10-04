@@ -15,7 +15,7 @@ from controllers.prioritised import Prioritised
 from engine.given import given
 from features.boards.controller import Boards
 from features.boards.resource import DONE, START
-from features.checks.controller import tail
+from features.checks.output import tail
 from engine.proc import streamed
 from features.tickets.cards import CardState, TicketCards
 from features.tickets.details import TicketsDetails
