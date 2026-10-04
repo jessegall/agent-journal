@@ -7,13 +7,12 @@ from resources.shapes import Field, Shape
 class Critique(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Critique round",
-        abstract="A design critique round: critics on a provider each look at the app through one lens, and their findings gather into one report",
-        help="journal critique round \"<what changed>\" --critics 3 starts one; recheck sends the same critics back after a revision; finish ends it.",
+        abstract="A design critique round: one read-only critic per lens looks at the app, and their findings gather into one report",
+        help="journal critique round \"<what changed>\" --critics 3 starts one; recheck says how to send the same critics back after a revision; finish ends it.",
     )
     data_fields: ClassVar[list[Field]] = [
         Field(default=0, name="report"),
         Field(default=list, name="critics"),
-        Field(default=list, name="reported"),
     ]
     type = "critique"
     icon = "report"

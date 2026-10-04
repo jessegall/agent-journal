@@ -8,9 +8,8 @@ from engine import runtime
 from features.critique.details import CritiqueDetails
 from features.critique.lenses import DEFAULT, LENSES
 from features.critique.resource import Critique
-from features.helpers.controller import Helpers
 from features.sharing.controller import answers
-from resources.base import SYSTEM, Refused
+from resources.base import Refused
 
 SEED_SECONDS = 300
 
@@ -27,13 +26,13 @@ def brief(what: str, lens, folder) -> str:
     return (f"You are {lens.critic}, a design critic. What changed: {what}\n\nYour lens: {lens.looks}.\n\nRead {folder}/round.md first: "
             f"it says how to open the app and what you may not do. Use the app as a person would, through your lens only. At most eight "
             f"findings, most important first, each with what you saw, why it matters and a concrete fix, in plain words; end with the "
-            f"paths of your screenshots. The designer decides what to take. Report with journal helper report \"<your findings>\".")
+            f"paths of your screenshots. The designer decides what to take. Your findings are your answer: end with them.")
 
 
 class Critiques(Controller):
     resource = Critique
 
-    def round(self, what: str, critics: int = 0, lenses: str = "", provider: str = "claude", model: str = "sonnet") -> str:
+    def round(self, what: str, critics: int = 0, lenses: str = "", model: str = "sonnet") -> str:
         chosen = [name.strip() for name in lenses.split(",") if name.strip()] or list(DEFAULT)
         unknown = [name for name in chosen if name not in LENSES]
         if unknown:
@@ -51,32 +50,26 @@ class Critiques(Controller):
         folder = runtime.folder(self.record.root) / "critiques" / str(row.n)
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "round.md").write_text(page(settings.app, settings.login, settings.browsers))
-        helpers = Helpers(self.record, actor=self.actor)
         sent = []
         for name in chosen:
             lens = LENSES[name]
-            critic = helpers._dispatched(lens.critic, f"Critique {what} through the {name} lens"[:80], provider, model, brief(what, lens, folder))
-            sent.append({"helper": critic.n, "lens": name, "name": lens.critic})
+            (folder / f"{name}.md").write_text(brief(what, lens, folder))
+            sent.append({"lens": name, "name": lens.critic, "brief": str(folder / f"{name}.md")})
         self.update(row.n, critics=sent)
-        return f"critique round {row.n}: {len(sent)} critics out ({', '.join(c['name'] for c in sent)}); their findings gather in report {report.n}"
+        briefs = "; ".join(f"{c['name']} ({c['lens']}) with the brief in {c['brief']}" for c in sent)
+        return (f"critique round {row.n}: dispatch one read-only subagent per lens on model {model}, named for its critic: {briefs}. "
+                f"As each answers, put its findings in report {report.n} with journal report section {report.n} \"<critic>, <lens>\" "
+                f"\"<findings>\"; once all are in, hand report {report.n} to the designer, who decides.")
 
     def recheck(self, n: int, revised: str) -> str:
         row = self._unfinished(n, "finished")
-        helpers = Helpers(self.record, actor=SYSTEM)
-        for critic in row.critics:
-            helpers.say(critic["helper"], f"The designer revised it: {revised}. Look again through your lens and report again with journal helper report.")
-        self.update(n, reported=[])
-        return f"the {len(row.critics)} critics of round {n} look again"
+        names = ", ".join(c["name"] for c in row.critics)
+        return (f"send the same critics of round {n} back ({names}): continue each subagent with \"The designer revised it: {revised}. "
+                f"Look again through your lens and answer with your findings.\", and add their new findings to report {row.report}")
 
     def complete(self, n: int, how: str = "", **data):
-        row = self._unfinished(n, "finished")
-        helpers = Helpers(self.record, actor=SYSTEM)
-        for critic in row.critics:
-            try:
-                helpers.stop(critic["helper"])
-            except Refused:
-                continue
-        return super().complete(n, how or "the round is over and its critics are stopped", **data)
+        self._unfinished(n, "finished")
+        return super().complete(n, how or "the round is over", **data)
 
 
 resources_module.register(Critique)
