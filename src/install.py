@@ -499,7 +499,7 @@ def package() -> Package:
     from commands.cli import served
     from engine.package import point
     from engine.sessions import held_builds
-    from features.journal_laws.policy import brief
+    from features.journal_laws.briefing import brief
     from features.sequences.shipped import ship
     from migrations import run as migrate
     from migrations import shipped

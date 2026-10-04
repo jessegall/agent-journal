@@ -5,7 +5,7 @@ from pathlib import Path
 import features
 from runner.hooks import handle
 from features.session_briefing.start import start_block
-from features.journal_laws.policy import BEGIN, brief
+from features.journal_laws.briefing import BEGIN, brief
 from providers import PROVIDERS
 from tests.conftest import fresh
 from tests.kit import nudges, report
@@ -60,7 +60,7 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     Rules(record, actor=USER).inject(Rules(record, actor=USER).create("never deploy on Fridays", keywords="deploy").n)
     started()
     assert len(checking().runs) == 1, "a rule injected into the block is checked at the next start"
-    from features.journal_laws.policy import instructions_hash
+    from features.journal_laws.briefing import instructions_hash
     seen = instructions_hash(project, record)
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text().replace("cannot be switched off", "ship with every journal"))
     assert instructions_hash(project, record) == seen, "the block's own wording changing starts no check; its laws and injected rules do"
@@ -206,7 +206,7 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
 
 
 def test_the_naming_law_follows_the_chosen_style():
-    from features.journal_laws.policy import carry, laws
+    from features.journal_laws.laws import carry, laws
     record = fresh()
     assert "a human name, a little quirky" in carry(record) and "Dr. Einstein" in dict((law.name, law.reason) for law in laws(record))["L5"], \
         "by default subagents are named after famous people with a twist"

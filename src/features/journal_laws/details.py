@@ -1,8 +1,10 @@
 from features.base import Behaviour, FeatureDetails, Line
-from features.journal_laws.handlers import LARGEST_RESULT, TOO_LONG
 from features.recital import BEHAVIOURS, LINES, WHISPER
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
+
+LARGEST_RESULT = "largest result"
+TOO_LONG = "too long"
 
 
 class LawDetails(FeatureDetails):
