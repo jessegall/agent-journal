@@ -64,6 +64,7 @@ BEGIN = f"<!-- BEGIN: agent-journal, form {FORM} (auto-generated, run `journal u
 END = f"<!-- END: agent-journal, form {FORM} -->"
 CURRENT = re.compile(r"<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->", re.DOTALL)
 CONFLICTED = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
+BOM = "\ufeff"
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
 CURRENT_MARKERS = Markers("<!-- BEGIN: agent-journal, form", "<!-- END: agent-journal, form")
 RETIRED = (
@@ -117,22 +118,27 @@ def brief(project: Path, record) -> Briefing:
     title = project.resolve().name
     written, left = [], []
     for name in sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file}):
-        target = project / name
-        had = target.read_bytes().decode() if target.is_file() else ""
+        target = (project / name).resolve()
+        try:
+            had = target.read_bytes().decode() if target.is_file() else ""
+        except UnicodeDecodeError:
+            left.append(f"{name} left as it is: it is not UTF-8 text")
+            continue
+        mark, had = (BOM, had[1:]) if had.startswith(BOM) else ("", had)
         why = untouchable(had)
         if why:
             left.append(f"{name} left as it is: {why}")
             continue
         want = leading(had, managed) if had.strip() else f"# {title}\n\n{managed}\n"
         if want != had:
-            write_text(target, want)
-            written.append(target)
+            write_text(target, mark + want)
+            written.append(project / name)
     return Briefing(tuple(written), tuple(left))
 
 
 def instructions_hash(project: Path, record) -> str:
     names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
-    texts = [CURRENT.sub("", (project / name).read_bytes().decode()) for name in names if (project / name).is_file()]
+    texts = [CURRENT.sub("", (project / name).read_bytes().decode(errors="replace")) for name in names if (project / name).is_file()]
     return digest("\0".join((*texts, *injected(record), carry(record)))) if texts else ""
 
 

@@ -15,6 +15,7 @@ MISSES_BEFORE_RESTART = 3
 PATIENCE = 10.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
+READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
 
 
 class KeepTunnelAnswering(Handler):
@@ -23,22 +24,24 @@ class KeepTunnelAnswering(Handler):
             return
         if not wanted(context.record.root) or not tunler():
             return
+        state, shares = State(context.record.root / "runtime" / "sharing-tunnel.json"), Shares(context.record, actor=SYSTEM)
         if refused_address(log_file(context.record.root, TUNNEL)):
-            state = State(context.record.root / "runtime" / "sharing-tunnel.json")
             if not state.get("address_refused"):
                 state.set("address_refused", time.time())
                 Messages(context.record, actor=SYSTEM).create(
-                    "The tunnel address is owned by another user",
-                    brief="The phone and share links cannot use this address until you choose another one.")
+                    "The tunnel address is owned by another user", buttons=[READDRESS],
+                    brief="The phone and share links cannot use this address. Choosing a new one changes the phone's address, so it has to be paired again.")
             return
-        state, shares = State(context.record.root / "runtime" / "sharing-tunnel.json"), Shares(context.record, actor=SYSTEM)
+        state.set("address_refused", 0)
         try:
             answering = shares._answering(PATIENCE)
         except Refused as error:
             if not state.get("settings_unreadable"):
                 state.set("settings_unreadable", time.time())
-                Messages(context.record, actor=SYSTEM).create("The tunnel address cannot be read", brief=f"{error}. The address has not changed.")
+                Messages(context.record, actor=SYSTEM).create("The tunnel address cannot be read", buttons=[READDRESS],
+                                                              brief=f"{error}. The address has not changed; choosing a new one means pairing the phone again.")
             return
+        state.set("settings_unreadable", 0)
         if answering:
             state.set("misses", 0)
             state.set("host_down", 0)

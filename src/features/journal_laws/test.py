@@ -35,6 +35,15 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     brief(project, record)
     assert ((project / "CLAUDE.md").read_text().count(BEGIN), "edited" in (project / "CLAUDE.md").read_text()) == (1, False), \
         "the managed block is restored once"
+    odd = tmp_path / "odd"
+    odd.mkdir()
+    (odd / "CLAUDE.md").write_bytes("\ufeff# Marked\n".encode())
+    (odd / "AGENTS.md").symlink_to("CLAUDE.md")
+    brief(odd, record)
+    assert ((odd / "AGENTS.md").is_symlink(), (odd / "CLAUDE.md").read_bytes().startswith("\ufeff# Marked\n".encode())) == (True, True), \
+        "a linked AGENTS.md stays a link and a byte-order mark stays first"
+    (odd / "CLAUDE.md").write_bytes(b"# Latin \xe9\n")
+    assert [line.split(":")[1].strip() for line in brief(odd, record).left] == ["it is not UTF-8 text"] * 2, "a file that is not UTF-8 is left as it is"
     from features.sequences.controller import Sequences
     from features.sequences.shipped import ship
     ship(record)

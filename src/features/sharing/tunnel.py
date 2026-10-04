@@ -35,6 +35,10 @@ def subdomain(root: Path) -> str:
             raise Refused(unreadable)
     if kept.get("subdomain"):
         return kept["subdomain"]
+    return addressed(root, kept)
+
+
+def addressed(root: Path, kept: dict) -> str:
     prefix = slugged(Path(root).resolve().parent.name, limit=20) or "journal"
     name = f"{prefix}-{secrets.token_hex(NAME_BYTES)}"
     write_json(Path(root) / TUNNEL_FILE, {**kept, "subdomain": name})

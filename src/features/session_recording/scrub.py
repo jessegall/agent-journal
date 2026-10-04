@@ -13,6 +13,11 @@ KEPT_EMAIL = "demo@example.com"
 HOME = "/home/demo"
 PROJECT = "/home/demo/project"
 SHORTEST_NAME = 4
+NAMED = re.compile(r"[-_\d]|^\w{10,}$")
+
+
+def private(name: str) -> bool:
+    return len(name) >= SHORTEST_NAME and not name.startswith("tmp") and bool(NAMED.search(name))
 
 
 class Scrubber:
@@ -20,8 +25,7 @@ class Scrubber:
         self.sessions: dict[str, str] = {}
         self.paths = {str(Path.home()): HOME, **dict.fromkeys(folders or [], PROJECT)}
         self.names = {name: "demo" for name in (getpass.getuser(), Path.home().name) if len(name) >= SHORTEST_NAME}
-        self.names.update({name: "demo" for journal in known() for name in (journal.project, Path(journal.root).parent.name)
-                           if len(name) >= SHORTEST_NAME})
+        self.names.update({name: "demo" for journal in known() for name in (journal.project, Path(journal.root).parent.name) if private(name)})
         host = socket.gethostname().split(".")[0]
         if len(host) >= SHORTEST_NAME:
             self.names[host] = "demo-host"
