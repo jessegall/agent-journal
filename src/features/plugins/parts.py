@@ -17,7 +17,7 @@ from features.plugins.payload import refusal
 from features.plugins.run import PluginReply, asked, call
 from features.plugins.skills import withdrawn
 from features.plugins.source import environment, folder, logged, plugin_socket
-from features.status_bar import commands
+from engine import command_effects
 from resources.base import OWNER, PLUGIN, SYSTEM
 from engine.reach import Reach
 
@@ -76,7 +76,7 @@ class AskPluginsToRefuse(ToolInterceptor):
     reach = Reach.MAIN
     def intercept(self, context: Context, call_) -> str:
         record, hook = context.record, context.hook
-        writes = commands.writes(hook)
+        writes = command_effects.writes(hook)
         left = ALTOGETHER
         for row in context.journal.plugins._standing():
             manifest = declared(row)

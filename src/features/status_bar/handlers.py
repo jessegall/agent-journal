@@ -3,7 +3,7 @@ import time
 from engine.events.agents import AgentReported
 from features.parts import AgentContext, Handler
 from features.status_bar.bar import EMPTY, bar
-from features.status_bar.runs import CommandRun
+from engine.command_runs import CommandRun
 from features.status_bar.usage import observe
 
 

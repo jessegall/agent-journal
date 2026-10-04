@@ -11,7 +11,7 @@ from features.trigger import DAY, MINUTE
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS
 from providers.base import BackgroundTasks
-from features.status_bar.runs import CommandRun, command_runs
+from engine.command_runs import CommandRun, command_runs
 
 FOREGROUND = "Bash"
 RECENT = 10 * MINUTE
