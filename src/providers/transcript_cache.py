@@ -85,7 +85,7 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return []
-        key = ("transcript", str(path))
+        key = ("transcript", str(path), providers_mark())
         kept = None if str(path) in self.transcripts else self.stored(key)
         held = self.transcripts.get(str(path)) or (kept and (kept[0], *kept[1]))
         offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")

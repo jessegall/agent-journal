@@ -86,13 +86,13 @@ class HookFacts:
     event: str
     tool: str
     file: str
-    cwd: str
+    cwd: str | None
     transcript: str
     inbox: str
     model: str
     effort: str
     context: float | None
-    asking: Asking | None
+    asking: dict
     last_message: str
     prompted: str | None
     transcript_facts: dict = field(default_factory=dict)

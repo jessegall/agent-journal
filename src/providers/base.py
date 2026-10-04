@@ -298,7 +298,7 @@ class Provider(ABC):
     def facts(self, hook, root: Path) -> HookFacts:
         return HookFacts(event=hook.event, tool=hook.tool.name, file=hook.tool.path, cwd=hook.cwd, transcript=str(hook.transcript) if hook.transcript else "",
                          inbox=self.inbox(hook), model=self.model(hook), effort=self.effort(Path(hook.cwd or root.parent), hook.transcript),
-                         context=self.context(hook), asking=self.asking(hook), last_message=hook.last_message, prompted=self.prompted(hook),
+                         context=self.context(hook), asking=asking_row(self.asking(hook)), last_message=hook.last_message, prompted=self.prompted(hook),
                          transcript_facts=self.session(hook.transcript))
 
     def prompted(self, hook) -> str | None:
