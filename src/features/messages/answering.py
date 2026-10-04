@@ -7,6 +7,15 @@ ASKING = re.compile(r"\?|\b(?:relay|reply|answer me|tell me|let me know|what do 
                     r"|denk je|ben je het (?:ermee )?eens|begrijp je|snap je|jouw (?:mening|kijk|idee))\b", re.I)
 
 
+NODDING = re.compile(r"^\W*(?:ok(?:ay|é)?|thanks?(?: you)?|thx|cool|nice|great|perfect|splendid|sure|got it|sounds good|good|top|prima|mooi"
+                     r"|dank(?:je|jewel| je| u)?|bedankt|helemaal goed|lekker)\b[\W\s]*(?:sir|jesse|man)?[\W\s]*$", re.I)
+
+
+def nods(message) -> bool:
+    text = message.brief or message.title
+    return not asks(message) and not message.files and bool(NODDING.match(text))
+
+
 def theirs(message) -> bool:
     return message.seen[:1] != [AGENT]
 

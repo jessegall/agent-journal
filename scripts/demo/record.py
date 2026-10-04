@@ -19,7 +19,7 @@ from engine.attic import removed  # noqa: E402
 from features.session_recording.demo import BRANCHES  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
-SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers")
+SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers", "docs", "memory")
 SHIPPED = SRC / "web" / "demo" / "scenarios"
 SETTLE = 3.0
 SERVED = ("heartbeat", "viewer.json")
