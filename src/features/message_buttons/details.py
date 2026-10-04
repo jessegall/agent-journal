@@ -1,7 +1,7 @@
 from features.base import FeatureDetails
 
 
-class ButtonsDetails(FeatureDetails):
+class MessageButtonsDetails(FeatureDetails):
     name = "message_buttons"
     skill_of = "messages"
     when = "a message you write should offer the user buttons"

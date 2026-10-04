@@ -2,7 +2,7 @@ from features.trigger import IDLE, Trigger
 from features.base import FeatureDetails, Line
 
 
-class DeferralDetails(FeatureDetails):
+class PutOffWorkDetails(FeatureDetails):
     name = "put_off_work"
     has_skill = False
 
