@@ -12,6 +12,7 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
+from features import FEATURES  # noqa: E402
 from features.sharing.controller import HEALTH, LAYOUT_FILE, SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
 from features.sharing.preview import card, tags  # noqa: E402
@@ -90,6 +91,9 @@ class ShareHandler(BaseHTTPRequestHandler):
     def log_message(self, *args) -> None:
         return
 
+    def sharing(self) -> bool:
+        return FEATURES["sharing"].enabled(self.shares.record)
+
     def do_HEAD(self) -> None:
         self.do_GET()
 
@@ -99,7 +103,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.send(200, b"ok", {"Content-Type": "text/plain"})
         if (route := routed(parts, self.shares.record)) is not None:
             return route.get(self, parts[1:])
-        if len(parts) < 2 or parts[0] != "s":
+        if len(parts) < 2 or parts[0] != "s" or not self.sharing():
             return self.page(404, unshared())
         share = self.shares._by_token(parts[1])
         if share is None or not share.approved:
@@ -141,7 +145,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if (route := routed(parts, self.shares.record)) is not None:
             return route.post(self, parts[1:])
-        if len(parts) != 3 or parts[0] != "s" or parts[2] not in VISITOR_POSTS:
+        if len(parts) != 3 or parts[0] != "s" or parts[2] not in VISITOR_POSTS or not self.sharing():
             return self.refused()
         share = self.shares._by_token(parts[1])
         if share is None or not share.approved or share.ended:
