@@ -153,7 +153,7 @@ def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
 
 
 def test_a_subagents_task_list_stays_off_the_main_list_and_each_agent_holds_its_own_work():
-    from commands.http import Listing, listing
+    from surfaces.listing import Listing, listing
     features.load()
     record = fresh()
     main = Todos(record, actor=AGENT)
