@@ -1,7 +1,7 @@
 from features.base import FeatureDetails
 
 
-class TabFocusDetails(FeatureDetails):
+class OpenViewerDetails(FeatureDetails):
     name = "open_viewer"
     has_skill = False
 

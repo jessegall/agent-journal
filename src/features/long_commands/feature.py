@@ -1,7 +1,8 @@
 from features.base import Feature
 from features.journal import Journal
 from features.long_commands.details import RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED, LongCommandsDetails
-from features.long_commands.handlers import MoveLongCommands, ended_runs, open_runs, stalled_runs
+from features.long_commands.move import MoveLongCommands
+from features.long_commands.watch import ended_runs, open_runs, stalled_runs
 from features.nudges import Nudge
 
 
