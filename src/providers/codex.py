@@ -2,12 +2,13 @@ import json
 from functools import cache
 from dataclasses import dataclass, field
 import re
+import time
 import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
-from providers.base import BackgroundTasks, Provider, parsed, recent
+from providers.base import Asking, BackgroundTasks, Provider, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
 from engine.fields import Loaded
@@ -421,10 +422,13 @@ class CodexDriver(Driver):
     READY = b"AskCodextodoanything"
     BUSY = b"esctointerrupt"
     ASKING = (b"Wouldyouliketorun", b"Yes,proceed", b"Allowcommand", b"Approve")
+    ASKED_COMMAND = re.compile(r"Would you like to run the following command\?.*\$ (.+?)\s*›\s*1\.\s*Yes, proceed", re.S)
+    ALLOW = b"y"
+    ASKS_ON_SCREEN = True
     QUEUED = b"Messagestobesubmittedafternexttoolcall"
     RUNNING = b"backgroundterminalrunning"
     SEND_NOW = b"\x1b"
-    TRUSTING = re.compile(rb"Doyoutrustthecontentsofthisdirectory.*?(\d)\.Yes,continue", re.S)
+    TRUSTING = re.compile(rb"(?:Doyoutrustthecontentsofthisdirectory|Trustthisfolder\?).*?(\d)\.(?:Yes,continue|Trustandcontinue)", re.S)
     UPDATING = re.compile(rb"Updateavailable.*?(\d)\.Skip(?!until)", re.S)
     SCREEN_TAIL = 8192
     OPENING = "The journal started this session."
@@ -452,12 +456,24 @@ class CodexDriver(Driver):
         plain = self._screen()
         return max(plain.rfind(phrase) for phrase in self.ASKING) > max(plain.rfind(self.READY), plain.rfind(self.BUSY))
 
+    def asked(self) -> Asking | None:
+        if not self.asking():
+            return None
+        found = list(self.ASKED_COMMAND.finditer(self._screen_text()))
+        return Asking("exec_command", found[-1][1].strip()[:300] if found else "a command", time.time())
+
+    def _screen_text(self) -> str:
+        return self._printed_tail().decode(errors="replace")
+
     def _screen(self) -> bytes:
+        return b"".join(self._printed_tail().split())
+
+    def _printed_tail(self) -> bytes:
         try:
             tail = self.printed.read_bytes()[-self.SCREEN_TAIL:]
         except OSError:
             return b""
-        return b"".join(ANSI.sub(b"", tail).split())
+        return ANSI.sub(b"", tail)
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []

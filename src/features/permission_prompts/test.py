@@ -48,6 +48,17 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert (codex.consent(asked), codex.opening(asked)) == (b"1\r", ""), "Codex's trust question is answered Yes by number, before the opening"
     assert codex.opening(b"\x1b[2m> Ask Codex to do anything\x1b[0m") == codex.OPENING, "at its empty prompt Codex is given the journal's opening line"
     assert codex.consent(asked + b"\r\n> Ask Codex to do anything") == b"", "once Codex is at its prompt, nothing more is typed into the question"
+    folder = b"Folder access /p Trust this folder?\r\nCodex can read, edit, and run files here.\r\n\xe2\x80\xba 1. Trust and continue\r\n  2. Quit"
+    assert codex.consent(folder) == b"1\r", "Codex 0.160 words its trust question differently, and it is answered the same way"
+    screen = ("Running printf 'hi' > hello.txt\r\nWould you like to run the following command?\r\nReason: May I create hello.txt?\r\n"
+              "$ printf 'hi' > hello.txt\r\n\u203a 1. Yes, proceed (y)\r\n  2. Yes, and don't ask again (p)\r\n  3. No, and tell Codex what to do differently (esc)")
+    driver = codex(fresh(), "codex-ask")
+    driver.printed.parent.mkdir(parents=True, exist_ok=True)
+    driver.printed.write_bytes(f"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nesc to interrupt\r\n{screen}".encode())
+    assert (driver.asked().tool, driver.asked().call, codex.ALLOW) == ("exec_command", "printf 'hi' > hello.txt", b"y"), \
+        "Codex's approval prompt is read off its screen with its command, and Allow presses y"
+    driver.printed.write_bytes(f"{screen}\r\n\x1b[2m> Ask Codex to do anything\x1b[0m".encode())
+    assert driver.asked() is None, "once the prompt is gone, nothing is asked"
     claude = DRIVERS["claude"]
     warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()

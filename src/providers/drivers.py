@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
-from providers.base import JOURNAL, MARK
+from providers.base import JOURNAL, MARK, Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted
@@ -43,6 +43,7 @@ class Driver(ABC):
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
     TAKES_CHANNEL = False
+    ASKS_ON_SCREEN = False
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
     WORKTREE: tuple = ()
@@ -58,8 +59,8 @@ class Driver(ABC):
     PROMPT = re.compile(r"[›>$❯]\s*$")
     SUGGESTED = re.compile(rb"(?!)")
     ELSEWHERE = ""
-    name = ""
     ALLOW, DENY = b"1", b"\x1b"
+    name = ""
 
     def __init__(self, record, session: str, fd: int = -1):
         self.record = record
@@ -199,6 +200,9 @@ class Driver(ABC):
 
     def permit(self, allow: bool) -> None:
         self._wrote(self.ALLOW if allow else self.DENY)
+
+    def asked(self) -> Asking | None:
+        return None
 
     def alive(self) -> bool:
         return self.fd >= 0 or typist.reachable(typist.path(self.record.root, self.session))

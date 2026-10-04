@@ -3,7 +3,7 @@ import json
 import pickle
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, ClassVar, TypeVar
 
@@ -103,6 +103,17 @@ class TypedRun:
 @dataclass
 class TypedRuns:
     runs: list[TypedRun] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class Asking:
+    tool: str
+    call: str
+    at: float
+
+
+def asking_row(asked: Asking | None) -> dict:
+    return asdict(asked) if asked is not None else {}
 
 
 @dataclass
@@ -353,7 +364,7 @@ class Provider(ABC):
                 "provider": self.name, "uses": int(row.uses) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
-                "context": row.context or 0 if context is None else context, "asking": self.asking(hook),
+                "context": row.context or 0 if context is None else context, "asking": asking_row(self.asking(hook)),
                 "last_message": hook.last_message or row.last_message or "", "loops": self.loops(row, hook), "prompted": self.prompted(row, hook)}
 
     def prompted(self, row, hook) -> str:
@@ -372,8 +383,8 @@ class Provider(ABC):
             kept.pop(call.loop, None)
         return kept
 
-    def asking(self, hook) -> dict:
-        return {"tool": hook.tool.name, "call": hook.tool.text[:300], "at": time.time()} if hook.event == PERMISSION else {}
+    def asking(self, hook) -> Asking | None:
+        return Asking(hook.tool.name, hook.tool.text[:300], time.time()) if hook.event == PERMISSION else None
 
     def read_ahead(self, path: Path) -> None:
         self.transcript(path)
