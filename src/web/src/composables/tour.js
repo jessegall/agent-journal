@@ -1,5 +1,5 @@
+import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {onUnmounted, ref, watch} from "vue";
-import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
 
 const KEY = "tour_seen";
 const START_AFTER = 800;

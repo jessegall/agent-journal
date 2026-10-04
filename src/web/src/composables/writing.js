@@ -1,6 +1,7 @@
+import {agent} from "./leadAgent.js";
+import {store} from "../state/store.js";
 import {computed, watch} from "vue";
 import {useNow} from "./now.js";
-import {agent, store} from "../state/store.js";
 
 const WRITING_FOR = 45;
 const TICK = 3000;

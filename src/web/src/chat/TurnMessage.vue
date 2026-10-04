@@ -1,4 +1,6 @@
 <script setup>
+import {meta, types} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import Buttons from "../resource/Buttons.vue";
@@ -17,7 +19,6 @@ import {useTurnText} from "./turnText.js";
 import {quoted} from "../format/quote.js";
 import {EARLIER, answered} from "../domain/replies.js";
 import {focusTurn, laidOut} from "../platform/view.js";
-import {meta, store, types} from "../state/store.js";
 import {optimistic} from "../sync/rows.js";
 import {render} from "../text/index.js";
 

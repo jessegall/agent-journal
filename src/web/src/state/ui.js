@@ -1,5 +1,5 @@
+import {kept, remembered} from "../platform/storage.js";
 import {reactive} from "vue";
-import {kept, remembered} from "../composables/remembered.js";
 import {AGENT_VIEW} from "../domain/orchestra.js";
 
 const AGENT_VIEW_KEY = "journal.agents.view";
@@ -17,6 +17,9 @@ export const ui = reactive({
     lightbox: {pictures: [], at: -1},
     away: {open: false, since: 0, back: 0, left: 0, hidden: false},
     flash: {at: Date.now()},
+    prefill: "",
+    litCard: 0,
+    stopsOpen: 0,
 });
 
 kept(AGENT_VIEW_KEY, () => ui.agentView);

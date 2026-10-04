@@ -1,10 +1,10 @@
 <script setup>
+import {ui} from "../state/ui.js";
 import {replayBlocks} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
-import {prefill} from "../state/prefill.js";
 
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -29,7 +29,7 @@ const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
 watch(
-    prefill,
+    () => ui.prefill,
     (text, was) => {
         if (text || was) draft.text = text;
     },
@@ -133,7 +133,7 @@ function unpick(i) {
 
 async function go() {
     if (draft.sending || !draft.text.trim()) return;
-    if (replayBlocks(draft.text.trim(), prefill.value.trim())) return;
+    if (replayBlocks(draft.text.trim(), ui.prefill.trim())) return;
     const text = draft.text.trim();
     const files = draft.files;
     draft.sending = true;

@@ -1,4 +1,7 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {autoOn, steered} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import QuickRow from "./QuickRow.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import Compose from "../chat/Compose.vue";
@@ -9,7 +12,6 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route, showFile} from "../route.js";
 import {open} from "../domain/records.js";
 import {showAway} from "../platform/visibility.js";
-import {agent, autoOn, steered, store} from "../state/store.js";
 import {setAuto} from "../actions/work.js";
 import {useNavigation} from "../composables/navigation.js";
 import {activityShown, toggleActivity} from "../actions/panels.js";
@@ -199,12 +201,13 @@ const commands = computed(() => {
             store.wide = !store.wide;
         },
     });
-    if (!steered.value) rows.push({
-        label: autoOn.value ? "Pause auto mode" : "Resume auto mode",
-        keys: "auto mode",
-        icon: "auto",
-        run: () => switchAuto(!autoOn.value),
-    });
+    if (!steered.value)
+        rows.push({
+            label: autoOn.value ? "Pause auto mode" : "Resume auto mode",
+            keys: "auto mode",
+            icon: "auto",
+            run: () => switchAuto(!autoOn.value),
+        });
     rows.push({
         label: "Show what happened while you were away",
         keys: "away digest recap",

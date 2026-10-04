@@ -1,6 +1,6 @@
+import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {computed, effectScope, ref, watch} from "vue";
 import {INSPECTOR_VIEWS, VIEWS, fresh, freshInspector, leaves, measure, opened, resized, valid} from "../domain/panes.js";
-import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
 import {route} from "../route.js";
 
 const SAVE_AFTER = 500;

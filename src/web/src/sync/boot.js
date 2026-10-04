@@ -1,6 +1,7 @@
+import {store} from "../state/store.js";
+import {types} from "../domain/spec.js";
 import {api} from "../api/client.js";
 import {go, route} from "../route.js";
-import {store, types} from "../state/store.js";
 import {recallEvents, reload} from "./rows.js";
 import {listen} from "./stream.js";
 

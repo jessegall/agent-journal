@@ -1,4 +1,7 @@
 <script setup>
+import {meta, types} from "../domain/spec.js";
+import {sharingOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, ref} from "vue";
@@ -10,7 +13,6 @@ import {href, route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
 import {connectedPhones} from "../composables/phones.js";
-import {meta, sharingOn, store, types} from "../state/store.js";
 import {useOutside} from "../composables/outside.js";
 import {activityShown, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";

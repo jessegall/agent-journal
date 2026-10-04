@@ -1,4 +1,4 @@
-import {remember, remembered} from "../composables/remembered.js";
+import {remember, remembered} from "../platform/storage.js";
 import {api} from "../api/client.js";
 import {tellExtension} from "../platform/extension.js";
 import {pollNow, startPoll} from "../poll.js";

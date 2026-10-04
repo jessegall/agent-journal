@@ -1,5 +1,5 @@
+import {remember, remembered} from "../platform/storage.js";
 import {ref} from "vue";
-import {remember, remembered} from "../composables/remembered.js";
 
 export const NAME_KEY = "shared-comment-name";
 export const visitorName = ref(remembered(NAME_KEY, ""));

@@ -1,4 +1,5 @@
 <script setup>
+import {label, meta, word} from "../domain/spec.js";
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -6,7 +7,6 @@ import TextInput from "../kit/TextInput.vue";
 import Dialog from "../kit/Dialog.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import {route} from "../route.js";
-import {label, meta, word} from "../state/store.js";
 
 const props = defineProps({type: String});
 const emit = defineEmits(["made", "close"]);

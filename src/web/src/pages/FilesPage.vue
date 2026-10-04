@@ -1,4 +1,5 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {searchTerms} from "../domain/documents.js";
 import {computed, onMounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
@@ -12,7 +13,6 @@ import {api} from "../api/client.js";
 import {href, route} from "../route.js";
 import {ageGroups} from "../format/time.js";
 import {openPictures} from "../platform/view.js";
-import {meta} from "../state/store.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 
 const files = ref([]);

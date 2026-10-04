@@ -1,9 +1,9 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import Folded from "../kit/Folded.vue";
 import {computed, inject, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import {byRef, parkedFor, waitsOn} from "../domain/records.js";
-import {meta} from "../state/store.js";
 import Sections from "./Sections.vue";
 import {useWriting} from "../composables/writing.js";
 import OptionsPicker from "./OptionsPicker.vue";

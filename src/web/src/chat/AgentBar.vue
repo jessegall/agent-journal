@@ -1,4 +1,6 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
 import {loadedSkills, usageWindows} from "../agents.js";
 import MenuPanel from "../kit/MenuPanel.vue";
@@ -14,7 +16,6 @@ import CrewList from "./CrewList.vue";
 import LoopList from "./LoopList.vue";
 import "./drop.css";
 import {go, peek, route} from "../route.js";
-import {agent, store} from "../state/store.js";
 
 const open = ref("");
 const schemesOpen = ref(false);

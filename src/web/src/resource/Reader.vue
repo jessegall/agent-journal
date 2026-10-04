@@ -1,9 +1,10 @@
 <script setup>
+import {meta} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, route, swap, unpeek} from "../route.js";
-import {meta, store} from "../state/store.js";
 import {holding, rows} from "../sync/rows.js";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";

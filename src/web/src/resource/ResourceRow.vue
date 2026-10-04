@@ -1,11 +1,11 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {parkedFor, state, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
-import {meta} from "../state/store.js";
 import {computed} from "vue";
 
 const props = defineProps({resource: Object, selected: Boolean});

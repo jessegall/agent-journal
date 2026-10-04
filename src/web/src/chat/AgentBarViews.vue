@@ -1,8 +1,9 @@
 <script setup>
+import {feedOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {computed, inject} from "vue";
 import Icon from "../kit/Icon.vue";
 import AgentFact from "./AgentFact.vue";
-import {feedOn, store} from "../state/store.js";
 
 defineProps({open: {type: String, default: ""}});
 const emit = defineEmits(["toggle"]);

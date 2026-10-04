@@ -1,9 +1,9 @@
 <script setup>
+import {meta, types} from "../domain/spec.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
-import {meta, types} from "../state/store.js";
 
 const props = defineProps({resource: Object, bare: Boolean});
 const BY_HAND = "";

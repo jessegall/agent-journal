@@ -1,4 +1,6 @@
 <script setup>
+import {meta, word} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import EmptyState from "../kit/EmptyState.vue";
 import TabBar from "../kit/TabBar.vue";
 import {useSighted} from "../composables/scrollback.js";
@@ -8,8 +10,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, route} from "../route.js";
-import {groupOf, GROUPS, open} from "../domain/records.js";
-import {counted, meta, store, word} from "../state/store.js";
+import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
 import {earlier, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
@@ -35,10 +36,10 @@ const SHOWS = {
     every: () => all.value,
 };
 const COUNTS = {
-    open: () => counted(props.type, "open") - (splits.value ? updates.value.filter((r) => !r.completed).length : 0),
+    open: () => recordCount(props.type, "open") - (splits.value ? updates.value.filter((r) => !r.completed).length : 0),
     updates: () => updates.value.length,
-    closed: () => counted(props.type, "all") - counted(props.type, "open"),
-    every: () => counted(props.type, "all"),
+    closed: () => recordCount(props.type, "all") - recordCount(props.type, "open"),
+    every: () => recordCount(props.type, "all"),
 };
 const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
 watch(

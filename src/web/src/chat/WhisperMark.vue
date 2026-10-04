@@ -1,8 +1,8 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import {peekRef} from "../route.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({
     row: {type: String, required: true},

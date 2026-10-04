@@ -1,11 +1,11 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref, watch} from "vue";
 import OptionsPicker from "./OptionsPicker.vue";
 import {api} from "../api/client.js";
 import {linkedTo} from "../domain/records.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object});
 const asking = (r) => meta(r.type).fields.options && meta(r.type).needs_attention;

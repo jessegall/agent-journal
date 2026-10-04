@@ -1,9 +1,9 @@
 <script setup>
+import {remember, remembered} from "../platform/storage.js";
 import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
-import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
 

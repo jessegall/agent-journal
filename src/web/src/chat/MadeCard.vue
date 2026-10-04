@@ -1,7 +1,7 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {peek} from "../route.js";
-import {meta} from "../state/store.js";
 
 defineProps({made: {type: Object, required: true}});
 </script>

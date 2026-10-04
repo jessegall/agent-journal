@@ -1,8 +1,8 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import KeywordList from "./KeywordList.vue";
 import ResourceBlock from "./ResourceBlock.vue";
-import {meta} from "../state/store.js";
 
 const props = defineProps({types: {type: Array, required: true}});
 const words = computed(() =>

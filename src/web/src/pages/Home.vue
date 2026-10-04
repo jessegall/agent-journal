@@ -1,4 +1,6 @@
 <script setup>
+import {store} from "../state/store.js";
+import {saveViewerSetting, viewerSetting, workMode} from "../composables/settings.js";
 import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
 import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
@@ -8,7 +10,6 @@ import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
 import DumpWindow from "../chat/DumpWindow.vue";
-import {store, workMode} from "../state/store.js";
 import {ORCHESTRATOR} from "../domain/modes.js";
 import PaneMenu from "./PaneMenu.vue";
 import HintBubble from "../kit/HintBubble.vue";
@@ -28,7 +29,6 @@ import {useDetached} from "../composables/detached.js";
 import {clamp} from "../format/number.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import {useTour} from "../composables/tour.js";
-import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
 import {schemeChoices, schemeColors, windowSchemes} from "../domain/schemes.js";
 import {levelChoices, levelOf} from "../domain/verbosity.js";
 import {

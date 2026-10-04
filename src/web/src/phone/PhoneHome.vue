@@ -1,11 +1,11 @@
 <script setup>
+import {ui} from "../state/ui.js";
 import {plainText} from "../text/words.js";
 import {copyText} from "../kit/copy.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
-import {prefill} from "../state/prefill.js";
 import PhoneHold from "./PhoneHold.vue";
 import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
@@ -85,7 +85,7 @@ const top = ref(null);
 const compose = ref(null);
 const draft = ref("");
 watch(
-    prefill,
+    () => ui.prefill,
     (text, was) => {
         if (text || was) draft.value = text;
     },

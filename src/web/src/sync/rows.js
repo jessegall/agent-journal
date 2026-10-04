@@ -1,6 +1,6 @@
+import {remember, remembered} from "../platform/storage.js";
 import {ref, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
-import {remember, remembered} from "../composables/remembered.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";

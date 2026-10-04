@@ -1,4 +1,4 @@
-import {prefill} from "../src/state/prefill.js";
+import {ui} from "../src/state/ui.js";
 import {QuietStream} from "./stream.js";
 
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
@@ -39,7 +39,8 @@ export class Player {
     mapped() {
         this.moves = movesOf(this.standIn.moments).filter(Boolean);
         const branches = Object.values(this.standIn.demo.branches || {});
-        const opening = branches.length && !this.standIn.state.branch && movesOf([this.standIn.demo.moments.at(-1), ...branches[0]]).find(Boolean);
+        const opening =
+            branches.length && !this.standIn.state.branch && movesOf([this.standIn.demo.moments.at(-1), ...branches[0]]).find(Boolean);
         this.fork = opening ? {...opening, at: this.standIn.moments.length, fork: true} : null;
     }
 
@@ -57,7 +58,7 @@ export class Player {
 
     offer() {
         const move = this.waiting;
-        prefill.value = move && move.kind === "send" ? this.asked(move.at) : "";
+        ui.prefill = move && move.kind === "send" ? this.asked(move.at) : "";
     }
 
     asked(at) {
@@ -74,7 +75,7 @@ export class Player {
     send() {
         const move = this.waiting;
         if (!move || move.kind !== "send") return null;
-        prefill.value = "";
+        ui.prefill = "";
         this.goTo(move.at);
         this.play();
         return this.message(move.at);

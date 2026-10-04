@@ -1,4 +1,7 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {feedOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {cardPlan} from "../domain/plans.js";
 import {waitsFor} from "../domain/agentState.js";
 import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
@@ -14,7 +17,6 @@ import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
-import {agent, feedOn, store} from "../state/store.js";
 import {earlier} from "../sync/rows.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";

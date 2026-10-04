@@ -1,11 +1,12 @@
 <script setup>
+import {meta, word} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
 import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
-import {meta, store, word} from "../state/store.js";
 
 const WORDS = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on", reopened: "Reopened"};
 const settled = ref(false);
