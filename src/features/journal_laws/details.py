@@ -78,7 +78,7 @@ class LawDetails(FeatureDetails):
         ),
         Setting(
             name="whole_read_lines",
-            default=300,
+            default=600,
             title="Refuse reading a whole file longer than",
             abstract="A file this long is read by range or searched, not read whole",
             unit="lines",

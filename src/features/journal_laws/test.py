@@ -127,15 +127,15 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     load()
     record = fresh()
     project = record.root.parent
-    (project / "long.py").write_text("x = 1\n" * 400)
+    (project / "long.py").write_text("x = 1\n" * 800)
     (project / "short.py").write_text("x = 1\n" * 20)
     hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-read", "tool_name": tool,
                                                                                         "cwd": str(project), "tool_input": given})
     whole = hook("Read", {"file_path": str(project / "long.py")})
-    assert whole.get("decision") == "block" and "has 400 lines" in whole.get("reason", "") and "read a range (offset 1, limit 120)" in whole.get("reason", "") and whole["hookSpecificOutput"]["permissionDecision"] == "deny", whole
+    assert whole.get("decision") == "block" and "has 800 lines" in whole.get("reason", "") and "read a range (offset 1, limit 120)" in whole.get("reason", "") and whole["hookSpecificOutput"]["permissionDecision"] == "deny", whole
     from controllers.types import Agents
     card = Agents(record).by_session("claude-read").data["cards"][-1]
-    assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("400 lines"), card
+    assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("800 lines"), card
     assert hook("Read", {"file_path": str(project / "long.py"), "offset": 1, "limit": 50}).get("decision") != "block", "a range passes"
     assert hook("Read", {"file_path": str(project / "short.py")}).get("decision") != "block", "a short file passes whole"
     (project / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n\0\0\0\r" + b"\n" * 900)
@@ -145,7 +145,7 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
     dropped = record.folder("dump") / "001" / "proposal.md"
     dropped.parent.mkdir(parents=True)
-    dropped.write_text("x = 1\n" * 400)
+    dropped.write_text("x = 1\n" * 800)
     assert hook("Read", {"file_path": str(dropped)}).get("decision") != "block", "a file dropped in a dump is read whole"
 
 
@@ -196,7 +196,7 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
     load()
     record = fresh()
     project = record.root.parent
-    (project / "long.py").write_text("x = 1\n" * 400)
+    (project / "long.py").write_text("x = 1\n" * 800)
     hook = lambda tool, given: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-read", "tool_name": tool,
                                                                                        "cwd": str(project), "tool_input": given})
     for tool, given in (("exec", {"input": "cat long.py"}), ("exec_command", {"cmd": "cat long.py"}), ("shell", {"command": ["cat", "long.py"]})):
