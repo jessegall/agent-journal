@@ -106,14 +106,23 @@ async function flushOnce() {
             lose(line, "The attached file was lost, so this was not sent. Attach it again in a new message.");
             continue;
         }
+        let made;
         try {
-            const made = await phone.say(line.brief, line.idempotency, line.about);
-            for (const file of files) await phone.attach(made.n, file);
+            made = await phone.say(line.brief, line.idempotency, line.about);
         } catch (error) {
             if (ended(error) || unreachable(error)) throw error;
             lose(line, `This was not sent: ${error.message}. Write it again in a new message.`);
             continue;
         }
+        const missing = [];
+        for (const file of files) {
+            try {
+                await phone.attach(made.n, file);
+            } catch (error) {
+                missing.push(file.name);
+            }
+        }
+        if (missing.length) line.reason = `Message sent, but ${missing.join(", ")} could not be attached. Attach again in a new message.`;
         carried.delete(line.idempotency);
         unstashed(line.idempotency);
         waitingToSend.value = waitingToSend.value.filter((held) => held.idempotency !== line.idempotency);

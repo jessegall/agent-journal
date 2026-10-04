@@ -6,9 +6,8 @@ import {sendAnswer} from "../api/shared.js";
 import {visitorName, rememberName} from "./visitor.js";
 
 const props = defineProps({n: {type: Number, required: true}, options: {type: Array, required: true}, answer: {type: String, default: ""}});
-const known = visitorName;
-const name = ref(known.value);
-watch(known, (value) => (name.value = value));
+const name = ref(visitorName.value);
+watch(visitorName, (value) => (name.value = value));
 const chosen = ref("");
 const picked = computed(() => props.answer || chosen.value);
 const sending = ref("");
@@ -36,7 +35,7 @@ async function pick(choice) {
             <p class="picked">Answered: {{ picked }}</p>
         </template>
         <template v-else>
-            <template v-if="!known">
+            <template v-if="!visitorName">
                 <TextInput class="name" :value="name" placeholder="Your name" aria-label="Your name" @input="name = $event.target.value" />
             </template>
             <div class="options">

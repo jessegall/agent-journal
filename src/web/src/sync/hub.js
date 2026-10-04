@@ -9,7 +9,7 @@ import {readSummary} from "./summary.js";
 import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
 
 const LINGER = 60000;
-const SCAN_EVERY = 2000;
+const SCAN_EVERY = 10000;
 const REFRESH_EVERY = 1000;
 const STALE_AFTER = 10000;
 const STREAMS_PER_JOURNAL = 3;
@@ -298,6 +298,17 @@ async function scan() {
 
 let users = 0;
 
+export function useJournalPoll() {
+    usePoll(
+        "journals",
+        async () => {
+            store.journals = await api.journals();
+            await scan();
+        },
+        SCAN_EVERY
+    );
+}
+
 export function useHub() {
     watch(
         () => store.events,
@@ -307,8 +318,10 @@ export function useHub() {
         }
     );
 
-    usePoll("hub", scan, SCAN_EVERY);
-    onMounted(() => users++);
+    onMounted(() => {
+        users++;
+        if (store.journals.length) scan();
+    });
     onUnmounted(() => {
         users--;
         if (users) return;
