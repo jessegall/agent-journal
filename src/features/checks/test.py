@@ -49,7 +49,7 @@ def test_only_the_checks_that_are_due_come_up_on_the_timer():
 
 
 def test_a_running_check_counts_its_steps_against_what_it_knows_of_the_total():
-    from features.checks.controller import progress
+    from features.checks.output import progress
     assert progress("building 12/40 files") == {"done": 12, "total": 40, "percent": 30.0}, "an explicit count"
     assert progress("collected 10 items\n\n.....F.") == {"done": 7, "total": 10, "percent": 70.0}, "one mark per test against the collected count"
     assert progress("bringing up nodes...\n\n" + "." * 30, 60) == {"done": 30, "total": 60, "percent": 50.0}, "the last run's count when none is printed"
@@ -70,13 +70,16 @@ def test_a_check_can_leave_a_report_of_findings_that_is_kept_with_its_run():
 
 
 def test_a_due_check_runs_in_one_engine_while_another_holds_it():
-    from features.checks.handlers import claim
+    from engine import runtime
+    from engine.stored import claim
+    from features.checks.controller import REPORTS
     from tests.conftest import fresh
     record = fresh()
-    first = claim(record.root, 3)
-    assert (first is not None, claim(record.root, 3)) == (True, None), "a second engine finds the check already claimed and leaves it"
+    lock = runtime.folder(record.root) / REPORTS / "3.lock"
+    first = claim(lock)
+    assert (first is not None, claim(lock)) == (True, None), "a second engine finds the check already claimed and leaves it"
     first.close()
-    assert claim(record.root, 3) is not None, "once the run ends, the check can be claimed again"
+    assert claim(lock) is not None, "once the run ends, the check can be claimed again"
 
 
 def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on_a_pass(monkeypatch):

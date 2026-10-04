@@ -147,6 +147,17 @@ def acquire(held, operation: int) -> None:
             time.sleep(0.05)
 
 
+def claim(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    held = path.open("a")
+    try:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        held.close()
+        return None
+    return held
+
+
 @contextmanager
 def hold_record_writes(root: Path):
     root = Path(root)
