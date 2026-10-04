@@ -1,5 +1,5 @@
 import {computed, ref} from "vue";
-import {useEscape} from "../composables/windowEvent.js";
+import {useEscape} from "./windowEvent.js";
 
 export function closing(emit, props = {}) {
     const led = () => props.open !== undefined && props.open !== null;

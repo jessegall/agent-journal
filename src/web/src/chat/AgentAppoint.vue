@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
-import {providerName} from "../agents.js";
+import {providerName} from "../domain/agents.js";
 import Icon from "../kit/Icon.vue";
 
 const emit = defineEmits(["done"]);

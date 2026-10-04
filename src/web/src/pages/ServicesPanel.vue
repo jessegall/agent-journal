@@ -11,7 +11,7 @@ import StateDot from "../kit/StateDot.vue";
 import {span} from "../format/time.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {useNow} from "../composables/now.js";
 import {dotOf, isFailing, isRunning, stateWord} from "../domain/services.js";
 import {useServiceAction, useServiceLog} from "../composables/service.js";

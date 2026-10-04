@@ -10,7 +10,7 @@ import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
-import {markPassage, passageIn} from "../composables/passage.js";
+import {markPassage, passageIn} from "../platform/passage.js";
 import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
 

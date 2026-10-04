@@ -5,7 +5,7 @@ import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import ListRow from "../kit/ListRow.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
-import RoleCard from "../organization/RoleCard.vue";
+import RoleCard from "../board/RoleCard.vue";
 import {href, peek, route} from "../route.js";
 import {store} from "../state/store.js";
 

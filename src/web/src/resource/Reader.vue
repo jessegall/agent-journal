@@ -19,7 +19,7 @@ import Comments from "./Comments.vue";
 import UpdateReport from "./UpdateReport.vue";
 import {isUpdate} from "../domain/updates.js";
 import {scopeIn} from "../composables/scope.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 
 const props = defineProps({
     type: String,

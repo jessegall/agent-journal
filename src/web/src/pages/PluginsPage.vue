@@ -19,7 +19,7 @@ import PluginRemoveDialog from "./PluginRemoveDialog.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {sendMessage} from "../chat/outbox.js";
 
 const source = ref("");

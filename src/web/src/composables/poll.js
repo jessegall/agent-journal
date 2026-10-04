@@ -1,5 +1,5 @@
 import {onMounted, onUnmounted} from "vue";
-import {transport} from "./api/transport.js";
+import {transport} from "../api/transport.js";
 
 const BACKOFF_CAP_MS = 60000;
 const SLOW_FACTOR = 4;

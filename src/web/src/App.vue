@@ -7,7 +7,7 @@ import {activityShown, closeOverlays} from "./actions/panels.js";
 
 import {computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
-import {project} from "./identity.js";
+import {project} from "./state/identity.js";
 import {ui} from "./state/ui.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";

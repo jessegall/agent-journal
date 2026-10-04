@@ -7,7 +7,7 @@ import {demo, unlessDemo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import FoldGroup from "../kit/FoldGroup.vue";
 import Icon from "../kit/Icon.vue";
-import {ink, project, tint} from "../identity.js";
+import {ink, project, tint} from "../state/identity.js";
 import {href, route} from "../route.js";
 import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";

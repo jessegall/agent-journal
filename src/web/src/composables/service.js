@@ -1,6 +1,6 @@
 import {ref} from "vue";
 import {api} from "../api/client.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "./poll.js";
 
 const LOG_EVERY = 2000;
 

@@ -2,7 +2,7 @@
 import {line} from "../domain/statusQueue.js";
 import {computed, ref} from "vue";
 import {phone} from "../api/phone.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {useBarLine} from "../composables/barLine.js";
 
 const BUSY_EVERY = 1000;

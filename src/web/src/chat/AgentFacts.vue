@@ -4,7 +4,7 @@ import {computed} from "vue";
 import {demo, unlessDemo} from "../platform/demo.js";
 import Spinner from "../kit/Spinner.vue";
 import AgentFact from "./AgentFact.vue";
-import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../agents.js";
+import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../domain/agents.js";
 import {span} from "../format/time.js";
 import {peek} from "../route.js";
 

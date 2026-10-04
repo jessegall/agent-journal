@@ -1,7 +1,7 @@
 import {reactive} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
-import {startPoll} from "../poll.js";
+import {startPoll} from "../composables/poll.js";
 import {envState, environmentsOf, isThrowaway} from "../domain/journals.js";
 
 const LINGER = 60000;

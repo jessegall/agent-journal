@@ -3,7 +3,7 @@ import {ref} from "vue";
 import {api} from "../api/client.js";
 import Dashboard from "../kit/Dashboard.vue";
 import SidePanel from "../kit/SidePanel.vue";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {route, showFile} from "../route.js";
 
 const props = defineProps({

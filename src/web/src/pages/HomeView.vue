@@ -1,7 +1,7 @@
 <script setup>
 import {agent} from "../composables/leadAgent.js";
 import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
-import AgentGrid from "../board/AgentGrid.vue";
+import AgentGrid from "../agents/AgentGrid.vue";
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -11,8 +11,8 @@ import PinnedNotices from "../chat/PinnedNotices.vue";
 import FileFeed from "../chat/FileFeed.vue";
 import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
-import RailWaiting from "./RailWaiting.vue";
-import RailTodos from "./RailTodos.vue";
+import RailWaiting from "../rail/RailWaiting.vue";
+import RailTodos from "../rail/RailTodos.vue";
 import FamilyTree from "./FamilyTree.vue";
 import {peek} from "../route.js";
 

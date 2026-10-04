@@ -4,7 +4,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CopyButton from "../kit/CopyButton.vue";
 import Icon from "../kit/Icon.vue";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {peek} from "../route.js";
 import {useOutside} from "../composables/outside.js";
 import {
@@ -19,7 +19,7 @@ import {
     viewsOf,
     waitingShares,
 } from "../composables/shares.js";
-import TunnelProblem from "../resource/TunnelProblem.vue";
+import TunnelProblem from "../pages/TunnelProblem.vue";
 
 const SERVICES_EVERY = 5000;
 const TUNNEL = "sharing.tunnel";

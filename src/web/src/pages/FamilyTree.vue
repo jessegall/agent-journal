@@ -6,8 +6,8 @@ import EmptyState from "../kit/EmptyState.vue";
 import GraphNode from "../kit/GraphNode.vue";
 import Spinner from "../kit/Spinner.vue";
 import {api} from "../api/client.js";
-import {usePoll} from "../poll.js";
-import {follow} from "../composables/pointer.js";
+import {usePoll} from "../composables/poll.js";
+import {follow} from "../platform/pointer.js";
 import {peekThere} from "../route.js";
 import {SIZES, edgeLabel, edgePath, familyCounts, familyTree, live, nodeLook} from "../domain/family.js";
 

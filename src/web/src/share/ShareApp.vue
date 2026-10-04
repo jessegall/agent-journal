@@ -2,7 +2,7 @@
 import SwitchCase from "../kit/SwitchCase.vue";
 import {sharedData, sharedFileUrl} from "../api/shared.js";
 import {computed, provide, reactive, ref, watch} from "vue";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {counted} from "../format/number.js";
 import {narrow} from "../platform/view.js";
