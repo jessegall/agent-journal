@@ -1,4 +1,4 @@
-import {computed, reactive, ref} from "vue";
+import {computed, onUnmounted, reactive, ref} from "vue";
 import {ended, perform} from "./outbox.js";
 import {announce} from "./announce.js";
 import {tick} from "./haptic.js";
@@ -19,6 +19,7 @@ export function usePlanGo(plan, refresh, failed) {
     const waits = ref(false);
     const stale = ref(false);
     const trouble = ref("");
+    const sendingNow = ref(false);
     let timer = 0;
     let sending = null;
 
@@ -30,6 +31,8 @@ export function usePlanGo(plan, refresh, failed) {
     }
 
     async function send() {
+        if (sendingNow.value || !held.value) return;
+        sendingNow.value = true;
         stop();
         trouble.value = "";
         try {
@@ -42,10 +45,13 @@ export function usePlanGo(plan, refresh, failed) {
             if (error.status === 409) stale.value = true;
             else if (ended(error)) failed(error);
             else trouble.value = `That didn't go through: ${error.message}. Try again.`;
+        } finally {
+            sendingNow.value = false;
         }
     }
 
     function start() {
+        if (held.value || sendingNow.value || sent.value || waits.value) return;
         sending = {n: plan.value.n, updated: plan.value.updated};
         stale.value = false;
         sent.value = false;
@@ -65,5 +71,6 @@ export function usePlanGo(plan, refresh, failed) {
         refresh();
     }
 
-    return reactive({left, held, sent, waits, stale, trouble, seconds, start, undo: stop, now: send, again});
+    onUnmounted(stop);
+    return reactive({left, held, sent, waits, stale, trouble, sendingNow, seconds, start, undo: stop, now: send, again});
 }

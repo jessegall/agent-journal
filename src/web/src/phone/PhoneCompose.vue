@@ -2,9 +2,10 @@
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
-import {ended, flush, hold} from "./outbox.js";
+import {ended, flush, hold, place, waitingToSend} from "./outbox.js";
 import {announce} from "./announce.js";
 import {prefill} from "../state/prefill.js";
+import {kept, remembered} from "../composables/remembered.js";
 
 const MOST_LINES = 5;
 const REPLAY = __DEMO__;
@@ -14,13 +15,14 @@ const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused"]);
 const SHORT = 420;
 const SHORT_LINES = 2;
 const failed = inject("phoneFailed");
-const words = ref("");
+const words = ref(remembered(`phone-compose:${place.value}`, ""));
+kept(`phone-compose:${place.value}`, words);
 const files = ref([]);
 const picker = ref(null);
 const box = ref(null);
 const sending = ref(false);
-const said = computed(() => words.value.trim());
-const ready = computed(() => Boolean(said.value || files.value.length));
+const messageText = computed(() => words.value.trim());
+const ready = computed(() => Boolean(messageText.value || files.value.length));
 
 const focus = () => box.value?.focus({preventScroll: true});
 const tapped = (event) => !event.target.closest("button, textarea") && focus();
@@ -37,7 +39,7 @@ watch(
             if (start) focus();
         });
     },
-    {immediate: true},
+    {immediate: true}
 );
 
 const previews = reactive(new Map());
@@ -72,10 +74,10 @@ function grow() {
 
 async function send() {
     if (!ready.value || sending.value) return;
-    if (REPLAY && said.value !== prefill.value.trim()) return hinted();
+    if (REPLAY && messageText.value !== prefill.value.trim()) return hinted();
     sending.value = true;
-    const text = said.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
-    hold(text, props.about, files.value);
+    const text = messageText.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
+    const line = hold(text, props.about, files.value);
     emit("unquote");
     words.value = "";
     files.value = [];
@@ -84,8 +86,13 @@ async function send() {
     nextTick(grow);
     try {
         await flush();
-        announce("Message sent");
-        emit("sent");
+        const waiting = waitingToSend.value.find((item) => item.idempotency === line.idempotency);
+        if (waiting?.lost) announce(waiting.reason);
+        else if (waiting) announce("Message waits to send");
+        else {
+            announce("Message sent");
+            emit("sent");
+        }
     } catch (error) {
         if (ended(error)) failed(error);
         else announce("Message waits to send");

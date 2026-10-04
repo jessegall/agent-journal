@@ -4,7 +4,11 @@ import PhoneChevron from "./PhoneChevron.vue";
 import {counted, here, phaseAt, share, WAITS} from "./planGo.js";
 
 const SEGMENTS = 8;
-const props = defineProps({plan: {type: Object, required: true}, go: {type: Object, required: true}, away: {type: Boolean, default: false}});
+const props = defineProps({
+    plan: {type: Object, required: true},
+    go: {type: Object, required: true},
+    away: {type: Boolean, default: false},
+});
 const emit = defineEmits(["open"]);
 const typing = ref(false);
 const focus = (event) => (typing.value = event.type === "focusin" && /^(INPUT|TEXTAREA)$/.test(event.target.tagName));
@@ -34,11 +38,25 @@ onUnmounted(() => {
     <section :class="['plan-strip', {waits, folded}]" aria-label="The plan that is running">
         <button type="button" class="plan-open" :aria-label="label" @click="emit('open')">
             <span class="plan-row">
-                <svg class="plan-flag" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg
+                    class="plan-flag"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
                     <path d="M4 14V2.5M4 3h8l-1.6 2.7L12 8.5H4" />
                 </svg>
                 <span class="plan-title">{{ plan.title }}</span>
-                <span :class="['plan-where', {you: waits}]">{{ where }}<template v-if="folded"> · {{ count }}</template></span>
+                <span :class="['plan-where', {you: waits}]">
+                    {{ where }}
+                    <template v-if="folded">· {{ count }}</template>
+                </span>
                 <PhoneChevron :size="12" class="plan-chevron" />
             </span>
             <template v-if="!folded">
@@ -47,7 +65,11 @@ onUnmounted(() => {
                         <span class="plan-segs">
                             <template v-for="(each, i) in plan.phases" :key="i">
                                 <span class="plan-seg">
-                                    <span :style="{width: `${i + 1 < at ? 100 : i + 1 === at && !waits ? share(each) : i + 1 === at ? 100 : 0}%`}" />
+                                    <span
+                                        :style="{
+                                            width: `${i + 1 < at ? 100 : i + 1 === at && !waits ? share(each) : i + 1 === at ? 100 : 0}%`,
+                                        }"
+                                    />
                                 </span>
                             </template>
                         </span>
@@ -57,7 +79,10 @@ onUnmounted(() => {
                             <span class="plan-seg"><span :style="{width: `${((at - 1 + share(phase) / 100) / total) * 100}%`}" /></span>
                         </span>
                     </template>
-                    <span class="plan-count">{{ count }}<template v-if="phase.todos.length"> done</template></span>
+                    <span class="plan-count">
+                        {{ count }}
+                        <template v-if="phase.todos.length">done</template>
+                    </span>
                 </span>
             </template>
         </button>
@@ -65,6 +90,9 @@ onUnmounted(() => {
             <div class="plan-wait">
                 <template v-if="go.sent">
                     <span class="plan-note">Sent</span>
+                </template>
+                <template v-else-if="go.sendingNow">
+                    <span class="plan-note">Continuing…</span>
                 </template>
                 <template v-else-if="go.waits">
                     <span class="plan-note">Continuing when you're back online</span>

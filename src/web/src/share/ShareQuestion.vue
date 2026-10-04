@@ -1,14 +1,14 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import TextInput from "../kit/TextInput.vue";
 import {sendAnswer} from "../api/shared.js";
-import {remember, remembered} from "../composables/remembered.js";
-import {NAME_KEY} from "./visitor.js";
+import {visitorName, rememberName} from "./visitor.js";
 
 const props = defineProps({n: {type: Number, required: true}, options: {type: Array, required: true}, answer: {type: String, default: ""}});
-const known = remembered(NAME_KEY, "");
-const name = ref(known);
+const known = visitorName;
+const name = ref(known.value);
+watch(known, (value) => (name.value = value));
 const chosen = ref("");
 const picked = computed(() => props.answer || chosen.value);
 const sending = ref("");
@@ -20,7 +20,7 @@ async function pick(choice) {
     sending.value = choice;
     try {
         await sendAnswer(props.n, name.value.trim(), choice);
-        remember(NAME_KEY, name.value.trim());
+        rememberName(name.value.trim());
         chosen.value = choice;
     } catch (e) {
         error.value = e.message;

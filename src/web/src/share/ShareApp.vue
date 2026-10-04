@@ -1,7 +1,7 @@
 <script setup>
 import SwitchCase from "../kit/SwitchCase.vue";
 import {sharedData} from "../api/shared.js";
-import {computed, provide, ref, watch} from "vue";
+import {computed, provide, reactive, ref, watch} from "vue";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
 import {counted} from "../format/number.js";
@@ -58,6 +58,9 @@ const FACTS = {
 const REFRESH_MS = 20000;
 const data = ref(null);
 const failed = ref(false);
+const drafts = reactive({});
+const errors = reactive({});
+let failures = 0;
 
 provide("fileUrl", (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`);
 
@@ -90,11 +93,13 @@ function take(got) {
     stock(got.rows || {}, got.types || {});
     data.value = got;
     failed.value = false;
+    failures = 0;
 }
 
 function ask() {
     return sharedData().catch((e) => {
-        if (!data.value) failed.value = true;
+        failures += 1;
+        if (!data.value || [404, 410].includes(e.status) || failures >= 3) failed.value = true;
         throw e;
     });
 }
@@ -110,7 +115,7 @@ const rowOf = (ref) => {
     const [type, n] = (ref || ":").split(":");
     return (store.rows[type] || []).find((r) => r.n === Number(n)) || null;
 };
-const shown = computed(() => rowOf(shownRef.value));
+const currentRow = computed(() => rowOf(shownRef.value));
 const target = computed(() => rowOf(data.value?.share.target));
 const kind = computed(() => target.value?.type || "");
 const look = computed(() => LOOKS[kind.value] || {noun: kind.value, icon: "docs"});
@@ -135,14 +140,14 @@ function follow(e) {
 function showThread() {
     document.getElementById("share-comments")?.scrollIntoView({behavior: "smooth", block: "start"});
 }
-const timeline = computed(() => (shown.value?.type === "plan" ? data.value?.timeline || [] : []));
+const timeline = computed(() => (currentRow.value?.type === "plan" ? data.value?.timeline || [] : []));
 const away = computed(() => shownRef.value !== data.value?.share.target);
 const ends = computed(() => {
     const at = data.value?.share.expires;
     return at ? new Date(at * 1000).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : "";
 });
 
-watch(shown, (item) => item && (document.title = item.title));
+watch(currentRow, (item) => item && (document.title = item.title));
 watch(shownRef, () => (read.value = 0));
 </script>
 
@@ -155,7 +160,7 @@ watch(shownRef, () => (read.value = 0));
                 <p>It may have ended, or the address is not complete.</p>
             </main>
         </template>
-        <template v-else-if="shown">
+        <template v-else-if="currentRow">
             <ShareStrip
                 :icon="look.icon"
                 :noun="look.noun"
@@ -167,16 +172,16 @@ watch(shownRef, () => (read.value = 0));
             />
             <div :class="['view', {aside: sideline}]">
                 <div class="reading" @scroll.capture="follow">
-                    <DocumentPage :key="shownRef" :resource="shown" read-only>
-                        <SwitchCase :value="shown.type">
+                    <DocumentPage :key="shownRef" :resource="currentRow" read-only>
+                        <SwitchCase :value="currentRow.type">
                             <template #collection>
-                                <CollectionPage :resource="shown" read-only />
+                                <CollectionPage :resource="currentRow" read-only />
                             </template>
                             <template #plan>
-                                <PlanPage :resource="shown" read-only pin-progress />
+                                <PlanPage :resource="currentRow" read-only pin-progress />
                             </template>
                             <template #default>
-                                <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
+                                <ResourceBody :resource="currentRow" :comments="false" :links="false" read-only />
                             </template>
                         </SwitchCase>
                         <template v-if="timeline.length && narrow">
@@ -209,7 +214,15 @@ watch(shownRef, () => (read.value = 0));
                         </template>
                     </DocumentPage>
                     <template v-if="data.share.comments">
-                        <CommentBar :key="shownRef" v-model:sent="sent" :about="shownRef" :count="thread.length" @show="showThread" />
+                        <CommentBar
+                            :key="shownRef"
+                            v-model:sent="sent"
+                            v-model:draft="drafts[shownRef]"
+                            v-model:error="errors[shownRef]"
+                            :about="shownRef"
+                            :count="thread.length"
+                            @show="showThread"
+                        />
                     </template>
                 </div>
                 <template v-if="sideline">

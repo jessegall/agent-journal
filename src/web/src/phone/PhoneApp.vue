@@ -20,10 +20,12 @@ const told = ref("");
 const connection = ref(null);
 const typed = ref("");
 const pairing = ref(false);
-const waiting = computed(() => waitingToSend.value.length + waitingActions.value.length);
+const waiting = computed(() => waitingToSend.value.filter((line) => !line.lost).length + waitingActions.value.length);
 const waitsLine = computed(() => {
     if (!waiting.value) return "";
-    return waiting.value === 1 ? "1 thing waits to send and goes once you are back." : `${waiting.value} things wait to send and go once you are back.`;
+    return waiting.value === 1
+        ? "1 thing waits to send and goes once you are back."
+        : `${waiting.value} things wait to send and go once you are back.`;
 });
 const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 
@@ -42,8 +44,8 @@ async function connect() {
         wanted.value = decodeURIComponent(code.slice(OPEN.length));
         return;
     }
-    history.replaceState(null, "", location.pathname);
     await phone.pair(code, deviceName());
+    history.replaceState(null, "", location.pathname);
 }
 
 async function load() {
@@ -81,26 +83,23 @@ async function pairTyped() {
     }
 }
 
-const pressable = () => {};
 useKeyboard();
 const typing = () => document.activeElement?.matches?.("textarea, input, [contenteditable]");
 const pinned = () => !typing() && (window.scrollX || window.scrollY) && window.scrollTo(0, 0);
 const released = () => setTimeout(pinned, 300);
-const heard = (event) => event.data?.open && (wanted.value = event.data.open);
+const serviceMessage = (event) => event.data?.open && (wanted.value = event.data.open);
 onMounted(() => {
-    document.addEventListener("touchstart", pressable, {passive: true});
     window.addEventListener("scroll", pinned, {passive: true});
     document.addEventListener("focusout", released);
-    navigator.serviceWorker?.addEventListener("message", heard);
+    navigator.serviceWorker?.addEventListener("message", serviceMessage);
     navigator.serviceWorker?.register("./sw.js", {scope: "./"}).catch(() => {});
     load();
 });
 onUnmounted(() => {
     clearInterval(retry);
-    document.removeEventListener("touchstart", pressable);
     window.removeEventListener("scroll", pinned);
     document.removeEventListener("focusout", released);
-    navigator.serviceWorker?.removeEventListener("message", heard);
+    navigator.serviceWorker?.removeEventListener("message", serviceMessage);
 });
 </script>
 
@@ -127,17 +126,28 @@ onUnmounted(() => {
                     <template v-if="dropped">
                         <h1 class="phone-title">This phone was disconnected</h1>
                         <p class="phone-words">
-                            Pair it again to keep going: on your computer, press the phone button in the top bar, then scan the code or type it here.
+                            Pair it again to keep going: on your computer, press the phone button in the top bar, then scan the code or type
+                            it here.
                             {{ waitsLine }}
                         </p>
                     </template>
                     <template v-else>
                         <h1 class="phone-title">Connect this phone</h1>
-                        <p class="phone-words">On your computer, open the journal and press the phone button in the top bar. Scan the code, or type the short code under it here.</p>
+                        <p class="phone-words">
+                            On your computer, open the journal and press the phone button in the top bar. Scan the code, or type the short
+                            code under it here.
+                        </p>
                     </template>
                     <form class="phone-typed" @submit.prevent="pairTyped">
                         <label class="phone-hidden" for="phone-code">Pairing code</label>
-                        <input id="phone-code" v-model="typed" class="phone-code-box" autocomplete="one-time-code" autocapitalize="characters" placeholder="ABCD-EFGH" />
+                        <input
+                            id="phone-code"
+                            v-model="typed"
+                            class="phone-code-box"
+                            autocomplete="one-time-code"
+                            autocapitalize="characters"
+                            placeholder="ABCD-EFGH"
+                        />
                         <Btn kind="primary" large :busy="pairing" @click="pairTyped">Connect</Btn>
                         <template v-if="told && pairing === false && typed">
                             <p class="phone-typed-told">{{ told }}</p>

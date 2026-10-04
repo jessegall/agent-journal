@@ -57,6 +57,10 @@ async function sendActions(asked = "") {
             done(action);
         } catch (error) {
             if (unreachable(error)) return false;
+            if (ended(error)) {
+                if (action.id === asked) throw error;
+                return false;
+            }
             done(action);
             if (action.id === asked) throw error;
         } finally {
@@ -78,24 +82,38 @@ const carried = new Map();
 export const ended = (error) => error instanceof PhoneError && ENDED.includes(error.status);
 
 export function hold(brief, about, files = []) {
-    const line = {brief, about, idempotency: crypto.randomUUID(), at: Date.now(), files: files.map((file) => file.name), place: place.value};
+    const line = {
+        brief,
+        about,
+        idempotency: crypto.randomUUID(),
+        at: Date.now(),
+        files: files.map((file) => file.name),
+        place: place.value,
+    };
     carried.set(line.idempotency, files);
     if (files.length) stash(line.idempotency, files);
     waitingToSend.value = [...waitingToSend.value, line];
     keep(waitingToSend.value);
+    return line;
 }
 
 async function flushOnce() {
-    await sendActions();
+    if (!(await sendActions())) return;
     for (const line of [...waitingToSend.value]) {
         if (!belongs(line) || line.lost) continue;
         const files = carried.get(line.idempotency) || (line.files.length ? await unstash(line.idempotency) : []);
         if (line.files.length && !files?.length) {
-            lose(line);
+            lose(line, "The attached file was lost, so this was not sent. Attach it again in a new message.");
             continue;
         }
-        const made = await phone.say(line.brief, line.idempotency, line.about);
-        for (const file of files) await phone.attach(made.n, file);
+        try {
+            const made = await phone.say(line.brief, line.idempotency, line.about);
+            for (const file of files) await phone.attach(made.n, file);
+        } catch (error) {
+            if (ended(error) || unreachable(error)) throw error;
+            lose(line, `This was not sent: ${error.message}. Write it again in a new message.`);
+            continue;
+        }
         carried.delete(line.idempotency);
         unstashed(line.idempotency);
         waitingToSend.value = waitingToSend.value.filter((held) => held.idempotency !== line.idempotency);
@@ -123,8 +141,10 @@ export function flush() {
     return flushing;
 }
 
-function lose(line) {
-    waitingToSend.value = waitingToSend.value.map((held) => (held.idempotency === line.idempotency ? {...held, lost: true} : held));
+function lose(line, reason) {
+    carried.delete(line.idempotency);
+    unstashed(line.idempotency);
+    waitingToSend.value = waitingToSend.value.map((held) => (held.idempotency === line.idempotency ? {...held, lost: true, reason} : held));
     keep(waitingToSend.value);
 }
 

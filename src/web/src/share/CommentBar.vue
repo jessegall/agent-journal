@@ -1,22 +1,27 @@
 <script setup>
-import {nextTick, ref} from "vue";
+import {computed, nextTick, ref} from "vue";
 import {sendComment} from "../api/shared.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import TextInput from "../kit/TextInput.vue";
-import {remember, remembered} from "../composables/remembered.js";
-import {NAME_KEY} from "./visitor.js";
+import {visitorName, rememberName} from "./visitor.js";
 import {counted} from "../format/number.js";
 
-const props = defineProps({about: {type: String, required: true}, sent: {type: Array, required: true}, count: {type: Number, default: 0}});
-const emit = defineEmits(["update:sent", "show"]);
-const name = ref(remembered(NAME_KEY, ""));
+const props = defineProps({
+    about: {type: String, required: true},
+    sent: {type: Array, required: true},
+    count: {type: Number, default: 0},
+    draft: {type: String, default: ""},
+    error: {type: String, default: ""},
+});
+const emit = defineEmits(["update:sent", "update:draft", "update:error", "show"]);
+const name = ref(visitorName.value);
 const naming = ref(!name.value);
-const open = ref(false);
+const open = ref(Boolean(props.error));
 const done = ref(false);
-const draft = ref("");
+const draft = computed({get: () => props.draft, set: (value) => emit("update:draft", value)});
 const sending = ref(false);
-const error = ref("");
+const error = computed({get: () => props.error, set: (value) => emit("update:error", value)});
 const nameBox = ref(null);
 const box = ref(null);
 
@@ -37,12 +42,23 @@ async function send() {
     if (!text || !name.value.trim() || sending.value) return;
     error.value = "";
     sending.value = true;
-    const waiting = {n: -Date.now(), about: props.about, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true, replies: [], options: [], answer: ""};
+    const about = props.about;
+    const waiting = {
+        n: -Date.now(),
+        about,
+        name: name.value.trim(),
+        text,
+        created: Date.now() / 1000,
+        waiting: true,
+        replies: [],
+        options: [],
+        answer: "",
+    };
     emit("update:sent", [...props.sent, waiting]);
     draft.value = "";
     try {
-        const made = await sendComment(props.about, name.value.trim(), text);
-        remember(NAME_KEY, made.name);
+        const made = await sendComment(about, name.value.trim(), text);
+        rememberName(made.name);
         name.value = made.name;
         naming.value = false;
         emit("update:sent", [...props.sent.filter((c) => c.n !== waiting.n), made]);
