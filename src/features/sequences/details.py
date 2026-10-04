@@ -72,8 +72,8 @@ class SequencesDetails(FeatureDetails):
             name=DISPATCH,
             while_waiting=True,
             title="board {{board}} waits for the {{kind}} ({{why}}) - dispatch it now",
-            brief="dispatch it and carry on with your own work: the Agent tool with subagent_type \"{{kind}}\", model \"{{model}}\", a "
-                  "description that starts with a name, and this prompt: \"You fill board {{board}} for {{about}}. The request: "
+            brief="dispatch it and carry on with your own work: your subagent tool (Claude's Agent tool with subagent_type \"{{kind}}\", "
+                  "or Codex's spawn_agent with agent_type \"{{kind}}\"), model \"{{model}}\", a description that starts with a name, and this prompt: \"You fill board {{board}} for {{about}}. The request: "
                   "'{{request}}'. Now: {{why}}. Your steps are sequence {{n}}, {{title}}. Take up the step in hand with journal --agent {{kind}} "
                   "sequence follow {{n}} --about {{about}}, do it, then journal --agent {{kind}} sequence next {{n}} --about {{about}}, and "
                   "that answers with the next step, already taken up, as journal board score does: do it at once. After a 5 the step is "
