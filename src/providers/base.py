@@ -1,8 +1,11 @@
+import importlib.util
 import json
 import pickle
+import pkgutil
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
+from functools import cache
 from pathlib import Path
 from typing import Any, Callable, ClassVar, TypeVar
 
@@ -12,7 +15,6 @@ from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispa
 from resources.base import Refused
 from engine.stored import read_json, write_text
 from engine.wording import digest
-from engine.version import version
 
 RECENT: dict[str, tuple] = {}
 FOLDS: dict[tuple, tuple] = {}
@@ -73,6 +75,12 @@ def parsed(line: str, into: Callable[[Any], T]) -> T | None:
     except (ValueError, TypeError, KeyError, AttributeError):
         return None
 
+
+@cache
+def providers_mark() -> str:
+    import providers
+    sources = [importlib.util.find_spec(f"providers.{module.name}") for module in sorted(pkgutil.iter_modules(providers.__path__), key=lambda found: found.name)]
+    return digest("\n".join(spec.loader.get_source(spec.name) or "" for spec in sources), 12)
 
 @dataclass
 class SkillWindows:
@@ -434,7 +442,7 @@ class Provider(ABC):
         return loads
 
     def folded(self, path: Path, fold, start):
-        key = (str(path), fold.__name__, version(), *getattr(start, "__dataclass_fields__", ()))
+        key = (str(path), fold.__name__, providers_mark(), *getattr(start, "__dataclass_fields__", ()))
         try:
             size = Path(path).stat().st_size
         except (OSError, TypeError):

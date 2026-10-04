@@ -1,10 +1,17 @@
+import os
+import signal
 import time
+from contextlib import suppress
 from pathlib import Path
 from engine import runtime
+from engine.proc import ran
+from engine.sessions import alive
 from engine.stored import write_text
+from engine.viewer import last, running
 
 WAIT = 15.0
 EVERY = 0.2
+ESCALATE = 5.0
 
 
 def flag(root: Path) -> Path:
@@ -42,10 +49,31 @@ def clear(root: Path) -> None:
 
 
 def gone(root: Path, seconds: float = WAIT) -> bool:
-    from engine.viewer import running
+    server = serving(Path(root))
     end = time.monotonic() + seconds
     while time.monotonic() < end:
-        if not running(Path(root)):
+        if not (alive(server) if server else running(Path(root))):
             return True
         time.sleep(EVERY)
     return False
+
+
+def ended(root: Path) -> bool:
+    if gone(root):
+        return True
+    for signal_, seconds in ((signal.SIGTERM, ESCALATE), (signal.SIGKILL, ESCALATE)):
+        server = serving(Path(root))
+        if not server:
+            return not running(Path(root))
+        with suppress(OSError):
+            os.kill(server, signal_)
+        if gone(root, seconds):
+            return True
+    return False
+
+
+def serving(root: Path) -> int:
+    pid = last(root).pid
+    listed = ran(["ps", "-o", "command=", "-p", str(pid)]) if pid else None
+    command = listed.stdout if listed else ""
+    return pid if " serve" in command and any(form in command for form in (str(root), str(root.resolve()))) else 0
