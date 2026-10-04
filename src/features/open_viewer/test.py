@@ -74,3 +74,84 @@ def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, mo
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is False, "a server left from an older install is replaced, not reused"
     answered[0] = viewer.Identity(str(tmp_path), "", version())
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is True
+
+
+def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path):
+    import threading
+    import urllib.error
+    import urllib.request
+    from http.server import ThreadingHTTPServer
+    import pytest
+    from commands.dispatch import Request
+    from commands.http import get_file_diff, get_file_text, get_project_files
+    from engine.project_files import read_source, walk
+    from resources.base import Refused
+    from serve import Handler
+    project, other = tmp_path / "project", tmp_path / "other"
+    (project / ".journal").mkdir(parents=True)
+    (project / ".private").mkdir()
+    (other / ".git").mkdir(parents=True)
+    (project / "visible.txt").write_text("visible")
+    (project / ".env").write_text("secret")
+    (project / ".private" / "note.txt").write_text("private")
+    (other / "note.txt").write_text("other")
+    (project / "linked.txt").symlink_to(other / "note.txt")
+    assert (read_source(project, "visible.txt").text, [path.name for path in walk(project)[0]]) == ("visible", ["visible.txt"]), "a visible file is read and listed"
+    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt"):
+        with pytest.raises(Refused):
+            read_source(project, asked)
+    for handler, query in ((get_file_text, {"path": ".env"}), (get_file_diff, {"path": ".env"}), (get_project_files, {"folder": ".journal"}), (get_file_text, {"path": str(other / "note.txt")})):
+        with pytest.raises(Refused):
+            handler(Request(project / ".journal", {"env": "main"}, query, {}))
+    Handler.root = project / ".journal"
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    def status(headers):
+        request = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/api/no-such-route", data=b"{}", headers=headers, method="POST")
+        try:
+            return urllib.request.urlopen(request, timeout=5).status
+        except urllib.error.HTTPError as error:
+            return error.code
+
+    try:
+        assert [status({}), status({"Host": f"evil.example:{server.server_port}"}), status({"Origin": "http://localhost:9999"})] == [404, 403, 403], \
+            "its own host is answered; another host or an unknown origin is refused"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
+    import pytest
+    from commands.dispatch import Request, static
+    from controllers.types import Environments, Todos
+    from engine.record import Record
+    from migrations import applied
+    from resources.base import Refused, USER
+    for name in (".", "..", "../other", "nested/name", "nested\\name"):
+        with pytest.raises(Refused):
+            Record(tmp_path, name)
+    with pytest.raises(Refused):
+        static("/../outside")
+    record = fresh()
+    environments = Environments(record, actor=USER)
+    with pytest.raises(Refused):
+        environments.update(environments.create("Safe name").n, title="../outside")
+    request = Request(record.root, {"env": record.env, "type": "todo"}, {}, {"actor": "system"})
+    assert (request.controller().actor, "actor" in request.body) == (USER, False), "the body never chooses the actor"
+    shipped = Todos(record, actor=SYSTEM).create("Shipped row", system=True)
+    todos = Todos(record, actor=USER)
+    for refused in (lambda: todos.stamp(shipped.n, changed=True), lambda: todos.move(shipped.n, "another")):
+        with pytest.raises(Refused):
+            refused()
+    source = tmp_path / "attachment.txt"
+    source.write_text("content")
+    row = todos.create("A row")
+    monkeypatch.setattr(todos, "save", lambda *args, **kwargs: (_ for _ in ()).throw(Refused("cannot save")))
+    with pytest.raises(Refused):
+        todos.attach(row.n, str(source))
+    assert not (todos.folder(row.n) / source.name).exists(), "a refused save leaves no attachment behind"
+    (tmp_path / "migrations.json").write_text("not json")
+    with pytest.raises(Refused):
+        applied(tmp_path)

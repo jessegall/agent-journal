@@ -37,7 +37,6 @@ import {flash} from "../platform/visibility.js";
 
 usePoll(...polled.agents);
 
-const IDLE = 30000;
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
 const pane = computed(() => props.view || store.pane);
@@ -184,7 +183,6 @@ async function loaded() {
         new Promise((done) => setTimeout(done, 4000)),
     ]);
 }
-const reading = ref({inside: false, moved: 0});
 const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, keep, link, keyOf} = usePromised(revoke);
 const boardRequests = computed(
@@ -243,7 +241,7 @@ watch(
 );
 
 function settled() {
-    if (!stillReading() && !away.value && !store.focus) toBottom(settledOnce.value);
+    if (!away.value && !store.focus) toBottom(settledOnce.value);
 }
 
 let grew = null;
@@ -272,7 +270,6 @@ onUnmounted(() => {
     clearTimeout(planTimer);
     clearTimeout(newestTimer);
     cancelAnimationFrame(frame);
-    clearTimeout(idleTimer);
 });
 
 let scrolledAt = 0;
@@ -283,7 +280,6 @@ function scrolledByHand() {
 }
 
 function wheeled(e) {
-    markActive();
     scrolledByHand();
     const s = scroller.value;
     if (e.deltaY > 0 && s && s.scrollHeight - s.scrollTop - s.clientHeight <= AT_BOTTOM) settlePlan(true);
@@ -346,17 +342,6 @@ function watchScroll() {
     if (scrolledUp.value && s.scrollTop < NEAR_TOP) older();
 }
 
-function stillReading() {
-    return away.value && reading.value.inside && Date.now() - reading.value.moved < IDLE;
-}
-
-let idleTimer = 0;
-function markActive() {
-    reading.value.moved = Date.now();
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => away.value && reading.value.inside && toBottom(), IDLE);
-}
-
 async function post(text, files) {
     if (editing.value) {
         await scope.api.act("message", editing.value.n, "edit", {text: withQuote(editing.value.quote, text)});
@@ -409,7 +394,7 @@ async function pin(text, about = "") {
 
 watch(busy, async () => {
     await nextTick();
-    if (!stillReading()) toBottom(settledOnce.value);
+    if (!away.value) toBottom(settledOnce.value);
 });
 
 watch(
@@ -424,7 +409,7 @@ watch(
             laidOut.value += 1;
         }
         if (prepending) return;
-        if (stillReading()) missed.value += Math.max(0, n - (before || 0));
+        if (away.value) missed.value += Math.max(0, n - (before || 0));
         else toBottom(settledOnce.value);
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
     },
@@ -489,9 +474,6 @@ watch(
                     ref="scroller"
                     :class="['thread-scroll', {focusing: store.focus, loading: !ready, hidden: feeding}]"
                     @scroll.passive="watchScroll"
-                    @mouseenter="(reading.inside = true) && markActive()"
-                    @mouseleave="reading.inside = false"
-                    @mousemove="markActive"
                     @wheel.passive="wheeled"
                     @touchmove.passive="scrolledByHand"
                     @keydown="scrolledByHand"
