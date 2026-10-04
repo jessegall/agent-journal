@@ -10,10 +10,34 @@ DATA = CODE.with_name("src") if ZIPPED else CODE
 
 SRC = "src"
 ARCHIVE = "journal.pyz"
+IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
 
 def code(root: Path) -> Path:
     return root / SRC
+
+
+def build_file(root: Path) -> Path:
+    return (Path(root) / ARCHIVE).resolve()
+
+
+def code_stamp(place: Path) -> tuple[tuple[str, int], ...]:
+    if place.is_file():
+        return ((str(place.resolve()), place.stat().st_mtime_ns),)
+    files = []
+    for path in place.rglob("*.py"):
+        relative = path.relative_to(place)
+        if any(part.startswith(".") or part in IGNORED_CODE_FOLDERS for part in relative.parts[:-1]):
+            continue
+        try:
+            files.append((str(path), path.stat().st_mtime_ns))
+        except OSError:
+            continue
+    return tuple(sorted(files))
+
+
+def installed_stamp(root: Path) -> tuple[tuple[str, int], ...]:
+    return (*code_stamp(build_file(root)), *code_stamp(code(root)))
 
 
 def data(*parts: str) -> Path:
