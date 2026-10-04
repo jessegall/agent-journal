@@ -102,16 +102,20 @@ function took(type, got) {
 
 export async function load(type) {
     const size = paging.size[type] || PAGE;
-    took(type, await api.list(type, {last: size, completed: true}));
+    const starting = new Set((store.rows[type] || []).map((r) => r.n));
+    const got = await api.list(type, {last: size, completed: true});
+    const listed = new Set(got.rows.map((r) => r.n));
+    const arriving = (store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n));
+    took(type, {...got, rows: [...got.rows, ...arriving].sort((a, b) => a.n - b.n)});
     paging.size[type] = size;
     return store.rows[type];
 }
 
 async function caughtUp(type) {
-    const held = store.rows[type] || [];
-    const since = Math.max(0, ...held.map((r) => r.updated || 0));
+    const since = Math.max(0, ...(store.rows[type] || []).map((r) => r.updated || 0));
     const got = await api.list(type, {last: PAGE, completed: true, since});
     if (got.more) return load(type);
+    const held = store.rows[type] || [];
     const fresh = new Map(got.rows.map((r) => [r.n, r]));
     const kept = held.filter((r) => !fresh.has(r.n)).concat(got.rows.filter((r) => !r.deleted));
     store.rows[type] = kept.sort((a, b) => a.n - b.n);
@@ -123,10 +127,11 @@ export async function earlier(...types) {
     const growing = types.filter((type) => paging.more[type]);
     await Promise.all(
         growing.map(async (type) => {
-            const held = store.rows[type] || [];
-            const closed = held.filter((r) => r.completed);
-            const before = (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.n), Infinity);
+            const starting = store.rows[type] || [];
+            const closed = starting.filter((r) => r.completed);
+            const before = (closed.length ? closed : starting).reduce((low, r) => Math.min(low, r.n), Infinity);
             const got = await api.list(type, {last: PAGE, completed: true, before: Number.isFinite(before) ? before : 0});
+            const held = store.rows[type] || [];
             const known = new Set(held.map((r) => r.n));
             store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
             paging.size[type] = store.rows[type].length;

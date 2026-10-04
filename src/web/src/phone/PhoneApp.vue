@@ -49,7 +49,6 @@ async function connect() {
 }
 
 async function load() {
-    state.value = "loading";
     try {
         await connect();
         connection.value = await phone.state();

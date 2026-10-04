@@ -208,9 +208,9 @@ const thread = computed(() => {
         here && !!paging.more.message,
         props.hidden
     );
-    made.keys.forEach((placeholder, ref) => link(ref, placeholder));
     return made;
 });
+watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
 watch(turns, keep);
 
@@ -348,8 +348,9 @@ async function post(text, files) {
         editing.value = null;
         return;
     }
-    const body = withQuote(quote.value.text, text);
-    const about = quote.value.ref || undefined;
+    const replying = quote.value;
+    const body = withQuote(replying.text, text);
+    const about = replying.ref || undefined;
     quote.value = {text: "", ref: ""};
     const id = token();
     const placeholder = await promised(body, files, id);
@@ -359,6 +360,7 @@ async function post(text, files) {
         await sendMessage(scope.env || route.value.env, {brief: body, about}, files, id);
     } catch (e) {
         drop(placeholder);
+        if (!quote.value.ref && !quote.value.text) quote.value = replying;
         throw e;
     }
     await nextTick();
@@ -440,7 +442,7 @@ watch(
                         :class="['thread-down', {'over-docks': dockCount}]"
                         :style="{'--docks': dockCount}"
                         :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
-                        @click="toBottom"
+                        @click="toBottom()"
                     >
                         <Icon name="down" />
                         {{ missed ? `${missed} new` : "Newest" }}

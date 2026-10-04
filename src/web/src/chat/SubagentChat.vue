@@ -4,7 +4,7 @@ import {standing} from "../composables/agentLinks.js";
 import {chatTurns} from "../domain/transcript.js";
 import {useScope} from "../composables/scope.js";
 import Compose from "./Compose.vue";
-import Notice from "./Notice.vue";
+import ChatNotice from "./ChatNotice.vue";
 import Turn from "./Turn.vue";
 
 const props = defineProps({
@@ -35,7 +35,7 @@ watch(
         <template v-if="pins.length">
             <div class="pins">
                 <template v-for="pin in pins" :key="pin.n">
-                    <Notice :notice="pin" />
+                    <ChatNotice :notice="pin" />
                 </template>
             </div>
         </template>

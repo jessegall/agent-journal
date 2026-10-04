@@ -7,12 +7,12 @@ export const pollKey = () => ++instance;
 
 function next(held) {
     clearTimeout(held.timer);
-    if (document.hidden || polls.get(held.key) !== held) return;
+    if (document.hidden || polls.get(held.key) !== held || !held.active()) return;
     held.timer = setTimeout(() => round(held), typeof held.every === "function" ? held.every() : held.every);
 }
 
 function round(held) {
-    if (polls.get(held.key) !== held) return Promise.resolve();
+    if (polls.get(held.key) !== held || !held.active()) return Promise.resolve();
     if (held.running) {
         held.again = true;
         return held.running;
@@ -29,20 +29,20 @@ async function rounds(held) {
             const got = await held.ask();
             held.takers.forEach((take) => take(got));
         } catch (e) {}
-    } while (held.again && polls.get(held.key) === held);
+    } while (held.again && polls.get(held.key) === held && held.active());
     next(held);
 }
 
 document.addEventListener("visibilitychange", () => polls.forEach((held) => (document.hidden ? clearTimeout(held.timer) : round(held))));
 
-export function usePoll(key, ask, every, take = () => {}) {
+export function usePoll(key, ask, every, take = () => {}, active = () => true) {
     onMounted(() => {
         const held = polls.get(key);
         if (held) {
             held.takers.add(take);
             return;
         }
-        const fresh = {key, ask, every, takers: new Set([take]), timer: 0};
+        const fresh = {key, ask, every, active, takers: new Set([take]), timer: 0};
         polls.set(key, fresh);
         round(fresh);
     });
