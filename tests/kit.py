@@ -1,6 +1,9 @@
 import subprocess
+import sys
+import threading
 import time
-from dataclasses import dataclass
+from contextlib import contextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from controllers.types import Agents, Nudges
@@ -80,3 +83,32 @@ def project_on(branch: str) -> Repo:
     git(project, "checkout", "-q", "-b", branch)
     commit(project, "shared.txt", "one\n")
     return Repo(record, project)
+
+
+AUDITED = {"open": "opened", "os.scandir": "scanned", "os.listdir": "scanned"}
+ACTIVE = threading.local()
+INSTALLED = []
+
+
+@dataclass
+class Work:
+    opened: list = field(default_factory=list)
+    scanned: list = field(default_factory=list)
+
+
+def recorded(event: str, args: tuple) -> None:
+    work = getattr(ACTIVE, "work", None)
+    if work is not None and event in AUDITED:
+        getattr(work, AUDITED[event]).append(str(args[0]))
+
+
+@contextmanager
+def counted():
+    if not INSTALLED:
+        sys.addaudithook(recorded)
+        INSTALLED.append(recorded)
+    ACTIVE.work = Work()
+    try:
+        yield ACTIVE.work
+    finally:
+        ACTIVE.work = None

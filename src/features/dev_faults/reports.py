@@ -1,13 +1,13 @@
 import cProfile
 import io
 import pstats
-import re
 import time
 from pathlib import Path
 
 from controllers.types import Agents, Notifications
 from engine import runtime
 from engine.record import Record
+from engine.wording import plural
 from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
 
@@ -19,6 +19,8 @@ RETIRED = "slow"
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
 SERVED: set[str] = set()
+VIEWER = {"overlap": "the viewer sent {where} twice at once", "page": "the viewer asked {where} for more than a page",
+          "refetch": "the viewer refetched {where} with nothing changed"}
 ALL_THREADS = "cProfile records every thread, so cumulative times include work other threads did while this ran.\n\n"
 
 
@@ -29,7 +31,7 @@ class FaultReports:
         self.feature = feature
 
     def milliseconds(self, record, kind: str) -> int:
-        return int(self.feature.setting(record, f"budget.{kind}", BUDGET[kind]))
+        return int(self.feature.values(record).get(f"budget.{kind}", BUDGET[kind]))
 
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
@@ -39,7 +41,7 @@ class FaultReports:
             rows.stamp(standing.n, times=int(standing.data["times"]) + 1, **data)
             return
         times = int(standing.data["times"]) + 1 if standing else 1
-        summary = f"{brief} Seen {self.feature.plural(times, 'time')}."
+        summary = f"{brief} Seen {plural(times, 'time')}."
         told = {"told_uses": agent.uses} if agent else {}
         if standing:
             rows.update(standing.n, brief=summary, times=times, **told, **data)
@@ -66,8 +68,7 @@ class FaultReports:
     def threw(self, record, message: str, where: str, stack: str, kind: str = "threw") -> None:
         if self.feature.on(record, "log"):
             logged(record.root, f"{kind} {where}: {message}")
-        title = {"overlap": f"the viewer sent {where} twice at once",
-                 "page": f"the viewer asked {where} for more than a page", "refetch": f"the viewer refetched {where} with nothing changed"}.get(kind, f"{THREW} {message}")
+        title = VIEWER[kind].format(where=where) if kind in VIEWER else f"{THREW} {message}"
         self.file(record, title[:80], f"{message}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
 
     def kept(self, root, name: str, took: float, profile: cProfile.Profile) -> None:
@@ -97,7 +98,7 @@ class FaultReports:
         if kind == RETIRED:
             return True
         record = Record(Path(root), env)
-        if not self.feature.on(record, "budget" if kind in ("overlap", "page", "refetch") else "console"):
+        if not self.feature.on(record, "budget" if kind in VIEWER else "console"):
             return False
         self.threw(record, message, where, stack, kind)
         return True

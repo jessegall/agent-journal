@@ -1,7 +1,7 @@
 from features.base import Behaviour, FeatureDetails, Line
 
 
-class FaultsDetails(FeatureDetails):
+class DevFaultsDetails(FeatureDetails):
     name = "dev_faults"
     has_skill = False
 
