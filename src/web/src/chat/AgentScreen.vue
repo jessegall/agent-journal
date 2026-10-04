@@ -3,24 +3,20 @@ import {Terminal} from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {pollKey, usePoll} from "../poll.js";
 
 const props = defineProps({session: String});
 const box = ref(null);
 const EVERY = 400;
 let term = null;
 let at = -1;
-let timer = 0;
-let gone = false;
 
 const bytes = (text) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
 
-async function pull() {
-    const part = await api.agentScreen(props.session, at);
-    if (gone) return;
+function draw(part) {
     if (term.rows !== part.rows || term.cols !== part.cols) term.resize(part.cols, part.rows);
     if (part.data) term.write(bytes(part.data));
     at = part.at;
-    timer = setTimeout(pull, EVERY);
 }
 
 onMounted(() => {
@@ -32,14 +28,10 @@ onMounted(() => {
     });
     term.open(box.value);
     term.onData((text) => api.agentKeys(props.session, text));
-    pull();
 });
+usePoll(pollKey(), () => api.agentScreen(props.session, at), EVERY, draw);
 
-onUnmounted(() => {
-    gone = true;
-    clearTimeout(timer);
-    term.dispose();
-});
+onUnmounted(() => term.dispose());
 </script>
 
 <template>

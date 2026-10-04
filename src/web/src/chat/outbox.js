@@ -1,18 +1,18 @@
 import {remember, remembered} from "../composables/remembered.js";
 import {api} from "../api/client.js";
 import {tellExtension} from "../platform/extension.js";
+import {pollNow, startPoll} from "../poll.js";
 
 const KEY = "journal.outbox.v1";
 const BRIDGE_WAIT = 500;
 const RETRY_MS = 5000;
+const OUTBOX = "outbox";
 const bridge = new Map();
 let request = 0;
 let queueTask = Promise.resolve();
 let storageMode = "";
 let active = null;
-let retrying = 0;
-let retryTimer = 0;
-let onlineBound = false;
+let polling = false;
 let changed = () => {};
 
 window.addEventListener("message", (event) => {
@@ -181,16 +181,7 @@ function report(ids) {
     if (ids.length) changed(ids);
 }
 
-async function retry() {
-    if (!active || retrying) return;
-    retrying = 1;
-    try {
-        report(await flush(active.env, active.origin));
-    } catch (e) {
-    } finally {
-        retrying = 0;
-    }
-}
+const retry = async () => active && report(await flush(active.env, active.origin));
 
 export function onOutboxChange(fn) {
     changed = fn;
@@ -198,12 +189,13 @@ export function onOutboxChange(fn) {
 
 export function startOutbox(env) {
     active = {env, origin: location.origin};
-    if (!onlineBound) {
-        window.addEventListener("online", retry);
-        onlineBound = true;
+    if (polling) {
+        pollNow(OUTBOX);
+        return;
     }
-    if (!retrying) retry();
-    if (!retryTimer) retryTimer = setInterval(retry, RETRY_MS);
+    polling = true;
+    window.addEventListener("online", () => pollNow(OUTBOX));
+    startPoll(OUTBOX, retry, RETRY_MS);
 }
 
 export async function sendMessage(env, body, files = [], id = token()) {
