@@ -56,10 +56,15 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     record = fresh()
     assert counted({("message", "created"): {4465: None}}, record) == ["1 new message 4465 - answer by opening your turn with [!reply:4465]"], \
         "the tags feature adds to the messages line; no second line follows"
-    assert counted({("message", "created"): {1: None, 2: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
-    assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
-    from controllers.types import Agents
+    from controllers.types import Agents, Messages
     from resources.base import AGENT, USER
+    thanks, asked = Messages(record, actor=USER).create("Thank you, sir."), Messages(record, actor=USER).create("Thanks, but which branch?")
+    assert counted({("message", "created"): {thanks.n: None}}, record) == \
+        [f'1 new message {thanks.n} - message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍", no words needed'], \
+        "a message that only acknowledges is answered with a reaction"
+    assert "[!reply:" in counted({("message", "created"): {asked.n: None}}, record)[0], "one that asks something still gets a reply"
+    assert counted({("message", "created"): {4465: None, 4466: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
+    assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(Messages(record, actor=USER).create("how is it going?").n)

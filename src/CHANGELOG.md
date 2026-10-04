@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.245.0 — reactions for a nod, and two new lessons
+
+**A message that only acknowledges, such as thanks, ok or perfect, now tells the agent to react to it instead of
+writing a reply.** Codex had been loading its skills but rarely reacting, because the line that hands it a message
+always said to reply; now that line says to react when a nod is all it needs. **Two new lessons for the demo:** a
+visitor asks for a document and sees it written and filed, and a visitor tells the agent something worth keeping and
+sees it handed back later.
+
 ## 2.244.3 — the instruction check waits for a real change
 
 **A project's first start no longer runs the instruction-file check.** It only records the files as seen, and the
