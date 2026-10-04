@@ -16,6 +16,21 @@ RUNTIME = "runtime"
 T = TypeVar("T")
 
 
+class Growth:
+    def __init__(self):
+        self.size = -1
+
+    def grew(self, path: Path) -> bool:
+        try:
+            size = path.stat().st_size
+        except OSError:
+            return False
+        if size == self.size:
+            return False
+        self.size = size
+        return True
+
+
 def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
     try:
         return into(json.loads(Path(path).read_text()))
