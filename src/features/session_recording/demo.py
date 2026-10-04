@@ -170,7 +170,8 @@ class Throwaway:
         yield "phone.feed", feed
         yield from ((f"phone.{path}", read_body(phones, phone, [path], {})) for path in ("state", "bar"))
         places = read_body(phones, phone, ["places"], {})
-        yield "phone.places", {**places, "places": [place for place in places["places"] if Path(place["root"]).resolve() == self.root.resolve()]}
+        recorded = str(self.root.resolve())
+        yield "phone.places", {**places, "at": recorded, "places": [place for place in places["places"] if Path(place["root"]).resolve() == self.root.resolve()]}
         lists = {kind: read_body(phones, phone, ["list"], {"type": [kind]}) for kind in CARDS}
         yield from ((f"phone.list.{kind}", listed) for kind, listed in lists.items())
         named = [*feed["items"], *feed["waiting"], *(row for listed in lists.values() for row in listed["rows"])]
