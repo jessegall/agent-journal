@@ -5,8 +5,7 @@ import shutil
 from pathlib import Path
 
 import features
-from controllers.base import actions
-from controllers.base import COMMANDS
+from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
 from providers import PROVIDERS
 from providers.base import LIBRARY
@@ -18,10 +17,8 @@ HERE = data()
 
 
 def signature(controller: type, name: str) -> str:
-    fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
-    params = list(inspect.signature(fn).parameters.values())[1:]
     words = []
-    for p in params:
+    for p in word_parameters(controller, name):
         if p.kind is inspect.Parameter.VAR_KEYWORD:
             words.append("[--set key=value…]")
         elif p.default is inspect.Parameter.empty:
@@ -35,7 +32,7 @@ NOUNS = "references/nouns.md"
 
 
 def reference() -> str:
-    named = {type_: {*actions(controller), *COMMANDS.get(type_, {})} for type_, controller in CONTROLLERS.items()}
+    named = {type_: word_names(controller) for type_, controller in CONTROLLERS.items()}
     shared = set.intersection(*named.values())
     out = ["## Reference: every noun and its own words", "",
            f"Every noun takes these words: {', '.join(sorted(shared))}. A noun that renames one says so below. "

@@ -1,24 +1,20 @@
 import argparse
 import os
-import shutil
-import subprocess
-import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from controllers.types import Agents, CONTROLLERS
 import features
+from agents.launch import launch
 from engine.record import Record
+from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
-from providers import DRIVERS, PROVIDERS
-from commands.menu import Choice, choices_of, pick
+from providers import PROVIDERS
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine import runtime
-from engine.wording import plural
 from engine.stored import last_lines
-from engine.version import version as package_version
 
 
 def transcript(record, session: str):
@@ -79,15 +75,14 @@ def switched(ctx, on: bool) -> str:
     return "the journal is off: the hooks report nothing and hold nothing until journal enable"
 
 def verify(ctx) -> str:
-    from providers import PROVIDERS
     root = ctx["record"].root
     lines = [f"root {root}", f"environment {ctx['record'].env}", "off" if runtime.off(root) else "in force"]
     for name, provider in PROVIDERS.items():
         settings = provider().config(root.parent)
         wired = settings.is_file() and "hook.sh" in settings.read_text()
         lines.append(f"{name}: hooks {'wired' if wired else 'NOT wired'} ({settings})")
-    live = [p for p in runtime.sessions(root).glob("*/seat.json") if time.time() - p.stat().st_mtime < 10]
-    lines.append(f"engine: {len(live)} running — {', '.join(p.parent.name[:8] for p in live) or 'none'}")
+    live = seats(root, within=10)
+    lines.append(f"engine: {len(live)} running — {', '.join(seat.terminal[:8] for seat in live) or 'none'}")
     row = Agents(ctx["record"], actor=ctx["actor"]).by_session(ctx["session"]) if ctx["session"] else None
     if row:
         lines.append(f"this session: {row.status or '?'} after {row.event or '?'}, {row.uses} tool uses")
@@ -146,204 +141,13 @@ def still_open(record) -> list[str]:
     messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(FEATURES["messages"].journal.at(record))]
     return works + messages
 
-NO_INTERACTION = "--no-interaction"
-LAUNCHED = "launched"
-SAVED_CURSOR = "\x1b7"
-QUESTION_SCREEN = "\x1b8\x1b[J"
-
-
-def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> str:
-    answering = sys.stdin.isatty() if answering is None else answering
-    if "--env" in sys.argv or worktree:
-        return record.env
-    from controllers.types import Environments
-    from engine.sessions import Sessions
-    from engine.worktree import linked
-    names = [r["title"] for r in Environments(record, actor=SYSTEM).summaries() if not r["deleted"] and not r["completed"]]
-    if not answering:
-        sessions = Sessions(record.root)
-        return record.env if not sessions.holder(record.env) else next((name for name in names if not sessions.holder(name)), record.env)
-    if not names:
-        return record.env
-    sessions = Sessions(record.root)
-    worktrees = linked(record.root.parent)
-    choices = [Choice(name, tuple(badge for badge, on in (("worktree", name in worktrees), ("agent working", sessions.holder(name))) if on))
-               for name in names] + [Choice("A new environment")]
-    free = [i for i, name in enumerate(names) if not sessions.holder(name)]
-    default = names.index(record.env) if record.env in names and names.index(record.env) in free else (free or [len(names)])[0]
-    while True:
-        picked = choose("Which environment", [], choices, default, ask)
-        if picked is None:
-            return record.env
-        if picked < len(names):
-            holder = sessions.holder(names[picked])
-            if not holder:
-                return names[picked]
-            notes = [f"An agent is working {names[picked]}. Taking it over tells that agent and moves it off."]
-            if choose(f"Take over {names[picked]}", notes, ["Yes, take it over", "No, pick another"], 1, ask) == 0:
-                sessions.evict(holder, "a new session", names[picked], "taken over at start")
-                return names[picked]
-        try:
-            return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip()).title
-        except EOFError:
-            return record.env
-        except Refused as e:
-            print(f"    {e}")
-        else:
-            print(f"a number from 1 to {len(names) + 1}")
-
-
-def defaults(_: str) -> str:
-    return ""
-
-
-def choose(heading: str, notes: list[str], choices: list, default: int, ask=input) -> int | None:
-    if ask is defaults:
-        return default
-    if sys.stdout.isatty():
-        print(QUESTION_SCREEN, end="")
-    if ask is input and sys.stdin.isatty() and sys.stdout.isatty():
-        return pick(heading, notes, choices, default)
-    print(f"\n  {heading}\n  {'─' * len(heading)}")
-    if notes:
-        print("", *(f"    {line}" for line in notes), sep="\n")
-    print("")
-    for i, choice in enumerate(choices_of(choices), 1):
-        print(f"    {i}  {choice.label}" + "".join(f"  [{badge}]" for badge in choice.badges) + ("   ← Enter" if i - 1 == default else ""))
-    while True:
-        try:
-            picked = ask("\n  > ").strip() or str(default + 1)
-        except EOFError:
-            return None
-        if picked.isdigit() and 1 <= int(picked) <= len(choices):
-            return int(picked) - 1
-        print(f"    A number from 1 to {len(choices)}.")
-
-
-def banner(agent: str, project: Path) -> str:
-    width = max(40, shutil.get_terminal_size().columns - 4)
-    version = package_version()
-    lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
-             "A question or two first: move with ↑ ↓ and pick with Enter."]
-    rule = "─" * width
-    body = "\n".join(f"│ {line:<{width - 2}} │" for line in lines)
-    return f"\x1b[2J\x1b[H┌{rule}┐\n{body}\n└{rule}┘\n{SAVED_CURSOR}"
-
-
-def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
-    from features import FEATURES
-    from features.clean_slate.slate import others, state
-    answering = sys.stdin.isatty() if answering is None else answering
-    hooks = others(project, agent)
-    if not answering or not FEATURES["clean_slate"].enabled(record) or not hooks:
-        return False
-    last = state(record).get("last", True)
-    notes = [f"Hooks that are not the journal's, in {plural(len(hooks), 'file')}:", *(f"  {f.name}" for f in hooks),
-             "", "Your skills stay where they are. The hooks are put back when the agent exits or the journal stops."]
-    return choose("Set aside the other hooks", notes, ["Yes, set them aside", "No, keep them"], 0 if last else 1, ask) == 0
-
-
-def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:
-    from features.permission_prompts.skipping import set_skipped, skipped
-    answering = sys.stdin.isatty() if answering is None else answering
-    driver = DRIVERS.get(agent)
-    if not answering or not driver or not driver.SKIP_ARGS or set(driver.SKIP_ARGS) <= set(args):
-        return
-    notes = [f"{agent.capitalize()} then runs without stopping to ask before each tool call ({' '.join(driver.SKIP_ARGS)}),",
-             "so the journal can keep it working. Settings can change this later."]
-    picked = choose("Run without permission prompts", notes, ["Yes, skip them", "No, ask me each time"], 0 if skipped(record) else 1, ask)
-    if picked is not None:
-        set_skipped(record, picked == 0)
-
-
-def asked_history(record: Record, agent: str, conversation: str, ask=input, answering=None) -> None:
-    from controllers.types import Agents
-    from engine.sessions import Sessions
-    from features.agent_sessions.history import history
-    answering = sys.stdin.isatty() if answering is None else answering
-    provider = PROVIDERS[agent]()
-    seen = conversation and (Sessions(record.root).known(conversation) or Agents(record, actor=SYSTEM)._titled(conversation))
-    path = provider.conversation_file(conversation) if conversation and not seen else None
-    if not answering or not path:
-        return
-    notes = [f"The journal has never seen conversation {conversation}. Filling it in puts what you and the agent wrote",
-             f"into the chat of {record.env}, already read, so the history is there when you carry on."]
-    if choose("Fill the journal from this conversation", notes, ["Yes, fill it in", "No, start from here"], 0, ask) == 0:
-        print(f"journal: {history(record, provider, path, conversation)} messages brought in from the conversation")
-
-
-def asked_resume(record: Record, agent: str, args: list[str], ask=input, answering=None) -> list[str]:
-    from engine.sessions import Sessions
-    answering = sys.stdin.isatty() if answering is None else answering
-    driver = DRIVERS.get(agent)
-    worked = (driver and driver.worktree(args)) or record.env
-    earlier = Sessions(record.root).last(worked, agent) if driver else ""
-    if not answering or not earlier or driver.resuming(args):
-        return args
-    last = [arg for arg in record.setting(LAUNCHED, {}).get(agent, []) if arg not in args]
-    notes = [f"An earlier {agent.capitalize()} session worked {worked}. Carrying on opens that conversation again,",
-             f"started as before{': ' + ' '.join(last) if last else ''}, without asking the other questions."]
-    picked = choose("Carry on from the last session", notes, ["Yes, carry on", "No, start a new one"], 0, ask)
-    return driver.resumed([*args, *last], earlier) if picked == 0 else args
-
-
 def attached(ctx) -> str:
     from agents.terminal import attach
     return attach(ctx["record"].root, ctx["target"])
 
 
 def supervise(ctx, agent: str) -> str:
-    from agents.terminal import carried
-    from engine.viewer import start
-    from features.clean_slate.slate import put_back, remember, set_aside, slate_of
-    from engine.worktree import linked
-    from engine.sessions import Sessions
-    from features.auto_update.launch import latest_first
-    from engine.stop import clear
-    record = ctx["record"]
-    project = Path.cwd()
-    taken = carried()
-    if taken:
-        return started(record, project, agent, taken["env"], taken["args"], taken)
-    held = latest_first(record)
-    if held:
-        print(f"journal: carrying on with {package_version()}: {held}")
-    quiet = NO_INTERACTION in (ctx["args"] or [])
-    args = [arg for arg in ctx["args"] or [] if arg != NO_INTERACTION]
-    ask, answering = (defaults, True) if quiet else (input, None)
-    if sys.stdin.isatty() and not quiet:
-        subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
-        print(banner(agent, project))
-    driver = DRIVERS[agent]
-    resumed = driver.conversation(args) or driver.continued(args, project)
-    env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, answering)
-    here = Record(record.root, env)
-    args = driver.within(args, env) if env in linked(project) or driver.asks_worktree(args) else args
-    put_back(here)
-    clear(record.root)
-    try:
-        args = asked_resume(here, agent, args, ask, answering)
-        asked_history(here, agent, driver.conversation(args), ask, answering)
-        carrying = driver.resuming(args)
-        if not carrying:
-            asked_prompts(here, agent, args, ask, answering)
-        if slate_of(here) if carrying else asked_slate(here, project, agent, ask, answering):
-            print(f"journal: {set_aside(here, project, agent)}")
-        else:
-            remember(here, False)
-        here.set_setting(LAUNCHED, {**here.setting(LAUNCHED, {}), agent: driver.unresumed(args)})
-        url = start(record.root, project)
-        print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
-    except BaseException:
-        put_back(here)
-        raise
-    return started(record, project, agent, env, args)
-
-
-def started(record: Record, project: Path, agent: str, env: str, args: list[str], taken: dict | None = None) -> str:
-    from agents.terminal import supervise as hand_over
-    hand_over(record.root, project, env, agent, args, taken)
-    return ""
+    return launch(ctx["record"], agent, ctx["args"])
 
 
 def ended(ctx) -> str:
