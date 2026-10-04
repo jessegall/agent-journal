@@ -27,6 +27,7 @@ CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"v
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
 FAST_CONTROLS = {"key": "fast", "label": "Fast mode", "choices": [{"value": "switch", "label": "Turn fast mode on or off", "command": "/fast"}]}
 SESSION_OPEN = re.compile(r'"session_id":\s*(\d+)')
+DETACHED = re.compile(r"^(.*?)\s*(?:>\S*\s*(?:2>&1)?\s*)?&\s*(?:echo \$!)?\s*$", re.S)
 EXEC_COMMAND = re.compile(r'exec_command\(\{\s*cmd:\s*"((?:[^"\\]|\\.)*)"')
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
@@ -320,6 +321,12 @@ class Codex(Provider):
             for session in [s for s in SESSION_OPEN.findall(found.output_text) if s not in tasks.started]:
                 tasks.started[session] = row.at
                 tasks.commands[session] = script
+        detached = DETACHED.match(found.item.command_line) if found.type == "item_completed" and found.item.type == "CommandExecution" else None
+        if detached and found.item.stdout.strip().isdigit():
+            key = f"pid:{found.item.stdout.strip()}"
+            tasks.started.setdefault(key, row.at)
+            tasks.commands[key] = detached[1].strip("() ")
+            tasks.detached[key] = int(found.item.stdout.strip())
         if found.type == "item_completed" and found.item.type == "CommandExecution" and found.item.process_id in tasks.started:
             tasks.ended.setdefault(found.item.process_id, found.completed_at_ms / 1000 if found.completed_at_ms else row.at)
             if found.item.status == "failed":

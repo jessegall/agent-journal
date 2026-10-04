@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.245.1 — a command Codex detaches is watched too
+
+**Codex sometimes starts a background command detached, as `(command) & echo $!`, which leaves no exec session
+behind.** The journal now follows such a command by the pid it printed, and tells the agent when it ends, when it
+has run ten minutes, and when the agent stops while it still runs, as it already did for the others.
+
 ## 2.245.0 — reactions for a nod, and two new lessons
 
 **A message that only acknowledges, such as thanks, ok or perfect, now tells the agent to react to it instead of
