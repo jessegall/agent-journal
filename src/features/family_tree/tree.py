@@ -119,13 +119,11 @@ def messaged(row, key: str, members: dict, named: dict) -> list[Link]:
 
 def exchanged(turns) -> list[tuple[str, str, str]]:
     pairs = []
-    for turn in turns:
-        kind, _, rest = turn.who.partition(":")
-        if kind == SENT and rest:
-            pairs.append((SENT, rest, rest))
-        elif kind == PEER and rest:
-            name, _, sender = rest.partition(":")
-            pairs.append((PEER, sender or name, name or sender))
+    for note in (turn.peer for turn in turns if turn.peer is not None):
+        if note.direction == SENT and note.address:
+            pairs.append((SENT, note.address, note.address))
+        elif note.direction == PEER:
+            pairs.append((PEER, note.address or note.name, note.name or note.address))
     return pairs
 
 

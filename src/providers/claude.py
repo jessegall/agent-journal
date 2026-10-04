@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
+from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, PeerNote, Turn
 from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from providers.base import BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
 from providers.jsonl import complete_lines, last_lines, parsed_row, rows
@@ -372,7 +372,7 @@ class Claude(Provider):
         used = next((row.tokens for row in reversed(self.recent(path)) if row.tokens is not None), None)
         return None if used is None else round(100 * used / self.window(hook, used), 1)
 
-    def turn(self, row: Row) -> tuple | None:
+    def turn(self, row: Row, line: int) -> Turn | None:
         if row.type == "attachment" and row.queued.kind == "peer":
             row = replace(row, type="user", origin=row.queued, text=row.prompt, blocks=())
         if (row.sidechain and not row.agent_id) or row.type not in ("user", "assistant"):
@@ -389,15 +389,15 @@ class Claude(Provider):
         if not text.strip() and not tools:
             return None
         kind = self.kind(row, bool(results))
-        who = SPEAKERS.get(kind, kind)
+        peer = None
         if kind == PEER and row.origin.name and row.origin.sender.startswith(SESSIONS):
-            who, text = f"{PEER}:{row.origin.name}:{row.origin.sender}", row.origin.body if row.origin.body else text
+            peer, text = PeerNote(PEER, row.origin.name, row.origin.sender), row.origin.body if row.origin.body else text
         sent = next((use for use in uses if use.name == SENDS and use.to), None)
         if sent:
-            kind, who, text = PEER, f"{SENT}:{sent.to}", sent.message if sent.message else text
+            kind, peer, text = PEER, PeerNote(SENT, "", sent.to), sent.message if sent.message else text
         asked = [use.id for use in uses if use.name in self.question_tools]
         answered = [block.tool_use_id for block in results]
-        return who, text, kind, row.at, tools, row.parent, asked, answered
+        return Turn(line, SPEAKERS.get(kind, kind), text, kind=kind, at=row.at, tools=tools, parent=row.parent, asked=asked, answered=answered, peer=peer)
 
     def question_text(self, use: ToolCall) -> str:
         lines = (f"{question.text}  [{' / '.join(question.labels)}]" if question.labels else question.text for question in use.questions)
