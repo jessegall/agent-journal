@@ -23,7 +23,10 @@ const title = defineModel("title", {type: String, default: ""});
 const emit = defineEmits(["close", "follow", "cancel"]);
 const data = computed(() => props.resource.data || {});
 const template = computed(() => data.value.template || "");
-const source = computed(() => (data.value.source || "").split(":"));
+const origin = computed(() => {
+    const [type, n] = (data.value.source || "").split(":");
+    return meta(type) && Number(n) ? {type, n: Number(n), icon: meta(type).icon, title: meta(type).title.toLowerCase()} : null;
+});
 const chaptered = computed(
     () => props.kind.view === "document" && !["message", "sequence"].includes(props.resource.type) && props.resource.sections.length >= 2
 );
@@ -84,10 +87,10 @@ const chaptered = computed(
                 Made from template {{ template }}
             </button>
         </template>
-        <template v-if="data.source && !readOnly">
-            <button type="button" class="from" @click="peek(source[0], Number(source[1]))">
-                <Icon :name="meta(source[0]).icon" :size="11" />
-                Came from {{ meta(source[0]).title.toLowerCase() }} {{ source[1] }}
+        <template v-if="origin && !readOnly">
+            <button type="button" class="from" @click="peek(origin.type, origin.n)">
+                <Icon :name="origin.icon" :size="11" />
+                Came from {{ origin.title }} {{ origin.n }}
             </button>
         </template>
         <template v-if="editing">
