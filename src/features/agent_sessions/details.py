@@ -3,7 +3,7 @@ from features.settings import Setting
 from features.trigger import MINUTES, Trigger
 
 
-class AgentsDetails(FeatureDetails):
+class AgentSessionsDetails(FeatureDetails):
     name = "agent_sessions"
     has_skill = False
 

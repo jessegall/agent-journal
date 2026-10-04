@@ -282,6 +282,7 @@ FAILED = "failed"
 AT_REST = (STOPPED, IDLE)
 SUBAGENT = "subagent"
 HELPER = "helper"
+RUN_KINDS = ("shell_rows", "subagent_rows", "monitor_rows")
 
 
 class AgentRow(Shape, Resource):
@@ -359,9 +360,16 @@ class AgentRow(Shape, Resource):
         return bool(self.dispatcher or self.parent)
 
     @property
+    def live(self) -> bool:
+        return bool(self.status) and self.status != STOPPED
+
+    @property
+    def runs(self) -> list[dict]:
+        return [entry for kind in RUN_KINDS for entry in self.data.get(kind) or []]
+
+    @property
     def background_run(self) -> str:
-        return next((entry.get("task") or entry.get("command") or "a background run"
-                     for kind in ("shell_rows", "subagent_rows", "monitor_rows") for entry in self.data.get(kind) or [] if entry.get("running")), "")
+        return next((entry.get("task") or entry.get("command") or "a background run" for entry in self.runs if entry.get("running")), "")
 
 
 class Notification(Shape, Resource):

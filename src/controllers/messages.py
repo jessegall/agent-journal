@@ -1,6 +1,6 @@
 from controllers.base import Controller, CONTROLLERS
 from resources import types
-from resources.base import AGENT, Refused, titled
+from resources.base import AGENT, USER, Refused, titled
 from controllers.comments import Comments
 
 
@@ -23,6 +23,14 @@ class Messages(Controller):
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
+
+    def _imported(self, turns: list[tuple[str, str, float]], outcome: str) -> None:
+        with self.record.locked():
+            n = (self.numbers() or [0])[-1]
+            for actor, text, at in turns:
+                n += 1
+                self._write_file(self.resource(n=n, title=titled(text.strip().splitlines()[0]), brief=text, seen=[actor, USER if actor == AGENT else AGENT],
+                                               created=at, updated=at, completed=at, outcome=outcome))
 
     def waiting(self) -> list:
         return [m for m in self._standing() if m.author != AGENT]

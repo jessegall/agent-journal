@@ -7,16 +7,14 @@ from engine.events.resources import AgentChanged, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions, live
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
-from resources.types import SUBAGENT
+from resources.types import COMPACTING, STOPPED, SUBAGENT
 from features.trigger import MINUTE
 
 
-STOPPED = "stopped"
 STOP = "stop"
 
 REPORT_WITHIN = 1800
 
-COMPACTING = "compacting"
 KEPT_COMPACTIONS = 50
 ONE_COMPACTION = 120
 
@@ -45,7 +43,7 @@ class RecordCompactions(Handler):
         kept = row.data.get("compactions") or []
         if row.status != COMPACTING or (kept and time.time() - float(kept[-1]["at"]) < ONE_COMPACTION):
             return
-        context.journal.agents.update(row.n, compactions=[*kept, {"at": time.time()}][-KEPT_COMPACTIONS:])
+        context.journal.agents._appended(row, "compactions", {"at": time.time()}, KEPT_COMPACTIONS)
 
 
 class AskToStop(Handler):
@@ -68,7 +66,7 @@ class MarkSilentStopped(Handler):
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
         for row in agents._every():
-            if row.status and row.status != STOPPED and float(row.at) < silent and not live(sessions.read(row.title)):
+            if row.live and float(row.at) < silent and not live(sessions.read(row.title)):
                 agents.stamp(row.n, status=STOPPED)
 
 

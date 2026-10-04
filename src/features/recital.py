@@ -60,8 +60,7 @@ def recite(context: AgentContext, resources: str, text_of) -> None:
         if not mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) or not whisper_due(context, row.ref):
             continue
         context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
-        kept = context.agent.row.data.get("whispers") or []
-        context.journal.agents.update(context.agent.row.n, whispers=[*kept, {"at": time.time(), "ref": row.ref, "title": row.title}][-KEPT_WHISPERS:])
+        context.journal.agents._appended(context.agent.row, "whispers", {"at": time.time(), "ref": row.ref, "title": row.title}, KEPT_WHISPERS)
 
 
 class WhisperOnKeyword(ToolInterceptor):
