@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.2 — no long stall after an upgrade
+
+**An upgrade no longer reads every agent transcript again from the start.** What the journal knows about a transcript
+is kept between versions and read again only when the code that reads transcripts changes. A project with large
+transcripts (tens of megabytes) used to keep the server busy for minutes after an upgrade, so pages timed out and hooks
+got no answer. **`journal stop` stops a server even when it is too busy to answer**: it watches the server's own
+process and ends it if it stays. **A diagnostic log**, off by default: switch on "Keep a diagnostic log" under Dev
+faults in Settings, and slow requests and errors are written to `.journal/runtime/diagnostics.log`.
+
 ## 2.249.1 — a quicker agent list
 
 **The viewer's list of agents, polled every second, answers in a few milliseconds again after an agent changes.** A

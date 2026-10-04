@@ -127,16 +127,16 @@ def upgrade_here(ctx) -> str:
     return "\n".join(upgrade(root.parent, root))
 
 def halt(ctx) -> str:
-    from engine.stop import ask, clear, gone
+    from engine.stop import ask, clear, ended
     record = ctx["record"]
     root = record.root
     left = still_open(record)
     ask(root)
     from features.clean_slate.slate import put_back
     put_back(record)
-    went = gone(root)
+    went = ended(root)
     clear(root)
-    summary = "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
+    summary = "the journal is stopped: its viewer, its engine and every service it ran" if went else "the server did not stop, even when told to end; see .journal/runtime/viewer.log"
     return "\n".join([summary, *left])
 
 

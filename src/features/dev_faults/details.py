@@ -39,6 +39,12 @@ class FaultsDetails(FeatureDetails):
             title="Report what the viewer throws",
             abstract="An error in the client's console is filed and said to the agent",
         ),
+        Behaviour(
+            name="log",
+            title="Keep a diagnostic log",
+            abstract="Slow requests and errors are written to .journal/runtime/diagnostics.log while this is on",
+            default=False,
+        ),
     ]
 
     lines = [
