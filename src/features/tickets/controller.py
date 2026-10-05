@@ -182,8 +182,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _owned_by(self, name: str, kind: str) -> int:
         place = Environments(self.record, actor=SYSTEM).rows.by_title(name) if name else None
-        owner = str(place.owner) if place else ""
-        return int(owner.split(":")[1]) if owner.startswith(f"{kind}:") else 0
+        return place.owned_by(kind) if place else 0
 
     def _in_plan_worktree(self, ticket) -> bool:
         return bool(self._plan_owner(ticket.work_environment))
@@ -239,7 +238,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def hold(self, type_: str, n: int) -> None:
         owner = Environments(self.record, actor=self.actor).rows.by_title(self.record.env)
-        if owner and owner.owner.startswith(f"{self.type}:"):
+        if owner and owner.owned_by(self.type):
             CONTROLLERS[type_](self.record, actor=self.actor).complete(n, how=f"proposed for {owner.owner.replace(':', ' ')}; it counts once that branch is merged",
                                                                       proposed_for=owner.owner)
 
@@ -249,7 +248,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _stop_orphaned(self) -> list[str]:
         kept = {row.ref for row in self.rows.every() if not row.deleted}
         owned = [env.title for env in Environments(self.record, actor=SYSTEM).rows.every()
-                 if not env.deleted and env.owner.startswith(f"{self.type}:") and env.owner not in kept]
+                 if not env.deleted and env.owned_by(self.type) and env.owner not in kept]
         stopped = [place for place in owned if Sessions(self.record.root).holder(place)]
         for place in stopped:
             self._ask_to_stop(Sessions(self.record.root).holder(place))
