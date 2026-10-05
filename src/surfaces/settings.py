@@ -48,5 +48,5 @@ def apply(record: Record, body: dict, actor: str) -> dict:
     aliases = renamed()
     turned = [f"{name} {'on' if on else 'off'}" for name, on in after.items() if name not in aliases and before.get(name) != on]
     if turned:
-        Nudges(record, actor=actor)._to_primary(f"the user turned {', '.join(turned)}", "journal settings shows every switch")
+        Nudges(record, actor=actor).to_primary(f"the user turned {', '.join(turned)}", "journal settings shows every switch")
     return settings(record)

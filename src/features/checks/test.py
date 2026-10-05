@@ -42,10 +42,10 @@ def test_only_the_checks_that_are_due_come_up_on_the_timer():
     checks = Checks(record, actor=USER)
     hourly = checks.create("Hourly", command="true", every=60)
     checks.create("By hand", command="true")
-    assert checks._due(hourly.created + 60) == [], "a new check does not run the moment it is made"
-    assert [c.n for c in checks._due(hourly.created + 3600)] == [hourly.n], "it runs a full interval after it was made"
+    assert checks.due(hourly.created + 60) == [], "a new check does not run the moment it is made"
+    assert [c.n for c in checks.due(hourly.created + 3600)] == [hourly.n], "it runs a full interval after it was made"
     checks.run(hourly.n, wait=True)
-    assert checks._due(checks.load(hourly.n).last["at"] + 60) == [], "it waits its minutes after a run"
+    assert checks.due(checks.load(hourly.n).last["at"] + 60) == [], "it waits its minutes after a run"
 
 
 def test_a_running_check_counts_its_steps_against_what_it_knows_of_the_total():

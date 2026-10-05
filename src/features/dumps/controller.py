@@ -130,7 +130,7 @@ class Dumps(Controller):
         r = self._choosing(n)
         said = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
         Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(titled(how), brief=how.strip(), about=r.ref, window=r.ref)
-        return self._appended(r, "said", said, LOG_KEPT, chosen=said)
+        return self.appended(r, "said", said, LOG_KEPT, chosen=said)
 
     def _choosing(self, n: int):
         if self.actor == AGENT:
@@ -219,7 +219,7 @@ class Dumps(Controller):
             raise Refused(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
         if r.completed and not r.data.get("options") and not r.data.get("chosen"):
             self._refuse(f"dump {r.n} is closed")
-        return self._appended(r, "log", entry(status, on, making, detail), LOG_KEPT)
+        return self.appended(r, "log", entry(status, on, making, detail), LOG_KEPT)
 
     @action
     def say(self, n: int, text: str):
@@ -228,7 +228,7 @@ class Dumps(Controller):
             raise Refused("say the answer: journal dump say <n> \"<text>\"")
         if len(text.strip()) > ANSWER:
             raise Refused(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
-        return self._appended(r, "log", entry(text, answer=True), LOG_KEPT)
+        return self.appended(r, "log", entry(text, answer=True), LOG_KEPT)
 
     @action
     def ask(self, n: int, question: str, guesses: str = ""):

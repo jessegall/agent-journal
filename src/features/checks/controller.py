@@ -41,7 +41,7 @@ class Checks(Controller):
         self._require_command(n)
         if wait:
             return self._ran(n)
-        if not self._in_background(n):
+        if not self.in_background(n):
             return f"check {n} is already running; its result lands on the row"
         return f"check {n} is running; its result lands on the row, and a failure is told to you"
 
@@ -91,7 +91,7 @@ class Checks(Controller):
         except Exception:
             threw(self.record.root, self.record.env, f"gating on check {n}")
             return
-        Nudges(self.record, actor=SYSTEM)._to_primary(titled(told.split("\n")[0]), told)
+        Nudges(self.record, actor=SYSTEM).to_primary(titled(told.split("\n")[0]), told)
 
     def _landed(self, check, message: str, paths: list[str]) -> str:
         if not check.last_run.ok:
@@ -112,7 +112,7 @@ class Checks(Controller):
     def sweep(self, wait: bool = False):
         return [self.run(check.n, wait=wait) for check in self.rows.standing() if check.command]
 
-    def _in_background(self, n: int) -> bool:
+    def in_background(self, n: int) -> bool:
         held = claim(runtime.folder(self.record.root) / REPORTS / f"{n}.lock")
         if not held:
             return False
@@ -157,7 +157,7 @@ class Checks(Controller):
         check.running = {}
         return self.save(check, "updated", ran=True)
 
-    def _due(self, now: float) -> list:
+    def due(self, now: float) -> list:
         return [check for check in self.rows.standing()
                 if check.command and check.every and now - (check.last_run.at if check.last_run.at else check.created) >= float(check.every) * 60]
 
