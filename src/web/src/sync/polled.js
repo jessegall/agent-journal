@@ -4,6 +4,7 @@ import {isActive} from "../domain/journals.js";
 import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
 import {takeEvents} from "./rows.js";
+import {floatWindow} from "../platform/view.js";
 
 const LIVE = 5;
 const BUSY_EVERY = 500;
@@ -31,8 +32,14 @@ export const polled = {
         take: (got) => Array.isArray(got && got.queue) && (store.bar = got),
     },
     agents: {key: "agents", ask: () => api.agents(LIVE), every: 1000, take: (got) => (store.agents = got)},
-    pages: {key: "pages", ask: () => api.pages(), every: 5000, take: (got) => (store.pages = got)},
-    organization: {key: "organization", ask: () => api.organization(), every: 10000, take: (got) => (store.organization = got)},
+    pages: {key: "pages", ask: () => api.pages(), every: 5000, take: (got) => (store.pages = got), mainWindowOnly: true},
+    organization: {
+        key: "organization",
+        ask: () => api.organization(),
+        every: 10000,
+        take: (got) => (store.organization = got),
+        mainWindowOnly: true,
+    },
     ticketTodos: {
         key: "ticketTodos",
         ask: () => api.ticketTodos(),
@@ -45,5 +52,7 @@ export const polled = {
     journals: {key: "journals", ask: () => api.journals(), every: 10000, take: (got) => (store.journals = got)},
     events: {key: "events", ask: pollEvents, every: 5000, take: takePolled, active: () => !store.streamOpen},
 };
+
+export const windowPolls = () => Object.values(polled).filter((poll) => !(floatWindow && poll.mainWindowOnly));
 
 export const usePolled = ({key, ask, every, take, active}) => usePoll(key, ask, every, take, active);
