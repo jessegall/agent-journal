@@ -1,9 +1,12 @@
 from pathlib import Path
 
+from agents.terminal import Launched
+from supervisor import LAUNCHED
 from controllers.types import Environments, Features
+from engine import runtime
 from engine.record import Record
 from engine.seats import terminal_of
-from engine.sessions import Sessions
+from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from features.permission_prompts.skipping import prompted
 from resources.base import SYSTEM
@@ -40,9 +43,27 @@ def launched(record, name: str, provider: str, args: list[str], cwd: Path) -> st
     return name
 
 
+def running(launched: Launched) -> bool:
+    return not launched.pid or alive(launched.pid)
+
+
+def running_in(record, environment: str) -> str:
+    session = Sessions(record.root).holder(environment)
+    return session if session and running(Launched.read(record.root, terminal_of(record.root, session))) else ""
+
+
+def running_at(root: Path, folder: Path) -> bool:
+    inside = folder.resolve()
+    for path in runtime.sessions(root).glob(f"*/{LAUNCHED}"):
+        launched = Launched.read(root, path.parent.name)
+        if launched.pid and alive(launched.pid) and launched.cwd and Path(launched.cwd).resolve().is_relative_to(inside):
+            return True
+    return False
+
+
 def driver_in(record, environment: str, provider: str):
     from providers import DRIVERS
-    session = Sessions(record.root).holder(environment)
+    session = running_in(record, environment)
     return DRIVERS[provider](Record(record.root, environment), terminal_of(record.root, session)) if session else None
 
 

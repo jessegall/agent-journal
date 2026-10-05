@@ -114,3 +114,23 @@ def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
     assert (folder.exists(), git(project, "branch", "--list", "helper-rhea")) == (False, ""), "the worktree and its branch are gone"
     assert git(project, "rev-parse", "refs/journal/helpers/rhea") == last, "its last commit is kept under refs/journal/helpers"
     assert refused(lambda: worktrees.take(row.n)) == f"worktree {row.n} is dropped", "a dropped worktree takes nothing"
+
+
+def test_a_worktree_is_not_dropped_while_an_agent_runs_in_it():
+    import json
+    import os
+    import subprocess
+    from engine import runtime
+    features.load()
+    repo = project_on("phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    launched = runtime.sessions(repo.record.root) / "claude-1" / "launched.json"
+    launched.parent.mkdir(parents=True, exist_ok=True)
+    launched.write_text(json.dumps({"pid": os.getpid(), "cwd": row.path}))
+    assert "still running" in refused(lambda: worktrees.complete(row.n)), "a worktree with a live agent in it is kept"
+    ended = subprocess.Popen(["true"])
+    ended.wait()
+    launched.write_text(json.dumps({"pid": ended.pid, "cwd": row.path}))
+    assert worktrees.complete(row.n).completed, "once the agent is gone the worktree drops"
