@@ -222,12 +222,17 @@ function reset() {
     display: block;
 }
 
+.setting-row.field :deep(.choices.stacked) {
+    align-self: flex-start;
+}
+
 .setting-number {
-    width: 130px;
+    width: 200px;
 }
 
 .setting-text {
     width: 100%;
+    max-width: 420px;
 }
 
 .setting-timing {

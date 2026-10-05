@@ -17,6 +17,7 @@ class WorkModesDetails(FeatureDetails):
     name = NAME
     group = Group.AGENT
     label = "Work modes"
+    position = 2
     has_skill = False
 
     title = "Work modes"

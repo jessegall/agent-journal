@@ -6,6 +6,7 @@ class PluginsDetails(FeatureDetails):
     name = "plugins"
     group = Group.ALWAYS
     label = "Plugins"
+    hint = "Repositories installed into the journal"
     when = "a plugin is installed, upgraded, configured or answers"
 
     title = "Plugins"

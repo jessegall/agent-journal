@@ -7,6 +7,7 @@ class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
     group = Group.AGENT
     label = "Call you by a title"
+    position = 1
     has_skill = False
 
     title = "Your title and name"

@@ -7,6 +7,7 @@ class StartingAgentsDetails(FeatureDetails):
     name = "starting_agents"
     group = Group.ALWAYS
     label = "Start agents from the viewer"
+    hint = "The Start button opens an agent in an environment's own terminal"
     has_skill = False
 
     title = "Start an agent in an environment"

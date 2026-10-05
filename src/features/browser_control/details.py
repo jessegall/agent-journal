@@ -6,6 +6,7 @@ class BrowserControlDetails(FeatureDetails):
     name = "browser_control"
     group = Group.ALWAYS
     label = "Let the agent use your browser tab"
+    hint = "Screenshots, text and clicks, through the Chrome extension"
     when = "you need to see or act in the tab the user is driving"
 
     title = "Browser tab control"

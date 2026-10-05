@@ -9,6 +9,7 @@ class CommandTagsDetails(FeatureDetails):
     name = "command_tags"
     group = Group.AGENT
     label = "Run commands from tags"
+    position = 5
     hint = "When the agent writes a tag such as [!reply:12], the journal runs the command it stands for: here, reply to message 12"
     skill_of = "messages"
     when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
