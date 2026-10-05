@@ -2,7 +2,6 @@
 import {agent} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
 import {store} from "../state/store.js";
-import {stopAgentNamed} from "../actions/agents.js";
 import {barPlan, otherPlans} from "../domain/plans.js";
 import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
 import {silentIn} from "../domain/journals.js";
@@ -25,7 +24,6 @@ import {useHelpers} from "../composables/helpers.js";
 import {helperState} from "../domain/helpers.js";
 import {MODES} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
-import AgentStopButton from "../chat/AgentStopButton.vue";
 import {runPlan, setAuto} from "../actions/work.js";
 
 const current = computed(() => currentWork(rows("work")));
@@ -149,12 +147,6 @@ async function runBar(p) {
                     <Icon :name="paused ? 'resume' : 'pause'" />
                 </template>
             </Btn>
-            <AgentStopButton
-                class="statusbar-stop"
-                :environment="route.env"
-                :work="state === 'working' && current ? current.title : ''"
-                :stop="() => stopAgentNamed(api, route.env)"
-            />
         </template>
         <span class="statusbar-tools">
             <template v-if="!steered">
@@ -382,10 +374,6 @@ async function runBar(p) {
     position: relative;
     flex: none;
     margin-right: 8px;
-}
-
-.statusbar-stop {
-    margin: 0 8px 0 -4px;
 }
 
 .statusbar-pause.paused {

@@ -224,11 +224,12 @@ def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
     finally:
         starter.kill()
         starter.wait(WAIT)
-    url = viewer.launch(root, root.parent)[0]
+    url, started = viewer.launch(root, root.parent)
     try:
         assert url, "a new server starts where the killed one was"
     finally:
-        os.kill(viewer.last(root).pid, signal.SIGTERM)
+        if started and alive(started):
+            os.kill(started, signal.SIGTERM)
 
 
 def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_back(tmp_path):
