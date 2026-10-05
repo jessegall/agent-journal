@@ -174,6 +174,14 @@ export class ApiClient {
         return page.url.replace(page.path, "").replace("127.0.0.1", location.hostname) + at;
     }
 
+    diagnostics(lines = 200) {
+        return this.get(this.here(`/diagnostics?lines=${lines}`));
+    }
+
+    clearDiagnostics() {
+        return this.post(this.here("/diagnostics/clear"));
+    }
+
     pluginLog(name, lines = 200) {
         return this.get(`/plugins/${name}/log${query({lines})}`);
     }

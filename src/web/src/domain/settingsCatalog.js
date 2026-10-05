@@ -11,7 +11,11 @@ export const EVENT_CHOICES = {idle: "the agent rests", worked: "after work", sta
 
 const sorted = (value) =>
     value && typeof value === "object" && !Array.isArray(value)
-        ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, sorted(value[key])]))
+        ? Object.fromEntries(
+              Object.keys(value)
+                  .sort()
+                  .map((key) => [key, sorted(value[key])])
+          )
         : value;
 
 export const same = (a, b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
@@ -52,7 +56,11 @@ export function settingChanges(target, value, settings) {
     const [top, key] = target.path;
     const saved = settings[top] || {};
     const base = target.defaults
-        ? Object.fromEntries(Object.keys(target.defaults).filter((k) => k in saved && !same(saved[k], target.defaults[k])).map((k) => [k, saved[k]]))
+        ? Object.fromEntries(
+              Object.keys(target.defaults)
+                  .filter((k) => k in saved && !same(saved[k], target.defaults[k]))
+                  .map((k) => [k, saved[k]])
+          )
         : {...saved};
     const stored = target.invert ? !value : value;
     if (target.sparse && same(stored, target.shipped)) delete base[key];
@@ -82,7 +90,13 @@ function row(fields) {
 function timing(name, declared, settings) {
     if (!hasTiming(declared)) return null;
     const value = (settings.triggers || {})[name] || declared;
-    return {value, shipped: declared, words: timingWords(value), changed: !same(value, declared), target: {path: ["triggers", name], sparse: true, shipped: declared}};
+    return {
+        value,
+        shipped: declared,
+        words: timingWords(value),
+        changed: !same(value, declared),
+        target: {path: ["triggers", name], sparse: true, shipped: declared},
+    };
 }
 
 const switchValue = (settings, name, fallback) => {
@@ -124,7 +138,10 @@ function settingRow(f, setting, settings) {
 function featureRows(f, settings, extras) {
     const declared = f.settings.filter((s) => s.kind !== "map");
     const under = (key) => declared.filter((s) => s.under === key).map((s) => settingRow(f, s, settings));
-    const own = hasTiming(f.trigger) && f.trigger_label ? [row({key: `${f.name}:timing`, kind: "timing", label: f.trigger_label, timing: timing(f.name, f.trigger, settings)})] : [];
+    const own =
+        hasTiming(f.trigger) && f.trigger_label
+            ? [row({key: `${f.name}:timing`, kind: "timing", label: f.trigger_label, timing: timing(f.name, f.trigger, settings)})]
+            : [];
     return [
         ...own,
         ...Object.entries(f.behaviours).flatMap(([key, b]) => [behaviourRow(f, key, b, settings), ...under(key)]),
@@ -134,7 +151,13 @@ function featureRows(f, settings, extras) {
 }
 
 function featureHead(f, label, hint, settings) {
-    const shared = {key: f.name, label, hint, words: `${f.title} ${(f.keywords || []).join(" ")}`, timing: f.trigger_label ? null : timing(f.name, f.trigger, settings)};
+    const shared = {
+        key: f.name,
+        label,
+        hint,
+        words: `${f.title} ${(f.keywords || []).join(" ")}`,
+        timing: f.trigger_label ? null : timing(f.name, f.trigger, settings),
+    };
     if (f.fixed) return row({...shared, kind: "always"});
     const value = switchValue(settings, f.name, f.default);
     return row({...shared, kind: "switch", value, shipped: f.default, target: {path: ["features", f.name]}});
@@ -143,12 +166,23 @@ function featureHead(f, label, hint, settings) {
 const plain = (f, extras) => !f.fixed && !f.parts && !hasTiming(f.trigger) && !(extras[f.name] || []).length;
 
 function block(f, settings, extras) {
-    return {key: f.name, block: true, help: f.help, head: featureHead(f, f.label, f.hint, settings), rows: featureRows(f, settings, extras)};
+    return {
+        key: f.name,
+        block: true,
+        help: f.help,
+        head: featureHead(f, f.label, f.hint, settings),
+        rows: featureRows(f, settings, extras),
+    };
 }
 
 function normalised(f) {
     const settings = (f.settings || []).filter((s) => s.kind !== "map");
-    return {...f, settings: f.settings || [], behaviours: f.behaviours || {}, parts: Object.keys(f.behaviours || {}).length + settings.length};
+    return {
+        ...f,
+        settings: f.settings || [],
+        behaviours: f.behaviours || {},
+        parts: Object.keys(f.behaviours || {}).length + settings.length,
+    };
 }
 
 function group(g, members, settings, loose) {
@@ -198,33 +232,111 @@ function looseRows(settings, context) {
     return {
         rows: {
             journal: [
-                row({key: "color", kind: "color", label: "Project color", hint: "The band that tells this project apart from other open journals", words: "colour identity", value: identity.color, shipped: null, changed: Boolean(identity.custom_color), target: {action: "color"}}),
-                row({key: "channel", kind: "switch", label: "Deliver messages while the agent works", hint: "Off: they are typed into its terminal instead", words: "channel delivery", value: delivery.channel ?? true, shipped: true, target: {path: ["delivery", "channel"], sparse: true, shipped: true}}),
+                row({
+                    key: "color",
+                    kind: "color",
+                    label: "Project color",
+                    hint: "The band that tells this project apart from other open journals",
+                    words: "colour identity",
+                    value: identity.color,
+                    shipped: null,
+                    changed: Boolean(identity.custom_color),
+                    target: {action: "color"},
+                }),
+                row({
+                    key: "channel",
+                    kind: "switch",
+                    label: "Deliver messages while the agent works",
+                    hint: "Off: they are typed into its terminal instead",
+                    words: "channel delivery",
+                    value: delivery.channel ?? true,
+                    shipped: true,
+                    target: {path: ["delivery", "channel"], sparse: true, shipped: true},
+                }),
                 row({
                     key: "extension",
                     kind: "buttons",
                     label: "Chrome extension",
                     hint: "The chat on any page; the agent can see and use the tab",
                     words: "browser download",
-                    buttons: extension.available ? [...(extension.store ? [{key: "store", label: "Add to Chrome", href: extension.store}] : []), {key: "zip", label: "Download", href: context.extensionZip}] : [],
+                    buttons: extension.available
+                        ? [
+                              ...(extension.store ? [{key: "store", label: "Add to Chrome", href: extension.store}] : []),
+                              {key: "zip", label: "Download", href: context.extensionZip},
+                          ]
+                        : [],
                 }),
-                row({key: "services", kind: "buttons", label: "Services", hint: "Start, stop and read the logs of the journal's processes", words: "processes server tunnel plugin log restart", buttons: [{key: "services", label: "Show services"}]}),
+                row({
+                    key: "services",
+                    kind: "buttons",
+                    label: "Services",
+                    hint: "Start, stop and read the logs of the journal's processes",
+                    words: "processes server tunnel plugin log restart",
+                    buttons: [{key: "services", label: "Show services"}],
+                }),
             ],
             viewer: [
-                row({key: "away", kind: "switch", label: "Show what happened while you were away", hint: "A card when you come back to this tab", value: viewer.away !== false, shipped: true, target: {path: ["viewer", "away"]}}),
-                row({key: "tour", kind: "switch", label: "Show the Home tour", value: !viewer.tour_seen, changed: false, target: {path: ["viewer", "tour_seen"], invert: true}}),
+                row({
+                    key: "away",
+                    kind: "switch",
+                    label: "Show what happened while you were away",
+                    hint: "A card when you come back to this tab",
+                    value: viewer.away !== false,
+                    shipped: true,
+                    target: {path: ["viewer", "away"]},
+                }),
+                row({
+                    key: "tour",
+                    kind: "switch",
+                    label: "Show the Home tour",
+                    value: !viewer.tour_seen,
+                    changed: false,
+                    target: {path: ["viewer", "tour_seen"], invert: true},
+                }),
             ],
         },
         extras: {
             permission_prompts: permissions.possible
-                ? [row({key: "permission_prompts:skip", kind: "switch", label: "Skip permission prompts", hint: "Restarts the agent in the same conversation", value: Boolean(permissions.skip), shipped: false, target: {action: "relaunch"}})]
+                ? [
+                      row({
+                          key: "permission_prompts:skip",
+                          kind: "switch",
+                          label: "Skip permission prompts",
+                          hint: "Restarts the agent in the same conversation",
+                          value: Boolean(permissions.skip),
+                          shipped: false,
+                          target: {action: "relaunch"},
+                      }),
+                  ]
                 : [],
-            auto_archive: [keepRow("report", "Keep reports for", "0 keeps them listed", 14), keepRow("todo", "Keep finished to-dos for", "", 7)],
+            auto_archive: [
+                keepRow("report", "Keep reports for", "0 keeps them listed", 14),
+                keepRow("todo", "Keep finished to-dos for", "", 7),
+            ],
+            dev_faults: [
+                row({
+                    key: "diagnostics",
+                    kind: "buttons",
+                    label: "Developer error log",
+                    hint: "Slow requests and errors, as written to .journal/runtime/diagnostics.log",
+                    words: "diagnostics log errors slow",
+                    buttons: [{key: "diagnostics", label: "Show the log"}],
+                }),
+            ],
         },
         danger: {
             journal: context.demo
                 ? []
-                : [row({key: "stop", kind: "danger", label: "Stop the journal", hint: "Closes the viewer, the engine and every plugin. Nothing is deleted.", words: "shut down quit engine viewer", buttons: [{key: "stop", label: context.stopping ? "Stopping" : "Stop"}]})],
+                : [
+                      row({
+                          key: "stop",
+                          kind: "danger",
+                          label: "Stop the journal",
+                          hint: "Closes the viewer, the engine and every plugin. Nothing is deleted.",
+                          words: "shut down quit engine viewer",
+                          buttons: [{key: "stop", label: context.stopping ? "Stopping" : "Stop"}],
+                      }),
+                  ],
         },
     };
 }
@@ -237,7 +349,14 @@ export const LINKS = [
 export function catalog(spec, settings, context) {
     const features = Object.values(spec.features || {}).map(normalised);
     const loose = looseRows(settings || {}, context);
-    const groups = (spec.groups || []).map((g) => group(g, features.filter((f) => f.group === g.key), settings || {}, loose));
+    const groups = (spec.groups || []).map((g) =>
+        group(
+            g,
+            features.filter((f) => f.group === g.key),
+            settings || {},
+            loose
+        )
+    );
     const titles = [...new Set((spec.groups || []).map((g) => g.section))];
     return titles.map((title) => ({title, groups: groups.filter((g) => g.section === title)}));
 }
