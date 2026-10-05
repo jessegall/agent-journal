@@ -351,6 +351,12 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     CONTROLLERS["agent"](record, actor=SYSTEM).create("d2c1c997-real", event="PostToolUse", status="working")
     Sessions(record.root).write("d2c1c997-real", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
     assert Agents(record, actor=SYSTEM).state(record.env) == "working", "an older launch record of the same agent never hides the session that reports"
+    from engine import runtime
+    from engine.stored import write_json
+    write_json(runtime.session_file(record.root, "claude-4343", "seat.json"), {"at": time.time(), "agent": "claude", "env": record.env, "report": {"title": "claude-4343", "provider": "claude"}})
+    Sessions(record.root).write("claude-4343", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
+    assert [call(base, f"/p/{tap}", {}, key).status for tap in ("pause", "resume")] == [201, 201], "with an agent running, the phone pauses it and resumes it"
+    Sessions(record.root).write("claude-4343", environment="")
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
     Environments(record, actor=USER).create("ticket-4", owner="ticket:4")

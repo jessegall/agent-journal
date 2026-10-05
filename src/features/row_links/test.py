@@ -86,3 +86,7 @@ def test_a_file_name_is_a_chip_when_one_project_file_has_it_and_the_agent_hears_
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "the fix is in test.py")
     told = [n.title for n in Nudges(record).all() if "test.py" in n.title]
     assert told == ["test.py names 2 files in the project"], f"the agent is told to write the path: {told}"
+    for nudge in Nudges(record).all():
+        Nudges(record).delete(nudge.n, "cleared")
+    chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "again: test.py")
+    assert [n.title for n in Nudges(record).all() if "test.py" in n.title] == [], "naming the same shared file a second time does not tell the agent again"
