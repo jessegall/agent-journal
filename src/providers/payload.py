@@ -71,8 +71,8 @@ class AskedQuestion(Loaded):
         return [{"title": choice.label.removesuffix(RECOMMENDED).strip(), "description": choice.description} for choice in self.choices if choice.label]
 
     @property
-    def pick(self) -> int:
-        return next((at for at, label in enumerate(self.labels, 1) if label.endswith(RECOMMENDED)), 0)
+    def pick(self) -> int | None:
+        return next((at for at, label in enumerate(self.labels, 1) if label.endswith(RECOMMENDED)), None)
 
 
 @dataclass(frozen=True)

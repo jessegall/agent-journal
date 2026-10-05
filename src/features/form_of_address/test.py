@@ -28,5 +28,5 @@ def test_the_chosen_profile_is_the_voice_and_a_change_reaches_the_running_agent(
     from surfaces.settings import apply
     apply(record, {"form_of_address": {"title": "Captain", "first_name": "Ada", "profile": "coach"}}, "user")
     from controllers.types import Nudges
-    told = [n.brief for n in Nudges(record).all() if n.title == "the user changed how you talk to them"]
-    assert len(told) == 1 and "encouraging coach" in told[0], "a change saved in Settings reaches the running agent at once, with the new voice"
+    briefs = [n.brief for n in Nudges(record).all() if n.title == "the user changed how you talk to them"]
+    assert len(briefs) == 1 and "encouraging coach" in briefs[0], "a change saved in Settings reaches the running agent at once, with the new voice"
