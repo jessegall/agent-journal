@@ -33,6 +33,12 @@ def test_a_trigger_denies_a_command_and_nudges_on_a_word():
     cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
     assert cards == [("Trigger no force pushes denied the call", "danger"), ("Trigger mind the migrations nudged the agent", "note")], \
         "each firing is marked in the chat with what it did, a deny in the danger tone"
+    Triggers(record, actor="user").create("bump the version", text="update VERSION and the changelog before tagging",
+                                          **{"words": ["tag"], "does": "instruct", "words_in": "commands"})
+    assert fired(record, "git tag v2.252.0") == "", "an instruction lets the call through"
+    assert [n for n in nudges(record) if "bump the version" in n], "and puts its instruction in front of the agent"
+    assert Agents(record, actor="system").by_session("claude-1").data["cards"][-1]["label"] == "Trigger bump the version instructed the agent", \
+        "its mark says it instructed the agent"
 
 
 def test_a_trigger_fires_on_what_the_user_writes():
