@@ -51,6 +51,34 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(mon
     assert big.read_bytes().endswith(b"THE END+more") is True, "an append after the trim continues the tail"
 
 
+def test_spent_launch_logs_and_the_captures_of_ended_sessions_go(monkeypatch):
+    import json
+    record = fresh()
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    launches = runtime.folder(record.root) / "launches"
+    launches.mkdir(parents=True)
+    spent, running = launches / "main-old-helper.log", launches / "main-busy-helper.log"
+    spent.write_bytes(b"done")
+    aged(spent, 3)
+    running.write_bytes(b"x" * (2 * 1024 * 1024) + b"still going\n")
+    captured = {}
+    for name, pid in (("claude-ended", 999_999_999), ("claude-live", os.getpid())):
+        folder = runtime.sessions(record.root) / name
+        folder.mkdir(parents=True)
+        (folder / "session.json").write_text(json.dumps({"environment": "main", "pid": pid}))
+        for capture in ("printed", "screen"):
+            (folder / capture).write_bytes(b"frames")
+        aged(folder, 1.5)
+        captured[name] = folder
+
+    tidy(record.root, 2)
+
+    assert (spent.exists(), running.stat().st_size, running.read_bytes().endswith(b"still going\n")) == (False, 1024 * 1024, True), \
+        "a launch log quiet past the days goes, and a running one keeps its last megabyte"
+    assert sorted(f.name for f in captured["claude-ended"].iterdir()) == ["session.json"], "an ended session's terminal captures go after a day"
+    assert sorted(f.name for f in captured["claude-live"].iterdir()) == ["printed", "screen", "session.json"], "a live session keeps them"
+
+
 def test_the_days_to_keep_is_a_setting():
     house = FEATURES["runtime_cleanup"]
     record = fresh()

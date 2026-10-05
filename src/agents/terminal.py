@@ -163,7 +163,7 @@ def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conve
     started = entry_in(root, "supervisor")
     log = launch_log(root, env)
     log.parent.mkdir(parents=True, exist_ok=True)
-    with log.open("wb") as kept:
+    with log.open("ab") as kept:
         child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args, conversation=conversation), "headless": True})],
                                  stdin=subprocess.DEVNULL, stdout=kept, stderr=kept, start_new_session=True)
     hold_build(root, CODE, child.pid)
