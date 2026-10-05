@@ -5,11 +5,14 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import TextInput from "../kit/TextInput.vue";
-import {route} from "../route.js";
+import {stepsOf} from "../domain/sequences.js";
+import {peek, route} from "../route.js";
+import {rows} from "../sync/rows.js";
 import StartsOn from "./StartsOn.vue";
 
 const props = defineProps({resource: {type: Object, required: true}});
 const steps = computed(() => props.resource.sections || []);
+const track = computed(() => stepsOf(props.resource, rows("sequence")));
 const own = computed(() => !props.resource.data.system && !props.resource.completed);
 const inHand = computed(
     () =>
@@ -67,7 +70,7 @@ async function save() {
     <section class="sequence-steps">
         <header class="steps-head">
             <span class="steps-title">Steps</span>
-            <span class="steps-count">{{ draft.open ? draft.steps.length : steps.length }}</span>
+            <span class="steps-count">{{ draft.open ? draft.steps.length : track.length }}</span>
             <span class="grow" />
             <template v-if="resource.data.system">
                 <span class="steps-locked" title="This sequence ships with the journal and can't be changed">
@@ -95,7 +98,7 @@ async function save() {
                         </div>
                     </li>
                 </template>
-                <template v-for="(s, i) in steps" :key="s.title">
+                <template v-for="(s, i) in track" :key="`${i}-${s.title}`">
                     <li :class="['stop', {now: inHand.has(i + 1)}]">
                         <span class="node">{{ i + 1 }}</span>
                         <div class="stop-body">
@@ -105,13 +108,18 @@ async function save() {
                                     <span class="now-label">In hand</span>
                                 </template>
                             </span>
+                            <template v-if="s.from && s.from.n !== track[i - 1]?.from?.n">
+                                <Btn small kind="ghost" class="stop-from" :title="`Open sequence ${s.from.n}`" @click="peek('sequence', s.from.n)">
+                                    From {{ s.from.title }}
+                                </Btn>
+                            </template>
                             <template v-if="s.body">
                                 <TextDisplay class="stop-text" :text="s.body" />
                             </template>
                         </div>
                     </li>
                 </template>
-                <template v-if="!steps.length">
+                <template v-if="!track.length">
                     <li class="stop">
                         <span class="node empty" />
                         <p class="none">No steps yet.</p>
@@ -318,6 +326,12 @@ async function save() {
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.stop-from {
+    align-self: flex-start;
+    margin-top: 2px;
+    color: var(--text-3);
 }
 
 .now-label {
