@@ -5,6 +5,7 @@ const CONTROLS =
 const NAVIGATION =
     ".demo-band, .side, [role=tablist], a[href], [aria-expanded], [title^=Close], [aria-label^=Close], .page-jump, .quick-row";
 const PRESSES = ["pointerdown", "mousedown", "click", "dblclick", "dragstart"];
+const HINTED = new Set(["click", "keydown", "dragstart"]);
 const MOVING = new Set(["Tab", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", "Shift"]);
 
 const hint = () => window.dispatchEvent(new CustomEvent("replay-hint"));
@@ -23,11 +24,16 @@ function typeable(standIn, event) {
 function held(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
-    if (event.type === "click" || event.type === "keydown" || event.type === "dragstart") hint();
+    if (HINTED.has(event.type)) hint();
 }
 
 export function lockReplay(standIn) {
     const pressed = (event) => event.target instanceof Element && !pressable(standIn, event.target) && held(event);
+    const typed = (event) => typeable(standIn, event) || held(event);
     PRESSES.forEach((kind) => window.addEventListener(kind, pressed, true));
-    window.addEventListener("keydown", (event) => typeable(standIn, event) || held(event), true);
+    window.addEventListener("keydown", typed, true);
+    return () => {
+        PRESSES.forEach((kind) => window.removeEventListener(kind, pressed, true));
+        window.removeEventListener("keydown", typed, true);
+    };
 }

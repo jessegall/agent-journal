@@ -153,12 +153,9 @@ class ReportLinked(ResourceEvent):
 
 class EndReviewWithItsReport(Handler):
     def handle(self, context: Context, event: ReportLinked) -> None:
-        kind, _, n = event.to.partition(":")
-        if kind != "plan" or not n.isdigit():
-            return
         plans = context.journal.acting(SYSTEM).get(Plans)
-        plan = plans.load(n)
-        if plan.status != REVIEWING:
+        plan = plans._under_review(event.to)
+        if not plan:
             return
         plans.build(plan.n)
         speaking = context.to_primary()

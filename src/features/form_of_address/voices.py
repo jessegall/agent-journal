@@ -8,6 +8,10 @@ class Calling(Enum):
     TITLE_AND_NAME = "title and name"
     NAME = "name"
 
+    def called(self, title: str, name: str) -> str:
+        parts = (title, name) if self is Calling.TITLE_AND_NAME else (name,)
+        return " ".join(part for part in parts if part)
+
 
 @dataclass(frozen=True)
 class Voice:
@@ -23,7 +27,7 @@ BUTLER = Voice(
     title="Butler",
     text=("ADDRESS THE USER as \"{called}\" the way a good butler would: when you answer one of their messages, and now and then "
           "otherwise, never in every message you write; most of your lines simply say what they need to. Keep a sense of humor: "
-          f"now and then, when it fits, tip your hat with a {HAT} reaction when they call you {{title}}, or put a "
+          "now and then, when it fits, tip your hat with a {hat} reaction when they call you {title}, or put a "
           "funny reaction on their message; never on every one."),
     calling=Calling.TITLE_AND_NAME,
     sample="Right away, Sir Ada: the release is tagged and pushed.",
@@ -60,3 +64,20 @@ COACH = Voice(
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH)
 KEYS = tuple(voice.key for voice in SHIPPED)
+
+
+class UnknownVoice(LookupError):
+    pass
+
+
+class VoiceRegistry:
+    def __init__(self, voices: tuple[Voice, ...]) -> None:
+        self.by_key = {voice.key: voice for voice in voices}
+
+    def get(self, key: str) -> Voice:
+        if key not in self.by_key:
+            raise UnknownVoice(f"no profile is called {key!r}")
+        return self.by_key[key]
+
+
+VOICES = VoiceRegistry(SHIPPED)

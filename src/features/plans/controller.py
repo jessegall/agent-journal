@@ -149,6 +149,11 @@ class Plans(Controller):
     def review(self, n: int):
         return self._status(self.load(n), REVIEWING, BUILDING, DRAFT, READY)
 
+    def _under_review(self, ref: str):
+        kind, _, n = ref.partition(":")
+        plan = self.load(n) if kind == "plan" and n.isdigit() else None
+        return plan if plan and plan.status == REVIEWING else None
+
     @action
     def ready(self, n: int):
         r = self.load(n)
