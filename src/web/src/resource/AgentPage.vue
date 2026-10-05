@@ -18,16 +18,16 @@ import AgentHome from "../agents/AgentHome.vue";
 import AgentLinks from "./AgentLinks.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import {usePoll} from "../composables/poll.js";
+import {PAGE} from "../sync/rows.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const {env, api, rows, recent} = useScope();
 const ELSEWHERE_EVERY = 5000;
-const ELSEWHERE_LAST = 100;
 if (env)
     usePoll(
         `agent-elsewhere:${env}`,
-        () => Promise.all(["work", "nudge", "notice", "message"].map((type) => recent(type, ELSEWHERE_LAST))),
+        () => Promise.all(["work", "nudge", "notice", "message"].map((type) => recent(type, PAGE))),
         ELSEWHERE_EVERY
     );
 const data = computed(() => props.resource.data);
