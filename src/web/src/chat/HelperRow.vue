@@ -53,6 +53,7 @@ onMounted(() =>
             <template v-if="state() === 'running'">
                 <AgentStopButton
                     quiet
+                    label="Stop its agent"
                     :environment="name()"
                     :work="row.title"
                     :stop="() => api.act('helper', row.n, 'stop')"
