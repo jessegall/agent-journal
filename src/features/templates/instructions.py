@@ -12,7 +12,7 @@ INSTRUCTIONS = "instructions"
 def template_of(journal, row):
     given = row.data.get("template")
     if not given and row.type == "todo":
-        plan = next((p for p in journal.get(Plans).rows.every() if row.ref in p.refs and p.data.get("template")), None)
+        plan = next((p for p in journal.get(Plans).linked_to(row.ref) if p.data.get("template")), None)
         given = plan.data.get("template") if plan else ""
     try:
         return journal.get(Templates).chosen(given)

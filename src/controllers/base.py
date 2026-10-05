@@ -247,6 +247,9 @@ class Controller(Files, Links, Discussed):
     def set(self, n: int, key: str, value: str) -> Resource:
         return self.update(n, **{key: typed(value)})
 
+    def add_part(self, n: int, title: str, body: str) -> Resource:
+        return self.section(n, title, body)
+
     @marks.action
     def section(self, n: int, title: str, body: str) -> Resource:
         with self.record.locked(self.resource.scope):
