@@ -76,8 +76,14 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Bool
     background: var(--accent);
     color: #fff;
 }
+.btn.danger {
+    border-color: color-mix(in oklab, var(--danger) 55%, var(--border-2));
+    color: var(--danger);
+}
+
 .btn.danger:hover {
     border-color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 12%, transparent);
     color: var(--danger);
 }
 .btn.icon {
