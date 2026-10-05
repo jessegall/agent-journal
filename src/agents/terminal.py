@@ -5,10 +5,9 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV, Sessions, hold_build
-from engine.package import code
 from engine import runtime
 from engine.stored import read_json, write_json
-from engine.package import CODE, entry
+from engine.package import CODE, code, entry_in
 from engine.fields import Loaded
 from engine.worktree import checkout, environment, share_journal
 from typing import TypedDict
@@ -138,9 +137,9 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
             share_journal(top, root, workspace_folders())
         worked = environment(top)
         env = Sessions(root).free(worked) if worked else env
-    journal = [*entry("journal"), "--root", str(root)]
+    journal = [*entry_in(root, "journal"), "--root", str(root)]
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
-            "worker": entry("worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
+            "worker": entry_in(root, "worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
             **({"adopt": {"pid": taken["pid"], "fd": taken["fd"], "session": taken["session"], "saved": taken["saved"]}, "args": args}
                if taken else launching(root, cwd, env, agent, args, conversation))}
 
@@ -152,7 +151,7 @@ def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], take
         os.set_inheritable(taken["fd"], True)
     else:
         print(f"journal: environment {spec['env']}")
-    started = entry("supervisor")
+    started = entry_in(root, "supervisor")
     os.execv(started[0], [*started, json.dumps(spec)])
 
 
@@ -161,7 +160,7 @@ def launch_log(root: Path, env: str) -> Path:
 
 
 def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> int:
-    started = entry("supervisor")
+    started = entry_in(root, "supervisor")
     log = launch_log(root, env)
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("wb") as kept:

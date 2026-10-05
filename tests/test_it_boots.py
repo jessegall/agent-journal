@@ -167,6 +167,14 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
+def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
+    here, there = installed(tmp_path / "here"), installed(tmp_path / "there")
+    asked = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in; "
+             f"print(entry_in(Path({str(there)!r}), 'supervisor')[1])")
+    launched = subprocess.run([sys.executable, "-c", asked], capture_output=True, text=True, timeout=WAIT).stdout.strip()
+    assert launched == str(there / "journal.pyz"), "a journal launching a session for another starts it on that journal's build, never its own"
+
+
 def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
     import signal
     from engine import viewer
