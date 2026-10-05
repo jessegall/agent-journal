@@ -50,6 +50,11 @@ def entry(module: str) -> list[str]:
     return [sys.executable, str(CODE.joinpath(*module.split("."))) + ".py"]
 
 
+def entry_in(root: Path, module: str) -> list[str]:
+    built = Path(root) / ARCHIVE
+    return [sys.executable, str(built), "-m", module] if ZIPPED and built.is_file() else entry(module)
+
+
 def point(root: Path, build: Path) -> None:
     pointer = Path(root) / f"{ARCHIVE}.link"
     pointer.unlink(missing_ok=True)
