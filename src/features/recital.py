@@ -29,14 +29,14 @@ LINES = [
     ),
 ]
 
-BEHAVIOURS = [
-    Behaviour(
-        name=WHISPER,
-        title="Whisper a row when one of its keywords appears",
-        abstract="Said again once this many of the agent's tool uses have passed since it last spoke",
-        trigger=Trigger(every=100, unit=trigger.USES),
-    ),
-]
+def whispering(noun: str) -> list[Behaviour]:
+    return [
+        Behaviour(
+            name=WHISPER,
+            title=f"Repeat a {noun} when its keyword comes up",
+            trigger=Trigger(every=100, unit=trigger.USES),
+        ),
+    ]
 
 
 TEXT, COMMANDS, BOTH, EVERYTHING = "text", "commands", "both", "everything"

@@ -1,10 +1,13 @@
 from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails
-from features.recital import BEHAVIOURS, LINES
+from features.recital import LINES, whispering
+from features.groups import Group
 
 
 class FactsDetails(FeatureDetails):
     name = "facts"
+    group = Group.MEMORY
+    label = "Repeat facts"
     skill_of = "memory"
     when = "you learn something a later session would get wrong without, or at a context mark"
 
@@ -30,4 +33,4 @@ class FactsDetails(FeatureDetails):
 
     lines = LINES
 
-    behaviours = BEHAVIOURS
+    behaviours = whispering("fact")

@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class CollectionsDetails(FeatureDetails):
     name = "collections"
+    group = Group.RECORDS
+    label = "Collections"
     when = "rows that belong together should be grouped into a collection"
 
     title = "Collections"

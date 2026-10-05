@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class FileFeedDetails(FeatureDetails):
     name = "file_feed"
+    group = Group.CHAT
+    label = "Show file edits as they land"
     has_skill = False
 
     title = "File feed"

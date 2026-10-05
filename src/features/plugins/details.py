@@ -1,8 +1,11 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class PluginsDetails(FeatureDetails):
     name = "plugins"
+    group = Group.JOURNAL
+    label = "Plugins"
     when = "a plugin is installed, upgraded, configured or answers"
 
     title = "Plugins"

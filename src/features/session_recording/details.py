@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class SessionRecordingDetails(FeatureDetails):
     name = "session_recording"
+    group = Group.DEVELOPER
+    label = "Allow session recording"
     has_skill = False
 
     title = "Session recording"

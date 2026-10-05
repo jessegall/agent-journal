@@ -1,10 +1,13 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 UNPINNED = "unpinned"
 
 
 class PinnedLinksDetails(FeatureDetails):
     name = "pinned_links"
+    group = Group.CHAT
+    label = "Pin links the agent gives you"
     when = "you point the user at a design, a page or anything else outside the journal"
 
     title = "Pinned links"

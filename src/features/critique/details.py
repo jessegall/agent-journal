@@ -1,11 +1,14 @@
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 NAME = "critique"
 
 
 class CritiqueDetails(FeatureDetails):
     name = NAME
+    group = Group.DEVELOPER
+    label = "Critique rounds"
     skill_of = "reports"
     when = "a new design needs its critique round, or the designer revised it and the critics should look again"
 
@@ -30,9 +33,9 @@ class CritiqueDetails(FeatureDetails):
     """
 
     settings = [
-        Setting(name="app", default="", title="The address the critics open, such as the phone app of a demo journal"),
-        Setting(name="login", default="", title="A browser storage file the critics start logged in with"),
-        Setting(name="seed", default="", title="The project's own command that puts demo data in place before a round"),
-        Setting(name="browsers", default="", title="A folder with Playwright installed, for the critics' browsers"),
+        Setting(name="app", default="", title="App address"),
+        Setting(name="login", default="", title="Login file"),
+        Setting(name="seed", default="", title="Demo data command"),
+        Setting(name="browsers", default="", title="Playwright folder"),
     ]
 

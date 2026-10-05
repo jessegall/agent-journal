@@ -3,6 +3,7 @@ from dataclasses import fields
 from pathlib import Path
 
 import features
+from features import groups
 from controllers.base import actions
 from controllers.base import Controller
 from controllers.described import described_types
@@ -34,6 +35,7 @@ class Manifest(TypedDict):
     methods: tuple[str, ...]
     types: dict[str, dict]
     features: dict
+    groups: list[groups.Described]
 
 
 def manifest(root: Path | None = None) -> Manifest:
@@ -51,4 +53,5 @@ def manifest(root: Path | None = None) -> Manifest:
         "methods": actions(Controller),
         "types": described_types(),
         "features": features.describe(),
+        "groups": groups.describe(),
     }

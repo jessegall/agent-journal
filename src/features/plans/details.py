@@ -1,9 +1,11 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class PlansDetails(FeatureDetails):
     name = "plans"
+    group = Group.PLANS
     when = "the user asks for a plan, phases or a roadmap, or a plan is started, advanced or finished"
 
     title = "Planning"
@@ -40,14 +42,12 @@ class PlansDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="still",
-            title="Tell an agent standing still to carry on with the running plan",
-            abstract="When a plan runs with rows the agent can do and it has done nothing this long, it is told to carry on",
+            title="Nudge an agent that stalls on a running plan",
             trigger=Trigger(every=5, unit=MINUTES),
         ),
         Behaviour(
             name="blocked",
-            title="Ask whether a running plan's blocked to-dos still are",
-            abstract="While a plan runs with blocked to-dos, the agent is asked this often to check each, on the clock and on tool use",
+            title="Recheck a running plan's blocked to-dos",
             trigger=Trigger(every=30, unit=MINUTES),
         ),
     ]

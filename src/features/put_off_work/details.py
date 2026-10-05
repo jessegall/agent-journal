@@ -1,9 +1,13 @@
 from features.trigger import IDLE, Trigger
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class PutOffWorkDetails(FeatureDetails):
     name = "put_off_work"
+    group = Group.WORK_TRACKING
+    label = "Catch work put off for later"
+    hint = "Said once when a later has no to-do"
     has_skill = False
 
     title = "Catch put-off work"

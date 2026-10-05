@@ -1,9 +1,12 @@
 from features.trigger import MINUTES, PERCENT, Trigger
 from features.base import Behaviour, FeatureDetails, Line
+from features.groups import Group
 
 
 class MemoryCheckpointsDetails(FeatureDetails):
     name = "memory_checkpoints"
+    group = Group.MEMORY
+    label = "Memory checkpoints"
     skill_of = "memory"
     when = "a context mark holds your writes until you record a fact, a rule or nothing"
 
@@ -32,8 +35,7 @@ class MemoryCheckpointsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="rereading",
-            title="Read every rule and fact again each week",
-            abstract="Named once a day while the reading is owed",
+            title="Reread every rule and fact each week",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]

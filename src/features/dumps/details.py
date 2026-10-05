@@ -1,8 +1,11 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class DumpsDetails(FeatureDetails):
     name = "dumps"
+    group = Group.RECORDS
+    label = "Sort dumped files into a collection"
     when = "the user drops items into a dump, or a dump is being worked"
 
     title = "Dumps"

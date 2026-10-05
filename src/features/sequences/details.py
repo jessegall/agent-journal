@@ -1,5 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 STEP = "step"
 STEP_HELD = "step held"
@@ -10,6 +11,7 @@ UNFINISHED = "unfinished"
 
 class SequencesDetails(FeatureDetails):
     name = "sequences"
+    group = Group.SEQUENCES
     when = "a sequence is run, stepped or written"
 
     title = "Sequences"
@@ -56,9 +58,7 @@ class SequencesDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=UNFINISHED,
-            title="Remind the agent of a sequence step left unfinished",
-            abstract="Said when the agent stops with a step in hand or the step stands still this long, then this often while it stays there; "
-                     "while the agent waits on something, as often as work tracking asks about a wait",
+            title="Remind about an unfinished step",
             trigger=Trigger(every=1, unit=MINUTES),
         ),
     ]

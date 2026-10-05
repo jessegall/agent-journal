@@ -1,9 +1,12 @@
 from features.base import FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class RecordAuditDetails(FeatureDetails):
     name = "record_audit"
+    group = Group.RECORDS
+    label = "Check the record for rows that no longer hold"
     has_skill = False
 
     title = "Record audit"

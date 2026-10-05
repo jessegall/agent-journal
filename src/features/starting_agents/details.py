@@ -1,9 +1,12 @@
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 
 class StartingAgentsDetails(FeatureDetails):
     name = "starting_agents"
+    group = Group.JOURNAL
+    label = "Start agents from the viewer"
     has_skill = False
 
     title = "Start an agent in an environment"
@@ -24,6 +27,7 @@ class StartingAgentsDetails(FeatureDetails):
         Setting(
             name="wake_on_message",
             default=False,
-            title="Start the environment's last agent when the user writes and none is running",
+            title="Start the last agent when you write",
+            abstract="Only when no agent is running",
         ),
     ]

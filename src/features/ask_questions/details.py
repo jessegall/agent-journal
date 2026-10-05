@@ -2,10 +2,12 @@ from features.trigger import IDLE, MINUTES, Trigger
 from features.ask_questions.interceptors import FILED
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 
 class AskQuestionsDetails(FeatureDetails):
     name = "ask_questions"
+    group = Group.QUESTIONS
     when = "a decision only the user can make comes up, or before offering the user choices"
 
     title = "Questions, not prose choices"
@@ -53,8 +55,7 @@ class AskQuestionsDetails(FeatureDetails):
         Setting(
             name="hold",
             default=3,
-            title="Hold a picked answer",
-            abstract="Click the same answer again within this time to cancel it",
+            title="Undo a picked answer within",
             unit="seconds",
         ),
     ]
@@ -62,14 +63,12 @@ class AskQuestionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="asking",
-            title="Ask through a question, not in prose",
-            abstract="Choices offered in a message hold the writes until they are asked as a question",
+            title="Pause writes until choices are asked as a question",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="settled",
-            title="Ask whether a question open for a day is still needed",
-            abstract="Once a day for each question still open after a day, the agent checks whether the project or the code has settled it",
+            title="Recheck questions open longer than a day",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]

@@ -1,9 +1,12 @@
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 
 class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
+    group = Group.AGENT
+    label = "Address you by title"
     has_skill = False
 
     title = "How the agent addresses you"
@@ -22,13 +25,13 @@ class FormOfAddressDetails(FeatureDetails):
         Setting(
             name="title",
             default="Sir",
-            title="What the agent calls you",
-            abstract="A title such as Sir or Madam, or any word you like; empty uses your name alone",
+            title="Title",
+            abstract="Empty: your first name alone",
         ),
         Setting(
             name="first_name",
             default="",
-            title="Your first name",
-            abstract="Empty uses the first name git knows you by",
+            title="First name",
+            abstract="Empty: the name git knows you by",
         ),
     ]

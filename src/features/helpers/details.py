@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class HelpersDetails(FeatureDetails):
     name = "helpers"
+    group = Group.SESSIONS
+    label = "Allow helper agents"
     skill_of = "todos"
     when = "a bounded job goes to a helper on another provider, such as Codex, or a helper reports"
 

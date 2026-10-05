@@ -1,8 +1,12 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class CloseFromCommitsDetails(FeatureDetails):
     name = "close_from_commits"
+    group = Group.WORK_TRACKING
+    label = "Close to-dos from commit messages"
+    hint = "Journal: todos done 648"
     has_skill = False
 
     title = "Close to-dos from commits"

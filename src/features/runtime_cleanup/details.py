@@ -1,10 +1,13 @@
 from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 
 class RuntimeCleanupDetails(FeatureDetails):
     name = "runtime_cleanup"
+    group = Group.ARCHIVE
+    label = "Clean the runtime folder"
     has_skill = False
 
     title = "Runtime cleanup"

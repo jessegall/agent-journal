@@ -1,10 +1,13 @@
 from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails
-from features.recital import BEHAVIOURS, LINES
+from features.recital import LINES, whispering
+from features.groups import Group
 
 
 class RemindersDetails(FeatureDetails):
     name = "reminders"
+    group = Group.MEMORY
+    label = "Repeat reminders"
     skill_of = "memory"
     when = "you keep forgetting something, or leave an instruction for another agent"
 
@@ -27,4 +30,4 @@ class RemindersDetails(FeatureDetails):
 
     lines = LINES
 
-    behaviours = BEHAVIOURS
+    behaviours = whispering("reminder")

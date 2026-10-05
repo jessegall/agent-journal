@@ -22,7 +22,7 @@ class WorkFeature(Feature):
         return super().chosen(record, key) or (key == "auto" and bool(steered(record)))
 
     def settings_view(self, record) -> dict:
-        return {"steered": steered(record)}
+        return {**super().settings_view(record), "steered": steered(record)}
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("work", LogWork())

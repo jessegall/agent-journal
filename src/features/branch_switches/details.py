@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class BranchSwitchesDetails(FeatureDetails):
     name = "branch_switches"
+    group = Group.CHAT
+    label = "Show branch switches"
     has_skill = False
 
     title = "Branch switches in the chat"

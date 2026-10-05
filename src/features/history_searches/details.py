@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class HistorySearchesDetails(FeatureDetails):
     name = "history_searches"
+    group = Group.CHAT
+    label = "Show history searches"
     has_skill = False
 
     title = "History searches in the chat"

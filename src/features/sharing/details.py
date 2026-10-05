@@ -1,11 +1,13 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 
 ANSWERED, ALLOWED, HOST_DOWN, RESTARTED = "answered", "allowed", "host down", "restarted"
 
 class SharingDetails(FeatureDetails):
     name = "sharing"
+    group = Group.SHARING
     when = "the user wants to show a document, a report, a collection or a plan to someone outside the journal"
 
     title = "Sharing"
@@ -90,6 +92,5 @@ class SharingDetails(FeatureDetails):
             name="host",
             default="tunler.jessegall.nl",
             title="Tunler server",
-            abstract="The tunler server shares go out through; the same one tunler login uses on this machine",
         ),
     ]

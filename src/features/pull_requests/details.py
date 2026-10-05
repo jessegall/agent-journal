@@ -1,10 +1,13 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 OPEN = "open"
 
 
 class PullRequestsDetails(FeatureDetails):
     name = "pull_requests"
+    group = Group.CHAT
+    label = "Pin open pull requests"
     has_skill = False
 
     title = "Pull requests"

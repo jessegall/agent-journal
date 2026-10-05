@@ -1,11 +1,14 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import NOTICES, Trigger
+from features.groups import Group
 
 SHOP, REMIND = "shop", "remind"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
     name = "chat_etiquette"
+    group = Group.AGENT
+    label = "Keep journal talk out of the chat"
     when = "you write anything the user will read in the chat"
 
     title = "Chat etiquette"
@@ -53,8 +56,7 @@ class ChatEtiquetteDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=REMIND,
-            title="Remind the agent of chat etiquette every few journal lines",
-            abstract="A line from the journal is acted on or noted, never answered or mentioned in the chat",
+            title="Remind the agent",
             trigger=Trigger(every=20, unit=NOTICES),
         ),
     ]

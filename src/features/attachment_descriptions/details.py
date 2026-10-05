@@ -1,8 +1,11 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.groups import Group
 
 
 class AttachmentDescriptionsDetails(FeatureDetails):
     name = "attachment_descriptions"
+    group = Group.RECORDS
+    label = "Read attachments for the agent"
     has_skill = False
 
     title = "Describing attachments"
@@ -26,12 +29,11 @@ class AttachmentDescriptionsDetails(FeatureDetails):
         Behaviour(
             name="tagging",
             title="Ask for a description of each image and video",
-            abstract="The agent is told when a media file has no tags yet",
         ),
         Behaviour(
             name="frames",
-            title="Sample a video into frames",
-            abstract="Needs ffmpeg and ffprobe on the machine",
+            title="Sample videos into frames",
+            abstract="Needs ffmpeg",
         ),
     ]
 

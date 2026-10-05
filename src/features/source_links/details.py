@@ -1,9 +1,13 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 
 class SourceLinksDetails(FeatureDetails):
     name = "source_links"
+    group = Group.RECORDS
+    label = "Ask for source links"
+    hint = "On new plans, documents and reports"
     has_skill = False
 
     title = "Source links"
@@ -22,7 +26,6 @@ class SourceLinksDetails(FeatureDetails):
             name="within",
             default=30,
             title="Count what was read in the last",
-            abstract="A report or doc read this recently is one the new row could have been built on",
             unit="minutes",
         ),
     ]

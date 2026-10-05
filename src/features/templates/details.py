@@ -1,9 +1,12 @@
 from features.base import FeatureDetails, Line
 from features.templates.instructions import INSTRUCTIONS
+from features.groups import Group
 
 
 class TemplatesDetails(FeatureDetails):
     name = "templates"
+    group = Group.RECORDS
+    label = "Templates"
     when = "something is to be made from a template, or a template is written"
 
     title = "Templates"

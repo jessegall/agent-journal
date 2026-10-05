@@ -1,8 +1,12 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class PhoneDetails(FeatureDetails):
     name = "phone"
+    group = Group.VIEWER
+    label = "Connect a phone"
+    hint = "Scan a code to use the chat from your phone"
     has_skill = False
 
     title = "Phone connection"

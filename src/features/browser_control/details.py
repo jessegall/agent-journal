@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class BrowserControlDetails(FeatureDetails):
     name = "browser_control"
+    group = Group.JOURNAL
+    label = "Let the agent use your browser tab"
     when = "you need to see or act in the tab the user is driving"
 
     title = "Controlling your browser tab"

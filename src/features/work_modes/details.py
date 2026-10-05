@@ -1,5 +1,6 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 NAME = "work_modes"
 BUILDER, ORCHESTRATOR, SOLO = "builder", "orchestrator", "solo"
@@ -14,6 +15,8 @@ MODE_SET = "mode set"
 
 class WorkModesDetails(FeatureDetails):
     name = NAME
+    group = Group.AGENT
+    label = "Work modes"
     has_skill = False
 
     title = "Work modes"
@@ -36,12 +39,13 @@ class WorkModesDetails(FeatureDetails):
         Setting(
             name="mode",
             default=BUILDER,
-            title="How the agent works: builder, orchestrator or solo",
+            title="Mode",
+            choices=tuple(MODES),
         ),
         Setting(
             name="drift_after",
             default=8,
-            title="In orchestrator mode, remind the agent after this many of its own file edits",
+            title="Remind an orchestrator after its own edits",
             unit="edits",
         ),
     ]

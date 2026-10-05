@@ -2,10 +2,14 @@ from features.base import FeatureDetails
 from features.hosting.files import HOSTING
 from engine.organization import FOLDER
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class HostingDetails(FeatureDetails):
     name = "hosting"
+    group = Group.TICKETS
+    label = "Run each ticket's own app"
+    hint = "From its worktree, while it is worked on"
     skill_of = "organization"
     when = "a ticket's app is started, opened or stopped"
 
