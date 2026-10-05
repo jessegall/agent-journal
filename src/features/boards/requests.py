@@ -1,9 +1,9 @@
 import time
 
-from controllers.base import internal
 from controllers.types import Messages, Questions
 from features.boards.resource import DRAFTING_PHASE, EXPLORING, LOST, PANEL_REPLY, STALLED, WAITING
 from resources.base import COMMISSIONED, REQUESTED, REVISED, Ref, Refused, SYSTEM, titled
+from controllers.marks import action
 
 READING = 120
 FEWEST = 6
@@ -19,11 +19,13 @@ def numbers_in(text: str) -> list[int]:
 
 
 class DraftingBoards:
+    @action
     def ask(self, n: int, question: str, abstract: str = "", **data):
         board = self.load(n)
         asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
         return asking.create(question, abstract, about=board.ref, hidden=True, **data)
 
+    @action
     def cancel(self, n: int):
         board = self.load(n)
         asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
@@ -33,7 +35,6 @@ class DraftingBoards:
         self._stop_drafting(board)
         return self.update(board.n, drafting={"cancelled": time.time()} if board.drafting_since else {})
 
-    @internal
     def cancelled_lately(self, n: int) -> bool:
         return time.time() - self.load(n).drafting.get("cancelled", 0) < CANCEL_HOLDS
 
@@ -46,15 +47,18 @@ class DraftingBoards:
         for left in self._drafts(board) if board.drafting_since else []:
             tickets.delete(left.n, why="The request on the board was cancelled")
 
+    @action
     def request(self, n: int, text: str, idempotency: str = ""):
         return self._opened(self.load(n), REQUESTED, text, idempotency)
 
+    @action
     def hand(self, n: int, document: str, text: str = "", idempotency: str = ""):
         board = self.load(n)
         if document not in board.files:
             raise Refused(f"board {board.n} holds no file {document!r}; attach it first")
         return self._opened(board, COMMISSIONED, text.strip() or f"Draft tickets from {document}", idempotency, document=document)
 
+    @action
     def outline(self, n: int, sections: str):
         board = self._drafting(n)
         titles = [title.strip() for title in sections.split("|") if title.strip()]
@@ -62,6 +66,7 @@ class DraftingBoards:
             raise Refused("name the document's sections in order, split by |, like Background|Who can invite|Roles")
         return self._merged(board, "drafting", outline=[{"title": title, "state": "", "drafts": 0} for title in titles])
 
+    @action
     def progress(self, n: int, section: str, state: str, drafts: str = ""):
         board = self._drafting(n)
         if state not in SECTION_STATES:
@@ -72,6 +77,7 @@ class DraftingBoards:
         marked = [{**part, "state": state, "drafts": int(drafts or part["drafts"])} if part["title"] == section else part for part in outline]
         return self._merged(board, "drafting", outline=marked)
 
+    @action
     def group(self, n: int, name: str, tickets: str):
         board = self.load(n)
         if not board.drafting_since:
@@ -79,6 +85,7 @@ class DraftingBoards:
         groups = {**(board.drafting.get("groups") or {}), name.strip(): self._drafted(board, tickets)}
         return self._merged(board, "drafting", groups=groups)
 
+    @action
     def pick(self, n: int, tickets: str):
         board = self._drafting(n)
         return self._merged(board, "drafting", picks={"tickets": self._drafted(board, tickets), "at": time.time()})
@@ -91,6 +98,7 @@ class DraftingBoards:
             raise Refused(f"name drafts on board {board.n}, like \"12, 13\"; not {stray or tickets!r}")
         return numbers
 
+    @action
     def say(self, n: int, line: str):
         board = self._drafting(n)
         asked = board.asked
@@ -119,6 +127,7 @@ class DraftingBoards:
         self.record.emit("message", made.n, moment, self.actor)
         return made
 
+    @action
     def score(self, n: int, score: str, reading: str = "", goal: str = "", done: str = ""):
         from features.sequences.controller import Sequences
         from features.boards.drafting import DRAFTING
@@ -147,6 +156,7 @@ class DraftingBoards:
         board = self._merged(board, "drafting", phase=phase, score=rated, turns=turns, reading=read)
         return sequences.follow(handed, about=about) if handed else board
 
+    @action
     def ideas(self, n: int, ideas: list[str]):
         kept = [" ".join(str(idea).split()) for idea in ideas if str(idea).strip()]
         if not 2 <= len(kept) <= IDEAS:
@@ -155,12 +165,14 @@ class DraftingBoards:
             raise Refused(f"each idea fits one chip: at most {IDEA} characters")
         return self.update(int(n), ideas=kept, ideas_at=time.time())
 
+    @action
     def wait(self, n: int):
         board = self._drafting(n)
         if board.phase != DRAFTING_PHASE:
             raise Refused(f"board {board.n} is not drafting, so there is nothing to wait for: it is {board.phase}")
         return self._merged(board, "drafting", phase=WAITING)
 
+    @action
     def stall(self, n: int, why: str):
         board = self._drafting(n)
         if not why.strip():
@@ -168,6 +180,7 @@ class DraftingBoards:
         return self._merged(board, "drafting", phase=STALLED, stalled=why.strip(),
                                               stalled_from=board.drafting.get("stalled_from") or board.phase)
 
+    @action
     def retry(self, n: int):
         board = self._drafting(n)
         if board.phase != STALLED:
@@ -195,6 +208,7 @@ class DraftingBoards:
         kept = list(board.done_when) if board.started else []
         return self.update(board.n, goal=goal.strip() or board.goal, done_when=kept + [c for c in clauses if c not in kept])
 
+    @action
     def expect(self, n: int, count: str, fewer: str = ""):
         if not str(count).isdigit():
             raise Refused(f"the count is how many tickets you will draft, a whole number like 3; not {count!r}")
@@ -206,12 +220,14 @@ class DraftingBoards:
             raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")
         return self.update(int(n), expected=int(count))
 
+    @action
     def revise(self, n: int, text: str, idempotency: str = ""):
         board = self.load(n)
         made = self.follow_up(board.n, text, idempotency)
         self.record.emit("message", made.n, REVISED, self.actor)
         return made
 
+    @action
     def follow_up(self, n: int, text: str, idempotency: str = ""):
         board = self.load(n)
         made = self._filed(board, text, idempotency)

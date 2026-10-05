@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from resources.base import LAZY, MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
-from controllers.marks import internal
 
 DAMAGED = "damaged"
 DRAFT_OF = "draft_of"
@@ -73,7 +72,6 @@ class Stamped:
     noted: int
 
 class Stored:
-    @internal
     def path(self, n: int) -> Path:
         return self._row_folder(n) / f"{self.type}.md" if self.resource.own_folder else self._folder() / member(n)
 
@@ -123,12 +121,10 @@ class Stored:
         whole = read[:read.rfind("\n") + 1]
         return {int(line) for line in whole.splitlines() if line.isdigit()}, since + len(whole.encode())
 
-    @internal
     def numbers(self) -> list[int]:
         folder = self._folder()
         return sorted(set(self._stamps(folder)) | set(self._packed()))
 
-    @internal
     def summaries(self) -> list[dict]:
         folder = self._folder()
         moved = self._moved(folder)
@@ -283,7 +279,6 @@ class Stored:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
         return self.load(found) if found else None
 
-    @internal
     def load(self, n: int | str) -> Resource:
         r = self._peek(int(n))
         return r.fork() if self.resource.loading == MEMORY else r

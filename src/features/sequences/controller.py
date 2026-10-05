@@ -5,12 +5,13 @@ import time
 import controllers.types as types_module
 import resources.types as resources_module
 from engine.given import given
-from controllers.base import Controller, internal
+from controllers.base import Controller
 from controllers.types import Agents
 from features.sequences.resource import BY_HAND, RunKey, Sequence
 from features.triggers.controller import Triggers
 from features.triggers.resource import START
 from resources.base import AGENT, SECTION, SYSTEM
+from controllers.marks import action
 
 VIOLET = "#a78bfa"
 TRIGGER = "trigger"
@@ -20,10 +21,12 @@ INCLUDED = re.compile(r"^sequence:(\d+)(?: steps (\d+)(?:-(\d+))?)?$")
 class Sequences(Controller):
     resource = Sequence
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", starts_on: str = "", **data):
         self._check_start(starts_on)
         return super().create(title, abstract, brief, starts_on=starts_on, **data)
 
+    @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None,
                starts_on: str | None = None, **data):
         if starts_on is None:
@@ -31,10 +34,10 @@ class Sequences(Controller):
         self._check_start(starts_on)
         return super().update(n, title, abstract, brief, outcome, starts_on=starts_on, **data)
 
-    @internal
     def update_run(self, r, key: str, run: dict):
         return self.update(r.n, runs={**r.runs, key: run})
 
+    @action
     def steps(self, n: int, steps: str):
         try:
             parsed = json.loads(steps) if isinstance(steps, str) else steps
@@ -49,6 +52,7 @@ class Sequences(Controller):
         r.sections = [{SECTION.title: title, SECTION.body: str(step.get("body", ""))} for title, step in zip(titles, parsed)]
         return self.save(r, "updated")
 
+    @action
     def include(self, n: int, other: int, steps: str = ""):
         r, included = self.load(n), self.load(other)
         span = steps.strip()
@@ -71,7 +75,6 @@ class Sequences(Controller):
                 found |= self._reached(self.load(match[1]), (*seen, int(match[1])))
         return found
 
-    @internal
     def steps_of(self, r, seen: tuple = ()) -> list[dict]:
         steps = []
         for part in r.sections:
@@ -103,6 +106,7 @@ class Sequences(Controller):
     def _moments(self) -> set[str]:
         return {f"{kind}.{moment}" for kind, resource in resources_module.TYPES.items() if kind != "sequence" for moment in resource.moments}
 
+    @action
     def run(self, n: int, about: str | None = None):
         r = self.load(n)
         if not self.steps_of(r):
@@ -120,6 +124,7 @@ class Sequences(Controller):
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}{then}")
         return key
 
+    @action
     def next(self, n: int, about: str | None = None, through: int | None = None):
         r = self.load(n)
         key = self._run_key(r, about, f": journal sequence run {r.n} starts it")
@@ -140,6 +145,7 @@ class Sequences(Controller):
             self._resume()
         return self.follow(r.n, about=about) if going and handing else moved
 
+    @action
     def follow(self, n: int, about: str | None = None):
         r = self.load(n)
         key = self._run_key(r, about, f": journal sequence run {r.n} starts it")
@@ -148,7 +154,6 @@ class Sequences(Controller):
         steps, step = self.steps_of(r), r.runs[key]["step"]
         return f"Step {step} of {len(steps)} of sequence {r.n}, {steps[step - 1][SECTION.title]}: {steps[step - 1][SECTION.body]}"
 
-    @internal
     def jump(self, n: int, about: str, step: int):
         r = self.load(n)
         key = self._run_key(r, about)
@@ -156,7 +161,6 @@ class Sequences(Controller):
         run = {k: v for k, v in r.runs[key].items() if k != "followed"}
         return self.update_run(r, key, {**run, "step": step, "stepped": time.time(), "titles": self._titles(r)})
 
-    @internal
     def finish(self, n: int, about: str):
         r = self.load(n)
         key = self._key(about)
@@ -177,7 +181,6 @@ class Sequences(Controller):
         handed = {k: v for k, v in run.items() if k != "followed"}
         self.update_run(sequence, key, {**handed, "stepped": time.time()})
 
-    @internal
     def open_rows(self) -> list[dict]:
         return [row for row in self.summaries() if not row["completed"] and not row["deleted"]]
 
@@ -187,21 +190,19 @@ class Sequences(Controller):
     def _running_here(self) -> list:
         return [self.load(row["n"]) for row in self.open_rows() if self._here(row.get("runs"))]
 
-    @internal
     def in_hand(self):
         mine = [(sequence.lasting, sequence.started(key), sequence, key, sequence.runs[key]) for sequence in self._running_here()
                 if not sequence.dispatch for key in self._here(sequence.runs)]
         return min(mine, key=lambda found: (found[0], -found[1]))[2:] if mine else None
 
-    @internal
     def without(self, r, key: str) -> dict:
         return {k: v for k, v in r.runs.items() if k != key}
 
-    @internal
     def left(self, r, key: str) -> list[str]:
         run = r.run(key)
         return (run.titles or self._titles(r))[run.step - 1:]
 
+    @action
     def abandon(self, n: int, about: str | None = None, why: str = "", sure: bool = False):
         r = self.load(n)
         key = self._run_key(r, about)
@@ -221,7 +222,6 @@ class Sequences(Controller):
         self._resume()
         return abandoned
 
-    @internal
     def give_up(self, about: str, why: str) -> None:
         for row in self.open_rows():
             if self._key(about) in (row.get("runs") or {}):

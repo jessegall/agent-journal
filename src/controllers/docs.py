@@ -4,6 +4,7 @@ from pathlib import Path
 from controllers.base import Controller
 from resources import types
 from resources.base import Refused
+from controllers.marks import action
 
 
 @dataclass(frozen=True)
@@ -25,18 +26,22 @@ class Written:
 class Docs(Controller):
     resource = types.Doc
 
+    @action
     def hide(self, n: int):
         return self.update(int(n), hidden=True)
 
+    @action
     def unhide(self, n: int):
         return self.update(int(n), hidden=False)
 
     def _standing(self, closed_since: float = 0, closed_last: int = 0):
         return [r for r in super()._standing(closed_since, closed_last) if not r.hidden]
 
+    @action
     def search(self, term: str):
         return [r for r in super().search(term) if not r.hidden]
 
+    @action
     def file(self, title: str, path: str):
         source = Path(path).expanduser()
         if not source.is_file():
@@ -44,13 +49,16 @@ class Docs(Controller):
         written = Written.read(source.read_text(errors="replace"))
         return self._created_with_sections(title, "", written.brief, list(written.chapters), written=True)
 
+    @action
     def draft(self, n: int):
         return self.update(n, status="draft")
 
+    @action
     def complete(self, n: int, how: str = "", **data):
         self.update(n, status="final")
         return super().complete(n, how or "final", **data)
 
+    @action
     def supersede(self, n: int, by: int):
         newer = self._supersede(n, self.load(by).n)
         self.link(n, newer.ref)

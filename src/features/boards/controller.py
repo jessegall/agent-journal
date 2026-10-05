@@ -2,12 +2,13 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller, internal
+from controllers.base import Controller
 from features.boards.building import BuildingBoards
 from features.boards.requests import DraftingBoards, numbers_in
 from features.boards.resource import DONE, MEANINGS, Board
 from features.boards.running import RunningBoards
 from resources.base import FINISHED, Ref, Refused, Resource, SYSTEM
+from controllers.marks import action
 
 STAGES = ("To do", "Doing", "Review", "Done")
 BUILD_LOG = 40
@@ -23,11 +24,11 @@ def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
 class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
     resource = Board
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         opening = {} if "stages" in data else {"stages": list(STAGES), "meanings": {STAGES[-1]: DONE}}
         return super().create(title, abstract, brief, **{**opening, **data})
 
-    @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
         stages = [str(stage) for stage in r.stages]
         if len(set(stages)) != len(stages):
@@ -37,27 +38,27 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
             raise Refused(f"a stage of this board is marked {', '.join(MEANINGS)}; not {unknown}")
         return super().save(r, action, **event)
 
+    @action
     def stage(self, n: int, name: str, meaning: str = ""):
         board = self.load(n)
         return self.update(board.n, stages=[*board.stages, name.strip()], meanings=with_meaning(board.meanings, name.strip(), meaning))
 
+    @action
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(n)
         return self.update(board.n, meanings=with_meaning(board.meanings, stage, meaning))
 
-    @internal
     def paused(self) -> set[int]:
         return {board.n for board in self._standing() if board.paused}
 
-    @internal
     def of_message(self, message) -> int:
         return next((ref.n for ref in map(Ref.parse, message.refs) if ref.type == Board.type), 0)
 
-    @internal
     def finish(self, n: int) -> None:
         self.update(n, finished=time.time())
         self.record.emit("board", n, FINISHED, SYSTEM)
 
+    @action
     def added(self, n: int, tickets: str):
         board = self.load(n)
         numbers = numbers_in(tickets)
@@ -65,6 +66,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
             raise Refused("name the tickets that were added, like \"12, 13\"")
         return self.update(board.n, added={"tickets": numbers, "at": time.time()})
 
+    @action
     def log(self, n: int, line: str):
         board = self.load(n)
         entry = {"at": time.time(), "text": line.strip()}

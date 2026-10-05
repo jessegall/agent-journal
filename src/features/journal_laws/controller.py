@@ -7,6 +7,7 @@ from controllers.base import Controller
 from resources.base import Refused
 from features.journal_laws.resource import Output
 from providers import PROVIDERS
+from controllers.marks import action
 
 TITLE_LENGTH = 80
 
@@ -14,6 +15,7 @@ TITLE_LENGTH = 80
 class Outputs(Controller):
     resource = Output
 
+    @action
     def keep(self, path: str, command_line: str = "", provider: str = "", session_id: str = "", shown: int = 0) -> str:
         source = Path(path)
         if not source.is_file():

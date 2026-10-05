@@ -6,6 +6,7 @@ from resources.base import Refused, Resource
 from resources.pictures import dimensions
 from engine.paths import contained
 from engine.stored import undoable
+from controllers.marks import action
 
 REVISIONS = "revisions"
 
@@ -13,12 +14,14 @@ REVISIONS = "revisions"
 
 
 class Files:
+    @action
     def folder(self, n: int) -> Path:
         self.load(n)
         f = self._row_folder(n)
         f.mkdir(exist_ok=True)
         return f
 
+    @action
     def attach(self, n: int, path: str, description: str = "") -> Resource:
         source = Path(path)
         if not source.exists():
@@ -54,6 +57,7 @@ class Files:
                         raise
                     return saved
 
+    @action
     def tag(self, n: int, name: str, tags: str) -> Resource:
         r = self.load(n)
         if name not in r.files:
@@ -61,16 +65,19 @@ class Files:
         r.files[name] = tags.strip()
         return self.save(r, "updated", file=name, tags=tags.strip())
 
+    @action
     def files(self, n: int) -> list[str]:
         return sorted(p.name for p in self.folder(n).iterdir() if p.name not in self._kept_beside())
 
     def _kept_beside(self) -> set[str]:
         return {f"{self.type}.md", REVISIONS} if self.resource.own_folder else set()
 
+    @action
     def paths(self, n: int) -> list[str]:
         folder = self.folder(n)
         return [str(contained(folder, name).resolve()) for name in self.files(n)]
 
+    @action
     def detach(self, n: int, name: str, why: str = "") -> Resource:
         with self.record.locked(self.resource.scope):
             r = self.load(n)
@@ -85,6 +92,7 @@ class Files:
             shutil.move(str(target), str(struck))
             return saved
 
+    @action
     def index(self, n: int) -> Resource:
         r = self.load(n)
         known = r.files

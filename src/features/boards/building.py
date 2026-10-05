@@ -1,9 +1,11 @@
 import time
 
 from resources.base import COMMISSIONED, Refused
+from controllers.marks import action
 
 
 class BuildingBoards:
+    @action
     def build(self, n: int, name: str = "", steer: str = ""):
         board = self.load(n)
         if not board.files:
@@ -15,13 +17,16 @@ class BuildingBoards:
         self.record.emit("board", board.n, COMMISSIONED, self.actor)
         return self.load(board.n)
 
+    @action
     def built(self, n: int, summary: str):
         board = self._being_built(n)
         return self._merged(board, "building", done=time.time(), summary=summary.strip())
 
+    @action
     def keep(self, n: int):
         return self.update(self.load(n).n, building={})
 
+    @action
     def discard(self, n: int, why: str = "The user removed the board built from a document"):
         from features.sequences.controller import Sequences
         board = self.load(n)

@@ -19,6 +19,7 @@ from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
 from features.trigger import DAY
+from controllers.marks import action
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
@@ -43,6 +44,7 @@ def until(expires: str) -> float:
 class Shares(ShareVisits, SharePages, Controller):
     resource = Share
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str = "", **data):
         if self.actor != USER and (USER_SHARE_FIELDS.intersection(data) or expires != "7d" or password):
             raise Refused("only the user may set a share's approval, target, password, comments or expiry")
@@ -57,11 +59,13 @@ class Shares(ShareVisits, SharePages, Controller):
             self._ask_to_open(made, target)
         return made
 
+    @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         if self.actor != USER and USER_SHARE_FIELDS.intersection(data):
             raise Refused("only the user may change a share's approval, target, password, comments or expiry")
         return super().update(n, title, abstract, brief, outcome, **data)
 
+    @action
     def share_layout(self, name: str, layout: str, expires: str = "7d", once: bool = False):
         if self.actor != USER:
             raise Refused("only the user shares a layout, from its menu in the viewer")
@@ -78,11 +82,13 @@ class Shares(ShareVisits, SharePages, Controller):
         if share.once:
             self.complete(share.n, "opened once")
 
+    @action
     def approve(self, n: int):
         if self.actor != USER:
             raise Refused("only the user opens a share: it waits for their Accept in the chat")
         return self.update(int(n), approved=True)
 
+    @action
     def ask(self, n: int, question: str, options: str):
         from controllers.types import Comments
         chosen = [option.strip() for option in options.split("|") if option.strip()]
@@ -91,6 +97,7 @@ class Shares(ShareVisits, SharePages, Controller):
         comments = Comments(self.record, actor=self.actor)
         return comments.create(titled(question), brief=question, about=comments.load(n).ref, options=chosen)
 
+    @action
     def agree(self, n: int, words: str) -> str:
         if " ".join(str(words).split()) != AGREEMENT:
             raise Refused(f'the words must be exactly: "{AGREEMENT}"')
@@ -99,6 +106,7 @@ class Shares(ShareVisits, SharePages, Controller):
         unhold(agents, agents.by_session(self.session), n)
         return f"agreed on comment {int(n)}: tell the user about it if they should know, and act only on their own word"
 
+    @action
     def allow(self, n: int):
         if self.actor != USER:
             raise Refused("only the user lets the agent act on a visitor's comment: it waits for their button in the chat")
@@ -126,6 +134,7 @@ class Shares(ShareVisits, SharePages, Controller):
                      {"label": "Deny", "type": "share", "n": share.n, "action": "stop"}],
         )
 
+    @action
     def opens(self, ref: str) -> list[str]:
         target = self._target(ref)
         lines = [f"{target.title} ({target.type} {target.n})"]
@@ -134,17 +143,20 @@ class Shares(ShareVisits, SharePages, Controller):
         lines += [f"{m.title} ({m.type} {m.n})" for m in self._loaded_members(self.record, target)]
         return lines
 
+    @action
     def tunnel(self) -> dict:
         return {**tunler_status(), "address": self._address()}
 
     def _address(self) -> str:
         return f"{subdomain(self.record.root)}.{self._host()}"
 
+    @action
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
         host = endpoint.strip() if endpoint else self._host()
         return {**log_in(host, username.strip(), password, master_password or None), **self.tunnel()}
 
+    @action
     def logout(self) -> dict:
         self._user_only("log tunler out")
         failed = log_out()
@@ -152,13 +164,16 @@ class Shares(ShareVisits, SharePages, Controller):
             raise Refused(failed)
         return self.tunnel()
 
+    @action
     def version(self) -> TunlerVersion:
         return versions(self._host())
 
+    @action
     def install_tunler(self) -> str:
         self._user_only("install tunler")
         return install(self._host())
 
+    @action
     def update_tunler(self) -> str:
         self._user_only("update tunler")
         return updated()
@@ -166,9 +181,11 @@ class Shares(ShareVisits, SharePages, Controller):
     def _host(self) -> str:
         return SharingDetails.values(self.record).host
 
+    @action
     def domains(self) -> list[str]:
         return owned()
 
+    @action
     def release(self, domain: str) -> list[str]:
         self._user_only("release a tunler domain")
         failed = unclaim(domain, self._host())
@@ -176,6 +193,7 @@ class Shares(ShareVisits, SharePages, Controller):
             raise Refused(failed)
         return owned()
 
+    @action
     def readdress(self) -> str:
         self._user_only("choose a new tunnel address")
         from engine.services import UP, want
@@ -188,9 +206,11 @@ class Shares(ShareVisits, SharePages, Controller):
         if self.actor != USER:
             raise Refused(f"only the user may {what}, from the viewer")
 
+    @action
     def reachable(self, n: int) -> dict:
         return {"reachable": answers(self.load(n).abstract)}
 
+    @action
     def answering(self) -> dict:
         return {"reachable": self._answering()}
 

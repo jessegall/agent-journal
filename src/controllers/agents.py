@@ -1,7 +1,8 @@
 import time
 
-from controllers.base import Controller, internal
+from controllers.base import Controller
 from resources import types
+from controllers.marks import action
 
 KEPT_CARDS = 50
 
@@ -11,6 +12,7 @@ KEPT_CARDS = 50
 class Agents(Controller):
     resource = types.AgentRow
 
+    @action
     def by_session(self, session: str):
         return self._titled(session) or self.create(session, status="stopped")
 
@@ -22,15 +24,12 @@ class Agents(Controller):
             memo[self.type, session] = self.by_session(session)
         return memo[self.type, session]
 
-    @internal
     def saw(self, n: int, fact: dict, **data):
         return self._changed(n, "reported", data, **fact)
 
-    @internal
     def subagent(self, n: int, action: str, **data):
         return self._emit(int(n), action, **data)
 
-    @internal
     def card(self, n: int, **card):
         row = self.load(n)
         cards = row.data.get("cards") or []
@@ -41,6 +40,7 @@ class Agents(Controller):
             return row
         return self._appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
+    @action
     def stop_task(self, n: int, task: str, description: str = ""):
         if not task.strip():
             self._refuse("name the task to stop")
@@ -49,6 +49,7 @@ class Agents(Controller):
     def _session_or_primary(self, session: str):
         return self._titled(session) if session else self.primary()
 
+    @action
     def primary(self):
         standing = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
         latest = max(standing, key=lambda row: 0.0 if row["at"] is None else float(row["at"]), default=None)

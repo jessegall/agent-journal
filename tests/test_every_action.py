@@ -195,3 +195,11 @@ def test_no_environment_name_is_shadowed_by_a_global_route():
     from engine.paths import ROUTED
     fixed = {parts[2] for parts in (r.pattern.split("/") for r in ROUTES) if parts[1] == "api" and len(parts) > 3 and not parts[2].startswith("{")}
     assert fixed <= ROUTED, f"environments named {sorted(fixed - ROUTED)} would be shadowed by a global route"
+
+
+def test_an_action_is_marked_on_a_public_name_only():
+    import inspect
+    features.load()
+    marked = {f"{type_} {name}" for type_, controller in CONTROLLERS.items()
+              for name, fn in inspect.getmembers(controller, inspect.isfunction) if getattr(fn, "action", False) and name.startswith("_")}
+    assert marked == set(), "an underscore name is a helper, never an action"

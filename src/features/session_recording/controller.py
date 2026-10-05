@@ -16,11 +16,13 @@ from engine.sessions import alive
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
 from engine.stored import write_json
+from controllers.marks import action
 
 
 class Recordings(Controller):
     resource = Recording
 
+    @action
     def start(self, folder: str) -> str:
         target = Path(folder)
         if not target.is_absolute():
@@ -36,6 +38,7 @@ class Recordings(Controller):
         row = self.create(titled(f"Recording into {target.name}"), folder=str(target), pid=child.pid)
         return f"recording into {target} as record {row.n}; journal record stop ends it"
 
+    @action
     def stop(self) -> str:
         row = self._running()
         if not row:
@@ -48,6 +51,7 @@ class Recordings(Controller):
         self.complete(row.n, f"recorded into {row.folder} with {copied} transcripts")
         return f"recording stopped; {copied} transcripts copied into {row.folder}/transcripts"
 
+    @action
     def scrub(self, folder: str) -> str:
         target = Path(folder)
         scrubber = Scrubber()
@@ -59,6 +63,7 @@ class Recordings(Controller):
             raise Refused("the recording still holds the machine: " + "; ".join(still[:5]))
         return f"{target} holds nothing about this machine"
 
+    @action
     def build(self, folder: str, into: str, env: str = "", name: str = "") -> str:
         demo = branched(Path(folder), env, name or Path(folder).resolve().name)
         write_json(Path(into), demo)

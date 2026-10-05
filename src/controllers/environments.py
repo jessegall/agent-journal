@@ -21,6 +21,7 @@ from controllers.questions import Questions
 from controllers.reminders import Reminders
 from controllers.todos import Todos
 from controllers.works import Works
+from controllers.marks import action
 
 
 SWEPT = ("message", "comment", "reaction", "notification", "notice", "nudge")
@@ -37,6 +38,7 @@ class Environments(Controller):
     PICKED_UP = (Works, Todos, Questions, Messages)
     resource = types.Environment
 
+    @action
     def update(self, n: int, title: str | None = None, **data):
         if title is not None:
             raise Refused("rename an environment with journal environment rename")
@@ -46,6 +48,7 @@ class Environments(Controller):
         row = self._titled(name) or self.create(name)
         return self.update(row.n, holder=session)
 
+    @action
     def unused(self, name: str, hint: str = "") -> str:
         if name in ROUTED:
             raise Refused(f"{name!r} is a word the viewer's own addresses use; choose another name")
@@ -53,6 +56,7 @@ class Environments(Controller):
             raise Refused(f"environment {name!r} exists{hint}")
         return name
 
+    @action
     def vacant(self, title: str, mine: str = "") -> None:
         holder = self._sessions.holder(title)
         if holder and holder != mine:
@@ -60,6 +64,7 @@ class Environments(Controller):
             ending = f"journal environment stop {found.n} ends its agent" if found else "its agent ends"
             self._refuse(f"environment {title!r} is held by session {holder}; {ending} first")
 
+    @action
     def stop(self, n: int):
         env = self.load(n)
         holder = self._sessions.holder(env.title)
@@ -75,6 +80,7 @@ class Environments(Controller):
         os.kill(running.pid, signal.SIGTERM)
         return self._stopping(env.n, session=holder)
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
@@ -97,6 +103,7 @@ class Environments(Controller):
             raise Refused("no session to bind: say which with --session")
         return self.session
 
+    @action
     def switch(self, n: int, project: bool = False, move: str = "", back: bool = False):
         bound = self._bound_session()
         who = move or bound
@@ -121,6 +128,7 @@ class Environments(Controller):
             runtime.set_env(self.record.root, env.title)
         return self.update(n, holder=who)
 
+    @action
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         env = self.load(n)
         record = self._record_of(env)
@@ -134,6 +142,7 @@ class Environments(Controller):
         self.force_delete(n)
         return f"environment {env.title!r} removed; its record is packed in attic/ — journal environment unarchive {env.title} brings it back"
 
+    @action
     def sweep(self, n: int, yes: bool = False):
         env = self.load(n)
         record = self._record_of(env)
@@ -162,6 +171,7 @@ class Environments(Controller):
         return [controller(record, actor=SYSTEM) for controller in CONTROLLERS.values()
                 if controller.resource.scope == ENVIRONMENT and controller.resource.type not in KEPT]
 
+    @action
     def unarchive(self, name: str):
         home = environment_home(self.record.root, name)
         archive = attic.latest(self.record.root, name)
@@ -171,6 +181,7 @@ class Environments(Controller):
         attic.unpack(archive, home)
         return self.create(name)
 
+    @action
     def rename(self, n: int, name: str):
         env = self.load(n)
         new = self.unused(check_title(name))
@@ -187,6 +198,7 @@ class Environments(Controller):
         self._sessions.rebind(env.title, new)
         return super().update(n, title=new)
 
+    @action
     def pickup(self, n: int) -> dict:
         env = self.load(n)
         record = self._record_of(env)
@@ -195,6 +207,7 @@ class Environments(Controller):
                 **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM)._standing()][:10] for c in self.PICKED_UP},
                 "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM)._standing()][:10]}
 
+    @action
     def claim(self, n: int, why: str):
         env = self.load(n)
         session = self._bound_session()
@@ -204,6 +217,7 @@ class Environments(Controller):
         self._sessions.bind(session, env.title)
         return self.update(n, holder=session, claimed={"from": holder, "why": why})
 
+    @action
     def leave(self, n: int):
         env = self.load(n)
         session = self._bound_session()
@@ -212,6 +226,7 @@ class Environments(Controller):
         self._sessions.unbind(session)
         return self.update(n, holder="")
 
+    @action
     def grant(self, n: int, off: bool = False):
         env = self.load(n)
         return self._sessions.grant(self._bound_session(), env.title, on=not off)

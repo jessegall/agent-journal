@@ -13,7 +13,7 @@ from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.files import Files
 from controllers.links import Links
-from controllers.marks import internal
+from controllers import marks
 from controllers.stored import Stored
 from engine.wording import noun
 
@@ -44,8 +44,7 @@ def checked_field(fields: dict, key: str, value):
 
 @cache
 def actions(controller: type) -> tuple[str, ...]:
-    return tuple(sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)
-                  if not name.startswith("_") and not getattr(f, "internal", False)))
+    return tuple(sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction) if getattr(f, "action", False)))
 
 
 def word_names(controller: type) -> set[str]:
@@ -111,7 +110,6 @@ class Controller(Stored, Files, Links, Discussed):
                 stored.sections != r.sections or kept(stored) != kept(r):
             self._refuse(f"{self.type} {r.n} ships with the journal and cannot be changed or removed")
 
-    @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
         self._shipped(r, action)
         self._guarded(r, action)
@@ -166,6 +164,7 @@ class Controller(Stored, Files, Links, Discussed):
                      and r.author == self.actor and (not about or about in r.refs)
                      and (not idempotency or r.data.get("idempotency") == idempotency)), None)
 
+    @marks.action
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
         twin = self._twin(title, brief, data.get("about"), data.get("idempotency", ""))
         if twin is not None:
@@ -212,6 +211,7 @@ class Controller(Stored, Files, Links, Discussed):
     def _stopping(self, n: int, **asked) -> Resource:
         return self.update(n, stopping={**asked, "at": time.time()})
 
+    @marks.action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
         taken = self._handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
         if taken is not None:
@@ -230,6 +230,7 @@ class Controller(Stored, Files, Links, Discussed):
             given = {"title": title, "abstract": abstract, "brief": brief, "outcome": outcome}
             return self.save(r, "updated", fields=[*(k for k, v in given.items() if v is not None), *data])
 
+    @marks.action
     def stamp(self, n: int, **data) -> Resource:
         return self._changed(n, "stamped", data, quiet=True, fields=sorted(data))
 
@@ -242,9 +243,11 @@ class Controller(Stored, Files, Links, Discussed):
             r.data.update(self._shaped(data))
             return self.save(r, action, **event)
 
+    @marks.action
     def set(self, n: int, key: str, value: str) -> Resource:
         return self.update(n, **{key: typed(value)})
 
+    @marks.action
     def section(self, n: int, title: str, body: str) -> Resource:
         with self.record.locked(self.resource.scope):
             r = self.load(n)
@@ -256,6 +259,7 @@ class Controller(Stored, Files, Links, Discussed):
                 r.sections.append({SECTION.title: title, SECTION.body: body})
             return self.save(r, "updated", section=title)
 
+    @marks.action
     def delete(self, n: int, why: str = "") -> Resource:
         taken = self._handled("delete", n=n, why=why)
         if taken is not None:
@@ -265,6 +269,7 @@ class Controller(Stored, Files, Links, Discussed):
             r.deleted = time.time()
             return self.save(r, "deleted", why=why)
 
+    @marks.action
     def complete(self, n: int, how: str = "", **data) -> Resource:
         taken = self._handled("complete", n=n, how=how, **data)
         if taken is not None:
@@ -280,6 +285,7 @@ class Controller(Stored, Files, Links, Discussed):
                 r.seen = [who for who in r.seen if who != USER]
             return self.save(r, "completed", how=how, **data)
 
+    @marks.action
     def reopen(self, n: int, why: str) -> Resource:
         with self.record.locked(self.resource.scope):
             r = self.load(n)
@@ -291,17 +297,14 @@ class Controller(Stored, Files, Links, Discussed):
             r.outcome = ""
             return self.save(r, "reopened", why=why)
 
-    @internal
     def named(self, method: str) -> str:
         return self.resource.command_names.get(method, method)
 
-    @internal
     def method(self, name: str):
         if name in self.resource.command_names and name not in self.resource.command_names.values():
             raise Refused(f"a {self.type} calls that {self.resource.command_names[name]}")
         return self.action(name)
 
-    @internal
     def action(self, name: str):
         if name.startswith("_") or name not in {*word_names(type(self)), *self.resource.command_names.values()}:
             raise Refused(f"{self.type} has no action {name!r}")
@@ -311,6 +314,7 @@ class Controller(Stored, Files, Links, Discussed):
         method = next((method for method, alias in self.resource.command_names.items() if alias == name), name)
         return bus.commanded(self.type, method, getattr(self, method))
 
+    @marks.action
     def restore(self, n: int) -> Resource:
         r = self.load(n)
         r.deleted = 0.0
@@ -321,6 +325,7 @@ class Controller(Stored, Files, Links, Discussed):
         for r in prunable[self.resource.kept:]:
             self.force_delete(r.n)
 
+    @marks.action
     def force_delete(self, n: int) -> None:
         self.load(n)
         self._remove(n)
@@ -329,6 +334,7 @@ class Controller(Stored, Files, Links, Discussed):
             shutil.rmtree(files)
         self._emit(n, "deleted", force=True)
 
+    @marks.action
     def move(self, n: int, env: str) -> Resource:
         r = self.load(n)
         self._shipped(r, "deleted")
@@ -343,14 +349,17 @@ class Controller(Stored, Files, Links, Discussed):
         self.delete(n, why=f"moved to {env} as {self.type} {m}")
         return moved
 
+    @marks.action
     def show(self, n: int) -> Resource:
         row = self.read(n)
         self._handled("show", row=row)
         return row
 
+    @marks.action
     def read(self, n: int) -> Resource:
         return self.read_all([n])[0]
 
+    @marks.action
     def read_all(self, numbers: list[int]) -> list[Resource]:
         rows = []
         changed = []
@@ -369,10 +378,12 @@ class Controller(Stored, Files, Links, Discussed):
                 self._emit(changed[0].n, "updated", numbers=[r.n for r in changed], seen=self.actor, by="read")
         return rows
 
+    @marks.action
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
         return [self.load(row["n"]) for row in self.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
 
+    @marks.action
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
         if not deleted and int(last) and type(self)._ordered is Stored._ordered:
             listed = [row["n"] for row in self.summaries() if not row["deleted"] and (not row["completed"] or completed and not row.get(PART_OF))]
@@ -381,10 +392,10 @@ class Controller(Stored, Files, Links, Discussed):
         rows = rows if completed else [r for r in rows if not r.completed]
         return rows[-int(last):] if int(last) else rows
 
-    @internal
     def mark(self, r: Resource) -> str:
         return ""
 
+    @marks.action
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
         texts = self._texts()
@@ -403,6 +414,7 @@ class Controller(Stored, Files, Links, Discussed):
             kept[row["n"]] = (row["updated"], searchable(self._peek(row["n"])))
         return {n: text for n, (_, text) in kept.items()}
 
+    @marks.action
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
             return self.load(name)

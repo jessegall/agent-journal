@@ -15,6 +15,7 @@ from features.tickets.resource import PROPOSED
 from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS
 from resources.types import IDLE
+from controllers.marks import action
 
 SILENT_AFTER = 300.0
 CARD_EXTRAS: list = []
@@ -57,6 +58,7 @@ RUN_TEXT = 60
 
 
 class TicketCards:
+    @action
     def board(self, n: int) -> dict:
         stages = self._stages(n)
         tickets = sorted((r for r in self._standing(closed_since=1) if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)

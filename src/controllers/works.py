@@ -1,17 +1,20 @@
 from controllers.base import Controller
 from resources import types
 from controllers.todos import Todos
+from controllers.marks import action
 
 
 class Works(Controller):
     resource = types.Work
 
+    @action
     def active(self):
         return next((w for w in self._standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
 
     def _unparked(self) -> list:
         return [w for w in self._standing() if not w.parked]
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         self._gate(int(self._given(data).todo))
         return super().create(title, abstract, brief, **data)

@@ -7,7 +7,7 @@ from typing import TypedDict
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.marks import internal
+from controllers.marks import action
 from controllers.notices import Notices
 from controllers.types import Environments
 from engine import runtime
@@ -51,10 +51,12 @@ def hashed(secret: str) -> str:
 class Phones(Controller):
     resource = Phone
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         self._untouched(data)
         return super().create(title, abstract, brief, **data)
 
+    @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         self._untouched(data)
         return super().update(n, title, abstract, brief, outcome, **data)
@@ -63,7 +65,6 @@ class Phones(Controller):
         if set(data) & set(KEPT):
             raise Refused(f"a phone's {', '.join(sorted(set(data) & set(KEPT)))} are set only by scanning the code in the viewer's Connect your phone dialog")
 
-    @internal
     def connect(self, days: int = 7) -> Code:
         if self.actor != USER:
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")

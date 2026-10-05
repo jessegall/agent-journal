@@ -10,7 +10,7 @@ from engine.worktree import contains, current_branch, git, included, lines, pres
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from resources.base import Refused
-from controllers.marks import lasting
+from controllers.marks import action
 
 NAMED = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
 BRANCH = "helper-"
@@ -40,7 +40,7 @@ def within(folder: Path, places: tuple[Path, ...], commands: tuple[str, ...]) ->
 class Worktrees(Controller):
     resource = Worktree
 
-    @lasting
+    @action(network=True)
     def cut(self, name: str, helper: str = "") -> str:
         row = self._cut(name, helper)
         return (f"worktree {row.n}: {row.path} on branch {row.branch}, cut from {row.working} at {row.base[:10]}. "
@@ -62,13 +62,14 @@ class Worktrees(Controller):
         share_journal(folder, self.record.root, workspace_folders())
         return self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
 
+    @action
     def drift(self, n: int) -> str:
         row = self._unfinished(n, "dropped")
         found = self._drift(row)
         moved = f"{found.working} gained {found.commits} since the cut" if found.gained else f"{found.working} has not moved since the cut"
         return f"{moved}; {row.branch} {'contains' if found.current else 'does not contain'} its tip {found.tip[:10]}"
 
-    @lasting
+    @action(network=True)
     def take(self, n: int) -> str:
         row = self._unfinished(n, "dropped")
         project = self._project()
@@ -94,7 +95,7 @@ class Worktrees(Controller):
         self.update(row.n, taken=tip(project, row.branch))
         return f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
 
-    @lasting
+    @action(network=True)
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "dropped")
         project = self._project()
