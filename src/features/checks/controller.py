@@ -12,7 +12,8 @@ from engine.package import entry
 from engine.proc import streamed
 from controllers.faults import threw
 from engine import runtime
-from engine.stored import claim, read_json
+from engine.locks import claim
+from engine.stored import read_json
 from features.checks.output import progress, steps, tail
 from features.checks.resource import TIMEOUT, Check, CheckReport, CheckRun
 from controllers.types import Nudges
