@@ -82,7 +82,7 @@ const extension = computed(() => props.kind || props.file.name.split(".").pop())
 }
 
 .file-slip.read .file-slip-meta::before {
-    content: "✓ read · ";
+    content: "✓ ";
 }
 
 .file-slip.failed .file-slip-meta {
