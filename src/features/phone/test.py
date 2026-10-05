@@ -344,13 +344,13 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     detail = call(base, f"/p/helper?n={helper.n}", key=key)
     assert detail.status == 200 and detail.body["todo"]["title"] == helper.title and detail.body["running"], \
         "the phone can open a helper from the environment that launched it"
+    from controllers.types import Agents
     from engine.sessions import Sessions
-    from surfaces.agent_state import agent_state
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
-    assert agent_state(record, record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
+    assert Agents(record, actor=SYSTEM).state(record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
     CONTROLLERS["agent"](record, actor=SYSTEM).create("d2c1c997-real", event="PostToolUse", status="working")
     Sessions(record.root).write("d2c1c997-real", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
-    assert agent_state(record, record.env) == "working", "an older launch record of the same agent never hides the session that reports"
+    assert Agents(record, actor=SYSTEM).state(record.env) == "working", "an older launch record of the same agent never hides the session that reports"
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
     Environments(record, actor=USER).create("ticket-4", owner="ticket:4")

@@ -2,37 +2,9 @@ import threading
 import time
 from pathlib import Path
 
-from controllers.types import Notifications
 from engine import runtime
-from engine.runtime import default_env
-from engine.record import Record
-from resources.base import SYSTEM
 from engine.stored import write_text
-from engine.version import version as package_version
 from install import released, version_key
-
-KIND = "update"
-
-
-def newer(version: str, than: str) -> bool:
-    return bool(version) and (not than or than == "0" or version_key(version) > version_key(than))
-
-
-def announce(root: Path, version: str = "") -> str:
-    version = version or package_version()
-    seen = runtime.folder(root) / "version"
-    before = seen.read_text().strip() if seen.is_file() else ""
-    if before == version:
-        return ""
-    seen.parent.mkdir(parents=True, exist_ok=True)
-    write_text(seen, version)
-    if not before:
-        return ""
-    record = Record(Path(root), default_env(Path(root)))
-    Notifications(record, actor=SYSTEM)._logged(f"Journal updated to {version}", brief=f"The journal went from {before} to {version}.",
-                                               kind=KIND, version=version)
-    return version
-
 
 UPSTREAM_FOR = 900
 FETCHING = threading.Lock()
@@ -81,3 +53,7 @@ def check_now(root: Path) -> None:
             FETCHING.release()
 
     threading.Thread(target=check, daemon=True).start()
+
+
+def newer(version: str, than: str) -> bool:
+    return bool(version) and (not than or than == "0" or version_key(version) > version_key(than))

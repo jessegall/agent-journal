@@ -1,12 +1,17 @@
 import time
 
 from controllers.base import Controller
+from engine.sessions import Sessions
 from resources import types
 from controllers.marks import action
 
 KEPT_CARDS = 50
 
 
+
+
+OFFLINE, IDLE_STATE, WORKING_STATE, SILENT = "offline", "idle", "working", "silent"
+REPORT_WITHIN = 30.0
 
 
 class Agents(Controller):
@@ -54,3 +59,15 @@ class Agents(Controller):
         standing = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
         latest = max(standing, key=lambda row: 0.0 if row["at"] is None else float(row["at"]), default=None)
         return self.load(latest["n"]) if latest is not None else None
+
+    def state(self, environment: str) -> str:
+        sessions = Sessions(self.record.root)
+        holder = sessions.holder(environment)
+        if not holder:
+            return OFFLINE
+        row = self._titled(holder)
+        if row is not None and row.data.get("status") in (types.BUSY, types.WORKING):
+            return WORKING_STATE
+        if (row is None or not row.data.get("event")) and time.time() - sessions.read(holder).since > REPORT_WITHIN:
+            return SILENT
+        return IDLE_STATE

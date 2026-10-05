@@ -14,7 +14,7 @@ from engine.version import version
 from features import running
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
-from surfaces.updates import newer, stale, upstream
+from engine.upgrades import newer, stale, upstream
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10

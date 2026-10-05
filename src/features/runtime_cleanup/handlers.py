@@ -5,7 +5,7 @@ from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from features.runtime_cleanup.tidy import tidy, tidy_files
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
-from surfaces.updates import KIND
+from features.auto_update.announcing import KIND
 from controllers.types import Notifications
 
 

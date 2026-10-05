@@ -1,11 +1,12 @@
 import re
 
-from controllers.types import Messages, Questions, Works
+from controllers.types import Agents, Messages, Questions, Works
 from engine.record import Record
 from engine.worktree import git
 from features.plans.controller import DONE as PLAN_DONE
 from features.tickets.details import TicketsDetails
 from resources.base import AGENT, SYSTEM
+from controllers.agents import WORKING_STATE
 
 PLAN_DONE_CALL = "ticket_plan_done"
 PEOPLE: dict = {}
@@ -14,8 +15,7 @@ WAITS_ON_PEOPLE = re.compile(r"\b(?:orchestrator|user|you|your|approv\w*|decisio
 
 
 def handed_in(tickets, ticket) -> bool:
-    from surfaces.agent_state import WORKING_STATE, agent_state
-    working = agent_state(tickets.record, ticket.work_environment) == WORKING_STATE
+    working = Agents(tickets.record, actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
     return tickets._plan_status(ticket) == PLAN_DONE and tickets._clean(ticket) and not working
 
 

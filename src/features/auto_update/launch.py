@@ -10,7 +10,7 @@ from features import running
 from features.auto_update.check import failure_in, journal_repository
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
-from surfaces.updates import fetched, newer
+from engine.upgrades import fetched, newer
 from migrations import ran
 
 LOST = "Project records were lost in the 2.84.0 upgrade - restore them from a backup"

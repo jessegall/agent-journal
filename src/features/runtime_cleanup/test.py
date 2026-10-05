@@ -142,7 +142,7 @@ def test_an_installed_update_tidies_at_once():
     from controllers.types import Notifications
     from features import load
     from resources.base import SYSTEM
-    from surfaces.updates import KIND
+    from features.auto_update.announcing import KIND
     load()
     record = fresh()
     left = record.root / "plugins" / ".staging-old"
