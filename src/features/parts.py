@@ -67,7 +67,7 @@ class Context:
         return AgentContext.of(self.feature, self.record, row, self.provider, self.hook)
 
     def to_primary(self) -> "AgentContext | None":
-        agent = self.journal.get(Agents).primary()
+        agent = self.journal.get(Agents)._primary_to_read()
         return self.speaking_to(agent) if agent else None
 
     def due(self, behaviour: str = "") -> bool:

@@ -20,7 +20,7 @@ class PermissionPrompts(Feature):
         journal.events.handler(ShowWaitingPermission())
 
     def settings_view(self, record) -> dict:
-        primary = Agents(record, actor=SYSTEM).primary()
+        primary = Agents(record, actor=SYSTEM)._primary_to_read()
         pair = live_session(record.root, primary.title) if primary else None
         seat = pair[1] if pair else None
         driver = DRIVERS.get(seat.provider) if seat else None
