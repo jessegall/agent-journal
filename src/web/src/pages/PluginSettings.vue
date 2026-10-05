@@ -2,12 +2,14 @@
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {installedPlugins} from "../composables/plugins.js";
-import {matches} from "../domain/settingsCatalog.js";
+import {matches, tabLine} from "../domain/settingsCatalog.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
+import Chip from "../kit/Chip.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import ListBox from "../kit/ListBox.vue";
 import SettingNav from "../kit/SettingNav.vue";
+import Switch from "../kit/Switch.vue";
 import PluginSetting from "./PluginSetting.vue";
 
 const props = defineProps({query: {type: String, default: ""}});
@@ -74,6 +76,11 @@ async function all(group, on) {
     emit("saved", group.name || "Settings");
 }
 
+async function toggle(on) {
+    await api.act("plugin", plugin.value.n, on ? "enable" : "disable");
+    emit("saved", plugin.value.title);
+}
+
 function pick(key) {
     const [name, group] = key.split("|");
     chosen.value = name;
@@ -96,7 +103,15 @@ watch(
         <div class="plugin-settings">
             <SettingNav class="plugin-settings-nav" :sections="sections" :current="current" @pick="pick" />
             <div class="plugin-settings-body">
-                <h2 class="plugin-settings-title">{{ plugin.title }}</h2>
+                <p class="plugin-settings-line">{{ tabLine("plugins") }}</p>
+                <div class="plugin-settings-head">
+                    <h2 class="plugin-settings-title">{{ plugin.title }}</h2>
+                    <Chip>{{ plugin.version }}</Chip>
+                    <span class="plugin-settings-on">
+                        {{ plugin.enabled ? "On" : "Off" }}
+                        <Switch :on="plugin.enabled" :title="`Turn ${plugin.title} on or off`" @change="toggle" />
+                    </span>
+                </div>
                 <p class="plugin-settings-line">{{ plugin.description }}</p>
                 <template v-for="group in groups" :key="group.name">
                     <div :data-group="group.name">
@@ -128,7 +143,6 @@ watch(
 .plugin-settings {
     display: grid;
     grid-template-columns: 216px minmax(0, 1fr);
-    gap: 24px;
     align-items: start;
 }
 
@@ -137,12 +151,34 @@ watch(
     top: var(--page-bar-height, 52px);
     max-height: calc(100vh - var(--page-bar-height, 52px) - 48px);
     overflow-y: auto;
+    padding: 14px 10px;
+}
+
+.plugin-settings-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.plugin-settings-on {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .plugin-settings-body {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    min-width: 0;
+    padding: 26px 40px 40px;
+    border-left: 1px solid var(--border);
+}
+
+.plugin-settings-body > * {
     max-width: 760px;
 }
 
