@@ -54,6 +54,13 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     assert not holds(record).get("status"), "a reply settles it and lifts the hold"
     assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
     assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "a to-do filed after reading the message and linked nowhere is linked to it when it is answered"
+    first, second = (Messages(record, actor=USER).create(words) for words in ("first ask", "second ask"))
+    Messages(record, actor=AGENT).read(first.n)
+    Messages(record, actor=AGENT).read(second.n)
+    unsure = Todos(record, actor=AGENT).create("which message is this from")
+    Messages(record, actor=AGENT).reply(second.n, "done")
+    assert all(f"todo:{unsure.n}" not in Messages(record).load(n).refs for n in (first.n, second.n)), \
+        "a row filed while two messages are in hand is linked to neither, never to a guess"
 
 
 def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read():

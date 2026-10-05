@@ -8,13 +8,24 @@ RECENT = 200
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 
 
+def read_numbers(e) -> list[int]:
+    return e.data.get("numbers") or [e.n]
+
+
+def held_at(events: list, at: float) -> set[int]:
+    read = {n for e in events if e.type == "message" and e.data.get("seen") == AGENT and e.at <= at for n in read_numbers(e)}
+    closed = {e.n for e in events if e.type == "message" and e.action == "completed" and e.at <= at}
+    return read - closed
+
+
 def filed(context: Context, message) -> None:
     events = context.record.event_log.events(last=RECENT)
-    read = max((e.at for e in events if e.type == "message" and e.data.get("seen") == AGENT and message.n in (e.data.get("numbers") or [e.n])), default=0.0)
     claimed = {e.data.get("to") for e in events if e.type == "message" and e.action == "linked" and not e.data.get("off")}
     for e in events:
         ref = f"{e.type}:{e.n}"
-        if read and e.at >= read and e.action == "created" and e.actor == AGENT and e.type not in LINKED and ref not in claimed | set(message.refs):
+        if e.action != "created" or e.actor != AGENT or e.type in LINKED or ref in claimed | set(message.refs):
+            continue
+        if held_at(events, e.at) == {message.n}:
             context.journal.get(Messages).link(message.n, ref)
 
 
