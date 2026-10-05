@@ -14,6 +14,7 @@ from controllers.types import Agents, Todos
 from engine.transaction import WORK, undoable
 from features.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
+from commands.demo import demo_built
 from features.session_recording.demo import leaks
 from features.session_recording.scrub import Scrubber
 from resources.base import AGENT, SYSTEM, Refused
@@ -116,7 +117,7 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     recordings = Recordings(record, actor=SYSTEM)
     assert leaks(folder, Scrubber()), "the synthetic session holds a home path, an email, a tunnel host and a session id"
     with pytest.raises(Refused, match="journal record scrub"):
-        recordings.build(str(folder), str(tmp_path / "demo.json"))
+        demo_built(folder, tmp_path / "demo.json")
     recordings.scrub(str(folder))
     assert not leaks(folder, Scrubber())
     assert "jesse@example.org" not in (folder / "frames.jsonl").read_text() + "".join(blob.read_text() for blob in (folder / "blobs").iterdir())
@@ -140,7 +141,7 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     recordings.scrub(str(folder))
     shipped = tmp_path / "demo.json"
     with undoable():
-        recordings.build(str(folder), str(shipped))
+        demo_built(folder, shipped)
         assert WORK.undo_releases == [], "the throwaway world's events never wait to be released into the command's record"
     demo = json.loads(shipped.read_text())
     places = demo["answers"][demo["moments"][-1]["answers"]["phone.places"]]

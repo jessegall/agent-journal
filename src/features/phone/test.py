@@ -326,7 +326,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     CONTROLLERS["work"](helper_record, actor=SYSTEM).create(helper.title, todo=todo.n)
     CONTROLLERS["agent"](helper_record, actor=SYSTEM).create("codex-rhea", status="working", at=now, started=now - 60,
                                                              tool="Edit", file="src/web/src/phone/PhoneHome.vue")
-    from surfaces.summary import summarize
+    from overview.summary import summarize
     monkeypatch.setattr(feed, "lately_summarized", summarize)
     fed = call(base, "/p/feed", key=key).body
     assert fed["agent"] == "offline", "the phone sees no agent running"

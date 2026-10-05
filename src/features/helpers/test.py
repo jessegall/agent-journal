@@ -8,7 +8,7 @@ from tests.kit import project_on
 from features.helpers.controller import Helpers
 from resources.base import AGENT, SYSTEM
 from resources.types import FAILED, IDLE
-from surfaces.summary import summarize
+from overview.summary import summarize
 from tests.conftest import fresh, refused
 
 

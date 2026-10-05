@@ -2,6 +2,7 @@ import controllers.types as types_module
 from controllers.base import Controller
 from resources import types
 from controllers.marks import action
+from resources.base import SYSTEM
 
 ACCEPT, ADJUST, DECLINE = "Accept", "Adjust", "Decline"
 OPEN_SUGGESTIONS = 5
@@ -37,3 +38,7 @@ class Suggestions(Controller):
 
 
 types_module.register(Suggestions)
+
+
+def waiting_suggestions(record) -> int:
+    return len(Suggestions(record, actor=SYSTEM).rows.standing())

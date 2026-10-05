@@ -86,7 +86,20 @@
                         "agents",
                         "supervisor",
                         "features",
-                        "migrations"
+                        "migrations",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "overview",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents"
                     ]
                 ]
             },
@@ -99,7 +112,8 @@
                         "controllers",
                         "providers",
                         "agents",
-                        "supervisor"
+                        "supervisor",
+                        "overview"
                     ]
                 ]
             },
@@ -111,7 +125,8 @@
                         "engine",
                         "controllers",
                         "providers",
-                        "features"
+                        "features",
+                        "overview"
                     ]
                 ]
             },
@@ -124,7 +139,8 @@
                         "controllers",
                         "providers",
                         "agents",
-                        "features"
+                        "features",
+                        "overview"
                     ]
                 ]
             },
@@ -143,7 +159,8 @@
                         "surfaces",
                         "install",
                         "skills",
-                        "serve"
+                        "serve",
+                        "overview"
                     ]
                 ]
             },
@@ -155,7 +172,8 @@
                         "engine",
                         "controllers",
                         "providers",
-                        "features"
+                        "features",
+                        "overview"
                     ]
                 ]
             },
@@ -170,7 +188,8 @@
                         "features",
                         "migrations",
                         "commands",
-                        "skills"
+                        "skills",
+                        "overview"
                     ]
                 ]
             },
@@ -186,7 +205,8 @@
                         "features",
                         "migrations",
                         "surfaces",
-                        "commands"
+                        "commands",
+                        "overview"
                     ]
                 ]
             },

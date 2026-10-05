@@ -3,19 +3,17 @@ import time
 from pathlib import Path
 
 from controllers.types import Agents, Environments, Messages, Notices, Questions, Todos, Works
-from features.suggestions.controller import Suggestions
-from features.plans.controller import Plans
-from surfaces.listing import counts
-from surfaces.manifest import manifest
+from engine import runtime
+from engine.version import version
+from overview.counts import counts
+from overview.parts import SUMMARY_COUNTS, SUMMARY_PARTS
 from engine.record import Record
 from controllers.agents import SILENT
-from features.work_tracking.auto import automatic
 from resources.base import SYSTEM
 from providers import PROVIDERS
 from engine.color import identity
 from typing import TypedDict
 
-SHOWN = ("building", "ready", "active", "waiting", "done")
 RECENT = 600.0
 SUBAGENT_FIELDS = ("id", "session", "task", "type", "model", "at", "ended", "status", "running", "refusal", "tool", "file", "outcome")
 
@@ -48,26 +46,6 @@ BUILDING = threading.Lock()
 REBUILDING: set[Path] = set()
 
 
-def rows_of(p) -> list[int]:
-    return [n for phase in p.phases for n in phase["todos"]]
-
-
-class PlanSummary(TypedDict):
-    n: int
-    title: str
-    status: str
-    current: int
-    phase: str
-    phases: int
-    rows: int
-    done: int
-
-
-def plan(p, todos: dict) -> PlanSummary:
-    current = p.phases[p.current - 1] if p.phases and 0 < p.current <= len(p.phases) else None
-    rows = rows_of(p)
-    return {"n": p.n, "title": p.title, "status": p.status, "current": p.current, "phase": current["title"] if current else "",
-            "phases": len(p.phases), "rows": len(rows), "done": sum(bool(todos.get(n)) for n in rows)}
 
 
 def attention_of(questions: list, prompts: list) -> dict:
@@ -99,18 +77,17 @@ def environment(record: Record) -> dict:
                   "asking": bool(agent.asking), "background_run": agent.background_run} if agent else None,
         "work": work(current),
         "last": work(last),
-        "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM).rows.standing() if p.status in SHOWN],
         "subagents": subagents(agent),
-        "auto": automatic(record),
         "silent": Agents(record, actor=SYSTEM).state(record.env) == SILENT,
         "attention": attention,
         "counts": {
             "messages": counts(Messages(record, actor=SYSTEM))["unread"],
             "questions": len(questions),
             "todos": len([n for n, done in todos.items() if not done]),
-            "suggestions": len(Suggestions(record, actor=SYSTEM).rows.standing()),
             "prompts": len(prompts),
+            **{name: count(record) for name, count in SUMMARY_COUNTS.keyed().items()},
         },
+        **{name: part(record) for name, part in SUMMARY_PARTS.keyed().items()},
     }
 
 
@@ -146,11 +123,11 @@ class JournalSummary(TypedDict):
 
 
 def summarize(root: Path) -> JournalSummary:
-    m = manifest(root)
-    every = Environments(Record(root, m["environment"]), actor=SYSTEM).rows.standing()
+    start = runtime.env(root)
+    every = Environments(Record(root, start), actor=SYSTEM).rows.standing()
     standing = [e for e in every if not e.helping]
     owners = {e.title: e.owner for e in standing}
-    names = dict.fromkeys([m["environment"], *(e.title for e in standing)])
-    return {"project": m["project"], "root": str(root), "version": m["version"], "start": m["environment"], "color": identity(root)["color"],
+    names = dict.fromkeys([start, *(e.title for e in standing)])
+    return {"project": root.resolve().parent.name, "root": str(root), "version": version(), "start": start, "color": identity(root)["color"],
             "environments": [{**environment(Record(root, name)), "owner": owners.get(name, "")} for name in names],
             "helpers": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.helping]}

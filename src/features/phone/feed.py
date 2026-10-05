@@ -22,7 +22,7 @@ from features.plans.resource import PHASE
 from features.work_modes.modes import mode_of
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, Refused
-from surfaces.summary import JournalSummary, lately_summarized, subagents
+from overview.summary import JournalSummary, lately_summarized, subagents
 
 FEED = 40
 HELPERS_SHOWN = 10

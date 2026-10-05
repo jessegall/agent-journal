@@ -16,7 +16,7 @@ from urllib.parse import quote
 import features
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
-from surfaces.summary import lately_summarized
+from overview.summary import lately_summarized
 from engine.color import identity, set_color
 from engine.upgrades import check_now
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell

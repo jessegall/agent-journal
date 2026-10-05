@@ -115,8 +115,8 @@ def played(key: str, project: Path, pace: float, folder: Path | None = None) -> 
 
 def shipped(key: str, project: Path, folder: Path) -> Path:
     into = SHIPPED / f"{key}.json"
-    for step in (["scrub", str(folder)], ["build", str(folder), str(into), "--name", scenario(key).NAME]):
-        subprocess.run([str(project / ".journal" / "journal"), "record", *step], check=True, capture_output=True, timeout=600)
+    for step in (["record", "scrub", str(folder)], ["demo", str(folder), str(into), "--name", scenario(key).NAME]):
+        subprocess.run([str(project / ".journal" / "journal"), *step], check=True, capture_output=True, timeout=600)
     return into
 
 
