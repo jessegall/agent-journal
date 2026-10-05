@@ -43,6 +43,7 @@ watch(
 
 const mode = workMode;
 const {rows: helpers, refresh: refreshHelpers} = useHelpers();
+const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
 const helpersOpen = ref(false);
 const helpersAnchor = ref(null);
@@ -187,14 +188,15 @@ async function runBar(p) {
                 <template v-if="helpersOpen">
                     <MenuPanel
                         :anchor="helpersAnchor"
+                        plain
                         :min-width="320"
                         :max-width="380"
-                        :max-height="480"
+                        :height="helpersHeight"
                         :gap="12"
                         @click.stop
                         @close="helpersOpen = false"
                     >
-                        <HelperList :rows="helpers" @changed="refreshHelpers" />
+                        <HelperList :rows="helpers" @changed="refreshHelpers" @close="helpersOpen = false" />
                     </MenuPanel>
                 </template>
             </template>

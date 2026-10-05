@@ -5,8 +5,8 @@ export const HELPER_WORDS = {
     working: "Working",
     running: "Working",
     idle: "Idle",
-    reported: "Reported",
-    finished: "Finished",
+    reported: "Report ready",
+    finished: "Closed",
     stopped: "Stopped",
     ended: "Ended, no report",
     refused: "Refused",
@@ -46,3 +46,20 @@ export function helpersInOrder(rows, keepFinished = 5) {
         .reverse();
     return [...open.filter((row) => helperState(row) === "running"), ...open.filter((row) => helperState(row) === "reported"), ...done];
 }
+
+export const helperName = (row) => row.data?.name || `Helper ${row.n}`;
+export const helperEnvironment = (row) => row.data?.environment;
+export const helperReport = (row) => row.data?.report || "";
+
+export function helpersByState(rows) {
+    const ordered = helpersInOrder(rows, rows.length);
+    return {
+        open: ordered.filter((row) => helperState(row) !== "finished"),
+        closed: ordered.filter((row) => helperState(row) === "finished"),
+    };
+}
+
+export const helperCounts = (rows) => ({
+    working: rows.filter((row) => helperState(row) === "running").length,
+    reported: rows.filter((row) => helperState(row) === "reported").length,
+});
