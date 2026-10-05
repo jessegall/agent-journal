@@ -7,7 +7,7 @@ import TextInput from "../kit/TextInput.vue";
 
 const props = defineProps({host: {type: String, default: ""}});
 const emit = defineEmits(["ready"]);
-const endpoint = ref(props.host || "tunler.jessegall.nl");
+const endpoint = ref(props.host);
 const username = ref("");
 const password = ref("");
 const master = ref("");
@@ -49,7 +49,7 @@ async function connect() {
 <template>
     <form class="tunnel-login" @submit.prevent="connect">
         <FormField label="Server">
-            <TextInput :value="endpoint" placeholder="tunler.jessegall.nl" @input="endpoint = $event.target.value" />
+            <TextInput :value="endpoint" placeholder="tunler.example.com" @input="endpoint = $event.target.value" />
         </FormField>
         <FormField label="Username">
             <TextInput :value="username" autocomplete="username" @input="username = $event.target.value" />

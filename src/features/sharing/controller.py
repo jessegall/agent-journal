@@ -6,6 +6,7 @@ import uuid
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
+from controllers.features import Features
 from controllers.messages import Messages
 from engine.ports import REACH_SECONDS, answers
 from engine.record import Record
@@ -13,7 +14,7 @@ from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, new_address, owned, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -148,7 +149,8 @@ class Shares(ShareVisits, SharePages, Controller):
         return {**tunler_status(), "address": self._address()}
 
     def _address(self) -> str:
-        return f"{subdomain(self.record.root)}.{self._host()}"
+        host = self._host()
+        return f"{subdomain(self.record.root)}.{host}" if host else ""
 
     @action
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
@@ -169,9 +171,12 @@ class Shares(ShareVisits, SharePages, Controller):
         return versions(self._host())
 
     @action
-    def install_tunler(self) -> str:
+    def install_tunler(self, host: str) -> str:
         self._user_only("install tunler")
-        return install(self._host())
+        server = server_name(host)
+        outcome = install(server)
+        Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", server)
+        return outcome
 
     @action
     def update_tunler(self) -> str:
@@ -179,7 +184,7 @@ class Shares(ShareVisits, SharePages, Controller):
         return updated()
 
     def _host(self) -> str:
-        return SharingDetails.values(self.record).host
+        return SharingDetails.values(self.record).host or tunler_status()["host"]
 
     @action
     def domains(self) -> list[str]:

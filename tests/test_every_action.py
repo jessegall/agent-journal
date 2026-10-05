@@ -1,5 +1,7 @@
 import inspect
+import re
 import time
+from pathlib import Path
 
 import features
 from controllers.base import actions
@@ -73,6 +75,20 @@ def test_every_action_is_reachable_as_a_command():
                for name in actions(type(controller(fresh(type_[:2]), actor=SYSTEM)))
                if controller.resource.command_names.get(name, name) not in built[type_]._subparsers._group_actions[0].choices]
     assert missing == [], "every public action on a controller is a journal command"
+
+
+def test_every_action_the_viewer_asks_for_is_one_the_api_runs():
+    features.load()
+    client = (Path(__file__).resolve().parents[1] / "src" / "web" / "src" / "api" / "client.js").read_text()
+    asked = set(re.findall(r'\b(?:command|act)\(\s*"(\w+)"\s*,\s*(?:[^,()"]+,\s*)?"(\w+)"', client))
+    missing = []
+    for type_, name in sorted(asked):
+        try:
+            CONTROLLERS[type_](fresh(type_[:2]), actor=SYSTEM).action(name)
+        except Refused as refused:
+            missing.append(f"{type_} {name}: {refused}")
+    assert len(asked) > 40, "the viewer's calls are read from its one API client"
+    assert missing == [], "every action the viewer sends answers through the same funnel the API uses"
 
 
 def test_no_command_argument_shares_a_name_with_a_global_option():

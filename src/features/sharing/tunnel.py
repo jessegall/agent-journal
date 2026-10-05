@@ -172,6 +172,13 @@ def versions(host: str) -> TunlerVersion:
     return TunlerVersion(current=current, latest=newest, update_available=bool(current and newest and current != newest))
 
 
+def server_name(address: str) -> str:
+    server = address.strip().removeprefix("https://").removeprefix("http://").split("/")[0]
+    if not server:
+        raise Refused("give the address of the tunler server to install from, such as tunler.example.com")
+    return server
+
+
 def install(host: str) -> str:
     machine = platform.machine().lower()
     build = f"tunler-{platform.system().lower()}-{ARCHES.get(machine, machine)}"
@@ -182,7 +189,7 @@ def install(host: str) -> str:
             part.write_bytes(answer.read())
     except OSError as error:
         part.unlink(missing_ok=True)
-        return f"tunler could not be downloaded: {error}"
+        raise Refused(f"tunler could not be downloaded from {host}: {error}") from error
     part.chmod(0o700)
     part.replace(LOCAL_BIN)
     return f"tunler {installed()} is installed"
