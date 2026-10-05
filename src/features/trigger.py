@@ -6,10 +6,11 @@ from engine.fields import Loaded
 from resources.base import names
 from engine.stored import read_json, write_json
 from engine import runtime
+from engine.memo import Memo
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES = "percent", "uses", "minutes", "idle", "worked", "start", "notices"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES)
-HELD: dict[str, tuple[int, "Mark"]] = {}
+HELD = Memo()
 TRIGGER = names("unit", "on", "every", "at")
 MINUTE = 60.0
 DAY = 24 * 60 * MINUTE
@@ -60,10 +61,7 @@ def _file(record, session: str, name: str):
 def last(record, session: str, name: str) -> Mark:
     f = str(_file(record, session, name))
     stamp = stamped(f)
-    held = HELD.get(f)
-    if not held or held[0] != stamp:
-        held = HELD[f] = (stamp, read_json(f, Mark.from_json, Mark.from_json({})))
-    return held[1]
+    return HELD.get(f, stamp, lambda: read_json(f, Mark.from_json, Mark.from_json({})))
 
 
 def stamped(f: str) -> int:
@@ -113,13 +111,13 @@ def write(record, agent, name: str, **fields) -> None:
     if now != was:
         f = _file(record, agent.title, name)
         write_json(f, asdict(now))
-        HELD[str(f)] = (stamped(str(f)), now)
+        HELD.put(str(f), stamped(str(f)), now)
 
 
 def observe(record, agent, name: str, was: Mark) -> None:
     if (was.status, was.event) != (agent.status, agent.event):
         f = str(_file(record, agent.title, name))
-        HELD[f] = (stamped(f), replace(was, status=agent.status, event=agent.event))
+        HELD.put(f, stamped(f), replace(was, status=agent.status, event=agent.event))
 
 
 def fired(record, agent, name: str) -> None:

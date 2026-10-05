@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import IO, Any, Callable, TypeVar
 
 from engine import waits
+from engine.memo import Memo
 
 UNDO = threading.local()
 MIGRATIONS = ContextVar("migrations", default=())
@@ -35,20 +36,14 @@ class Growth:
 
 class JsonFiles:
     def __init__(self):
-        self.held: dict[Path, tuple] = {}
+        self.held = Memo()
 
     def read(self, path: Path, into: Callable[[Any], T], default: T) -> T:
         try:
             found = path.stat()
         except OSError:
             return default
-        stamp = (found.st_mtime_ns, found.st_size)
-        held = self.held.get(path)
-        if held is not None and held[0] == stamp:
-            return held[1]
-        value = read_json(path, into, default)
-        self.held[path] = (stamp, value)
-        return value
+        return self.held.get(path, (found.st_mtime_ns, found.st_size), lambda: read_json(path, into, default))
 
 
 def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
