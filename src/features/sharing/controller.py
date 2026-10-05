@@ -22,7 +22,7 @@ from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import SHARED, formatted
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, owned, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
@@ -270,7 +270,8 @@ class Shares(Controller):
         return {**tunler_status(), "address": self._address()}
 
     def _address(self) -> str:
-        return f"{subdomain(self.record.root)}.{self._host()}"
+        host = self._host()
+        return f"{subdomain(self.record.root)}.{host}" if host else ""
 
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
@@ -287,16 +288,20 @@ class Shares(Controller):
     def version(self) -> TunlerVersion:
         return versions(self._host())
 
-    def install_tunler(self) -> str:
+    def install_tunler(self, host: str) -> str:
         self._user_only("install tunler")
-        return install(self._host())
+        server = server_name(host)
+        outcome = install(server)
+        sharing = FEATURES["sharing"]
+        self.record.set_setting(sharing.name, {**self.record.setting(sharing.name, {}), "host": server})
+        return outcome
 
     def update_tunler(self) -> str:
         self._user_only("update tunler")
         return updated()
 
     def _host(self) -> str:
-        return FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
+        return FEATURES["sharing"].setting(self.record, "host", "") or tunler_status()["host"]
 
     def domains(self) -> list[str]:
         return owned()
