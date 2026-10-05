@@ -13,7 +13,13 @@ const emit = defineEmits(["pick"]);
                 :class="['segmented-option', {on: o.key === value}]"
                 @click="emit('pick', o.key)"
             >
+                <template v-if="o.dot">
+                    <span class="segmented-dot" />
+                </template>
                 {{ o.label }}
+                <template v-if="o.count !== undefined">
+                    <em class="segmented-count">{{ o.count }}</em>
+                </template>
             </button>
         </template>
     </span>
@@ -42,6 +48,23 @@ const emit = defineEmits(["pick"]);
 
 .segmented-option:hover {
     color: var(--text);
+}
+
+.segmented-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    vertical-align: middle;
+}
+
+.segmented-count {
+    margin-left: 5px;
+    color: var(--text-4);
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
 }
 
 .segmented-option.on {

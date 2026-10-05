@@ -1,16 +1,23 @@
 <script setup>
 import Spinner from "./Spinner.vue";
 
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean, disabled: Boolean, fill: Boolean});
+defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean, disabled: Boolean, fill: Boolean, href: {type: String, default: ""}});
 </script>
 
 <template>
-    <button type="button" :class="['btn', kind, {small, large, busy, fill}]" :aria-busy="busy" :disabled="busy || disabled">
+    <component
+        :is="href ? 'a' : 'button'"
+        :type="href ? undefined : 'button'"
+        :href="href || undefined"
+        :class="['btn', kind, {small, large, busy, fill}]"
+        :aria-busy="busy"
+        :disabled="busy || disabled"
+    >
         <span :class="['btn-label', {hidden: busy}]"><slot /></span>
         <template v-if="busy">
             <Spinner class="btn-spinner" />
         </template>
-    </button>
+    </component>
 </template>
 
 <style scoped>
@@ -26,6 +33,7 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Bool
     background: transparent;
     color: var(--text-2);
     font-size: 12.5px;
+    text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
 }
