@@ -1,20 +1,20 @@
-const SHOWN_FOR = 3200;
-const SAID = "This is a replay, so the message is already written: press Send to send it.";
+const BANNER_FOR = 3200;
+const TEXT = "This is a replay, so the message is already written: press Send to send it.";
 
 export function noticeOwnWords() {
-    let shown = null;
+    let banner = null;
     let gone = null;
     const cleared = () => {
-        if (shown) shown.remove();
-        shown = null;
+        if (banner) banner.remove();
+        banner = null;
     };
     window.addEventListener("replay-hint", () => {
-        if (shown) shown.remove();
+        if (banner) banner.remove();
         clearTimeout(gone);
-        shown = document.createElement("div");
-        shown.textContent = SAID;
-        shown.setAttribute("role", "status");
-        Object.assign(shown.style, {
+        banner = document.createElement("div");
+        banner.textContent = TEXT;
+        banner.setAttribute("role", "status");
+        Object.assign(banner.style, {
             position: "fixed",
             left: "50%",
             top: "88px",
@@ -29,7 +29,7 @@ export function noticeOwnWords() {
             textAlign: "center",
             boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
         });
-        document.body.append(shown);
-        gone = setTimeout(cleared, SHOWN_FOR);
+        document.body.append(banner);
+        gone = setTimeout(cleared, BANNER_FOR);
     });
 }
