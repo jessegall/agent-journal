@@ -12,12 +12,12 @@ const props = defineProps({
     over: {type: Boolean, default: false},
 });
 const emit = defineEmits(["close", "dismiss"]);
-const {shown, close, closed} = closing(emit, props);
+const {visible, close, closed} = closing(emit, props);
 </script>
 
 <template>
     <Transition name="side" appear @after-leave="closed">
-        <div v-if="shown" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
+        <div v-if="visible" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
             <aside :class="['panel', width]" role="dialog" :aria-label="title">
                 <template v-if="title">
                     <header class="head">

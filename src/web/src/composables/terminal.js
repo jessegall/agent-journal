@@ -6,12 +6,12 @@ import {pollKey, usePoll} from "./poll.js";
 const EVERY = 2000;
 const KEPT = 200;
 
-export function useTerminal(level, shown = () => agent.value, client = api) {
+export function useTerminal(level, agentOf = () => agent.value, client = api) {
     const lines = ref([]);
     let showing = 0;
 
     function ask() {
-        const n = shown() ? shown().n : 0;
+        const n = agentOf() ? agentOf().n : 0;
         if (n !== showing) {
             showing = n;
             lines.value = [];
