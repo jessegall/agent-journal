@@ -9,6 +9,7 @@ from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 from resources.types import COMPACTING, STOPPED, SUBAGENT
 from features.trigger import MINUTE
+from controllers.types import CONTROLLERS, Agents, Todos
 
 
 STOP = "stop"
@@ -43,12 +44,12 @@ class RecordCompactions(Handler):
         kept = row.data.get("compactions") or []
         if row.status != COMPACTING or (kept and time.time() - float(kept[-1]["at"]) < ONE_COMPACTION):
             return
-        context.journal.agents._appended(row, "compactions", {"at": time.time()}, KEPT_COMPACTIONS)
+        context.journal.get(Agents)._appended(row, "compactions", {"at": time.time()}, KEPT_COMPACTIONS)
 
 
 class AskToStop(Handler):
     def handle(self, context: Context, event: AgentChanged) -> None:
-        row = context.journal.agents.load(event.agent)
+        row = context.journal.get(Agents).load(event.agent)
         stopping = row.data.get("stopping") or {}
         provider = PROVIDERS.get(row.provider)
         if not stopping or not provider:
@@ -62,7 +63,7 @@ class MarkSilentStopped(Handler):
     behaviour = "liveness"
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        agents = context.journal.agents
+        agents = context.journal.get(Agents)
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
         for row in agents._every():
@@ -76,9 +77,9 @@ class KeepSubagentAlive(Handler):
     def handle(self, context: Context, event: ResourceCreated) -> None:
         if event.type == "agent":
             return
-        made = context.journal.of(event.type).load(event.n)
+        made = context.journal.get(CONTROLLERS[event.type]).load(event.n)
         if made.agent:
-            agents = context.journal.agents
+            agents = context.journal.get(Agents)
             agents.update(agents.by_session(made.agent).n, active=time.time(), dispatcher=made.dispatcher, status=SUBAGENT)
 
 
@@ -88,7 +89,7 @@ class LinkReportToSubagent(Handler):
     def handle(self, context: Context, event: ResourceCreated) -> None:
         if event.type != "report" or event.actor != "agent":
             return
-        agents = context.journal.agents
+        agents = context.journal.get(Agents)
         row = agents.primary()
         linked = dict((row and row.data.get("subagent_reports")) or {})
         ended = [s for s in (row and row.data.get("subagent_rows")) or [] if s.get("ended") and s["id"] not in linked and time.time() - s["ended"] < REPORT_WITHIN]
@@ -100,14 +101,14 @@ class HandBackReport(Handler):
     behaviour = "subagents"
 
     def handle(self, context: Context, event: TodoUpdated) -> None:
-        todos = context.journal.todos
+        todos = context.journal.get(Todos)
         todo = todos.load(event.n)
         reported = todo.reported or {}
         if not reported or reported.get("notified"):
             return
         todos.update(todo.n, reported={**reported, "notified": True})
         if reported.get("dispatcher"):
-            dispatcher = context.journal.agents.by_session(reported["dispatcher"])
+            dispatcher = context.journal.get(Agents).by_session(reported["dispatcher"])
             context.speaking_to(dispatcher).agent.say("reported", who=reported.get("agent"), n=todo.n, how=reported.get("how", ""))
 
 
@@ -115,17 +116,17 @@ class ClearLapsedAssignments(Handler):
     behaviour = "subagents"
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        subagents = {a.title: a for a in context.journal.agents._standing() if a.status == SUBAGENT}
+        subagents = {a.title: a for a in context.journal.get(Agents)._standing() if a.status == SUBAGENT}
         if not subagents:
             return
         limit = context.settings.lapse * MINUTE
-        todos = context.journal.todos
+        todos = context.journal.get(Todos)
         for t in todos._standing():
             who = t.assigned
             if not who or who not in subagents or time.time() - float(subagents[who].active) < limit:
                 continue
             todos.update(t.n, assigned="", lapsed=who)
-            dispatcher = context.journal.agents.by_session(subagents[who].dispatcher)
+            dispatcher = context.journal.get(Agents).by_session(subagents[who].dispatcher)
             context.speaking_to(dispatcher).agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
 
 

@@ -6,6 +6,7 @@ from features.sequences.controller import Sequences
 from features.boards.exploration import FILLER
 from features.boards.drafting import BUILDING_A_BOARD, DRAFTING, DRAFTING_FROM_A_DOCUMENT, REVISING_THE_DRAFTS
 from features.boards.exploration import EXPLORATION
+from controllers.types import Messages
 
 BOARD_SEQUENCES = {shipped.title for shipped in (EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, DRAFTING_FROM_A_DOCUMENT, BUILDING_A_BOARD)}
 HELD = ("plan", "question")
@@ -34,7 +35,7 @@ class PanelRepliesStayShort(ActionInterceptor):
         about = str(args.get("about", ""))
         if controller.type != "comment" or controller.actor != AGENT or not about.startswith("message:"):
             return None
-        message = context.journal.messages.load(about.split(":")[1])
+        message = context.journal.get(Messages).load(about.split(":")[1])
         if not Boards(context.record, actor=SYSTEM).of_message(message):
             return None
         text = "\n".join(line for line in (args.get("brief") or "").split("\n") if not line.startswith(">")).strip()

@@ -5,6 +5,7 @@ from features import trigger
 from features.messages.answering import unanswered
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT
+from controllers.types import Messages
 
 INBOX_AFTER = 5
 
@@ -35,7 +36,7 @@ class ResetCountsOnArrival(Handler):
 
 class NameUnread(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        unread = context.journal.messages.unread(AGENT)
+        unread = context.journal.get(Messages).unread(AGENT)
         if not unread or len(unread) <= INBOX_AFTER and context.agent.row.status != IDLE:
             context.release("unread")
             reset(context, "unread")

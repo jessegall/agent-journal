@@ -6,6 +6,7 @@ from engine.proc import git
 from features.parts import AgentContext, Handler
 from resources.base import Refused
 from engine.wording import digest
+from controllers.types import Agents, Todos, Works
 
 MADE_HERE = "commit"
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +)\d+\b)*)(?: +(.*))?$", re.MULTILINE)
@@ -31,7 +32,7 @@ class CloseRowsFromCommits(Handler):
         for sha, action, subject, body in commits[:shas.index(seen)]:
             if not action.startswith(MADE_HERE):
                 continue
-            context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{checkout.branch}`", icon="branch", tone="commit", title=subject)
+            context.journal.get(Agents).card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{checkout.branch}`", icon="branch", tone="commit", title=subject)
             self.close(context, sha, subject, body)
 
     def log(self, project) -> list[tuple[str, str, str, str]]:
@@ -39,7 +40,7 @@ class CloseRowsFromCommits(Handler):
         return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
 
     def close(self, context: AgentContext, sha: str, subject: str, body: str) -> None:
-        todos, works = context.journal.todos, context.journal.works
+        todos, works = context.journal.get(Todos), context.journal.get(Works)
         closed, ended = [], []
         for numbers, how in TRAILER.findall(body):
             for n in re.findall(r"\d+", numbers):

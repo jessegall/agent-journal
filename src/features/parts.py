@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from controllers.types import Environments
+from controllers.types import Agents, Environments
 from engine.events.resources import AgentChanged
 from engine.reach import Reach
 from engine.state import State
@@ -64,7 +64,7 @@ class Context:
         return AgentContext.of(self.feature, self.record, row, self.provider, self.hook)
 
     def to_primary(self) -> "AgentContext | None":
-        agent = self.journal.agents.primary()
+        agent = self.journal.get(Agents).primary()
         return self.speaking_to(agent) if agent else None
 
     def due(self, behaviour: str = "") -> bool:

@@ -8,6 +8,7 @@ from features.parts import AgentContext, Handler
 from providers import PROVIDERS
 from providers.payload import HookEvent
 from engine.fields import Loaded
+from controllers.types import Agents
 
 THINKING = "thinking"
 THOUGHTS = "thoughts"
@@ -45,11 +46,11 @@ class FollowThinking(Handler):
             now = time.time()
             changes[THOUGHTS] = [*(row.data.get(THOUGHTS) or []), *({"at": now, "text": text[:THOUGHT_CHARS]} for text in kept)][-KEPT_THOUGHTS:]
         if changes:
-            context.journal.agents.stamp(row.n, **changes)
+            context.journal.get(Agents).stamp(row.n, **changes)
 
 
 
 class ClearOnMessage(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
         if event.text.strip() and context.agent.row.data.get(THINKING):
-            context.journal.agents.stamp(context.agent.row.n, **{THINKING: ""})
+            context.journal.get(Agents).stamp(context.agent.row.n, **{THINKING: ""})

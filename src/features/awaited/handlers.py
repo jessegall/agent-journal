@@ -2,6 +2,7 @@ from engine.events.engine import ClockTicked
 from features.helpers.controller import Helpers
 from features.parts import AgentContext, Handler
 from resources.base import SYSTEM
+from controllers.types import Works
 
 HELPER = "helper:"
 KEPT = 300
@@ -19,7 +20,7 @@ def back(context: AgentContext, ref: str) -> str | None:
 
 class ReturnWhenAwaitedReport(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        works = context.journal.works
+        works = context.journal.get(Works)
         for w in (w for w in works._standing() if w.awaiting_on and not w.parked):
             found = [back(context, ref) for ref in w.awaiting_on.split(",")]
             if None in found:

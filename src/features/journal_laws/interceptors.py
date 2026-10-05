@@ -9,6 +9,7 @@ from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 from providers.payload import ReadCall
 from resources.types import TYPES
 from engine.reach import Reach
+from controllers.types import Agents
 
 
 class EnforceDispatchLaw(Canceler):
@@ -74,7 +75,7 @@ class RefuseWholeLongReads(ToolInterceptor):
         if count <= limit:
             return ""
         instead = "read a range (offset 1, limit 120)" if whole else f"print a range: sed -n '1,120p' {named}"
-        context.journal.agents.card(context.agent.row.n, label=f"Refused reading a long file whole `{path}`", icon="terminal", tone="danger",
+        context.journal.get(Agents).card(context.agent.row.n, label=f"Refused reading a long file whole `{path}`", icon="terminal", tone="danger",
                                     title=f"{count:,} lines; told to {instead} or grep instead")
         return (f"{named} has {count:,} lines, too long to read whole (law L3, read narrowly). Instead: {instead}, then the next range; "
                 f"or list its headings first with grep -n '^#' {named} and read only the part you need; or grep -n for the line you want.")

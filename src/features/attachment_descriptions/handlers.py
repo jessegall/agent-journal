@@ -4,11 +4,12 @@ import shutil
 from dataclasses import dataclass
 from typing import ClassVar
 
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Agents, Messages
 from engine.events.agents import SessionStarted
 from engine.events.resources import MessageUpdated, ResourceEvent
 from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing
 from features.parts import AgentContext, Context, Handler
+from controllers.types import CONTROLLERS
 
 MEDIA = ("image/", VIDEO)
 
@@ -33,10 +34,10 @@ class TagNewMedia(Handler):
     def handle(self, context: Context, event: FileAttached) -> None:
         if event.type not in CONTROLLERS or not event.file or not media(event.file):
             return
-        row = context.journal.of(event.type).load(event.n)
+        row = context.journal.get(CONTROLLERS[event.type]).load(event.n)
         if event.file not in row.files or row.files.get(event.file):
             return
-        for agent in context.journal.agents._every():
+        for agent in context.journal.get(Agents)._every():
             if agent.live:
                 tell(context.speaking_to(agent), event.type, row, event.file)
 
@@ -45,7 +46,7 @@ class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.of(type_)._every()
+        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.get(CONTROLLERS[type_])._every()
                     for name, tags in row.files.items() if (not tags or str(tags).startswith(TAGGED)) and media(name))
         for type_, row, name in untagged:
             tell(context, type_, row, name)
@@ -58,7 +59,7 @@ class SampleVideoFrames(Handler):
         name = event.file
         if not name or not media(name, VIDEO):
             return
-        messages = context.journal.messages
+        messages = context.journal.get(Messages)
         source = messages.folder(event.n) / name
         row = messages.load(event.n)
         if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):

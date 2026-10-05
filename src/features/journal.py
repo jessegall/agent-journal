@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
 from functools import cached_property
 
-from controllers.base import NAMED, Controller
+from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.wording import appended
 from features.wiring import AgentHooks, Client, Commands, Events
@@ -28,14 +28,8 @@ class BoundJournal:
     def __init__(self, journal: "Journal", record, actor: str = SYSTEM):
         self.journal, self.record, self.actor = journal, record, actor
 
-    def __getattr__(self, name: str) -> Controller:
-        found = NAMED.get(name)
-        if found is None:
-            raise AttributeError(f"the journal has no resource called {name}")
-        return found(self.record, actor=self.actor)
-
-    def of(self, type_: str) -> Controller:
-        return CONTROLLERS[type_](self.record, actor=self.actor)
+    def get(self, controller: type[Controller]) -> Controller:
+        return controller(self.record, actor=self.actor)
 
     def acting(self, actor: str) -> "BoundJournal":
         return BoundJournal(self.journal, self.record, actor)

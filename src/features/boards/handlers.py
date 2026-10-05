@@ -9,6 +9,7 @@ from features.boards.resource import DRAFTING_PHASE
 from features.nudges import Sent
 from features.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
+from features.boards.controller import Boards
 
 ADDED = "added"
 
@@ -54,5 +55,5 @@ class MarkQuietFillingStalled(Handler):
 
 def boards_wanting_ideas(context, agent) -> list[Sent]:
     every = context.feature.interval(context.record, "ideas")
-    return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.boards._standing()
+    return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.get(Boards)._standing()
             if board.environment == context.record.env and not board.finished and time.time() - float(board.ideas_at) >= every]

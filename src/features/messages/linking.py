@@ -2,6 +2,7 @@ from engine.events.resources import ResourceCreated
 from features.messages.answering import in_hand
 from features.parts import Context, Handler
 from resources.base import AGENT
+from controllers.types import Messages
 
 RECENT = 200
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
@@ -14,7 +15,7 @@ def filed(context: Context, message) -> None:
     for e in events:
         ref = f"{e.type}:{e.n}"
         if read and e.at >= read and e.action == "created" and e.actor == AGENT and e.type not in LINKED and ref not in claimed | set(message.refs):
-            context.journal.messages.link(message.n, ref)
+            context.journal.get(Messages).link(message.n, ref)
 
 
 class LinkToMessageInHand(Handler):
@@ -26,4 +27,4 @@ class LinkToMessageInHand(Handler):
         message = in_hand(context.journal)
         ref = f"{event.type}:{event.n}"
         if message and ref not in message.refs:
-            context.journal.messages.link(message.n, ref)
+            context.journal.get(Messages).link(message.n, ref)

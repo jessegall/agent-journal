@@ -4,6 +4,7 @@ from features.journal_laws.briefing import instructions_hash
 from features.journal_laws.details import LARGEST_RESULT
 from features.sequences.shipped import CHECKING_THE_INSTRUCTION_FILES
 from features.parts import AgentContext, Handler, in_background
+from features.sequences.controller import Sequences
 
 
 
@@ -30,7 +31,7 @@ class CheckChangedInstructions(Handler):
         state.set("instructions", seen)
         if not known:
             return
-        sequences = context.journal.sequences
+        sequences = context.journal.get(Sequences)
         found = sequences._titled(CHECKING_THE_INSTRUCTION_FILES.title)
         if found is not None:
             sequences.run(found.n)

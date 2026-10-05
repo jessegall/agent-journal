@@ -11,7 +11,7 @@ from resources.base import SYSTEM
 
 class StartNextForGlobalRole(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        todo = context.journal.todos.load(event.n)
+        todo = context.journal.get(Todos).load(event.n)
         role = role_of(context.record, todo)
         if role:
             for env, waiting in next_in_line(context.record, todo.data["domain"], todo.data["role"], context.record.env, todo.n):

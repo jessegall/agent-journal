@@ -13,6 +13,7 @@ from providers import PROVIDERS
 from providers.payload import HookEvent
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow
+from controllers.types import Agents, Messages
 
 WINDOWS = (HookEvent.SESSION_START, HookEvent.PRE_COMPACT)
 KEPT_LOADS = 50
@@ -82,9 +83,9 @@ class RequireSkillsTheUserNames(Handler):
     def handle(self, context: Context, event: MessageCreated) -> None:
         if event.actor != USER:
             return
-        row = context.journal.acting(SYSTEM).agents.primary()
+        row = context.journal.acting(SYSTEM).get(Agents).primary()
         if row:
-            require_named(context.record, row, context.journal.messages.load(event.n).brief)
+            require_named(context.record, row, context.journal.get(Messages).load(event.n).brief)
 
 
 class ShowLoadsInChat(Handler):
@@ -93,4 +94,4 @@ class ShowLoadsInChat(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
         if event.skill:
             loads = [*(context.agent.row.data.get(AgentRow.skill_loads) or []), {"skill": event.skill, "at": time.time()}]
-            context.journal.agents.update(context.agent.row.n, **{AgentRow.skill_loads: loads[-KEPT_LOADS:]})
+            context.journal.get(Agents).update(context.agent.row.n, **{AgentRow.skill_loads: loads[-KEPT_LOADS:]})

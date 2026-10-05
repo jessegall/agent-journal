@@ -3,6 +3,7 @@ import shlex
 
 from features.parts import AgentContext, ToolInterceptor
 from engine.reach import Reach
+from controllers.types import Agents
 
 SEPARATORS = {"&&", "||", ";", "|", "&", "\n"}
 VALUED = {"--root", "--env", "--as", "--session", "--agent", "--page", "--back"}
@@ -75,5 +76,5 @@ class MarkHistorySearches(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         for command in call.commands:
             for found in searches(command):
-                context.journal.agents.card(context.agent.row.n, label=found, icon="search", tone="note")
+                context.journal.get(Agents).card(context.agent.row.n, label=found, icon="search", tone="note")
         return ""

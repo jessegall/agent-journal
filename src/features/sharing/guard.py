@@ -52,7 +52,7 @@ class NameVisitorComment(Handler):
         comment = Comments(context.record, actor=SYSTEM).load(event.n)
         if not comment.data.get("visitor"):
             return
-        agent = context.journal.agents.primary()
+        agent = context.journal.get(Agents).primary()
         if agent:
             line = "trusted" if comment.data.get("trusted") else "commented"
             context.speaking_to(agent).agent.whisper(line, name=comment.data["visitor"], about=comment.refs[0].replace(":", " "), n=comment.n)

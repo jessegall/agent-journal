@@ -7,6 +7,7 @@ from features.boards.exploration import FILLER
 from features.sequences.resource import RunKey
 from providers import dispatch_model
 from resources.base import SYSTEM
+from controllers.types import Agents, Messages
 
 REQUEST_TEXT = 400
 DISPATCH_MODELS: dict = {}
@@ -22,21 +23,21 @@ def board_of(context: Context, about: str) -> int:
         return int(n)
     if kind != "message" or not n.isdigit():
         return 0
-    return Boards(context.record, actor=SYSTEM).of_message(context.journal.messages.load(n))
+    return Boards(context.record, actor=SYSTEM).of_message(context.journal.get(Messages).load(n))
 
 
 def request_of(context: Context, about: str) -> str:
     kind, _, n = about.partition(":")
     if kind != "message" or not n.isdigit():
         return ""
-    message = context.journal.messages.load(n)
+    message = context.journal.get(Messages).load(n)
     text = " ".join((message.brief or message.title).split())
     return clipped(text, REQUEST_TEXT)
 
 
 def working_agent(context: Context):
     holder = Sessions(context.record.root).holder(context.record.env)
-    return (context.journal.agents._titled(holder) if holder else None) or context.journal.agents.primary()
+    return (context.journal.get(Agents)._titled(holder) if holder else None) or context.journal.get(Agents).primary()
 
 
 def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) -> None:

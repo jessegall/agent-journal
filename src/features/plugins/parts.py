@@ -49,7 +49,7 @@ class PluginChatRules(TextFormatter):
         return found
 
     def kept_rules(self, context: Context) -> list:
-        plugins = context.journal.plugins
+        plugins = context.journal.get(Plugins)
         stamp = tuple((row["n"], row["stamp"]) for row in plugins.summaries())
         kept = KEPT_RULES.get(str(context.record.home))
         if kept and kept[0] == stamp:
@@ -65,7 +65,7 @@ class AskPluginsToRefuse(ToolInterceptor):
         record, hook = context.record, context.hook
         writes = command_effects.writes(hook)
         left = ALTOGETHER
-        for row in context.journal.plugins._standing():
+        for row in context.journal.get(Plugins)._standing():
             manifest = declared(row)
             asking = manifest.refuse
             if not row.enabled or row.completed or not asking or left <= 0:
@@ -99,7 +99,7 @@ class AskPluginsToCancel(Canceler):
 
     def cancel(self, context: Context, data) -> str:
         record = context.record
-        for row in context.journal.plugins._standing():
+        for row in context.journal.get(Plugins)._standing():
             manifest = declared(row)
             asking = manifest.cancels.get(self.event)
             if not row.enabled or row.completed or not asking:
@@ -123,7 +123,7 @@ def forgotten(record, name: str) -> None:
 
 class ClearRemovedPlugin(Handler):
     def handle(self, context: Context, event: PluginRemoved) -> None:
-        rows = context.journal.plugins
+        rows = context.journal.get(Plugins)
         row = rows.load(event.n)
         name = called(row)
         still = any(r.n != event.n and called(r) == name for r in rows._standing())

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from controllers.types import Works
+from controllers.types import Todos, Works
 from engine.events.agents import AgentReported
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
@@ -12,6 +12,7 @@ from features.work_tracking.auto import passes_checkpoints
 from features.work_tracking.next import carried_on, named_rows, ready, waiting_rows
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
+from features.plans.controller import Plans
 
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
@@ -27,7 +28,7 @@ class StartBuilding(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
         speaking = context.to_primary()
         if event.action == "created" and event.actor == USER and speaking:
-            plan = context.journal.plans.load(event.n)
+            plan = context.journal.get(Plans).load(event.n)
             speaking.agent.say("started", n=plan.n, title=plan.title, depth=DEPTHS[plan.depth])
 
 
@@ -36,7 +37,7 @@ class StartApproved(Handler):
         speaking = context.to_primary()
         if event.action != "updated" or event.actor not in (USER, SYSTEM) or not speaking:
             return
-        plan = context.journal.plans.load(event.n)
+        plan = context.journal.get(Plans).load(event.n)
         if plan.status == APPROVED and speaking.once("approved", str(plan.n)):
             speaking.agent.say("approved", n=plan.n, title=plan.title)
 
@@ -46,7 +47,7 @@ class TellParkedAndPickedUp(Handler):
         speaking = context.to_primary()
         if event.action != "updated" or event.actor != USER or event.status not in (ACTIVE, PARKED) or event.parked_for or not speaking:
             return
-        plan = context.journal.plans.load(event.n)
+        plan = context.journal.get(Plans).load(event.n)
         line = "picked up" if event.status == ACTIVE else "parked"
         speaking.agent.say(line, n=plan.n, title=plan.title, phase=plan.current)
 
@@ -55,7 +56,7 @@ class GuideBuilding(Handler):
     def handle(self, context: Context, event: PlanChanged) -> None:
         if not (event.written or event.action == "linked") or event.actor != AGENT:
             return
-        plan = context.journal.plans.load(event.n)
+        plan = context.journal.get(Plans).load(event.n)
         speaking = context.to_primary()
         if plan.status != BUILDING or not speaking:
             return
@@ -70,7 +71,7 @@ class PassCheckpointsInAuto(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         if not passes_checkpoints(context.record):
             return
-        plans = context.journal.plans
+        plans = context.journal.get(Plans)
         for plan in plans._every():
             if plan.status == WAITING:
                 plans.resume(plan.n)
@@ -78,9 +79,9 @@ class PassCheckpointsInAuto(Handler):
 
 class TakeStruckRowsOutOfUnapprovedPlans(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not context.journal.todos.load(event.n).data.get("struck"):
+        if not context.journal.get(Todos).load(event.n).data.get("struck"):
             return
-        plans = context.journal.plans
+        plans = context.journal.get(Plans)
         for plan in plans._every():
             p = plan.phase_of("todo", event.n)
             if p and plan.status in (BUILDING, DRAFT, READY):

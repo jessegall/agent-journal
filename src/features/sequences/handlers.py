@@ -21,6 +21,7 @@ from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 from engine.reach import Reach
 from features.trigger import MINUTE
+from features.sequences.controller import Sequences
 
 FREE_NOUNS = ("search", "carry", "status", "user", "conversation")
 FREE_VERBS = ("show", "read", "comments", "all", "progress", "search", "unread", "board", "screen", "paths", "find", "linked_to", "members",
@@ -77,7 +78,7 @@ class StartOnTrigger(Handler):
 
 
 def start(context: Context, moment: str, event: ResourceEvent, about: str) -> None:
-    sequences = context.journal.sequences
+    sequences = context.journal.get(Sequences)
     for row in sequences.open_rows():
         if row.get("starts_on") != moment:
             continue
@@ -95,7 +96,7 @@ class EndWithItsRow(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if event.action != "deleted" or event.type == "sequence":
             return
-        sequences = context.journal.sequences
+        sequences = context.journal.get(Sequences)
         key = RunKey(context.record.env, f"{event.type}:{event.n}").text
         for row in sequences.open_rows():
             sequence = sequences.load(row["n"])
@@ -104,7 +105,7 @@ class EndWithItsRow(Handler):
 
 
 def step_values(context: Context, sequence, key: str, run: dict) -> dict:
-    steps = context.journal.sequences.steps_of(sequence)
+    steps = context.journal.get(Sequences).steps_of(sequence)
     part = steps[run["step"] - 1]
     return {"n": sequence.n, "title": sequence.title, "step": run["step"], "count": len(steps), "name": part[SECTION.title],
             "body": filled(context, sequence.n, key, part[SECTION.body]), "then": then_next(sequence.n, key, part[SECTION.body])}
@@ -113,12 +114,12 @@ def step_values(context: Context, sequence, key: str, run: dict) -> dict:
 class HandStepToAgent(Handler):
     def handle(self, context: Context, event: SequenceMoved) -> None:
         agent = working_agent(context)
-        sequence = context.journal.sequences.load(event.n) if agent and event.action != "deleted" else None
+        sequence = context.journal.get(Sequences).load(event.n) if agent and event.action != "deleted" else None
         if sequence and sequence.dispatch:
             for key, run in sequence.runs.items():
                 if RunKey.of(key).here(context.record.env) and not run.get("agent"):
                     dispatched_by_line(context, agent, sequence, key, f"retry {int(run['retried'])}" if run.get("retried") else "a new request")
-        found = context.journal.sequences.in_hand() if agent else None
+        found = context.journal.get(Sequences).in_hand() if agent else None
         if not found:
             if agent:
                 context.speaking_to(agent).release(STEP)
@@ -143,7 +144,7 @@ def chat_rule(sequence) -> str:
 
 class KeepOutOfTheChat(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
-        found = context.journal.sequences.in_hand()
+        found = context.journal.get(Sequences).in_hand()
         if not found or not found[0].talks_in or not event.text.strip():
             return
         event.stop()
@@ -164,11 +165,11 @@ def minutes(value) -> int:
 
 def asked_since(context: AgentContext, at: float, about: set) -> bool:
     return any(not row["completed"] and not row["deleted"] and row["updated"] >= at and about & set(row["refs"])
-               for row in context.journal.questions.summaries())
+               for row in context.journal.get(Questions).summaries())
 
 
 def standing_steps(context: AgentContext, agent) -> list[Sent]:
-    found = context.journal.sequences.in_hand()
+    found = context.journal.get(Sequences).in_hand()
     if not found or found[0].lasting:
         return []
     sequence, key, run = found
@@ -190,16 +191,16 @@ def named_in(found: JournalCall, step: str) -> bool:
 class HoldJournalWritesForTheStep(ToolInterceptor):
     reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
-        found = context.journal.sequences.in_hand()
+        found = context.journal.get(Sequences).in_hand()
         if not found or found[2].get("followed") == found[2]["step"]:
             return ""
         sequence, key, run = found
         held = [made for command in call.commands for made in calls(command) if not free_while_held(made)]
         if not held:
             return ""
-        step = context.journal.sequences.steps_of(sequence)[run["step"] - 1][SECTION.body]
+        step = context.journal.get(Sequences).steps_of(sequence)[run["step"] - 1][SECTION.body]
         if all(named_in(made, step) for made in held):
-            context.journal.sequences.follow(sequence.n, about=about_of(key))
+            context.journal.get(Sequences).follow(sequence.n, about=about_of(key))
             return ""
         return context.feature.line_text(STEP_HELD, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
 
@@ -211,8 +212,8 @@ class DispatchAgainOnAnswer(Handler):
         boards = [ref for ref in question.refs if ref.startswith("board:")]
         if not agent or not boards:
             return
-        for row in context.journal.sequences.open_rows():
-            sequence = context.journal.sequences.load(row["n"])
+        for row in context.journal.get(Sequences).open_rows():
+            sequence = context.journal.get(Sequences).load(row["n"])
             if not sequence.dispatch:
                 continue
             for key in sequence.runs:
