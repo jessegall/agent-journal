@@ -12,6 +12,11 @@ const MOVES = [
     ["answer", (e) => e.type === "dump" && e.action === "updated" && e.data.by === "answer"],
 ];
 
+const ANSWERS = {
+    question: (row) => row.outcome,
+    dump: (row) => row.data.answers.at(-1).answer,
+};
+
 const newest = (moment) => Math.max(0, ...(moment.events || []).map((e) => e.id));
 
 function moveIn(moment, before) {
@@ -32,22 +37,14 @@ export class Player {
         this.standIn = standIn;
         this.timer = null;
         this.stepped = () => {};
-        this.mapped();
+        this.moves = movesOf(this.standIn.moments).filter(Boolean);
         const first = this.waiting;
         if (first && this.standIn.state.at === 0) this.goTo(first.at - 1);
         this.play();
     }
 
-    mapped() {
-        this.moves = movesOf(this.standIn.moments).filter(Boolean);
-        const branches = Object.values(this.standIn.demo.branches || {});
-        const opening =
-            branches.length && !this.standIn.state.branch && movesOf([this.standIn.demo.moments.at(-1), ...branches[0]]).find(Boolean);
-        this.fork = opening ? {...opening, at: this.standIn.moments.length, fork: true} : null;
-    }
-
     get waiting() {
-        return this.moves.find((move) => move.at > this.standIn.state.at) || this.fork || undefined;
+        return this.moves.find((move) => move.at > this.standIn.state.at);
     }
 
     get playing() {
@@ -70,6 +67,11 @@ export class Player {
         return message ? message.brief || message.title : "";
     }
 
+    recorded(move) {
+        const row = this.standIn.moments[move.at].rows[move.type].find((one) => one.n === move.n);
+        return ANSWERS[move.type](row);
+    }
+
     message(at) {
         const before = this.standIn.moments[at - 1];
         const known = new Set(((before && before.rows.message) || []).map((r) => r.n));
@@ -88,9 +90,8 @@ export class Player {
     moved(kind, n, how) {
         const move = this.waiting;
         if (!move || move.kind !== kind || move.n !== n) return false;
-        if (move.fork && !this.standIn.branched(how)) return false;
-        if (move.fork) this.mapped();
-        this.goTo(this.waiting.at);
+        if (kind === "answer" && how !== this.recorded(move)) return false;
+        this.goTo(move.at);
         this.play();
         return true;
     }

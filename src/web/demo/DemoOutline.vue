@@ -1,17 +1,17 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
+import {inject, onMounted, ref} from "vue";
 import Outline from "../src/kit/Outline.vue";
+import {useFollowedBox} from "../src/composables/followedBox.js";
 import {boxAround} from "../src/platform/boxes.js";
 import {nextButtons} from "./next.js";
+import {STAND_IN} from "./standIn.js";
 
-const FOLLOW = 250;
+const standIn = inject(STAND_IN);
 const rect = ref(null);
-let following = 0;
 
-const measure = () => (rect.value = globalThis.demo ? boxAround(nextButtons(globalThis.demo)) : null);
+const {follow} = useFollowedBox(() => (rect.value = boxAround(nextButtons(standIn))));
 
-onMounted(() => (following = setInterval(measure, FOLLOW)));
-onUnmounted(() => clearInterval(following));
+onMounted(follow);
 </script>
 
 <template>

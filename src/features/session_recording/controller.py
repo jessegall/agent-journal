@@ -10,7 +10,7 @@ from controllers.base import Controller
 from controllers.types import Agents
 from engine.package import entry
 from engine.record import Record
-from features.session_recording.demo import BRANCHES, leaks, scrubbed
+from features.session_recording.demo import leaks, scrubbed
 from features.session_recording.resource import Recording
 from engine.sessions import alive
 from features.session_recording.scrub import Scrubber
@@ -54,10 +54,8 @@ class Recordings(Controller):
     def scrub(self, folder: str) -> str:
         target = Path(folder)
         scrubber = Scrubber()
-        every = [target, *sorted(path for path in (target / BRANCHES).glob("*") if path.is_dir())]
-        for one in every:
-            scrubbed(one, scrubber)
-        still = [leak for one in every for leak in leaks(one, scrubber)]
+        scrubbed(target, scrubber)
+        still = leaks(target, scrubber)
         if still:
             raise Refused("the recording still holds the machine: " + "; ".join(still[:5]))
         return f"{target} holds nothing about this machine"

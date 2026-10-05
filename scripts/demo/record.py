@@ -1,12 +1,8 @@
 import argparse
 import importlib
-import json
-import os
 import shutil
-import stat
 import subprocess
 import sys
-import tempfile
 import time
 from contextlib import contextmanager, nullcontext
 from pathlib import Path
@@ -15,14 +11,11 @@ HERE = Path(__file__).resolve().parent
 SRC = HERE.parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
-from engine.attic import removed  # noqa: E402
-from features.session_recording.demo import BRANCHES  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
 SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers", "docs", "memory", "dumps")
 SHIPPED = SRC / "web" / "demo" / "scenarios"
 SETTLE = 3.0
-SERVED = ("heartbeat", "viewer.json")
 IGNORED = "__pycache__/\n.journal/\n.claude/\n.codex/\n.agents/\nAGENTS.md\nCLAUDE.md\n.mcp.json\n"
 
 
@@ -52,25 +45,6 @@ def prepared(project: Path, story) -> None:
     subprocess.run([sys.executable, str(SRC / "install.py"), str(project)], check=True, capture_output=True, timeout=120)
 
 
-def copied(source: str, target: str) -> None:
-    if not stat.S_ISSOCK(os.lstat(source).st_mode):
-        shutil.copy2(source, target, follow_symlinks=False)
-
-
-def kept(project: Path) -> Path:
-    copy = Path(tempfile.mkdtemp()) / project.name
-    shutil.copytree(project, copy, symlinks=True, copy_function=copied)
-    return copy
-
-
-def restored(copy: Path, project: Path) -> None:
-    stopped(project)
-    removed(project)
-    shutil.copytree(copy, project, symlinks=True, copy_function=copied)
-    for left in SERVED:
-        (project / ".journal" / "runtime" / left).unlink(missing_ok=True)
-
-
 @contextmanager
 def recording(session: Session, folder: Path):
     session.journal("record", "start", str(folder))
@@ -89,28 +63,12 @@ def played(key: str, project: Path, pace: float, folder: Path | None = None) -> 
     story = scenario(key)
     prepared(project, story)
     session = Session(project, pace, key)
-    copy = None
-    labels = {}
     try:
         with recorded(session, folder):
-            fork = story.trunk(session)
-        copy = kept(project)
-        alive = session.helping()
-        for at, (label, branch) in enumerate(story.BRANCHES.items()):
-            session.finish()
-            restored(copy, project)
-            session = Session(project, pace, key, alive=alive)
-            with recorded(session, folder and folder / BRANCHES / str(at)):
-                session.answered(fork, label)
-                branch(session, fork)
-            labels[label] = str(at)
+            story.lesson(session)
     finally:
         session.finish()
         stopped(project)
-        if copy:
-            shutil.rmtree(copy.parent, ignore_errors=True)
-    if folder:
-        (folder / BRANCHES / "branches.json").write_text(json.dumps(labels))
 
 
 def shipped(key: str, project: Path, folder: Path) -> Path:
@@ -121,13 +79,12 @@ def shipped(key: str, project: Path, folder: Path) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Record a demo scenario through the real journal, every answer of its question in turn")
+    parser = argparse.ArgumentParser(description="Record a demo lesson through the real journal")
     parser.add_argument("keys", nargs="*", default=list(SCENARIOS))
     parser.add_argument("--pace", type=float, default=1.0)
     parser.add_argument("--projects", type=Path, default=Path.home() / "projects")
     given = parser.parse_args()
     for key in given.keys:
-        story = scenario(key)
         project = given.projects / f"demo-{key}"
         folder = given.projects / "demo-recordings" / key
         shutil.rmtree(folder, ignore_errors=True)

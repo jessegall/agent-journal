@@ -1,7 +1,7 @@
 const BANNER_FOR = 3200;
-const TEXT = "This is a replay, so the message is already written: press Send to send it.";
+const TEXT = "This is a replay: only the outlined button goes on from here.";
 
-export function noticeOwnWords() {
+export function noticeReplay() {
     let banner = null;
     let gone = null;
     const cleared = () => {

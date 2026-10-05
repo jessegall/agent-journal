@@ -5,7 +5,11 @@ import "./tokens.css";
 
 watchConsole();
 
-const start = (root = App) => createApp(root).mount("#app");
+function start({root = App, given = new Map()} = {}) {
+    const app = createApp(root);
+    given.forEach((value, key) => app.provide(key, value));
+    app.mount("#app");
+}
 
 if (__DEMO__) import("../demo/boot.js").then(({install}) => install().then(start));
 else start();
