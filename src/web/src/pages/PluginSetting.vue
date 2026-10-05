@@ -1,70 +1,70 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, useId} from "vue";
 import ChoiceList from "../kit/ChoiceList.vue";
-import Icon from "../kit/Icon.vue";
+import FormField from "../kit/FormField.vue";
 import LineList from "../kit/LineList.vue";
 import Switch from "../kit/Switch.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TextInput from "../kit/TextInput.vue";
 
-const props = defineProps({setting: {type: Object, required: true}, children: {type: Array, default: () => []}});
+const props = defineProps({setting: {type: Object, required: true}, children: {type: Array, default: () => []}, dim: Boolean});
 const emit = defineEmits(["change"]);
-const open = ref(false);
+const id = useId();
+const flag = computed(() => props.setting.type === "flag");
+const on = computed(() => props.setting.value === "true");
 const choices = computed(() =>
     props.setting.options.map((option) => ({value: String(option), label: String(option), current: props.setting.value === String(option)}))
 );
 </script>
 
 <template>
-    <div :class="['setting', setting.type]">
-        <template v-if="children.length">
-            <button
-                type="button"
-                :class="['setting-open', {open}]"
-                :title="open ? 'Hide its settings' : 'Show its settings'"
-                @click="open = !open"
-            >
-                <Icon name="chevron" :size="11" />
-            </button>
+    <div :class="['setting', {dim}]">
+        <template v-if="flag">
+            <div class="setting-flag">
+                <div class="setting-names">
+                    <span class="setting-title">{{ setting.title }}</span>
+                    <template v-if="setting.help">
+                        <span class="setting-help">{{ setting.help }}</span>
+                    </template>
+                </div>
+                <Switch :on="on" :title="setting.title" @change="(next) => emit('change', setting.key, String(next))" />
+            </div>
         </template>
-        <div class="setting-names">
-            <span class="setting-title">{{ setting.title }}</span>
-            <template v-if="setting.help">
-                <span class="setting-help">{{ setting.help }}</span>
-            </template>
-        </div>
-        <SwitchCase :value="setting.type">
-            <template #flag>
-                <Switch :on="setting.value === 'true'" :title="setting.title" @change="(on) => emit('change', setting.key, String(on))" />
-            </template>
-            <template #options>
-                <ChoiceList :choices="choices" @pick="(value) => emit('change', setting.key, value)" />
-            </template>
-            <template #list>
-                <LineList :value="setting.value" @change="(value) => emit('change', setting.key, value)" />
-            </template>
-            <template #textarea>
-                <textarea
-                    class="setting-value"
-                    rows="4"
-                    :value="setting.value"
-                    spellcheck="false"
-                    @change="emit('change', setting.key, $event.target.value)"
-                />
-            </template>
-            <template #default>
-                <TextInput
-                    :type="setting.type === 'number' ? 'number' : 'text'"
-                    :value="setting.value"
-                    @change="emit('change', setting.key, $event.target.value)"
-                />
-            </template>
-        </SwitchCase>
+        <template v-else>
+            <FormField :label="setting.title" :for="id" :help="setting.help">
+                <SwitchCase :value="setting.type">
+                    <template #options>
+                        <ChoiceList stacked :choices="choices" @pick="(value) => emit('change', setting.key, value)" />
+                    </template>
+                    <template #list>
+                        <LineList :value="setting.value" @change="(value) => emit('change', setting.key, value)" />
+                    </template>
+                    <template #textarea>
+                        <textarea
+                            :id="id"
+                            class="setting-value"
+                            rows="4"
+                            :value="setting.value"
+                            spellcheck="false"
+                            @change="emit('change', setting.key, $event.target.value)"
+                        />
+                    </template>
+                    <template #default>
+                        <TextInput
+                            :id="id"
+                            :type="setting.type === 'number' ? 'number' : 'text'"
+                            :value="setting.value"
+                            @change="emit('change', setting.key, $event.target.value)"
+                        />
+                    </template>
+                </SwitchCase>
+            </FormField>
+        </template>
     </div>
-    <template v-if="children.length && open">
-        <div :class="['setting-children', {off: setting.value !== 'true'}]">
+    <template v-if="children.length">
+        <div class="setting-children">
             <template v-for="child in children" :key="child.key">
-                <PluginSetting :setting="child" @change="(key, value) => emit('change', key, value)" />
+                <PluginSetting :setting="child" :dim="dim || (flag && !on)" @change="(key, value) => emit('change', key, value)" />
             </template>
         </div>
     </template>
@@ -72,15 +72,17 @@ const choices = computed(() =>
 
 <style scoped>
 .setting {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px 0;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border);
+    transition: opacity var(--fade);
 }
 
-.setting.flag {
-    flex-direction: row;
+.setting.dim {
+    opacity: 0.5;
+}
+
+.setting-flag {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
@@ -105,6 +107,7 @@ const choices = computed(() =>
 }
 
 .setting-value {
+    width: 100%;
     padding: 6px 9px;
     border: 1px solid var(--border-2);
     border-radius: 7px;
@@ -120,42 +123,7 @@ const choices = computed(() =>
     border-color: var(--accent);
 }
 
-.setting.flag:has(.setting-open) {
-    justify-content: flex-start;
-}
-
-.setting.flag:has(.setting-open) .setting-names {
-    flex: 1;
-}
-
-.setting-open {
-    display: grid;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    border: 0;
-    border-radius: 5px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-    transition: transform var(--move);
-}
-
-.setting-open.open {
-    transform: rotate(90deg);
-}
-
-.setting-open:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
 .setting-children {
     padding-left: 22px;
-    transition: opacity var(--fade);
-}
-
-.setting-children.off {
-    opacity: 0.5;
 }
 </style>

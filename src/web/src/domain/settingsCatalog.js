@@ -423,6 +423,7 @@ export function tabCounts(sections) {
 }
 
 export function navMark(g, searching) {
+    if (g.mark) return {kind: "count", text: g.mark};
     if (searching) return {kind: "count", text: String(counted(g))};
     if (g.head && g.head.off) return {kind: "off", text: "Off"};
     return groupRows(g).some((r) => r.changed) ? {kind: "changed", text: ""} : {kind: "", text: ""};

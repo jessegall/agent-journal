@@ -22,7 +22,7 @@ const emit = defineEmits(["pick"]);
                         <span class="setting-nav-name">{{ group.title }}</span>
                         <SwitchCase :value="navMark(group, searching).kind">
                             <template #count>
-                                <span class="setting-nav-count">{{ navMark(group, searching).text }}</span>
+                                <span class="setting-nav-count" :title="group.markTitle">{{ navMark(group, searching).text }}</span>
                             </template>
                             <template #off>
                                 <span class="setting-nav-off">Off</span>
