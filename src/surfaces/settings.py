@@ -41,6 +41,8 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             record.set_setting(key, {**record.viewer, **value})
             continue
         record.set_setting(key, value)
+    for name in (name for name in body if name in features.FEATURES):
+        features.FEATURES[name].settings_changed(record, actor)
     if "boards" in body:
         written(record.root.parent, record)
     rebuild(record)
