@@ -6,6 +6,7 @@ import Chip from "./Chip.vue";
 import ChoiceList from "./ChoiceList.vue";
 import ColorSwatch from "./ColorSwatch.vue";
 import FormField from "./FormField.vue";
+import ResetButton from "./ResetButton.vue";
 import Segmented from "./Segmented.vue";
 import Switch from "./Switch.vue";
 import SwitchCase from "./SwitchCase.vue";
@@ -37,7 +38,7 @@ function reset() {
                         <span class="setting-dot" title="Changed from the default" />
                     </template>
                     <template v-if="resettable">
-                        <button type="button" class="setting-reset" @click="reset">Reset</button>
+                        <ResetButton class="setting-reset" @click="reset" />
                     </template>
                 </template>
                 <SwitchCase :value="row.kind">
@@ -94,7 +95,7 @@ function reset() {
             </div>
             <div class="setting-control">
                 <template v-if="resettable">
-                    <button type="button" class="setting-reset" @click="reset">Reset</button>
+                    <ResetButton class="setting-reset" @click="reset" />
                 </template>
                 <template v-if="!sheet && row.timing">
                     <TimingChip :timing="row.timing" :prefix="row.prefix" :label="row.label" @change="emit('timing', $event)" />
@@ -204,13 +205,6 @@ function reset() {
 
 .setting-reset {
     visibility: hidden;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
 }
 
 .setting-row:hover .setting-reset,
