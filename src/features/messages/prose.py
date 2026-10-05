@@ -6,6 +6,7 @@ from features.parts import AgentContext, Handler
 from providers.turns import last_text
 from resources.base import AGENT, ENVIRONMENT
 from resources.types import TYPES
+from controllers.types import CONTROLLERS, Messages
 
 RUN_ON, SENTENCES = 400, 3
 
@@ -61,10 +62,10 @@ class NameBareNumbers(Handler):
             return
         known = numbers(context)
         named = [str(n) for n in found if n in known]
-        sent = next((m for m in reversed(context.journal.messages.summaries()) if m["seen"][:1] == [AGENT]), None)
+        sent = next((m for m in reversed(context.journal.get(Messages).summaries()) if m["seen"][:1] == [AGENT]), None)
         if named and sent:
             context.agent.whisper("numbers", n=sent["n"], numbers=", ".join(named))
 
 
 def numbers(context: AgentContext) -> set[int]:
-    return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.of(name).summaries()}
+    return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.get(CONTROLLERS[name]).summaries()}

@@ -7,6 +7,7 @@ from features.long_commands.details import KEPT, MOVED
 from features.long_commands.watch import background_tasks_of
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS
+from controllers.types import Agents
 
 FOREGROUND = "Bash"
 
@@ -36,7 +37,7 @@ class MoveLongCommands(Handler):
         context.state.set("task", "")
         context.agent.move_to_background()
         context.agent.say(MOVED, seconds=seconds)
-        context.journal.agents.card(row.n, key=f"command:{started}", label="Moved a long command to the background", icon="terminal",
+        context.journal.get(Agents).card(row.n, key=f"command:{started}", label="Moved a long command to the background", icon="terminal",
                                     command=last.command, state="running", started=float(started))
 
     def follow(self, context: AgentContext, row, started: str) -> None:
@@ -49,4 +50,4 @@ class MoveLongCommands(Handler):
         if task in tasks.ended:
             context.state.set("ended", started)
             outcome = "failed" if task in tasks.failed else "done"
-            context.journal.agents.card(row.n, key=f"command:{started}", state=outcome, ended=tasks.ended[task])
+            context.journal.get(Agents).card(row.n, key=f"command:{started}", state=outcome, ended=tasks.ended[task])

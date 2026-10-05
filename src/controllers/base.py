@@ -34,7 +34,6 @@ def networked(type_: str, name: str) -> bool:
     return bool(getattr(held, "network", False))
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
-NAMED: dict[str, type] = {}
 
 
 def checked_field(fields: dict, key: str, value):
@@ -437,4 +436,3 @@ def row_of(record: Record, ref: "str | Ref") -> Resource:
 
 def register(*classes) -> None:
     CONTROLLERS.update({c.resource.type: c for c in classes})
-    NAMED.update({c.__name__.lower(): c for c in classes})

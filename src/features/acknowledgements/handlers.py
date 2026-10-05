@@ -1,7 +1,7 @@
 import re
 
 from controllers.base import row_of
-from controllers.types import Nudges
+from controllers.types import Messages, Nudges
 from engine.events.engine import AgentMessageSending
 from features.command_tags.reading import CARRIED
 from features.messages.answering import NODS
@@ -37,4 +37,4 @@ class HideBareAcknowledgements(Handler):
             return
         event.stop()
         if text and context.once("acknowledged", f"{','.join(row.delivered)}:{text}"):
-            context.journal.acting(AGENT).messages.create(titled(text), brief=text, acknowledgement=True)
+            context.journal.acting(AGENT).get(Messages).create(titled(text), brief=text, acknowledgement=True)

@@ -10,6 +10,7 @@ from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolIn
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 from engine.reach import Reach
 from engine.wording import plural
+from controllers.types import Agents
 
 WHISPER = "whisper"
 
@@ -54,35 +55,35 @@ def mentioned(words, text: str) -> bool:
 KEPT_WHISPERS = 50
 
 
-def recite(context: AgentContext, resources: str, text_of) -> None:
-    rows = getattr(context.journal, resources)
+def recite(context: AgentContext, controller: type, text_of) -> None:
+    rows = context.journal.get(controller)
     for row in rows._standing():
         if not mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) or not whisper_due(context, row.ref):
             continue
         context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
-        context.journal.agents._appended(context.agent.row, "whispers", {"at": time.time(), "ref": row.ref, "title": row.title}, KEPT_WHISPERS)
+        context.journal.get(Agents)._appended(context.agent.row, "whispers", {"at": time.time(), "ref": row.ref, "title": row.title}, KEPT_WHISPERS)
 
 
 class WhisperOnKeyword(ToolInterceptor):
     reach = Reach.MAIN
     refuses = False
 
-    def __init__(self, resources: str):
-        self.resources = resources
+    def __init__(self, controller: type):
+        self.controller = controller
 
     def intercept(self, context: AgentContext, call) -> str:
         if context.on(WHISPER):
-            recite(context, self.resources, lambda scope: searched(call, scope))
+            recite(context, self.controller, lambda scope: searched(call, scope))
         return ""
 
 
 class WhisperOnKeywordInChat(Handler):
-    def __init__(self, resources: str):
-        self.resources = resources
+    def __init__(self, controller: type):
+        self.controller = controller
 
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
         if context.on(WHISPER):
-            recite(context, self.resources, lambda scope: "" if scope == COMMANDS else event.text)
+            recite(context, self.controller, lambda scope: "" if scope == COMMANDS else event.text)
 
 
 def whisper_due(context: Context, ref: str) -> bool:
@@ -92,18 +93,18 @@ def whisper_due(context: Context, ref: str) -> bool:
 class RepeatStanding(Handler):
     behaviour = WHOLE_FEATURE
 
-    def __init__(self, resources: str):
-        self.resources = resources
+    def __init__(self, controller: type):
+        self.controller = controller
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        resources = getattr(context.journal, self.resources)
+        resources = context.journal.get(self.controller)
         rows = [r for r in resources._standing() if r.data.get(WHOM, context.agent.session) == context.agent.session]
         if rows:
             context.agent.say("standing", count=plural(len(rows), resources.type),
                               rows="; ".join(f"{r.n}. {r.title}" for r in rows))
 
 
-def register_recital(journal, kind: str) -> None:
-    journal.agent.interceptor(WhisperOnKeyword(kind))
-    journal.events.handler(WhisperOnKeywordInChat(kind))
-    journal.events.handler(RepeatStanding(kind))
+def register_recital(journal, controller: type) -> None:
+    journal.agent.interceptor(WhisperOnKeyword(controller))
+    journal.events.handler(WhisperOnKeywordInChat(controller))
+    journal.events.handler(RepeatStanding(controller))

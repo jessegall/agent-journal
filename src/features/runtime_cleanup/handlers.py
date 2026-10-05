@@ -6,6 +6,7 @@ from engine.events.resources import ResourceEvent
 from features.runtime_cleanup.tidy import tidy, tidy_files
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from surfaces.updates import KIND
+from controllers.types import Notifications
 
 
 class TidyRuntime(Handler):
@@ -22,5 +23,5 @@ class NotificationCreated(ResourceEvent):
 
 class TidyAfterUpdate(Handler):
     def handle(self, context: Context, event: NotificationCreated) -> None:
-        if context.journal.notifications.load(event.n).data.get("kind") == KIND:
+        if context.journal.get(Notifications).load(event.n).data.get("kind") == KIND:
             tidy_files(context.record.root, context.settings.days)

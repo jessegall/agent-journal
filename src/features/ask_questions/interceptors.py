@@ -5,6 +5,7 @@ from features.ask_questions.choices import restates
 from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
 from resources.base import AGENT, titled
 from resources.shapes import normalize_options
+from controllers.types import Questions
 
 FILED = "filed"
 
@@ -21,7 +22,7 @@ class AskInTheJournal(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         if not context.provider.question(call):
             return ""
-        questions = context.journal.acting(AGENT).questions
+        questions = context.journal.acting(AGENT).get(Questions)
         numbers = [questions.create(titled(asked.text), brief=asked.text, options=asked.options).n
                    for asked in context.provider.asked_questions(call)]
         return context.feature.line_text(FILED, numbers=", ".join(map(str, numbers)) or "none")

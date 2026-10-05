@@ -8,6 +8,8 @@ from features.plans.resource import ACTIVE
 from features.trigger import DAY
 from resources.base import Ref
 from surfaces.board import AgentChip, BoardLanes, Card
+from features.plans.controller import Plans
+from controllers.types import Agents, Questions, Todos, Works
 
 DONE_SHOWN = 50
 QUIET_SUBAGENT = 20 * 60
@@ -36,16 +38,16 @@ def card_of(sources: Sources, todo, main: str = "") -> Card:
 
 
 def sources_of(journal) -> Sources:
-    works = {int(w.todo): w for w in journal.works._standing() if w.todo}
-    questions = {Ref.parse(ref).n: q.n for q in journal.questions._standing() for ref in q.refs if ref.startswith("todo:")}
-    return Sources(journal.todos, works, questions, journal.plans._every())
+    works = {int(w.todo): w for w in journal.get(Works)._standing() if w.todo}
+    questions = {Ref.parse(ref).n: q.n for q in journal.get(Questions)._standing() for ref in q.refs if ref.startswith("todo:")}
+    return Sources(journal.get(Todos), works, questions, journal.get(Plans)._every())
 
 
 def build(journal, done_days: float, plan: int, agent: str) -> BoardLanes:
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * DAY
-    rows = [t for t in journal.todos._standing(closed_since=since, closed_last=DONE_SHOWN) if not t.completed or not t.struck]
+    rows = [t for t in journal.get(Todos)._standing(closed_since=since, closed_last=DONE_SHOWN) if not t.completed or not t.struck]
     if plan:
         placed = next((p for p in plans if p.n == int(plan)), None)
         rows = [t for t in rows if placed and t.ref in placed.refs]
@@ -61,13 +63,13 @@ def build(journal, done_days: float, plan: int, agent: str) -> BoardLanes:
 
 
 def main_agent(journal) -> str:
-    row = journal.agents.primary()
+    row = journal.get(Agents).primary()
     return row.title if row else ""
 
 
 def agents_of(journal, works: dict, main: str, assigned: set) -> list[AgentChip]:
     chips = []
-    for row in journal.agents._standing():
+    for row in journal.get(Agents)._standing():
         name = row.agent if row.agent else row.title
         held = min((w for w in works.values() if worker_of(w, main)["agent"] == name), key=lambda w: bool(w.parked), default=None)
         subagent = row.subagent

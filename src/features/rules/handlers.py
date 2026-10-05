@@ -5,6 +5,7 @@ from engine.events.resources import ResourceEvent, RuleCreated
 from features.journal_laws.briefing import brief
 from features.parts import Context, Handler
 from resources.base import AGENT
+from controllers.types import Agents, Rules
 
 
 
@@ -22,6 +23,6 @@ class ReviewNewRule(Handler):
     def handle(self, context: Context, event: RuleCreated) -> None:
         if event.actor != AGENT:
             return
-        agent = context.journal.agents.primary()
+        agent = context.journal.get(Agents).primary()
         if agent:
-            context.speaking_to(agent).agent.whisper("review", n=event.n, title=context.journal.rules.load(event.n).title)
+            context.speaking_to(agent).agent.whisper("review", n=event.n, title=context.journal.get(Rules).load(event.n).title)

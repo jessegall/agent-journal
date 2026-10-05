@@ -8,6 +8,8 @@ from engine.wording import plural
 from features.dumps.controller import OWN_WORDS
 from features.parts import AgentContext, Context, Handler
 from resources.base import USER
+from features.dumps.controller import Dumps
+from controllers.types import Messages
 
 FILED = "completed"
 
@@ -22,7 +24,7 @@ class DumpWritten(ResourceEvent):
 
 class PromptFiling(Handler):
     def handle(self, context: Context, event: DumpWritten) -> None:
-        dumps, speaking = context.journal.dumps, context.to_primary()
+        dumps, speaking = context.journal.get(Dumps), context.to_primary()
         dump = dumps.load(event.n)
         if speaking and self.choice(speaking, dump):
             return
@@ -63,11 +65,11 @@ class PromptFiling(Handler):
 
 class TranscriptToDump(Handler):
     def handle(self, context: Context, event: MessageUpdated) -> None:
-        messages = context.journal.messages
+        messages = context.journal.get(Messages)
         message = messages.load(event.n)
         if message.data.get("kind") != "transcript" or any(ref.startswith("dump:") for ref in message.refs):
             return
-        dumps = context.journal.acting(USER).dumps
+        dumps = context.journal.acting(USER).get(Dumps)
         dump = dumps.create(brief=message.brief)
         for path in messages.paths(message.n):
             dumps.attach(dump.n, path)
@@ -79,7 +81,7 @@ class CarryOnFiling(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         if context.agent.row.status != IDLE:
             return
-        dumps = context.journal.dumps
+        dumps = context.journal.get(Dumps)
         dump = dumps._in_hand()
         if not dump or (dump.data.get("question") or {}).get("text"):
             return

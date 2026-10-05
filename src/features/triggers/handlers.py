@@ -6,6 +6,8 @@ from features.triggers.controller import Triggers
 from features.triggers.resource import DENY, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
 from resources.base import SYSTEM, USER
 from engine.reach import Reach
+from features.triggers.controller import Triggers
+from controllers.types import Agents, Messages
 
 WATCHING = "watching"
 CHAT_DENIED = "caught a denied word in the agent's message"
@@ -13,16 +15,16 @@ DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instruc
 
 
 def firing(context, text_of, from_user: bool = False) -> list:
-    return [row for row in context.journal.acting(SYSTEM).triggers._standing()
+    return [row for row in context.journal.acting(SYSTEM).get(Triggers)._standing()
             if (from_user or row.words_in != FROM_USER) and mentioned(row.words, text_of(str(row.words_in or "both")))]
 
 
 def fire(context, agent, row, done: str = "", about: str = "") -> None:
     if row.does != START:
-        context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
+        context.journal.acting(SYSTEM).get(Agents).card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
                                                    tone="danger" if row.does == DENY else "note", title=row.wording, ref=row.ref)
     if row.does == MESSAGE:
-        context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text, trigger=row.n)
+        context.journal.acting(USER).get(Messages).create(row.title, brief=row.brief or row.text, trigger=row.n)
     elif row.does in (NUDGE, INSTRUCT):
         context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.wording)
     Triggers(context.record, actor=SYSTEM).fired(row.n, about)
@@ -56,8 +58,8 @@ class WatchWhatTheUserWrites(Handler):
     def handle(self, context: Context, event: MessageCreated) -> None:
         if event.actor != USER:
             return
-        agent = context.journal.acting(SYSTEM).agents.primary()
-        message = context.journal.messages.load(event.n)
+        agent = context.journal.acting(SYSTEM).get(Agents).primary()
+        message = context.journal.get(Messages).load(event.n)
         if message.data.get("trigger"):
             return
         text = f"{message.title} {message.brief}"
