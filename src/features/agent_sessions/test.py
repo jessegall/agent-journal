@@ -197,7 +197,23 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     monkeypatch.setattr(driver, "asking", lambda: True)
     assert engine.probe() == "" and pressed == [], "nor one that is asking the user something"
     monkeypatch.setattr(driver, "asking", lambda: False)
+    monkeypatch.setattr(engine.agent, "state", lambda: "idle")
+    assert engine.probe() == "" and pressed == [], "an idle agent is never probed, however silent"
+    monkeypatch.setattr(engine.agent, "state", lambda: "working")
     assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], "a working agent silent for two minutes is probed with Ctrl-C"
+    import json
+    from datetime import datetime, timedelta, timezone
+    transcript = record.root / "rollout.jsonl"
+    transcript.write_text("")
+    report(record, "working", "PreToolUse", provider="codex", transcript=str(transcript))
+    ends = lambda message, ahead: json.dumps({"timestamp": (datetime.now(timezone.utc) + timedelta(seconds=ahead)).isoformat(), "type": "event_msg",
+                                              "payload": {"type": "task_complete", "error": {"message": message}}}, separators=(",", ":")) + "\n"
+    transcript.write_text(ends("old failure", -3600))
+    assert engine.failed() == "", "an error from before the agent's last report is not this turn's"
+    transcript.write_text(transcript.read_text() + ends("out of credits", 3600))
+    assert engine.failed() == "the turn failed: out of credits", "a turn that ends in an error is named"
+    row = Agents(record, actor="system").by_session("claude-1")
+    assert (row.status, row.data["failure"]) == ("idle", "out of credits"), "the agent goes idle with the failure set"
 
 
 def test_the_start_question_never_offers_a_busy_environment_on_enter():

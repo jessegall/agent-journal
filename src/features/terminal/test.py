@@ -87,3 +87,48 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     assert (lines[-1], b"!/effort high" in typed, "/effort high" in pending()) == (b"/effort high", False, False), \
         "a line starting with / is a command for the agent: typed as it is, and not waited on as a shell command"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
+
+
+def test_the_worker_stops_on_request_or_signal_reloads_when_its_session_moves_and_a_failing_check_stops_nothing(monkeypatch):
+    import threading
+    from pathlib import Path
+    from types import SimpleNamespace
+    from engine.sessions import Sessions
+    from engine.stop import ask_session
+    from runner import worker
+    from supervisor import RELOAD, STOP
+    record = fresh()
+    monkeypatch.setattr(worker, "watch_change_log", lambda: None)
+    monkeypatch.setattr(worker, "TICK", 0.01)
+    monkeypatch.setattr(worker, "CHECKS_EVERY", 0.0)
+    sessions = Sessions(record.root)
+    sessions.bind("claude-1", record.env, provider="claude")
+    start = lambda: worker.run(record.root, Path(record.root).parent, record.env, "claude", "claude-1")
+    threading.Timer(0.3, lambda: sessions.write("claude-1", environment="elsewhere")).start()
+    assert start() == RELOAD, "a session moved to another environment reloads the worker so it follows"
+    sessions.write("claude-1", environment=record.env)
+    ask_session(record.root, "claude-1")
+    assert start() == STOP and not worker.session_flag(record.root, "claude-1").is_file(), "a stop request for the session ends the worker and is used up"
+    monkeypatch.setattr(worker, "TERMINATED", SimpleNamespace(is_set=lambda: True))
+    assert start() == STOP, "SIGTERM ends the worker"
+
+    ran = []
+    boom = SimpleNamespace(tick=lambda: 1 / 0)
+    after = SimpleNamespace(tick=lambda: ran.append("after"))
+    seat = SimpleNamespace(root=record.root, env=record.env)
+    worker.run_checks(seat, SimpleNamespace(pump=lambda: ran.append("pump")), [boom, after])
+    assert ran == ["pump", "after"], "one failing check does not stop the ones after it"
+
+    sent = []
+    printed = record.root / "printed"
+    printed.write_bytes(b"ready")
+    asked = SimpleNamespace(printed=printed, printed_tail=lambda size: b"ready", consent=lambda early: b"", opening=lambda early: "go",
+                            CONFIRM_AFTER=0.0, send=lambda text, now: sent.append(text))
+    late = worker.Confirm(asked)
+    late.started -= worker.STARTUP + 1
+    late.tick()
+    assert sent == [], "the start-up confirm is not typed once its time is up"
+    timely = worker.Confirm(asked)
+    timely.tick()
+    timely.tick()
+    assert sent == ["go"], "within its time the start-up confirm is typed once"

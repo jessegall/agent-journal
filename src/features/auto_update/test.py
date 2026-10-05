@@ -1,4 +1,6 @@
+import fcntl
 import json
+import tarfile
 import time
 
 import pytest
@@ -213,7 +215,7 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     assert [n.title for n in Notices(record, actor="system").all()].count(launch.LOST) == 1
 
 
-def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_path):
+def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_path, monkeypatch):
     import install
     moved, flat, empty, target = tmp_path / "moved", tmp_path / "flat", tmp_path / "empty", tmp_path / "target"
     for base in (moved / "src", flat):
@@ -233,6 +235,25 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     root = tmp_path.resolve()
     assert install.installed_here(root, root / "journal-2.1.0-abc.pyz"), "an older build beside the record fetches the release rather than reading itself"
     assert not install.installed_here(root, moved), "a checkout elsewhere is read as the package"
+    journal = tmp_path / "project" / ".journal"
+    (journal / "environments" / "main").mkdir(parents=True)
+    (journal / "environments" / "main" / "todo.json").write_text("{}")
+    (journal / "runtime").mkdir()
+    kept = install.keep_copy(journal)
+    saved = list((journal / "attic").glob("before-*.tar.gz"))
+    assert len(saved) == 1 and kept.startswith("a copy of the record is kept in"), "an upgrade starts by keeping a copy of the record in the attic"
+    with tarfile.open(saved[0]) as archive:
+        assert "environments/main/todo.json" in archive.getnames() and not any(name.startswith(("runtime", "attic")) for name in archive.getnames()), \
+            "the copy holds the record and nothing of the runtime or earlier copies"
+    with (journal / "runtime" / "upgrade.lock").open("a") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        assert install.upgrade(journal.parent, journal) == ["another upgrade of this journal is running; this one stepped aside"], \
+            "an upgrade started while another holds the lock steps aside and changes nothing"
+    monkeypatch.setattr(install, "PACKAGE", journal.resolve() / "journal.pyz")
+    monkeypatch.delenv(install.BOOTSTRAPPED, raising=False)
+    monkeypatch.setenv(install.REPOSITORY_ENV, str(tmp_path / "no-such-repository"))
+    refused = install.upgrade(journal.parent, journal)
+    assert refused[-1].startswith("package not refreshed:"), f"a repository that cannot be fetched is named, not installed: {refused}"
 
 
 def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):
