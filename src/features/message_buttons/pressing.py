@@ -1,11 +1,7 @@
 from controllers.messages import Messages
 from controllers.types import CONTROLLERS
 from features.message_buttons.shaping import Button, spent
-from resources.base import Refused, titled
-
-
-class Spent(Refused):
-    pass
+from resources.base import Stale, titled
 
 
 def pressed_of(row) -> list[str]:
@@ -21,7 +17,7 @@ def unspent(row) -> list[Button]:
 def press(record, row, label: str, actor: str, via: str):
     button = next((one for one in unspent(row) if one.label == label), None)
     if button is None:
-        raise Spent(f"{label!r} is no longer on {row.ref}")
+        raise Stale(f"{label!r} is no longer on {row.ref}")
     if button.say:
         Messages(record, actor=actor).create(titled(button.say), brief=button.say, about=row.ref, via=via)
     elif button.n is None:

@@ -16,10 +16,10 @@ from features.phone.feed import waiting
 from features.phone.places import MAIN, Place, places
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
-from features.phone.surface import CARDS, Stale
+from features.phone.surface import CARDS
 from features.sharing.controller import Shares
 from features.trigger import DAY
-from resources.base import PROJECT, SYSTEM, USER, Refused, titled
+from resources.base import PROJECT, SYSTEM, USER, Refused, Stale, titled
 
 CODE_SECONDS = 600
 DAYS = (1, 7, 30)

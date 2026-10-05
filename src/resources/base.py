@@ -262,6 +262,10 @@ class Refused(Exception):
     pass
 
 
+class Stale(Refused):
+    pass
+
+
 class Missing(Refused):
     pass
 
