@@ -1,10 +1,9 @@
-from features.sequences.shipping import ShippedSequence
 import re
 
+from features import discover
+from features.base import REGISTRY
 from features.sequences.controller import Sequences
-from features.boards.drafting import BUILDING_A_BOARD, DRAFTING, DRAFTING_FROM_A_DOCUMENT, REVISING_THE_DRAFTS
-from features.boards.exploration import EXPLORATION
-from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
+from features.sequences.shipping import ShippedSequence
 from features.triggers.controller import Triggers
 from resources.base import AGENT, SECTION, SYSTEM
 
@@ -178,17 +177,26 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
                              "Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )
-SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT, ORCHESTRATION, *ORCHESTRATING_MOMENTS)
+SEQUENCES = (FILING_A_DUMP, BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT,
+             FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT)
 
 SHIPPED_FIELDS = ("brief", "starts_on", "started_by", "only_when_idle", "talks_in", "lasting", "unless", "dispatch")
 
 
+def shipped_sequences() -> list[ShippedSequence]:
+    discover()
+    return [sequence for feature in REGISTRY.values() for sequence in feature.sequences]
+
+
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
+    shipping = shipped_sequences()
     numbers = {row["title"]: row["n"] for row in sequences.rows.summaries() if not row["deleted"]}
-    retire(sequences, {shipped.title for shipped in SHIPPED})
-    return [shipped.title for shipped in SHIPPED if in_step(sequences, shipped, numbers)]
+    retire(sequences, {shipped.title for shipped in shipping})
+    for shipped in shipping:
+        if shipped.title not in numbers:
+            numbers[shipped.title] = sequences.create(shipped.title, starts_on=shipped.starts_on, system=True).n
+    return [shipped.title for shipped in shipping if in_step(sequences, shipped, numbers)]
 
 
 def retire(sequences: Sequences, titles: set[str]) -> None:
@@ -211,11 +219,9 @@ def in_step(sequences: Sequences, shipped: ShippedSequence, numbers: dict[str, i
     else:
         unwatched(sequences.record, shipped)
     steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped.steps]
-    n = numbers.get(shipped.title)
-    row = sequences.load(n) if n else sequences.create(shipped.title, starts_on=shipped.starts_on, system=True)
-    numbers[shipped.title] = row.n
+    row = sequences.load(numbers[shipped.title])
     shape = {**{name: getattr(shipped, name) for name in SHIPPED_FIELDS}, "sections": steps}
-    if n and (not row.system or {name: getattr(row, name) for name in shape} == shape):
+    if not row.system or {name: getattr(row, name) for name in shape} == shape:
         return False
     for name, value in shape.items():
         setattr(row, name, value)

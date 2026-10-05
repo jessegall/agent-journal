@@ -9,9 +9,11 @@ from features.boards.resource import DONE, MEANINGS, Board
 from features.boards.running import RunningBoards
 from resources.base import FINISHED, Ref, Refused, Resource, SYSTEM
 from controllers.marks import action
+from engine.extension import Extension
 
 STAGES = ("To do", "Doing", "Review", "Done")
 BUILD_LOG = 40
+CARD_STORE = Extension()
 
 
 def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
@@ -76,8 +78,10 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         return self._merged(board, "drafting", log=[*(board.drafting.get("log") or []), entry][-BUILD_LOG:])
 
     def _cards(self, actor: str):
-        from features.tickets.controller import Tickets
-        return Tickets(self.record, actor=actor, session=self.session, agent=self.agent)
+        store = next(iter(CARD_STORE.each()), None)
+        if store is None:
+            raise Refused("boards keep their cards as tickets, and the tickets feature is not loaded")
+        return store(self.record, actor=actor, session=self.session, agent=self.agent)
 
     def _merged(self, board, field: str, **changes):
         return self.update(board.n, **{field: {**getattr(board, field), **changes}})

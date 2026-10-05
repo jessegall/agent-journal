@@ -6,11 +6,11 @@ from tests.kit import Nudges, nudges, report
 
 
 def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
-    from features.sequences.shipped import SHIPPED, ship
+    from features.sequences.shipped import ship, shipped_sequences
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
-    assert (ship(record), ship(record)) == ([shipped.title for shipped in SHIPPED], []), "shipped once, never twice"
+    assert (ship(record), ship(record)) == ([shipped.title for shipped in shipped_sequences()], []), "shipped once, never twice"
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     filing = next(r for r in sequences.rows.summaries() if r["title"] == "Filing a dump")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")

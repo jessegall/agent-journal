@@ -15,6 +15,7 @@ from features.tickets.handlers import (
     ticket_calls,
 )
 from features.tickets.limits import DraftsCarryOneLine
+from features.boards.controller import CARD_STORE
 from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from features.plans.resource import PHASE
 from features.tickets.phases import start_tickets_of_phase
@@ -35,6 +36,7 @@ class TicketsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         PHASE_ROWS.add(None, Tickets, key=PHASE.tickets)
+        CARD_STORE.add(None, Tickets)
         PHASE_STARTS.add(self, start_tickets_of_phase)
         PLAN_STARTS.add(self, start_worker)
         journal.commands.add("ticket", ShowTicketTodos())

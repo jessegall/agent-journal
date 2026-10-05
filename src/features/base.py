@@ -101,6 +101,7 @@ class Feature(ABC):
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
     nudges: ClassVar[tuple] = ()
+    sequences: ClassVar[tuple] = ()
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
