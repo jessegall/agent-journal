@@ -126,8 +126,8 @@ class Worktrees(Controller):
             if not row.path or not within(Path(row.path), places, commands) or row.told == tip(project, row.working):
                 continue
             found = self._drift(row)
+            self.update(row.n, told=found.tip)
             if not found.current:
-                self.update(row.n, told=found.tip)
                 return row, found
         return None
 
