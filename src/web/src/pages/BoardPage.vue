@@ -2,74 +2,57 @@
 import {remember, remembered} from "../platform/storage.js";
 import {boardOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
-import {useWindowEvent} from "../composables/windowEvent.js";
-import {saveSettings} from "../actions/settings.js";
-import {computed, onMounted, provide, ref, watch} from "vue";
+import {useKeyMap} from "../composables/keyMap.js";
+import {useUndoToast} from "../composables/undoToast.js";
+import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import TextInput from "../kit/TextInput.vue";
 import Icon from "../kit/Icon.vue";
 import Toast from "../kit/Toast.vue";
-import AgentDrawer from "../agents/AgentDrawer.vue";
-import TicketAgent from "../agents/TicketAgent.vue";
-import {workingCards} from "../domain/ticketAgents.js";
-import BoardRoles from "../board/BoardRoles.vue";
-import AgentStrip from "../agents/AgentStrip.vue";
-import Lane from "../board/Lane.vue";
-import Segmented from "../kit/Segmented.vue";
 import Switch from "../kit/Switch.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
 import NewBoard from "../board/NewBoard.vue";
-import NewWork from "../board/NewWork.vue";
-import RunBar from "../board/RunBar.vue";
-import BoardGoal from "../board/BoardGoal.vue";
 import BoardMenu from "../board/BoardMenu.vue";
-import BuildStrip from "../board/BuildStrip.vue";
+import TodoBoard from "../board/TodoBoard.vue";
+import TicketBoard from "../board/TicketBoard.vue";
+import {lens} from "../board/lanes.js";
 import {load as loadRows, patched, rows} from "../sync/rows.js";
-import NotePrompt from "../board/NotePrompt.vue";
-import ShiftPrompt from "../board/ShiftPrompt.vue";
-import StopPrompt from "../board/StopPrompt.vue";
-import NewResource from "../resource/NewResource.vue";
 import {poke, usePoll} from "../composables/poll.js";
-import {href, peek, route} from "../route.js";
+import {href, route} from "../route.js";
 
-const SKELETON = ["To do", "Held", "Doing", "Needs you", "Done"].map((title) => ({key: title, title, cards: []}));
-const adding = ref("");
 const LIVE = new Set(["todo", "work", "question", "plan", "agent", "ticket", "board"]);
+const FIRST_BOARD_SEEN = "board.first-board-seen";
 const text = ref("");
-const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
 const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
 const archived = computed(() => rows("board").filter((board) => board.completed && !board.deleted));
 const boardMenu = ref(false);
 const boardMenuOpener = ref(null);
 const boardMenuAnchor = computed(() => boardMenuOpener.value && boardMenuOpener.value.$el);
 const tickets = computed(() => Boolean(store.board.lens.board));
+const kind = computed(() => (tickets.value ? "tickets" : "todos"));
 const chosenBoard = computed(() => store.board.lens.board);
-const slots = computed(() => store.board.slots);
-const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
-const building = computed(() => tickets.value && current.value && (current.value.data.building || {}).since);
-const firstLane = computed(() => (store.board.lanes || [])[0] || {key: "", cards: []});
-const waitingCount = computed(() => (tickets.value ? firstLane.value.cards.length + ((slots.value && slots.value.queued) || 0) : 0));
-const waits = (card) => card.lane === firstLane.value.key || card.state === "queued";
 const searching = ref(false);
-const picked = ref("");
-const ticketCount = computed(() => (store.board.lanes || []).reduce((sum, lane) => sum + lane.cards.length, 0));
-const removed = (n) => settle(boards.value.filter((board) => board.n !== n));
-const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
-const writingWork = ref(false);
+const activeBoard = ref(null);
 const newBoard = ref(false);
-const FIRST_BOARD_SEEN = "board.first-board-seen";
-const workStage = ref("");
-const newWork = (stage = "") => (tickets.value ? ((workStage.value = stage), (writingWork.value = true)) : (adding.value = "todo"));
-const toast = ref(null);
-const undo = () => toast.value && toast.value.action && (toast.value.action(), (toast.value = null));
-const KEYS = {"/": () => finder.value.focus(), n: newWork, z: (e) => (e.metaKey || e.ctrlKey) && undo()};
-const openFlow = () => writingWork.value || newBoard.value;
-const onKey = (e) =>
-    KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key](e));
-useWindowEvent("keydown", onKey);
+const showingDone = computed(() => store.board.lens.done !== false);
+const tabs = computed(() => [{key: "0", title: "To-dos"}, ...boards.value.map((board) => ({key: String(board.n), title: board.title}))]);
+const chosenTab = computed({get: () => String(store.board.lens.board || 0), set: (key) => lens({board: Number(key)})});
+const removed = (n) => settle(boards.value.filter((board) => board.n !== n));
+const newWork = () => activeBoard.value?.newWork("");
+const notify = (next) => (toast.value = next);
+const {toast, undo} = useUndoToast();
+const refusal = ref("");
+let clearing = 0;
+
+useKeyMap(
+    {"/": () => finder.value.focus(), n: newWork, z: (e) => (e.metaKey || e.ctrlKey) && undo()},
+    () => !newBoard.value && !activeBoard.value?.writing
+);
+
 onMounted(async () => {
     const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
     newBoard.value = route.value.q === "new" || (!known.length && !remembered(FIRST_BOARD_SEEN, false));
@@ -79,6 +62,12 @@ onMounted(async () => {
 function settle(open) {
     if (open.some((board) => board.n === store.board.lens.board)) return;
     lens({board: open.length ? open[0].n : 0});
+}
+
+function refuse(e) {
+    refusal.value = e.message;
+    clearTimeout(clearing);
+    clearing = setTimeout(() => (refusal.value = ""), 5000);
 }
 
 async function archive(board) {
@@ -121,97 +110,6 @@ function boardMade(n) {
     leaveNewBoard();
     lens({board: n});
 }
-const chosenPlan = computed(() => store.board.lens.plan);
-
-function made(n) {
-    peek(adding.value, n);
-    adding.value = "";
-}
-
-const showingDone = computed(() => store.board.lens.done !== false);
-const planHold = computed(() => store.board.planHold);
-const loading = computed(() => !store.board.loaded);
-const tabs = computed(() => [{key: "0", title: "To-dos"}, ...boards.value.map((board) => ({key: String(board.n), title: board.title}))]);
-const chosenTab = computed({get: () => String(store.board.lens.board || 0), set: (key) => lens({board: Number(key)})});
-const only = ref("");
-watch(
-    () => store.board.lens.board,
-    () => (only.value = "")
-);
-const matches = (card) =>
-    (!only.value || (only.value === "waiting" ? waits(card) : card.state === only.value)) &&
-    (!text.value.trim() || `#${card.n} ${card.title}`.toLowerCase().includes(text.value.trim().toLowerCase()));
-const lanes = computed(() =>
-    store.board.loaded
-        ? store.board.lanes
-              .filter((lane) => store.board.lens.done !== false || meaningOf(lane.key) !== "done")
-              .map((lane) => ({...lane, cards: lane.cards.filter(matches)}))
-        : SKELETON
-);
-const pickedLane = computed(
-    () =>
-        (lanes.value.find((lane) => lane.key === picked.value) || lanes.value.find((lane) => lane.cards.length) || lanes.value[0] || {}).key
-);
-const lanePicks = computed(() => lanes.value.map((lane) => ({key: lane.key, label: `${lane.title} ${lane.cards.length}`})));
-const empty = computed(() => store.board.loaded && lanes.value.every((lane) => !lane.cards.length));
-
-const ASKS = {held: true, done: true};
-const moving = ref(0);
-const asking = ref(null);
-const stopping = ref(null);
-const watching = ref(null);
-const noting = ref(null);
-const askNote = (ask) => (noting.value = ask);
-const watchAgent = (card) => (watching.value = card);
-const opened = ref(null);
-const openAgent = (card) => (opened.value = card);
-const allCards = computed(() => (store.board.lanes || []).flatMap((lane) => lane.cards));
-const agentCard = computed(
-    () => opened.value && (allCards.value.find((card) => card.type === "ticket" && card.n === opened.value.n) || opened.value)
-);
-const working = computed(() => (tickets.value ? workingCards(store.board.lanes) : []));
-const starting = ref(false);
-
-async function setLimit(n) {
-    store.board.slots = {...store.board.slots, limit: n};
-    try {
-        await saveSettings({tickets: {...((store.settings && store.settings.tickets) || {}), running: n}});
-    } catch (e) {
-        refuse(e);
-    }
-    refresh();
-}
-
-async function startBoard() {
-    starting.value = true;
-    try {
-        await api.startBoard(current.value.n);
-        toast.value = {text: `The main agent runs ${current.value.title}`};
-    } catch (e) {
-        refuse(e);
-    } finally {
-        starting.value = false;
-    }
-}
-async function boardAction(action) {
-    starting.value = true;
-    try {
-        await api.act("board", current.value.n, action);
-    } catch (e) {
-        refuse(e);
-    } finally {
-        starting.value = false;
-    }
-}
-const LIVE_STATES = ["running", "you"];
-const refusal = ref("");
-let clearing = 0;
-
-function refuse(e) {
-    refusal.value = e.message;
-    clearTimeout(clearing);
-    clearing = setTimeout(() => (refusal.value = ""), 5000);
-}
 
 function take(got) {
     Object.assign(store.board, {
@@ -228,64 +126,15 @@ function take(got) {
 }
 
 const load = () => (tickets.value ? api.ticketBoard(store.board.lens.board) : api.board(store.board.lens));
-
-async function refresh() {
-    await ask();
-}
-
-const leavesItsAgent = (card, lane) =>
-    card.type === "ticket" && LIVE_STATES.includes(card.state) && meaningOf(card.lane) === "start" && meaningOf(lane) !== "start";
-
-function move(card, lane) {
-    if (leavesItsAgent(card, lane)) stopping.value = {card, lane};
-    else if (card.type === "todo" && (ASKS[lane] || (card.lane === "done" && lane === "todo"))) asking.value = {card, lane};
-    else return shift(card, lane, {});
-    return null;
-}
-
-async function stopAndMove({card, lane}) {
-    stopping.value = null;
-    await api.stopTicket(card.n);
-    shift(card, lane, {});
-}
-
-async function sendNote(note) {
-    const {card, action} = noting.value;
-    noting.value = null;
-    await api.act(card.type, card.n, action.action, {note});
-    refresh();
-}
-
-function keepAndMove({card, lane}) {
-    stopping.value = null;
-    shift(card, lane, {});
-}
-
-const laneTitle = (key) => (store.board.lanes.find((lane) => lane.key === key) || {title: key}).title;
-
-async function shift(card, lane, words) {
-    asking.value = null;
-    moving.value = card.n;
-    try {
-        await (card.type === "ticket" ? api.moveTicket(card.n, lane) : api.shift(card.n, lane, words));
-        toast.value = {text: `Moved #${card.n} to ${laneTitle(lane)}`, label: "Undo", action: () => move({...card, lane}, card.lane)};
-    } catch (e) {
-        refuse(e);
-    } finally {
-        await refresh();
-        moving.value = 0;
-    }
-}
-
-provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent, openAgent, askNote});
-
-const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
-watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
-watch(
-    () => store.board.drafting.since,
-    (drafting) => drafting && tickets.value && (writingWork.value = true),
-    {immediate: true}
+const ask = usePoll(
+    "board",
+    () => (boardOn.value ? load() : Promise.resolve(null)),
+    5000,
+    (got) => got && take(got)
 );
+const refresh = () => ask();
+
+watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
 
 let seen = 0;
 watch(
@@ -295,13 +144,6 @@ watch(
         seen = newest;
         if (fresh) poke("board");
     }
-);
-
-const ask = usePoll(
-    "board",
-    () => (boardOn.value ? load() : Promise.resolve(null)),
-    5000,
-    (got) => got && take(got)
 );
 </script>
 
@@ -343,7 +185,7 @@ const ask = usePoll(
                 <TextInput ref="finder" :value="text" class="find" placeholder="Filter cards  /" @input="text = $event.target.value" />
                 <Switch :on="showingDone" word="Show done cards" @change="(on) => lens({done: on})" />
             </div>
-            <Btn kind="primary" small title="New work (N)" @click="newWork('')">
+            <Btn kind="primary" small title="New work (N)" @click="newWork">
                 <Icon name="plus" />
                 New work
             </Btn>
@@ -354,102 +196,28 @@ const ask = usePoll(
                 <a :href="href.page(route.env, 'settings')">Turn it on in Settings</a>
             </p>
         </template>
-        <template v-else-if="empty && !tickets">
-            <div class="empty">
-                <p>Nothing is on the list.</p>
-                <Btn kind="primary" small @click="newWork('')">New to-do</Btn>
-            </div>
-        </template>
         <template v-else>
-            <template v-if="tickets && current && !building">
-                <RunBar
-                    :board="current"
-                    :cards="working"
-                    :slots="slots"
-                    :waiting="waitingCount"
-                    :only="only"
-                    :busy="starting"
-                    @play="startBoard"
-                    @pause="boardAction('pause')"
-                    @resume="boardAction('resume')"
-                    @open="openAgent"
-                    @only="(state) => (only = only === state ? '' : state)"
-                    @limit="setLimit"
-                />
-                <BoardGoal :board="current" />
-                <template v-if="store.board.roles.length">
-                    <BoardRoles :roles="store.board.roles" />
+            <SwitchCase :value="kind">
+                <template #todos>
+                    <TodoBoard ref="activeBoard" :text="text" :refusal="refusal" :refresh="refresh" :refuse="refuse" :notify="notify" />
                 </template>
-            </template>
-            <template v-if="!tickets">
-                <div class="plans">
-                    <Btn :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</Btn>
-                    <template v-for="plan in plans" :key="plan.n">
-                        <Btn :class="['plan', {on: chosenPlan === plan.n}]" @click="lens({plan: plan.n})">Plan {{ plan.n }}</Btn>
-                    </template>
-                    <span class="grow" />
-                    <AgentStrip />
-                </div>
-            </template>
-            <template v-if="building || refusal || planHold">
-                <div class="strips">
-                    <template v-if="building">
-                        <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
-                    </template>
-                    <template v-if="refusal">
-                        <p class="refusal">{{ refusal }}</p>
-                    </template>
-                    <template v-if="planHold">
-                        <p class="hold">{{ planHold }}</p>
-                    </template>
-                </div>
-            </template>
-            <div class="lane-pick">
-                <Segmented fill :options="lanePicks" :value="pickedLane" @pick="(key) => (picked = key)" />
-            </div>
-            <div :key="chosenBoard || 0" class="lanes">
-                <template v-for="(lane, i) in lanes" :key="lane.key">
-                    <Lane
-                        :class="{away: lane.key !== pickedLane}"
-                        :lane="lane"
-                        :loading="loading"
-                        :meaning="meaningOf(lane.key)"
-                        :adds="tickets && !i"
-                        :style="{'--order': i}"
+                <template #tickets>
+                    <TicketBoard
+                        :key="chosenBoard"
+                        ref="activeBoard"
+                        :board="current || null"
+                        :text="text"
+                        :refusal="refusal"
+                        :refresh="refresh"
+                        :refuse="refuse"
+                        :notify="notify"
+                        @removed="removed"
                     />
                 </template>
-            </div>
+            </SwitchCase>
         </template>
         <Toast :toast="toast" @done="toast = null" />
-        <template v-if="noting">
-            <NotePrompt :ask="noting" @send="sendNote" @close="noting = null" />
-        </template>
-        <template v-if="agentCard">
-            <TicketAgent :card="agentCard" @close="opened = null" @terminal="watching = agentCard" />
-        </template>
-        <template v-if="watching">
-            <AgentDrawer :card="watching" @close="watching = null" @stopped="refresh" />
-        </template>
-        <template v-if="stopping">
-            <StopPrompt :move="stopping" @stop="stopAndMove(stopping)" @keep="keepAndMove(stopping)" @close="stopping = null" />
-        </template>
-        <template v-if="asking">
-            <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
-        </template>
         <NewBoard :open="newBoard" @close="leaveNewBoard" @made="boardMade" />
-        <template v-if="tickets && current">
-            <NewWork
-                :open="writingWork"
-                :board="current"
-                :stage="workStage"
-                :starts="meaningOf(workStage) === 'start'"
-                @close="writingWork = false"
-                @added="refresh"
-            />
-        </template>
-        <template v-if="adding">
-            <NewResource :type="adding" @made="made" @close="adding = ''" />
-        </template>
     </section>
 </template>
 
@@ -541,87 +309,11 @@ const ask = usePoll(
     outline: none;
 }
 
-.plans {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    min-height: 44px;
-    padding: 6px 12px 6px 20px;
-    border-bottom: 1px solid var(--border);
-}
-
-.plan {
-    padding: 4px 9px;
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.plan.on {
-    border-color: var(--accent);
-    color: var(--text);
-}
-
-.strips {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px 20px 0;
-}
-
-.refusal {
+.off {
     margin: 0;
-    color: var(--danger);
-    font-size: 12.5px;
-}
-
-.hold {
-    margin: 0;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--raised);
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.lane-pick {
-    display: none;
-}
-
-.lanes {
-    display: flex;
-    flex: 1;
-    gap: 12px;
-    min-height: 0;
-    padding: 14px 20px 20px;
-    overflow-x: auto;
-}
-
-.off,
-.empty {
     padding: 18px 20px;
-}
-
-.off,
-.empty p {
-    margin: 0;
     color: var(--text-2);
     font-size: 13px;
-}
-
-.empty {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
 }
 
 @media (max-width: 900px) {
@@ -684,28 +376,6 @@ const ask = usePoll(
         flex: 1;
         width: auto;
         height: 36px;
-    }
-
-    .plans {
-        padding: 6px 14px;
-    }
-
-    .lane-pick {
-        display: block;
-        flex: none;
-        margin: 12px 14px 0;
-    }
-
-    .lanes {
-        padding: 12px 14px 16px;
-    }
-
-    .lanes > .away {
-        display: none;
-    }
-
-    .lanes > :deep(.lane) {
-        max-width: none;
     }
 }
 </style>
