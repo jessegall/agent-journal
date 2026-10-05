@@ -130,6 +130,11 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
                    capture_output=True, timeout=120)
     kept = sorted(build.name for build in root.glob("journal-*.pyz") if build != old[0])
     assert old[0].is_file() and not old[1].is_file() and len(kept) <= 2, f"the build a live process runs from is kept; of the others only the two newest stay: {kept}"
+    from engine.package import code_stamp
+    watched = root / "journal.pyz"
+    before = code_stamp(watched)
+    point(root, old[0])
+    assert code_stamp(watched) != before, "the server watches journal.pyz itself, so a new build it points at restarts the server"
 
 
 def heals(root: Path, good: Path):

@@ -23,7 +23,7 @@ from providers.turns import read_transcripts  # noqa: E402
 from runner.chat_mirror import replay  # noqa: E402
 from engine.runtime import default_env
 from engine.record import Record  # noqa: E402
-from engine.package import CODE, ZIPPED, build_file, code_stamp, entry
+from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
 
 DEFAULT_PORT = 8430
 REQUEST_BACKLOG = 128
@@ -196,7 +196,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     warm_viewer(root, default_env(root))
     read_transcripts(root)
     gc.freeze()
-    threading.Thread(target=watch_code, args=(build_file(root) if ZIPPED else CODE, server, changed), daemon=True).start()
+    threading.Thread(target=watch_code, args=(Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
