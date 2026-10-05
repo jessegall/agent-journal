@@ -1,3 +1,4 @@
+import signal
 import sys
 import threading
 import time
@@ -7,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from providers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
+from runner.engines import ENDING, supervise  # noqa: E402
 from features.plugins.services import plugin_services  # noqa: E402
 from engine import runtime  # noqa: E402
 from controllers.faults import threw  # noqa: E402
@@ -107,41 +109,53 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     began = time.time()
     driver = DRIVERS[agent](Record(root, env), session)
     confirm = Confirm(driver)
+    kept = checks(seat, driver)
+    services = Manager(root, lifeline, sources=(plugin_services,))
     last_check = last_viewer = last_services = last_checks = 0.0
     watching = None
     exits: list = []
-    kept = checks(seat, driver)
-    services = Manager(root, lifeline, sources=(plugin_services,))
-    while True:
-        time.sleep(TICK)
-        confirm.tick()
-        if asked(root, began) or stopping.is_file():
-            stopping.unlink(missing_ok=True)
-            return STOP
-        if relaunching.is_file():
-            return RELAUNCH
-        now = time.time()
-        if now - last_services >= SERVICES_EVERY:
-            last_services = now
-            services.tick()
-        if now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
-            last_viewer = now
-            watching = keep_viewer(root, cwd, watching, exits)
-            if crashing(exits):
-                return HEAL
-        if now - last_checks >= CHECKS_EVERY:
-            last_checks = now
-            if moved(seat):
-                return RELOAD
-            if not kept:
-                kept = checks(seat, driver)
-            run_checks(seat, driver, kept)
-        if now - last_check >= RELOAD_EVERY:
-            last_check = now
-            if installed_stamp(root) != stamps and not runtime.upgrading(root):
-                return RELOAD
+    engines = threading.Event()
+    supervising = threading.Thread(target=supervise, args=(root, engines), daemon=True)
+    supervising.start()
+    try:
+        while True:
+            time.sleep(TICK)
+            confirm.tick()
+            if asked(root, began) or stopping.is_file():
+                stopping.unlink(missing_ok=True)
+                return STOP
+            if relaunching.is_file():
+                return RELAUNCH
+            now = time.time()
+            if now - last_services >= SERVICES_EVERY:
+                last_services = now
+                services.tick()
+            if now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
+                last_viewer = now
+                watching = keep_viewer(root, cwd, watching, exits)
+                if crashing(exits):
+                    return HEAL
+            if now - last_checks >= CHECKS_EVERY:
+                last_checks = now
+                if moved(seat):
+                    return RELOAD
+                if not kept:
+                    kept = checks(seat, driver)
+                run_checks(seat, driver, kept)
+            if now - last_check >= RELOAD_EVERY:
+                last_check = now
+                if installed_stamp(root) != stamps and not runtime.upgrading(root):
+                    return RELOAD
+    finally:
+        engines.set()
+        supervising.join(timeout=ENDING)
+
+
+def ended(signum, frame) -> None:
+    raise SystemExit(STOP)
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, ended)
     root, cwd, env, agent, session = sys.argv[1:6]
     raise SystemExit(run(Path(root), Path(cwd), env, agent, session, int(sys.argv[6]) if len(sys.argv) > 6 else -1))
