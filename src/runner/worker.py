@@ -34,6 +34,7 @@ SERVER_CRASHES = 3
 RETRY_AFTER = 1.0
 STARTUP, EARLY = 30.0, 16384
 CONSENT_EVERY = 3.0
+TERMINATED = threading.Event()
 
 
 def keep_viewer(root: Path, cwd: Path, watching, exits: list) -> object:
@@ -121,7 +122,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
         while True:
             time.sleep(TICK)
             confirm.tick()
-            if asked(root, began) or stopping.is_file():
+            if asked(root, began) or stopping.is_file() or TERMINATED.is_set():
                 stopping.unlink(missing_ok=True)
                 return STOP
             if relaunching.is_file():
@@ -152,7 +153,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
 
 
 def ended(signum, frame) -> None:
-    raise SystemExit(STOP)
+    TERMINATED.set()
 
 
 if __name__ == "__main__":

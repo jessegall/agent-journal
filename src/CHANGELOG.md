@@ -22,7 +22,7 @@ buttons are red before you hover them.
 **The viewer is gentler on a slow server**: it backs off when the server is slow or down, fetches other journals'
 summaries only while they are on screen, keeps a shared poll running for its other users, and fetches less on each poll.
 
-**Fixed**: the phone tunnel no longer restarts itself into a lockout; a hold never drops a reply, a reaction or a new
+**Fixed**: one agent keeps the project's services, however many agents run, and a running service keeps its port, so the phone tunnel is never started twice or pointed at a stale port; the phone tunnel no longer restarts itself into a lockout; a hold never drops a reply, a reaction or a new
 to-do written on the same line, and nothing else gets through on such a line; reading a file whole is refused only past
 600 lines; a check that runs out of time says so; dropping a worktree no longer kills the helper inside it; a ticket
 from an outside source no longer breaks its panel.

@@ -8,6 +8,7 @@ from pathlib import Path
 from engine.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
+from engine.locks import claim
 from engine.package import ARCHIVE, entry
 from engine.ports import free
 from engine.runtime import env, folder
@@ -24,6 +25,7 @@ NEEDED_FOR = 600.0
 ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 KEEPER_EXIT = 3.0
+KEEPING = "services-keeper.lock"
 CRASHES, WITHIN = 5, 60.0
 
 
@@ -93,7 +95,7 @@ def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     if isinstance(wants, int):
         return (wants, "") if free(wants) else (wants, f"port {wants} is in use")
     held = status(root, sid)
-    if held.port and held.port not in taken and free(held.port):
+    if held.port and held.port not in taken and (free(held.port) or alive(held.keeper)):
         return held.port, ""
     for port in PORTS:
         if port not in taken and free(port):
@@ -162,8 +164,12 @@ class Manager:
         self.seen: dict = {}
         self.waiting: dict = {}
         self.needed: dict = {}
+        self.owned = None
 
     def tick(self) -> list[str]:
+        self.owned = self.owned or claim(folder(self.root) / KEEPING)
+        if self.owned is None:
+            return []
         started = []
         declared = specs(self.root, self.sources)
         for spec in declared:
