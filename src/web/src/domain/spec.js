@@ -5,3 +5,19 @@ export const types = computed(() => (store.spec ? store.spec.priority.map((t) =>
 export const meta = (type) => store.spec.types[type];
 export const word = (type, method) => meta(type).command_names[method] || method;
 export const label = (type, field, fallback) => meta(type).labels[field] || fallback;
+
+const NAMED_CLOSES = {
+    plugin: "Remove plugin",
+    environment: "Remove environment",
+    phone: "Disconnect",
+    share: "Stop sharing",
+    question: "Answer",
+    suggestion: "Accept or decline",
+    worktree: "Remove worktree",
+    helper: "Remove helper and its working copy",
+};
+const STOPS = {trigger: "It stops starting by itself.", sequence: "It stops starting by itself.", rule: "The agent stops following it."};
+
+export const closeWord = (type) => NAMED_CLOSES[type] || "Close";
+export const closeNote = (type) => `Moves it to Closed. ${STOPS[type] ? `${STOPS[type]} ` : ""}You can reopen it.`;
+export const DELETE_NOTE = "It leaves every list. Its history stays in Activity.";

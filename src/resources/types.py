@@ -25,7 +25,7 @@ class Message(Shape, Resource):
     answer_command = "reply"
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "message"
-    event_labels = {"created": "Message", "completed": "Message processed", "updated.read": "Message read", "updated.process": "Message part filed",
+    event_labels = {"created": "Message", "completed": "Message closed", "updated.read": "Message read", "updated.process": "Message part filed",
                     "updated.edit": "Message edited", "updated.file": "Message file filed"}
     icon = "mail"
     listed_under = RESULTS
@@ -54,7 +54,7 @@ class Todo(Ranked, Placed, Resource):
     hidden_listed = False
     listed_open = True
     type = "todo"
-    event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",
+    event_labels = {"created": "To-do created", "completed": "To-do closed", "updated.read": "To-do read", "updated.assign": "To-do assigned",
                     "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
                     "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
     start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
@@ -81,7 +81,7 @@ class Work(Traced, Resource):
     )
     type = "work"
     indexed = ("todo",)
-    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
+    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work closed"}
     status_labels = {"create": "starting", "complete": "ending"}
     start_heading = "STILL OPEN, from this or an earlier session"
     icon = "play"
@@ -110,7 +110,7 @@ class Doc(Shape, Resource):
     loading = LAZY
     own_folder = True
     type = "doc"
-    event_labels = {"created": "Doc written", "completed": "Doc settled"}
+    event_labels = {"created": "Doc written", "completed": "Doc closed"}
     status_labels = {"complete": "settling"}
     start_heading = "docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all"
     start_as_count = True
@@ -141,7 +141,7 @@ class Report(Shape, Resource):
     )
     loading = LAZY
     type = "report"
-    event_labels = {"created": "Report written", "completed": "Report archived"}
+    event_labels = {"created": "Report written", "completed": "Report closed"}
     status_labels = {"complete": "archiving"}
     needs_attention = True
     icon = "report"
@@ -161,7 +161,7 @@ class Fact(Reasoned, Resource):
         help="A fact is handed to every session on its environment; it is struck when it stops being true.",
     )
     type = "fact"
-    event_labels = {"created": "Fact noted", "completed": "Fact struck"}
+    event_labels = {"created": "Fact noted", "completed": "Fact closed"}
     status_labels = {"complete": "striking"}
     start_heading = "FACTS about this environment"
     subagent_writable = False
@@ -182,7 +182,7 @@ class Rule(Reasoned, Resource):
         help="A rule is decided by the user, cited where it applies, and struck only by them.",
     )
     type = "rule"
-    event_labels = {"created": "Rule made", "completed": "Rule struck"}
+    event_labels = {"created": "Rule made", "completed": "Rule closed"}
     status_labels = {"complete": "striking"}
     start_heading = "RULES, in force on every environment"
     subagent_writable = False
@@ -203,7 +203,7 @@ class Reminder(Shape, Resource):
         help="A reminder repeats at every start and every so often mid-work, because knowing is not doing. One written with --set whom=<session> is said to that agent alone, which is how an agent reminds itself or leaves one for another.",
     )
     type = "reminder"
-    event_labels = {"created": "Reminder set", "completed": "Reminder retired"}
+    event_labels = {"created": "Reminder set", "completed": "Reminder closed"}
     status_labels = {"complete": "retiring"}
     start_heading = "REMINDERS, said again at every stop"
     needs_attention = True
@@ -226,7 +226,7 @@ class Question(Options, Resource):
     )
     listed_open = True
     type = "question"
-    event_labels = {"created": "Question asked", "completed": "Question answered"}
+    event_labels = {"created": "Question asked", "completed": "Question closed"}
     status_labels = {"create": "asking", "complete": "answering"}
     needs_attention = True
     cleared_by = COMPLETED
@@ -249,7 +249,7 @@ class Suggestion(Options, Resource):
     )
     listed_open = True
     type = "suggestion"
-    event_labels = {"created": "Suggestion made", "completed": "Suggestion decided"}
+    event_labels = {"created": "Suggestion made", "completed": "Suggestion closed"}
     status_labels = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
     start_heading = "SUGGESTIONS waiting on the user"
     needs_attention = True
@@ -269,7 +269,7 @@ class Comment(Shape, Resource):
     deduplicates = True
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "comment"
-    event_labels = {"created": "Comment", "completed": "Comment done"}
+    event_labels = {"created": "Comment", "completed": "Comment closed"}
     nested = True
     icon = "bubble"
     command_names = {"complete": "done", "comment": "reply"}
@@ -380,7 +380,7 @@ class Notification(Shape, Resource):
     )
     type = "notification"
     takes_comments = False
-    event_labels = {"completed": "Notification cleared", "updated.read": "Notification read"}
+    event_labels = {"completed": "Notification closed", "updated.read": "Notification read"}
     kept = 100
     pruned_when = Pruned.SEEN
     needs_attention = True
@@ -479,7 +479,7 @@ class Plugin(Shape, Resource):
         Field(NUMBER, 0.0, name="read_at"),
     ]
     type = "plugin"
-    event_labels = {"created": "Plugin installed", "completed": "Plugin removed"}
+    event_labels = {"created": "Plugin installed", "completed": "Plugin closed"}
     status_labels = {"complete": "removing"}
     subagent_writable = False
     in_sidebar = False
@@ -496,7 +496,7 @@ class Environment(Shape, Resource):
     )
     data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched")]
     type = "environment"
-    event_labels = {"created": "Environment prepared", "completed": "Environment removed"}
+    event_labels = {"created": "Environment prepared", "completed": "Environment closed"}
     status_labels = {"create": "preparing", "complete": "removing"}
     subagent_writable = False
     icon = "branch"

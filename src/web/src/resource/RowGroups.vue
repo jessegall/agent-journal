@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {go, route} from "../route.js";
+import ResourceEnd from "./ResourceEnd.vue";
 import ResourceRow from "./ResourceRow.vue";
 defineProps({groups: Array, type: String});
 const settled = ref(false);
@@ -15,14 +16,14 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
                 <span class="gcount">{{ g.list.length }}</span>
             </div>
             <TransitionGroup tag="div" class="rows" :name="settled ? 'row' : ''">
-                <ResourceRow
-                    v-for="(r, i) in g.list"
-                    :key="r.n"
-                    :resource="r"
-                    :selected="r.n === route.n && (g.env || route.env) === route.env"
-                    :style="{'--i': i}"
-                    @click="go(g.env || route.env, type, r.n)"
-                />
+                <div v-for="(r, i) in g.list" :key="r.n" class="row-wrap" :style="{'--i': i}">
+                    <ResourceRow
+                        :resource="r"
+                        :selected="r.n === route.n && (g.env || route.env) === route.env"
+                        @click="go(g.env || route.env, type, r.n)"
+                    />
+                    <ResourceEnd :resource="r" />
+                </div>
             </TransitionGroup>
         </div>
     </TransitionGroup>
@@ -35,6 +36,20 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 
 .rows {
     position: relative;
+}
+
+.row-wrap {
+    position: relative;
+}
+
+.row-wrap :deep(.resource-end) {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+}
+
+.row-wrap :deep(.row) {
+    padding-right: 170px;
 }
 
 @keyframes row-arrived {

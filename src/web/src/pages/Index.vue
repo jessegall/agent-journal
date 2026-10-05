@@ -14,6 +14,7 @@ import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
 import {earlier, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
+import ResourceEnd from "../resource/ResourceEnd.vue";
 import CheckCard from "../resource/CheckCard.vue";
 import NewResource from "../resource/NewResource.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -76,7 +77,7 @@ onUnmounted(() => {
 const listed = computed(() =>
     [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
         .filter((r) => !r.data?.hidden)
-        .sort((a, b) => b.created - a.created || b.n - a.n)
+        .sort((a, b) => Boolean(a.data.system) - Boolean(b.data.system) || b.created - a.created || b.n - a.n)
 );
 
 const groups = computed(() => {
@@ -86,8 +87,7 @@ const groups = computed(() => {
         .filter((k) => buckets[k])
         .map((k) => ({
             key: k,
-            title:
-                k === "open" && filter.value !== "open" ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
+            title: k === "open" && filter.value !== "open" ? "Closed" : GROUPS[k],
             list: buckets[k],
         }))
         .concat(held.value);
@@ -166,7 +166,10 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
             <template #document>
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">
-                        <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                        <div class="card-wrap">
+                            <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                            <ResourceEnd :resource="r" />
+                        </div>
                     </template>
                 </div>
             </template>
@@ -241,6 +244,15 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
     .bar.library .new-word {
         display: none;
     }
+}
+
+.card-wrap {
+    position: relative;
+    display: flex;
+}
+
+.card-wrap > :first-child {
+    flex: 1;
 }
 
 .empty {

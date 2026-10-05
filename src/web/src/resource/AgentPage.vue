@@ -77,7 +77,7 @@ const subagentBand = computed(() => ({
         ? {key: "working", word: "Working", dot: "running"}
         : {
               key: "idle",
-              word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Finished",
+              word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Closed",
               dot: "done",
           },
     reason: `subagent of agent ${props.resource.n} · ${picked.value.model || "inherited model"}`,

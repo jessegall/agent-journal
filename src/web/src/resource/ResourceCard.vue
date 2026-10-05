@@ -1,6 +1,5 @@
 <script setup>
 import {meta} from "../domain/spec.js";
-import Chip from "../kit/Chip.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
@@ -12,7 +11,7 @@ const props = defineProps({resource: Object});
 const startsWhen = (start) => {
     if (!start) return "run by hand";
     if (start.startsWith("trigger:")) return `starts when trigger ${start.slice(8)} fires`;
-    return `starts when a ${start.replace(".completed", " is finished").replace(".created", " is created")}`;
+    return `starts when a ${start.replace(".completed", " is closed").replace(".created", " is created").replace(".", " ")}`;
 };
 const plan = computed(() => {
     if (props.resource.type !== "plan") return null;
@@ -45,9 +44,6 @@ const holds = computed(() => {
         <span class="head">
             <Icon :name="meta(resource.type).icon" :size="14" />
             <span class="n">{{ update ? update.label : `${meta(resource.type).title} ${resource.n}` }}</span>
-            <template v-if="resource.data.system">
-                <Chip title="Ships with the journal; it cannot be removed">System</Chip>
-            </template>
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
         <span class="title">{{ resource.title }}</span>

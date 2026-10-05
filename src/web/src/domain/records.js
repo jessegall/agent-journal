@@ -1,4 +1,4 @@
-import {meta, types, word} from "./spec.js";
+import {meta, types} from "./spec.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
@@ -87,7 +87,7 @@ export function happened(r) {
     const action = r.completed ? "completed" : "created";
     const label = (kind.event_labels || {})[action];
     if (label) return label;
-    return r.completed ? `${kind.title} ${word(r.type, "complete")}` : `${kind.title} created`;
+    return r.completed ? `${kind.title} closed` : `${kind.title} created`;
 }
 
 export function missed(since) {
