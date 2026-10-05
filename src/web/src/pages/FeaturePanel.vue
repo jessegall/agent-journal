@@ -2,6 +2,7 @@
 import {api} from "../api/client.js";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import Segmented from "../kit/Segmented.vue";
 import Switch from "../kit/Switch.vue";
 import TextInput from "../kit/TextInput.vue";
 import FeaturePermissions from "./FeaturePermissions.vue";
@@ -73,6 +74,9 @@ async function saveSetting(setting, value) {
                         </span>
                         <template v-if="setting.kind === 'switch'">
                             <Switch :on="!!valueOf(setting)" @change="(v) => saveSetting(setting, v)" />
+                        </template>
+                        <template v-else-if="setting.kind === 'choice'">
+                            <Segmented :options="setting.choices" :value="valueOf(setting)" @pick="(v) => saveSetting(setting, v)" />
                         </template>
                         <template v-else>
                             <span class="amount">

@@ -31,6 +31,23 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "upstream", lambda root: "98.0.0")
     check.tick()
     assert len(sent) == 1, "a version that would not start here is never offered again"
+    Features(record, actor=SYSTEM).switch("auto_update", True)
+    record.set_setting("auto_update", {"installs": "patch"})
+    installing = []
+    monkeypatch.setattr(updates, "version", lambda: "2.249.6")
+    monkeypatch.setattr(check, "install", lambda feature, latest: installing.append(latest))
+    monkeypatch.setattr(updates, "stale", lambda root: False)
+    monkeypatch.setattr(updates, "upstream", lambda root: "2.249.7")
+    check.checked_at = 0.0
+    assert check.tick() == "installing 2.249.7", "a patch installs by itself when patches are chosen"
+    monkeypatch.setattr(updates, "upstream", lambda root: "2.250.0")
+    check.checked_at = 0.0
+    assert check.tick() == "told of 2.250.0" and sent[-1].startswith("journal 2.250.0 is out"), "a minor version waits for the user"
+    record.set_setting("auto_update", {"installs": "sometimes"})
+    monkeypatch.setattr(updates, "upstream", lambda root: "3.0.0")
+    check.checked_at = 0.0
+    assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
+    Features(record, actor=SYSTEM).switch("auto_update", False)
     record.set_setting("triggers", {"auto_update": {"every": 5, "unit": "minutes"}})
     monkeypatch.setattr(updates, "stale", lambda root: True)
     check.checked_at = 0.0
