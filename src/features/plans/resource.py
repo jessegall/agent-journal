@@ -6,6 +6,7 @@ from resources.shapes import FLAG, NUMBER, Field, Shape, names
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos", "tickets")
 PHASE_FIELDS = {"todo": PHASE.todos, "ticket": PHASE.tickets}
+MUST_HAVE = "Must have"
 BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, DONE, ABANDONED = (
     "building", "draft", "ready", "approved", "active", "waiting", "parked", "done", "abandoned"
 )

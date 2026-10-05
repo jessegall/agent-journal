@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
+from features.plans.resource import MUST_HAVE
 from features.templates.controller import Templates
 from resources.base import SYSTEM
 
-MUST_HAVE = "Must have"
 CRITIQUE = "critique"
 
 
