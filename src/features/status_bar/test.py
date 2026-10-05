@@ -161,3 +161,26 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert marks() == [("Running tests", "running")], "a test run shows as a mark while it runs"
     handle(claude, record.root, record.env, {**tests, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "3 passed, 1 failed in 0.2s"}})
     assert marks() == [("Tests failed", "failed")], "and turns red in place when a test fails"
+
+
+def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(tmp_path, monkeypatch):
+    import json
+    import subprocess
+    from pathlib import Path
+    from providers import PROVIDERS
+    from providers.base import HookCommand
+    script = Path(__file__).resolve().parents[2] / "claude-status.sh"
+    payload = {"session_id": "s-9", "context_window": {"context_window_size": 1000000},
+               "rate_limits": {"five_hour": {"used_percentage": 42, "resets_at": 1791300000}}}
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "AGENT_JOURNAL_ACTIVE": "1"}
+    subprocess.run(["sh", str(script)], input=json.dumps(payload), env=env, capture_output=True, text=True, timeout=10, check=True)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    claude = PROVIDERS["claude"]()
+    usage = claude.usage(tmp_path / "s-9.jsonl")
+    assert [(w.key, w.used, w.resets) for w in usage] == [("five_hour", 42.0, 1791300000)], "the status line's rate limits come back as usage windows"
+    assert claude.reported(tmp_path / "s-9.jsonl", "context_window") == {"context_window_size": 1000000}, "and its context window size"
+    project = tmp_path / "project"
+    (project / ".claude").mkdir(parents=True)
+    claude.save(project, {"statusLine": {"type": "command", "command": "my-own-status"}})
+    claude.wire(project, HookCommand(tmp_path / "hook.sh", "claude", project / ".journal"))
+    assert claude.settings(project)["statusLine"]["command"] == "my-own-status", "a status line the user already has is kept"
