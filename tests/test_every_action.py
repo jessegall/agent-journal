@@ -233,6 +233,8 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500():
         "a row or a type that is not there is a 404"
     assert (post("todo/create"), post(f"todo/{todo.n}/bogus"), post(f"todo/{todo.n}/priority", {"value": "urgentest"})) == (400, 400, 400), \
         "a missing argument, an unknown action and a value the action refuses are each a 400"
+    assert (post(f"todo/{todo.n}/create"), post(f"todo/{todo.n}/search", {"term": "x"})) == (400, 400), \
+        "an action that takes no row, posted to a row's route, is a 400 that names its route, never a 500"
     assert (post("work/start", {"title": "one"}), post("work/start", {"title": "two"})) == (201, 400), "an action the row's state refuses is a 400"
     answered = {}
     for type_, resource in TYPES.items():

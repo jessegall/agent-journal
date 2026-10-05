@@ -45,7 +45,7 @@ from commands.dispatch import rank_routes, represented, route
 from features.routing import JSON, PLAIN, Reply, Request
 from resources.base import Missing
 
-from commands.invoke import invoked
+from commands.invoke import invoked, takes_row
 from features.format import VIEWER, formatted, shaped
 from surfaces.attachments import attachments, listed_types
 from surfaces.listing import Listing, counted, listing
@@ -639,7 +639,10 @@ def post_action_bare(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}/{n}/{action}")
 def post_action(req: Request) -> Reply:
-    got = invoked(req.controller(), req.params["action"], (int(req.params["n"]),), req.body)
+    controller, action = req.controller(), req.params["action"]
+    if not takes_row(controller.method(action)):
+        raise Refused(f"{controller.type} {action} takes no row number: POST /api/{req.params['env']}/{controller.type}/{action}")
+    got = invoked(controller, action, (int(req.params["n"]),), req.body)
     return Reply(200, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))
 
 
