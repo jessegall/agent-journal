@@ -5,13 +5,13 @@ from pathlib import Path
 import features
 from commands.http import dispatch
 from engine.record import Record
-from engine.stored import read_json, write_json
+from engine.stored import write_json
 from engine.transaction import apart
 from engine.wording import digest
 from features.phone.controller import CARDS, Phones
 from features.phone.resource import Phone
 from features.phone.routes import read_body
-from features.session_recording.demo import BRANCHES, Throwaway, frames, leaks
+from features.session_recording.demo import Throwaway, frames, leaks
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Event, Refused
 
@@ -30,7 +30,8 @@ def shown(event: Event) -> bool:
 
 
 def demo_built(folder: Path, into: Path, environment: str = "", name: str = "") -> str:
-    demo = branched(folder, environment, name or folder.resolve().name)
+    with apart():
+        demo = built(folder, environment, name or folder.resolve().name)
     write_json(into, demo)
     return f"wrote {len(demo['moments'])} moments and {len(demo['answers'])} answers into {into}"
 
@@ -87,24 +88,6 @@ def phone_reads(root: Path, phones: Phones, phone: Phone) -> Iterator[tuple[str,
             yield f"phone.row.{ref}", read_body(phones, phone, ["row", kind, n], {})
         except Refused:
             continue
-
-
-def branched(folder: Path, env: str, name: str) -> dict:
-    with apart():
-        return grown(folder, env, name)
-
-
-def grown(folder: Path, env: str, name: str) -> dict:
-    demo = built(folder, env, name)
-    listed = folder / BRANCHES / "branches.json"
-    if not listed.is_file():
-        return demo
-    branches = {}
-    for label, sub in read_json(listed, dict, {}).items():
-        branch = built(folder / BRANCHES / sub, env, name)
-        demo["answers"].update(branch["answers"])
-        branches[label] = branch["moments"]
-    return {**demo, "branches": branches}
 
 
 def built(folder: Path, env: str = "", name: str | None = None) -> dict:

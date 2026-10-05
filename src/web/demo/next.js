@@ -1,4 +1,11 @@
-const BUTTONS = {send: ".compose-send.ready", approve: ".plan-card-start"};
+const all = (selector) => [...document.querySelectorAll(selector)];
+const labelled = (label) => all("button").filter((b) => b.textContent.trim().startsWith(label));
+
+const FOUND = {
+    send: () => all(".compose-send.ready"),
+    approve: () => all(".plan-card-start"),
+    answer: (standIn, move) => labelled(standIn.player.recorded(move)),
+};
 
 function uncovered(el) {
     const r = el.getBoundingClientRect();
@@ -7,18 +14,8 @@ function uncovered(el) {
     return Boolean(hit && el.contains(hit));
 }
 
-function choices(standIn, move) {
-    if (move.fork) return Object.keys(standIn.demo.branches);
-    const row = (standIn.state.rows[move.type] || []).find((one) => one.n === move.n);
-    if (!row) return [];
-    return move.type === "dump" ? row.data.question?.guesses || [] : (row.data.options || []).map((option) => option.title);
-}
-
-const labelled = (labels) => [...document.querySelectorAll("button")].filter((b) => labels.some((label) => b.textContent.trim().startsWith(label)));
-
 export function nextButtons(standIn) {
     const move = standIn.player.waiting;
     if (!move || standIn.player.playing) return [];
-    const found = move.kind in BUTTONS ? [...document.querySelectorAll(BUTTONS[move.kind])] : labelled(choices(standIn, move));
-    return found.filter(uncovered);
+    return FOUND[move.kind](standIn, move).filter(uncovered);
 }

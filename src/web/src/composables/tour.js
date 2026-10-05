@@ -1,10 +1,10 @@
 import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {onUnmounted, ref, watch} from "vue";
 import {boxAround} from "../platform/boxes.js";
+import {useFollowedBox} from "./followedBox.js";
 
 const KEY = "tour_seen";
 const START_AFTER = 800;
-const FOLLOW = 250;
 
 const around = (selector) => boxAround([...document.querySelectorAll(selector)]);
 
@@ -12,7 +12,6 @@ export function useTour(steps, menu) {
     const step = ref(-1);
     const rect = ref(null);
     let waiting = 0;
-    let following = 0;
 
     function measure() {
         const now = steps[step.value];
@@ -20,6 +19,8 @@ export function useTour(steps, menu) {
         if (now.menu && !menu.isOpen()) menu.open();
         rect.value = around(now.target) || (now.fallback ? around(now.fallback) : null);
     }
+
+    const {follow, stop} = useFollowedBox(measure);
 
     function go(at) {
         step.value = at;
@@ -30,8 +31,7 @@ export function useTour(steps, menu) {
 
     function start() {
         go(0);
-        clearInterval(following);
-        following = setInterval(measure, FOLLOW);
+        follow();
     }
 
     function end() {
@@ -39,7 +39,7 @@ export function useTour(steps, menu) {
         if (steps[step.value].menu) menu.close();
         step.value = -1;
         rect.value = null;
-        clearInterval(following);
+        stop();
         saveViewerSetting(KEY, true);
     }
 
@@ -56,7 +56,6 @@ export function useTour(steps, menu) {
     window.addEventListener("keydown", key);
     onUnmounted(() => {
         clearTimeout(waiting);
-        clearInterval(following);
         window.removeEventListener("keydown", key);
     });
     return {step, rect, next, end};

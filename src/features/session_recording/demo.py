@@ -10,7 +10,6 @@ from features.session_recording.scrub import Scrubber
 from resources.base import Refused
 from engine.wording import digest
 
-BRANCHES = "branches"
 RESTORED = {"record/environments/": "environments/", "record/project/": "project/"}
 
 
