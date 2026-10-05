@@ -56,9 +56,17 @@ class Agents(Controller):
 
     @action
     def primary(self):
+        n = self._primary_n()
+        return self.load(n) if n is not None else None
+
+    def _primary_to_read(self):
+        n = self._primary_n()
+        return self._peek(n) if n is not None else None
+
+    def _primary_n(self) -> int | None:
         standing = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
         latest = max(standing, key=lambda row: 0.0 if row["at"] is None else float(row["at"]), default=None)
-        return self.load(latest["n"]) if latest is not None else None
+        return latest["n"] if latest is not None else None
 
     def state(self, environment: str) -> str:
         sessions = Sessions(self.record.root)
