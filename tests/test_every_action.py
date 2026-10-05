@@ -1,14 +1,64 @@
 import inspect
+import json
 import re
+import subprocess
 import time
 from pathlib import Path
+from urllib.parse import parse_qsl, urlparse
 
 import features
+from commands.dispatch import resolve
+from commands.http import dispatch
+from commands.invoke import spread
 from controllers.base import actions
 from controllers.types import CONTROLLERS
 from resources.base import Refused, SYSTEM, USER
 from resources.types import TYPES
 from tests.conftest import fresh
+
+VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
+RECORDER = Path(__file__).with_name("viewer_calls.mjs")
+UNBOUND = ("unexpected keyword argument", "missing a required argument", "positional argument")
+BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "page", "origin", "journal", "pluginUrl", "markdownUrl", "fileUrl",
+         "extensionZip", "stream", "layoutFrom"}
+REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
+        "tunnelAnswering", "tunnelDomains", "tunnelRelease", "setService", "installPlugin", "upgradePlugin", "previewPlugin",
+        "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone"}
+SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
+CALLS = {
+    "changelog": [], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
+    "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
+    "extension": [], "tunnelLogin": [{"endpoint": "tunler.example", "username": "walker", "password": "a password"}],
+    "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["tunler.example"], "tunnelAnswering": [],
+    "tunnelDomains": [], "tunnelRelease": ["walk.tunler.example"], "connectPhone": [7], "disconnectPhone": [1],
+    "shareLayout": ["a layout", {"panels": []}], "services": [], "serviceLog": ["sharing.server"], "setService": ["sharing.server", "up"],
+    "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
+    "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],
+    "create": ["todo", {"title": "walked by the viewer"}], "fieldChoices": ["todo", 1], "installPlugin": ["/nowhere/plugin"],
+    "upgradePlugin": [1, False], "planTimeline": [1], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
+    "board": [{}], "shift": [1, "Doing", {"why": "walked"}], "cancelWork": [1], "reviseWork": [1, "change one card", WALK],
+    "followUpWork": [1, "and one more", WALK], "requestWork": [1, "a new card", WALK], "handWork": [1, "doc:1", "from this doc", WALK],
+    "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "moveTicket": [1, "Doing"], "stopTicket": [1], "confirmTicket": [1],
+    "updateTicket": [1, {"title": "renamed"}], "deleteTicket": [1, "not needed"], "acceptDependencies": [1], "declineDependencies": [1],
+    "buildBoard": [1, "a board", "steer it"], "startBoard": [1], "retryBoard": [1], "archiveBoard": [1], "restoreBoard": [1],
+    "addedToBoard": [1, [1]], "markStage": [1, "Done", "done"], "stopShare": [1], "approveShare": [1], "tunnelStatus": [],
+    "shareReachable": [1], "shareOpens": ["doc:1"], "questionsLinkedTo": ["todo:1"], "planFromDoc": [1], "keepDoc": [1],
+    "runCheck": [1], "setCheck": [1, "every", 5], "closeNotice": [1], "editMessage": [1, "reworded"],
+    "stopTask": [AGENT_N, "task-1", "a background run"], "updateComment": [1, "reworded"], "deleteComment": [1], "addToCollection": [1, ["todo:1"]],
+    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "configurePlugin": [1, "key", "value"],
+    "clearPluginLog": [1], "removeEnvironment": [1, False], "sweepEnvironment": [1, False], "readAll": ["todo", [1]],
+    "upload": ["todo", 1, {"file": "walked.txt"}], "events": [], "recentEvents": [10], "settings": [], "saveSettings": [{}],
+    "saveMode": ["solo"], "search": ["walked"], "files": [], "changes": [], "commit": ["HEAD"], "projectFile": ["README.md"],
+    "fileDiff": ["README.md"], "previewPlugin": ["/nowhere/plugin"], "previewUpgrade": [1], "findFiles": ["read"], "projectFiles": [],
+    "bar": [], "agents": [5], "launchAgent": [1, "claude"], "stopAgentIn": [1], "appoint": [SESSION],
+    "controlAgent": [SESSION, "model", "opus"], "forceAgent": [SESSION], "pauseAgent": [SESSION], "resumeAgent": [SESSION],
+    "permitAgent": [SESSION, True], "ticketTodos": [], "organization": [], "family": [], "agentScreen": [SESSION, 0],
+    "agentKeys": [SESSION, "hello"], "runShell": [SESSION, "true"], "relaunchAgent": [SESSION, False],
+    "transcript": [AGENT_N, SESSION, ""], "agentLinks": [AGENT_N, SESSION], "edits": [AGENT_N, 0, 25], "olderEdits": [AGENT_N, 0, 25],
+    "editedFile": [AGENT_N, "c-1", "after"], "terminal": [AGENT_N, "commands"], "skills": [], "skill": ["journal"],
+    "loadSkill": ["journal"], "alwaysSkill": ["journal", True], "skillKeywords": ["journal", "walk, walked"],
+    "report": [{"kind": "threw", "message": "walked", "where": "/", "stack": ""}],
+}
 
 WORLD = ("run", "install", "uninstall", "upgrade", "services", "archive_file", "pickup", "unarchive", "ask", "launch")
 SAID = {"title": "a row worth keeping", "text": "a line of words", "body": "the body", "why": "it stopped being true",
@@ -77,18 +127,61 @@ def test_every_action_is_reachable_as_a_command():
     assert missing == [], "every public action on a controller is a journal command"
 
 
-def test_every_action_the_viewer_asks_for_is_one_the_api_runs():
+def viewer_calls(env: str) -> dict:
+    walked = subprocess.run(["node", str(RECORDER), VIEWER.as_uri(), env, json.dumps(CALLS)], capture_output=True, text=True, timeout=60)
+    assert walked.returncode == 0, walked.stderr
+    return json.loads(walked.stdout)
+
+
+def multipart(name: str) -> dict:
+    boundary = "walked"
+    raw = f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{name}"\r\n\r\nwalked\r\n--{boundary}--\r\n'
+    return {"_raw": raw.encode(), "_type": f"multipart/form-data; boundary={boundary}"}
+
+
+def unanswered(record, sent: dict, world: bool) -> str:
+    url = urlparse(sent["url"])
+    found = resolve(sent["method"], url.path)
+    if found is None:
+        return "no route answers it"
+    body = multipart("walked.txt") if (sent["body"] or {}).get("form") else sent["body"] or {}
+    if world:
+        return unbound(record, found, body)
+    reply = dispatch(sent["method"], url.path, record.root, dict(parse_qsl(url.query)), body)
+    error = str(reply.body.get("error", "")) if isinstance(reply.body, dict) else ""
+    if reply.code >= 500 or (reply.code == 404 and error == "no such route") or any(word in error for word in UNBOUND):
+        return f"{reply.code} {error or reply.body}"
+    return ""
+
+
+def unbound(record, found, body: dict) -> str:
+    route, params = found
+    if route.handler.__name__ not in ("post_action", "post_action_bare"):
+        return ""
+    controller = CONTROLLERS[params["type"]](record, actor=USER)
+    try:
+        fn = controller.method(params["action"])
+    except Refused as refused:
+        return str(refused)
+    ordered, keyed = spread(fn, (1,) if "n" in params else (), body, {})
+    try:
+        inspect.signature(fn).bind(*ordered, **keyed)
+    except TypeError as error:
+        return str(error)
+    return ""
+
+
+def test_every_call_the_viewer_makes_is_answered_by_the_api_as_the_user():
     features.load()
-    client = (Path(__file__).resolve().parents[1] / "src" / "web" / "src" / "api" / "client.js").read_text()
-    asked = set(re.findall(r'\b(?:command|act)\(\s*"(\w+)"\s*,\s*(?:[^,()"]+,\s*)?"(\w+)"', client))
-    missing = []
-    for type_, name in sorted(asked):
-        try:
-            CONTROLLERS[type_](fresh(type_[:2]), actor=SYSTEM).action(name)
-        except Refused as refused:
-            missing.append(f"{type_} {name}: {refused}")
-    assert len(asked) > 40, "the viewer's calls are read from its one API client"
-    assert missing == [], "every action the viewer sends answers through the same funnel the API uses"
+    record = fresh()
+    walked = viewer_calls(record.env)
+    unwalked = set(walked["methods"]) - set(CALLS) - BUILT
+    assert unwalked == set(), "every method of the viewer's API client is walked here, or named as one that only builds a url"
+    broken = [f"{name}: {sent.get('error') or sent['method'] + ' ' + sent['url']} - {why}"
+              for name, requests in walked["sent"].items()
+              for sent in requests or [{"error": "sent nothing"}]
+              for why in [sent.get("error") or unanswered(record, sent, name in REAL)] if why]
+    assert broken == [], "every request the viewer sends reaches a route, binds its body to the method and never fails with a 500"
 
 
 def test_no_command_argument_shares_a_name_with_a_global_option():
