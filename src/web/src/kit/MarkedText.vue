@@ -9,12 +9,12 @@ const parts = computed(() => {
     return props.text
         .split(pattern)
         .filter(Boolean)
-        .map((part) => ({text: part, hit: props.words.includes(part.toLowerCase())}));
+        .map((part, at) => ({at, text: part, hit: props.words.includes(part.toLowerCase())}));
 });
 </script>
 
 <template>
-    <template v-for="(part, i) in parts" :key="i">
+    <template v-for="part in parts" :key="part.at">
         <template v-if="part.hit">
             <mark class="marked">{{ part.text }}</mark>
         </template>

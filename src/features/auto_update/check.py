@@ -14,8 +14,7 @@ from engine.version import version
 from features import running
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
-from engine.upgrades import newer, stale, upstream
-from install import version_key
+from engine.upgrades import newer, shared_parts, stale, upstream
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
@@ -25,8 +24,7 @@ KEPT_PARTS = {"patches": 2, "minor versions": 1, "major versions": 0, "always": 
 
 
 def within(installed: str, latest: str, installs: str) -> bool:
-    kept = KEPT_PARTS[installs]
-    return version_key(latest)[:kept] == version_key(installed)[:kept]
+    return shared_parts(latest, installed, KEPT_PARTS[installs])
 
 
 def journal_repository(project: Path) -> bool:

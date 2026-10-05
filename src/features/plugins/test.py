@@ -142,7 +142,7 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     assert "$ echo building; exit 3\nbuilding\n" in log(broken.root, "broken").read_text(), "the log holds each command and the output it printed, as it came"
     assert (rows.all(), [p.name for p in home(broken.root).iterdir()] if home(broken.root).exists() else []) == ([], []), \
         "and nothing is left behind"
-    from commands.http import dispatch
+    from tests.kit import dispatch
     looked = dispatch("POST", f"/api/{broken.env}/plugins/preview", broken.root, {}, {"source": repository(tmp_path, WORKS, name="looked")})
     assert (looked.code, looked.body["name"]) == (200, "works"), "the viewer previews a plugin before installing it"
     assert [p.name for p in home(broken.root).glob(".staging-*")] == [], "and the preview takes away the copy it fetched"

@@ -13,12 +13,15 @@ from commands.cli import captured  # noqa: F401
 from commands.cli import run  # noqa: F401
 import commands.http  # noqa: F401
 from commands.dispatch import dispatch  # noqa: F401
+from commands.demo import demo_built  # noqa: F401
+import commands.launch_update as launch_update  # noqa: F401
 from commands.launch import asked_for  # noqa: F401
 from commands.launch import asked_history  # noqa: F401
 from commands.launch import asked_prompts  # noqa: F401
 from commands.launch import asked_resume  # noqa: F401
 from commands.launch import defaults  # noqa: F401
 from commands.queries import ended  # noqa: F401
+from migrations.m0062_clean_slate_moved_into_its_file import run as clean_slate_moved  # noqa: F401
 from features.plans.controller import Plans  # noqa: F401
 from features.plugins.manifest import MANIFEST  # noqa: F401
 from features.plugins.manifest import read  # noqa: F401

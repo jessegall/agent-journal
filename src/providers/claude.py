@@ -105,10 +105,6 @@ SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
 
 
-def message_row(raw: dict) -> Row | None:
-    return Row.from_payload(raw) if raw.get("message") else None
-
-
 def worth_opening(link: str) -> bool:
     _, _, file = link.partition("?file=")
     return not file or file.endswith(".html")
@@ -539,7 +535,7 @@ class Claude(Provider):
 
     def settling(self, path: Path) -> bool:
         lines, _ = last_lines(path, SETTLE_BYTES)
-        for row in rows(reversed(lines), message_row):
+        for row in rows(reversed(lines), Row.from_payload):
             if row.type in ("user", "assistant"):
                 return row.type == "user" or (bool(row.blocks) and all(block.type == "thinking" for block in row.blocks))
         return False

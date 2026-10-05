@@ -59,7 +59,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         tried["3.0.2"] = {"at": __import__("time").time() - 3600, "tries": 2, "ok": False}
     assert not updates.claimed(record.root, "3.0.2", "major versions") and updates.claimed(record.root, "3.0.2", "always"), \
         "Always tries a failed install again after 30 minutes however often it failed, major versions wait longer each time"
-    from commands.http import dispatch
+    from tests.kit import dispatch
     monkeypatch.setattr(updates, "journal_repository", lambda project: True)
     assert dispatch("POST", "/api/update", record.root, {}, {}).code == 400, "the journal's own repository is never updated from a release"
     monkeypatch.setattr(updates, "journal_repository", lambda project: False)
@@ -166,7 +166,7 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
 
 def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypatch):
     import features
-    import commands.launch_update as launch
+    from tests.kit import launch_update as launch
     features.load()
     record = fresh()
     ran = []
@@ -191,7 +191,7 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     import sys
     from pathlib import Path
     import features
-    import commands.launch_update as launch
+    from tests.kit import launch_update as launch
     from controllers.types import Notices
     from engine.record import Record
     here = Path(__file__).resolve().parents[2]

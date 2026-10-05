@@ -23,7 +23,7 @@ class PeerNote:
 class Turn:
     line: int
     who: str
-    text: str
+    text: str = ""
     kind: str = ""
     at: float = 0.0
     tools: list[str] = field(default_factory=list)

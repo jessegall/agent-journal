@@ -5,7 +5,8 @@
     ],
     "exclude": [
         ".venv",
-        "__pycache__"
+        "__pycache__",
+        "src/web/dist-demo"
     ],
     "disable": {
         "languages": [
