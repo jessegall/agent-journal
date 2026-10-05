@@ -12,7 +12,7 @@ import PluginGuide from "./PluginGuide.vue";
 import PluginSettings from "./PluginSettings.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import PluginInstallDialog from "./PluginInstallDialog.vue";
-import PluginLogDialog from "./PluginLogDialog.vue";
+import LogDialog from "../kit/LogDialog.vue";
 import PluginMakeCard from "./PluginMakeCard.vue";
 import PluginMakeDialog from "./PluginMakeDialog.vue";
 import PluginRemoveDialog from "./PluginRemoveDialog.vue";
@@ -307,7 +307,7 @@ async function askAgent() {
             <PluginRemoveDialog :title="removing.title" @close="removing = null" @remove="remove" />
         </template>
         <template v-if="reading">
-            <PluginLogDialog :name="reading" :logged="logged" :busy="Boolean(busy)" @close="reading = ''" @clear="clearLog" />
+            <LogDialog :title="`${reading} log`" :logged="logged" :busy="Boolean(busy)" @close="reading = ''" @clear="clearLog" />
         </template>
         <template v-if="guide">
             <PluginGuide @close="guide = false" />

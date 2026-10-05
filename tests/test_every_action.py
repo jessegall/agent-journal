@@ -57,7 +57,7 @@ CALLS = {
     "transcript": [AGENT_N, SESSION, ""], "agentLinks": [AGENT_N, SESSION], "edits": [AGENT_N, 0, 25], "olderEdits": [AGENT_N, 0, 25],
     "editedFile": [AGENT_N, "c-1", "after"], "terminal": [AGENT_N, "commands"], "skills": [], "skill": ["journal"],
     "loadSkill": ["journal"], "alwaysSkill": ["journal", True], "skillKeywords": ["journal", "walk, walked"],
-    "report": [{"kind": "threw", "message": "walked", "where": "/", "stack": ""}],
+    "report": [{"kind": "threw", "message": "walked", "where": "/", "stack": ""}], "diagnostics": [], "clearDiagnostics": [],
 }
 
 WORLD = ("run", "install", "uninstall", "upgrade", "services", "archive_file", "pickup", "unarchive", "ask", "launch")

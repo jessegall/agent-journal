@@ -14,6 +14,7 @@ import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TextInput from "../kit/TextInput.vue";
 import ServicesPanel from "./ServicesPanel.vue";
+import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
 import {LINKS, catalog, counted, counts, narrowed} from "../domain/settingsCatalog.js";
@@ -31,6 +32,7 @@ const field = ref(null);
 const current = ref("");
 const chosen = ref("");
 const services = ref(false);
+const diagnostics = ref(false);
 const stopping = ref(false);
 const extension = ref(null);
 
@@ -96,7 +98,7 @@ async function stop() {
     }
 }
 
-const BUTTON_ACTIONS = {services: () => (services.value = true), stop};
+const BUTTON_ACTIONS = {services: () => (services.value = true), diagnostics: () => (diagnostics.value = true), stop};
 const save = (row, value) => saveSetting(row.target, value);
 const saveTiming = (row, next) => saveSetting(row.timing.target, next);
 const act = (row, key) => BUTTON_ACTIONS[key]();
@@ -191,6 +193,9 @@ onMounted(async () => {
 
         <template v-if="services">
             <ServicesPanel @close="services = false" />
+        </template>
+        <template v-if="diagnostics">
+            <DiagnosticsLog @close="diagnostics = false" />
         </template>
     </section>
 </template>

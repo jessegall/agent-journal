@@ -44,6 +44,11 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     with measured(record, "request", "GET /api/main/message"):
         busy(0.08)
     assert "slow request GET /api/main/message" in log.read_text(), "switched on, a slow request is written to the diagnostic log"
+    from commands.http import dispatch
+    shown = dispatch("GET", f"/api/{record.env}/diagnostics", record.root, {"lines": "50"}, {}).body["log"]
+    assert "slow request GET /api/main/message" in shown, "the viewer shows the diagnostic log in Settings"
+    dispatch("POST", f"/api/{record.env}/diagnostics/clear", record.root, {}, {})
+    assert dispatch("GET", f"/api/{record.env}/diagnostics", record.root, {}, {}).body["log"] == "", "and clears it"
 
 
 def test_a_fast_request_is_never_reported():
