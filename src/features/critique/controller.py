@@ -10,6 +10,7 @@ from features.critique.lenses import DEFAULT, LENSES
 from features.critique.resource import Critique
 from engine.ports import answers
 from resources.base import SYSTEM, Refused
+from controllers.marks import action
 
 SEED_SECONDS = 300
 
@@ -32,6 +33,7 @@ def brief(what: str, lens, folder) -> str:
 class Critiques(Controller):
     resource = Critique
 
+    @action
     def round(self, what: str, critics: int = 0, lenses: str = "", model: str = "sonnet") -> str:
         chosen = self._lenses(lenses, critics)
         settings = self._app_ready()
@@ -77,6 +79,7 @@ class Critiques(Controller):
             sent.append({"lens": name, "name": lens.critic, "brief": str(folder / f"{name}.md")})
         return sent
 
+    @action
     def recheck(self, n: int, revised: str) -> str:
         row = self._unfinished(n, "finished")
         names = ", ".join(c["name"] for c in row.critics)
@@ -85,6 +88,7 @@ class Critiques(Controller):
                 f"Look again through your lens and answer with your findings.\" A critic you can no longer reach, as after a new "
                 f"session, is dispatched afresh with its brief ({briefs}) and the same words. Add their new findings to report {row.report}.")
 
+    @action
     def complete(self, n: int, how: str = "", **data):
         self._unfinished(n, "finished")
         return super().complete(n, how or "the round is over", **data)

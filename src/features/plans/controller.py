@@ -12,6 +12,7 @@ from features.plans.resource import (
 from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
+from controllers.marks import action
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 PHASE_ROWS: dict = {}
@@ -58,11 +59,13 @@ class Plans(Controller):
     def _finished(self, r) -> bool:
         return r.status in ENDED
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if data.get("depth", "normal") not in DEPTHS:
             self._refuse(f"a plan's depth is {' or '.join(DEPTHS)}")
         return super().create(title, abstract, brief, status=BUILDING, stage=PHASES, phases=[], current=1, **data)
 
+    @action
     def from_doc(self, doc: int):
         from features.templates.shipped import MUST_HAVE
         source = Docs(self.record, actor=self.actor).load(doc)
@@ -77,14 +80,17 @@ class Plans(Controller):
                 self.phase(plan.n, s[SECTION.title].split(":", 1)[-1].split("—", 1)[-1].strip() or s[SECTION.title], brief=s[SECTION.body])
         return self.link(plan.n, source.ref)
 
+    @action
     def stage(self, n: int, at: str):
         if at not in STAGES:
             raise Refused(f"a plan is written in stages: {' or '.join(STAGES)}")
         return self.update(n, stage=at)
 
+    @action
     def phases(self, n: int) -> list[dict]:
         return self.load(n).phases
 
+    @action
     def phase(self, n: int, title: str, when: str | None = None, checkpoint: bool = False, brief: str = "", before: int = 0):
         r = self.load(n)
         if before and not 1 <= int(before) <= len(r.phases) + 1:
@@ -93,6 +99,7 @@ class Plans(Controller):
         r.phases.insert(int(before) - 1 if before else len(r.phases), made)
         return self.save(r, "updated", phase=r.phases.index(made) + 1)
 
+    @action
     def rephrase(self, n: int, p: int, title: str | None = None, when: str | None = None, checkpoint: bool | None = None, brief: str | None = None):
         r = self.load(n)
         phase = self._phase(r, p)
@@ -101,9 +108,11 @@ class Plans(Controller):
                 phase[key] = check_title(value) if key in (PHASE.title, PHASE.when) and value else value
         return self.save(r, "updated", phase=int(p))
 
+    @action
     def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
         return self._placed(n, p, "todo", todos, move, off)
 
+    @action
     def tickets(self, n: int, p: int, tickets: list, move: bool = False, off: bool = False):
         return self._placed(n, p, "ticket", tickets, move, off)
 
@@ -128,9 +137,11 @@ class Plans(Controller):
             r.refs = [x for x in r.refs if x != ref] if off else r.refs + [ref] * (ref not in r.refs)
         return self.save(r, "linked", phase=int(p), **{key: [int(t) for t in numbers]}, off=off)
 
+    @action
     def build(self, n: int):
         return self._status(self.load(n), BUILDING, READY, DRAFT)
 
+    @action
     def ready(self, n: int):
         r = self.load(n)
         empty = r.empty_phases()
@@ -138,10 +149,12 @@ class Plans(Controller):
             self._refuse(f"plan {n} cannot be ready: phase {empty[0]} has no to-dos or tickets")
         return self._status(r, READY, BUILDING, DRAFT)
 
+    @action
     def approve(self, n: int):
         self._user_only("approve")
         return self._status(self.load(n), APPROVED, DRAFT, READY)
 
+    @action
     def start(self, n: int):
         r = self.load(n)
         if r.status in (DRAFT, READY):
@@ -158,21 +171,26 @@ class Plans(Controller):
         self._start_phase(started)
         return started
 
+    @action
     def dismiss(self, n: int):
         return self.update(int(n), dismissed=True)
 
+    @action
     def park(self, n: int):
         return self._status(self.load(n), PARKED, APPROVED, *RUNNING)
 
+    @action
     def resume(self, n: int):
         self._user_only("continue")
         r = self.load(n)
         r.current += 1
         return self._status(r, ACTIVE, WAITING)
 
+    @action
     def abandon(self, n: int, why: str = ""):
         return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
 
+    @action
     def progress(self, n: int) -> str:
         r = self.load(n)
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
@@ -186,6 +204,7 @@ class Plans(Controller):
         lines += [f"lately: {moment['kind']} to-do {moment['todo']}, {moment['title']}" for moment in self.timeline(r.n)[-3:]]
         return "\n".join(lines)
 
+    @action
     def timeline(self, n: int) -> list[dict]:
         r = self.load(n)
         numbers = {t for phase in r.phases for t in phase[PHASE.todos]}

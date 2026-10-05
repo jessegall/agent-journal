@@ -11,7 +11,7 @@ from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from resources.types import HELPER
-from controllers.marks import lasting
+from controllers.marks import action
 from engine.wording import slugged
 
 
@@ -28,7 +28,7 @@ def kickoff(row, folder: Path, todo: int) -> str:
 class Helpers(Controller):
     resource = Helper
 
-    @lasting
+    @action(network=True)
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False) -> str:
         row = self._dispatched(name, job, provider, model, brief, worktree)
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
@@ -55,13 +55,14 @@ class Helpers(Controller):
         launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n)), folder)
         return row
 
-    @lasting
+    @action(network=True)
     def say(self, n: int, text: str) -> str:
         row = self._unfinished(n, "finished")
         if not tell_in(self.record, row.environment, row.provider, text):
             raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
         return f"sent to {row.name}"
 
+    @action
     def report(self, text: str) -> str:
         place = self._helping()
         if not place:
@@ -89,7 +90,7 @@ class Helpers(Controller):
         Nudges(home, actor=SYSTEM)._to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped")
 
-    @lasting
+    @action(network=True)
     def stop(self, n: int):
         row = self._unfinished(n, "finished")
         if self.actor == USER:
@@ -100,7 +101,7 @@ class Helpers(Controller):
             raise Refused(f"helper {n}, {row.name}, has no environment left to stop")
         return places.stop(place.n)
 
-    @lasting
+    @action(network=True)
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)

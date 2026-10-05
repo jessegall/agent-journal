@@ -10,6 +10,7 @@ from features.collections.controller import Collections
 from features.dumps.resource import ENTRY, ITEM, Dump, Offer, entry
 from features.message_buttons.shaping import LABEL, one
 from resources.base import AGENT, Ref, Refused, titled
+from controllers.marks import action
 
 LOG_KEPT = 20
 ANSWER = 600
@@ -20,12 +21,14 @@ OWN_WORDS = -2
 class Dumps(Controller):
     resource = Dump
 
+    @action
     def create(self, title: str = "", abstract: str = "", brief: str = "", **data):
         with self.record.locked():
             dump = super().create(f"Dump {(self.numbers() or [0])[-1] + 1}", abstract, brief, queued_at=time.time(), **data)
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
 
+    @action
     def attach(self, n: int, path: str, description: str = ""):
         if self.load(n).completed:
             self._refuse(f"dump {n} is already filed: start a new dump for more")
@@ -50,6 +53,7 @@ class Dumps(Controller):
         refs = [ref for i in items for ref in i.get(ITEM.refs) or []] + [e.get(ENTRY.on) for e in dump.data.get("log") or [] if e.get(ENTRY.on)]
         return [ref for ref in dict.fromkeys(refs) if not ref.startswith("collection:")]
 
+    @action
     def remove(self, n: int):
         if self.actor == AGENT:
             self._refuse("only the user removes what a dump filed")
@@ -73,6 +77,7 @@ class Dumps(Controller):
             self._collections().delete(found, why=f"removed with dump {dump.n}")
         return self.update(dump.n, removed=time.time(), removed_refs=gone)
 
+    @action
     def offer(self, n: int, options: str, summary: str = ""):
         r = self.load(n)
         try:
@@ -92,6 +97,7 @@ class Dumps(Controller):
             self._refuse("sum up what you filed with --summary, and offer a next step only where one is worth taking")
         return self.update(r.n, options=steps, chosen={}, taken={}, declined=[], **given(summary=summary.strip()))
 
+    @action
     def choose(self, n: int, pick: int):
         r = self._choosing(n)
         options = r.data.get("options") or []
@@ -110,12 +116,14 @@ class Dumps(Controller):
             taken[str(pick)] = chosen
         return self.update(r.n, chosen=chosen, taken=taken)
 
+    @action
     def decline(self, n: int, pick: int):
         r = self._choosing(n)
         if not str(pick).isdigit() or int(pick) >= len(r.data.get("options") or []):
             self._refuse(f"dump {r.n} has no option {pick}: pick is the number of an offered step")
         return self.update(r.n, declined=sorted({*(r.data.get("declined") or []), int(pick)}))
 
+    @action
     def direct(self, n: int, how: str):
         if not how.strip():
             self._refuse("say what should happen next: journal dump direct <n> \"<what to do>\"")
@@ -129,6 +137,7 @@ class Dumps(Controller):
             self._refuse("only the user chooses what a dump does next")
         return self.load(n)
 
+    @action
     def split(self, n: int, parts: str):
         r = self.load(n)
         if not r.brief.strip():
@@ -138,9 +147,11 @@ class Dumps(Controller):
             self._refuse("name the parts of the pasted text, comma separated, none named like a dropped file")
         return self.update(r.n, parts=found)
 
+    @action
     def dismiss(self, n: int):
         return self.update(int(n), dismissed=True)
 
+    @action
     def name(self, n: int, title: str):
         if not title.strip():
             raise Refused("say the name")
@@ -164,9 +175,11 @@ class Dumps(Controller):
             return self.complete(r.n, how=f"{len(settled) - failed} filed" + (f", {failed} failed" if failed else ""))
         return written
 
+    @action
     def note(self, n: int, item: str, insight: str):
         return self._write(n, item, **{ITEM.insight: insight.strip()})
 
+    @action
     def filed(self, n: int, item: str, how: str, refs: str = "", added: str = ""):
         if not how.strip():
             raise Refused("say what was done with it")
@@ -180,6 +193,7 @@ class Dumps(Controller):
             self._collect(self.load(n), found)
         return self._write(n, item, **{ITEM.outcome: how.strip(), ITEM.refs: found, ITEM.added: own, ITEM.failed: ""})
 
+    @action
     def stop(self, n: int):
         if self.actor == AGENT:
             self._refuse("only the user stops a dump")
@@ -190,11 +204,13 @@ class Dumps(Controller):
         self.update(r.n, stopped=True)
         return self.complete(r.n, how=f"stopped, {filed} filed, {len(r.item_names) - filed} left out")
 
+    @action
     def failed(self, n: int, item: str, why: str):
         if not why.strip():
             raise Refused("say why it could not be filed")
         return self._write(n, item, **{ITEM.failed: why.strip()})
 
+    @action
     def log(self, n: int, status: str, on: str = "", making: str = "", detail: str = ""):
         r = self.load(n)
         if not status.strip():
@@ -205,6 +221,7 @@ class Dumps(Controller):
             raise Refused(f"dump {r.n} is closed")
         return self._appended(r, "log", entry(status, on, making, detail), LOG_KEPT)
 
+    @action
     def say(self, n: int, text: str):
         r = self.load(n)
         if not text.strip():
@@ -213,6 +230,7 @@ class Dumps(Controller):
             raise Refused(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
         return self._appended(r, "log", entry(text, answer=True), LOG_KEPT)
 
+    @action
     def ask(self, n: int, question: str, guesses: str = ""):
         r = self.load(n)
         if not question.strip():
@@ -222,6 +240,7 @@ class Dumps(Controller):
         found = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
         return self.update(r.n, question={ENTRY.at: time.time(), ENTRY.text: question.strip(), "guesses": found})
 
+    @action
     def answer(self, n: int, text: str):
         if self.actor == AGENT:
             self._refuse("only the user answers a question on a dump")
@@ -234,6 +253,7 @@ class Dumps(Controller):
         answers = [*(r.data.get("answers") or []), {"question": asked.get(ENTRY.text, ""), "answer": text.strip(), ENTRY.at: time.time()}]
         return self.update(r.n, question={}, answers=answers)
 
+    @action
     def reopen(self, n: int, why: str):
         super().reopen(n, why)
         return self.update(int(n), queued_at=time.time(), stopped=False)
@@ -241,6 +261,7 @@ class Dumps(Controller):
     def _in_hand(self):
         return min(self._standing(), key=lambda r: (r.data.get("queued_at") or r.created, r.n), default=None)
 
+    @action
     def items(self, n: int) -> list[str]:
         r = self.load(n)
         return [f"{name}: {r.item(name).standing}" for name in r.item_names]

@@ -3,6 +3,7 @@ from engine.record import Record
 from resources import types
 from resources.base import SYSTEM
 from controllers.rules import Rules
+from controllers.marks import action
 
 SENDERS: dict = {}
 
@@ -27,5 +28,6 @@ class Facts(Controller):
         sent_from = sender(self.record)
         return [*own, *Facts(Record(self.record.root, sent_from), actor=SYSTEM)._standing()] if sent_from else own
 
+    @action
     def promote(self, n: int):
         return self._carried(n, Rules(self.record, actor=self.actor), "promoted to")

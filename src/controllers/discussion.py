@@ -1,11 +1,13 @@
 import time
 from resources.base import Refused, Resource, titled
+from controllers.marks import action
 
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩")
 TWICE_WITHIN = 10.0
 
 
 class Discussed:
+    @action
     def comment(self, n: int, text: str) -> Resource:
         from controllers.types import Comments
         parent = self.load(n)
@@ -16,10 +18,12 @@ class Discussed:
     def _mark_commented(self, n: int, made: Resource) -> Resource:
         return self.save(self.load(n), "commented", comment=made.n)
 
+    @action
     def comments(self, n: int) -> list[Resource]:
         from controllers.types import Comments
         return Comments(self.record, actor=self.actor).linked_to(f"{self.type}:{n}")
 
+    @action
     def react(self, n: int, face: str) -> Resource | None:
         if face not in FACES:
             raise Refused(f"a reaction is one of {' '.join(FACES)}")

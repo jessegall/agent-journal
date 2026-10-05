@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine.worktree import changed, contains, git, keep, linked, merged, present, roots, tip
 from features.tickets.resource import Bases
+from controllers.marks import action
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,7 @@ class TicketLanding:
         folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
         return all(folder and not git(folder, "status", "--porcelain").stdout.strip() for folder in folders)
 
+    @action
     def keep_branches(self) -> None:
         for ticket in (r for r in self._standing() if r.work_environment):
             for _, place, _ in self._repositories(ticket):

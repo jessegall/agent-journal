@@ -1,10 +1,11 @@
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller, internal
+from controllers.base import Controller
 from features.templates.resource import Template, TemplateField
 from resources.base import Refused
 from engine.wording import slugged
+from controllers.marks import action
 
 
 KINDS = ("text", "number", "choice")
@@ -13,7 +14,6 @@ KINDS = ("text", "number", "choice")
 class Templates(Controller):
     resource = Template
 
-    @internal
     def chosen(self, given):
         if not given:
             return None
@@ -22,14 +22,17 @@ class Templates(Controller):
         except (ValueError, Refused):
             raise Refused(f"template {given} does not exist: journal template all lists them") from None
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         self._known(data.get("applies_to"))
         return super().create(title, abstract, brief, **data)
 
+    @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         self._known(data.get("applies_to"))
         return super().update(n, title, abstract, brief, outcome, **data)
 
+    @action
     def field(self, n: int, label: str, kind: str = "text", options: str = "", default: str = ""):
         if kind not in KINDS:
             self._refuse(f"a field is one of {', '.join(KINDS)}")

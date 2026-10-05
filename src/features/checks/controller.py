@@ -7,7 +7,7 @@ import time
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.marks import lasting
+from controllers.marks import action
 from engine.package import entry
 from engine.proc import streamed
 from controllers.faults import threw
@@ -30,10 +30,12 @@ REPORT = "JOURNAL_REPORT"
 class Checks(Controller):
     resource = Check
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         made = super().create(title, abstract, brief, **data)
         return self.update(made.n, buttons=[{"label": "Run", "type": self.type, "action": "run", "n": made.n, "again": True}])
 
+    @action
     def run(self, n: int, wait: bool = False):
         self._runnable(n)
         if wait:
@@ -55,7 +57,7 @@ class Checks(Controller):
     def _shell(self, command: str, on_output=lambda _: None, env: dict | None = None, timeout: float = TIMEOUT) -> tuple[int | None, str]:
         return streamed(["/bin/sh", "-c", command], self._project, timeout, on_output, env=env)
 
-    @lasting
+    @action(network=True)
     def touched(self, n: int) -> str:
         check = self.load(n)
         if not check.touched:
@@ -67,7 +69,7 @@ class Checks(Controller):
         uncovered = f"\nno test covers {found.uncovered}; the full check is the gate for those" if found.bare else ""
         return f"{tail(output)}{uncovered}" if code == 0 else f"failed:\n{tail(output)}"
 
-    @lasting
+    @action(network=True)
     def gate(self, n: int, message: str, paths: str = "", wait: bool = False):
         self._runnable(n)
         named = [path.strip() for path in paths.split(",") if path.strip()]
@@ -107,6 +109,7 @@ class Checks(Controller):
         code, output = self._shell(check.then)
         return f"check {check.n} passed and {head} is committed; then {'ran' if code == 0 else 'failed'}\n{tail(output)}"
 
+    @action
     def sweep(self, wait: bool = False):
         return [self.run(check.n, wait=wait) for check in self._standing() if check.command]
 

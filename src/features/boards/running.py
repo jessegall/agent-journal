@@ -4,9 +4,11 @@ from engine.worktree import current_branch
 from features.work_modes.details import ORCHESTRATOR
 from features.work_modes.modes import pick
 from resources.base import PAUSED, RESUMED, Refused, STARTED, SYSTEM
+from controllers.marks import action
 
 
 class RunningBoards:
+    @action
     def start(self, n: int):
         board = self.load(n)
         if not board.branch and current_branch(self.record.root.parent):
@@ -18,6 +20,7 @@ class RunningBoards:
         self.record.emit("board", board.n, STARTED, self.actor)
         return board
 
+    @action
     def orchestrate(self, mode: str):
         if mode not in ("on", "off"):
             raise Refused(f"orchestrating is on or off; not {mode!r}")
@@ -39,6 +42,7 @@ class RunningBoards:
         self.record.set_setting("boards", {**self.record.setting("boards", {}), "orchestrating": on})
         rebuild(self.record)
 
+    @action
     def pause(self, n: int):
         board = self.load(n)
         if not board.started or board.paused:
@@ -47,6 +51,7 @@ class RunningBoards:
         self.record.emit("board", board.n, PAUSED, self.actor)
         return board
 
+    @action
     def resume(self, n: int):
         board = self.load(n)
         if not board.paused:
