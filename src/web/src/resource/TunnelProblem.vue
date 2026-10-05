@@ -1,6 +1,8 @@
 <script setup>
 import Icon from "../kit/Icon.vue";
 import TunnelLogin from "./TunnelLogin.vue";
+import TunlerInstall from "../pages/TunlerInstall.vue";
+import {checkTunnel} from "../composables/shares.js";
 
 defineProps({status: {type: Object, required: true}});
 const emit = defineEmits(["ready"]);
@@ -10,11 +12,14 @@ const emit = defineEmits(["ready"]);
     <div class="tunnel-problem">
         <Icon name="warn" :size="14" />
         <template v-if="!status.installed">
-            <p>
-                Sharing needs
-                <b>tunler</b>
-                , and it isn't installed on this machine.
-            </p>
+            <div class="tunnel-connect">
+                <p>
+                    Sharing needs
+                    <b>tunler</b>
+                    , and it isn't installed on this machine.
+                </p>
+                <TunlerInstall @installed="checkTunnel" />
+            </div>
         </template>
         <template v-else>
             <div class="tunnel-connect">

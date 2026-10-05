@@ -299,20 +299,31 @@ def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
     assert any(message.title == "The tunnel address cannot be read" for message in Messages(record).all())
 
 
-def test_tunler_installs_the_machines_build_into_the_local_bin_for_the_user_only(tmp_path, monkeypatch):
+def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_path, monkeypatch):
     import io
     import stat
+    from features import FEATURES
     from features.sharing import tunnel
+    record = fresh()
+    shares = Shares(record, actor=USER)
+    host = lambda: FEATURES["sharing"].setting(record, "host", "")
     asked = []
     monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "bin" / "tunler")
     monkeypatch.setattr(tunnel.platform, "system", lambda: "Darwin")
     monkeypatch.setattr(tunnel.platform, "machine", lambda: "x86_64")
     monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: asked.append(url) or io.BytesIO(b"binary"))
     monkeypatch.setattr(tunnel, "installed", lambda: "v0.2.2")
-    assert tunnel.install("tunler.example") == "tunler v0.2.2 is installed"
-    assert asked == ["https://tunler.example/dl/tunler-darwin-amd64"], "the build for this system and processor"
+    assert host() == "", "no tunler server is assumed"
+    assert "address of the tunler server" in refused_with(lambda: shares.install_tunler("  "))
+    assert shares.install_tunler("https://tunler.example/") == "tunler v0.2.2 is installed"
+    assert asked == ["https://tunler.example/dl/tunler-darwin-amd64"], "the build for this system and processor, from the server given"
+    assert host() == "tunler.example", "the server it came from is the one the journal connects to"
     assert (tunnel.LOCAL_BIN.read_bytes(), stat.S_IMODE(tunnel.LOCAL_BIN.stat().st_mode), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == \
         (b"binary", 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"
+    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(urllib.error.URLError("no such host")))
+    assert "could not be downloaded from tunler.typo" in refused_with(lambda: shares.install_tunler("tunler.typo"))
+    assert host() == "tunler.example", "a server that sent nothing is not kept"
+    assert "install tunler" in refused_with(lambda: Shares(record, actor=AGENT).install_tunler("tunler.example"))
 
 
 

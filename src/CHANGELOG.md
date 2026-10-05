@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.4 — tunler installs from the server you name
+
+**Installing tunler asks which server to install it from.** The Install tunler form, on Settings under Tunler and in
+the share and phone dialogs, starts with an empty Server field: type the address of your tunler server, such as
+tunler.example.com. tunler is downloaded from there, and the journal keeps that server for sharing and phones. A
+download that fails says why and keeps nothing. The form links to tunler on GitHub (github.com/jessegall/tunler) for
+anyone who has no server yet. No server is assumed any more: a journal that already uses tunler keeps the server
+tunler is logged in to, so nothing changes for it.
+
 ## 2.249.3 — the viewer stays calm when the server is slow
 
 **The "server is not answering" bar no longer flashes on a slow server.** It shows only once nothing has answered for

@@ -63,8 +63,8 @@ class SharingDetails(FeatureDetails):
     settings = [
         Setting(
             name="host",
-            default="tunler.jessegall.nl",
+            default="",
             title="Tunler server",
-            abstract="The tunler server shares go out through; the same one tunler login uses on this machine",
+            abstract="The tunler server shares go out through, and tunler is installed from; the same one tunler login uses on this machine",
         ),
     ]
