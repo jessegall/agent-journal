@@ -1,8 +1,11 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.groups import Group
 
 
 class DevFaultsDetails(FeatureDetails):
     name = "dev_faults"
+    group = Group.DEVELOPER
+    label = "Report developer faults"
     has_skill = False
 
     title = "Developer fault reports"
@@ -32,17 +35,15 @@ class DevFaultsDetails(FeatureDetails):
         Behaviour(
             name="budget",
             title="Report anything slower than its budget",
-            abstract="Fifty milliseconds for a request, a hook or a command",
         ),
         Behaviour(
             name="console",
-            title="Report what the viewer throws",
-            abstract="An error in the client's console is filed and said to the agent",
+            title="Report errors the viewer throws",
         ),
         Behaviour(
             name="log",
-            title="Keep a diagnostic log",
-            abstract="Slow requests and errors are written to .journal/runtime/diagnostics.log while this is on",
+            title="Write a diagnostic log",
+            abstract=".journal/runtime/diagnostics.log",
             default=False,
         ),
     ]

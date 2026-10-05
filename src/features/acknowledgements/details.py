@@ -1,8 +1,12 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class AcknowledgementsDetails(FeatureDetails):
     name = "acknowledgements"
+    group = Group.CHAT
+    label = "Hide turns that only acknowledge"
+    hint = "The chat's Shown menu brings them back"
     has_skill = False
 
     title = "Hidden acknowledgements"

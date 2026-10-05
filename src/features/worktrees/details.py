@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class WorktreesDetails(FeatureDetails):
     name = "worktrees"
+    group = Group.SESSIONS
+    label = "Link worktrees to the project's journal"
     has_skill = False
 
     title = "Worktrees"

@@ -1,10 +1,13 @@
 from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails, Line
-from features.recital import BEHAVIOURS, LINES, WHISPER
+from features.recital import LINES, WHISPER, whispering
+from features.groups import Group
 
 
 class RulesDetails(FeatureDetails):
     name = "rules"
+    group = Group.MEMORY
+    label = "Repeat rules"
     skill_of = "memory"
     when = "the user makes a ruling that binds every environment"
 
@@ -48,4 +51,4 @@ class RulesDetails(FeatureDetails):
         ),
     ]
 
-    behaviours = BEHAVIOURS
+    behaviours = whispering("rule")

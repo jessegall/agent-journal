@@ -1,9 +1,13 @@
 from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class AutoUpdateDetails(FeatureDetails):
     name = "auto_update"
+    group = Group.JOURNAL
+    label = "Install updates automatically"
+    hint = "Off: the agent installs a new version instead"
     has_skill = False
 
     title = "Auto-update"

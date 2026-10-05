@@ -1,9 +1,13 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.triggers.resource import DOES
+from features.groups import Group
 
 
 class TriggersDetails(FeatureDetails):
     name = "triggers"
+    group = Group.RECORDS
+    label = "Triggers"
+    hint = "Your watch words and what they do"
     when = "the user wants words watched for, or a trigger fires"
 
     title = "Triggers"
@@ -27,8 +31,7 @@ class TriggersDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="watching",
-            title="Fire a trigger when one of its words comes up",
-            abstract="In what the agent writes or runs, and in what the user writes to it",
+            title="Fire a trigger when its word comes up",
         ),
     ]
 

@@ -2,10 +2,14 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.command_tags.reading import RUNS
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class CommandTagsDetails(FeatureDetails):
     name = "command_tags"
+    group = Group.AGENT
+    label = "Run commands from tags"
+    hint = "A tag the agent writes runs the command it stands for"
     skill_of = "messages"
     when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
 
@@ -57,8 +61,7 @@ class CommandTagsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="hint",
-            title="Show the tag for a command",
-            abstract="When the agent runs a command a tag stands for, it is shown the tag once in a while",
+            title="Show the agent the tag for a command",
             trigger=Trigger(every=30, unit=MINUTES),
         ),
     ]

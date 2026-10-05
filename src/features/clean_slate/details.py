@@ -1,8 +1,12 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class CleanSlateDetails(FeatureDetails):
     name = "clean_slate"
+    group = Group.JOURNAL
+    label = "Set other hooks aside at launch"
+    hint = "They are put back when the agent exits"
     has_skill = False
 
     title = "Clean slate"

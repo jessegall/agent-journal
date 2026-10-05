@@ -1,9 +1,12 @@
 from engine.reach import Reach
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class HelperWorktreesDetails(FeatureDetails):
     name = "helper_worktrees"
+    group = Group.SESSIONS
+    label = "Give each helper its own worktree"
     skill_of = "todos"
     when = "a helper is given a worktree of its own, or its work is taken back"
 

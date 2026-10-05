@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class OpenViewerDetails(FeatureDetails):
     name = "open_viewer"
+    group = Group.JOURNAL
+    label = "Open the viewer at launch"
     has_skill = False
 
     title = "Open the viewer at start"

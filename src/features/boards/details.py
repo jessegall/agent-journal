@@ -2,10 +2,14 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 from features.settings import Setting
 from features.boards.resource import MEANINGS
+from features.groups import Group
+
+MODELS = ("haiku", "sonnet", "opus")
 
 
 class BoardsDetails(FeatureDetails):
     name = "boards"
+    group = Group.BOARDS
     skill_of = "tickets"
     when = "a board is made, its stages change, or a ticket moves between them"
 
@@ -47,8 +51,8 @@ class BoardsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="ideas",
-            title="Think up new ideas for New work",
-            abstract="How often the agent thinks up what you might ask for on each board, shown as chips under New work",
+            title="Suggest new work",
+            abstract="Shown as chips under New work",
             trigger=Trigger(every=720, unit=MINUTES),
         ),
     ]
@@ -57,19 +61,20 @@ class BoardsDetails(FeatureDetails):
         Setting(
             name="filler_model",
             default="sonnet",
-            title="Model of the agent that fills a board",
-            abstract="The board-filler asks, drafts and hands the cards over; it needs quick reasoning more than deep logic",
+            choices=MODELS,
+            title="Board filler model",
         ),
         Setting(
             name="reviewer_model",
             default="sonnet",
-            title="Model of the agents that review plans, tickets and the board's goal",
+            choices=MODELS,
+            title="Reviewer model",
         ),
         Setting(
             name="orchestrating",
             default=False,
-            title="This environment's agent orchestrates its boards",
-            abstract="On, it only delegates: board moments, ticket nudges and the orchestrating sequences reach it. Off, none do and it works as usual. Play turns it on",
+            title="This environment orchestrates its boards",
+            abstract="On: its agent only delegates",
         ),
     ]
 

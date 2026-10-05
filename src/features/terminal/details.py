@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class TerminalDetails(FeatureDetails):
     name = "terminal"
+    group = Group.VIEWER
+    label = "Show the agent's terminal"
     has_skill = False
 
     title = "Terminal"

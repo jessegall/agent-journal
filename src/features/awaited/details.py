@@ -1,8 +1,12 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class AwaitedDetails(FeatureDetails):
     name = "awaited"
+    group = Group.SESSIONS
+    label = "Wait for named agents and runs"
+    hint = "Results come back when they all finish"
     skill_of = "todos"
     when = "you wait on a subagent, a helper or a background run"
 

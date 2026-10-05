@@ -2,10 +2,14 @@ from resources.text import paragraphs
 
 
 class Setting:
-    def __init__(self, name: str, default, title: str, abstract: str = "", unit: str = ""):
-        self.name, self.default, self.title, self.abstract, self.unit = name, default, paragraphs(title), paragraphs(abstract), unit
+    def __init__(self, name: str, default, title: str, abstract: str = "", unit: str = "", under: str = "",
+                 choices: tuple[str, ...] = ()):
+        self.name, self.default, self.title, self.abstract, self.unit, self.under = name, default, paragraphs(title), paragraphs(abstract), unit, under
+        self.choices = choices
 
     def kind(self) -> str:
+        if self.choices:
+            return "choice"
         if isinstance(self.default, bool):
             return "switch"
         if isinstance(self.default, (int, float)):
@@ -13,7 +17,8 @@ class Setting:
         return "map" if isinstance(self.default, dict) else "text"
 
     def describe(self) -> dict:
-        return {"name": self.name, "title": self.title, "abstract": self.abstract, "default": self.default, "unit": self.unit, "kind": self.kind()}
+        return {"name": self.name, "title": self.title, "abstract": self.abstract, "default": self.default, "unit": self.unit, "kind": self.kind(),
+                "under": self.under, "choices": list(self.choices)}
 
 
 class Settings(dict):

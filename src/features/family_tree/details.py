@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class FamilyTreeDetails(FeatureDetails):
     name = "family_tree"
+    group = Group.VIEWER
+    label = "Show the agent family tree"
     has_skill = False
 
     title = "Agent family tree"

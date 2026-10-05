@@ -1,10 +1,13 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class AgentSessionsDetails(FeatureDetails):
     name = "agent_sessions"
+    group = Group.SESSIONS
+    label = "Track agent sessions"
     has_skill = False
 
     title = "Agent sessions"
@@ -30,19 +33,17 @@ class AgentSessionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="eviction",
-            title="Hold a session whose environment was claimed",
-            abstract="Its writes wait until it switches or claims the environment back",
+            title="Pause a session pushed out of its environment",
+            abstract="Its writes wait until it claims the environment back",
         ),
         Behaviour(
             name="liveness",
-            title="Mark a silent session stopped",
-            abstract="Checked every hour",
+            title="Mark silent sessions stopped",
             trigger=Trigger(every=60, unit=MINUTES),
         ),
         Behaviour(
             name="subagents",
-            title="Mind a subagent's rows",
-            abstract="Its writes mark it as working; its report goes to the agent that dispatched it; when it goes silent, its assigned rows come back",
+            title="Release a silent subagent's rows",
         ),
     ]
 
@@ -50,22 +51,21 @@ class AgentSessionsDetails(FeatureDetails):
         Setting(
             name="quiet",
             default=60,
-            title="Mark a session stopped after",
-            abstract="A session that says working or idle but has not been heard from this long",
+            title="Silent for",
+            under="liveness",
             unit="minutes",
         ),
         Setting(
             name="lapse",
             default=20,
-            title="Give a subagent's rows back after",
-            abstract="A silent subagent's assignment clears after this long",
+            title="Silent for",
+            under="subagents",
             unit="minutes",
         ),
         Setting(
             name="recent",
             default=60,
             title="List sessions active in the last",
-            abstract="How far back the agent bar lists sessions",
             unit="minutes",
         ),
     ]

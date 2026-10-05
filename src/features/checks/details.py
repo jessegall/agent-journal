@@ -1,8 +1,12 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class ChecksDetails(FeatureDetails):
     name = "checks"
+    group = Group.RECORDS
+    label = "Checks"
+    hint = "Pass or fail scripts; a failure is filed"
     when = "a check is created, run or fails"
 
     title = "Checks"

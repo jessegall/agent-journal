@@ -1,8 +1,11 @@
 from features.base import Behaviour, FeatureDetails
+from features.groups import Group
 
 
 class StatusLineDetails(FeatureDetails):
     name = "status_bar"
+    group = Group.VIEWER
+    label = "Show the status bar"
     has_skill = False
 
     title = "Status bar"
@@ -29,6 +32,5 @@ class StatusLineDetails(FeatureDetails):
         Behaviour(
             name="usage",
             title="Show how much of the plan is left",
-            abstract="The provider's plan windows, read from the live CLI",
         ),
     ]

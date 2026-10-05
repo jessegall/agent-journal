@@ -1,5 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 MOVED, KEPT = "moved", "kept"
 RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED = "run ended", "run open", "run stalled", "watch runs"
@@ -7,6 +8,7 @@ RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED = "run ended", "run open", "run stalle
 
 class LongCommandsDetails(FeatureDetails):
     name = "long_commands"
+    group = Group.LONG_COMMANDS
     has_skill = False
 
     title = "Long commands"
@@ -32,8 +34,8 @@ class LongCommandsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=WATCHED,
-            title="Tell an agent about the commands it left running",
-            abstract="When one ends, when it has run ten minutes, and when the agent stops while it runs; only for a provider that does not wake the agent itself",
+            title="Tell the agent about commands it left running",
+            abstract="When one ends or has run ten minutes",
         ),
     ]
 
@@ -41,7 +43,7 @@ class LongCommandsDetails(FeatureDetails):
         Setting(
             name="after_seconds",
             default=30,
-            title="Move a command to the background after",
+            title="Move to the background after",
             unit="seconds",
         ),
     ]

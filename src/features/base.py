@@ -13,6 +13,7 @@ from engine.gates import Hold, hold
 from engine.reach import Reach, Unreached
 from engine.record import Record
 from engine.runtime import env
+from features.groups import Group
 from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
@@ -80,6 +81,10 @@ class FeatureDetails:
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    label: ClassVar[str] = ""
+    hint: ClassVar[str] = ""
+    group: ClassVar[Group]
+    trigger_label: ClassVar[str] = ""
     lines: ClassVar[list[Line]] = []
     behaviours: ClassVar[list[Behaviour]] = []
     settings: ClassVar[list[Setting]] = []
@@ -105,6 +110,10 @@ class Feature(ABC):
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    label: ClassVar[str] = ""
+    hint: ClassVar[str] = ""
+    group: ClassVar[Group] = Group.DEVELOPER
+    trigger_label: ClassVar[str] = ""
     trigger: ClassVar[Trigger] = NEVER
     behaviours: ClassVar[dict] = {}
     lines: ClassVar[dict[str, Line]] = {}
@@ -123,6 +132,7 @@ class Feature(ABC):
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
             cls.title, cls.abstract, cls.help, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), d.when
+            cls.label, cls.hint, cls.group, cls.trigger_label = paragraphs(d.label), paragraphs(d.hint), d.group, paragraphs(d.trigger_label)
             cls.aliases, cls.fixed, cls.default = d.aliases, d.fixed, d.default
             named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
             cls.speaks_while_waiting = d.speaks_while_waiting
@@ -261,6 +271,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
+                "label": self.label, "hint": self.hint, "group": self.group.key, "trigger_label": self.trigger_label,
                 "keywords": list(self.keywords), "when": self.when,
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.described(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},

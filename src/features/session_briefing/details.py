@@ -1,8 +1,11 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class SessionBriefingDetails(FeatureDetails):
     name = "session_briefing"
+    group = Group.AGENT
+    label = "Brief each new session"
     has_skill = False
 
     title = "Session briefing"

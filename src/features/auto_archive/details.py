@@ -1,9 +1,12 @@
 from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class AutoArchiveDetails(FeatureDetails):
     name = "auto_archive"
+    group = Group.ARCHIVE
+    label = "Archive finished rows"
     has_skill = False
 
     title = "Auto-archive"

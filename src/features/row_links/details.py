@@ -1,10 +1,14 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 AMBIGUOUS = "ambiguous"
 
 
 class RowLinksDetails(FeatureDetails):
     name = "row_links"
+    group = Group.CHAT
+    label = "Turn row numbers into links"
+    hint = "to-do 648 opens to-do 648"
     has_skill = False
 
     title = "Row links"

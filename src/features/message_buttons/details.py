@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class MessageButtonsDetails(FeatureDetails):
     name = "message_buttons"
+    group = Group.CHAT
+    label = "Show buttons on the agent's messages"
     skill_of = "messages"
     when = "a message you write should offer the user buttons"
 

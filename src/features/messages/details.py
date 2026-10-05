@@ -1,10 +1,12 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.trigger import IDLE, Trigger, USES
+from features.groups import Group
 
 
 class MessagesDetails(FeatureDetails):
     name = "messages"
+    group = Group.MESSAGES
     when = "the user has left a message, or before replying, reacting or filing what a message asks for"
 
     title = "Messaging"
@@ -32,36 +34,31 @@ class MessagesDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="unread",
-            title="Name the unread messages",
-            abstract="Said while more than five wait unread or the agent is idle, then every third use",
+            title="Name unread messages",
             trigger=Trigger(every=3, unit=USES),
         ),
         Behaviour(
             name="answering",
-            title="Answer a message before writing",
-            abstract="Said once a message has waited ten tool uses unanswered, or once the agent is idle",
+            title="Require a reply before writing",
             trigger=Trigger(every=10, unit=USES),
         ),
         Behaviour(
             name="closing",
-            title="Close a message once it is dealt with",
-            abstract="A reply, a reaction, every part processed, or the user reading what the agent wrote",
+            title="Close a message once it is handled",
         ),
         Behaviour(
             name="linking",
-            title="Link what is filed to the message in hand",
-            abstract="A row the agent creates while a message is open cites that message",
+            title="Link new rows to the open message",
         ),
         Behaviour(
             name="paragraphs",
-            title="Keep the paragraphs of a message apart",
-            abstract="A message of several sentences run together earns you one reminder, at the end of the turn",
+            title="Remind to keep paragraphs apart",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="numbers",
-            title="Name what a number in a message is",
-            abstract="A message that names a row by a bare number, like 'answered 1712', earns you a reminder to add the type, so the chat links it; quoted text and code are left alone",
+            title="Remind to name what a number is",
+            abstract="answered 1712 becomes answered message 1712",
         ),
     ]
 
@@ -69,12 +66,15 @@ class MessagesDetails(FeatureDetails):
         Setting(
             name="unread.patience",
             default=5,
-            title="Hold writes after the unread messages are named this often",
+            title="Pause writes after naming them",
+            unit="times",
+            under="unread",
         ),
         Setting(
             name="answering.patience",
             default=3,
-            title="Stop naming an unanswered message after",
+            title="Stop asking after",
+            under="answering",
             unit="times",
         ),
     ]

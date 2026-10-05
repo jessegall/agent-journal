@@ -1,8 +1,11 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class ThinkingDetails(FeatureDetails):
     name = "thinking"
+    group = Group.CHAT
+    label = "Show what the agent is thinking"
     has_skill = False
 
     title = "Thinking"

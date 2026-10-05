@@ -1,9 +1,12 @@
 from features.base import Behaviour, FeatureDetails, Line, Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class TicketsDetails(FeatureDetails):
     name = "tickets"
+    group = Group.TICKETS
+    trigger_label = "Check the tickets"
     when = "work is put on a board, arrives from an outside source, or a ticket is started"
 
     title = "Tickets"
@@ -93,23 +96,24 @@ class TicketsDetails(FeatureDetails):
     ]
 
     behaviours = [
-        Behaviour(name="asks", title="Remind the orchestrator of a ticket agent's open question", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="awaits", title="Remind the orchestrator of a ticket agent waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="decisions", title="Remind the orchestrator of waits and drafts it may decide", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="board check", title="Ask an idle orchestrator to check on its boards", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="asks", title="Remind the orchestrator of a ticket's open question", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="awaits", title="Remind it of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="decisions", title="Remind it of decisions it may take", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="board check", title="Ask an idle orchestrator to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
     ]
 
     settings = [
         Setting(
             name="remind_every",
             default=5,
-            title="Tell the orchestrator again that a ticket's plan is done every",
+            title="Repeat that a ticket's plan is done every",
             unit="minutes",
         ),
         Setting(
             name="running",
             default=3,
-            title="Tickets whose agents run at once, 0 for no limit",
+            title="Tickets running at once",
+            abstract="0: no limit",
             unit="tickets",
         ),
     ]

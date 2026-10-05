@@ -1,7 +1,8 @@
 from features.base import Behaviour, FeatureDetails, Line
-from features.recital import BEHAVIOURS, LINES, WHISPER
+from features.recital import LINES, WHISPER, whispering
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 LARGEST_RESULT = "largest result"
 TOO_LONG = "too long"
@@ -9,6 +10,7 @@ TOO_LONG = "too long"
 
 class LawDetails(FeatureDetails):
     name = "journal_laws"
+    group = Group.LAWS
     has_skill = False
 
     title = "Journal laws"
@@ -57,16 +59,14 @@ class LawDetails(FeatureDetails):
     ]
 
     behaviours = [
-        *BEHAVIOURS,
+        *whispering("law"),
         Behaviour(
             name=LARGEST_RESULT,
-            title="Tell the agent when a tool result is the largest this session",
-            abstract="Only above the floor, and only when it is larger than every earlier result",
+            title="Name the largest tool result of the session",
         ),
         Behaviour(
             name=TOO_LONG,
-            title="Tell the agent when an instruction file is longer than its provider reads",
-            abstract="Once a day for each file, and again when it grows by another 4 KB",
+            title="Warn when an instruction file is too long",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]
@@ -76,27 +76,25 @@ class LawDetails(FeatureDetails):
             name="cartoon_names",
             default=False,
             title="Name subagents after cartoon characters",
-            abstract="Dora the Explorer researches and Bob Ross designs, instead of famous people with a twist",
         ),
         Setting(
             name="whole_read_lines",
             default=600,
-            title="Refuse reading a whole file longer than",
-            abstract="A file this long is read by range or searched, not read whole",
+            title="Refuse to read a whole file longer than",
             unit="lines",
         ),
         Setting(
             name="output_lines",
             default=200,
-            title="Keep this many lines at each end of a long command's output",
-            abstract="The lines between are cut, with a note on how to see them; 0 keeps every line",
+            title="Keep lines at each end of long output",
+            abstract="0 keeps every line",
             unit="lines",
         ),
         Setting(
             name="result_floor",
             default=20_000,
-            title="Tell the agent about a tool result from",
-            abstract="A result smaller than this is never mentioned",
+            title="Ignore results smaller than",
+            under="largest result",
             unit="characters",
         ),
     ]

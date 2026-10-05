@@ -1,10 +1,13 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.trigger import IDLE, MINUTES, Trigger, WORKED
+from features.groups import Group
 
 
 class WorkDetails(FeatureDetails):
     name = "work_tracking"
+    group = Group.WORK_TRACKING
+    trigger_label = "Check open work"
     skill_of = "todos"
     when = "you start, log, park, await or end work, or before the first write"
 
@@ -56,14 +59,12 @@ class WorkDetails(FeatureDetails):
         Behaviour(
             name="auto",
             title="Work the list without asking",
-            abstract="The next ready row is offered on idle, and the agent decides rather than waiting on the user",
             default=True,
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="carry on",
-            title="Tell an agent that stopped with work in hand to carry on",
-            abstract="Five minutes after it stops with unparked work it is not waiting on, then this often, three times at most",
+            title="Tell a stopped agent to carry on",
             trigger=Trigger(every=10, unit=MINUTES),
         ),
     ]
@@ -72,19 +73,19 @@ class WorkDetails(FeatureDetails):
         Setting(
             name="log_after",
             default=20,
-            title="Hold the writes after this many edits without a log entry",
+            title="Pause writes after edits without a log entry",
             unit="edits",
         ),
         Setting(
             name="ask_awaiting_every",
             default=5,
-            title="Have the agent check what it waits on every",
+            title="Check what the agent waits on every",
             unit="minutes",
         ),
         Setting(
             name="ask_blocked_every",
             default=1,
-            title="Ask whether a blocked to-do is still blocked every",
+            title="Recheck a blocked to-do every",
             unit="closed to-dos",
         ),
         Setting(
