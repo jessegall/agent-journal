@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from controllers.types import Todos, Works
-from engine.events.agents import AgentReported
+from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
 from features.nudges import Sent
@@ -68,7 +68,7 @@ class GuideBuilding(Handler):
 
 
 class PassCheckpointsInAuto(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
         if not passes_checkpoints(context.record):
             return
         plans = context.journal.get(Plans)
