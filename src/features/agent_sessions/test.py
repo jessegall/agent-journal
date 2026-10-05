@@ -169,6 +169,35 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     sessions.write("claude-1", environment="")
     assert engines.Children(record.root).wanted() == {"main", "feature-x"} and sessions.environment("claude-1") == "main", \
         "a live agent's terminal that lost its environment gets back the one it was seated in, so its engine keeps running"
+    from controllers.types import Messages, Notices
+    children, ended = engines.Children(record.root), []
+    monkeypatch.setattr(children, "end", ended.append)
+    lost = Messages(record, actor=USER).create("are you getting these?")
+    children.unheard(record.env)
+    assert ended == [], "a message waits its few minutes before anything is restarted"
+    later = time.time() + engines.UNHEARD_AFTER + 1
+    monkeypatch.setattr(engines.time, "time", lambda: later)
+    children.unheard(record.env)
+    children.unheard(record.env)
+    assert (ended, [n.title for n in Notices(record).all()]) == ([record.env], [f"Message {lost.n} has not reached the agent"]), \
+        "a message the agent never saw restarts its engine once, with a notice saying so, and is not alarmed about again"
+    monkeypatch.undo()
+    from providers import DRIVERS
+    from runner.engine import Engine, SILENT_AFTER
+    report(record, "working", "PreToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    driver, pressed = engine.agent.driver, []
+    senses = {"alive": lambda: True, "quiet_for": lambda: SILENT_AFTER + 1, "asking": lambda: False, "interrupt": lambda: pressed.append("ctrl-c")}
+    for name, sense in senses.items():
+        monkeypatch.setattr(driver, name, sense)
+    monkeypatch.setattr(driver, "last_report", lambda: Agents(record, actor="system").by_session("claude-1"))
+    monkeypatch.setattr(engine.agent, "state", lambda: "working")
+    assert engine.probe() == "" and pressed == [], "an agent that reported moments ago is never interrupted"
+    monkeypatch.setattr(engines.time, "time", lambda: later + SILENT_AFTER)
+    monkeypatch.setattr(driver, "asking", lambda: True)
+    assert engine.probe() == "" and pressed == [], "nor one that is asking the user something"
+    monkeypatch.setattr(driver, "asking", lambda: False)
+    assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], "a working agent silent for two minutes is probed with Ctrl-C"
 
 
 def test_the_start_question_never_offers_a_busy_environment_on_enter():

@@ -173,6 +173,8 @@ def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)], env=env, capture_output=True, text=True, timeout=120)
     assert "hooks checked: claude" in again.stdout, again.stdout
+    verified = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "verify"], cwd=root.parent, env=env, capture_output=True, text=True, timeout=WAIT)
+    assert (verified.returncode, "Traceback" in verified.stderr, "claude" in verified.stdout.lower()) == (0, False, True), verified.stdout + verified.stderr
     claude = PROVIDERS["claude"]()
     settings = root.parent / ".claude" / "settings.local.json"
     wired = json.loads(settings.read_text())

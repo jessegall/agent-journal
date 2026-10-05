@@ -37,6 +37,12 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         assert hook("PreToolUse", "Bash", command="cat x.py | grep y") == {}, f"{name}: a Bash read passes"
         assert hook("PreToolUse", "Edit", file_path="x.py") == provider.blocking(REFUSED), \
             f"{name}: an edit is refused, in the harness's shape"
+        from engine import runtime
+        runtime.OFF.raise_flag(root)
+        try:
+            assert hook("PreToolUse", "Edit", file_path="x.py") == {}, f"{name}: with the journal switched off nothing is held, the escape hatch"
+        finally:
+            runtime.OFF.lower_flag(root)
         assert hook("PreToolUse", "Bash", command="git commit -m x") == provider.blocking(REFUSED), \
             f"{name}: a writing command is refused"
         assert hook("PreToolUse", "Bash", command="echo x > out.txt") == provider.blocking(REFUSED), \
