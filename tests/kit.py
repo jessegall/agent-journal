@@ -52,6 +52,10 @@ def nudges(record):
     return [n.title for n in Nudges(record).all()]
 
 
+def nudges_with_briefs(record):
+    return [(n.title, n.brief) for n in Nudges(record).all()]
+
+
 def git(where: Path, *args: str) -> str:
     return subprocess.run(["git", *args], cwd=where, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
 
