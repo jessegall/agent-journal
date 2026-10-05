@@ -1,5 +1,6 @@
 import fcntl
 import os
+import sys
 import threading
 import time
 from contextlib import contextmanager
@@ -90,8 +91,14 @@ class Record:
                     if not self._depth:
                         pending, self._pending = self._pending, []
         finally:
+            failure = None
             for announce in pending:
-                announce()
+                try:
+                    announce()
+                except Exception as error:
+                    failure = failure or error
+            if failure and sys.exception() is None:
+                raise failure
 
     @contextmanager
     def _flocked(self, path: Path):
