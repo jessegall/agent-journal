@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Rules
-from features.memory_checkpoints.reread import standing
+from features.memory_checkpoints.reread import READ_AT, STATE, standing
 from features.parts import Command, Context
 
 
@@ -10,5 +10,5 @@ class Reread(Command):
 
     def run(self, context: Context, rules: Rules) -> str:
         rows = standing(rules.record)
-        rules.record.cleanup_read_at = time.time()
+        rules.record.state(STATE).set(READ_AT, time.time())
         return "\n\n".join(f"{r.type} {r.n}  {r.title}\n{r.brief}".rstrip() for r in rows)

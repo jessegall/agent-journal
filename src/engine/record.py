@@ -50,7 +50,6 @@ class Record:
     questions = Setting(dict)
     delivery = Setting(dict)
     viewer = Setting(dict)
-    cleanup_read_at = Setting(0)
 
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
