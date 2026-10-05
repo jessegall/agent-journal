@@ -2,7 +2,7 @@ import time
 
 from features.parts import Command, Context
 from features.revisions.history import CHANGE, OPEN_UNTIL, REVISION, count, is_open, read
-from resources.base import SECTION, Refused
+from resources.base import Refused
 
 
 class Keep(Command):
@@ -30,17 +30,6 @@ class Revision(Command):
         if not 1 <= int(number) <= found:
             raise Refused(f"doc {n} has revisions 1 to {found}" if found else f"doc {n} has no revisions yet")
         return read(docs, n, number)
-
-
-class Cut(Command):
-    name = "cut"
-
-    def run(self, context: Context, docs, n: int, title: str):
-        doc = docs.load(n)
-        if not any(s[SECTION.title] == title for s in doc.sections):
-            raise Refused(f"doc {doc.n} has no part named {title!r}")
-        doc.sections = [s for s in doc.sections if s[SECTION.title] != title]
-        return docs.save(doc, "updated", section=title)
 
 
 def listed(doc) -> str:
