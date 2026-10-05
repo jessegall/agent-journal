@@ -42,7 +42,7 @@ onMounted(load);
 
 <template>
     <div class="tunnel-settings">
-        <ListBox title="Tunler account">
+        <ListBox title="Connection">
             <div class="tunnel-state">
                 <template v-if="!tunnelStatus">
                     <p class="tunnel-line">Checking…</p>

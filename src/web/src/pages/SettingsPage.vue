@@ -9,6 +9,7 @@ import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
+import SettingGroup from "../kit/SettingGroup.vue";
 import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
@@ -19,6 +20,7 @@ import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import PluginSettings from "./PluginSettings.vue";
 import SettingsRegion from "./SettingsRegion.vue";
+import SettingsTunnel from "./SettingsTunnel.vue";
 import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../platform/storage.js";
 import {useScrollSpy} from "../composables/scrollSpy.js";
@@ -75,12 +77,15 @@ const filters = computed(() => [
 ]);
 const ASKING = {environments: "Find an environment", plugins: "Find a setting of a plugin"};
 const asking = computed(() => ASKING[tab.value] || "Find a setting in every tab");
+const tabGroups = computed(() => navSections.value.flatMap((s) => s.groups));
+const onlyGroup = computed(() => (tabGroups.value.length === 1 ? tabGroups.value[0].key : ""));
+const shownGroup = computed(() => chosen.value || onlyGroup.value);
 const screen = computed(() => {
     if (!narrow.value || searching.value || !listed.value) return "page";
-    return chosen.value ? "group" : "list";
+    return shownGroup.value ? "group" : "list";
 });
-const back = computed(() => narrow.value && screen.value === "group");
-const phoneGroup = computed(() => groups.value.find((g) => g.key === chosen.value) || null);
+const back = computed(() => narrow.value && screen.value === "group" && Boolean(chosen.value));
+const phoneGroup = computed(() => groups.value.find((g) => g.key === shownGroup.value) || null);
 const spied = computed(() => (screen.value === "page" && listed.value ? groups.value.map((g) => g.key) : []));
 
 useScrollSpy(spied, current);
@@ -139,7 +144,7 @@ onMounted(async () => {
 <template>
     <section :class="['settings', {narrow}]">
         <PageBar>
-            <TabBar :tabs="tabs" :model-value="tab" @update:model-value="openTab" />
+            <TabBar :tabs="tabs" :model-value="across ? '' : tab" @update:model-value="openTab" />
             <span class="settings-scope">
                 Applies to environment
                 <span class="settings-env">{{ route.env }}</span>
@@ -178,6 +183,9 @@ onMounted(async () => {
                     <template v-if="phoneGroup">
                         <SettingGroup sheet :group="phoneGroup" @change="save" @timing="saveTiming" @act="act" />
                     </template>
+                    <template v-if="tab === 'sharing'">
+                        <SettingsTunnel />
+                    </template>
                 </div>
             </template>
             <template #page>
@@ -185,14 +193,13 @@ onMounted(async () => {
                     <template v-if="!narrow && listed">
                         <SettingNav class="settings-nav" :sections="navSections" :current="current" :searching="searching" @pick="pick" />
                     </template>
-                    <div class="settings-content">
+                    <div :class="['settings-content', {flush: tab === 'plugins'}]">
                         <SwitchCase :value="tab">
                             <template #environments>
                                 <p class="settings-line">{{ tabLine("environments") }}</p>
                                 <SettingsEnvironments :query="query" />
                             </template>
                             <template #plugins>
-                                <p class="settings-line">{{ tabLine("plugins") }}</p>
                                 <PluginSettings :query="query" @saved="saved = {text: `Saved: ${$event}`}" />
                             </template>
                             <template #default>
@@ -262,6 +269,10 @@ onMounted(async () => {
 
 .settings-body.plain {
     display: block;
+}
+
+.settings-content.flush {
+    padding: 0;
 }
 
 .settings-body.plain .settings-content {
