@@ -16,6 +16,7 @@ from controllers.marks import action
 from engine.extension import Extension
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
+CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)
 PHASE_ROWS = Extension()
 PHASE_STARTS = Extension()
 PLAN_STARTS = Extension()
@@ -90,6 +91,9 @@ class Plans(Controller):
     @action
     def phases(self, n: int) -> list[dict]:
         return self.load(n).phases
+
+    def add_part(self, n: int, title: str, body: str):
+        return self.phase(n, CHECKPOINT.sub("", title), when=body, checkpoint=bool(CHECKPOINT.search(title)))
 
     @action
     def phase(self, n: int, title: str, when: str | None = None, checkpoint: bool = False, brief: str = "", before: int = 0):

@@ -1,4 +1,3 @@
-import re
 
 from features.parts import ActionInterceptor, Context, Handler
 from engine.events.resources import ResourceCreated
@@ -7,7 +6,6 @@ from resources.base import SECTION, Refused
 from controllers.types import CONTROLLERS
 from features.templates.controller import Templates
 
-CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)
 
 
 class CheckTemplate(ActionInterceptor):
@@ -28,8 +26,5 @@ class ApplyTemplate(Handler):
         values = row.data.get("template_values") or {}
         for part in template.sections:
             title, body = filled(template, values, part[SECTION.title]), filled(template, values, part[SECTION.body])
-            if event.type == "plan":
-                rows.phase(row.n, CHECKPOINT.sub("", title), when=body, checkpoint=bool(CHECKPOINT.search(title)))
-            else:
-                rows.section(row.n, title, body)
+            rows.add_part(row.n, title, body)
         rows.link(row.n, template.ref)
