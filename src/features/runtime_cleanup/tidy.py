@@ -84,7 +84,3 @@ def trim(f: Path, keep: int) -> bool:
         held.write(tail)
         held.truncate()
     return True
-
-
-def summary(done: Tidied) -> str:
-    return done.summary
