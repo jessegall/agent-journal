@@ -41,6 +41,15 @@ or service mistaken for one that is long gone, Codex subagents and exec cells in
 pressed twice, rows lost while older ones load, the phone feed frozen by one failing message, an ended share link that
 kept polling, a chat send that lost its quote, and section and shared titles that skipped the formatters.
 
+## 2.249.4 — tunler installs from the server you name
+
+**Installing tunler asks which server to install it from.** The Install tunler form, on Settings under Tunler and in
+the share and phone dialogs, starts with an empty Server field: type the address of your tunler server, such as
+tunler.example.com. tunler is downloaded from there, and the journal keeps that server for sharing and phones. A
+download that fails says why and keeps nothing. The form links to tunler on GitHub (github.com/jessegall/tunler) for
+anyone who has no server yet. No server is assumed any more: a journal that already uses tunler keeps the server
+tunler is logged in to, so nothing changes for it.
+
 ## 2.249.3 — the viewer stays calm when the server is slow
 
 **The "server is not answering" bar no longer flashes on a slow server.** It shows only once nothing has answered for
