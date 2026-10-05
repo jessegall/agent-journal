@@ -94,6 +94,16 @@ def test_a_commit_reminds_the_agent_it_may_write_an_update_at_most_hourly():
     record.event_log.set_cursor_text("close_from_commits", "ccc")
     report(record, "idle", "Stop")
     assert len(offers()) == 1, "another commit within the hour says nothing more"
+    waiting = recap(record, "What happened")
+    record.event_log.set_cursor_text("update-offered", "ccc 0")
+    record.event_log.set_cursor_text("close_from_commits", "ddd")
+    report(record, "idle", "Stop")
+    assert len(offers()) == 1, "no offer while an update the user has not read waits, even long after the last one"
+    assert record.event_log.cursor_text("update-offered") == "ddd 0", "the unread update held the offer back and kept the old mark"
+    Reports(record, actor=USER).read(waiting.n)
+    record.event_log.set_cursor_text("close_from_commits", "eee")
+    report(record, "idle", "Stop")
+    assert record.event_log.cursor_text("update-offered") != "ddd 0", "once it is read, the next commit after the hour offers again and restarts the hour"
 
 
 def test_an_update_report_never_starts_the_sequence_for_research_reports():
