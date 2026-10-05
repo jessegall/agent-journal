@@ -88,6 +88,10 @@ def nouns(names) -> list[str]:
     return [name for name in names if "_" not in name]
 
 
+def sentence(text: str) -> str:
+    return text if text.endswith((".", "!", "?")) else f"{text}."
+
+
 def reaching(f) -> str:
     told = [*(f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN),
             *(f"the guard {guard.name}" for guard in f.journal.agent.guards if guard.reach != Reach.MAIN)]
@@ -95,7 +99,7 @@ def reaching(f) -> str:
 
 
 def folded_parts(folded: list) -> str:
-    return "".join(f"\n## {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n" for f in folded)
+    return "".join(f"\n## {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n" for f in folded)
 
 
 def moments(whens: list[str]) -> str:
@@ -111,9 +115,9 @@ def feature_skill(f) -> str:
     folded = folded_into(f.name)
     subject_text = subject(f.name)
     when = moments([f.when, *(g.when for g in folded)])
-    loaded = f"Load it when {when}. {f.abstract}." if when else f"{f.abstract}. It runs by itself; load it to read how it works."
+    loaded = f"Load it when {when}. {sentence(f.abstract)}" if when else f"{sentence(f.abstract)} It runs by itself; load it to read how it works."
     return (head(f.name, loaded, [*f.keywords, *(w for g in folded for w in g.keywords)], nouns([f.name, *(g.name for g in folded)]))
-            + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
+            + f"\n# {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
 
 
 def subject_skill(source: Path) -> str:
