@@ -427,7 +427,7 @@ class Controller(Files, Links, Discussed):
     def _texts(self) -> dict[int, str]:
         kept = SEARCHABLE.setdefault(str(self.rows.folder()), {})
         for row in self.rows.summaries():
-            version = row.get("stamp") or row["updated"]
+            version = row["stamp"]
             if row["deleted"] or kept.get(row["n"], (None,))[0] == version:
                 continue
             kept[row["n"]] = (version, searchable(self.rows.peek(row["n"])))

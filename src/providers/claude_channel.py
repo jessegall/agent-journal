@@ -40,6 +40,7 @@ def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
     except OSError:
         return [], at
     if size < at:
+        # the queue was cut back and refilled, so what it holds now is all unread
         at = 0
     if size == at:
         return [], at
