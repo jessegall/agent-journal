@@ -427,3 +427,80 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
     assert outcomes == {"runtime": "written", "record": "timed out"}, "a migration holds record writes back until they time out, and never the runtime folder"
     writing("after", root / "environments" / "main" / "todo" / "001.md")
     assert outcomes["after"] == "written", "once the migration lets go the same write goes through"
+
+
+def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(tmp_path):
+    from engine.stop import ask
+    root = installed(tmp_path)
+    env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
+    server = subprocess.Popen([sys.executable, str(root / "journal.py"), "--root", str(root), "serve", "--port", "0"], cwd=root.parent, env=env,
+                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    printed = []
+    threading.Thread(target=lambda: printed.extend(iter(server.stdout.readline, "")), daemon=True).start()
+
+    def said(text: str, meanwhile=lambda: None, times: int = 1) -> bool:
+        heard = lambda: sum(text in line for line in printed) >= times
+        began = time.time()
+        while not heard() and time.time() - began < WAIT:
+            meanwhile()
+            time.sleep(0.5)
+        return heard()
+
+    touched = [0.0]
+
+    def touch() -> None:
+        if time.time() - touched[0] > 4:
+            os.utime(root / "journal.pyz")
+            touched[0] = time.time()
+
+    try:
+        assert said("http://127.0.0.1:"), "the server prints where it is serving"
+        assert said("restarting on the same port", touch), "a new build of the code restarts the server on the port it had"
+        assert said("http://127.0.0.1:", times=2), "the restarted server serves again"
+        ask(root)
+        assert said("journal: stopped") and server.wait(WAIT) == 0, "writing the stop flag ends the server and says it stopped"
+    finally:
+        if server.poll() is None:
+            server.kill()
+            server.wait(WAIT)
+
+
+def test_healing_twice_goes_back_once_and_refuses_the_broken_build_for_a_while(tmp_path):
+    from engine import heal
+    root = tmp_path / ".journal"
+    root.mkdir()
+    good, bad = root / "journal-1.0.0-aaaaaaaaaa.pyz", root / "journal-2.0.0-bbbbbbbbbb.pyz"
+    for build, age in ((good, 1), (bad, 2)):
+        build.write_bytes(b"")
+        os.utime(build, (age, age))
+    point(root, bad)
+    assert heal.refused(root, "2.0.0") is False, "a build nobody has failed on is not refused"
+    first, second = heal.heal(root), heal.heal(root)
+    assert ("went back to journal-1.0.0-aaaaaaaaaa.pyz" in first, second, (root / "journal.pyz").resolve().name) == (True, "", good.name), \
+        "the first heal goes back to the last good build, and a second finds nothing to go back to"
+    assert (heal.refused(root, "2.0.0"), heal.refused(root, "1.0.0")) == (True, False), "the build that would not start is refused, the one the journal went back to is not"
+    assert heal.refused(root, "2") is False, "a version is matched whole, never by its first digits"
+
+
+def supervised(place: Path, agent: str, worker: str, headless: bool = True) -> tuple[subprocess.CompletedProcess, Path]:
+    root = place / ".journal"
+    (place / "heals").write_text("")
+    spec = {"root": str(root), "cwd": str(place), "env": "main", "agent": "claude", "worker": [sys.executable, "-c", worker], "args": [],
+            "heal": [sys.executable, "-c", f"open({str(place / 'heals')!r}, 'a').write('x'); print('healed')"],
+            "ended": [sys.executable, "-c", f"open({str(place / 'ended')!r}, 'w').write('x')"],
+            "command": [sys.executable, "-c", agent], "environ": dict(os.environ), "launch": 0, "headless": headless}
+    done = subprocess.run([sys.executable, str(CODE / "supervisor.py"), json.dumps(spec)], cwd=place, capture_output=True, text=True, timeout=WAIT, stdin=subprocess.DEVNULL)
+    return done, next((root / "runtime" / "sessions").glob("claude-*"))
+
+
+def test_a_supervisor_relays_the_agent_resizes_it_heals_a_crashing_worker_and_leaves_nothing_running(tmp_path):
+    runs = tmp_path / "runs"
+    worker = (f"import sys; from pathlib import Path; runs = Path({str(runs)!r}); n = len(runs.read_text()) if runs.is_file() else 0; runs.write_text('x' * (n + 1)); "
+              "sys.exit(1 if n == 0 else 76)")
+    done, session = supervised(tmp_path, "import time; print('hello from the agent', flush=True); time.sleep(60)", worker)
+    pid = json.loads((session / "launched.json").read_text())["pid"]
+    shape = json.loads((session / "screen.json").read_text())
+    assert (done.returncode, len(runs.read_text()), (tmp_path / "heals").read_text(), "healed" in done.stdout) == (255, 2, "x", True), \
+        f"a worker that crashes at once is healed and started again, and one that exits to stop ends the agent: {done.stdout}{done.stderr}"
+    assert (b"hello from the agent" in (session / "printed").read_bytes(), (shape["rows"], shape["cols"])) == (True, (40, 120)), "what the agent prints is relayed and a headless agent has a fixed size"
+    assert ((tmp_path / "ended").is_file(), subprocess.run(["kill", "-0", str(pid)], capture_output=True).returncode != 0) == (True, True), "the journal is told the agent ended and no agent process is left"

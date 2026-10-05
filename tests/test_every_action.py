@@ -758,3 +758,32 @@ def test_an_action_that_raises_restores_every_file_it_wrote_and_removes_every_fi
         pass
     monkeypatch.undo()
     assert ((todos.folder(row.n) / "note.txt").read_text(), todos.load(row.n).files) == ("first", {"note.txt": "the first"}), "a failed move leaves the attached file and its description as they were"
+
+
+def test_the_file_browser_and_its_search_leave_out_secrets_and_the_journal():
+    from tests.kit import project_on
+    repo = project_on("work")
+    record, project = repo.record, repo.project
+    (project / "src").mkdir()
+    for name in ("src/app.py", "src/.env", ".env", "notes.txt"):
+        (project / name).write_text("x")
+    (record.root / "kept.txt").write_text("x")
+    listed = [row["path"] for row in get(record, "/api/{env}/project-files").body]
+    found = [row["path"] for q in (".env", "kept.txt", "app.py") for row in get(record, "/api/{env}/project-files/find", q=q).body]
+    assert (sorted(listed), found) == (["notes.txt", "shared.txt", "src"], ["src/app.py"]), "the listing and the search show project files, never a .env file or anything inside .journal"
+    assert get(record, "/api/{env}/project-files", folder=".env").code == 400, "a secret cannot be opened by asking for it by name"
+
+
+def test_trimming_the_event_log_keeps_what_a_lagging_reader_has_not_yet_read():
+    record = fresh()
+    for n in range(10):
+        CONTROLLERS["todo"](record, actor=SYSTEM).create(f"row {n}")
+    ids = [event.id for event in record.event_log.events()]
+    behind = ids[2]
+    record.event_log.set_cursor_text("slow", str(behind))
+    dropped = record.event_log.trim(keep=4, readers_since=0)
+    assert (dropped, [e.id for e in record.event_log.events()]) == (ids.index(behind + 1), ids[ids.index(behind + 1):]), \
+        "a reader's cursor holds the trim back, so every event after it survives"
+    record.event_log.set_cursor_text("slow", "")
+    record.event_log.trim(keep=4, readers_since=0)
+    assert [e.id for e in record.event_log.events()] == ids[-4:], "with no reader behind, the log is cut to the number kept"
