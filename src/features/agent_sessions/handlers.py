@@ -2,6 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
+from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
 from engine.events.resources import AgentChanged, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions, live
@@ -64,7 +65,7 @@ class AskToStop(Handler):
 class MarkSilentStopped(Handler):
     behaviour = "liveness"
 
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
         agents = context.journal.get(Agents)
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
@@ -117,7 +118,7 @@ class HandBackReport(Handler):
 class ClearLapsedAssignments(Handler):
     behaviour = "subagents"
 
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
         subagents = {a.title: a for a in context.journal.get(Agents)._standing() if a.status == SUBAGENT}
         if not subagents:
             return

@@ -13,7 +13,7 @@ from engine.record import Record
 from features.work_tracking.next import ready
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
-from tests.kit import idle
+from tests.kit import idle, tick
 
 
 @dataclass(frozen=True)
@@ -134,8 +134,9 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto.features = {"work_tracking.auto": True}
     Agents(auto, actor=AGENT).by_session("claude-1")
     idle(auto)
+    tick(auto)
     assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"]) == ("active", 4), \
-        "auto switched on while a plan waits: the next agent activity continues it"
+        "auto switched on while a plan waits: the engine's next clock tick continues it"
     from controllers.types import Environments
     Environments(auto, actor=USER).create("ticket-8", owner="ticket:8")
     steered = Record(auto.root, "ticket-8")

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.command_runs import CommandRun
+from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceEvent
 from features.checks.output import summary
@@ -22,7 +23,7 @@ TESTS = "tests"
 
 
 class RunDueChecks(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
         checks = context.journal.get(Checks)
         for check in checks._due(time.time()):
             checks._in_background(check.n)
