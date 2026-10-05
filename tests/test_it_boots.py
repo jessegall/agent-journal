@@ -1,18 +1,24 @@
+import http.client
 import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import zipfile
+from contextlib import contextmanager
 from pathlib import Path
 
 from engine.heal import broken
 from engine.package import point
+from controllers.types import Todos
 from engine.sessions import hold_build
 from install import STUBS
 from providers import DRIVERS
+from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, launches
 from scripts.checks.imports import imports, missing
+from tests.conftest import fresh
 
 HERE = Path(__file__).resolve().parents[1]
 CODE = HERE / "src"
@@ -328,3 +334,72 @@ def test_an_installer_left_with_only_itself_fetches_the_package_and_finishes(tmp
                          timeout=WAIT * 4, env={**os.environ, "AGENT_JOURNAL_REPO": str(HERE)})
     assert ran.returncode == 0, f"an older installer copies only install.py and runs it; it must heal:\n{ran.stderr[-2000:]}"
     assert (code / "engine").is_dir() and (tmp_path / ".journal" / "journal.pyz").is_file(), "the package is back and packed"
+
+
+@contextmanager
+def serving(record):
+    from serve import Handler, JournalServer
+    Handler.root = record.root
+    server = JournalServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield server.server_port
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def asked(port: int, method: str, path: str, body: bytes = b"", kind: str = "application/json") -> tuple[int, bytes]:
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=WAIT)
+    try:
+        connection.request(method, path, body=body or None, headers={"Content-Type": kind} if body else {})
+        reply = connection.getresponse()
+        return reply.status, reply.read()
+    finally:
+        connection.close()
+
+
+def test_the_server_answers_a_body_it_cannot_read_and_keeps_serving():
+    record = fresh()
+    with serving(record) as port:
+        assert asked(port, "POST", f"/api/{record.env}/todo", b"{")[0] == 400, "a body that is not JSON is a 400, not a dropped connection"
+        assert asked(port, "POST", "/api/run", b"todo\0all", "text/plain")[0] == 200, "a text/plain body reaches its route as raw bytes"
+        assert asked(port, "GET", f"/api/{record.env}/todo")[0] == 200, "the next request is answered as before"
+
+
+def test_an_upload_and_the_file_route_stay_inside_the_rows_folder():
+    record = fresh()
+    row = Todos(record, actor=SYSTEM).create("a row with files")
+    edge = "xBOUNDARYx"
+    parts = b"".join(f'--{edge}\r\nContent-Disposition: form-data; name="file"; filename="{name}"\r\n\r\n{text}\r\n'.encode() for name, text in (("a.txt", "one"), ("b.txt", "two")))
+    with serving(record) as port:
+        base = f"/api/{record.env}/todo/{row.n}"
+        status, body = asked(port, "POST", f"{base}/upload", parts + f"--{edge}--\r\n".encode(), f"multipart/form-data; boundary={edge}")
+        assert (status, json.loads(body)["files"]) == (200, ["a.txt", "b.txt"]), "a two-part upload answers both file names"
+        assert asked(port, "GET", f"{base}/files/b.txt") == (200, b"two"), "an attached file is served back"
+        assert asked(port, "GET", f"{base}/files/..%2Fx")[0] == 400, "a name that climbs out of the folder is refused"
+        assert asked(port, "POST", f"{base}/detach", json.dumps({"name": "../x"}).encode())[0] == 400, "detaching a name outside the folder is refused"
+        assert sorted(Todos(record, actor=SYSTEM).load(row.n).files) == ["a.txt", "b.txt"], "a refused call leaves the attached files as they were"
+
+
+def test_the_event_stream_opens_carries_an_event_and_frees_its_watcher_on_disconnect():
+    from engine import bus
+    record = fresh()
+    watching = len(bus._watchers)
+    with serving(record) as port:
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=WAIT)
+        connection.request("GET", f"/api/{record.env}/stream")
+        reply = connection.getresponse()
+        assert reply.fp.readline() == b": open\n", "the stream says it is open"
+        reply.fp.readline()
+        assert len(bus._watchers) == watching + 1, "a connected reader holds one watcher on the bus"
+        Todos(record, actor=SYSTEM).create("an event for the stream")
+        line = reply.fp.readline()
+        assert line.startswith(b"id: "), "an event reaches the open stream"
+        reply.close()
+        connection.close()
+        began = time.time()
+        while len(bus._watchers) > watching and time.time() - began < WAIT:
+            Todos(record, actor=SYSTEM).create("wakes the stream so it notices the disconnect")
+            time.sleep(0.2)
+        assert len(bus._watchers) == watching, "the watcher is released once the reader is gone"

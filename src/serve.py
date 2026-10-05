@@ -70,7 +70,11 @@ class Handler(BaseHTTPRequestHandler):
         length = self.headers["Content-Length"]
         raw = self.rfile.read(int(length)) if length else b""
         kind = self.headers.get("Content-Type") or ""
-        body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") or kind.startswith("text/plain") else json.loads(raw or b"{}")
+        try:
+            body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") or kind.startswith("text/plain") else json.loads(raw or b"{}")
+        except ValueError:
+            self.send_error(400)
+            return
         reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
         self.send_response(reply.code)
         self.sibling()
