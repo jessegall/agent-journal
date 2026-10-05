@@ -17,7 +17,7 @@ from supervisor import HEAL, RELAUNCH, RELOAD, STOP  # noqa: E402
 from agents.terminal import TerminalSession, seated  # noqa: E402
 from agents.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
-from engine.package import CODE, installed_stamp  # noqa: E402
+from engine.package import CODE, installed_stamp, own_build  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
 from features.switches import watch_change_log  # noqa: E402
@@ -115,9 +115,11 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     last_check = last_viewer = last_services = last_checks = 0.0
     watching = None
     exits: list = []
+    keeps = own_build(root)
     engines = threading.Event()
     supervising = threading.Thread(target=supervise, args=(root, engines), daemon=True)
-    supervising.start()
+    if keeps:
+        supervising.start()
     try:
         while True:
             time.sleep(TICK)
@@ -128,10 +130,10 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
             if relaunching.is_file():
                 return RELAUNCH
             now = time.time()
-            if now - last_services >= SERVICES_EVERY:
+            if keeps and now - last_services >= SERVICES_EVERY:
                 last_services = now
                 services.tick()
-            if now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
+            if keeps and now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
                 last_viewer = now
                 watching = keep_viewer(root, cwd, watching, exits)
                 if crashing(exits):
@@ -149,7 +151,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
                     return RELOAD
     finally:
         engines.set()
-        supervising.join(timeout=ENDING)
+        if keeps:
+            supervising.join(timeout=ENDING)
 
 
 def ended(signum, frame) -> None:

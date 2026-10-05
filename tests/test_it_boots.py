@@ -186,10 +186,11 @@ def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_
 
 def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
     here, there = installed(tmp_path / "here"), installed(tmp_path / "there")
-    asked = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in; "
-             f"print(entry_in(Path({str(there)!r}), 'supervisor')[1])")
-    launched = subprocess.run([sys.executable, "-c", asked], capture_output=True, text=True, timeout=WAIT).stdout.strip()
+    asked = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in, own_build; "
+             f"print(entry_in(Path({str(there)!r}), 'supervisor')[1], own_build(Path({str(here)!r})), own_build(Path({str(there)!r})), sep='|')")
+    launched, mine, theirs = subprocess.run([sys.executable, "-c", asked], capture_output=True, text=True, timeout=WAIT).stdout.strip().split("|")
     assert launched == str(there / "journal.pyz"), "a journal launching a session for another starts it on that journal's build, never its own"
+    assert (mine, theirs) == ("True", "False"), "a worker on another journal's build knows it, and leaves that journal's servers to its own sessions"
 
 
 def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
