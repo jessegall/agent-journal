@@ -4,13 +4,17 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.runtime import folder, profiles, sessions
+from engine.sessions import Sessions, alive
 from providers.transcript_cache import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
 from features.trigger import DAY
 
-TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "channels/*.jsonl": 1024 * 1024}
+TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024,
+         "channels/*.jsonl": 1024 * 1024}
+CAPTURES = ("printed", "screen")
+ENDED_FOR = DAY
 EVENTS_KEPT = 100
 READERS_WITHIN = DAY
 STAGING_FOR = 3600
@@ -52,8 +56,16 @@ def tidy_files(root: Path, days: float) -> Tidied:
     removed = [d for d in sessions(root).glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < quiet]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)
+    spent = older(kept.glob("launches/*.log"), days * DAY) + older(ended_captures(root), ENDED_FOR)
+    for f in spent:
+        f.unlink(missing_ok=True)
     trimmed = [f for pattern, keep in TAILS.items() for f in kept.glob(pattern) if f.is_file() and trim(f, keep)]
-    return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left)
+    return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left + len(spent))
+
+
+def ended_captures(root: Path) -> list[Path]:
+    ended = [name for name, session in Sessions(root).all().items() if not alive(session.pid)]
+    return [f for name in ended for f in (sessions(root) / name / capture for capture in CAPTURES) if f.is_file()]
 
 
 def older(paths, age: float) -> list[Path]:
