@@ -27,8 +27,8 @@ async function install() {
 
 <template>
     <form class="tunler-install" @submit.prevent="install">
-        <FormField label="Server" hint="the tunler server to install from and connect to">
-            <TextInput :value="server" placeholder="tunler.example.com" @input="server = $event.target.value" />
+        <FormField label="Server" for="tunler-install-server" help="The tunler server to install from and connect to.">
+            <TextInput id="tunler-install-server" :value="server" placeholder="tunler.example.com" @input="server = $event.target.value" />
         </FormField>
         <template v-if="failure">
             <p class="tunler-install-failure">{{ failure }}</p>

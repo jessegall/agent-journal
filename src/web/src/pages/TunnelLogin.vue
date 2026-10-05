@@ -48,20 +48,26 @@ async function connect() {
 
 <template>
     <form class="tunnel-login" @submit.prevent="connect">
-        <FormField label="Server">
-            <TextInput :value="endpoint" placeholder="tunler.example.com" @input="endpoint = $event.target.value" />
+        <FormField label="Server" for="tunnel-server">
+            <TextInput id="tunnel-server" :value="endpoint" placeholder="tunler.example.com" @input="endpoint = $event.target.value" />
         </FormField>
-        <FormField label="Username">
-            <TextInput :value="username" autocomplete="username" @input="username = $event.target.value" />
+        <FormField label="Username" for="tunnel-username">
+            <TextInput id="tunnel-username" :value="username" autocomplete="username" @input="username = $event.target.value" />
         </FormField>
-        <FormField label="Password" hint="at least 8 characters">
-            <TextInput :value="password" type="password" autocomplete="current-password" @input="password = $event.target.value" />
+        <FormField label="Password" for="tunnel-password" help="At least 8 characters.">
+            <TextInput
+                id="tunnel-password"
+                :value="password"
+                type="password"
+                autocomplete="current-password"
+                @input="password = $event.target.value"
+            />
         </FormField>
         <template v-if="asking">
             <p class="tunnel-note">{{ note }}</p>
         </template>
-        <FormField label="Master password" :hint="asking ? '' : 'only to create a new account'">
-            <TextInput :value="master" type="password" autocomplete="off" @input="master = $event.target.value" />
+        <FormField label="Master password" for="tunnel-master" :help="asking ? '' : 'Only to create a new account.'">
+            <TextInput id="tunnel-master" :value="master" type="password" autocomplete="off" @input="master = $event.target.value" />
         </FormField>
         <template v-if="failure">
             <p class="tunnel-failure">{{ failure }}</p>
