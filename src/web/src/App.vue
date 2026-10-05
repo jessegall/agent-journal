@@ -11,7 +11,7 @@ import {project} from "./state/identity.js";
 import {ui} from "./state/ui.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";
-import {polled, usePolled} from "./sync/polled.js";
+import {usePolled, windowPolls} from "./sync/polled.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";
@@ -49,7 +49,7 @@ import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 
 const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
-Object.values(polled).forEach(usePolled);
+windowPolls().forEach(usePolled);
 const bootError = ref("");
 let bootTimer = 0;
 function startBoot() {
