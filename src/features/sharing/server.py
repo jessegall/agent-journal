@@ -257,7 +257,7 @@ class ShareHandler(BaseHTTPRequestHandler):
 def ticking(shares) -> None:
     while True:
         time.sleep(TICK_EVERY)
-        for tick in TICKS.each(shares):
+        for tick in TICKS.each(shares.record):
             try:
                 tick(shares)
             except Exception:

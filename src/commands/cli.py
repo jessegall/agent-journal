@@ -22,8 +22,6 @@ from typing import TypedDict
 from commands.boot import boot
 
 
-
-
 class CommandContext(TypedDict):
     record: Record
     session: str

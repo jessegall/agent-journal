@@ -11,7 +11,7 @@ import pytest
 
 import features
 from controllers.types import Agents, Todos
-from engine.transaction import undoable
+from engine.transaction import WORK, undoable
 from features.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
 from features.session_recording.demo import leaks
@@ -139,9 +139,9 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     recordings = Recordings(record, actor=SYSTEM)
     recordings.scrub(str(folder))
     shipped = tmp_path / "demo.json"
-    with undoable() as undo:
+    with undoable():
         recordings.build(str(folder), str(shipped))
-        assert undo.events == [], "the throwaway world's events never wait to be released into the command's record"
+        assert WORK.undo_releases == [], "the throwaway world's events never wait to be released into the command's record"
     demo = json.loads(shipped.read_text())
     places = demo["answers"][demo["moments"][-1]["answers"]["phone.places"]]
     assert [place["root"] for place in places["places"]] == [places["at"]], "the phone shows only the recorded journal"

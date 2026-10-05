@@ -1,8 +1,6 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from engine.record import Record
-from engine.runtime import env
 
 EXTENSIONS: list["Extension"] = []
 
@@ -12,10 +10,6 @@ class Entry:
     owner: object
     key: object
     value: object
-
-
-def record_of(source) -> Record:
-    return Record(source, env(source)) if isinstance(source, Path) else getattr(source, "record", source)
 
 
 class Extension:
@@ -33,14 +27,13 @@ class Extension:
     def remove(self, value) -> None:
         self.entries = [entry for entry in self.entries if entry.value is not value]
 
-    def each(self, source=None, key=None) -> list:
-        return [entry.value for entry in self._live(source) if key is None or entry.key == key]
+    def each(self, record: Record | None = None, key=None) -> list:
+        return [entry.value for entry in self._live(record) if key is None or entry.key == key]
 
-    def keyed(self, source=None) -> dict:
-        return {entry.key: entry.value for entry in self._live(source)}
+    def keyed(self, record: Record | None = None) -> dict:
+        return {entry.key: entry.value for entry in self._live(record)}
 
-    def _live(self, source) -> list[Entry]:
-        record = record_of(source) if source is not None else None
+    def _live(self, record: Record | None) -> list[Entry]:
         return [entry for entry in self.entries if record is None or entry.owner is None or entry.owner.enabled(record)]
 
     def clear(self) -> None:
