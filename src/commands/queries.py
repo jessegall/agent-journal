@@ -113,6 +113,10 @@ def speed(ctx) -> str:
     from commands.speed import measure
     return measure(ctx["record"].root, ctx["record"].env, ctx["runs"], ctx["url"], ctx["out"])
 
+def demo(ctx) -> str:
+    from commands.demo import demo_built
+    return demo_built(Path(ctx["folder"]), Path(ctx["into"]), ctx["environment"], ctx["name"])
+
 def upgrade_here(ctx) -> str:
     from install import upgrade
     root = ctx["record"].root

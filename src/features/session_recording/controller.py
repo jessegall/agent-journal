@@ -10,12 +10,11 @@ from controllers.base import Controller
 from controllers.types import Agents
 from engine.package import entry
 from engine.record import Record
-from features.session_recording.demo import BRANCHES, branched, leaks, scrubbed
+from features.session_recording.demo import BRANCHES, leaks, scrubbed
 from features.session_recording.resource import Recording
 from engine.sessions import alive
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
-from engine.stored import write_json
 from controllers.marks import action
 
 
@@ -62,12 +61,6 @@ class Recordings(Controller):
         if still:
             raise Refused("the recording still holds the machine: " + "; ".join(still[:5]))
         return f"{target} holds nothing about this machine"
-
-    @action
-    def build(self, folder: str, into: str, env: str = "", name: str = "") -> str:
-        demo = branched(Path(folder), env, name or Path(folder).resolve().name)
-        write_json(Path(into), demo)
-        return f"wrote {len(demo['moments'])} moments and {len(demo['answers'])} answers into {into}"
 
     def _running(self):
         return next((row for row in self.all() if alive(row.pid)), None)

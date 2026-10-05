@@ -14,7 +14,7 @@ from resources.base import AGENT
 from engine.version import version
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.tidy import tidy
-from commands.queries import attached, decided, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
+from commands.queries import attached, decided, demo, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 argparse._ = str
 
@@ -127,6 +127,8 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "heal", "go back to the last build that started, when the one installed will not", lambda ctx: healed(ctx))
     add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
+    add_query(cmds, "demo", "build a demo's data from a scrubbed recording, every moment answered by the real server",
+              lambda ctx: demo(ctx), ("folder", {}), ("into", {}), ("--environment", {"default": ""}), ("--name", {"default": ""}))
     add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: tidy(ctx["record"].root, RuntimeCleanupDetails.values(ctx["record"]).days).summary)
     add_query(cmds, "services", "the services plugins run: list them, start, stop or restart one, read its log, or keep them up in this terminal with up",
               lambda ctx: services(ctx), ("action", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
