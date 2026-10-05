@@ -20,6 +20,10 @@ def spread(fn, positional: tuple, named: dict, extra: dict) -> tuple[list, dict]
     return ordered, {**keyed, **{key: value for key, value in extra.items() if key not in moved}}
 
 
+def takes_row(fn) -> bool:
+    return next(iter(inspect.signature(fn).parameters), "") == "n"
+
+
 def invoked(controller, word: str, positional: tuple = (), named: dict | None = None, extra: dict | None = None):
     fn = controller.method(word)
     ordered, keyed = spread(fn, positional, named or {}, extra or {})
