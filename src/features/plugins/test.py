@@ -217,9 +217,16 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)
     status_file(record.root, "gone.web").parent.mkdir(parents=True, exist_ok=True)
     status_file(record.root, "gone.web").write_text(json.dumps({"state": "running", "keeper": left.pid, "pgid": left.pid}))
-    Manager(record.root, sources=(plugin_services,)).tick()
+    keeping = Manager(record.root, sources=(plugin_services,))
+    keeping.tick()
     assert left.wait(timeout=5) is not None, "its process is stopped"
     assert not status_file(record.root, "gone.web").exists(), "and it is no longer listed"
+    other = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    status_file(record.root, "gone.web").write_text(json.dumps({"state": "running", "keeper": other.pid, "pgid": other.pid}))
+    Manager(record.root, sources=(plugin_services,)).tick()
+    assert other.poll() is None, "a second keeper of the same project keeps nothing while the first holds the services"
+    keeping.tick()
+    assert other.wait(timeout=5) is not None, "the one that holds them does"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():
