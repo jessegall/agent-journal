@@ -142,7 +142,7 @@ def still_open(record) -> list[str]:
     return works + messages
 
 def attached(ctx) -> str:
-    from agents.terminal import attach
+    from agents.screen import attach
     return attach(ctx["record"].root, ctx["target"])
 
 
