@@ -586,7 +586,7 @@ class Transcript:
     path: Path
 
     def turns(self) -> list:
-        return self.provider.transcript(self.path)
+        return self.provider.turns(self.path)
 
     def links(self) -> list:
         return self.provider.work_links(self.path)

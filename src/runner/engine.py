@@ -144,7 +144,7 @@ class Engine:
         f = runtime.session_file(self.record.root, row.title, "peers.json")
         seen = read_json(f, dict, None)
         log = PeerLog.from_json(seen)
-        recent = sorted((t for t in reading.provider.tail(reading.transcript) if t.peer is not None), key=lambda t: t.at)
+        recent = sorted((t for t in reading.provider.last_turns(reading.transcript) if t.peer is not None), key=lambda t: t.at)
         newest = max([t.at for t in recent] + [log.at])
         names = dict(log.names)
         for t in recent if seen is not None else []:

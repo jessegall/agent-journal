@@ -143,7 +143,7 @@ class ClaudeDriver(Driver):
         wanted = " ".join(joined(line).split())[:LINE_START]
         if not wanted or not last or not last.transcript:
             return False
-        return any(row.at >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent(Path(last.transcript)))
+        return any(row.at >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent_rows(Path(last.transcript)))
 
     def _handed_file(self) -> Path:
         return runtime.session_file(self.record.root, self.session, HANDED)
@@ -159,7 +159,7 @@ class ClaudeDriver(Driver):
         waiting = held.lines
         if not waiting or not last or not last.transcript:
             return True
-        rows = Claude().recent(Path(last.transcript))
+        rows = Claude().recent_rows(Path(last.transcript))
         arrived = [text for text in map(self._channel_text, rows) if CHANNEL_MARK in text]
         times = [row.at for row in rows]
         lost = [h for h in waiting if not any(h.line in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]

@@ -238,19 +238,19 @@ class Provider(ABC):
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return ""
 
-    def recent(self, path: Path | None) -> list[dict]:
+    def recent_rows(self, path: Path | None) -> list[dict]:
         return CACHE.recent(path, self.row_of)
 
     def settling(self, path: Path) -> bool:
         return False
 
-    def transcript(self, path: Path) -> list:
+    def turns(self, path: Path) -> list:
         return CACHE.transcript(path, self.extended)
 
     def extended(self, turns: list[Turn], lines: list[bytes], count: int) -> list[Turn]:
         return self.refine(turns + self.read_turns(lines, count))
 
-    def tail(self, path: Path, span: int = RECENT_BYTES) -> list:
+    def last_turns(self, path: Path, span: int = RECENT_BYTES) -> list:
         lines, _ = last_lines(path, span)
         return self.refine(self.read_turns(lines, 0))
 
@@ -316,10 +316,10 @@ class Provider(ABC):
         return Asking(hook.tool.name, hook.tool.text[:300], time.time()) if hook.event == PERMISSION else None
 
     def read_ahead(self, path: Path) -> None:
-        self.transcript(path)
+        self.turns(path)
         self.loaded_skills(path)
         self.prior_window(path)
-        self.recent(path)
+        self.recent_rows(path)
 
     def loaded_skills(self, path: Path) -> dict[str, float]:
         return dict(self.folded(path, self.skill_loads, dict))

@@ -104,7 +104,7 @@ def messaged(row, key: str, members: dict, named: dict) -> list[Link]:
     if held and held[0] == size:
         pairs = held[2]
     else:
-        turns = provider().transcript(row.transcript)
+        turns = provider().turns(row.transcript)
         read = held[1] if held and held[1] <= len(turns) else 0
         pairs = (held[2] if read else []) + exchanged(turns[read:])
         MESSAGED[row.transcript] = (size, len(turns), pairs)

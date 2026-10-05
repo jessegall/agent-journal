@@ -346,7 +346,7 @@ class Claude(Provider):
         return typed
 
     def shell_runs(self, path: Path) -> list[tuple[float, str]]:
-        found = ((row.at, BASH_INPUT.match(row.text)) for row in self.recent(path) if row.type == "user" and row.text is not None)
+        found = ((row.at, BASH_INPUT.match(row.text)) for row in self.recent_rows(path) if row.type == "user" and row.text is not None)
         return [(at, match[1]) for at, match in found if match]
 
     def unwrapped_command(self, command: str) -> str:
@@ -363,13 +363,13 @@ class Claude(Provider):
         path = hook.transcript
         if not path or not path.is_file():
             return hook.model
-        return next((row.model for row in reversed(self.recent(path)) if row.model), hook.model)
+        return next((row.model for row in reversed(self.recent_rows(path)) if row.model), hook.model)
 
     def context(self, hook: Hook) -> float | None:
         path = hook.transcript
         if not path or not path.is_file():
             return None
-        used = next((row.tokens for row in reversed(self.recent(path)) if row.tokens is not None), None)
+        used = next((row.tokens for row in reversed(self.recent_rows(path)) if row.tokens is not None), None)
         return None if used is None else round(100 * used / self.window(hook, used), 1)
 
     def turn(self, row: Row, line: int) -> Turn | None:
@@ -496,7 +496,7 @@ class Claude(Provider):
                                                running=running, at=use.at, ended=0.0 if running else done, status="" if running else status,
                                                session=session.stem.removeprefix("agent-") if session else "", task_id=ids.get(use.id, ""),
                                                refusal=held.errors.get(use.id), skills=self.skills(session),
-                                               facts=subagent_facts(self.recent(session)) if session else None).to_json())
+                                               facts=subagent_facts(self.recent_rows(session)) if session else None).to_json())
         shells = []
         for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):
             status, done = ended.get(use.id, ("", 0.0))

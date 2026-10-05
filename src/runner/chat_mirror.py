@@ -147,7 +147,7 @@ def unfinished(root: Path, session: str, row) -> None:
     provider = PROVIDERS.get(row.provider)
     if provider is None or not row.transcript:
         return
-    turns = [turn for turn in provider().transcript(Path(row.transcript)) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
+    turns = [turn for turn in provider().turns(Path(row.transcript)) if turn.has_agent_text and turn.at >= time.time() - CATCH_UP]
     ledger = DisplayedLedger(root, session)
     with ledger.changing() as held:
         sent = [*held.get(SENT, [])]
