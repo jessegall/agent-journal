@@ -16,6 +16,8 @@ from resources.base import Refused
 
 TUNNEL_FILE = "sharing.json"
 OWNED = "domain is owned by another user"
+HELD = "409 Conflict"
+LAST_LINES = 4
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
 ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
@@ -56,12 +58,20 @@ def addressed(root: Path, kept: dict) -> str:
     return name
 
 
-def refused_address(log: Path) -> bool:
+def last_lines(log: Path) -> list[str]:
     try:
-        lines = log.read_text(errors="ignore").splitlines()[-4:]
+        return log.read_text(errors="ignore").splitlines()[-LAST_LINES:]
     except OSError:
-        return False
-    return any(OWNED in line for line in lines)
+        return []
+
+
+def refused_address(log: Path) -> bool:
+    return any(OWNED in line for line in last_lines(log))
+
+
+def held_by_server(log: Path) -> bool:
+    lines = last_lines(log)
+    return bool(lines) and HELD in lines[-1]
 
 
 def tunler() -> str:

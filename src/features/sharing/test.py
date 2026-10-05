@@ -227,6 +227,15 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
         tick(record)
     assert (len(asked), len([n for n in Nudges(record, actor=USER).all() if "answers for no address" in n.title])) == (restarts, 1), \
         "with the tunnel server answering for no address at all, nothing is restarted and the agent is told once"
+    from engine.services import log_file
+    monkeypatch.setattr(watchdog, "reached", lambda url, wait=0: True)
+    monkeypatch.setattr(watchdog, "serving", lambda root: True)
+    log_file(record.root, watchdog.TUNNEL).write_text("domain already has an active tunnel (409 Conflict); reconnecting in 2s\n")
+    restarts = len(asked)
+    for _ in range(6):
+        watchdog.State(record.root / "runtime" / "sharing-tunnel.json").set("restarted", 0)
+        tick(record)
+    assert len(asked) == restarts, "a tunnel waiting out the server's hold on its address is left to reconnect, never restarted into another 409"
 
 
 def test_a_layout_link_hands_the_layout_once_to_any_viewer():
