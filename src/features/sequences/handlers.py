@@ -201,7 +201,7 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
         if all(named_in(made, step) for made in held):
             context.journal.sequences.follow(sequence.n, about=about_of(key))
             return ""
-        return context.feature.spoken(STEP_HELD, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
+        return context.feature.line_text(STEP_HELD, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
 
 
 class DispatchAgainOnAnswer(Handler):

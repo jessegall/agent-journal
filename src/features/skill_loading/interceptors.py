@@ -34,4 +34,4 @@ class RefuseUntilLoaded(ToolInterceptor):
         missing = outstanding(context.record, context.agent.row)
         if not missing:
             return ""
-        return context.feature.spoken("required", skills=", ".join(missing), loads=", ".join(context.provider.skill_load(name) for name in missing))
+        return context.feature.line_text("required", skills=", ".join(missing), loads=", ".join(context.provider.skill_load(name) for name in missing))
