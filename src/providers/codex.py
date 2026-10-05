@@ -327,7 +327,7 @@ class Codex(Provider):
             turn_kind = message_kind(payload)
             return Turn(line, "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at)
         if payload.type in ("function_call", "custom_tool_call"):
-            return Turn(line, "agent", "", AGENT, row.at, [TOOLS.get(payload.name, payload.name)] if payload.name else [])
+            return Turn(line, "agent", kind=AGENT, at=row.at, tools=[TOOLS.get(payload.name, payload.name)] if payload.name else [])
         if payload.type in ("function_call_output", "custom_tool_call_output"):
             return Turn(line, TOOL, payload.output_text, TOOL, row.at)
         return None

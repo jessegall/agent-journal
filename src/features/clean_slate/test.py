@@ -51,7 +51,7 @@ def test_a_second_set_aside_keeps_the_original_hooks_until_the_last_session_ends
 
 def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
     import features.clean_slate.slate as slate
-    from migrations.m0062_clean_slate_moved_into_its_file import run
+    from tests.kit import clean_slate_moved as run
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     record = fresh()
     project = record.root.parent

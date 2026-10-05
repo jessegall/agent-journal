@@ -14,7 +14,7 @@ from controllers.types import Agents, Todos
 from engine.transaction import WORK, undoable
 from features.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
-from commands.demo import demo_built
+from tests.kit import demo_built
 from features.session_recording.demo import leaks
 from features.session_recording.scrub import Scrubber
 from resources.base import AGENT, SYSTEM, Refused
