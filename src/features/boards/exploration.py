@@ -19,7 +19,7 @@ RULES = ("A request typed into a board's New work panel is explored until you kn
          "meaning. Ask only what changes the cards; skip a step you can already answer by rating higher. " + "When you rate 5, give the goal and what done means with it: journal board score <board n> 5 --reading \"<reading>\" --goal \"<the goal in their words>\" --done \"<clause>|<clause>|...\", each clause one thing a person can check, such as \"a visitor can read every page without signing in\"." + " " + LOG)
 
 ASK = ("journal board ask <board n> \"<question>\" --abstract \"<one plain line>\" --set options='[{\"title\": \"<option>\", "
-       "\"text\": \"<what it gives them>\"}, ...]'")
+       "\"text\": \"<what it gives them>\"}, ...]' --set pick=<the option you would pick>")
 
 EXPLORATION = ShippedSequence(
     title="Exploring a request",

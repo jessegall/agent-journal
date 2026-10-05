@@ -99,7 +99,7 @@ ESCALATING_A_TICKET = ShippedSequence(
         ("Stop it", f"{FIND_IT} Stop its agent: journal ticket stop <ticket n>. Tickets that wait on it stay queued."),
         ("Ask the user", "Ask on the board with both reasons it was sent back: journal board ask <board n> \"<ticket> was sent back "
                          "twice: <reasons>\" --set options='[{\"title\": \"Let me look\"}, {\"title\": \"Rewrite the card\"}, {\"title\": "
-                         "\"Drop it\"}]'."),
+                         "\"Drop it\"}]' --set pick=<the one you would pick>."),
         ("Act on the answer", "Let me look: leave it stopped and say so in the chat. Rewrite the card: dispatch the board-filler to revise "
                               "it, then journal ticket start <ticket n>. Drop it: journal ticket delete <ticket n> --why \"<their words>\"."),
     ],

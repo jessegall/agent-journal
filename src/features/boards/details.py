@@ -38,7 +38,7 @@ class BoardsDetails(FeatureDetails):
         journal board expect <n> <count> says how many tickets you are about to draft, so the New work panel shows that many
         placeholders; guess low, since more fade in and none is taken away.
 
-        journal board ask <n> "<question>" --set options='[...]' asks the user a question about the board: the New work
+        journal board ask <n> "<question>" --set options='[...]' --set pick=<n> asks the user a question about the board: the New work
         panel shows it, and it stays out of the board itself, the chat, the Questions page and your nudges. The answer comes back as an event.
 
         Everything you write goes to the chat; the New work panel gets words only through its command. journal board say <n>

@@ -57,7 +57,7 @@ REVISING_THE_DRAFTS = ShippedSequence(
     steps=[
         ("Read the change", "Read their words and the drafts made for this request on the board. Work out which cards the "
                             "change is about. When it is unclear, ask one short question on the board with the cards it might "
-                            "mean as options: journal board ask <board n> \"<question>\" --set options='[...]'. When it is "
+                            "mean as options: journal board ask <board n> \"<question>\" --set options='[...]' --set pick=<n>. When it is "
                             "answered, or clear from the start: journal sequence next <this sequence> --about <ref>."),
         ("Change the drafts", "Change only the cards they named: journal ticket update <n> with a new title, --abstract or "
                               "--brief, or delete a card they dropped (journal ticket delete <n> --why \"<their words>\"). "
@@ -130,7 +130,7 @@ DRAFTING_FROM_A_DOCUMENT = ShippedSequence(
                               "<board n> \"<section>\" now; after it, journal board progress <board n> \"<section>\" read "
                               "--drafts <how many it gave>, or out when it holds no work. Leave out background and context, and "
                               "follow the user's note. When the document leaves a choice open that changes a ticket, ask "
-                              "it on the board with journal board ask <board n> \"<question>\" --set options='[...]' and "
+                              "it on the board with journal board ask <board n> \"<question>\" --set options='[...]' --set pick=<n> and "
                               "change the draft when it is answered. Then offer two to four groups they can pick at once, such as what the first release needs or one subject: journal board group <board n> \"<name>\" \"<ticket>, <ticket>\". When every ticket is drafted: journal sequence next "
                               "<this sequence> --about <ref>."),
         ("Say one line", "Say it in the panel in one short line with journal board say <board n> \"<line>\", of at most 200 characters, like \"7 drafts from 6 "

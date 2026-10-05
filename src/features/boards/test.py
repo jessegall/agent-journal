@@ -44,7 +44,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
     filler.follow(exploring.n, about=made.ref)
     assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT).in_hand() is None, \
         "the filler's run is its own: the main agent never has it in hand"
-    asked = Boards(record, actor=AGENT, agent="board-filler").ask(board.n, "Which goal?", options=[{"title": "A"}, {"title": "B"}])
+    asked = Boards(record, actor=AGENT, agent="board-filler").ask(board.n, "Which goal?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     before = sum("board-filler" in n for n in nudges(record))
     Questions(record, actor=USER).complete(asked.n, how="A")
     assert sum("board-filler" in n for n in nudges(record)) == before + 1, "the user's answer asks the main agent to dispatch the filler again"
