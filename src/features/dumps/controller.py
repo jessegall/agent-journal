@@ -59,7 +59,7 @@ class Dumps(Controller):
             self._refuse("only the user removes what a dump filed")
         dump = self.load(n)
         if dump.data.get("removed"):
-            self._refuse(f"dump {dump.n} was already removed")
+            raise Refused(f"dump {dump.n} was already removed")
         if not dump.completed:
             self.stop(dump.n)
         gone = []
@@ -82,8 +82,8 @@ class Dumps(Controller):
         r = self.load(n)
         try:
             offered = json.loads(options or "[]")
-        except ValueError:
-            self._refuse("options is a JSON list of {ask, label} or {ask, label, type, n, action}")
+        except ValueError as error:
+            raise Refused("options is a JSON list of {ask, label} or {ask, label, type, n, action}") from error
         steps = []
         for raw in (o for o in (offered[:OFFERED] if isinstance(offered, list) else []) if isinstance(o, dict)):
             option = Offer.from_payload(raw)
@@ -91,10 +91,10 @@ class Dumps(Controller):
                 continue
             action = one(self.record, option.to_json()) if option.action else {}
             if option.action and not action:
-                self._refuse(f"{option.label}: {option.type} {option.action} is not a command")
+                raise Refused(f"{option.label}: {option.type} {option.action} is not a command")
             steps.append({**action, "label": option.label, **given(ask=option.ask)})
         if not steps and not summary.strip():
-            self._refuse("sum up what you filed with --summary, and offer a next step only where one is worth taking")
+            raise Refused("sum up what you filed with --summary, and offer a next step only where one is worth taking")
         return self.update(r.n, options=steps, chosen={}, taken={}, declined=[], **given(summary=summary.strip()))
 
     @action
@@ -102,7 +102,7 @@ class Dumps(Controller):
         r = self._choosing(n)
         options = r.data.get("options") or []
         if not str(pick).lstrip("-").isdigit() or int(pick) >= len(options):
-            self._refuse(f"dump {r.n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
+            raise Refused(f"dump {r.n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
         taken = dict(r.data.get("taken") or {})
         if str(pick) in taken:
             self._refuse(f"{options[int(pick)]['label']} was already taken on dump {r.n}")
@@ -120,13 +120,13 @@ class Dumps(Controller):
     def decline(self, n: int, pick: int):
         r = self._choosing(n)
         if not str(pick).isdigit() or int(pick) >= len(r.data.get("options") or []):
-            self._refuse(f"dump {r.n} has no option {pick}: pick is the number of an offered step")
+            raise Refused(f"dump {r.n} has no option {pick}: pick is the number of an offered step")
         return self.update(r.n, declined=sorted({*(r.data.get("declined") or []), int(pick)}))
 
     @action
     def direct(self, n: int, how: str):
         if not how.strip():
-            self._refuse("say what should happen next: journal dump direct <n> \"<what to do>\"")
+            raise Refused("say what should happen next: journal dump direct <n> \"<what to do>\"")
         r = self._choosing(n)
         said = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
         Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(titled(how), brief=how.strip(), about=r.ref, window=r.ref)
@@ -141,10 +141,10 @@ class Dumps(Controller):
     def split(self, n: int, parts: str):
         r = self.load(n)
         if not r.brief.strip():
-            self._refuse(f"dump {r.n} has no pasted text to split")
+            raise Refused(f"dump {r.n} has no pasted text to split")
         found = list(dict.fromkeys(part.strip()[:LABEL] for part in parts.split(",") if part.strip()))
         if not found or set(found) & set(r.files):
-            self._refuse("name the parts of the pasted text, comma separated, none named like a dropped file")
+            raise Refused("name the parts of the pasted text, comma separated, none named like a dropped file")
         return self.update(r.n, parts=found)
 
     @action
@@ -199,7 +199,7 @@ class Dumps(Controller):
             self._refuse("only the user stops a dump")
         r = self.load(n)
         if r.completed:
-            self._refuse(f"dump {r.n} is already closed")
+            raise Refused(f"dump {r.n} is already closed")
         filed = sum(1 for name in r.item_names if r.item(name).outcome)
         self.update(r.n, stopped=True)
         return self.complete(r.n, how=f"stopped, {filed} filed, {len(r.item_names) - filed} left out")
@@ -218,7 +218,7 @@ class Dumps(Controller):
         if len(status.strip()) > LABEL:
             raise Refused(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
         if r.completed and not r.data.get("options") and not r.data.get("chosen"):
-            raise Refused(f"dump {r.n} is closed")
+            self._refuse(f"dump {r.n} is closed")
         return self._appended(r, "log", entry(status, on, making, detail), LOG_KEPT)
 
     @action
@@ -236,7 +236,7 @@ class Dumps(Controller):
         if not question.strip():
             raise Refused("say what you need to know")
         if r.completed:
-            raise Refused(f"dump {r.n} is closed")
+            self._refuse(f"dump {r.n} is closed")
         found = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
         return self.update(r.n, question={ENTRY.at: time.time(), ENTRY.text: question.strip(), "guesses": found})
 
@@ -247,9 +247,9 @@ class Dumps(Controller):
         r = self.load(n)
         asked = r.data.get("question") or {}
         if not asked:
-            self._refuse(f"dump {r.n} has no question waiting")
+            raise Refused(f"dump {r.n} has no question waiting")
         if not text.strip():
-            self._refuse("say the answer")
+            raise Refused("say the answer")
         answers = [*(r.data.get("answers") or []), {"question": asked.get(ENTRY.text, ""), "answer": text.strip(), ENTRY.at: time.time()}]
         return self.update(r.n, question={}, answers=answers)
 
