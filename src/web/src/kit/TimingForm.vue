@@ -11,7 +11,6 @@ import {
     timingUnit,
     timingWords,
 } from "../domain/settingsCatalog.js";
-import ChoiceList from "./ChoiceList.vue";
 import Segmented from "./Segmented.vue";
 import TextInput from "./TextInput.vue";
 
@@ -22,7 +21,7 @@ const when = computed(() => props.timing.value);
 const units = computed(() =>
     [...COUNTED, ...(when.value.unit === "notices" ? ["notices"] : [])].map((key) => ({key, label: UNIT_CHOICES[key]}))
 );
-const events = computed(() => EVENTS.map((key) => ({value: key, label: EVENT_CHOICES[key], current: when.value.on === key})));
+const events = EVENTS.map((key) => ({key, label: EVENT_CHOICES[key]}));
 
 function pick(next) {
     if (next && !same(next, when.value)) emit("change", next);
@@ -55,12 +54,12 @@ function pick(next) {
                     aria-label="How many"
                     @change="pick(timingEvery(when, $event.target.value))"
                 />
-                <Segmented :options="units" :value="when.unit || ''" :fill="sheet" @pick="pick(timingUnit(when, $event))" />
             </div>
+            <Segmented wrap :options="units" :value="when.unit || ''" @pick="pick(timingUnit(when, $event))" />
         </template>
         <div class="timing-line">
             <span class="timing-word">Or once, when</span>
-            <ChoiceList stacked :choices="events" @pick="pick(timingUnit(when, $event))" />
+            <Segmented wrap :options="events" :value="when.on || ''" @pick="pick(timingUnit(when, $event))" />
         </div>
         <div class="timing-foot">
             <span>Default: {{ timingWords(timing.shipped) }}. Saved as you change it.</span>
@@ -90,7 +89,7 @@ function pick(next) {
     gap: 8px;
 }
 
-.timing-line :deep(.choices) {
+.timing-line :deep(.segmented) {
     flex: 1 1 100%;
 }
 
