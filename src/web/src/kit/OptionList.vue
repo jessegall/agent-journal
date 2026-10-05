@@ -1,10 +1,11 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, useSlots} from "vue";
 import {useHeldSend} from "../composables/heldSend.js";
 import Btn from "./Btn.vue";
 
 const props = defineProps({
     options: {type: Array, default: () => []},
+    send: {type: Function, required: true},
     chosen: {type: String, default: ""},
     suggested: {type: Number, default: -1},
     disabled: Boolean,
@@ -14,87 +15,114 @@ const props = defineProps({
     immediate: Boolean,
     tiles: Boolean,
     steady: Boolean,
+    large: Boolean,
     multiple: Boolean,
+    sendWhenHidden: Boolean,
     chosenMany: {type: Array, default: () => []},
     holdSeconds: {type: Number, default: undefined},
 });
-const emit = defineEmits(["pick", "picks"]);
+const slots = useSlots();
 const ticked = ref([]);
 const isChosen = (o) => (props.chosen && props.chosen === o.title) || props.chosenMany.includes(o.title);
 const tick = (i) => (ticked.value = ticked.value.includes(i) ? ticked.value.filter((t) => t !== i) : [...ticked.value, i]);
-const settle = () =>
-    ticked.value.length &&
-    emit(
-        "picks",
-        [...ticked.value].sort((a, b) => a - b)
-    );
+const settle = () => ticked.value.length && props.send([...ticked.value].sort((a, b) => a - b).map((i) => props.options[i].title));
 const pressed = ref(-1);
 const {
     value: holding,
+    left,
     length,
     start,
     undo,
-} = useHeldSend({seconds: () => props.holdSeconds, send: (i) => emit("pick", i), sendOnUnmount: true});
+    sendNow,
+} = useHeldSend({
+    seconds: () => props.holdSeconds,
+    send: (title) => props.send(title),
+    sendOnUnmount: true,
+    sendWhenHidden: props.sendWhenHidden,
+});
 const held = computed(() => length.value * 1000);
+const heldSlot = (title) => Boolean(slots.held) && holding.value === title;
+const heldOwn = computed(() => holding.value !== null && !props.options.some((o) => o.title === holding.value));
+
+async function press(i) {
+    if (pressed.value >= 0) return;
+    pressed.value = i;
+    try {
+        await props.send(props.options[i].title);
+    } catch {
+        pressed.value = -1;
+    }
+}
 
 function choose(i) {
     if (props.multiple) return tick(i);
-    if (props.immediate) {
-        if (pressed.value >= 0) return;
-        pressed.value = i;
-        return emit("pick", i);
-    }
-    if (holding.value === i) return undo();
-    start(i);
+    if (props.immediate) return press(i);
+    if (holding.value === props.options[i].title) return undo();
+    start(props.options[i].title);
 }
+
+defineExpose({undo});
 </script>
 
 <template>
-    <div :class="['options', {tiles, steady, multiple}]" :style="{'--tone': color}">
+    <div :class="['options', {tiles, steady, large, multiple}]" :style="{'--tone': color}">
         <template v-for="(o, i) in options" :key="i">
-            <button
-                type="button"
-                :class="[
-                    'option',
-                    {
-                        suggested: i === suggested && !disabled,
-                        chosen: isChosen(o),
-                        ticked: multiple && ticked.includes(i),
-                        holding: holding === i,
-                        pressed: pressed === i,
-                    },
-                ]"
-                :style="{'--i': i}"
-                :disabled="disabled"
-                @click="choose(i)"
-            >
-                <template v-if="tiles">
-                    <span class="mark" />
-                </template>
-                <template v-if="steady">
-                    <span class="tick">✓</span>
-                </template>
-                <template v-if="i === suggested && !disabled">
-                    <span class="pick">The agent's pick</span>
-                </template>
-                <template v-if="chosen && chosen === o.title">
-                    <span class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</span>
-                </template>
-                <span class="label">{{ o.title }}</span>
-                <template v-if="o.description">
-                    <span class="desc">{{ o.description }}</span>
-                </template>
-                <template v-if="o.code">
-                    <code class="code">{{ o.code }}</code>
-                </template>
-                <template v-if="chosen && chosen === o.title && chosenBy === 'agent' && reason">
-                    <span class="reason">{{ reason }}</span>
-                </template>
-                <template v-if="holding === i">
-                    <span class="hold-note">Saving this choice… click it again to cancel</span>
-                    <span class="hold-bar" :style="{'--hold': `${held}ms`}" />
-                </template>
-            </button>
+            <template v-if="heldSlot(o.title)">
+                <slot name="held" :answer="o.title" :left="left" :seconds="length" :send-now="sendNow" :undo="undo" />
+            </template>
+            <template v-else>
+                <button
+                    type="button"
+                    :class="[
+                        'option',
+                        {
+                            suggested: i === suggested && !disabled,
+                            chosen: isChosen(o),
+                            ticked: multiple && ticked.includes(i),
+                            holding: holding === o.title,
+                            pressed: pressed === i,
+                        },
+                    ]"
+                    :style="{'--i': i}"
+                    :disabled="disabled"
+                    @click="choose(i)"
+                >
+                    <template v-if="tiles">
+                        <span class="mark" />
+                    </template>
+                    <template v-if="steady">
+                        <span class="tick">✓</span>
+                    </template>
+                    <template v-if="i === suggested && !disabled">
+                        <span class="pick">The agent's pick</span>
+                    </template>
+                    <template v-if="chosen && chosen === o.title">
+                        <span class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</span>
+                    </template>
+                    <span class="label">{{ o.title }}</span>
+                    <template v-if="o.description">
+                        <span class="desc">{{ o.description }}</span>
+                    </template>
+                    <template v-if="o.code">
+                        <code class="code">{{ o.code }}</code>
+                    </template>
+                    <template v-if="chosen && chosen === o.title && chosenBy === 'agent' && reason">
+                        <span class="reason">{{ reason }}</span>
+                    </template>
+                    <template v-if="holding === o.title">
+                        <span class="hold-note">Saving this choice… click it again to cancel</span>
+                        <span class="hold-bar" :style="{'--hold': `${held}ms`}" />
+                    </template>
+                </button>
+            </template>
+        </template>
+        <template v-if="slots.own">
+            <template v-if="slots.held && heldOwn">
+                <slot name="held" :answer="holding" :left="left" :seconds="length" :send-now="sendNow" :undo="undo" />
+            </template>
+            <template v-else>
+                <slot name="own" :hold="start" />
+            </template>
         </template>
         <template v-if="multiple && !disabled">
             <div class="settle">
@@ -228,6 +256,18 @@ function choose(i) {
     font-family: ui-monospace, monospace;
     font-size: 12px;
     white-space: pre-wrap;
+}
+
+.options.large {
+    gap: 14px;
+}
+
+.large .option {
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 1em;
 }
 
 .options.tiles {

@@ -1,6 +1,15 @@
 <script setup>
+import {onMounted, ref} from "vue";
+import {tick} from "./haptic.js";
+
 defineProps({answer: {type: String, required: true}, left: {type: Number, required: true}, seconds: {type: Number, required: true}});
 const emit = defineEmits(["now", "undo"]);
+const cancel = ref(null);
+
+onMounted(() => {
+    tick();
+    cancel.value?.focus({preventScroll: true});
+});
 </script>
 
 <template>
@@ -9,7 +18,15 @@ const emit = defineEmits(["now", "undo"]);
             <span class="sending-words">Sending “{{ answer }}”</span>
             <span class="sending-left" aria-hidden="true">{{ left }}s</span>
         </button>
-        <button type="button" class="sending-undo" :aria-label="`Cancel sending “${answer}”, it sends in ${seconds} seconds`" @click="emit('undo')">Cancel</button>
+        <button
+            ref="cancel"
+            type="button"
+            class="sending-undo"
+            :aria-label="`Cancel sending “${answer}”, it sends in ${seconds} seconds`"
+            @click="emit('undo')"
+        >
+            Cancel
+        </button>
     </div>
 </template>
 

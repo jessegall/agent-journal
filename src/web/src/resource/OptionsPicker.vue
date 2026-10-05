@@ -78,8 +78,7 @@ const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
             :multiple="multiple"
             :chosen-many="chosenMany"
             :hold-seconds="holdSeconds"
-            @pick="(i) => submit(options[i].title)"
-            @picks="(all) => submit(all.map((i) => options[i].title).join(MANY))"
+            :send="(choice) => submit([choice].flat().join(MANY))"
         />
         <template v-if="question.unsaved">
             <p class="unsaved">

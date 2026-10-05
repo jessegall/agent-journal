@@ -2,20 +2,20 @@
 import {openUpdate} from "../state/overlays.js";
 import {meta, types} from "../domain/spec.js";
 import {store} from "../state/store.js";
-import TextDisplay from "../kit/TextDisplay.vue";
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed, ref} from "vue";
 import Buttons from "../resource/Buttons.vue";
-import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
 import TurnParent from "./TurnParent.vue";
 import TurnPeer from "./TurnPeer.vue";
 import TurnText from "./TurnText.vue";
+import TurnQuestion from "./TurnQuestion.vue";
 import TurnActions from "./TurnActions.vue";
 import TurnReactions from "./TurnReactions.vue";
 import {useTurnLinks} from "./turnLinks.js";
 import {useTurnText} from "./turnText.js";
+import {useTurnShape} from "./turnShape.js";
 import {quoted} from "../format/quote.js";
 import {EARLIER, answered} from "../domain/replies.js";
 import {focusTurn, laidOut} from "../platform/view.js";
@@ -26,7 +26,6 @@ const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "grew", "pin"]);
 const picking = ref(false);
 const bubble = ref(null);
-const LONG = 6;
 const FOLD_AT = 420;
 const PEER_FOLD_AT = 140;
 const PEER_KEEP = 96;
@@ -43,32 +42,6 @@ function chipOrUpdate(e) {
     openUpdate(Number(update.dataset.update), update);
 }
 
-function shaped() {
-    const el = bubble.value;
-    const text = el && el.querySelector(".thread-text");
-    if (!el || !text || files.value.length || props.turn.type === "question") return;
-    Object.assign(el.style, {width: "9999px", maxWidth: ""});
-    const cap = el.getBoundingClientRect().width;
-    const rows = () => Math.round(text.getBoundingClientRect().height / parseFloat(getComputedStyle(text).lineHeight));
-    const lines = rows();
-    el.style.width = "";
-    if (lines < 2 || lines > LONG) return;
-    let low = Math.ceil(cap / lines);
-    let high = Math.ceil(cap);
-    while (high - low > 4) {
-        const mid = Math.floor((low + high) / 2);
-        el.style.width = `${mid}px`;
-        if (rows() > lines) low = mid;
-        else high = mid;
-    }
-    el.style.width = `${high}px`;
-}
-
-onMounted(() =>
-    nextTick(() => {
-        shaped();
-    })
-);
 const mine = computed(() => props.turn.who === "user");
 const subagentTask = (id) =>
     rowsOf("agent")
@@ -153,11 +126,7 @@ const faces = computed(() => {
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
 const files = computed(() => Object.keys(props.turn.data.files || {}));
-watch([html, laidOut], () =>
-    nextTick(() => {
-        shaped();
-    })
-);
+useTurnShape(bubble, {sources: [html, laidOut], holdsCard: () => files.value.length > 0 || props.turn.type === "question"});
 
 function refOf(word) {
     const m = word.trim().match(/^([\w-]+)[ :](\d+)$/);
@@ -233,10 +202,7 @@ async function drop() {
             </template>
             <TurnText :html="html" :fold-at="between ? PEER_FOLD_AT : FOLD_AT" :keep="between ? PEER_KEEP : 320" @activate="chipOrUpdate" />
             <template v-if="turn.type === 'question'">
-                <template v-if="turn.abstract">
-                    <TextDisplay class="thread-context" :text="turn.abstract" />
-                </template>
-                <OptionsPicker :resource="turn" />
+                <TurnQuestion :turn="turn" />
             </template>
             <template v-if="turn.type === 'message'">
                 <Buttons :resource="turn" />
@@ -412,12 +378,6 @@ button.thread-pill:hover {
     font-size: 14.5px;
     font-weight: 600;
     color: var(--text);
-}
-
-.thread-context {
-    margin: 4px 0 0;
-    color: var(--text-3);
-    font-size: 12.5px;
 }
 
 .thread-turn:hover :deep(.thread-tools) {
