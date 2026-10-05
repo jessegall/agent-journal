@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.5 — a long message no longer hangs the server
+
+**The server no longer hangs at 100% CPU on a long message with many flags.** To decide whether a `--flag` belongs to
+another program, the chat formatter searched all the text before every flag again, so a long message with many paths
+and flags cost the square of its length; the server hung while warming the dashboard, and again after every restart.
+It now looks only at the word before the flag, with the same answers. Reported by Johannes Jan Prins, with the patch.
+
 ## 2.249.4 — tunler installs from the server you name
 
 **Installing tunler asks which server to install it from.** The Install tunler form, on Settings under Tunler and in

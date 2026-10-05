@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
@@ -178,6 +179,10 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
     shown = formatted("run python3 journal.py --root .journal upgrade, or pass --why", record, VIEWER)
     assert shown.endswith(" --root .journal upgrade, or pass `--why`"), "a flag of another program and a .journal path stay plain text"
+    long = "see src/a.py and docs/b.md --flag " * 4000
+    began = time.perf_counter()
+    formatted(long, record, VIEWER)
+    assert time.perf_counter() - began < 1.0, "a long text with many paths and flags formats in linear time"
 
 
 def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
