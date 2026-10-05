@@ -9,6 +9,7 @@ from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted, Work
 from features import trigger
 from features.nudges import Sent
 from features.trigger import MINUTE
+from providers.payload import HookEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
@@ -204,6 +205,7 @@ class RemindOpenWork(Handler):
 
 
 class CountEdits(Handler):
+    hooks = (HookEvent.POST_TOOL_USE,)
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         work = working(context)[:1]
         if not context.agent.row.wrote or not work:

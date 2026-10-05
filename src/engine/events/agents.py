@@ -19,6 +19,11 @@ class AgentReported(AgentEvent):
     def name(cls) -> str:
         return f"hook.{cls.hook_name}" if cls.hook_name else cls.on
 
+    @classmethod
+    def patterns(cls, hooks: tuple[str, ...]) -> tuple[str, ...]:
+        named = hooks or ((cls.hook_name,) if cls.hook_name else ())
+        return tuple(f"hook.{hook}" for hook in named) or (cls.on,)
+
     def wanted(self) -> bool:
         return not self.hook_name or self.hook == self.hook_name
 

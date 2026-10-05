@@ -48,7 +48,8 @@ class Events:
             if wanted(handler, feature, record, row):
                 handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
         self.names.append(kind.name())
-        bus.on(kind.on, run, enabled=feature.enabled)
+        for pattern in kind.patterns(handler.hooks):
+            bus.on(pattern, run, enabled=feature.enabled)
 
 
 class Client:
