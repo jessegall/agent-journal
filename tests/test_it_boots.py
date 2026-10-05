@@ -456,6 +456,7 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
     try:
         assert said("http://127.0.0.1:"), "the server prints where it is serving"
         assert said("restarting on the same port", touch), "a new build of the code restarts the server on the port it had"
+        assert (root / "runtime" / "restarting").is_file(), "the server marks its restart before it stops serving, so a hook meanwhile retries"
         assert said("http://127.0.0.1:", times=2), "the restarted server serves again"
         ask(root)
         assert said("journal: stopped") and server.wait(WAIT) == 0, "writing the stop flag ends the server and says it stopped"
