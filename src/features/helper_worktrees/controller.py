@@ -124,10 +124,10 @@ class Worktrees(Controller):
     def _drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]):
         project = self._project()
         for row in self.rows.standing():
-            if not row.path or not within(Path(row.path), places, commands) or row.told == tip(project, row.working):
+            if not row.path or not within(Path(row.path), places, commands) or row.checked_tip == tip(project, row.working):
                 continue
             found = self._drift(row)
-            self.update(row.n, told=found.tip)
+            self.update(row.n, checked_tip=found.tip)
             if not found.current:
                 return row, found
         return None
