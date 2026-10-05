@@ -52,7 +52,7 @@ from features.plugins.paths import data
 from engine.git_view import commit, file_diff
 from engine.project_files import list_folder, matching, project_path, read_source
 from engine.paths import contained
-from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
+from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, rank_routes, represented, route
 from commands.invoke import invoked
 from features.format import VIEWER, formatted, shaped
 from surfaces.attachments import attachments, listed_types
@@ -909,3 +909,6 @@ def post_action_bare(req: Request) -> Reply:
 def post_action(req: Request) -> Reply:
     got = invoked(req.controller(), req.params["action"], (int(req.params["n"]),), req.body)
     return Reply(200, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))
+
+
+rank_routes()

@@ -13,7 +13,7 @@ from engine.stop import ask_session
 from resources import types
 from resources.base import ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
 from engine import runtime
-from engine.paths import environment_home, environments
+from engine.paths import ROUTED, environment_home, environments
 from engine.wording import plural
 from controllers.facts import Facts
 from controllers.messages import Messages
@@ -47,6 +47,8 @@ class Environments(Controller):
         return self.update(row.n, holder=session)
 
     def unused(self, name: str, hint: str = "") -> str:
+        if name in ROUTED:
+            raise Refused(f"{name!r} is a word the viewer's own addresses use; choose another name")
         if self._titled(name):
             raise Refused(f"environment {name!r} exists{hint}")
         return name

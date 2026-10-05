@@ -6,7 +6,7 @@ from engine.clock import TICKED
 from engine.events.base import AgentEvent, TypedEvent
 from engine.files import EDITED
 from engine.ran import COMMAND_RAN
-from engine.timing import MEASURED, TIMING
+from engine.timing import EVENT
 
 
 @dataclass(frozen=True)
@@ -72,7 +72,7 @@ class FileEdited(AgentEvent):
 
 @dataclass(frozen=True)
 class Measured(TypedEvent):
-    on: ClassVar[str] = f"{TIMING}.{MEASURED}"
+    on: ClassVar[str] = EVENT
     root: str = ""
     env: str = ""
     kind: str = ""
