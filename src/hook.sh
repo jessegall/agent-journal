@@ -17,6 +17,7 @@ down() {
 }
 read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
 [ $(( $(date +%s) - at )) -le 5 ] || down
+restarting() { read -r since < "$root/runtime/restarting" 2>/dev/null && [ $(( $(date +%s) - ${since%.*} )) -lt 30 ]; }
 tries=0
 while :; do
   reply=$(curl -s -m 10 -w '\n%{http_code}' -H 'Content-Type: application/json' \
@@ -25,7 +26,7 @@ while :; do
 }
   tries=$((tries + 1))
   [ "${code:-000}" = 000 ] || break
-  [ -e "$root/runtime/upgrading" ] && [ $tries -lt 16 ] || [ $tries -lt 4 ] || break
+  { [ -e "$root/runtime/upgrading" ] || restarting; } && [ $tries -lt 16 ] || [ $tries -lt 4 ] || break
   sleep 0.5
 done
 out=${reply%

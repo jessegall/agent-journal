@@ -140,7 +140,7 @@ FREEZE_SECONDS = 10.0
 LATE_STOP = 5.0
 
 
-def watch_code(package: Path, server: ThreadingHTTPServer, changed: threading.Event) -> None:
+def watch_code(root: Path, package: Path, server: ThreadingHTTPServer, changed: threading.Event) -> None:
     before = code_stamp(package)
     last_change = 0.0
     while not changed.is_set():
@@ -150,6 +150,7 @@ def watch_code(package: Path, server: ThreadingHTTPServer, changed: threading.Ev
             before = now
             last_change = time.monotonic()
         elif last_change and time.monotonic() - last_change >= SETTLE_SECONDS:
+            runtime.restarting(root).write_text(str(time.time()))
             changed.set()
             server.shutdown()
 
@@ -201,7 +202,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     warm_viewer(root, default_env(root))
     read_transcripts(root)
     gc.freeze()
-    threading.Thread(target=watch_code, args=(Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
+    threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
@@ -219,7 +220,6 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
         return
     if changed.is_set():
         print("journal: Python code changed; restarting on the same port", flush=True)
-        runtime.restarting(root).write_text(str(time.time()))
         command = [*entry("journal"), "--root", str(root), "serve", "--port", str(server.server_port)]
         os.execv(sys.executable, command)
 
