@@ -19,8 +19,9 @@ def webp(head: bytes) -> tuple[int, int] | None:
     if kind == b"VP8L":
         bits = int.from_bytes(head[21:25], "little")
         return (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
-    if kind == b"VP8 ":
-        return struct.unpack("<HH", head[26:30])[0] & 0x3FFF, struct.unpack("<HH", head[28:32])[0] & 0x3FFF
+    if kind == b"VP8 " and len(head) >= 30:
+        width, height = struct.unpack("<HH", head[26:30])
+        return width & 0x3FFF, height & 0x3FFF
     return None
 
 

@@ -664,7 +664,9 @@ def test_picture_dimensions_are_read_from_tiny_files_and_search_sees_an_edit_tha
         (tmp_path / name).write_bytes(data)
     (tmp_path / "text.png").write_bytes(b"not a picture at all")
     assert {name: dimensions(tmp_path / name) for name in pictures} == wanted, "each picture type gives its width and height from its first bytes"
-    assert (dimensions(tmp_path / "text.png"), dimensions(tmp_path / "gone.png")) == (None, None), "a file that is no picture, or is not there, has no dimensions"
+    (tmp_path / "cut.webp").write_bytes((tmp_path / "v.webp").read_bytes()[:29])
+    assert (dimensions(tmp_path / "text.png"), dimensions(tmp_path / "gone.png"), dimensions(tmp_path / "cut.webp")) == (None, None, None), \
+        "a file that is no picture, is not there, or is cut short has no dimensions"
     features.load()
     record = fresh()
     todos = CONTROLLERS["todo"](record, actor=SYSTEM)
