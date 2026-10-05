@@ -44,11 +44,11 @@ onMounted(() =>
     <div :class="['helper', state()]">
         <div class="helper-head">
             <span :class="['helper-dot', state()]" />
-            <button type="button" class="helper-what" title="Open this helper's inspector" @click="emit('inspect')">
+            <Btn kind="text" class="helper-what" title="Open this helper's inspector" @click="emit('inspect')">
                 <strong>{{ name() }}</strong>
                 {{ row.title }}
                 <small>{{ helperLine(row) }}</small>
-            </button>
+            </Btn>
             <span :class="['helper-state', state()]">{{ word() }}</span>
             <template v-if="state() === 'running'">
                 <AgentStopButton
@@ -64,9 +64,9 @@ onMounted(() =>
         <template v-if="report()">
             <TextDisplay ref="reportBox" :class="['helper-report', {whole}]" :text="report()" :style="{'--lines': LINES}" />
             <template v-if="clipped || whole">
-                <button type="button" class="helper-more" @click="whole = !whole">
+                <Btn kind="text" class="helper-more" @click="whole = !whole">
                     {{ whole ? "Show less" : "Show the whole report" }}
-                </button>
+                </Btn>
             </template>
         </template>
         <template v-if="state() === 'reported'">
@@ -141,14 +141,8 @@ onMounted(() =>
 .helper-what {
     flex: 1;
     min-width: 0;
-    padding: 0;
-    border: 0;
-    background: none;
     color: var(--text);
-    font: inherit;
     font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
 }
 
 .helper-what:hover strong {
@@ -191,13 +185,8 @@ onMounted(() =>
 .helper-more {
     align-self: flex-start;
     margin-left: 15px;
-    padding: 0;
-    border: 0;
-    background: none;
     color: var(--accent-text);
-    font: inherit;
     font-size: 12px;
-    cursor: pointer;
 }
 
 .helper-remove {

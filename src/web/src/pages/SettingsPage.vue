@@ -168,10 +168,10 @@ onMounted(async () => {
         </PageBar>
 
         <template v-if="back">
-            <button type="button" class="settings-back" @click="chosen = ''">
+            <Btn kind="text" class="settings-back" @click="chosen = ''">
                 <Icon name="back" :size="14" />
                 {{ TABS.find((t) => t.key === tab).title }}
-            </button>
+            </Btn>
         </template>
         <SwitchCase :value="screen">
             <template #list>
@@ -351,19 +351,17 @@ onMounted(async () => {
     color: var(--text);
 }
 
-.settings-back {
+.settings-back :deep(.btn-label) {
     display: inline-flex;
-    align-self: flex-start;
     align-items: center;
     gap: 6px;
+}
+
+.settings-back {
+    align-self: flex-start;
     margin: 16px 16px 0;
-    padding: 0;
-    border: 0;
-    background: none;
     color: var(--accent-text);
-    font: inherit;
     font-size: 15px;
-    cursor: pointer;
 }
 
 .settings.narrow .settings-body {

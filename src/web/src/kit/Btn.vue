@@ -1,7 +1,15 @@
 <script setup>
 import Spinner from "./Spinner.vue";
 
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean, disabled: Boolean, fill: Boolean, href: {type: String, default: ""}});
+defineProps({
+    kind: {type: String, default: "ghost"},
+    small: Boolean,
+    large: Boolean,
+    busy: Boolean,
+    disabled: Boolean,
+    fill: Boolean,
+    href: {type: String, default: ""},
+});
 </script>
 
 <template>
@@ -86,6 +94,26 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Bool
     background: color-mix(in oklab, var(--danger) 12%, transparent);
     color: var(--danger);
 }
+.btn.text {
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    white-space: normal;
+}
+
+.btn.text:hover {
+    background: none;
+    color: var(--text);
+}
+
+.btn.text .btn-label {
+    display: block;
+}
+
 .btn.icon {
     height: auto;
     padding: 5px;

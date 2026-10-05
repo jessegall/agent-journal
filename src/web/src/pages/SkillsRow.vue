@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import Btn from "../kit/Btn.vue";
 import ListRow from "../kit/ListRow.vue";
 import StateDot from "../kit/StateDot.vue";
 import Switch from "../kit/Switch.vue";
@@ -12,7 +13,7 @@ const state = computed(() => (props.skill.stale ? "Changed since loaded" : props
 
 <template>
     <div class="skill-row" :style="{'--depth': props.depth}">
-        <button type="button" class="skill-open" :aria-label="`Open ${skill.name}`" @click="$emit('open', skill)">
+        <Btn kind="text" fill class="skill-open" :aria-label="`Open ${skill.name}`" @click="$emit('open', skill)">
             <ListRow :title="skill.name" :text="skill.description">
                 <template #end>
                     <span :class="['skill-state', {stale: skill.stale}]">
@@ -21,7 +22,7 @@ const state = computed(() => (props.skill.stale ? "Changed since loaded" : props
                     </span>
                 </template>
             </ListRow>
-        </button>
+        </Btn>
         <Switch
             class="skill-switch"
             :on="skill.always"
@@ -45,13 +46,7 @@ const state = computed(() => (props.skill.stale ? "Changed since loaded" : props
 .skill-open {
     flex: 1;
     min-width: 0;
-    padding: 0;
-    border: 0;
-    background: none;
     color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
 }
 
 .skill-state {
