@@ -38,18 +38,16 @@ class Checks(Controller):
 
     @action
     def run(self, n: int, wait: bool = False):
-        self._runnable(n)
+        self._require_command(n)
         if wait:
             return self._ran(n)
         if not self._in_background(n):
             return f"check {n} is already running; its result lands on the row"
         return f"check {n} is running; its result lands on the row, and a failure is told to you"
 
-    def _runnable(self, n: int):
-        check = self.load(n)
-        if not check.command:
+    def _require_command(self, n: int) -> None:
+        if not self.load(n).command:
             raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
-        return check
 
     @property
     def _project(self):
@@ -72,7 +70,7 @@ class Checks(Controller):
 
     @action(network=True)
     def gate(self, n: int, message: str, paths: str = "", wait: bool = False):
-        self._runnable(n)
+        self._require_command(n)
         named = [path.strip() for path in paths.split(",") if path.strip()]
         if not named:
             raise Refused("name the paths the commit takes: --paths <path>,<path>")
