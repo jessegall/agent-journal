@@ -131,10 +131,15 @@ class HookBinding:
     def owned(self) -> set[str]:
         return {r.title for r in Environments(Record(self.root, runtime.env(self.root)), actor=SYSTEM).all() if r.owner}
 
+    def worked_in(self, hook) -> str:
+        if self.provider.is_subagent(hook):
+            return ""
+        return environment(checkout(Path(hook.cwd), workspace_folders()) if hook.cwd else None)
+
     def environment(self, hook, prefer: str) -> str:
         session = hook.session
         held = self.sessions.read(session)
-        worked = "" if self.provider.is_subagent(hook) else environment(checkout(Path(hook.cwd), workspace_folders()) if hook.cwd else None)
+        worked = self.worked_in(hook)
         stays = bool(held.environment and held.provider) and not self.moving(session, held.environment, worked)
         env = held.environment if stays else self.bound(session, worked, prefer)
         if stays and not alive(held.pid):

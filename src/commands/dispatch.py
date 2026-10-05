@@ -2,6 +2,7 @@ import mimetypes
 from pathlib import Path
 from urllib.parse import unquote
 from engine import bus
+from engine.record import Record
 from engine.timing import Stopwatch, profiler
 from controllers.faults import threw
 from features.format import shaped
@@ -55,7 +56,7 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Sto
     if not reply.timed:
         return reply
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
-    return later(reply, lambda: began.announce(root, env, "hook" if "/hook/" in path else "request", name, profile))
+    return later(reply, lambda: began.announce(Record(root, env), "hook" if "/hook/" in path else "request", name, profile))
 
 
 def known_environment(root: Path, env: str) -> bool:

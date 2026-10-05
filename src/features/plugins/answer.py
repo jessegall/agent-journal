@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
 from engine.fields import Loaded
-from features.plugins.declared import declared, named, settings_of, settings_with
+from features.plugins.declared import declared, named, settings_of, settings_choosing
 from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
@@ -84,7 +84,7 @@ def settled(record, plugin: str, values: dict) -> None:
     settings = settings_of(row)
     found = {key: str(value) for key, value in values.items() if key in known and settings.chosen.get(key) != str(value)}
     if found:
-        rows.update(row.n, settings=settings_with(row, chosen={**settings.chosen, **found}))
+        rows.update(row.n, settings=settings_choosing(row, found))
 
 
 def wanted(reply: dict) -> list[tuple[str, object]]:

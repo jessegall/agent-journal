@@ -8,6 +8,12 @@ PROVIDERS = {p.name: p for p in PROVIDER_TYPES}
 DRIVERS = {d.name: d for d in (ClaudeDriver, CodexDriver)}
 
 
+
+def transcript_reader(agent):
+    provider = PROVIDERS.get(agent.provider)
+    return provider() if provider and agent.transcript else None
+
+
 def skill_folders() -> tuple[str, ...]:
     return (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 

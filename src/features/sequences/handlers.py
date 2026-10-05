@@ -1,5 +1,5 @@
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import ClassVar
 
 from controllers.types import Questions
@@ -13,7 +13,7 @@ from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
-from features.sequences.resource import RunKey
+from features.sequences.resource import Run, RunKey
 from features.triggers.controller import Triggers
 from features.triggers.resource import FIRED, START
 from controllers.types import CONTROLLERS
@@ -104,11 +104,22 @@ class EndWithItsRow(Handler):
                 sequences.update(sequence.n, runs=sequences.without(sequence, key))
 
 
-def step_values(context: Context, sequence, key: str, run: dict) -> dict:
+@dataclass(frozen=True)
+class StepInHand:
+    n: int
+    title: str
+    step: int
+    count: int
+    name: str
+    body: str
+    then: str
+
+
+def step_values(context: Context, sequence, key: str, run: Run) -> dict:
     steps = context.journal.get(Sequences).steps_of(sequence)
-    part = steps[run["step"] - 1]
-    return {"n": sequence.n, "title": sequence.title, "step": run["step"], "count": len(steps), "name": part[SECTION.title],
-            "body": filled(context, sequence.n, key, part[SECTION.body]), "then": then_next(sequence.n, key, part[SECTION.body])}
+    part = steps[run.step - 1]
+    return asdict(StepInHand(sequence.n, sequence.title, run.step, len(steps), part[SECTION.title],
+                             filled(context, sequence.n, key, part[SECTION.body]), then_next(sequence.n, key, part[SECTION.body])))
 
 
 class HandStepToAgent(Handler):
@@ -131,7 +142,7 @@ class HandStepToAgent(Handler):
             return
         speaking.hold(STEP_HELD, STEP, n=sequence.n, title=sequence.title, step=run["step"], about=about_flag(key))
         speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run.get('stepped', run['at'])}", lambda: speaking.agent.say(
-            STEP, **step_values(context, sequence, key, run), about=about_flag(key), chat_rule=chat_rule(sequence)))
+            STEP, **step_values(context, sequence, key, Run.from_json(run)), about=about_flag(key), chat_rule=chat_rule(sequence)))
 
 
 def then_next(n: int, key: str, body: str) -> str:
@@ -177,7 +188,7 @@ def standing_steps(context: AgentContext, agent) -> list[Sent]:
     standing = time.time() - handed >= step_pace(context) * MINUTE
     if not (agent.status == IDLE or standing) or asked_since(context, handed, {sequence.ref, RunKey.of(key).about}):
         return []
-    return [Sent(f"{sequence.n}|{key}|{run['step']}", step_values(context, sequence, key, run))]
+    return [Sent(f"{sequence.n}|{key}|{run['step']}", step_values(context, sequence, key, Run.from_json(run)))]
 
 
 def free_while_held(found: JournalCall) -> bool:

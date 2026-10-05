@@ -228,5 +228,9 @@ def settings_of(row) -> PluginSettings:
     return PluginSettings.of(row.settings)
 
 
+def settings_choosing(row, values: dict) -> dict:
+    return settings_with(row, chosen={**settings_of(row).chosen, **values})
+
+
 def settings_with(row, **changes) -> dict:
     return replace(settings_of(row), **changes).to_json()

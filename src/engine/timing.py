@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 from engine import bus, runtime, waits
 from engine.collecting import collecting
+from engine.record import Record
 from resources.base import SYSTEM
 
 TIMING = "timing"
@@ -20,14 +21,13 @@ class Stopwatch:
     garbage: float = field(default_factory=collecting)
     waiting: float = field(default_factory=waits.total)
 
-    def announce(self, root, env: str, kind: str, name: str, profile: cProfile.Profile | None = None) -> None:
+    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None) -> None:
         if not bus.heard(EVENT):
             return
         bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
-            "root": str(root), "env": env, "kind": kind, "target": name,
+            "root": str(record.root), "env": record.env, "kind": kind, "target": name, "profile": profile,
             "took": (time.perf_counter() - self.wall) * 1000, "working": (time.thread_time() - self.working) * 1000,
-            "garbage": (collecting() - self.garbage) * 1000, "waiting": waits.total() - self.waiting,
-            **({"profile": profile} if profile else {})})
+            "garbage": (collecting() - self.garbage) * 1000, "waiting": waits.total() - self.waiting})
 
 
 def profiler(root) -> cProfile.Profile | None:
@@ -35,9 +35,9 @@ def profiler(root) -> cProfile.Profile | None:
 
 
 @contextmanager
-def measured(root, env: str, kind: str, name: str):
+def measured(record: Record, kind: str, name: str):
     began = Stopwatch()
     try:
         yield
     finally:
-        began.announce(root, env, kind, name)
+        began.announce(record, kind, name)

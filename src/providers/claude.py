@@ -391,10 +391,10 @@ class Claude(Provider):
         kind = self.kind(row, bool(results))
         peer = None
         if kind == PEER and row.origin.name and row.origin.sender.startswith(SESSIONS):
-            peer, text = PeerNote(PEER, row.origin.name, row.origin.sender), row.origin.body if row.origin.body else text
+            peer, text = PeerNote(PEER, row.origin.sender, row.origin.name), row.origin.body if row.origin.body else text
         sent = next((use for use in uses if use.name == SENDS and use.to), None)
         if sent:
-            kind, peer, text = PEER, PeerNote(SENT, "", sent.to), sent.message if sent.message else text
+            kind, peer, text = PEER, PeerNote(SENT, sent.to), sent.message if sent.message else text
         asked = [use.id for use in uses if use.name in self.question_tools]
         answered = [block.tool_use_id for block in results]
         return Turn(line, SPEAKERS.get(kind, kind), text, kind=kind, at=row.at, tools=tools, parent=row.parent, asked=asked, answered=answered, peer=peer)

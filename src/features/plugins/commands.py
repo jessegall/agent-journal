@@ -3,7 +3,7 @@ import shutil
 from engine.version import version
 from features.parts import Command, Context
 from features.plugins.answer import Posting, raised
-from features.plugins.declared import called, declared, named, settings_of, settings_with
+from features.plugins.declared import called, declared, named, settings_of, settings_choosing
 from features.plugins.environment import environment, ports_for
 from features.plugins.lifecycle import difference, fetched, install_staged, reread, restarted
 from features.plugins.manifest import read
@@ -95,7 +95,7 @@ class Configure(Command):
             names = ", ".join(s.key for s in manifest.settings)
             raise Refused(f"{called(row)} has no setting {key!r}; it has {names if names else 'none'}")
         setting.check(value)
-        updated = plugins.update(row.n, settings=settings_with(row, chosen={**settings_of(row).chosen, key: value}))
+        updated = plugins.update(row.n, settings=settings_choosing(row, {key: value}))
         restarted(plugins.record.root, manifest)
         return updated
 
