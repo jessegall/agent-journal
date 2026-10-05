@@ -116,6 +116,21 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
     started = time.monotonic()
     answered = writing(slow)
     assert (answered, time.monotonic() - started < 3) == ({}, True), "a guard that hangs is given up on, quickly, and the write goes through"
+    from engine import viewer
+    asked = []
+    real = viewer.identity
+    viewer.identity = lambda url, timeout=0.05: asked.append(url) or real(url, timeout)
+    try:
+        viewer.lately_running(broken.root)
+        probed = len(asked)
+        viewer.lately_running(broken.root)
+        assert len(asked) == probed, "a lookup that found no viewer is not repeated by every guard within its few seconds"
+        viewer.remember(broken.root, 8999)
+        assert (viewer.lately_running(broken.root), len(asked)) == ("http://127.0.0.1:8999/", probed), \
+            "the serving process knows its own address without asking itself over HTTP"
+    finally:
+        viewer.identity = real
+        viewer.SERVING.clear()
 
 
 def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_path):

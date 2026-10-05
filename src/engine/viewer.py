@@ -25,6 +25,7 @@ from engine.fields import Loaded
 PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
 RUNNING_FOR = 5.0
 RUNNING: dict[str, tuple[float, str]] = {}
+SERVING: dict[str, str] = {}
 HEARTBEAT = 2.0
 LAUNCHING = "viewer.launching"
 COMING_UP = 30.0
@@ -92,6 +93,7 @@ def forget(root: str) -> None:
 def remember(root: Path, port: int) -> str:
     url = beat(root, port)
     note(root, url)
+    SERVING[str(Path(root).resolve())] = url
     return url
 
 
@@ -141,12 +143,13 @@ def running(root: Path) -> str:
 
 def lately_running(root: Path) -> str:
     key, now = str(Path(root).resolve()), time.monotonic()
+    if key in SERVING:
+        return SERVING[key]
     held = RUNNING.get(key)
     if held is not None and now - held[0] <= RUNNING_FOR:
         return held[1]
     url = running(root)
-    if url:
-        RUNNING[key] = (now, url)
+    RUNNING[key] = (now, url)
     return url
 
 
