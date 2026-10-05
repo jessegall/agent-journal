@@ -9,90 +9,109 @@ const props = defineProps({group: {type: Object, required: true}, sheet: Boolean
 const emit = defineEmits(["change", "timing", "act"]);
 
 const {members: opened, toggle} = useToggledSet();
+const bare = computed(() => !props.group.items.length && props.group.danger.length > 0);
 const off = computed(() => Boolean(props.group.head && props.group.head.off));
 const helps = computed(() => Object.fromEntries(props.group.items.filter((item) => item.block).map((item) => [item.key, item.help])));
 </script>
 
 <template>
     <section :data-spy="group.key" :class="['setting-group', {sheet}]">
-        <header class="setting-group-head">
-            <div class="setting-group-text">
-                <h2>{{ group.title }}</h2>
-                <p>
-                    {{ group.line }}
-                    <template v-if="group.help">
-                        <button type="button" class="setting-how" :aria-expanded="opened.has(group.key)" @click="toggle(group.key)">How it works</button>
-                    </template>
-                </p>
-            </div>
-            <template v-if="group.head">
-                <span class="setting-group-switch">
-                    <template v-if="group.head.kind === 'always'">
-                        <Chip>Always on</Chip>
-                    </template>
-                    <template v-else>
-                        <span>{{ group.head.value ? "On" : "Off" }}</span>
-                        <Switch :on="group.head.value" :large="sheet" :title="group.title" @change="emit('change', group.head, $event)" />
-                    </template>
-                </span>
-            </template>
-        </header>
+        <template v-if="!bare">
+            <header class="setting-group-head">
+                <div class="setting-group-text">
+                    <h2>{{ group.title }}</h2>
+                    <p>
+                        {{ group.line }}
+                        <template v-if="group.help">
+                            <button type="button" class="setting-how" :aria-expanded="opened.has(group.key)" @click="toggle(group.key)">
+                                How it works
+                            </button>
+                        </template>
+                    </p>
+                </div>
+                <template v-if="group.head">
+                    <span class="setting-group-switch">
+                        <template v-if="group.head.kind === 'always'">
+                            <Chip>Always on</Chip>
+                        </template>
+                        <template v-else>
+                            <span>{{ group.head.value ? "On" : "Off" }}</span>
+                            <Switch
+                                :on="group.head.value"
+                                :large="sheet"
+                                :title="group.title"
+                                @change="emit('change', group.head, $event)"
+                            />
+                        </template>
+                    </span>
+                </template>
+            </header>
+        </template>
         <template v-if="opened.has(group.key)">
             <p class="setting-help">{{ group.help }}</p>
         </template>
-        <div class="setting-card">
-            <template v-for="item in group.items" :key="item.key">
-                <template v-if="item.block">
-                    <SettingControl
-                        head
-                        :row="item.head"
-                        :sheet="sheet"
-                        :dim="off"
-                        @change="emit('change', item.head, $event)"
-                        @timing="emit('timing', item.head, $event)"
-                    >
-                        <template v-if="helps[item.key]" #title>
-                            <button type="button" class="setting-how small" :aria-expanded="opened.has(item.key)" @click="toggle(item.key)">How it works</button>
-                        </template>
-                    </SettingControl>
-                    <template v-if="opened.has(item.key)">
-                        <p class="setting-help inside">{{ helps[item.key] }}</p>
-                    </template>
-                    <template v-for="row in item.rows" :key="row.key">
+        <template v-if="!bare">
+            <div class="setting-card">
+                <template v-for="item in group.items" :key="item.key">
+                    <template v-if="item.block">
                         <SettingControl
-                            child
-                            :row="row"
+                            head
+                            :row="item.head"
                             :sheet="sheet"
-                            :dim="off || item.head.off"
-                            @change="emit('change', row, $event)"
-                            @timing="emit('timing', row, $event)"
-                            @act="emit('act', row, $event)"
+                            :dim="off"
+                            @change="emit('change', item.head, $event)"
+                            @timing="emit('timing', item.head, $event)"
+                        >
+                            <template v-if="helps[item.key]" #title>
+                                <button
+                                    type="button"
+                                    class="setting-how small"
+                                    :aria-expanded="opened.has(item.key)"
+                                    @click="toggle(item.key)"
+                                >
+                                    How it works
+                                </button>
+                            </template>
+                        </SettingControl>
+                        <template v-if="opened.has(item.key)">
+                            <p class="setting-help inside">{{ helps[item.key] }}</p>
+                        </template>
+                        <template v-for="row in item.rows" :key="row.key">
+                            <SettingControl
+                                child
+                                :row="row"
+                                :sheet="sheet"
+                                :dim="off || item.head.off"
+                                @change="emit('change', row, $event)"
+                                @timing="emit('timing', row, $event)"
+                                @act="emit('act', row, $event)"
+                            />
+                        </template>
+                    </template>
+                    <template v-else>
+                        <SettingControl
+                            :row="item"
+                            :sheet="sheet"
+                            :dim="off"
+                            @change="emit('change', item, $event)"
+                            @timing="emit('timing', item, $event)"
+                            @act="emit('act', item, $event)"
                         />
                     </template>
                 </template>
-                <template v-else>
-                    <SettingControl
-                        :row="item"
-                        :sheet="sheet"
-                        :dim="off"
-                        @change="emit('change', item, $event)"
-                        @timing="emit('timing', item, $event)"
-                        @act="emit('act', item, $event)"
-                    />
-                </template>
-            </template>
-            <template v-if="group.always.length">
-                <div class="setting-always">
-                    <b>Always on</b>
-                    <template v-for="(label, i) in group.always" :key="label">
-                        <template v-if="i">
-                            <span>·</span>
+                <template v-if="group.always.length">
+                    <div class="setting-always">
+                        <b>Always on</b>
+                        <template v-for="(label, i) in group.always" :key="label">
+                            <template v-if="i">
+                                <span>·</span>
+                            </template>
+                            <span>{{ label }}</span>
                         </template>
-                        <span>{{ label }}</span>
-                    </template>
-                </div>
-            </template>
-        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
         <template v-if="group.danger.length">
             <div class="setting-card danger">
                 <template v-for="row in group.danger" :key="row.key">
@@ -187,7 +206,6 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
 .setting-card.danger {
     margin-top: 12px;
 }
-
 
 .setting-always {
     display: flex;

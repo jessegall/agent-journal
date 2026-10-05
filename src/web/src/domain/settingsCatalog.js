@@ -187,7 +187,9 @@ function normalised(f) {
 
 function group(g, members, settings, loose) {
     const lead = members.find((f) => f.name === g.lead);
-    const rest = members.filter((f) => f !== lead).sort((a, b) => a.label.localeCompare(b.label));
+    const rest = members
+        .filter((f) => f !== lead)
+        .sort((a, b) => (a.position ?? 100) - (b.position ?? 100) || a.label.localeCompare(b.label));
     const extras = loose.extras;
     const listed = g.key === "always";
     const always = listed ? [] : rest.filter((f) => f.fixed && !f.parts);
@@ -205,8 +207,9 @@ function group(g, members, settings, loose) {
         items: [
             ...(lead ? featureRows(lead, settings, extras) : []),
             ...(loose.rows[g.key] || []),
-            ...flat.map((f) => featureHead(f, f.label, f.hint, settings)),
-            ...blocks.map((f) => block(f, settings, extras)),
+            ...rest
+                .filter((f) => flat.includes(f) || blocks.includes(f))
+                .map((f) => (flat.includes(f) ? featureHead(f, f.label, f.hint, settings) : block(f, settings, extras))),
         ],
         always: always.map((f) => f.label),
         danger: loose.danger[g.key] || [],

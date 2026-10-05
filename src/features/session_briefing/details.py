@@ -6,6 +6,7 @@ class SessionBriefingDetails(FeatureDetails):
     name = "session_briefing"
     group = Group.AGENT
     label = "Brief each new session"
+    position = 4
     has_skill = False
 
     title = "Brief each new session"

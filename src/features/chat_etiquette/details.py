@@ -9,6 +9,7 @@ class ChatEtiquetteDetails(FeatureDetails):
     name = "chat_etiquette"
     group = Group.AGENT
     label = "Keep journal talk out of the chat"
+    position = 3
     when = "you write anything the user will read in the chat"
 
     title = "Keep journal talk out of the chat"

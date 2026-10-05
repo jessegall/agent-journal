@@ -6,6 +6,7 @@ class OpenViewerDetails(FeatureDetails):
     name = "open_viewer"
     group = Group.ALWAYS
     label = "Open the viewer at launch"
+    hint = "Or bring its open tab to the front"
     has_skill = False
 
     title = "Open the viewer at launch"
