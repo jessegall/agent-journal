@@ -228,7 +228,7 @@ class Feature(ABC):
     def line(self, name: str, values: dict) -> tuple[str, str]:
         return self.declared_line(name).filled(values)
 
-    def spoken(self, name: str, **values) -> str:
+    def line_text(self, name: str, **values) -> str:
         return " - ".join(self.line(name, values))
 
     def to_primary(self, record, line: str, actor: str = SYSTEM, **values) -> None:

@@ -43,7 +43,7 @@ class RefuseUntilAgreed(ToolInterceptor):
         held = context.agent.row.data.get(UNAGREED, [])
         if not held or len(call.commands) == 1 and only_agree(call.commands[0]):
             return ""
-        return context.feature.spoken("agree", comments=", ".join(map(str, held)), words=AGREEMENT)
+        return context.feature.line_text("agree", comments=", ".join(map(str, held)), words=AGREEMENT)
 
 
 class NameVisitorComment(Handler):
