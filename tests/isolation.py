@@ -1,5 +1,6 @@
 import os
 import shutil
+import signal
 import socket
 import tempfile
 from pathlib import Path
@@ -19,6 +20,9 @@ SERIAL = {
     "tests/features/plugins/test_run.py": "plugins",
     "tests/features/plugins/test_install.py": "plugins",
 }
+
+
+VIEWER_BAND = range(8420, 8440)
 
 
 def worker() -> str:
@@ -85,7 +89,20 @@ def band(size: int = BAND) -> list[int]:
 
 def sweep() -> None:
     if worker() == "master":
+        stop_strays()
         shutil.rmtree(base(), ignore_errors=True)
+
+
+def stop_strays() -> None:
+    from engine.viewer import identity
+    runs = Path(tempfile.gettempdir()).resolve()
+    for port in VIEWER_BAND:
+        found = identity(f"http://127.0.0.1:{port}/", timeout=0.2)
+        if found and found.pid and Path(found.root).resolve().is_relative_to(runs) and Path(found.root).resolve().relative_to(runs).parts[0].startswith("agent-journal-"):
+            try:
+                os.kill(found.pid, signal.SIGTERM)
+            except OSError:
+                pass
 
 
 def group(path: Path) -> str:

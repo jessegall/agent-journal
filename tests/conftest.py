@@ -77,6 +77,20 @@ def free_port():
 
 
 @pytest.fixture(autouse=True)
+def closed_handles():
+    yield
+    from controllers import stored
+    from engine import locks
+    with locks.SHARING:
+        for writes in locks.SHARED.values():
+            writes.held.close()
+        locks.SHARED.clear()
+    for _, archive in stored.OPEN.values():
+        archive.close()
+    stored.OPEN.clear()
+
+
+@pytest.fixture(autouse=True)
 def viewer_ports(monkeypatch):
     import engine.viewer as viewer
     ours = isolation.band()
