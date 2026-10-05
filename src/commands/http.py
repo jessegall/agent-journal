@@ -2,7 +2,6 @@ import json
 import mimetypes
 import os
 import tempfile
-import threading
 import time
 from email import policy
 from email.parser import BytesParser
@@ -19,22 +18,15 @@ from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
 from surfaces.summary import lately_summarized
 from engine.color import identity, set_color
-from engine.upgrades import FETCHING, check_now, newer, upstream
+from engine.upgrades import check_now
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
-from features.family_tree.tree import family
-from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.permission_prompts.skipping import set_skipped
-from features.skill_loading.required import load_now
 from engine.files import found_files
-from features.file_feed.feed import PAGE, NoSuchEdit, Side, edited_file, edits_before, edits_since, notes
-from features.terminal.log import EVERYTHING, LEVELS as TERMINAL_LEVELS, lines as terminal_lines
 from controllers.base import LAST, networked
-from controllers.types import Agents, CONTROLLERS, Environments, Plugins
-from features.browser_control.controller import Asks
+from controllers.types import Agents, CONTROLLERS, Environments
 from engine import bus, runtime, typist, viewer
 from surfaces.manifest import manifest
 from engine.version import version
-from engine.package import code
 from engine.seats import terminal_of
 from agents.screen import screen_since
 from controllers.faults import broke, log_file
@@ -45,15 +37,14 @@ from engine.transcript import page
 from providers import PROVIDERS
 from providers.base import Provider
 from resources.base import OPENED, USER, Refused, titled
-from resources.types import Ask
-from engine.stored import read_json, last_lines
-from features.plugins.dashboard import checked
-from features.plugins.declared import called, declared
-from features.plugins.paths import data
+from engine.stored import last_lines
 from engine.git_view import commit, file_diff
 from engine.project_files import list_folder, matching, project_path, read_source
 from engine.paths import contained
-from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, rank_routes, represented, route
+from commands.dispatch import rank_routes, represented, route
+from features.routing import JSON, PLAIN, Reply, Request
+from resources.base import Missing
+
 from commands.invoke import invoked
 from features.format import VIEWER, formatted, shaped
 from surfaces.attachments import attachments, listed_types
@@ -86,7 +77,6 @@ def unanswered(root: Path) -> None:
         with log_file(root).open("a") as log:
             log.write(f"the hook\n{trouble}\n")
         broke(Record(root, env), trouble, where="the hook")
-
 
 
 TRANSCRIPT_PAGE = 300
@@ -152,22 +142,6 @@ class Forgotten(Loaded):
 
 
 @dataclass(frozen=True)
-class SkillsQuery(Loaded):
-    agent: int = 0
-
-
-@dataclass(frozen=True)
-class Keywords(Loaded):
-    keywords: object = None
-
-    @property
-    def words(self) -> list:
-        if isinstance(self.keywords, list):
-            return self.keywords
-        return str(self.keywords).split(",") if self.keywords else []
-
-
-@dataclass(frozen=True)
 class TranscriptQuery(Loaded):
     since: int = 0
     before: int = 0
@@ -177,35 +151,6 @@ class TranscriptQuery(Loaded):
 @dataclass(frozen=True)
 class FindQuery(Loaded):
     q: str = ""
-
-
-@dataclass(frozen=True)
-class TerminalQuery(Loaded):
-    level: str = EVERYTHING
-
-
-@dataclass(frozen=True)
-class EditsQuery(Loaded):
-    since: float = 0.0
-    last: int = PAGE
-
-
-@dataclass(frozen=True)
-class OlderEditsQuery(Loaded):
-    before: float
-    last: int = PAGE
-
-
-@dataclass(frozen=True)
-class EditedFileQuery(Loaded):
-    id: str
-    side: str = Side.AFTER
-
-
-@dataclass(frozen=True)
-class PluginSource(Loaded):
-    source: str = ""
-    ref: str = ""
 
 
 @dataclass(frozen=True)
@@ -250,32 +195,10 @@ def get_manifest(req: Request) -> Reply:
     return Reply(200, manifest(req.root))
 
 
-@route("GET", "/api/changelog")
-def get_changelog(req: Request) -> Reply:
-    from features.auto_update.check import journal_repository
-    log = code(req.root) / "CHANGELOG.md"
-    if not log.is_file():
-        return Reply(404, {"error": "this install carries no changelog"})
-    cache = runtime.upstream_cache(req.root)
-    latest = cache.read_text().strip() if cache.is_file() else ""
-    return Reply(200, {"version": version(), "changelog": log.read_text(), "latest": latest, "newer": newer(latest, version()),
-                       "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
-                       "repository": journal_repository(req.root.parent)})
-
-
 @route("POST", "/api/update/check")
 def post_update_check(req: Request) -> Reply:
     check_now(req.root)
     return Reply(200, {"checking": True})
-
-
-@route("POST", "/api/update")
-def post_update(req: Request) -> Reply:
-    from features.auto_update.check import installed, journal_repository
-    if journal_repository(req.root.parent):
-        raise Refused("this is the journal's own repository: it updates from its own code, not from a release")
-    threading.Thread(target=installed, args=(req.root,), daemon=True).start()
-    return Reply(200, {"updating": True})
 
 
 @route("GET", "/api/identity")
@@ -306,12 +229,6 @@ def get_agents(req: Request) -> Reply:
 @route("POST", "/api/{env}/appoint")
 def post_appoint(req: Request) -> Reply:
     return Reply(200, appoint(req.root, req.params["env"], req.body_as(Appointed).session))
-
-
-@route("POST", "/api/{env}/mode")
-def post_mode(req: Request) -> Reply:
-    from features.work_modes.modes import pick
-    return Reply(200, {"mode": pick(Record(req.root, req.params["env"]), str(req.body.get("mode", "")), USER)})
 
 
 @route("GET", "/api/agent-controls/{provider}")
@@ -425,14 +342,6 @@ def post_settings(req: Request) -> Reply:
     return Reply(200, apply(req.record(), req.body, USER))
 
 
-@route("GET", "/api/upstream")
-def get_upstream(req: Request) -> Reply:
-    installed = version()
-    latest = upstream(req.root)
-    installs = features.FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in features.FEATURES else False
-    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs})
-
-
 @route("POST", "/api/upgrade")
 def post_upgrade(req: Request) -> Reply:
     from install import upgrade
@@ -459,17 +368,6 @@ def command_of(args: list[str]) -> str:
     return " ".join(words[:2])
 
 
-@route("GET", "/api/{env}/changes")
-def get_changes(req: Request) -> Reply:
-    return Reply(200, {"changes": [asdict(note) for note in reversed(notes(req.record()))]})
-
-
-@route("GET", "/api/{env}/bar")
-def get_bar(req: Request) -> Reply:
-    from features.status_bar.bar import current
-    return Reply(200, current(req.record()))
-
-
 @route("POST", "/api/stop")
 def post_stop(req: Request) -> Reply:
     from engine.stop import ask
@@ -494,73 +392,9 @@ def post_forget(req: Request) -> Reply:
     return Reply(200, {"ok": True})
 
 
-@route("POST", "/api/{env}/browser/driver")
-def post_driver(req: Request) -> Reply:
-    Asks(req.record(), actor=USER)._drive(req.body.get("on"), req.body.get("url", ""), req.body.get("title", ""))
-    return Reply(200, {"ok": True})
-
-
-@route("POST", "/api/{env}/browser/pending")
-def post_pending(req: Request) -> Reply:
-    asks = Asks(req.record(), actor=USER).pending()
-    return Reply(200, {"data": [{"n": a.n, Ask.op: a.op, Ask.args: a.args} for a in asks]})
-
-
-@route("POST", "/api/{env}/browser/{n}/result")
-def post_result(req: Request) -> Reply:
-    got = Asks(req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
-    return Reply(200, shaped(got, req.record(), VIEWER))
-
-
-@route("GET", "/api/{env}/skills")
-def get_skills(req: Request) -> Reply:
-    return Reply(200, skills(req.record(), req.query_as(SkillsQuery).agent))
-
-
-@route("GET", "/api/{env}/skills/{name}")
-def get_skill(req: Request) -> Reply:
-    root = req.record().root.parent
-    hit = next((s for s in catalogue(root) if s[SKILL.name] == req.params["name"]), None)
-    if not hit:
-        return Reply(404, {"error": f"no skill {req.params['name']}"})
-    return Reply(200, {**hit, "text": (root / hit[SKILL.path]).read_text(errors="replace")})
-
-
-@route("POST", "/api/{env}/skills/{name}/load")
-def post_skill_load(req: Request) -> Reply:
-    return Reply(200, {"notice": load_now(req.record(), req.params["name"])})
-
-
-@route("POST", "/api/{env}/skills/{name}/always")
-def post_skill_always(req: Request) -> Reply:
-    record = req.record()
-    return Reply(200, {"skills": always(record, req.params["name"], bool(req.body.get("on")))})
-
-
-@route("POST", "/api/{env}/skills/{name}/keywords")
-def post_skill_keywords(req: Request) -> Reply:
-    words = req.body_as(Keywords).words
-    return Reply(200, {"keywords": set_keywords(req.record(), req.params["name"], [w.strip() for w in words if w.strip()])})
-
-
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
     return Reply(200, attachments(req.record()))
-
-
-@route("GET", "/api/{env}/plugin/{n}/dashboard/{name}")
-def get_plugin_dashboard(req: Request) -> Reply:
-    row = Plugins(req.record(), actor=USER).load(req.params["n"])
-    board = next((b for b in declared(row).dashboards if b.name == req.params["name"]), None)
-    if board is None:
-        raise Missing(f"{called(row)} declares no dashboard {req.params['name']}")
-    found = read_json(data(req.record().root, called(row)) / "dashboards" / f"{board.name}.json", dict, None)
-    if found is None:
-        return Reply(200, {"title": board.title, "missing": f"{called(row)} has not written its {board.title} dashboard yet"})
-    try:
-        return Reply(200, {"title": board.title, **checked(found)})
-    except Refused as broken:
-        return Reply(200, {"title": board.title, "broken": str(broken)})
 
 
 @route("GET", "/api/{env}/project-files")
@@ -639,46 +473,9 @@ def get_subagent_links(req: Request) -> Reply:
     return Reply(200, {"links": found.links()})
 
 
-@route("GET", "/api/{env}/family")
-def get_family(req: Request) -> Reply:
-    return Reply(200, family(req.record()))
-
-
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
     return transcript_of(req)
-
-
-@route("GET", "/api/{env}/agent/{n}/edits")
-def get_edits(req: Request) -> Reply:
-    asked = req.query_as(EditsQuery)
-    return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), asked.since, asked.last)))
-
-
-@route("GET", "/api/{env}/agent/{n}/edits/older")
-def get_older_edits(req: Request) -> Reply:
-    asked = req.query_as(OlderEditsQuery)
-    return Reply(200, asdict(edits_before(req.record(), int(req.params["n"]), asked.before, asked.last)))
-
-
-@route("GET", "/api/{env}/agent/{n}/edits/file")
-def get_edited_file(req: Request) -> Reply:
-    asked = req.query_as(EditedFileQuery)
-    if asked.side not in Side:
-        raise Refused(f"side is {Side.BEFORE} or {Side.AFTER}")
-    try:
-        return Reply(200, asdict(edited_file(req.record(), int(req.params["n"]), asked.id, Side(asked.side))))
-    except NoSuchEdit as error:
-        raise Missing(str(error)) from error
-
-
-@route("GET", "/api/{env}/agent/{n}/terminal")
-def get_terminal(req: Request) -> Reply:
-    level = req.query_as(TerminalQuery).level
-    if level not in TERMINAL_LEVELS:
-        raise Refused(f"level is one of {', '.join(TERMINAL_LEVELS)}")
-    record = req.record()
-    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(req.params["n"]).title, level)})
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
@@ -686,77 +483,10 @@ def get_subagent_transcript(req: Request) -> Reply:
     return transcript_of(req, req.params["session"])
 
 
-@route("GET", "/api/pages")
-def get_pages(req: Request) -> Reply:
-    from engine.services import specs, status
-    from features.plugins.declared import called, declared
-    from features.plugins.services import plugin_services, plugins as installed
-    where = {spec.id: spec for spec in specs(req.root, (plugin_services,))}
-    out = []
-    for row in installed(req.root):
-        plugin = called(row)
-        for page in declared(row).pages:
-            sid = f"{plugin}.{page.service}"
-            spec, state = where.get(sid), status(req.root, sid)
-            path = page.path if page.path else "/"
-            out.append({"plugin": plugin, "name": page.name, "title": page.title, "icon": page.icon if page.icon else "plug",
-                        "service": sid, "state": state.state if state.state else "not running", "path": path,
-                        "url": (spec.url if spec and spec.url else state.url) + path, "status": page.status})
-    return Reply(200, out)
-
-
-@route("GET", "/api/services")
-def get_services(req: Request) -> Reply:
-    from engine.services import listed
-    from features.plugins.services import plugin_services
-    return Reply(200, listed(req.root, (plugin_services,)))
-
-
-def asked_lines(req: Request) -> int:
-    return int(req.query.get("lines") or 200)
-
-
 @route("GET", "/api/services/{id}/log")
 def get_service_log(req: Request) -> Reply:
     from engine.services import log_file
-    return Reply(200, {"id": req.params["id"], "log": last_lines(log_file(req.root, req.params["id"]), asked_lines(req))})
-
-
-@route("POST", "/api/{env}/plugins/preview")
-def post_plugins_preview(req: Request) -> Reply:
-    from features.plugins.commands import VERSION
-    from features.plugins.lifecycle import drop
-    from features.plugins.preview import previewed
-    from features.plugins.staging import staged
-    asked = req.body_as(PluginSource)
-    source = asked.source
-    where, manifest, commit, linked = staged(req.root, source, asked.ref, VERSION)
-    try:
-        return Reply(200, previewed(manifest, source, commit), timed=False)
-    finally:
-        drop(where, linked)
-
-
-@route("POST", "/api/{env}/plugins/{n}/upgrade-preview")
-def post_plugin_upgrade_preview(req: Request) -> Reply:
-    from controllers.types import Plugins
-    from features.plugins.commands import VERSION
-    from features.plugins.declared import Manifest
-    from features.plugins.lifecycle import changed, drop
-    from features.plugins.preview import previewed
-    from features.plugins.staging import staged
-    row = Plugins(req.record(), actor=USER).load(req.params["n"])
-    where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
-    try:
-        return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(Manifest.of(row.manifest), manifest)}, timed=False)
-    finally:
-        drop(where, linked)
-
-
-@route("GET", "/api/plugins/{name}/log")
-def get_plugin_log(req: Request) -> Reply:
-    from features.plugins.paths import log
-    return Reply(200, {"name": req.params["name"], "log": last_lines(log(req.root, req.params["name"]), asked_lines(req))})
+    return Reply(200, {"id": req.params["id"], "log": last_lines(log_file(req.root, req.params["id"]), req.asked_lines())})
 
 
 @route("POST", "/api/services/{id}")

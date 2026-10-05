@@ -15,6 +15,7 @@ class Entry:
 class Extension:
     def __init__(self):
         self.entries: list[Entry] = []
+        self.version = 0
         EXTENSIONS.append(self)
 
     def add(self, owner, value, key=None, first: bool = False) -> None:
@@ -23,9 +24,11 @@ class Extension:
             self.entries.insert(0, entry)
         else:
             self.entries.append(entry)
+        self.version += 1
 
     def remove(self, value) -> None:
         self.entries = [entry for entry in self.entries if entry.value is not value]
+        self.version += 1
 
     def each(self, record: Record | None = None, key=None) -> list:
         return [entry.value for entry in self._live(record) if key is None or entry.key == key]
@@ -38,6 +41,7 @@ class Extension:
 
     def clear(self) -> None:
         self.entries.clear()
+        self.version += 1
 
 
 def clear_all() -> None:
