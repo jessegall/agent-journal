@@ -4,7 +4,7 @@ from typing import ClassVar
 from controllers.types import Todos, Works
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
-from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, RUNNING, WAITING, Plans
+from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans
 from features.nudges import Sent
 from features.trigger import MINUTE
 from features.plans.resource import PHASE, PHASE_FIELDS
@@ -84,7 +84,7 @@ class TakeStruckRowsOutOfUnapprovedPlans(Handler):
         plans = context.journal.get(Plans)
         for plan in plans.rows.every():
             p = plan.phase_of("todo", event.n)
-            if p and plan.status in (BUILDING, DRAFT, READY):
+            if p and plan.status in (BUILDING, DRAFT, READY, REVIEWING):
                 plans.place(plan.n, p, [event.n], off=True)
 
 
@@ -143,3 +143,24 @@ def blocked_plans(context, agent) -> list[Sent]:
         if held:
             found.append(Sent(str(plan.n), {"n": plan.n, "title": plan.title, "rows": named_rows(held)}))
     return found
+
+
+@dataclass(frozen=True)
+class ReportLinked(ResourceEvent):
+    on: ClassVar[str] = "report.linked"
+    to: str = ""
+
+
+class EndReviewWithItsReport(Handler):
+    def handle(self, context: Context, event: ReportLinked) -> None:
+        kind, _, n = event.to.partition(":")
+        if kind != "plan" or not n.isdigit():
+            return
+        plans = context.journal.acting(SYSTEM).get(Plans)
+        plan = plans.load(n)
+        if plan.status != REVIEWING:
+            return
+        plans.build(plan.n)
+        speaking = context.to_primary()
+        if speaking:
+            speaking.agent.say("reviewed", n=plan.n, title=plan.title, report=event.n)

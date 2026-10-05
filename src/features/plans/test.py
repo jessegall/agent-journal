@@ -71,6 +71,14 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert refused(lambda: by_agent.approve(plan.n)) == "only the user can approve a plan: they do it in the viewer", "not the agent"
     assert refused(lambda: by_agent.start(plan.n)) == f"plan {plan.n} waits for the user to approve it", "nor start one not approved"
     assert ready(record) == [], "a plan not yet started holds its rows: next skips them"
+    by_agent.review(plan.n)
+    assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is under review: its reviewers' report comes first", \
+        "a plan under review cannot be approved"
+    from controllers.types import Reports
+    review = Reports(record, actor=AGENT).create("what the reviewers found")
+    Reports(record, actor=AGENT).link(review.n, plan.ref)
+    assert by_agent.load(plan.n).data["status"] == "building", "linking the reviewers' report hands it back for revising"
+    by_agent.ready(plan.n)
     by_user.approve(plan.n)
     by_agent.start(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"

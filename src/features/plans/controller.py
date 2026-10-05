@@ -7,7 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs, Environments, Todos, Works
 from features.plans.resource import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, RUNNING, WAITING, Plan,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, REVIEWING, RUNNING, WAITING, Plan,
 )
 from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
@@ -143,7 +143,11 @@ class Plans(Controller):
 
     @action
     def build(self, n: int):
-        return self._status(self.load(n), BUILDING, READY, DRAFT)
+        return self._status(self.load(n), BUILDING, READY, DRAFT, REVIEWING)
+
+    @action
+    def review(self, n: int):
+        return self._status(self.load(n), REVIEWING, BUILDING, DRAFT, READY)
 
     @action
     def ready(self, n: int):
@@ -156,12 +160,15 @@ class Plans(Controller):
     @action
     def approve(self, n: int):
         self._user_only("approve")
-        return self._status(self.load(n), APPROVED, DRAFT, READY)
+        r = self.load(n)
+        if r.status == REVIEWING:
+            self._refuse(f"plan {n} is under review: its reviewers' report comes first")
+        return self._status(r, APPROVED, DRAFT, READY)
 
     @action
     def start(self, n: int):
         r = self.load(n)
-        if r.status in (DRAFT, READY):
+        if r.status in (DRAFT, READY, REVIEWING):
             self._refuse(f"plan {n} waits for the user to approve it")
         self._allowed(r, ACTIVE, APPROVED, PARKED)
         first_start = r.status == APPROVED
@@ -192,7 +199,7 @@ class Plans(Controller):
 
     @action
     def abandon(self, n: int, why: str = ""):
-        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
+        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, REVIEWING, APPROVED, ACTIVE, WAITING, PARKED, why=why)
 
     @action
     def progress(self, n: int) -> str:
