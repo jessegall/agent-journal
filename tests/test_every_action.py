@@ -1,27 +1,42 @@
 import inspect
+import io
 import json
-import re
+import os
+import struct
 import subprocess
 import tarfile
+import threading
 import time
 from functools import partial
 from os.path import commonprefix
 from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
 
+import controllers.files as files
+import controllers.stored as stored
 import features
-from commands.dispatch import resolve
-from commands.http import dispatch
+from commands.dispatch import dispatch, ranked, resolve
 from commands.invoke import spread
+from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
-from controllers.types import CONTROLLERS
-from engine.wording import noun
+from controllers.types import CONTROLLERS, Environments, Todos
+from engine.extension import EXTENSIONS
+from engine.package import code
+from engine.paths import ROUTED
 from engine.record import Record
+from engine.stored import read_json, write_text
+from engine.transaction import snapshot, undoable
+from engine.wording import noun
+from overview.counts import tally
+from overview.summary import environment, summarize
+from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, SYSTEM, USER
+from resources.pictures import dimensions
 from resources.shapes import normalize_options
-from resources.base import ENVIRONMENT, AGENT, Refused, SYSTEM, USER
 from resources.types import TYPES
 from tests.conftest import fresh, refused
+from tests.kit import project_on, report, run
+from commands import http  # noqa: F401
 
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
 RECORDER = Path(__file__).with_name("viewer_calls.mjs")
@@ -68,7 +83,7 @@ CALLS = {
 }
 
 WORLD = ("run", "install", "uninstall", "upgrade", "services", "archive_file", "pickup", "unarchive", "ask", "launch")
-SAID = {"title": "a row worth keeping", "text": "a line of words", "body": "the body", "why": "it stopped being true",
+VALUES = {"title": "a row worth keeping", "text": "a line of words", "body": "the body", "why": "it stopped being true",
         "how": "it landed", "name": "a name", "term": "row", "description": "what it is", "awaiting": "the build", "word": "done",
         "question": "which way", "part": "their words", "became": "todo:1", "value": "high", "face": "\U0001f44d",
         "env": "main", "kind": "note", "ref": "todo:1", "tags": "one two", "abstract": "one line",
@@ -87,8 +102,8 @@ def given(controller, parameter: inspect.Parameter, row):
         return [row.n] if "int" in text else ["a word"]
     if parameter.name in COUNTED:
         return row.n if parameter.name in ("n", "m", "waits", "doc", "plan") else 1
-    if parameter.name in SAID:
-        return SAID[parameter.name]
+    if parameter.name in VALUES:
+        return VALUES[parameter.name]
     if text.endswith("int"):
         return 1
     if text.endswith("bool"):
@@ -125,7 +140,6 @@ def test_every_action_of_every_resource_runs_or_refuses_in_words():
 
 def test_every_action_is_reachable_as_a_command():
     features.load()
-    from commands.parser import parser
     built = parser()._subparsers._group_actions[0].choices
     missing = [f"{type_} {controller.resource.command_names.get(name, name)}"
                for type_, controller in CONTROLLERS.items()
@@ -196,9 +210,6 @@ def get(record, path: str, **query):
 
 
 def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
-    from controllers.types import Todos
-    from engine.package import code
-    from tests.kit import report
     features.load()
     record = fresh()
     Todos(record, actor=SYSTEM).create("a row to find")
@@ -289,23 +300,21 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_ev
 
 
 def test_the_command_line_refuses_in_words_and_exits_nonzero():
-    import io
-    from tests.kit import run
     features.load()
     record = fresh()
 
-    def refused(*argv: str) -> tuple[int, str]:
+    def ran(*argv: str) -> tuple[int, str]:
         err = io.StringIO()
         return run(["--root", str(record.root), "--env", record.env, *argv], out=io.StringIO(), err=err), err.getvalue()
-    code, said = refused("todo", "all", "--force")
-    assert (code, "takes the reason" in said) == (1, True), "--force without its reason exits 1 and says it takes one"
-    code, said = refused("todo", "bogus")
-    assert (code, "invalid choice" in said or "bogus" in said) == (2, True), "a word the noun does not have exits 2 and names it"
-    code, said = refused("--as", "bogus", "todo", "all")
-    assert (code, "choose from 'user', 'agent', 'system', 'plugin'" in said) == (2, True), "an unknown actor exits 2 and names the actors there are"
-    code, said = refused("--agent", "sub-1", "todo", "create", "a title")
-    assert (code, said.startswith("! ")) == (1, True), f"a subagent that was never lent the environment is refused in words: {said}"
-    assert CONTROLLERS["todo"](record, actor=SYSTEM).all() == [], "and nothing was written by the refused command"
+    status, text = ran("todo", "all", "--force")
+    assert (status, "takes the reason" in text) == (1, True), "--force without its reason exits 1 and says it takes one"
+    status, text = ran("todo", "bogus")
+    assert (status, "invalid choice" in text or "bogus" in text) == (2, True), "a word the noun does not have exits 2 and names it"
+    status, text = ran("--as", "bogus", "todo", "all")
+    assert (status, "choose from 'user', 'agent', 'system', 'plugin'" in text) == (2, True), "an unknown actor exits 2 and names the actors there are"
+    status, text = ran("--agent", "sub-1", "todo", "create", "a title")
+    assert (status, text.startswith("! ")) == (1, True), f"a subagent that was never lent the environment is ran in words: {text}"
+    assert CONTROLLERS["todo"](record, actor=SYSTEM).all() == [], "and nothing was written by the ran command"
 
     def answered(*argv: str) -> str:
         out = io.StringIO()
@@ -313,16 +322,15 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
         return out.getvalue()
     assert "in force" in answered("verify") and f"settings on {record.env}" in answered("settings"), "verify and settings answer without raising"
     assert "usage:" in answered("help") and "usage:" in answered("help", "todo") and "no command" in answered("help", "nonsense"), "help answers for the whole journal, for one noun and for a word it does not have"
-    assert answered("services", "list") != "" and refused("services", "bogus")[0] == 1, "services lists, and a word it does not know is refused in words"
+    assert answered("services", "list") != "" and ran("services", "bogus")[0] == 1, "services lists, and a word it does not know is ran in words"
 
 
 def test_no_command_argument_shares_a_name_with_a_global_option():
     features.load()
-    from commands.parser import parser
     top = parser()
     globals_ = {action.dest for action in top._actions if action.dest not in ("help", "command")}
-    clashes = [f"{noun} {verb}: {action.dest}"
-               for noun, nouns in top._subparsers._group_actions[0].choices.items() if nouns._subparsers
+    clashes = [f"{group} {verb}: {action.dest}"
+               for group, nouns in top._subparsers._group_actions[0].choices.items() if nouns._subparsers
                for verb, command in nouns._subparsers._group_actions[0].choices.items()
                for action in command._actions if action.dest in globals_]
     assert clashes == [], "a command's own argument never shares its name with a global option, which would swallow it"
@@ -331,17 +339,16 @@ def test_no_command_argument_shares_a_name_with_a_global_option():
 BUDGET, PAGE, MANY = 50, 25, 150
 
 
-def fastest(call, times: int = 3) -> float:
+def fastest(work, times: int = 3) -> float:
     took = []
     for _ in range(times):
         began = time.perf_counter()
-        call()
+        work()
         took.append((time.perf_counter() - began) * 1000)
     return min(took)
 
 
 def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
-    from commands.http import dispatch
     record = fresh("li")
     for type_ in TYPES:
         controller = CONTROLLERS[type_](record, actor=SYSTEM)
@@ -354,8 +361,8 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
                 continue
     slow, wrong = {}, {}
     for type_ in TYPES:
-        ask = lambda: dispatch("GET", f"/api/{record.env}/{type_}", record.root, {}, {}).body
-        got = ask()
+        ask = partial(get, record, f"/api/{{env}}/{type_}")
+        got = ask().body
         if len(got["rows"]) > PAGE or any(r["completed"] for r in got["rows"]):
             wrong[type_] = (len(got["rows"]), sum(bool(r["completed"]) for r in got["rows"]))
         took = fastest(ask)
@@ -377,7 +384,6 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
 
 
 def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
-    from resources.base import AGENT, USER
     guarded = [type_ for type_, resource in TYPES.items() if resource.editors]
     changed = []
     for type_ in guarded:
@@ -395,9 +401,6 @@ def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
 
 
 def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
-    import threading
-    from engine.record import Record
-    from resources.base import PROJECT
     features.load()
     root = fresh().root
     for type_, resource in TYPES.items():
@@ -412,15 +415,14 @@ def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
                 return
 
         runs = [threading.Thread(target=make, args=(env, i)) for env in ("east", "west") for i in range(4)]
-        for run in runs:
-            run.start()
-        for run in runs:
-            run.join()
+        for thread in runs:
+            thread.start()
+        for thread in runs:
+            thread.join()
         assert len(made) == len(set(made)), f"{type_} rows made at once from two environments share a number: {sorted(made)}"
 
 
 def test_every_type_with_its_own_word_for_create_is_created_over_http():
-    from commands.dispatch import dispatch
     features.load()
     record = fresh()
     renamed = [type_ for type_, resource in TYPES.items() if "create" in resource.command_names]
@@ -431,16 +433,12 @@ def test_every_type_with_its_own_word_for_create_is_created_over_http():
 
 
 def test_no_environment_name_is_shadowed_by_a_global_route():
-    from commands import http  # noqa: F401
-    from commands.dispatch import ranked
-    from engine.paths import ROUTED
     features.load()
     fixed = {parts[2] for parts in (r.pattern.split("/") for r in ranked()) if parts[1] == "api" and len(parts) > 3 and not parts[2].startswith("{")}
     assert fixed <= ROUTED, f"environments named {sorted(fixed - ROUTED)} would be shadowed by a global route"
 
 
 def test_an_action_is_marked_on_a_public_name_only():
-    import inspect
     features.load()
     marked = {f"{type_} {name}" for type_, controller in CONTROLLERS.items()
               for name, fn in inspect.getmembers(controller, inspect.isfunction) if getattr(fn, "action", False) and name.startswith("_")}
@@ -448,7 +446,6 @@ def test_an_action_is_marked_on_a_public_name_only():
 
 
 def test_unloading_the_features_empties_every_extension_point():
-    from engine.extension import EXTENSIONS
     features.load()
     try:
         features.unload()
@@ -458,9 +455,6 @@ def test_unloading_the_features_empties_every_extension_point():
 
 
 def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out():
-    from overview.counts import tally
-    from overview.summary import environment, summarize
-    from controllers.types import Environments
     features.load()
     rows = [{"deleted": 0, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [USER]}, {"deleted": 0, "completed": 5, "seen": []},
             {"deleted": 5, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [], "hidden": True}]
@@ -484,11 +478,11 @@ def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out(
         (["helped"], False, True), "a helper's environment is listed with the helpers, not among the environments"
 
 
-def test_picture_dimensions_are_read_from_tiny_files_and_search_sees_an_edit_that_kept_its_updated_stamp(tmp_path):
-    import struct
-    from engine.stored import write_text
-    from resources.pictures import dimensions
-    riff = lambda kind, body: b"RIFF" + struct.pack("<I", 4 + 8 + len(body)) + b"WEBP" + kind + struct.pack("<I", len(body)) + body
+def riff(kind: bytes, body: bytes) -> bytes:
+    return b"RIFF" + struct.pack("<I", 4 + 8 + len(body)) + b"WEBP" + kind + struct.pack("<I", len(body)) + body
+
+
+def test_picture_dimensions_are_read_from_tiny_files(tmp_path):
     vp8l_bits = (640 - 1) | ((480 - 1) << 14)
     pictures = {
         "a.png": b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1390, 486) + b"\x08\x06\x00\x00\x00",
@@ -506,23 +500,9 @@ def test_picture_dimensions_are_read_from_tiny_files_and_search_sees_an_edit_tha
     (tmp_path / "cut.webp").write_bytes((tmp_path / "v.webp").read_bytes()[:29])
     assert (dimensions(tmp_path / "text.png"), dimensions(tmp_path / "gone.png"), dimensions(tmp_path / "cut.webp")) == (None, None, None), \
         "a file that is no picture, is not there, or is cut short has no dimensions"
-    features.load()
-    record = fresh()
-    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
-    row = todos.create("alpha")
-    assert [t.n for t in todos.search("alpha")] == [row.n], "search finds a row by its words"
-    edited = todos.load(row.n)
-    edited.title = "omega"
-    write_text(todos.path(row.n), edited.dump())
-    assert ([t.n for t in todos.search("omega")], todos.search("alpha")) == ([row.n], []), \
-        "search finds the new words after an edit that kept the same updated stamp, and not the old"
 
 
-def test_an_action_that_raises_restores_every_file_it_wrote_and_removes_every_file_it_made(tmp_path, monkeypatch):
-    import os
-    import controllers.files as files
-    from engine.stored import write_text
-    from engine.transaction import snapshot, undoable
+def test_an_action_that_raises_restores_every_file_it_wrote_and_removes_every_file_it_made(tmp_path):
     kept, made = tmp_path / "kept.txt", tmp_path / "made.txt"
     kept.write_text("before")
     try:
@@ -534,41 +514,42 @@ def test_an_action_that_raises_restores_every_file_it_wrote_and_removes_every_fi
     except RuntimeError:
         pass
     assert (kept.read_text(), made.exists()) == ("before", False), "a failed action puts back the file it changed and removes the one it made"
-    record = fresh()
-    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
-    row = todos.create("a row with a file")
-    source = tmp_path / "note.txt"
-    write_text(source, "first")
-    todos.attach(row.n, str(source), "the first")
-    write_text(source, "second")
-    moves = []
-    real = os.replace
 
-    def failing(src, dst):
-        moves.append(dst)
-        if len(moves) == 2:
-            raise OSError("the disk refused the move")
-        real(src, dst)
-    monkeypatch.setattr(files.os, "replace", failing)
-    try:
-        todos.attach(row.n, str(source), "the second")
-    except OSError:
-        pass
-    monkeypatch.undo()
-    assert ((todos.folder(row.n) / "note.txt").read_text(), todos.load(row.n).files) == ("first", {"note.txt": "the first"}), "a failed move leaves the attached file and its description as they were"
+
+def test_a_failed_attach_leaves_the_attached_file_and_its_description_as_they_were_for_every_type(tmp_path, monkeypatch):
+    source = tmp_path / "note.txt"
+    wrong = {}
+    for type_, resource, record, controller in each_type():
+        row = acting(type_, record, SYSTEM).create(f"a {type_} with a file", **needed(type_))
+        write_text(source, "first")
+        controller.attach(row.n, str(source), "the first")
+        write_text(source, "second")
+        moves = []
+        real = os.replace
+
+        def failing(src, dst):
+            moves.append(dst)
+            if len(moves) == 2:
+                raise OSError("the disk refused the move")
+            real(src, dst)
+        monkeypatch.setattr(files.os, "replace", failing)
+        failure = refused(partial(controller.attach, row.n, str(source), "the second"))
+        monkeypatch.undo()
+        reckon(wrong, type_, {"the move fails": "the disk refused the move" in failure,
+                              "the attached file and its description are as they were": ((controller.folder(row.n) / "note.txt").read_text(), controller.load(row.n).files) == ("first", {"note.txt": "the first"})})
+    assert wrong == {}, "a failed move leaves the attached file and its description as they were"
 
 
 def test_the_file_browser_and_its_search_leave_out_secrets_and_the_journal():
-    from tests.kit import project_on
     repo = project_on("work")
     record, project = repo.record, repo.project
     (project / "src").mkdir()
     for name in ("src/app.py", "src/.env", ".env", "notes.txt"):
         (project / name).write_text("x")
     (record.root / "kept.txt").write_text("x")
-    listed = [row["path"] for row in get(record, "/api/{env}/project-files").body]
+    names = [row["path"] for row in get(record, "/api/{env}/project-files").body]
     found = [row["path"] for q in (".env", "kept.txt", "app.py") for row in get(record, "/api/{env}/project-files/find", q=q).body]
-    assert (sorted(listed), found) == (["notes.txt", "shared.txt", "src"], ["src/app.py"]), "the listing and the search show project files, never a .env file or anything inside .journal"
+    assert (sorted(names), found) == (["notes.txt", "shared.txt", "src"], ["src/app.py"]), "the listing and the search show project files, never a .env file or anything inside .journal"
     assert get(record, "/api/{env}/project-files", folder=".env").code == 400, "a secret cannot be opened by asking for it by name"
 
 
@@ -848,3 +829,75 @@ def test_sweeping_an_environment_packs_every_swept_row_of_every_type_into_the_at
         packed_types = sorted({name.split("/")[-2] for name in packed.getnames() if name.endswith(".md")})
     assert packed_types == sorted(closed), "every swept row is in the attic"
     assert "nothing to sweep" in environments.sweep(env.n, yes=True), "sweeping again finds nothing"
+
+
+def written_elsewhere(controller, n: int, title: str) -> None:
+    row = controller.load(controller.rows.numbers()[0])
+    row.n, row.title = n, title
+    write_text(controller.path(n), row.dump())
+
+
+def listed(controller) -> dict:
+    return {row.n: row.title for row in controller.all(last=0)}
+
+
+def test_a_row_of_every_type_written_behind_the_stores_back_shows_up_in_lists_fresh_stale_or_in_bulk(monkeypatch):
+    wrong = {}
+    for type_, resource, record, controller in each_type():
+        first = acting(type_, record, SYSTEM).create("the first row", **needed(type_))
+        base = max(controller.rows.numbers()) + 1
+        facts = {"the list is warm before another process writes": first.n in listed(controller)}
+        written_elsewhere(controller, base, "written by another process")
+        facts["a new row file shows up while the stamps are fresh"] = listed(controller).get(base) == "written by another process"
+        written_elsewhere(controller, first.n, "edited by another process")
+        monkeypatch.setattr(stored, "STAMPS_FRESH", 0.0)
+        facts["an edited row file shows once the stamps are stale"] = listed(controller).get(first.n) == "edited by another process"
+        monkeypatch.setattr(stored, "FLUSH_ROWS", 5)
+        bulk = range(base + 1, base + 8)
+        for n in bulk:
+            written_elsewhere(controller, n, f"bulk row {n}")
+        facts["a bulk of rows past the flush count all show up"] = {n: f"bulk row {n}" for n in bulk}.items() <= listed(controller).items()
+        facts["a bulk past the flush count is written to the index"] = {first.n, base, *bulk} <= {int(n) for n in read_json(controller.rows.folder() / stored.INDEX, dict, {})}
+        monkeypatch.undo()
+        reckon(wrong, type_, facts)
+    assert wrong == {}, "a row written by another process shows up in lists for every type"
+
+
+def test_search_finds_a_row_of_every_type_by_its_words_and_sees_an_edit_that_kept_its_updated_stamp(monkeypatch):
+    monkeypatch.setattr(stored, "STAMPS_FRESH", 0.0)
+    wrong = {}
+    for type_, resource, record, controller in each_type():
+        row = acting(type_, record, SYSTEM).create("alpha", **needed(type_))
+        found = [t.n for t in controller.search(row.title)]
+        edited = controller.load(row.n)
+        edited.title = "omega"
+        write_text(controller.path(row.n), edited.dump())
+        facts = {"search finds a row by its words": row.n in found}
+        if not resource.own_folder:
+            facts["search finds the new words after an edit that kept the same updated stamp"] = row.n in [t.n for t in controller.search("omega")]
+            facts["and not the old"] = row.n not in [t.n for t in controller.search(row.title)]
+        reckon(wrong, type_, facts)
+    assert wrong == {}, "search follows an edit even when the updated stamp did not move"
+
+
+def multipart_files(*files: tuple[str, str]) -> dict:
+    boundary = "walked"
+    raw = "".join(f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="{name}"\r\n\r\n{text}\r\n' for name, text in files)
+    return {"_raw": f"{raw}--{boundary}--\r\n".encode(), "_type": f"multipart/form-data; boundary={boundary}"}
+
+
+def test_an_upload_and_the_file_route_stay_inside_the_rows_folder_for_every_type():
+    wrong = {}
+    for type_, resource, record, controller in each_type():
+        row = acting(type_, record, SYSTEM).create(f"a {type_} with files", **needed(type_))
+        base = f"/api/{{env}}/{type_}/{row.n}"
+        uploaded = post(record, f"{base}/upload", multipart_files(("a.txt", "one"), ("b.txt", "two")))
+        attached = sorted(controller.load(row.n).files)
+        reckon(wrong, type_, {
+            "a two-part upload answers both file names": (uploaded.code, uploaded.body["files"]) == (200, ["a.txt", "b.txt"]),
+            "an attached file is served back": (get(record, f"{base}/files/b.txt").code, get(record, f"{base}/files/b.txt").body) == (200, b"two"),
+            "a name that climbs out of the folder is refused": get(record, f"{base}/files/..%2Fx").code == 400,
+            "detaching a name outside the folder is refused": post(record, f"{base}/detach", {"name": "../x"}).code == 400,
+            "a refused call leaves the attached files as they were": sorted(controller.load(row.n).files) == attached == ["a.txt", "b.txt"],
+        })
+    assert wrong == {}, "an upload and the file route stay inside the row's folder for every type"

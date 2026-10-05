@@ -1,23 +1,31 @@
 import http.client
 import json
 import os
+import signal
 import subprocess
 import sys
 import threading
 import time
+import types
 import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine.heal import broken
-from engine.package import point
+import migrations
+from agents.terminal import relaunch
 from controllers.types import Todos
-from engine.sessions import hold_build
+from engine import bus, heal, locks, runtime, viewer
+from engine.heal import broken
+from engine.package import code_stamp, point
+from engine.sessions import alive, hold_build
+from engine.stop import ask
+from engine.stored import append_text, write_text
 from install import STUBS
-from providers import DRIVERS
+from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, launches
 from scripts.checks.imports import imports, missing
+from serve import Handler, JournalServer
 from tests.conftest import fresh
 
 HERE = Path(__file__).resolve().parents[1]
@@ -42,8 +50,6 @@ def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
 
 
 def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
-    from engine import runtime
-    from agents.terminal import relaunch
     root = tmp_path / PROJECT / ".journal"
     moved = []
 
@@ -64,11 +70,10 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
     place = tmp_path
     (place / PROJECT).mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    installed = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=120)
+    upgraded = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=120)
     root = place / PROJECT / ".journal"
     left = sorted(f.relative_to(root / "src").as_posix() for f in (root / "src").rglob("*.py"))
-    assert ((root / "journal.pyz").is_file(), left) == (True, sorted(STUBS)), f"the Python is packed into one zip, a stub left at each old entry:\n{installed.stdout}{installed.stderr}"
-    from engine import runtime
+    assert ((root / "journal.pyz").is_file(), left) == (True, sorted(STUBS)), f"the Python is packed into one zip, a stub left at each old entry:\n{upgraded.stdout}{upgraded.stderr}"
     assert not runtime.upgrading(root), "an upgrade that has finished leaves no mark, so the supervisor may reload"
     (root / "runtime" / "upgrading").touch()
     assert runtime.upgrading(root), "while one is under way, the mark holds the supervisor's reload back"
@@ -136,7 +141,6 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
                    capture_output=True, timeout=120)
     kept = sorted(build.name for build in root.glob("journal-*.pyz") if build != old[0])
     assert old[0].is_file() and not old[1].is_file() and len(kept) <= 2, f"the build a live process runs from is kept; of the others only the two newest stay: {kept}"
-    from engine.package import code_stamp
     watched = root / "journal.pyz"
     before = code_stamp(watched)
     point(root, old[0])
@@ -180,7 +184,6 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
 
 
 def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_path):
-    from providers import PROVIDERS
     root = installed(tmp_path)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     settings = root.parent / ".claude" / "settings.local.json"
@@ -208,17 +211,14 @@ def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_
 
 def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
     here, there = installed(tmp_path / "here"), installed(tmp_path / "there")
-    asked = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in, own_build; "
+    program = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in, own_build; "
              f"print(entry_in(Path({str(there)!r}), 'supervisor')[1], own_build(Path({str(here)!r})), own_build(Path({str(there)!r})), sep='|')")
-    launched, mine, theirs = subprocess.run([sys.executable, "-c", asked], capture_output=True, text=True, timeout=WAIT).stdout.strip().split("|")
+    launched, mine, theirs = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, timeout=WAIT).stdout.strip().split("|")
     assert launched == str(there / "journal.pyz"), "a journal launching a session for another starts it on that journal's build, never its own"
     assert (mine, theirs) == ("True", "False"), "a worker on another journal's build knows it, and leaves that journal's servers to its own sessions"
 
 
 def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
-    import signal
-    from engine import viewer
-    from engine.sessions import alive
     root = installed(tmp_path)
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     starter = subprocess.Popen([sys.executable, "-c", f"import sys, time; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine import viewer; "
@@ -248,11 +248,13 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
     journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
     wired = json.loads((root.parent / ".claude" / "settings.local.json").read_text())["hooks"]["SessionStart"][0]["hooks"][0]["command"]
-    hook = lambda body: subprocess.run(["sh", "-c", wired], input=json.dumps(body), text=True, env=env, capture_output=True, timeout=WAIT)
+
+    def hook(body: dict):
+        return subprocess.run(["sh", "-c", wired], input=json.dumps(body), text=True, env=env, capture_output=True, timeout=WAIT)
     channel = json.loads((root.parent / ".mcp.json").read_text())["mcpServers"]["journal"]
     assert channel == {"command": sys.executable, "args": [str(root / "journal.py"), "-m", "channel", str(root)]}, \
         "the channel runs the interpreter that installed it, with a path that has a space in it kept whole"
-    shown = {"hook_event_name": "MessageDisplay", "session_id": "s1", "message_id": "m1", "index": 0, "final": True, "delta": "said while the server was down"}
+    display = {"hook_event_name": "MessageDisplay", "session_id": "s1", "message_id": "m1", "index": 0, "final": True, "delta": "said while the server was down"}
 
     def serving():
         server = subprocess.Popen([*journal, "serve", "--port", "0"], cwd=root.parent, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -268,7 +270,7 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
         server.terminate()
         server.wait(WAIT)
     (root / "runtime" / "heartbeat").unlink(missing_ok=True)
-    hook(shown)
+    hook(display)
     assert list((root / "runtime" / "unsent").glob("*.json")), "the display hook keeps what the server could not take"
     server = serving()
     try:
@@ -283,10 +285,6 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
 
 
 def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatch):
-    import threading
-    import types
-    import migrations
-    from engine.stored import append_text, write_text
     root = tmp_path / ".journal"
     (root / "environments" / "main" / "todo").mkdir(parents=True)
     kept = root / "environments" / "main" / "todo" / "001.md"
@@ -318,12 +316,14 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
     except RuntimeError:
         pass
     writers[0].join(timeout=1)
-    left = lambda: list(root.glob(f".{migrations.BACKUP}-*"))
-    assert (kept.read_text(), added.read_text(), events.read_text(), migrations.applied(root), left()) == \
+
+    def backups() -> list:
+        return list(root.glob(f".{migrations.BACKUP}-*"))
+    assert (kept.read_text(), added.read_text(), events.read_text(), migrations.applied(root), backups()) == \
            ("the user's row", "written while migrating", "an event emitted while migrating\n", {}, []), \
         "a failed migration restores its backup before a waiting record write lands"
     monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch"])
-    assert migrations.run(root) == ["m9998_touch"] and not left(), "a run that succeeds deletes its backup"
+    assert migrations.run(root) == ["m9998_touch"] and not backups(), "a run that succeeds deletes its backup"
 
 
 def test_an_installer_left_with_only_itself_fetches_the_package_and_finishes(tmp_path):
@@ -338,7 +338,6 @@ def test_an_installer_left_with_only_itself_fetches_the_package_and_finishes(tmp
 
 @contextmanager
 def serving(record):
-    from serve import Handler, JournalServer
     Handler.root = record.root
     server = JournalServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -367,23 +366,7 @@ def test_the_server_answers_a_body_it_cannot_read_and_keeps_serving():
         assert asked(port, "GET", f"/api/{record.env}/todo")[0] == 200, "the next request is answered as before"
 
 
-def test_an_upload_and_the_file_route_stay_inside_the_rows_folder():
-    record = fresh()
-    row = Todos(record, actor=SYSTEM).create("a row with files")
-    edge = "xBOUNDARYx"
-    parts = b"".join(f'--{edge}\r\nContent-Disposition: form-data; name="file"; filename="{name}"\r\n\r\n{text}\r\n'.encode() for name, text in (("a.txt", "one"), ("b.txt", "two")))
-    with serving(record) as port:
-        base = f"/api/{record.env}/todo/{row.n}"
-        status, body = asked(port, "POST", f"{base}/upload", parts + f"--{edge}--\r\n".encode(), f"multipart/form-data; boundary={edge}")
-        assert (status, json.loads(body)["files"]) == (200, ["a.txt", "b.txt"]), "a two-part upload answers both file names"
-        assert asked(port, "GET", f"{base}/files/b.txt") == (200, b"two"), "an attached file is served back"
-        assert asked(port, "GET", f"{base}/files/..%2Fx")[0] == 400, "a name that climbs out of the folder is refused"
-        assert asked(port, "POST", f"{base}/detach", json.dumps({"name": "../x"}).encode())[0] == 400, "detaching a name outside the folder is refused"
-        assert sorted(Todos(record, actor=SYSTEM).load(row.n).files) == ["a.txt", "b.txt"], "a refused call leaves the attached files as they were"
-
-
 def test_the_event_stream_opens_carries_an_event_and_frees_its_watcher_on_disconnect():
-    from engine import bus
     record = fresh()
     watching = len(bus._watchers)
     with serving(record) as port:
@@ -406,8 +389,6 @@ def test_the_event_stream_opens_carries_an_event_and_frees_its_watcher_on_discon
 
 
 def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_other_write(tmp_path, monkeypatch):
-    from engine import locks
-    from engine.stored import write_text
     root = tmp_path / ".journal"
     monkeypatch.setattr(locks, "LOCK_WAIT", 0.3)
     outcomes = {}
@@ -430,7 +411,6 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
 
 
 def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(tmp_path):
-    from engine.stop import ask
     root = installed(tmp_path)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
     server = subprocess.Popen([sys.executable, str(root / "journal.py"), "--root", str(root), "serve", "--port", "0"], cwd=root.parent, env=env,
@@ -438,13 +418,15 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
     printed = []
     threading.Thread(target=lambda: printed.extend(iter(server.stdout.readline, "")), daemon=True).start()
 
-    def said(text: str, meanwhile=lambda: None, times: int = 1) -> bool:
-        heard = lambda: sum(text in line for line in printed) >= times
+    def printed_times(text: str, times: int) -> bool:
+        return sum(text in line for line in printed) >= times
+
+    def prints(text: str, meanwhile=lambda: None, times: int = 1) -> bool:
         began = time.time()
-        while not heard() and time.time() - began < WAIT:
+        while not printed_times(text, times) and time.time() - began < WAIT:
             meanwhile()
             time.sleep(0.5)
-        return heard()
+        return printed_times(text, times)
 
     touched = [0.0]
 
@@ -454,12 +436,12 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
             touched[0] = time.time()
 
     try:
-        assert said("http://127.0.0.1:"), "the server prints where it is serving"
-        assert said("restarting on the same port", touch), "a new build of the code restarts the server on the port it had"
+        assert prints("http://127.0.0.1:"), "the server prints where it is serving"
+        assert prints("restarting on the same port", touch), "a new build of the code restarts the server on the port it had"
         assert (root / "runtime" / "restarting").is_file(), "the server marks its restart before it stops serving, so a hook meanwhile retries"
-        assert said("http://127.0.0.1:", times=2), "the restarted server serves again"
+        assert prints("http://127.0.0.1:", times=2), "the restarted server serves again"
         ask(root)
-        assert said("journal: stopped") and server.wait(WAIT) == 0, "writing the stop flag ends the server and says it stopped"
+        assert prints("journal: stopped") and server.wait(WAIT) == 0, "writing the stop flag ends the server and says it stopped"
     finally:
         if server.poll() is None:
             server.kill()
@@ -467,7 +449,6 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
 
 
 def test_healing_twice_goes_back_once_and_refuses_the_broken_build_for_a_while(tmp_path):
-    from engine import heal
     root = tmp_path / ".journal"
     root.mkdir()
     good, bad = root / "journal-1.0.0-aaaaaaaaaa.pyz", root / "journal-2.0.0-bbbbbbbbbb.pyz"
