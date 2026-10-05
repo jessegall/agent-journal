@@ -11,10 +11,17 @@ const props = defineProps({
     maxWidth: {type: Number, default: 0},
     maxHeight: {type: Number, default: 0},
     gap: {type: Number, default: 4},
+    height: {type: Number, default: 0},
+    plain: Boolean,
 });
 const panel = ref(null);
 const px = (value) => (value ? `${value}px` : undefined);
-const size = computed(() => ({minWidth: px(props.minWidth), maxWidth: px(props.maxWidth), maxHeight: px(props.maxHeight)}));
+const size = computed(() => ({
+    minWidth: px(props.minWidth),
+    maxWidth: px(props.maxWidth),
+    maxHeight: px(props.maxHeight),
+    height: px(props.height),
+}));
 const EDGE = 8;
 const drawn = ref({w: 0, h: 0});
 const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
@@ -89,7 +96,7 @@ function follow() {
 onMounted(() => {
     measure();
     if (panel.value) watcher.observe(panel.value);
-    if (items()[0]) items()[0].focus();
+    if (!props.plain && items()[0]) items()[0].focus();
     follow();
 });
 onUnmounted(() => {

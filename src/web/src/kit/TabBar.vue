@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 
 defineProps({tabs: {type: Array, required: true}});
 const chosen = defineModel({type: String, required: true});
@@ -7,7 +7,20 @@ const strip = ref(null);
 const more = ref(false);
 const measure = () => strip.value && (more.value = strip.value.scrollWidth - strip.value.scrollLeft - strip.value.clientWidth > 1);
 const watcher = new ResizeObserver(measure);
-onMounted(() => watcher.observe(strip.value));
+const reveal = () => {
+    const tab = strip.value && strip.value.querySelector(".tab.on");
+    if (!tab) return;
+    const edge = tab.offsetLeft - strip.value.offsetLeft;
+    const left = Math.max(0, edge - 16);
+    const right = edge + tab.offsetWidth + 16 - strip.value.clientWidth;
+    if (strip.value.scrollLeft > left) strip.value.scrollLeft = left;
+    else if (strip.value.scrollLeft < right) strip.value.scrollLeft = right;
+};
+watch(chosen, () => nextTick(reveal));
+onMounted(() => {
+    watcher.observe(strip.value);
+    reveal();
+});
 onUnmounted(() => watcher.disconnect());
 </script>
 
