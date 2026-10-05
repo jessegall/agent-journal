@@ -51,6 +51,14 @@ class Fork:
     question: int
     rows: dict[str, int]
 
+    def answer(self, how: str) -> tuple[str, ...]:
+        return "question", "answer", str(self.question), "--how", how
+
+
+class DumpFork(Fork):
+    def answer(self, how: str) -> tuple[str, ...]:
+        return "dump", "answer", str(self.question), how
+
 
 @dataclass(frozen=True)
 class Seat:
@@ -464,8 +472,8 @@ class Session:
         self.stop()
         return n
 
-    def answered(self, question: int, how: str) -> None:
-        self.journal("question", "answer", str(question), "--how", how, actor=USER)
+    def answered(self, fork: Fork, how: str) -> None:
+        self.journal(*fork.answer(how), actor=USER)
         self.hook("UserPromptSubmit", prompt=how)
         self.news = True
 

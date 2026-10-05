@@ -35,6 +35,12 @@ export const LESSONS = [
         teaches: "Tell the agent something once while it builds a theatre's home page. When you ask for the show schedule later, it still knows, because it kept what you said as a fact.",
         load: () => import("./scenarios/memory.json"),
     },
+    {
+        key: "dumps",
+        title: "How to dump a pile of notes",
+        teaches: "Drop a pasted note, a screenshot and a text file in one dump. The agent sorts them by subject into documents in a named collection, says what it is doing as it goes, and asks you one question in the dump.",
+        load: () => import("./scenarios/dumps.json"),
+    },
 ];
 
 const LESSON = "scenario";

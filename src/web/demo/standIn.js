@@ -294,7 +294,7 @@ export class StandIn {
     }
 
     moved(row, action, body) {
-        if (!this.player.moved(action, row.n, body.how)) return {demo: true, notice: LATER};
+        if (!this.player.moved(action, row.n, body.how ?? body.text)) return {demo: true, notice: LATER};
         return stripped(this.held(row.type).find((r) => r.n === row.n) || row);
     }
 
