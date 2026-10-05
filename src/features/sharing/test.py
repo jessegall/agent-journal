@@ -1,3 +1,4 @@
+import base64
 import json
 import threading
 import time
@@ -159,6 +160,13 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
                 return got.status, json.loads(got.read())
         except urllib.error.HTTPError as error:
             return error.code, {}
+    def visit(page, password):
+        sent = {"Authorization": "Basic " + base64.b64encode(f"visitor:{password}".encode()).decode()} if password is not None else {}
+        try:
+            with urllib.request.urlopen(urllib.request.Request(page, headers=sent), timeout=5) as got:
+                return got.status
+        except urllib.error.HTTPError as error:
+            return error.code
     try:
         assert post({"Content-Type": "text/plain"})[0] == 403, "a plain form post is refused"
         status, made = post({"Content-Type": "application/json", "X-Shared-Comment": "1"})
@@ -169,6 +177,10 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
             html = got.read().decode()
         with urllib.request.urlopen(f"{page}preview.png", timeout=5) as got:
             picture = got.read()
+        locked = Shares(record, actor=USER).create(f"doc:{doc.n}", password="tulip")
+        opened = lambda password: visit(f"http://127.0.0.1:{server.server_port}/s/{locked.token}/", password)
+        assert (opened(None), opened("daisy"), opened("tulip")) == (401, 401, 200), \
+            "a page with a password asks for it, refuses a wrong one and opens for the right one"
         assert (f'property="og:title" content="{doc.title}"' in html, f'content="{page}preview.png"' in html, picture[:4]) == (True, True, b"\x89PNG"), \
             "the page carries its preview for Slack and WhatsApp: the shared item's title and a picture card"
     finally:
