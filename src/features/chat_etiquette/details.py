@@ -2,7 +2,7 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import NOTICES, Trigger
 from features.groups import Group
 
-SHOP, REMIND = "shop", "remind"
+SHOP, REMIND, SPOKEN_OF = "shop", "remind", "spoken_of"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
@@ -27,6 +27,8 @@ class ChatEtiquetteDetails(FeatureDetails):
         never answered or mentioned: no "you reacted". The state of the record is not news
         either: no "nothing is open on my side", "nothing else is waiting". Say what the work
         is and what it came to, in plain words, and name every row with its type, such as to-do 12.
+        Speak to the user, never about them: "you asked", not "the user asks" or their name with
+        "asks" or "wants", unless you are writing for someone else, as in a brief or a report.
 
         Filing a to-do from a message does not answer it. When the message asks you something or
         proposes a way to do it ("maybe do it this way"), reply as well: say whether you agree and
@@ -69,6 +71,11 @@ class ChatEtiquetteDetails(FeatureDetails):
                 a turn that only handles a journal line needs no words: act on it, or say once in the chat what you
                 wait on, then carry on; what the user needs to know still goes to the chat
             """,
+        ),
+        Line(
+            name=SPOKEN_OF,
+            title='your chat spoke about the user instead of to them - "{{words}}"',
+            brief="you are talking to them: say \"you asked\" or \"you want\", and keep their name for addressing them",
         ),
         Line(
             name=SHOP,

@@ -31,6 +31,13 @@ def test_chat_that_talks_about_the_journal_is_named_back_and_the_skill_is_always
     assert [bool(SHOP_TALK.search(text)) for text in ("Ik lees je bericht eerst.", "Bericht 12 is al beantwoord.", "De pagina is klaar.")] == [True, True, False], \
         "talk about the journal is caught in Dutch too, and plain Dutch about the work is not"
     assert "journal-chat-etiquette" in primary(), "its skill is loaded at every start, like the journal's own"
+    record.set_setting("form_of_address", {"first_name": "Ada"})
+    for line in ("Sir Ada asks to shorten the description.", "The user wants a shorter list.", "Will do, Sir Ada: shortening it now.",
+                 'Your words were "Ada wants a list", so here it is.'):
+        chat.send(record, agent, line)
+    assert [n for n in nudges(record) if "instead of to them" in n] == \
+        ['your chat spoke about the user instead of to them - "Sir Ada asks"', 'your chat spoke about the user instead of to them - "The user wants"'], \
+        "talking about the user in the third person is named back; addressing them by name, or quoting, is not"
 
 
 def test_every_twentieth_journal_line_reminds_the_agent_of_chat_etiquette():
