@@ -241,6 +241,24 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500():
     assert set(answered.values()) == {400}, f"creating any type without what it needs is refused in words, never a 500: {answered}"
 
 
+def test_the_command_line_refuses_in_words_and_exits_nonzero():
+    import io
+    from tests.kit import run
+    features.load()
+    record = fresh()
+
+    def refused(*argv: str) -> tuple[int, str]:
+        err = io.StringIO()
+        return run(["--root", str(record.root), "--env", record.env, *argv], out=io.StringIO(), err=err), err.getvalue()
+    code, said = refused("todo", "all", "--force")
+    assert (code, "takes the reason" in said) == (1, True), "--force without its reason exits 1 and says it takes one"
+    code, said = refused("todo", "bogus")
+    assert (code, "invalid choice" in said or "bogus" in said) == (2, True), "a word the noun does not have exits 2 and names it"
+    code, said = refused("--agent", "sub-1", "todo", "create", "a title")
+    assert (code, said.startswith("! ")) == (1, True), f"a subagent that was never lent the environment is refused in words: {said}"
+    assert CONTROLLERS["todo"](record, actor=SYSTEM).all() == [], "and nothing was written by the refused command"
+
+
 def test_no_command_argument_shares_a_name_with_a_global_option():
     features.load()
     from commands.parser import parser
