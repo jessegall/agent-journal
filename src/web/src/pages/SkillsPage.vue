@@ -6,15 +6,18 @@ import Btn from "../kit/Btn.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
-import {route} from "../route.js";
+import Segmented from "../kit/Segmented.vue";
+import TextInput from "../kit/TextInput.vue";
+import SkillPanel from "./SkillPanel.vue";
 import SkillsRow from "./SkillsRow.vue";
 
 const rows = ref([]);
 const loaded = ref(false);
 const opened = ref("");
-const text = ref("");
-const busy = ref("");
+const busy = ref(false);
 const notice = ref("");
+const query = ref("");
+const filter = ref("all");
 const {members: folded, toggle: fold} = useToggledSet();
 
 async function reload() {
@@ -28,8 +31,20 @@ async function reload() {
 onMounted(reload);
 watch(() => agent.value && agent.value.data.uses, reload);
 
+const FILTERS = {all: () => true, loaded: (s) => s.loaded, always: (s) => s.always};
 const loadedCount = computed(() => rows.value.filter((s) => s.loaded).length);
-const skillGroups = computed(() => groups(rows.value));
+const filters = computed(() => [
+    {key: "all", label: "All"},
+    {key: "loaded", label: "Loaded now", count: loadedCount.value},
+    {key: "always", label: "At session start", count: rows.value.filter((s) => s.always).length},
+]);
+const searching = computed(() => Boolean(query.value.trim()) || filter.value !== "all");
+const matching = computed(() => {
+    const words = query.value.toLowerCase().split(/\s+/).filter(Boolean);
+    return rows.value.filter((s) => FILTERS[filter.value](s) && words.every((w) => `${s.name} ${s.description}`.toLowerCase().includes(w)));
+});
+const skillGroups = computed(() => groups(matching.value));
+const panel = computed(() => rows.value.find((s) => s.name === opened.value) || null);
 
 function groups(list) {
     const under = (top) => list.filter((s) => s.name === top || s.name.startsWith(`${top}-`));
@@ -51,51 +66,44 @@ function groups(list) {
     return [...named, ...individual];
 }
 
-async function open(s) {
-    if (opened.value === s.name) {
-        opened.value = "";
-        return;
-    }
-    const got = await api.skill(s.name);
-    text.value = got.text.replace(/^---\n[\s\S]*?\n---\n/, "");
-    opened.value = s.name;
-}
-
-async function loadNow(s) {
-    busy.value = s.name;
+async function whileBusy(work) {
+    busy.value = true;
     try {
-        const got = await api.loadSkill(s.name);
-        notice.value = got.notice;
+        await work();
     } finally {
-        busy.value = "";
+        busy.value = false;
     }
 }
 
-async function always(s, on) {
-    busy.value = s.name;
-    try {
+const loadNow = (s) => whileBusy(async () => (notice.value = (await api.loadSkill(s.name)).notice));
+
+const always = (s, on) =>
+    whileBusy(async () => {
         await api.alwaysSkill(s.name, on);
         await reload();
-    } finally {
-        busy.value = "";
-    }
-}
+    });
 
-async function keywords(s, words) {
-    busy.value = s.name;
-    try {
+const keywords = (s, words) =>
+    whileBusy(async () => {
         await api.skillKeywords(s.name, words);
         await reload();
-    } finally {
-        busy.value = "";
-    }
-}
+    });
 </script>
 
 <template>
     <section class="skills">
         <div class="bar">
-            <span class="count">{{ rows.length }} skills · {{ loadedCount }} loaded in the agent's window</span>
+            <TextInput
+                class="skills-find"
+                icon="search"
+                :value="query"
+                placeholder="Find a skill"
+                aria-label="Find a skill"
+                @input="query = $event.target.value"
+                @keydown.esc="query = ''"
+            />
+            <Segmented :options="filters" :value="filter" @pick="filter = $event" />
+            <span class="count">{{ loadedCount }} of {{ rows.length }} skills are loaded in the agent's current context</span>
             <template v-if="notice">
                 <span class="notice">{{ notice }}</span>
             </template>
@@ -103,47 +111,34 @@ async function keywords(s, words) {
         <template v-if="loaded && !rows.length">
             <EmptyState class="empty">No skills are installed under .claude/skills or .codex/skills.</EmptyState>
         </template>
-        <template v-if="rows.length">
+        <template v-else-if="loaded && !matching.length">
+            <EmptyState class="empty" title="No skill matches">Try other words.</EmptyState>
+        </template>
+        <template v-if="matching.length">
             <div class="rows">
                 <template v-for="group in skillGroups" :key="group.key">
                     <div :class="['cluster', group.skill ? 'individual' : 'named']">
                         <template v-if="group.skill">
-                            <SkillsRow
-                                :skill="group.skill"
-                                :busy="busy"
-                                :opened="opened"
-                                :text="text"
-                                @open="open"
-                                @load="loadNow"
-                                @always="always"
-                                @keywords="keywords"
-                            />
+                            <SkillsRow :skill="group.skill" @open="opened = $event.name" @always="always" />
                         </template>
                         <template v-else>
-                            <Btn fill :class="['group', {folded: folded.has(group.key)}]" @click="fold(group.key)">
+                            <Btn fill :class="['group', {folded: folded.has(group.key) && !searching}]" @click="fold(group.key)">
                                 <span class="group-name">{{ group.name }}</span>
                                 <span class="group-count">{{ group.count }}</span>
                                 <Icon name="down" />
                             </Btn>
-                            <template v-if="!folded.has(group.key)">
+                            <template v-if="!folded.has(group.key) || searching">
                                 <template v-for="item in group.items" :key="item.key">
-                                    <SkillsRow
-                                        :skill="item.skill"
-                                        :busy="busy"
-                                        :opened="opened"
-                                        :text="text"
-                                        :depth="1"
-                                        @open="open"
-                                        @load="loadNow"
-                                        @always="always"
-                                        @keywords="keywords"
-                                    />
+                                    <SkillsRow :skill="item.skill" :depth="1" @open="opened = $event.name" @always="always" />
                                 </template>
                             </template>
                         </template>
                     </div>
                 </template>
             </div>
+        </template>
+        <template v-if="panel">
+            <SkillPanel :skill="panel" :busy="busy" @close="opened = ''" @load="loadNow" @always="always" @keywords="keywords" />
         </template>
     </section>
 </template>
@@ -155,16 +150,27 @@ async function keywords(s, words) {
 
 .bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    height: 44px;
-    padding: 0 14px 0 22px;
+    gap: 8px 12px;
+    min-height: 44px;
+    padding: 8px 14px 8px 22px;
     border-bottom: 1px solid var(--border);
     color: var(--text-2);
 }
 
-.notice {
+.skills-find {
+    flex: 0 1 280px;
+}
+
+.count {
     margin-left: auto;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.notice {
+    margin-left: 12px;
     font-size: 12px;
     color: var(--accent-text);
 }
