@@ -4,7 +4,6 @@ from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
 from features.messages.closing import CloseAnswered, CloseHandled, CloseSeenByUser
 from features.messages.inbox import NameUnanswered, NameUnread, ResetCountsOnArrival
-from features.messages.linking import LinkToMessageInHand
 from features.messages.prose import NameBareNumbers, NameRunTogether
 from features.messages.saving import SaveAgentMessage
 
@@ -20,7 +19,6 @@ class MessagesFeature(Feature):
         journal.events.handler(CloseHandled())
         journal.events.handler(CloseSeenByUser())
         journal.events.handler(CloseAnswered())
-        journal.events.handler(LinkToMessageInHand())
         journal.events.handler(NameRunTogether())
         journal.events.handler(NameBareNumbers())
         journal.client.formatter(CommandsAsCode())

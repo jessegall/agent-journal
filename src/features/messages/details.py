@@ -25,9 +25,8 @@ class MessagesDetails(FeatureDetails):
         Each new message is named to you as it arrives. The inbox reminder follows only while more than five wait unread, or once
         you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have not answered is mentioned again once it has waited ten tool uses, or
         once you are idle, a few times, without holding your writes.
-        A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it,
-        and a row you file while that one message alone is in your hands is linked to it; with several in hand,
-        link it yourself with journal message process.
+        A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it.
+        A row you file from a message is linked to it only by journal message process: nothing is linked by guessing.
     """
 
     aliases = (("inbox", "unread"), ("handled", "closing"), ("status", "answering"))
@@ -46,10 +45,6 @@ class MessagesDetails(FeatureDetails):
         Behaviour(
             name="closing",
             title="Close a message once it is handled",
-        ),
-        Behaviour(
-            name="linking",
-            title="Link what the agent files to the message it is answering",
         ),
         Behaviour(
             name="paragraphs",
