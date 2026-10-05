@@ -5,6 +5,7 @@ from features.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
+    EndReviewWithItsReport,
     GuideBuilding,
     PassCheckpointsInAuto,
     ReopenPlansWithTheirRows,
@@ -32,6 +33,7 @@ class PlansFeature(Feature):
         ROW_HOLDS.add(self, held)
         journal.events.handler(StartBuilding())
         journal.events.handler(StartApproved())
+        journal.events.handler(EndReviewWithItsReport())
         journal.events.handler(TellParkedAndPickedUp())
         journal.events.handler(GuideBuilding())
         journal.events.handler(PassCheckpointsInAuto())
