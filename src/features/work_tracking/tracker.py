@@ -3,7 +3,7 @@ from pathlib import Path
 from controllers.types import Agents, Works
 from engine.events.engine import FileEdited
 from engine.files import KIND, line_counts
-from engine.proc import git
+from engine.git import commits_since
 from engine.command_runs import Delta, counted_runs, current_run
 from resources.base import SYSTEM
 from resources.shapes import CHANGE, COMMIT
@@ -15,8 +15,7 @@ def files_of(record, n: int):
 
 
 def committed(project: Path, since: float) -> list[dict]:
-    out = git(["log", f"--since=@{int(since)}", "--format=%H%x1f%s"], project)
-    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
+    return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, subject in commits_since(project, since)]
 
 
 def begin(event, record) -> None:
