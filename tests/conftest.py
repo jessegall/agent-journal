@@ -15,6 +15,8 @@ import pytest  # noqa: E402
 
 from engine.record import Record  # noqa: E402
 from engine.runtime import TESTS_RUNNING  # noqa: E402
+from engine import locks  # noqa: E402
+from controllers import stored  # noqa: E402
 
 
 def fresh(env: str = "t") -> Record:
@@ -79,15 +81,8 @@ def free_port():
 @pytest.fixture(autouse=True)
 def closed_handles():
     yield
-    from controllers import stored
-    from engine import locks
-    with locks.SHARING:
-        for writes in locks.SHARED.values():
-            writes.held.close()
-        locks.SHARED.clear()
-    for _, archive in stored.OPEN.values():
-        archive.close()
-    stored.OPEN.clear()
+    locks.close_all()
+    stored.close_all()
 
 
 @pytest.fixture(autouse=True)

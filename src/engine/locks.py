@@ -44,6 +44,13 @@ SHARED: dict[Path, SharedWrites] = {}
 SHARING = threading.Lock()
 
 
+def close_all() -> None:
+    with SHARING:
+        for writes in SHARED.values():
+            writes.held.close()
+        SHARED.clear()
+
+
 def shared_writes(root: Path) -> SharedWrites:
     with SHARING:
         if root not in SHARED:
