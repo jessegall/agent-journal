@@ -9,7 +9,6 @@ import TextInput from "../kit/TextInput.vue";
 import PluginCard from "./PluginCard.vue";
 import PluginDashboard from "./PluginDashboard.vue";
 import PluginGuide from "./PluginGuide.vue";
-import PluginSettings from "./PluginSettings.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import PluginInstallDialog from "./PluginInstallDialog.vue";
 import LogDialog from "../kit/LogDialog.vue";
@@ -18,7 +17,7 @@ import PluginMakeDialog from "./PluginMakeDialog.vue";
 import PluginRemoveDialog from "./PluginRemoveDialog.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {rows} from "../sync/rows.js";
+import {installedPlugins} from "../composables/plugins.js";
 import {usePoll} from "../composables/poll.js";
 import {sendMessage} from "../chat/outbox.js";
 
@@ -33,37 +32,9 @@ const previewText = ref("");
 const shown = ref(null);
 const removing = ref(null);
 const outcome = ref(null);
-const configuring = ref(0);
 const viewing = ref(null);
-const configured = computed(() => plugins.value.find((p) => p.n === configuring.value));
 const busy = ref("");
-const plugins = computed(() =>
-    rows("plugin")
-        .filter((p) => !p.completed && !p.deleted)
-        .map((p) => ({
-            n: p.n,
-            name: (p.data.manifest || {}).name || "",
-            title: p.title,
-            description: p.abstract || "It says nothing about itself.",
-            version: p.data.version || "no version",
-            source: p.data.source,
-            commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
-            enabled: !!p.data.enabled,
-            dashboards: (p.data.manifest || {}).dashboards || [],
-            settings: Object.entries((p.data.manifest || {}).settings || {}).map(([key, s]) => ({
-                key,
-                title: s.title || key,
-                help: s.help || "",
-                type: s.type || "text",
-                options: s.options || [],
-                group: s.group || "",
-                parent: s.parent || "",
-                when: [s.when || []].flat().map((choice) => Object.entries(choice).map(([other, value]) => [other, String(value)])),
-                detail: !!s.detail,
-                value: String(((p.data.settings || {}).chosen || {})[key] ?? s.default ?? ""),
-            })),
-        }))
-);
+const plugins = installedPlugins();
 const services = ref([]);
 const reading = ref("");
 const logged = ref("");
@@ -121,12 +92,12 @@ async function install() {
     follow(name, skipped);
     try {
         const upgrading = shown.value.upgrading;
-        const said = upgrading ? await api.upgradePlugin(upgrading, shown.value.current) : await api.installPlugin(source.value);
-        outcome.value = {ok: true, text: typeof said === "string" ? said : `${shown.value.title} is up to date.`};
+        const installed = upgrading ? await api.upgradePlugin(upgrading, shown.value.current) : await api.installPlugin(source.value);
+        outcome.value = {ok: true, text: typeof installed === "string" ? installed : `${shown.value.title} is up to date.`};
         if (!upgrading) source.value = "";
-        if (!upgrading && said && said.n) {
+        if (!upgrading && installed && installed.n) {
             closeShown();
-            configuring.value = said.n;
+            settingsOf(name);
         }
     } catch (e) {
         outcome.value = {ok: false, text: e.message};
@@ -176,9 +147,7 @@ async function remove(everything) {
     if (everything) await act(p, "purge");
 }
 
-async function configure(p, key, value) {
-    await api.configurePlugin(p.n, key, value);
-}
+const settingsOf = (name) => (location.hash = `#/${route.value.env}/settings?sub=plugins&plugin=${encodeURIComponent(name)}`);
 
 async function clearLog() {
     const p = plugins.value.find((row) => row.name === reading.value);
@@ -232,7 +201,7 @@ async function askAgent() {
             >
                 <template #end>
                     <Btn kind="primary" small :busy="busy === 'preview'" :disabled="!source || busy === 'preview'" @click="preview">
-                        Scan
+                        Check before installing
                     </Btn>
                 </template>
             </TextInput>
@@ -240,8 +209,8 @@ async function askAgent() {
 
         <div class="body">
             <p class="lead">
-                A plugin runs as you, with your files and your network. Scan shows every command it would run before anything runs, and it
-                installs at that exact commit.
+                A plugin runs as you, with your files and your network. Check before installing shows every command it would run before
+                anything runs, and it installs at that exact commit.
             </p>
             <template v-if="previewText">
                 <Console :text="previewText" />
@@ -263,7 +232,7 @@ async function askAgent() {
                         @toggle="(on) => plugin(p, on ? 'enable' : 'disable')"
                         @upgrade="upgrade(p)"
                         @setup="plugin(p, 'upgrade', {yes: true, again: true})"
-                        @settings="configuring = p.n"
+                        @settings="settingsOf(p.name)"
                         @dashboard="(board) => (viewing = {plugin: p, board})"
                         @log="toggleLog(p)"
                         @remove="removing = p"
@@ -299,9 +268,6 @@ async function askAgent() {
         </template>
         <template v-if="viewing">
             <PluginDashboard :plugin="viewing.plugin" :board="viewing.board" @close="viewing = null" />
-        </template>
-        <template v-if="configured">
-            <PluginSettings :plugin="configured" @close="configuring = 0" @change="(key, value) => configure(configured, key, value)" />
         </template>
         <template v-if="removing">
             <PluginRemoveDialog :title="removing.title" @close="removing = null" @remove="remove" />

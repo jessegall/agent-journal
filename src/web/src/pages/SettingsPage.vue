@@ -17,6 +17,7 @@ import Toast from "../kit/Toast.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
+import PluginSettings from "./PluginSettings.vue";
 import SettingsRegion from "./SettingsRegion.vue";
 import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../platform/storage.js";
@@ -72,7 +73,8 @@ const filters = computed(() => [
     {key: "changed", label: "Changed", title: "Settings you changed from their default", count: total.value.changed, dot: true},
     {key: "off", label: "Off", count: total.value.off},
 ]);
-const asking = computed(() => (tab.value === "environments" ? "Find an environment" : "Find a setting in every tab"));
+const ASKING = {environments: "Find an environment", plugins: "Find a setting of a plugin"};
+const asking = computed(() => ASKING[tab.value] || "Find a setting in every tab");
 const screen = computed(() => {
     if (!narrow.value || searching.value || !listed.value) return "page";
     return chosen.value ? "group" : "list";
@@ -191,9 +193,7 @@ onMounted(async () => {
                             </template>
                             <template #plugins>
                                 <p class="settings-line">{{ tabLine("plugins") }}</p>
-                                <EmptyState class="settings-empty" title="Plugin settings open from the Plugins page">
-                                    Each plugin's card has a Settings button.
-                                </EmptyState>
+                                <PluginSettings :query="query" @saved="saved = {text: `Saved: ${$event}`}" />
                             </template>
                             <template #default>
                                 <div class="settings-column">
