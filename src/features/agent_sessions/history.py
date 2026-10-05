@@ -10,7 +10,7 @@ OUTCOME = "brought in from the conversation's transcript"
 
 
 def history(record, provider, path: Path, conversation: str) -> int:
-    turns = [turn for turn in provider.transcript(path) if turn.kind in (HUMAN, AGENT_TURN) and turn.text.strip()]
+    turns = [turn for turn in provider.turns(path) if turn.kind in (HUMAN, AGENT_TURN) and turn.text.strip()]
     messages = Messages(record, actor=SYSTEM)
     with record.locked():
         n = (messages.numbers() or [0])[-1]

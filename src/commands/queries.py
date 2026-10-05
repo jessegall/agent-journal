@@ -22,7 +22,7 @@ def transcript(record, session: str):
         return []
     row = Agents(record, actor=SYSTEM).by_session(session)
     provider = PROVIDERS.get(row.provider)
-    return provider().transcript(row.transcript) if provider else []
+    return provider().turns(row.transcript) if provider else []
 
 def turn_text(turn, source: str = "") -> str:
     return f"{source}{turn.line:>6}  {turn.who:<7} {visible(turn.text)}"
@@ -53,7 +53,7 @@ def environment_transcript(record) -> list[SourcedTurn]:
         if not provider or not path or not path.is_file() or path in seen:
             continue
         seen.add(path)
-        for turn in provider().transcript(path):
+        for turn in provider().turns(path):
             turns.append((turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)))
     turns.sort(key=lambda item: item[:3])
     return [item[-1] for item in turns]

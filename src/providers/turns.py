@@ -35,7 +35,7 @@ def turns(agent) -> list:
         return []
     held = TURNS.get(agent.transcript)
     if not held or held[0] != size:
-        held = TURNS[agent.transcript] = (size, [t for t in provider.transcript(agent.transcript) if t.has_agent_text])
+        held = TURNS[agent.transcript] = (size, [t for t in provider.turns(agent.transcript) if t.has_agent_text])
     return held[1]
 
 
@@ -43,7 +43,7 @@ def last_turn(agent):
     provider = _settled_provider(agent)
     if not provider:
         return None
-    recent = [t for t in provider.tail(agent.transcript) if t.has_agent_text] or turns(agent)
+    recent = [t for t in provider.last_turns(agent.transcript) if t.has_agent_text] or turns(agent)
     return recent[-1] if recent else None
 
 
