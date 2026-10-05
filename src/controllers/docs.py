@@ -3,7 +3,7 @@ from pathlib import Path
 
 from controllers.base import Controller
 from resources import types
-from resources.base import Refused
+from resources.base import SECTION, Refused
 from controllers.marks import action
 
 
@@ -48,6 +48,15 @@ class Docs(Controller):
             raise Refused(f"no such file: {path}; write the finished text to a file, then journal doc file \"{title}\" <file>")
         written = Written.read(source.read_text(errors="replace"))
         return self._created_with_sections(title, "", written.brief, list(written.chapters), written=True)
+
+    @action
+    def cut(self, n: int, title: str):
+        with self.record.locked(self.resource.scope):
+            doc = self.load(n)
+            if not any(s[SECTION.title] == title for s in doc.sections):
+                raise Refused(f"doc {doc.n} has no part named {title!r}")
+            doc.sections = [s for s in doc.sections if s[SECTION.title] != title]
+            return self.save(doc, "updated", section=title)
 
     @action
     def draft(self, n: int):
