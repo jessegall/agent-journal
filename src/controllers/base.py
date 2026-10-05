@@ -234,7 +234,7 @@ class Controller(Files, Links, Discussed):
     def stamp(self, n: int, **data) -> Resource:
         return self._changed(n, "stamped", data, quiet=True, fields=sorted(data))
 
-    def _appended(self, r: Resource, field: str, entry, keep: int, **data) -> Resource:
+    def appended(self, r: Resource, field: str, entry, keep: int, **data) -> Resource:
         return self.update(r.n, **{field: [*(r.data.get(field) or []), entry][-keep:]}, **data)
 
     def _changed(self, n: int, action: str, data: dict, **event) -> Resource:

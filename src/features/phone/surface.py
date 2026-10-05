@@ -195,7 +195,7 @@ class PhoneSurface:
     def auto(self, on: bool) -> bool:
         if automatic(self.home) != on:
             FEATURES["work_tracking"].choose(self.home, "auto", on)
-            Nudges(self.home, actor=USER)._to_primary(f"the user turned auto {'on' if on else 'off'}", "journal settings shows every switch")
+            Nudges(self.home, actor=USER).to_primary(f"the user turned auto {'on' if on else 'off'}", "journal settings shows every switch")
         return on
 
     def mode(self, mode: str) -> str:

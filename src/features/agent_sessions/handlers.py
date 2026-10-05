@@ -47,7 +47,7 @@ class RecordCompactions(Handler):
         kept = row.data.get("compactions") or []
         if row.status != COMPACTING or (kept and time.time() - float(kept[-1]["at"]) < ONE_COMPACTION):
             return
-        context.journal.get(Agents)._appended(row, "compactions", {"at": time.time()}, KEPT_COMPACTIONS)
+        context.journal.get(Agents).appended(row, "compactions", {"at": time.time()}, KEPT_COMPACTIONS)
 
 
 class AskToStop(Handler):

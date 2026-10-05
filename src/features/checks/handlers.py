@@ -25,8 +25,8 @@ TESTS = "tests"
 class RunDueChecks(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         checks = context.journal.get(Checks)
-        for check in checks._due(time.time()):
-            checks._in_background(check.n)
+        for check in checks.due(time.time()):
+            checks.in_background(check.n)
 
 
 class ReportCheckResult(Handler):

@@ -43,7 +43,7 @@ class Agents(Controller):
             return self.update(row.n, cards=[{**kept, **card} if kept.get("key") == key else kept for kept in cards])
         if "label" not in card:
             return row
-        return self._appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
+        return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
     @action
     def stop_task(self, n: int, task: str, description: str = ""):
@@ -59,7 +59,7 @@ class Agents(Controller):
         n = self._primary_n()
         return self.load(n) if n is not None else None
 
-    def _primary_to_read(self):
+    def primary_to_read(self):
         n = self._primary_n()
         return self.rows.peek(n) if n is not None else None
 

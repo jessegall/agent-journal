@@ -59,7 +59,7 @@ def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
         driver.send(f"{line} {fault}")
     else:
         from controllers.types import Nudges
-        Nudges(record, actor=SYSTEM)._to_primary(f"{where} hit an error"[-80:].replace(":", " "), brief=f"{line} {fault}")
+        Nudges(record, actor=SYSTEM).to_primary(f"{where} hit an error"[-80:].replace(":", " "), brief=f"{line} {fault}")
 
 
 def threw(root: Path, env: str, where: str, driver=None) -> None:

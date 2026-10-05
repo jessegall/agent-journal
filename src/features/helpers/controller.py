@@ -87,7 +87,7 @@ class Helpers(Controller):
         home = Record(self.record.root, place.launched_from)
         row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text)
         told = Messages(home, actor=AGENT).create(titled(text), brief=text, peer=row.name)
-        Nudges(home, actor=SYSTEM)._to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
+        Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped")
 
     @action(network=True)
