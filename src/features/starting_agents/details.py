@@ -5,7 +5,7 @@ from features.groups import Group
 
 class StartingAgentsDetails(FeatureDetails):
     name = "starting_agents"
-    group = Group.JOURNAL
+    group = Group.ALWAYS
     label = "Start agents from the viewer"
     has_skill = False
 
@@ -27,7 +27,7 @@ class StartingAgentsDetails(FeatureDetails):
         Setting(
             name="wake_on_message",
             default=False,
-            title="Start the last agent when you write",
+            title="Start the agent again when you send a message",
             abstract="Only when no agent is running",
         ),
     ]

@@ -52,7 +52,7 @@ class BoardsDetails(FeatureDetails):
         Behaviour(
             name="ideas",
             title="Suggest new work",
-            abstract="Shown as chips under New work",
+            abstract="Ideas show as chips under New work",
             trigger=Trigger(every=720, unit=MINUTES),
         ),
     ]
@@ -62,19 +62,19 @@ class BoardsDetails(FeatureDetails):
             name="filler_model",
             default="sonnet",
             choices=MODELS,
-            title="Board filler model",
+            title="Model for the agent that fills a board",
         ),
         Setting(
             name="reviewer_model",
             default="sonnet",
             choices=MODELS,
-            title="Reviewer model",
+            title="Model for the agents that review plans and tickets",
         ),
         Setting(
             name="orchestrating",
             default=False,
-            title="This environment orchestrates its boards",
-            abstract="On: its agent only delegates",
+            title="This environment only hands out board work",
+            abstract="Its agent delegates every ticket and writes no code itself",
         ),
     ]
 

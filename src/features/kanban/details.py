@@ -29,7 +29,7 @@ class KanbanDetails(FeatureDetails):
         Setting(
             name="done_days",
             default=7,
-            title="Keep done cards for",
+            title="Keep closed cards on the board for",
             unit="days",
         ),
     ]

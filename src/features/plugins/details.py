@@ -4,14 +4,14 @@ from features.groups import Group
 
 class PluginsDetails(FeatureDetails):
     name = "plugins"
-    group = Group.JOURNAL
+    group = Group.ALWAYS
     label = "Plugins"
     when = "a plugin is installed, upgraded, configured or answers"
 
     title = "Plugins"
 
 
-    abstract = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
+    abstract = "A plugin is a repository installed into the journal. It reacts to what happens in the journal and can run programs of its own."
 
     help = """
         Install a plugin with journal plugin install <url>, upgrade it with journal plugin upgrade <n>, and change a setting with

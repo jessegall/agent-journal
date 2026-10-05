@@ -6,7 +6,7 @@ class ChecksDetails(FeatureDetails):
     name = "checks"
     group = Group.RECORDS
     label = "Checks"
-    hint = "Pass or fail scripts; a failure is filed"
+    hint = "Scripts that pass or fail; a failure is filed"
     when = "a check is created, run or fails"
 
     title = "Checks"

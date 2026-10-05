@@ -8,12 +8,12 @@ class WorktreesDetails(FeatureDetails):
     label = "Link worktrees to the project's journal"
     has_skill = False
 
-    title = "Worktrees"
+    title = "Worktrees use the project's journal"
 
 
     abstract = """
-        A git worktree of the project works from the project's journal: one with no journal of
-        its own gets a link to it
+        A git worktree of the project uses the project's journal. A worktree without a journal of
+        its own gets a link to it.
     """
 
     help = """

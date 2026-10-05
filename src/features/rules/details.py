@@ -11,11 +11,11 @@ class RulesDetails(FeatureDetails):
     skill_of = "memory"
     when = "the user makes a ruling that binds every environment"
 
-    title = "Rules"
+    title = "Repeat rules"
 
     abstract = """
-        The rules said again at every quarter of the context, and the injected ones kept in
-        AGENTS.md and CLAUDE.md
+        Rules are repeated to the agent at every quarter of its context. Rules marked for it are
+        written into AGENTS.md and CLAUDE.md.
     """
 
     help = """

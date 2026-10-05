@@ -6,7 +6,7 @@ class CloseFromCommitsDetails(FeatureDetails):
     name = "close_from_commits"
     group = Group.WORK_TRACKING
     label = "Close to-dos from commit messages"
-    hint = "Journal: todos done 648"
+    hint = "A commit message with “Journal: todos done 648” closes to-do 648"
     has_skill = False
 
     title = "Close to-dos from commits"

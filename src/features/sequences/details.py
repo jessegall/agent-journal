@@ -58,7 +58,7 @@ class SequencesDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=UNFINISHED,
-            title="Remind about an unfinished step",
+            title="Remind the agent of an unfinished step",
             trigger=Trigger(every=1, unit=MINUTES),
         ),
     ]

@@ -53,12 +53,12 @@ const say = (e, kind = "", text = "") => (ask.value = {...ask.value, [e.n]: kind
 const confirming = (e) => ["remove", "refused"].includes(kindOf(e));
 const stepOf = (e) => (confirming(e) ? "remove" : kindOf(e) === "sweep" ? "sweep" : "idle");
 
-const workNote = (row) => (row.work ? `· ${row.work.current ? "" : "last finished "}${row.work.title}` : "");
+const workNote = (row) => (row.work ? `· ${row.work.current ? "" : "last closed "}${row.work.title}` : "");
 
 const removeWords = (row) =>
     [
         row.live ? "An agent is running here." : "",
-        `Removing moves all of ${row.title} into the attic.`,
+        `Removing moves all of ${row.title} into the archive.`,
         `Bring it back with journal environment unarchive ${row.title}.`,
     ]
         .filter(Boolean)
@@ -67,8 +67,8 @@ const removeWords = (row) =>
 function sweepWords(reply) {
     const found = /packs (.+) into the attic/.exec(String(reply));
     if (!found) return String(reply);
-    if (found[1] === "nothing") return "There is nothing to sweep.";
-    return `Sweeping moves ${found[1]} into the attic. Facts, rules, reminders, docs and open work stay.`;
+    if (found[1] === "nothing") return "There is nothing to archive.";
+    return `Archiving moves ${found[1]} into the archive. Facts, rules, reminders, docs and open work stay.`;
 }
 
 const sentence = (text) => String(text).charAt(0).toUpperCase() + String(text).slice(1) + ".";
@@ -94,7 +94,7 @@ async function sweep(e) {
     }
 }
 
-const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothing to sweep.";
+const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothing to archive.";
 </script>
 
 <template>
@@ -126,12 +126,12 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
                             <template #sweep>
                                 <Btn small @click="say(row.env)">{{ empty(row.env) ? "Close" : "Cancel" }}</Btn>
                                 <template v-if="!empty(row.env)">
-                                    <Btn kind="primary" small @click="sweep(row.env)">Sweep now</Btn>
+                                    <Btn kind="primary" small @click="sweep(row.env)">Archive now</Btn>
                                 </template>
                             </template>
                             <template #idle>
-                                <Btn small title="Tidy up: move old messages and finished rows into the attic" @click="sweep(row.env)">
-                                    Sweep
+                                <Btn small title="Moves old messages and closed items into the archive" @click="sweep(row.env)">
+                                    Archive old items
                                 </Btn>
                                 <Btn
                                     kind="danger"
@@ -140,7 +140,7 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
                                     :title="
                                         here(row.env)
                                             ? 'Switch to another environment to remove this one'
-                                            : 'Move this environment into the attic'
+                                            : 'Move this environment into the archive'
                                     "
                                     @click="remove(row)"
                                 >

@@ -13,8 +13,8 @@ class HelperWorktreesDetails(FeatureDetails):
     title = "Helper worktrees"
 
     abstract = """
-        Helpers work in worktrees cut from the tip of the working branch, and their commits come
-        back by cherry-pick once they have rebased
+        Each helper works in its own git worktree, made from the latest commit of the working
+        branch. Its commits are copied back once it has rebased.
     """
 
     help = """

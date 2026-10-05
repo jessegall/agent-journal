@@ -10,10 +10,7 @@ class StatusLineDetails(FeatureDetails):
 
     title = "Status bar"
 
-    abstract = """
-        The journal says what the bar shows — what the agent is running, and how much of its
-        plan is left — and the viewer renders it
-    """
+    abstract = "The bar under the top bar shows what the agent is running and how much of its plan is left."
 
     help = """
         Four stages, one after the other: the provider records every command that runs on

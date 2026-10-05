@@ -4,18 +4,15 @@ from features.groups import Group
 
 class OpenViewerDetails(FeatureDetails):
     name = "open_viewer"
-    group = Group.JOURNAL
+    group = Group.ALWAYS
     label = "Open the viewer at launch"
     has_skill = False
 
-    title = "Open the viewer at start"
+    title = "Open the viewer at launch"
 
     aliases = ("tabfocus",)
 
-    abstract = """
-        A journal launch shows its viewer tab once the agent's session has started, focusing an
-        existing tab instead of opening another
-    """
+    abstract = "When the agent starts, the viewer opens in your browser, or its open tab comes to the front."
 
     help = """
         Always on: the tab opens when the session starts, after any startup or resume menu is

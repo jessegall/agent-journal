@@ -6,7 +6,7 @@ from features.groups import Group
 class AutoArchiveDetails(FeatureDetails):
     name = "auto_archive"
     group = Group.ARCHIVE
-    label = "Archive finished rows"
+    label = "Archive closed items"
     has_skill = False
 
     title = "Auto-archive"

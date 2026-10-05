@@ -8,11 +8,11 @@ class SessionBriefingDetails(FeatureDetails):
     label = "Brief each new session"
     has_skill = False
 
-    title = "Session briefing"
+    title = "Brief each new session"
 
     aliases = ("start",)
 
-    abstract = "What a session is handed at its start, kept current on every change to the record"
+    abstract = "Each new session is handed a summary of the journal, kept up to date as anything in it changes."
 
     help = """
         The hook hands the file over at SessionStart; nothing is computed inside the hook.

@@ -10,6 +10,7 @@ const emit = defineEmits(["pick"]);
                 type="button"
                 role="radio"
                 :aria-checked="o.key === value"
+                :title="o.title"
                 :class="['segmented-option', {on: o.key === value}]"
                 @click="emit('pick', o.key)"
             >

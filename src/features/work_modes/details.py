@@ -45,7 +45,7 @@ class WorkModesDetails(FeatureDetails):
         Setting(
             name="drift_after",
             default=8,
-            title="Remind an orchestrator after its own edits",
+            title="Remind an orchestrator after this many of its own edits",
             unit="edits",
         ),
     ]

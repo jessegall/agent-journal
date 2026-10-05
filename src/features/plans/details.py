@@ -8,10 +8,10 @@ class PlansDetails(FeatureDetails):
     group = Group.PLANS
     when = "the user asks for a plan, phases or a roadmap, or a plan is started, advanced or finished"
 
-    title = "Planning"
+    title = "Plans"
 
 
-    abstract = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
+    abstract = "A plan moves on as its to-dos close: a phase completes, a checkpoint waits for you, and the last phase ends the plan."
 
     help = """
         A plan is built in order. journal plan create "<name>" --set goal="<what is true when
@@ -42,7 +42,7 @@ class PlansDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="still",
-            title="Nudge an agent that stalls on a running plan",
+            title="Remind the agent to continue a running plan when it stops",
             trigger=Trigger(every=5, unit=MINUTES),
         ),
         Behaviour(

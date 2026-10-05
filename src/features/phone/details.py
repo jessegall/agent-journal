@@ -6,7 +6,7 @@ class PhoneDetails(FeatureDetails):
     name = "phone"
     group = Group.VIEWER
     label = "Connect a phone"
-    hint = "Scan a code to use the chat from your phone"
+    hint = "Scan a code to use the chat on your phone"
     has_skill = False
 
     title = "Phone connection"

@@ -15,7 +15,7 @@ class SkillLoadingDetails(FeatureDetails):
     aliases = ("skills",)
 
 
-    abstract = "An agent working on with no journal skill is told once per context window to load one"
+    abstract = "Tells the agent to load the journal skill when it has not, once each time its context starts fresh."
 
     help = """
         A session start or compaction opens a fresh window; triggers.skills sets how long the
@@ -27,7 +27,7 @@ class SkillLoadingDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="reload",
-            title="Pause writes after a compaction until the skill is loaded",
+            title="After the context is summarized, block file changes until the journal skill is loaded",
         ),
         Behaviour(
             name="chat",
@@ -35,15 +35,15 @@ class SkillLoadingDetails(FeatureDetails):
         ),
         Behaviour(
             name="always",
-            title="Pause tool calls until every-start skills are loaded",
+            title="At a session start, block tool calls until the session-start skills are loaded",
         ),
         Behaviour(
             name="keywords",
-            title="Load a skill when its keyword comes up",
+            title="Load a skill when one of its words comes up",
         ),
         Behaviour(
             name="stale",
-            title="Reload every-start skills that changed",
+            title="When a session-start skill changes, block tool calls until it is reloaded",
         ),
     ]
 
@@ -51,8 +51,8 @@ class SkillLoadingDetails(FeatureDetails):
         Setting(
             name="most_refusals",
             default=5,
-            title="Refuse tool calls at most",
-            abstract="Then they go through for a while",
+            title="Block tool calls at most",
+            abstract="After that, tool calls go through for a while",
             unit="times",
         ),
         Setting(
@@ -64,7 +64,7 @@ class SkillLoadingDetails(FeatureDetails):
         Setting(
             name="recent",
             default=5,
-            title="After a compaction, also reload the last used",
+            title="After the context is summarized, also reload this many recently used skills",
             unit="skills",
         ),
     ]

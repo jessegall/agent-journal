@@ -8,11 +8,11 @@ class AttachmentDescriptionsDetails(FeatureDetails):
     label = "Read attachments for the agent"
     has_skill = False
 
-    title = "Describing attachments"
+    title = "Read attachments"
 
     abstract = """
-        An attached file is read for the agent — a video sampled into frames — and each image or
-        video is described in a few searchable words
+        Files you attach are read for the agent, and videos are turned into still frames. Each image
+        and video gets a short description you can search.
     """
 
     help = """
@@ -32,7 +32,7 @@ class AttachmentDescriptionsDetails(FeatureDetails):
         ),
         Behaviour(
             name="frames",
-            title="Sample videos into frames",
+            title="Turn videos into still frames",
             abstract="Needs ffmpeg",
         ),
     ]

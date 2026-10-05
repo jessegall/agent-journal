@@ -1,9 +1,11 @@
 <script setup>
-import {computed} from "vue";
+import {computed, useId} from "vue";
 import {same} from "../domain/settingsCatalog.js";
 import Btn from "./Btn.vue";
 import Chip from "./Chip.vue";
+import ChoiceList from "./ChoiceList.vue";
 import ColorSwatch from "./ColorSwatch.vue";
+import FormField from "./FormField.vue";
 import Segmented from "./Segmented.vue";
 import Switch from "./Switch.vue";
 import SwitchCase from "./SwitchCase.vue";
@@ -13,6 +15,11 @@ import TimingChip from "./TimingChip.vue";
 const props = defineProps({row: {type: Object, required: true}, sheet: Boolean, dim: Boolean, head: Boolean, child: Boolean});
 const emit = defineEmits(["change", "timing", "act"]);
 
+const id = useId();
+const field = computed(() => ["number", "text", "choice"].includes(props.row.kind));
+const LONG = 50;
+const stacked = computed(() => props.sheet || props.row.options.reduce((n, o) => n + o.label.length, 0) > LONG);
+const choices = computed(() => props.row.options.map((o) => ({value: o.key, label: o.label, current: o.key === props.row.value})));
 const resettable = computed(() => props.row.changed && (props.row.shipped !== undefined || props.row.timing));
 
 function reset() {
@@ -22,66 +29,107 @@ function reset() {
 </script>
 
 <template>
-    <div :class="['setting-row', {head, child, indent: row.indent, dim, sheet}]">
-        <div class="setting-label">
-            <div class="setting-title">
-                <template v-if="row.changed">
-                    <span class="setting-dot" title="Changed" />
+    <template v-if="field">
+        <div :class="['setting-row field', {child, indent: row.indent, dim, sheet}]">
+            <FormField :label="row.label" :for="id" :help="row.example ? `With this choice: ${row.example}` : row.hint">
+                <template #aside>
+                    <template v-if="row.changed">
+                        <span class="setting-dot" title="Changed from the default" />
+                    </template>
+                    <template v-if="resettable">
+                        <button type="button" class="setting-reset" @click="reset">Reset</button>
+                    </template>
                 </template>
-                <span>{{ row.label }}</span>
-                <slot name="title" />
+                <SwitchCase :value="row.kind">
+                    <template #number>
+                        <TextInput
+                            :id="id"
+                            class="setting-number"
+                            type="number"
+                            min="0"
+                            :value="row.value"
+                            @change="emit('change', Number($event.target.value))"
+                        >
+                            <template #end>{{ row.unit }}</template>
+                        </TextInput>
+                    </template>
+                    <template #text>
+                        <TextInput :id="id" class="setting-text" :value="row.value" @change="emit('change', $event.target.value)" />
+                    </template>
+                    <template #choice>
+                        <template v-if="stacked">
+                            <ChoiceList stacked :choices="choices" @pick="emit('change', $event)" />
+                        </template>
+                        <template v-else>
+                            <Segmented :options="row.options" :value="row.value" @pick="emit('change', $event)" />
+                        </template>
+                    </template>
+                </SwitchCase>
+            </FormField>
+        </div>
+    </template>
+    <template v-else>
+        <div :class="['setting-row', {head, child, indent: row.indent, dim, sheet}]">
+            <div class="setting-label">
+                <div class="setting-title">
+                    <template v-if="row.changed">
+                        <span class="setting-dot" title="Changed from the default" />
+                    </template>
+                    <span>{{ row.label }}</span>
+                    <slot name="title" />
+                </div>
+                <template v-if="row.hint">
+                    <div class="setting-hint">{{ row.hint }}</div>
+                </template>
+                <template v-if="sheet && row.timing">
+                    <TimingChip
+                        class="setting-timing"
+                        sheet
+                        :timing="row.timing"
+                        :prefix="row.prefix"
+                        :label="row.label"
+                        @change="emit('timing', $event)"
+                    />
+                </template>
             </div>
-            <template v-if="row.hint">
-                <div class="setting-hint">{{ row.hint }}</div>
-            </template>
-            <template v-if="sheet && row.timing">
-                <TimingChip class="setting-timing" sheet :timing="row.timing" :label="row.label" @change="emit('timing', $event)" />
-            </template>
-        </div>
-        <div class="setting-control">
-            <template v-if="resettable">
-                <button type="button" class="setting-reset" @click="reset">Reset</button>
-            </template>
-            <template v-if="!sheet && row.timing">
-                <TimingChip :timing="row.timing" :label="row.label" @change="emit('timing', $event)" />
-            </template>
-            <SwitchCase :value="row.kind">
-                <template #switch>
-                    <Switch :on="row.value" :large="sheet" :title="row.label" @change="emit('change', $event)" />
+            <div class="setting-control">
+                <template v-if="resettable">
+                    <button type="button" class="setting-reset" @click="reset">Reset</button>
                 </template>
-                <template #number>
-                    <span class="setting-amount">
-                        <TextInput class="setting-number" type="number" min="0" :value="row.value" :aria-label="row.label" @change="emit('change', Number($event.target.value))" />
-                        {{ row.unit }}
-                    </span>
+                <template v-if="!sheet && row.timing">
+                    <TimingChip :timing="row.timing" :prefix="row.prefix" :label="row.label" @change="emit('timing', $event)" />
                 </template>
-                <template #text>
-                    <TextInput class="setting-text" :value="row.value" :aria-label="row.label" @change="emit('change', $event.target.value)" />
-                </template>
-                <template #choice>
-                    <Segmented :options="row.options" :value="row.value" @pick="emit('change', $event)" />
-                </template>
-                <template #color>
-                    <ColorSwatch :value="row.value" :label="row.label" @change="emit('change', $event)" />
-                </template>
-                <template #buttons>
-                    <template v-for="button in row.buttons" :key="button.key">
-                        <Btn small :href="button.href" :target="button.href && button.key === 'store' ? '_blank' : undefined" @click="!button.href && emit('act', button.key)">
-                            {{ button.label }}
-                        </Btn>
+                <SwitchCase :value="row.kind">
+                    <template #switch>
+                        <Switch :on="row.value" :large="sheet" :title="row.label" @change="emit('change', $event)" />
                     </template>
-                </template>
-                <template #danger>
-                    <template v-for="button in row.buttons" :key="button.key">
-                        <Btn small kind="danger" @click="emit('act', button.key)">{{ button.label }}</Btn>
+                    <template #color>
+                        <ColorSwatch :value="row.value" :label="row.label" @change="emit('change', $event)" />
                     </template>
-                </template>
-                <template #always>
-                    <Chip>Always on</Chip>
-                </template>
-            </SwitchCase>
+                    <template #buttons>
+                        <template v-for="button in row.buttons" :key="button.key">
+                            <Btn
+                                small
+                                :href="button.href"
+                                :target="button.href && button.key === 'store' ? '_blank' : undefined"
+                                @click="!button.href && emit('act', button.key)"
+                            >
+                                {{ button.label }}
+                            </Btn>
+                        </template>
+                    </template>
+                    <template #danger>
+                        <template v-for="button in row.buttons" :key="button.key">
+                            <Btn small kind="danger" @click="emit('act', button.key)">{{ button.label }}</Btn>
+                        </template>
+                    </template>
+                    <template #always>
+                        <Chip>Always on</Chip>
+                    </template>
+                </SwitchCase>
+            </div>
         </div>
-    </div>
+    </template>
 </template>
 
 <style scoped>
@@ -170,23 +218,17 @@ function reset() {
     visibility: visible;
 }
 
-.setting-amount {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-3);
-    font-size: 12px;
+.setting-row.field {
+    display: block;
 }
 
 .setting-number {
-    width: 80px;
-    text-align: right;
+    width: 130px;
 }
 
 .setting-text {
-    width: 250px;
+    width: 100%;
 }
-
 
 .setting-timing {
     margin-top: 6px;
@@ -212,9 +254,5 @@ function reset() {
 
 .setting-row.sheet .setting-reset {
     visibility: visible;
-}
-
-.setting-row.sheet .setting-text {
-    width: 150px;
 }
 </style>

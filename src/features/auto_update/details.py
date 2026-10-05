@@ -6,17 +6,17 @@ from features.settings import Setting
 
 class AutoUpdateDetails(FeatureDetails):
     name = "auto_update"
-    group = Group.JOURNAL
+    group = Group.UPDATES
     label = "Install updates automatically"
-    hint = "Off: the agent installs a new version instead"
+    hint = "Off: the agent is told to install a new version instead"
     has_skill = False
 
-    title = "Auto-update"
+    title = "Automatic updates"
 
     aliases = ("updates",)
 
 
-    abstract = "A newer journal is installed by itself, or the agent is told to install it"
+    abstract = "Installs a newer journal by itself, or tells the agent to install it."
 
     help = """
         Every five minutes each session's worker compares the newest release tag on GitHub with
@@ -25,8 +25,8 @@ class AutoUpdateDetails(FeatureDetails):
 
         With auto-update on, the newest release is installed in the background, one install per
         journal at a time, and the session reloads itself. The setting chooses how big a step
-        installs by itself: patches only (2.249.4 to 2.249.5), minor versions too (to 2.250.0),
-        major versions too (to 3.0.0), or always, every release; a bigger one waits on Home. A failed install is filed as a notice
+        installs by itself: patches only (2.249.4 to 2.249.5), minor versions too (to 2.250.0), or
+        every release (to 3.0.0 and beyond); a bigger one waits on Home. A failed install is filed as a notice
         and tried again after 30 minutes, then 2 hours, then 6. With it off, Home shows a banner
         when a newer release is out, with Update and Update and turn on auto-update, and the agent
         is told to run journal upgrade. The journal's own repository never installs itself.
@@ -46,12 +46,17 @@ class AutoUpdateDetails(FeatureDetails):
         Setting(
             name="installs",
             default="always",
-            title="Updates that install by themselves",
+            title="Which updates install by themselves",
             abstract="A bigger update waits on Home with an Update button",
-            choices=("patches", "minor versions", "major versions", "always"),
+            choices=("patches", "minor versions", "always"),
+            labels=(("patches", "Patches only"), ("minor versions", "Minor versions too"), ("always", "Every release")),
+            examples=(
+                ("patches", "2.249.5 installs by itself. 2.250.0 and 3.0.0 wait for you on Home, with an Update button."),
+                ("minor versions", "2.249.5 and 2.250.0 install by themselves. 3.0.0 waits for you on Home, with an Update button."),
+                ("always", "Every new release installs by itself, whatever its number."),
+            ),
         ),
     ]
-
 
     lines = [
         Line(

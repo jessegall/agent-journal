@@ -7,13 +7,13 @@ AMBIGUOUS = "ambiguous"
 class RowLinksDetails(FeatureDetails):
     name = "row_links"
     group = Group.CHAT
-    label = "Turn row numbers into links"
-    hint = "to-do 648 opens to-do 648"
+    label = "Turn item numbers into links"
+    hint = "“to-do 648” opens to-do 648"
     has_skill = False
 
-    title = "Row links"
+    title = "Links for item numbers"
 
-    abstract = "A row named in text, like to-do 648 or message 1712, becomes a link to it in the viewer"
+    abstract = "An item named in text, like “to-do 648” or “message 1712”, becomes a link to it."
 
     help = """
         Wherever the viewer shows text, a type followed by a number is marked on the server as a

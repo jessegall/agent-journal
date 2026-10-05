@@ -5,7 +5,7 @@ from features.groups import Group
 class SessionRecordingDetails(FeatureDetails):
     name = "session_recording"
     group = Group.DEVELOPER
-    label = "Allow session recording"
+    label = "Save a recording of each session to a folder, for demos"
     has_skill = False
 
     title = "Session recording"

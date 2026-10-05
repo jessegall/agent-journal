@@ -6,16 +6,16 @@ from features.groups import Group
 class RecordAuditDetails(FeatureDetails):
     name = "record_audit"
     group = Group.RECORDS
-    label = "Check the record for rows that no longer hold"
+    label = "Find items that point at missing files or commands"
     has_skill = False
 
-    title = "Record audit"
+    title = "Find outdated items"
 
     aliases = ("cleanup",)
 
     abstract = """
-        Once a day you are told which rows in the record no longer hold: a file that is gone, a
-        command that does not exist, a row waiting on the user too long
+        Once a day the agent is told which items point at a file that is gone or a command that does
+        not exist, and which have waited on you too long.
     """
 
     help = "Each finding names the row, what is wrong with it, and the command that retires it."

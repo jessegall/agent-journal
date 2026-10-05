@@ -33,7 +33,7 @@ def whispering(noun: str) -> list[Behaviour]:
     return [
         Behaviour(
             name=WHISPER,
-            title=f"Repeat a {noun} when its keyword comes up",
+            title=f"Repeat a {noun} when one of its words comes up",
             trigger=Trigger(every=100, unit=trigger.USES),
         ),
     ]

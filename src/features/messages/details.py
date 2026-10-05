@@ -9,13 +9,13 @@ class MessagesDetails(FeatureDetails):
     group = Group.MESSAGES
     when = "the user has left a message, or before replying, reacting or filing what a message asks for"
 
-    title = "Messaging"
+    title = "Messages"
 
     speaks_while_waiting = True
 
     abstract = """
-        A message the user leaves you is shown to you until you read it, answered before you go on
-        working, and closed once you have dealt with it
+        The agent is reminded of your messages until it reads them, answers each one before it goes
+        on, and closes it once it is handled.
     """
 
     help = """
@@ -35,12 +35,12 @@ class MessagesDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="unread",
-            title="Name unread messages",
+            title="Remind the agent of unread messages",
             trigger=Trigger(every=3, unit=USES),
         ),
         Behaviour(
             name="answering",
-            title="Require a reply before writing",
+            title="Make the agent answer a message before it changes files",
             trigger=Trigger(every=10, unit=USES),
         ),
         Behaviour(
@@ -49,16 +49,16 @@ class MessagesDetails(FeatureDetails):
         ),
         Behaviour(
             name="linking",
-            title="Link new rows to the open message",
+            title="Link what the agent files to the message it is answering",
         ),
         Behaviour(
             name="paragraphs",
-            title="Remind to keep paragraphs apart",
+            title="Remind the agent to keep paragraphs apart",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="numbers",
-            title="Remind to name what a number is",
+            title="Remind the agent to say what a number is",
             abstract="answered 1712 becomes answered message 1712",
         ),
     ]
@@ -67,14 +67,14 @@ class MessagesDetails(FeatureDetails):
         Setting(
             name="unread.patience",
             default=5,
-            title="Pause writes after naming them",
+            title="Block file changes after this many reminders",
             unit="times",
             under="unread",
         ),
         Setting(
             name="answering.patience",
             default=3,
-            title="Stop asking after",
+            title="Stop reminding after",
             under="answering",
             unit="times",
         ),
