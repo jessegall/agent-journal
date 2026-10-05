@@ -26,6 +26,18 @@ def test_a_message_wakes_the_environments_last_conversation_when_no_agent_runs(m
     assert started == [(record.env, "codex", "bea86f27-last")], "the user's message resumes the environment's last conversation on its provider"
     Messages(record, actor=USER).create("hello again")
     assert len(started) == 1, "a second message while that start is under way starts nothing more"
+    import os
+    from engine.sessions import Sessions
+    environments = Environments(record, actor=SYSTEM)
+    environments.update(environments.rows.by_title(record.env).n, launched=0)
+    Sessions(record.root).write("claude-held", environment=record.env, pid=os.getpid())
+    Messages(record, actor=USER).create("are you still there?")
+    assert len(started) == 1, "a message while an agent holds the environment wakes nothing"
+    quiet = fresh("quiet")
+    quiet.set_setting("starting_agents", {"wake_on_message": True})
+    Environments(quiet, actor=SYSTEM).create(quiet.env)
+    Messages(quiet, actor=USER).create("anyone?")
+    assert len(started) == 1, "an environment with no conversation to carry on starts nothing"
 
 
 def test_the_agents_command_is_found_where_it_installs_itself_or_refused_in_words(tmp_path, monkeypatch):

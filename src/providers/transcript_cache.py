@@ -18,10 +18,14 @@ RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
 
 
+SHAPED_BY = ("engine.transcript",)
+
+
 @cache
-def providers_mark() -> str:
+def code_mark() -> str:
     import providers
-    sources = [importlib.util.find_spec(f"providers.{module.name}") for module in sorted(pkgutil.iter_modules(providers.__path__), key=lambda found: found.name)]
+    names = [*(f"providers.{module.name}" for module in sorted(pkgutil.iter_modules(providers.__path__), key=lambda found: found.name)), *SHAPED_BY]
+    sources = [importlib.util.find_spec(name) for name in names]
     return digest("\n".join(spec.loader.get_source(spec.name) or "" for spec in sources), 12)
 
 
@@ -85,7 +89,7 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return []
-        key = ("transcript", str(path), providers_mark())
+        key = ("transcript", str(path), code_mark())
         kept = None if str(path) in self.transcripts else self.stored(key)
         held = self.transcripts.get(str(path)) or (kept and (kept[0], *kept[1]))
         offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")
@@ -109,7 +113,7 @@ class TranscriptCache:
             return b""
 
     def folded(self, path: Path, fold, start, row_of: Callable):
-        key = (str(path), fold.__name__, providers_mark(), *getattr(start, "__dataclass_fields__", ()))
+        key = (str(path), fold.__name__, code_mark(), *getattr(start, "__dataclass_fields__", ()))
         size = size_of(path)
         if size is None:
             return start()

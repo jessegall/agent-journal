@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
@@ -273,6 +274,13 @@ def test_a_layout_link_hands_the_layout_once_to_any_viewer():
             raise AssertionError("a one-time link is gone once opened")
         except urllib.error.HTTPError as error:
             assert error.code == 410, "and lands on the page for a link that has ended"
+        lapsed = shares.share_layout("Old", json.dumps({"panes": ["files"]}), expires="1h")
+        shares.update(lapsed.n, expires=time.time() - 1)
+        try:
+            urllib.request.urlopen(f"http://127.0.0.1:{server.server_port}/s/{lapsed.token}/layout.json", timeout=5)
+            raise AssertionError("a link past its time is not served")
+        except urllib.error.HTTPError as error:
+            assert error.code == 410, "a link whose time has run out has ended, though nobody stopped it"
     finally:
         server.shutdown()
 
