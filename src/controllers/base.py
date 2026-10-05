@@ -387,7 +387,7 @@ class Controller(Files, Links, Discussed):
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
         if not deleted and int(last) and type(self)._ordered is Controller._ordered:
             listed = [row["n"] for row in self.rows.summaries() if not row["deleted"] and (not row["completed"] or completed and not row.get(PART_OF))]
-            return [self.load(n) for n in listed[-int(last):]]
+            return [self.rows.peek(n) for n in listed[-int(last):]]
         rows = self.rows.every(deleted) if completed or deleted else self.rows.standing()
         rows = rows if completed else [r for r in rows if not r.completed]
         return rows[-int(last):] if int(last) else rows
@@ -400,7 +400,7 @@ class Controller(Files, Links, Discussed):
         want = term.lower()
         texts = self._texts()
         hits = (row["n"] for row in reversed(self.rows.summaries()) if not row["deleted"] and want in texts.get(row["n"], ""))
-        return [self.rows.peek(n).fork() for n, _ in zip(hits, range(LAST))]
+        return [self.rows.peek(n) for n, _ in zip(hits, range(LAST))]
 
     def load(self, n: int | str) -> Resource:
         return self.rows.load(n)
