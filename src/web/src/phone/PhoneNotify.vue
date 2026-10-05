@@ -5,7 +5,7 @@ import {phone} from "../api/phone.js";
 const SKIPPED = "phone-notify-skipped";
 const possible = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 const asking = ref(false);
-const shown = ref(false);
+const offered = ref(false);
 const told = ref("");
 
 function remembered() {
@@ -24,7 +24,8 @@ function bytes(key) {
 async function subscribed() {
     const worker = await navigator.serviceWorker.register("./sw.js", {scope: "./"});
     const held = await worker.pushManager.getSubscription();
-    const made = held || (await worker.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: bytes((await phone.pushKey()).key)}));
+    const made =
+        held || (await worker.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: bytes((await phone.pushKey()).key)}));
     await phone.subscribe(made.endpoint);
 }
 
@@ -37,7 +38,7 @@ async function turnOn() {
             return;
         }
         await subscribed();
-        shown.value = false;
+        offered.value = false;
     } catch (error) {
         told.value = error.message;
     } finally {
@@ -46,7 +47,7 @@ async function turnOn() {
 }
 
 function skip() {
-    shown.value = false;
+    offered.value = false;
     try {
         localStorage.setItem(SKIPPED, "1");
     } catch (error) {
@@ -57,12 +58,12 @@ function skip() {
 onMounted(() => {
     if (!possible) return;
     if (Notification.permission === "granted") subscribed().catch(() => {});
-    else shown.value = Notification.permission === "default" && !remembered();
+    else offered.value = Notification.permission === "default" && !remembered();
 });
 </script>
 
 <template>
-    <template v-if="shown">
+    <template v-if="offered">
         <div class="notify">
             <p class="notify-words">Get a notification when the agent needs you, even with the app closed.</p>
             <div class="notify-actions">

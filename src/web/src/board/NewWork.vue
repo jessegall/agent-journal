@@ -48,7 +48,7 @@ let inFlight = null;
 let sessions = 0;
 const PENDING = Infinity;
 const START_OVER = "Start over";
-const shownDraft = ref(null);
+const openedDraft = ref(null);
 const FADED = 400;
 const HELD = 400;
 const WIDE = window.matchMedia("(min-width: 1160px)");
@@ -144,7 +144,7 @@ const cards = computed(() => {
     const slots = Array.from({length: ahead}, (_, i) => ({key: `slot-${i}`, order: drafts.value.length + i, ticket: null}));
     return [...drafts.value.map((ticket, order) => ({key: `ticket-${ticket.n}`, order, ticket})), ...slots];
 });
-const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
+const revealedDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
 const reveal = (n) => (revealed.value = [...revealed.value, n]);
 const STALLED_AFTER = 120000;
 const stalled = ref(false);
@@ -203,13 +203,13 @@ const addLabel = computed(() => {
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
 const sameSet = (a, b) => a.length === b.length && a.every((n) => b.includes(n));
 const presets = computed(() => {
-    const shown = shownDrafts.value.map((t) => t.n);
+    const numbers = revealedDrafts.value.map((t) => t.n);
     const groups = Object.entries(store.board.drafting.groups || {}).map(([name, tickets]) => ({
         key: `group:${name}`,
         name,
-        tickets: tickets.map(Number).filter((n) => shown.includes(n)),
+        tickets: tickets.map(Number).filter((n) => numbers.includes(n)),
     }));
-    return [{key: "all", name: "All", tickets: shown}, ...groups.filter((g) => g.tickets.length)].map((g) => ({
+    return [{key: "all", name: "All", tickets: numbers}, ...groups.filter((g) => g.tickets.length)].map((g) => ({
         ...g,
         label: `${g.name} ${g.tickets.length}`,
     }));
@@ -227,11 +227,11 @@ const say = (mine, text, id = `line-${lines.value.length}`, kind = "") =>
     (lines.value = [...lines.value, {id, mine, kind, text, at: (conversation.value.at(-1)?.at || 0) + 0.001}]);
 
 function onKey(e) {
-    if (!props.open || shownDraft.value) return;
+    if (!props.open || openedDraft.value) return;
     if (e.key === "Escape") return (e.preventDefault(), escape());
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && picked.value.length) return (e.preventDefault(), add());
-    const shown = shownDrafts.value[Number(e.key) - 1];
-    if (shown && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(shown.n));
+    const draft = revealedDrafts.value[Number(e.key) - 1];
+    if (draft && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(draft.n));
 }
 
 watch([() => store.board.drafting.picks?.at || 0, since], ([at]) => {
@@ -562,7 +562,7 @@ function startAnew() {
                         :presets="presets"
                         :preset="preset"
                         :phone="phone"
-                        :redraftable="Boolean(shownDrafts.length) && !writing && !(added > 0)"
+                        :redraftable="Boolean(revealedDrafts.length) && !writing && !(added > 0)"
                         :addable="Boolean(picked.length) && !(added > 0)"
                         :adding="adding"
                         :add-label="addLabel"
@@ -598,7 +598,7 @@ function startAnew() {
                                         :class="{flash: Boolean(card.ticket) && flashed.includes(card.ticket.n)}"
                                         @toggle="toggle(card.ticket.n)"
                                         @revealed="reveal(card.ticket.n)"
-                                        @more="(from) => (shownDraft = {ticket: card.ticket, from})"
+                                        @more="(from) => (openedDraft = {ticket: card.ticket, from})"
                                         @mouseenter="pointed = card.ticket"
                                         @mouseleave="pointed = null"
                                     />
@@ -612,14 +612,14 @@ function startAnew() {
                 </section>
             </div>
         </div>
-        <template v-if="shownDraft">
+        <template v-if="openedDraft">
             <DraftDetail
-                :ticket="shownDraft.ticket"
-                :from="shownDraft.from"
-                :picked="picked.includes(shownDraft.ticket.n)"
-                :measure="() => cardRect(shownDraft.ticket.n)"
-                @keep="toggle(shownDraft.ticket.n)"
-                @close="shownDraft = null"
+                :ticket="openedDraft.ticket"
+                :from="openedDraft.from"
+                :picked="picked.includes(openedDraft.ticket.n)"
+                :measure="() => cardRect(openedDraft.ticket.n)"
+                @keep="toggle(openedDraft.ticket.n)"
+                @close="openedDraft = null"
             />
         </template>
     </FocusStage>

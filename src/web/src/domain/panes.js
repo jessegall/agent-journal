@@ -222,9 +222,9 @@ export function opened(layout) {
 export function valid(layout, views = VIEWS) {
     if (!layout || !layout.tree || !layout.panes || !Number.isInteger(layout.next)) return false;
     const ids = leaves(layout.tree);
-    const shown = ids.flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
+    const tabs = ids.flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
     const loose = [...floating(layout), ...elsewhere(layout)].map((f) => f.view);
-    return [...shown, ...loose].every((v) => views.includes(v)) && new Set(shown).size === shown.length;
+    return [...tabs, ...loose].every((v) => views.includes(v)) && new Set(tabs).size === tabs.length;
 }
 
 const kept = (layout, tree, panes, next) => ({

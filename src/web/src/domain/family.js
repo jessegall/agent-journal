@@ -39,12 +39,12 @@ function parenting(family, byId) {
     return {kids, parent, kind};
 }
 
-const PEERS_SHOWN = 3;
+const PEERS_LISTED = 3;
 
 function folded(key, ids, byId, kids, unfolded, weight) {
     const finished = ids.filter((id) => rested(byId.get(id)) && !(kids.get(id) || []).length);
     const peers = ids.filter((id) => byId.get(id).kind === "peer").sort((a, b) => (weight.get(b) || 0) - (weight.get(a) || 0));
-    const quiet = peers.slice(PEERS_SHOWN);
+    const quiet = peers.slice(PEERS_LISTED);
     const hidden = [...finished, ...quiet];
     if (hidden.length < 2) return ids;
     const label = quiet.length
@@ -70,7 +70,7 @@ export function familyTree(family, unfolded, size = SIZES.wide) {
     const weight = weighing(family);
     const nodes = [];
     const edges = [];
-    const shown = new Map();
+    const placed = new Map();
     let row = 0;
 
     function place(item, level, from, how) {
@@ -88,11 +88,11 @@ export function familyTree(family, unfolded, size = SIZES.wide) {
         nodes.push(node);
         if (from) edges.push({id: `${from.id}>${id}`, kind: how, from, to: node, said: 0});
         if (item.fold) {
-            if (!item.open) item.hidden.forEach((hid) => shown.set(hid, node));
+            if (!item.open) item.hidden.forEach((hid) => placed.set(hid, node));
             node.y = PAD + row++ * NODE.row;
             return node;
         }
-        shown.set(id, node);
+        placed.set(id, node);
         const below = folded(`${ROOTS}${id}`, kids.get(id) || [], byId, kids, unfolded, weight).map((child) =>
             place(child, level + 1, node, child.fold ? "fold" : kind.get(child))
         );
@@ -109,10 +109,10 @@ export function familyTree(family, unfolded, size = SIZES.wide) {
 
     const between = new Map(edges.map((e) => [[e.from.id, e.to.id].sort().join("~"), e]));
     family.links
-        .filter((l) => l.kind === "messaged" && shown.has(l.source) && shown.has(l.target))
+        .filter((l) => l.kind === "messaged" && placed.has(l.source) && placed.has(l.target))
         .forEach((l) => {
-            const a = shown.get(l.source);
-            const b = shown.get(l.target);
+            const a = placed.get(l.source);
+            const b = placed.get(l.target);
             if (a === b) return;
             const key = [a.id, b.id].sort().join("~");
             const held = between.get(key) || {id: key, kind: "talk", from: a, to: b, said: 0};

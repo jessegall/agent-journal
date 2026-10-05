@@ -1,6 +1,6 @@
 import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
-import {shownIn} from "./chatShown.js";
+import {visibleIn} from "./chatVisibility.js";
 
 const PROMISED_WITHIN = 5;
 
@@ -154,7 +154,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
         .filter((t) => t.created >= floor)
-        .filter(shownIn(hidden))
+        .filter(visibleIn(hidden))
         .sort((a, b) => a.created - b.created);
     return {turns: grouped(mergedReplies(turns)), keys};
 }

@@ -33,7 +33,7 @@ const shapeOf = (name) =>
             ? "choice"
             : kind.value.fields[name];
 
-const shown = computed(() =>
+const visibleFields = computed(() =>
     kind.value.shown_fields.map((name) => ({
         name,
         label: kind.value.labels[name] || name,
@@ -57,7 +57,7 @@ function pick(field, item) {
 
 <template>
     <section class="data-fields">
-        <template v-for="field in shown" :key="field.name">
+        <template v-for="field in visibleFields" :key="field.name">
             <div :class="['data-field', field.shape]">
                 <span class="data-label">{{ field.label }}</span>
                 <SwitchCase :value="field.shape">

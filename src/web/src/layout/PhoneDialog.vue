@@ -35,13 +35,13 @@ const stopping = ref(0);
 const ready = computed(() => tunnelStatus.value && tunnelStatus.value.installed && tunnelStatus.value.logged_in);
 const active = computed(() => connectedPhones.value[0] || null);
 const reachable = ref(false);
-const shown = computed(() => made.value && reachable.value);
+const connected = computed(() => made.value && reachable.value);
 
 usePoll(
     "phone-tunnel",
     () => (made.value && !reachable.value ? api.tunnelAnswering() : null),
     ASK_EVERY,
-    (got) => got && (reachable.value = Boolean(got.reachable)),
+    (got) => got && (reachable.value = Boolean(got.reachable))
 );
 
 async function fresh() {
@@ -93,7 +93,7 @@ onMounted(checkTunnel);
             </template>
             <template v-else>
                 <div class="phone-code">
-                    <template v-if="shown">
+                    <template v-if="connected">
                         <QrCode :text="made.link" :size="184" />
                     </template>
                     <template v-else>
@@ -109,7 +109,7 @@ onMounted(checkTunnel);
                         <span class="phone-label">Stays connected for</span>
                         <Segmented :options="DAYS" :value="days" @pick="pick" />
                         <Btn small :busy="busy" @click="fresh">New code</Btn>
-                        <template v-if="shown">
+                        <template v-if="connected">
                             <span class="phone-short-label">Or type this code in the home-screen app</span>
                             <span class="phone-short">{{ made.short }}</span>
                             <span class="phone-address">{{ made.address }}</span>
@@ -127,7 +127,9 @@ onMounted(checkTunnel);
                         <li>{{ line }}</li>
                     </template>
                 </ul>
-                <p class="phone-cannot">It can't change settings, run commands or reach other environments. Everything it does is recorded as you.</p>
+                <p class="phone-cannot">
+                    It can't change settings, run commands or reach other environments. Everything it does is recorded as you.
+                </p>
             </div>
         </div>
     </Dialog>

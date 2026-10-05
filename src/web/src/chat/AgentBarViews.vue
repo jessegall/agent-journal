@@ -17,7 +17,7 @@ const panes = computed(() => PANES.filter((p) => p.key !== "feed" || feedOn.valu
 const viewGroups = computed(() =>
     ["agent", "panel"].map((key) => {
         const items = views ? views.items.value.filter((v) => v.group === key) : [];
-        return {key, items, shown: items.some((v) => !v.open)};
+        return {key, items, hasClosed: items.some((v) => !v.open)};
     })
 );
 </script>
@@ -32,7 +32,7 @@ const viewGroups = computed(() =>
         </template>
         <template v-for="(group, at) in viewGroups" :key="group.key">
             <template v-if="at">
-                <span :class="['agent-divider', 'agent-views-divider', {gone: !group.shown || !viewGroups[0].shown}]" />
+                <span :class="['agent-divider', 'agent-views-divider', {gone: !group.hasClosed || !viewGroups[0].hasClosed}]" />
             </template>
             <div class="agent-panes">
                 <template v-for="v in group.items" :key="v.key">

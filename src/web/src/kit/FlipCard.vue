@@ -51,7 +51,7 @@ onUnmounted(() => {
 
 <template>
     <Teleport to="body">
-        <div :class="['flip-scrim', {shown: centred}]" @click.self="close">
+        <div :class="['flip-scrim', {open: centred}]" @click.self="close">
             <div class="flip" :style="px(box)">
                 <div :class="['flip-inner', {flipped}]">
                     <div class="flip-face front">
@@ -78,7 +78,7 @@ onUnmounted(() => {
     transition: background 0.3s;
 }
 
-.flip-scrim.shown {
+.flip-scrim.open {
     background: rgba(0, 0, 0, 0.45);
 }
 

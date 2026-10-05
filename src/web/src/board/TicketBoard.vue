@@ -15,7 +15,7 @@ import NewWork from "./NewWork.vue";
 import RunBar from "./RunBar.vue";
 import StopPrompt from "./StopPrompt.vue";
 import {useBoardShift} from "./boardShift.js";
-import {named, shownLanes} from "./lanes.js";
+import {named, visibleLanes} from "./lanes.js";
 
 const props = defineProps({
     board: {type: Object, default: null},
@@ -42,7 +42,7 @@ const waits = (card) => card.lane === firstLane.value.key || card.state === "que
 const ticketCount = computed(() => (store.board.lanes || []).reduce((sum, lane) => sum + lane.cards.length, 0));
 const meaningOf = (key) => (props.board && props.board.data.meanings[key]) || "";
 const kept = (card) => !only.value || (only.value === "waiting" ? waits(card) : card.state === only.value);
-const lanes = computed(() => shownLanes(meaningOf, (card) => kept(card) && named(props.text)(card)));
+const lanes = computed(() => visibleLanes(meaningOf, (card) => kept(card) && named(props.text)(card)));
 const allCards = computed(() => (store.board.lanes || []).flatMap((lane) => lane.cards));
 const agentCard = computed(
     () => opened.value && (allCards.value.find((card) => card.type === "ticket" && card.n === opened.value.n) || opened.value)

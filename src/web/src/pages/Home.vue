@@ -1,7 +1,7 @@
 <script setup>
 import {store} from "../state/store.js";
 import {saveViewerSetting, viewerSetting, workMode} from "../composables/settings.js";
-import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
+import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";

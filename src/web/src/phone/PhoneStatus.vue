@@ -19,7 +19,7 @@ usePoll(
 
 const {message, elapsed} = useBarLine(() => queue.value);
 
-const shown = computed(() => line(message.value, elapsed.value));
+const current = computed(() => line(message.value, elapsed.value));
 const RECENT = 5;
 const open = ref(false);
 const recent = computed(() =>
@@ -32,7 +32,7 @@ const recent = computed(() =>
 </script>
 
 <template>
-    <div :class="['status-wrap', {empty: !shown}]">
+    <div :class="['status-wrap', {empty: !current}]">
         <template v-if="open && recent.length">
             <ul class="status-recent" @click="open = false">
                 <template v-for="one in recent" :key="one.key">
@@ -41,9 +41,9 @@ const recent = computed(() =>
             </ul>
         </template>
         <p class="status" @click="open = !open">
-            <template v-if="shown">
-                <span class="status-text">{{ shown.text }}</span>
-                <span class="status-clock">{{ shown.clock }}</span>
+            <template v-if="current">
+                <span class="status-text">{{ current.text }}</span>
+                <span class="status-clock">{{ current.clock }}</span>
             </template>
         </p>
     </div>

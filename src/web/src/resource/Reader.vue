@@ -142,7 +142,7 @@ watch(
                         </DocumentPage>
                     </template>
                     <template #collection>
-                        <DocumentPage :resource="resource" :focus="focusComment" :shown="resource.refs" @close="close">
+                        <DocumentPage :resource="resource" :focus="focusComment" :linked="resource.refs" @close="close">
                             <CollectionPage :resource="resource" @close="close" />
                         </DocumentPage>
                     </template>

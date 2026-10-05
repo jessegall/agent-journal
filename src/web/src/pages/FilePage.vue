@@ -17,7 +17,7 @@ const lines = computed(() => (file.value && !matches.value.length ? highlight(fi
 
 const diff = ref("");
 const changes = computed(() => route.value.sub === "diff");
-const shown = (sub) => href.file(route.value.env, route.value.q, 0, sub);
+const modeHref = (sub) => href.file(route.value.env, route.value.q, 0, sub);
 
 async function load() {
     error.value = "";
@@ -105,7 +105,7 @@ watch(() => route.value.line, reveal);
                 <code class="path">{{ file.path }}</code>
                 <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${file.lines} lines · ` : ""}${file.size} bytes` }}</span>
                 <template v-if="!file.project">
-                    <a class="mode" :href="shown(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
+                    <a class="mode" :href="modeHref(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
                 </template>
             </header>
             <template v-if="file.project">

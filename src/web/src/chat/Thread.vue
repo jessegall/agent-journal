@@ -5,7 +5,7 @@ import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {cardPlan} from "../domain/plans.js";
 import {waitsFor} from "../domain/agentState.js";
-import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
+import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
@@ -69,7 +69,7 @@ const dumpFiling = computed(() => dumps.value.filter((d) => !d.completed).sort((
 
 function openDump(n = 0) {
     store.pane = "chat";
-    store.dumpShown = n;
+    store.dumpSelected = n;
     store.dumping = true;
 }
 
@@ -123,7 +123,7 @@ const PLAN_SETTLE = 180;
 const PLAN_MOVE = 500;
 const NEWEST_AFTER = 1000;
 const NEWEST_AFTER_BOTTOM = 2000;
-const newestShown = ref(false);
+const newestVisible = ref(false);
 let newestTimer = 0;
 let leftBottomAt = 0;
 const short = ref(false);
@@ -308,12 +308,12 @@ watch(planOpen, (open) => open && holdBottom());
 watch(away, (now) => {
     clearTimeout(newestTimer);
     if (!now) {
-        newestShown.value = false;
+        newestVisible.value = false;
         leftBottomAt = Date.now();
         return;
     }
     const wait = Date.now() - leftBottomAt < NEWEST_AFTER_BOTTOM ? NEWEST_AFTER_BOTTOM : NEWEST_AFTER;
-    newestTimer = setTimeout(() => (newestShown.value = away.value), wait);
+    newestTimer = setTimeout(() => (newestVisible.value = away.value), wait);
 });
 
 function holdBottom() {
@@ -435,7 +435,7 @@ watch(
             <div :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
-                        v-if="away && newestShown"
+                        v-if="away && newestVisible"
                         type="button"
                         :class="['thread-down', {'over-docks': dockCount}]"
                         :style="{'--docks': dockCount}"

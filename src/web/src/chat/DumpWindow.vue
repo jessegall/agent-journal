@@ -36,7 +36,7 @@ watch(
         if (!files.length) return;
         draft.files.push(...files);
         store.dumpFiles = [];
-        store.dumpShown = 0;
+        store.dumpSelected = 0;
     },
     {immediate: true}
 );
@@ -44,10 +44,10 @@ watch(
 const every = computed(() => rows("dump").filter((d) => !d.deleted));
 const joined = (d) => d.data?.queued_at || d.created;
 const inHand = computed(() => every.value.filter((d) => !d.completed).sort((a, b) => joined(a) - joined(b) || a.n - b.n)[0] || null);
-const dump = computed(() => every.value.find((d) => d.n === store.dumpShown) || null);
+const dump = computed(() => every.value.find((d) => d.n === store.dumpSelected) || null);
 const earlier = computed(() => [...every.value].sort((a, b) => b.n - a.n).slice(0, EARLIER));
 watch(
-    () => store.dumpShown,
+    () => store.dumpSelected,
     () => {
         opened.value = "";
         merging.value = null;
@@ -225,7 +225,7 @@ const note = computed(() => {
     }
 });
 
-const shown = computed(() => (removed.value ? [] : made.value));
+const listed = computed(() => (removed.value ? [] : made.value));
 
 async function act(action, body = {}) {
     return api.act("dump", dump.value.n, action, body);
@@ -284,7 +284,7 @@ async function send() {
         const row = await api.create("dump", text ? {brief: text} : {title: draft.files[0].name.slice(0, 80), brief: ""});
         for (const file of draft.files) await api.upload("dump", row.n, file);
         Object.assign(draft, {text: "", files: []});
-        store.dumpShown = row.n;
+        store.dumpSelected = row.n;
     } catch (e) {
         draft.error = e.message;
     } finally {
@@ -415,7 +415,7 @@ const earlierRows = computed(() => earlier.value.map((d) => ({n: d.n, title: d.t
                                 @leave="leave"
                             />
                         </template>
-                        <template v-for="m in shown" :key="m.ref">
+                        <template v-for="m in listed" :key="m.ref">
                             <DumpMadeRow
                                 :made="m"
                                 :open="opened === m.ref"

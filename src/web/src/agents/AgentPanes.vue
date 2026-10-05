@@ -33,8 +33,8 @@ const props = defineProps({
 const {layout, measured, panes, open: opened, apply, replace, resize} = useInspectorLayout();
 
 const has = (key) => props.available.includes(key);
-const shownTabs = (pane) => pane.tabs.filter(has);
-const activeOf = (pane) => (has(pane.active) ? pane.active : shownTabs(pane)[0] || "");
+const visibleTabs = (pane) => pane.tabs.filter(has);
+const activeOf = (pane) => (has(pane.active) ? pane.active : visibleTabs(pane)[0] || "");
 const pick = (id, key) => apply(activated(layout.value, id, key));
 const tune = (id, patch) => replace(tuned(layout.value, id, patch));
 
@@ -79,14 +79,14 @@ const ghostHint = computed(() => {
     return target.zone === "center" ? "Add as tab" : `Split ${SIDES[target.zone]}`;
 });
 const tabsOf = (id, pane) =>
-    shownTabs(pane).map((key) => ({
+    visibleTabs(pane).map((key) => ({
         key,
         title: props.views[key].title,
         icon: props.views[key].icon,
         on: key === activeOf(pane),
         lifting: !!drag.value && drag.value.from === id && drag.value.view === key,
     }));
-const firstChat = (p) => (p.pane && shownTabs(p.pane).includes("chat") ? 0 : 1);
+const firstChat = (p) => (p.pane && visibleTabs(p.pane).includes("chat") ? 0 : 1);
 
 const menu = ref(null);
 const menuPane = computed(() => menu.value && layout.value.panes[menu.value.id]);
@@ -98,11 +98,11 @@ const others = computed(() =>
               .filter((id) => id !== menu.value.id)
               .map((id) => {
                   const pane = layout.value.panes[id];
-                  const shown = shownTabs(pane);
+                  const tabs = visibleTabs(pane);
                   return {
                       id,
-                      label: shown.map((key) => props.views[key].title).join(", ") || "Empty pane",
-                      icon: shown.length ? props.views[activeOf(pane)].icon : "panel",
+                      label: tabs.map((key) => props.views[key].title).join(", ") || "Empty pane",
+                      icon: tabs.length ? props.views[activeOf(pane)].icon : "panel",
                   };
               })
         : []
@@ -112,7 +112,7 @@ const unopened = () => props.available.find((v) => !opened.value.has(v));
 function splitPane(id, zone) {
     const pane = layout.value.panes[id];
     if (!pane) return;
-    if (shownTabs(pane).length > 1) return apply(placed(layout.value, activeOf(pane), id, zone, id));
+    if (visibleTabs(pane).length > 1) return apply(placed(layout.value, activeOf(pane), id, zone, id));
     if (unopened()) apply(placed(layout.value, unopened(), id, zone));
 }
 
@@ -176,7 +176,7 @@ defineExpose({shape, layout});
                 :floats="false"
                 :flushable="flushable.includes(activeOf(menuPane))"
                 :flush="!!menuPane.flush"
-                :splittable="shownTabs(menuPane).length > 1 || !!unopened()"
+                :splittable="visibleTabs(menuPane).length > 1 || !!unopened()"
                 :closable="leaves(layout.tree).length > 1 || menuPane.tabs.length > 0"
                 @close="menu = null"
                 @split="splitPane"

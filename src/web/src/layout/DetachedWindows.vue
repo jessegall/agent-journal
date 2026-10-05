@@ -1,5 +1,5 @@
 <script setup>
-import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
+import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import {computed, ref} from "vue";
 import FloatWindow from "../kit/FloatWindow.vue";
 import Toast from "../kit/Toast.vue";

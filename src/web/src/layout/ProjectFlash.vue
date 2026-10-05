@@ -4,7 +4,7 @@ import {ink, project, tint} from "../state/identity.js";
 import {ui} from "../state/ui.js";
 import {route} from "../route.js";
 
-const SHOWN_FOR = 2000;
+const MARKED_FOR = 2000;
 const showing = ref(false);
 let timer = 0;
 
@@ -18,7 +18,7 @@ watch(
             return;
         }
         clearTimeout(timer);
-        timer = setTimeout(() => ((showing.value = false), (timer = 0)), SHOWN_FOR);
+        timer = setTimeout(() => ((showing.value = false), (timer = 0)), MARKED_FOR);
     },
     {immediate: true}
 );

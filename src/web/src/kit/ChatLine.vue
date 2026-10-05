@@ -47,7 +47,7 @@ onUnmounted(() => clearTimeout(flipping));
 const MARKS = /\[\[\w+ [^|\]]+\|([^\]]+)\]\]/g;
 const plain = computed(() => props.text.replace(MARKS, "$1"));
 const count = useReveal(props.typed ? plain.value.length : 0);
-const shown = computed(() => plain.value.slice(0, count.value));
+const revealed = computed(() => plain.value.slice(0, count.value));
 const writing = computed(() => props.typed && count.value < plain.value.length);
 </script>
 
@@ -91,7 +91,7 @@ const writing = computed(() => props.typed && count.value < plain.value.length);
                 </div>
             </template>
             <template v-else-if="writing">
-                <span class="caret">{{ shown }}</span>
+                <span class="caret">{{ revealed }}</span>
             </template>
             <template v-else>
                 <TextDisplay :text="text" inline />

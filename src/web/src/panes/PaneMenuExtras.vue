@@ -36,7 +36,7 @@ const emit = defineEmits(["pick", "open", "all"]);
             icon="eye"
             label="Show in chat"
             :note="hidden.length ? `${hidden.length} hidden` : ''"
-            @click="emit('open', 'shown')"
+            @click="emit('open', 'visible')"
         />
     </template>
     <template v-if="schemes.length">

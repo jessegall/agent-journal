@@ -11,7 +11,7 @@ import BoardLanes from "./BoardLanes.vue";
 import BoardStrips from "./BoardStrips.vue";
 import ShiftPrompt from "./ShiftPrompt.vue";
 import {useBoardShift} from "./boardShift.js";
-import {lens, named, shownLanes} from "./lanes.js";
+import {lens, named, visibleLanes} from "./lanes.js";
 
 const props = defineProps({
     text: {type: String, default: ""},
@@ -27,7 +27,7 @@ const asking = ref(null);
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
 const chosenPlan = computed(() => store.board.lens.plan);
 const meaningOf = (key) => MEANINGS[key] || "";
-const lanes = computed(() => shownLanes(meaningOf, named(props.text)));
+const lanes = computed(() => visibleLanes(meaningOf, named(props.text)));
 const empty = computed(() => store.board.loaded && lanes.value.every((lane) => !lane.cards.length));
 const newWork = () => (adding.value = "todo");
 const {moving, shift} = useBoardShift({

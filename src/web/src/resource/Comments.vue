@@ -59,8 +59,8 @@ watch([() => props.focus, thread], focusComment, {immediate: true, flush: "post"
 
 const page = () => list.value?.closest(".document")?.querySelector(".document-body");
 const HOVERED = "comment-passage";
-const SHOWN = "comment-passage-shown";
-const SHOWN_FOR = 2400;
+const MARKED = "comment-passage-marked";
+const MARKED_FOR = 2400;
 
 function hover(c) {
     markPassage(HOVERED, c && c.quote ? passageIn(page(), c.quote) : null);
@@ -73,8 +73,8 @@ async function show(c) {
     at.closest(".folded-body")?.dispatchEvent(new Event("reveal"));
     await nextTick();
     at.scrollIntoView({behavior: "smooth", block: "center"});
-    markPassage(SHOWN, range);
-    setTimeout(() => markPassage(SHOWN, null), SHOWN_FOR);
+    markPassage(MARKED, range);
+    setTimeout(() => markPassage(MARKED, null), MARKED_FOR);
 }
 
 const editing = reactive({n: 0, text: "", error: ""});
@@ -546,7 +546,7 @@ textarea:focus {
     background-color: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
-::highlight(comment-passage-shown) {
+::highlight(comment-passage-marked) {
     background-color: color-mix(in srgb, var(--accent) 42%, transparent);
     color: var(--text);
 }

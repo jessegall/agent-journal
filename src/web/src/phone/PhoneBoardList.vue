@@ -6,7 +6,7 @@ import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
 defineProps({
     loaded: {type: Boolean, required: true},
     rows: {type: Array, required: true},
-    shown: {type: Array, required: true},
+    visibleRows: {type: Array, required: true},
     total: {type: Number, required: true},
     fresh: {type: Array, default: () => []},
     mark: {type: String, default: "New"},
@@ -21,7 +21,7 @@ const emit = defineEmits(["open", "more"]);
         </template>
         <template v-else-if="rows.length">
             <ul class="board-rows">
-                <template v-for="row in shown" :key="row.ref">
+                <template v-for="row in visibleRows" :key="row.ref">
                     <li>
                         <PhoneNavRow class="board-row" @click="emit('open', row.ref)">
                             <span class="board-title">{{ row.title }}</span>
@@ -33,7 +33,7 @@ const emit = defineEmits(["open", "more"]);
                     </li>
                 </template>
             </ul>
-            <template v-if="rows.length > shown.length">
+            <template v-if="rows.length > visibleRows.length">
                 <button type="button" class="board-more" @click="emit('more')">
                     {{ total > rows.length ? `Show ${rows.length} of ${total}` : `Show all ${rows.length}` }}
                 </button>
