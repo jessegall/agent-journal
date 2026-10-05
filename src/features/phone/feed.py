@@ -22,7 +22,6 @@ from features.plans.resource import PHASE
 from features.work_modes.modes import mode_of
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, Refused
-from surfaces.agent_state import agent_state
 from surfaces.summary import JournalSummary, lately_summarized, subagents
 
 FEED = 40
@@ -179,7 +178,7 @@ def feed(home: Record, phone, before: float = math.inf) -> Feed:
     shown = [mark for mark in marks(home, since) if mark["created"] < before]
     tasks = task_names(home) if any(item["data"].get("sent_to") for item in items) else {}
     items = sorted([*({**item, "to": tasks.get(item["data"].get("sent_to"))} for item in items), *shown], key=lambda item: item["created"])
-    return Feed(items=items, waiting=waiting(home, phone), agent=agent_state(home, phone.environment), notices=notices(home),
+    return Feed(items=items, waiting=waiting(home, phone), agent=Agents(home, actor=SYSTEM).state(phone.environment), notices=notices(home),
                 running=running(home, phone.environment), plan=plan_strip(home))
 
 
@@ -229,7 +228,7 @@ def running(home: Record, environment: str) -> Running:
     holder = Sessions(home.root).holder(environment)
     row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
     summary = lately_summarized(home.root)
-    shared = dict(state=agent_state(home, environment), prompt=prompt(summary, environment), auto=automatic(home), mode=mode_of(home),
+    shared = dict(state=Agents(home, actor=SYSTEM).state(environment), prompt=prompt(summary, environment), auto=automatic(home), mode=mode_of(home),
                   helpers=helpers_of(home, summary), subagents=subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())))
     if row is None:
         return Running(paused=False, context=0, usage=[], **shared)

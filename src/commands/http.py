@@ -19,7 +19,7 @@ from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
 from surfaces.summary import lately_summarized
 from engine.color import identity, set_color
-from surfaces.updates import FETCHING, newer, upstream
+from engine.upgrades import FETCHING, check_now, newer, upstream
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.family_tree.tree import family
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
@@ -264,7 +264,6 @@ def get_changelog(req: Request) -> Reply:
 
 @route("POST", "/api/update/check")
 def post_update_check(req: Request) -> Reply:
-    from surfaces.updates import check_now
     check_now(req.root)
     return Reply(200, {"checking": True})
 

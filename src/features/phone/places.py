@@ -12,7 +12,6 @@ from features.message_buttons.pressing import unspent
 from features.plans.resource import READY
 from features.status_bar.bar import current
 from resources.base import SYSTEM, USER
-from surfaces.agent_state import agent_state
 
 MAIN = "main"
 WAITED = ("question", "plan", "report", "doc")
@@ -38,7 +37,7 @@ def detail(root: Path, name: str) -> Detail:
     queue = current(record)["queue"]
     waiting = {kind: sum(map(owed, CONTROLLERS[kind](record, actor=SYSTEM)._standing())) for kind in WAITED}
     agents = Agents(record, actor=SYSTEM).summaries()
-    return Detail(agent=agent_state(record, name), doing=queue[-1]["key"] if queue else "", waiting=waiting,
+    return Detail(agent=Agents(record, actor=SYSTEM).state(name), doing=queue[-1]["key"] if queue else "", waiting=waiting,
                   inHand=len(Works(record, actor=SYSTEM)._standing()), lastActive=max((row["updated"] for row in agents), default=0.0))
 
 

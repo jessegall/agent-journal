@@ -4,7 +4,7 @@ from pathlib import Path
 
 from providers.payload import DISPLAYED, EVENTS
 from features.base import REGISTRY
-from surfaces.updates import newer
+from engine.upgrades import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 from engine.gates import CANCELABLE

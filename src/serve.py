@@ -11,8 +11,8 @@ from urllib.parse import parse_qsl, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features
-from surfaces import updates  # noqa: E402
-import migrations  # noqa: E402
+from features.auto_update.announcing import announce  # noqa: E402
+from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from engine import runtime  # noqa: E402
@@ -120,9 +120,8 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     if other:
         print(f"journal: this journal is already served at {other}", flush=True)
         raise SystemExit(0)
-    migrations.run(root)
-    features.load(root)
-    updates.announce(root)
+    boot(root)
+    announce(root)
     features.FEATURES["plugins"].host(root)
     server = JournalServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])

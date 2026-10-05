@@ -7,7 +7,6 @@ from pathlib import Path
 from controllers.base import networked
 from controllers.types import CONTROLLERS
 import features
-import migrations
 from providers import DRIVERS, workspace_folders
 from engine.record import Record
 from engine.sessions import Sessions, allowed
@@ -20,9 +19,9 @@ from engine.timing import measured
 from engine.binding import bound_environment
 from engine.worktree import checkout
 from typing import TypedDict
+from commands.boot import boot
 
 
-MIGRATED: set[Path] = set()
 
 
 class CommandContext(TypedDict):
@@ -35,16 +34,9 @@ class CommandContext(TypedDict):
     sessions: Sessions
 
 
-def bootstrap(root: Path) -> None:
-    if root not in MIGRATED:
-        migrations.run(root)
-        MIGRATED.add(root)
-    features.load(root)
-
-
 def context(args: dict) -> CommandContext:
     root = Path(args.pop("root")).resolve()
-    bootstrap(root)
+    boot(root)
     sessions = Sessions(root)
     session = args.pop("as_session")
     top = checkout(Path(args.pop("cwd") or os.getcwd()), workspace_folders())

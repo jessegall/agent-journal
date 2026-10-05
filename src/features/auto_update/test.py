@@ -121,7 +121,7 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
 
 def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from controllers.types import Notifications
-    from surfaces.updates import announce
+    from features.auto_update.announcing import announce
     record = fresh()
     announce(record.root, "1.0.0")
     assert announce(record.root, "1.0.1") == "1.0.1"

@@ -21,6 +21,199 @@
                     50
                 ]
             }
+        ],
+        "python/NamespaceDependencyDetector": [
+            {
+                "layer": [
+                    "supervisor"
+                ]
+            },
+            {
+                "layer": [
+                    "resources"
+                ]
+            },
+            {
+                "layer": [
+                    "engine",
+                    [
+                        "resources",
+                        "supervisor",
+                        "install"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "controllers",
+                    [
+                        "resources",
+                        "engine"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "providers",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "supervisor"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "agents",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "supervisor"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "runner",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "supervisor"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "features",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "runner",
+                        "supervisor"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "migrations",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "features"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "surfaces",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "features"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "commands",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "runner",
+                        "features",
+                        "migrations",
+                        "surfaces",
+                        "install",
+                        "skills",
+                        "serve"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "skills",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "features"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "install",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "features",
+                        "migrations",
+                        "commands",
+                        "skills"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "serve",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "runner",
+                        "features",
+                        "migrations",
+                        "surfaces",
+                        "commands"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "worker",
+                    [
+                        "commands",
+                        "runner"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "journal",
+                    [
+                        "commands"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "channel",
+                    [
+                        "providers"
+                    ]
+                ]
+            }
         ]
     }
 }
