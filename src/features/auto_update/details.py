@@ -1,5 +1,6 @@
 from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails, Line
+from features.settings import Setting
 
 
 class UpdatesDetails(FeatureDetails):
@@ -19,7 +20,9 @@ class UpdatesDetails(FeatureDetails):
         coming while the server is down.
 
         With auto-update on, the newest release is installed in the background, one install per
-        journal at a time, and the session reloads itself. A failed install is filed as a notice
+        journal at a time, and the session reloads itself. The setting chooses how big a step
+        installs by itself: patches only (2.249.4 to 2.249.5), minor versions too (to 2.250.0),
+        major versions too (to 3.0.0), or always, every release; a bigger one waits on Home. A failed install is filed as a notice
         and tried again after 30 minutes, then 2 hours, then 6. With it off, Home shows a banner
         when a newer release is out, with Update and Update and turn on auto-update, and the agent
         is told to run journal upgrade. The journal's own repository never installs itself.
@@ -34,6 +37,16 @@ class UpdatesDetails(FeatureDetails):
     """
 
     trigger = Trigger(every=5, unit=MINUTES)
+
+    settings = [
+        Setting(
+            name="installs",
+            default="always",
+            title="Updates that install by themselves",
+            abstract="A bigger update waits on Home with an Update button",
+            choices={"patch": "Patches", "minor": "Minor versions", "major": "Major versions", "always": "Always"},
+        ),
+    ]
 
 
     lines = [

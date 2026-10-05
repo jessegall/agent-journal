@@ -17,10 +17,19 @@ from engine.version import version
 from features import FEATURES
 from features.trigger import spec
 from resources.base import SYSTEM
+from install import counted
 from surfaces.updates import newer, stale, upstream
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
+
+
+KEPT_PARTS = {"patch": 2, "minor": 1, "major": 0, "always": 0}
+
+
+def within(installed: str, latest: str, installs: str) -> bool:
+    kept = KEPT_PARTS[installs]
+    return counted(latest)[:kept] == counted(installed)[:kept]
 
 
 def journal_repository(project: Path) -> bool:
@@ -96,7 +105,7 @@ class UpdateCheck:
             return ""
         if not claimed(root, latest):
             return ""
-        if feature.on(record) and not journal_repository(root.parent):
+        if feature.on(record) and within(installed, latest, feature.values(record).installs) and not journal_repository(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
             return f"installing {latest}"
         self.tell(feature, "newer", latest=latest, installed=installed)
