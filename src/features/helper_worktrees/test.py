@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import features
+from engine.worktree import tip
 from features.helper_worktrees.controller import Worktrees
 from providers import PROVIDERS
 from resources.base import AGENT
@@ -88,6 +89,7 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
             "tool_input": {"file_path": str(folder / "shared.txt")}}
     helper = lambda: handle(provider, record.root, record.env, {**read, "agent_id": "rhea"}).get("reason", "")
     assert helper() == "", "nothing is said while the working branch has not moved"
+    assert worktrees.all()[0].told == tip(project, "phone-connection"), "the tip it checked is kept, so the next tool call runs no git"
     commit(project, "main.txt", "meanwhile\n")
     told = helper()
     assert told.startswith("phone-connection moved 1 commit") and "rebase onto phone-connection" in told, "the helper is told the branch moved"
