@@ -340,7 +340,8 @@ def test_the_claude_channel_answers_its_handshake_and_delivers_each_queued_line_
     waited = time.monotonic()
     while len(sent) < 1 and time.monotonic() - waited < 10:
         time.sleep(0.02)
-    queue.write_text(queue.read_text() + json.dumps({"content": "second"}) + "\n")
+    with queue.open("a") as appended:
+        appended.write(json.dumps({"content": "second"}) + "\n")
     while len(sent) < 2 and time.monotonic() - waited < 10:
         time.sleep(0.02)
     stopped.set()
