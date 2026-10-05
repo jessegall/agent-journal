@@ -9,12 +9,14 @@ from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
 from engine.gates import CANCELABLE
 from features.plugins.parts import AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, ReadLinkedManifests, OneRowPerTitle, PluginChatRules
+from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_log, get_services, post_plugin_upgrade_preview, post_plugins_preview
 
 
 class Plugins(Feature):
     details = PluginsDetails
 
     def register(self, journal: Journal) -> None:
+        journal.routes.add(get_plugin_dashboard, get_pages, get_services, post_plugins_preview, post_plugin_upgrade_preview, get_plugin_log)
         for command in (Preview(), Install(), Upgrade(), Enable(), Disable(), Configure(), Raise(), Purge(), ClearLog()):
             journal.commands.add("plugin", command)
         journal.client.formatter(PluginChatRules())

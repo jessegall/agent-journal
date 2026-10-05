@@ -11,6 +11,7 @@ from engine.wording import APPENDS
 from features.format import FORMATTERS
 from features.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
 from resources.base import SYSTEM, Refused
+from features.routing import FEATURE_ROUTES
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
@@ -148,3 +149,12 @@ class Commands:
         feature = self.feature
         HANDLERS.setdefault(action, []).append(
             lambda controller, **args: interceptor.intercept(Context.of(feature, controller.record), controller, **args) if feature.enabled(controller.record) else None)
+
+
+class Routes:
+    def __init__(self, feature):
+        self.feature = feature
+
+    def add(self, *handlers) -> None:
+        for handler in handlers:
+            FEATURE_ROUTES.add(None, handler.route)

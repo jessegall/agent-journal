@@ -4,7 +4,7 @@ from functools import cached_property
 from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.wording import appended
-from features.wiring import AgentHooks, Client, Commands, Events
+from features.wiring import AgentHooks, Client, Commands, Events, Routes
 from resources.base import SYSTEM, titled
 
 
@@ -53,6 +53,10 @@ class Journal:
 
     def at(self, record, actor: str = SYSTEM) -> BoundJournal:
         return BoundJournal(self, record, actor)
+
+    @cached_property
+    def routes(self) -> Routes:
+        return Routes(self.feature)
 
     @cached_property
     def events(self) -> Events:

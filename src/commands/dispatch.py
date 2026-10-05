@@ -1,96 +1,21 @@
-import json
 import mimetypes
-import re
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Iterator
 from urllib.parse import unquote
-from controllers.types import CONTROLLERS
-from engine import bus, runtime
+from engine import bus
 from engine.timing import Stopwatch, profiler
-from engine.record import Record
 from controllers.faults import threw
 from features.format import shaped
-from resources.base import USER, Missing, Refused
+from resources.base import Missing, Refused
 from engine.package import data
-from engine.fields import Loaded
+from engine.memo import Memo
+from features.routing import FEATURE_ROUTES, Reply, Request, Route
 from engine.paths import contained, environment_home
 
 
 WEB = data("web", "dist")
 
-JSON = "application/json"
-
-PLAIN = "text/plain; charset=utf-8"
-
-
-@dataclass(frozen=True)
-class Named(Loaded):
-    env: str = ""
-
-
-@dataclass
-class Request:
-    root: Path
-    params: dict
-    query: dict
-    body: dict
-    kept: Record | None = None
-
-    def record(self) -> Record:
-        if self.kept is None:
-            self.kept = Record(self.root, self.params["env"], memo=True)
-        return self.kept
-
-    def query_as(self, kind):
-        return kind.from_json(self.query)
-
-    def body_as(self, kind):
-        return kind.from_json(self.body)
-
-    @property
-    def env(self) -> str:
-        named = Named.from_json(self.params).env or Named.from_json(self.query).env
-        return named if named else runtime.env(self.root)
-
-    def controller(self):
-        type_ = self.params["type"]
-        if type_ not in CONTROLLERS:
-            raise Missing(f"no type {type_}")
-        self.body.pop("actor", None)
-        return CONTROLLERS[type_](self.record(), actor=USER)
-
-
-@dataclass
-class Reply:
-    code: int = 200
-    body: object = None
-    kind: str = JSON
-    chunks: Iterator[bytes] | None = None
-    after: Callable[[], None] | None = None
-    timed: bool = True
-    named: str | None = None
-
-    def bytes(self) -> bytes:
-        if isinstance(self.body, bytes):
-            return self.body
-        return self.body.encode() if self.kind == PLAIN else json.dumps(self.body).encode()
-
-
-@dataclass
-class Route:
-    method: str
-    pattern: str
-    handler: Callable[[Request], Reply]
-    regex: re.Pattern = field(init=False)
-    rank: tuple[bool, ...] = field(init=False)
-
-    def __post_init__(self):
-        self.regex = re.compile("^" + re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", self.pattern) + "$")
-        self.rank = tuple(segment.startswith("{") for segment in self.pattern.split("/"))
-
-
 ROUTES: list[Route] = []
+RANKED = Memo()
 
 def route(method: str, pattern: str):
     def register(fn):
@@ -103,8 +28,12 @@ def rank_routes() -> None:
     ROUTES.sort(key=lambda r: r.rank)
 
 
+def ranked() -> list[Route]:
+    return RANKED.get("routes", (len(ROUTES), FEATURE_ROUTES.version), lambda: sorted([*ROUTES, *FEATURE_ROUTES.each()], key=lambda r: r.rank))
+
+
 def resolve(method: str, path: str) -> tuple[Route, dict] | None:
-    for r in ROUTES:
+    for r in ranked():
         m = r.regex.match(path)
         if m and r.method == method:
             return r, {k: unquote(v) for k, v in m.groupdict().items()}

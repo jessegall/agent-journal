@@ -191,9 +191,10 @@ def test_every_type_with_its_own_word_for_create_is_created_over_http():
 
 def test_no_environment_name_is_shadowed_by_a_global_route():
     from commands import http  # noqa: F401
-    from commands.dispatch import ROUTES
+    from commands.dispatch import ranked
     from engine.paths import ROUTED
-    fixed = {parts[2] for parts in (r.pattern.split("/") for r in ROUTES) if parts[1] == "api" and len(parts) > 3 and not parts[2].startswith("{")}
+    features.load()
+    fixed = {parts[2] for parts in (r.pattern.split("/") for r in ranked()) if parts[1] == "api" and len(parts) > 3 and not parts[2].startswith("{")}
     assert fixed <= ROUTED, f"environments named {sorted(fixed - ROUTED)} would be shadowed by a global route"
 
 

@@ -82,7 +82,7 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     import urllib.request
     from http.server import ThreadingHTTPServer
     import pytest
-    from commands.dispatch import Request
+    from features.routing import Request
     from commands.http import get_file_diff, get_file_text, get_project_files
     from engine.project_files import read_source, walk
     from resources.base import Refused
@@ -130,7 +130,7 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
 def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
     import subprocess
     import pytest
-    from commands.dispatch import Request
+    from features.routing import Request
     from commands.http import get_commit, get_file_diff
     from resources.base import Refused
     project = tmp_path / "project"
@@ -160,7 +160,8 @@ def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
 
 def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     import pytest
-    from commands.dispatch import Request, static
+    from commands.dispatch import static
+    from features.routing import Request
     from controllers.types import Environments, Todos
     from engine.record import Record
     from migrations import applied
