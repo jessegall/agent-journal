@@ -229,15 +229,22 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
         with log.open("a") as output:
             server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
-        until = time.monotonic() + COMING_UP
-        while time.monotonic() < until:
-            time.sleep(0.1)
-            url = running(root)
-            if url:
-                return url, None
-            if server.poll() is not None:
-                return "", server.returncode
-        return "", None
+        url, code = answered(root, server)
+        if code is None:
+            threading.Thread(target=server.wait, daemon=True).start()
+        return url, code
+
+
+def answered(root: Path, server: subprocess.Popen) -> tuple[str, int | None]:
+    until = time.monotonic() + COMING_UP
+    while time.monotonic() < until:
+        time.sleep(0.1)
+        url = running(root)
+        if url:
+            return url, None
+        if server.poll() is not None:
+            return "", server.returncode
+    return "", None
 
 
 def show(url: str, env: str = "", opener=webbrowser.open, focuser=existing_tab) -> str:

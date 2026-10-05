@@ -1,6 +1,8 @@
 import json
 import re
+import shlex
 import shutil
+import sys
 import time
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
@@ -216,7 +218,7 @@ class Claude(Provider):
         f = project / ".mcp.json"
         known = read_json(f, dict, {})
         servers = known.get("mcpServers") or {}
-        servers[SERVER] = {"command": "python3", "args": [str(Path(hook.root) / "journal.py"), "-m", "channel", hook.root]}
+        servers[SERVER] = {"command": sys.executable, "args": [str(hook.root / "journal.py"), "-m", "channel", str(hook.root)]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def journal_typed(self, prompt: str) -> bool:
@@ -227,8 +229,8 @@ class Claude(Provider):
         self.channel(project, hook)
         settings = self.settings(project)
         if "statusLine" not in settings:
-            script = Path(hook.script).with_name(STATUS_SCRIPT)
-            self.save(project, {**settings, "statusLine": {"type": "command", "command": f"sh {script}", "padding": 0}})
+            script = hook.script.with_name(STATUS_SCRIPT)
+            self.save(project, {**settings, "statusLine": {"type": "command", "command": shlex.join(["sh", str(script)]), "padding": 0}})
         settings = self.settings(project)
         permissions = settings.get("permissions") or {}
         deny = list(permissions.get("deny") or [])
