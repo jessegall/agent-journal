@@ -1,5 +1,5 @@
 const all = (selector) => [...document.querySelectorAll(selector)];
-const labelled = (label) => all("button").filter((b) => b.textContent.trim().startsWith(label));
+const labelled = (label) => all("button").filter((b) => (b.querySelector(".label") || b).textContent.trim() === label);
 
 const FOUND = {
     send: () => all(".compose-send.ready"),
