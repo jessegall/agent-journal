@@ -8,6 +8,7 @@ class CommandLine:
     parser: Callable
     words: Callable
     queries: set
+    captured: Callable
 
 
 WIRED: list = []

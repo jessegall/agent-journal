@@ -23,6 +23,7 @@ from engine.upgrades import FETCHING, check_now, newer, upstream
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.family_tree.tree import family
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
+from features.permission_prompts.skipping import set_skipped
 from features.skill_loading.required import load_now
 from engine.files import found_files
 from features.file_feed.feed import PAGE, NoSuchEdit, Side, edited_file, edits_before, edits_since, notes
@@ -349,7 +350,9 @@ def post_agent_keys(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")
 def post_agent_relaunch(req: Request) -> Reply:
-    return Reply(200, relaunch(req.root, req.params["env"], req.params["session"], bool(req.body.get("skip"))))
+    skip = bool(req.body.get("skip"))
+    set_skipped(req.record(), skip)
+    return Reply(200, {**relaunch(req.root, req.params["env"], req.params["session"]), "skip": skip})
 
 
 @route("POST", "/api/{env}/agent/{session}/force")

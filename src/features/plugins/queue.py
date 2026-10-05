@@ -7,7 +7,7 @@ from pathlib import Path
 
 from features.plugins.paths import logged, queue_path
 from resources.base import PLUGIN
-from features.command_line import command_line
+from engine.command_line import command_line
 
 EACH = 5
 LONGEST = 4000

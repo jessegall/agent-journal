@@ -1,7 +1,7 @@
 import time
 from dataclasses import dataclass
 
-from commands.cli import captured
+from engine.command_line import command_line
 from engine import bus
 from engine.journal_calls import JournalCall, pieces
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
@@ -68,7 +68,7 @@ def refusal(call: HookCall) -> str | None:
 
 def run_answer(call: HookCall, journal: JournalCall) -> bool:
     cwd = ("--cwd", call.hook.cwd) if call.hook.cwd else ()
-    _, code = captured(["--env", call.record.env, "--session", call.session, "--as", AGENT, *cwd, *journal.words[1:]], call.record.root)
+    _, code = command_line().captured(["--env", call.record.env, "--session", call.session, "--as", AGENT, *cwd, *journal.words[1:]], call.record.root)
     return code == 0
 
 

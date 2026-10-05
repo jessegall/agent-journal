@@ -1,7 +1,7 @@
 from engine.gates import held
 from engine.reach import Reach
 from features.parts import AgentContext, ToolInterceptor
-from engine import command_effects
+from providers import command_effects
 
 
 class RefuseHeldWrites(ToolInterceptor):

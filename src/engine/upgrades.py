@@ -4,7 +4,9 @@ from pathlib import Path
 
 from engine import runtime
 from engine.stored import write_text
-from install import released, version_key
+from install import fetch, released, version_key
+
+__all__ = ["fetch"]
 
 UPSTREAM_FOR = 900
 FETCHING = threading.Lock()

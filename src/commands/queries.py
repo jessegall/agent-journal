@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from controllers.types import Agents, CONTROLLERS
 import features
-from agents.launch import launch
+from commands.launch import launch
 from engine.record import Record
 from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
