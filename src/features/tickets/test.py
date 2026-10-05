@@ -50,7 +50,7 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     tickets = Tickets(record, actor=USER)
     ticket = tickets.create("Dark mode")
     bound = tickets.bind(ticket.n)
-    assert (bound.work_environment, Environments(record)._titled(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
+    assert (bound.work_environment, Environments(record).rows.by_title(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
         (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
     from features.dev_faults.feature import DevFaults
@@ -60,10 +60,10 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
     assert tickets.agent_session(ticket.n) == "claude-7", "the session is whichever one holds the ticket's environment"
     tickets.complete(ticket.n, how="still running", yes=True)
-    assert Environments(record)._titled(bound.work_environment) is not None, "an environment whose agent still runs is kept when its ticket closes"
+    assert Environments(record).rows.by_title(bound.work_environment) is not None, "an environment whose agent still runs is kept when its ticket closes"
     other = tickets.bind(tickets.create("Search").n)
     tickets.complete(other.n, how="shipped", yes=True)
-    assert Environments(record)._titled(other.work_environment) is None, "a closed ticket's idle environment goes to the attic"
+    assert Environments(record).rows.by_title(other.work_environment) is None, "a closed ticket's idle environment goes to the attic"
 
 
 def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
@@ -354,8 +354,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     user, agent = Tickets(record, actor=USER), Tickets(record, actor=AGENT)
     api, ui = user.create("An API", board=board.n), user.create("Its screen", board=board.n)
-    before = len(user.summaries())
-    assert "already made" in refused(lambda: agent.create("Its docs", board=board.n, after="999")) and len(user.summaries()) == before, \
+    before = len(user.rows.summaries())
+    assert "already made" in refused(lambda: agent.create("Its docs", board=board.n, after="999")) and len(user.rows.summaries()) == before, \
         "a card waiting on a card that does not exist is refused before anything is written"
     docs = agent.create("Its docs", board=board.n, after=str(api.n), covers=2)
     assert (docs.covers, list(docs.dependencies)) == (["2"], [api.ref]), "a card names its waits and one clause as it is made"

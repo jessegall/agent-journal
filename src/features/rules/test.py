@@ -17,7 +17,7 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     received = set()
 
     def text(session="claude-1"):
-        fresh_nudges = [n for n in Nudges(record, actor=AGENT)._every() if n.data.get("session") == session and n.n not in received]
+        fresh_nudges = [n for n in Nudges(record, actor=AGENT).rows.every() if n.data.get("session") == session and n.n not in received]
         received.update(n.n for n in fresh_nudges)
         return "\n".join(n.agent_line() for n in fresh_nudges)
 

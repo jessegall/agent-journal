@@ -89,7 +89,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
         sessions.unbind(moved_away)
     assert asked_for(Record(record.root, "t"), answering=False) == "u", "a quiet start never lands in an environment another live agent holds"
     users = Environments(record, actor=USER)
-    held_env = users._titled("t")
+    held_env = users.rows.by_title("t")
     assert "journal environment stop" in refused(lambda: users.vacant("t")), "a held environment says how to end its agent"
     import subprocess
     outside = subprocess.Popen(["sleep", "30"])
@@ -97,7 +97,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     users.stop(held_env.n)
     assert outside.wait(timeout=5) != 0, "an agent in a terminal the journal did not open is ended by its process when the user stops it"
     sessions.bind("gone-9", "u", pid=999999, provider="claude")
-    assert "no agent holds" in refused(lambda: users.stop(users._titled("u").n)), "an agent that is gone holds nothing to stop"
+    assert "no agent holds" in refused(lambda: users.stop(users.rows.by_title("u").n)), "an agent that is gone holds nothing to stop"
 
 
 def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the_same_law(env):
@@ -267,7 +267,7 @@ def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcr
     monkeypatch.setattr(PROVIDERS["claude"], "conversation_file", lambda self, conversation: transcript if conversation == "conv-7" else None)
     asked_history(record, "claude", "conv-7", ask=lambda _: "1", answering=True)
     asked_history(record, "claude", "conv-7", ask=lambda _: "1", answering=True)
-    brought = [(m.brief, m.seen[0], bool(m.completed)) for m in Messages(record, actor=USER)._every()]
+    brought = [(m.brief, m.seen[0], bool(m.completed)) for m in Messages(record, actor=USER).rows.every()]
     assert brought == [("please fix the login", USER, True), ("Fixed: the token expired early.", AGENT, True)], \
         "what the user and the agent wrote reaches the chat once, as theirs and already dealt with"
     assert Sessions(record.root).environment("conv-7") == record.env, "the conversation now belongs to the environment, so it is not asked again"

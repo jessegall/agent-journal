@@ -24,7 +24,7 @@ class Dumps(Controller):
     @action
     def create(self, title: str = "", abstract: str = "", brief: str = "", **data):
         with self.record.locked():
-            dump = super().create(f"Dump {(self.numbers() or [0])[-1] + 1}", abstract, brief, queued_at=time.time(), **data)
+            dump = super().create(f"Dump {(self.rows.numbers() or [0])[-1] + 1}", abstract, brief, queued_at=time.time(), **data)
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
 
@@ -259,7 +259,7 @@ class Dumps(Controller):
         return self.update(int(n), queued_at=time.time(), stopped=False)
 
     def _in_hand(self):
-        return min(self._standing(), key=lambda r: (r.data.get("queued_at") or r.created, r.n), default=None)
+        return min(self.rows.standing(), key=lambda r: (r.data.get("queued_at") or r.created, r.n), default=None)
 
     @action
     def items(self, n: int) -> list[str]:

@@ -39,7 +39,7 @@ def answered(journal, message) -> bool:
 
 
 def read_and_open(journal) -> list:
-    return [m for m in journal.get(Messages)._standing() if AGENT in m.seen and theirs(m)]
+    return [m for m in journal.get(Messages).rows.standing() if AGENT in m.seen and theirs(m)]
 
 
 def in_hand(journal):

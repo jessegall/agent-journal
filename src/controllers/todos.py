@@ -32,8 +32,8 @@ class Todos(Prioritised, Controller):
     @action
     def tasks(self, agent: str) -> list[dict]:
         from controllers.works import Works
-        works = {int(w.todo): w for w in Works(self.record, actor=SYSTEM)._standing() if w.todo}
-        rows = [self.load(row["n"]) for row in self.summaries() if row.get("assigned") == agent and not row["deleted"]]
+        works = {int(w.todo): w for w in Works(self.record, actor=SYSTEM).rows.standing() if w.todo}
+        rows = [self.load(row["n"]) for row in self.rows.summaries() if row.get("assigned") == agent and not row["deleted"]]
         return [{"n": r.n, "title": r.title, "hidden": bool(r.hidden), "state": task_state(r, works)} for r in rows]
 
     @action
@@ -126,7 +126,7 @@ class Todos(Prioritised, Controller):
     @action
     def prune(self, days: int = 30):
         cut = time.time() - int(days) * 86400
-        gone = [r for r in self._every() if r.completed and r.completed < cut]
+        gone = [r for r in self.rows.every() if r.completed and r.completed < cut]
         for r in gone:
             self.delete(r.n, f"pruned after {days} days")
         return gone
@@ -135,11 +135,8 @@ class Todos(Prioritised, Controller):
     def place(self, n: int, before: int):
         todo, target = self.load(n), self.load(before)
         level = int(target.priority or LEVELS["default"])
-        column = [t for t in self._ordered(self._standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
+        column = [t for t in self._ordered(self.rows.standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
         return self.update(todo.n, priority=level, rank=rank_before(column, target.n))
 
     def _ordered(self, rows: list) -> list:
         return sorted(rows, key=lambda t: (-int(t.priority or LEVELS["default"]), t.position, t.n))
-
-    def _every(self, deleted: bool = False) -> list:
-        return self._ordered(super()._every(deleted))

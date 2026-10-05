@@ -18,7 +18,7 @@ class Messages(Controller):
         with self.record.locked():
             key = data.get(types.Message.idempotency, "")
             if key:
-                existing = next((row["n"] for row in self.summaries() if row.get(types.Message.idempotency) == key), None)
+                existing = next((row["n"] for row in self.rows.summaries() if row.get(types.Message.idempotency) == key), None)
                 if existing:
                     return self.load(existing)
             return super().create(title, abstract, brief, **data)
@@ -29,15 +29,15 @@ class Messages(Controller):
 
     def _imported(self, turns: list[tuple[str, str, float]], outcome: str) -> None:
         with self.record.locked():
-            n = (self.numbers() or [0])[-1]
+            n = (self.rows.numbers() or [0])[-1]
             for actor, text, at in turns:
                 n += 1
-                self._write_file(self.resource(n=n, title=titled(text.strip().splitlines()[0]), brief=text, seen=[actor, USER if actor == AGENT else AGENT],
+                self.rows.write_file(self.resource(n=n, title=titled(text.strip().splitlines()[0]), brief=text, seen=[actor, USER if actor == AGENT else AGENT],
                                                created=at, updated=at, completed=at, outcome=outcome))
 
     @action
     def waiting(self) -> list:
-        return [m for m in self._standing() if m.author != AGENT]
+        return [m for m in self.rows.standing() if m.author != AGENT]
 
     @action
     def file(self, n: int, name: str, into: str = "keep"):

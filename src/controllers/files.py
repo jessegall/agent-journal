@@ -17,7 +17,7 @@ class Files:
     @action
     def folder(self, n: int) -> Path:
         self.load(n)
-        f = self._row_folder(n)
+        f = self.rows.row_folder(n)
         f.mkdir(exist_ok=True)
         return f
 
@@ -102,4 +102,4 @@ class Files:
         return self.save(r, "updated", indexed=sorted(known))
 
     def _attached(self) -> list[Resource]:
-        return [self.load(row["n"]) for row in self.summaries() if row.get("files") and not row["deleted"]]
+        return [self.load(row["n"]) for row in self.rows.summaries() if row.get("files") and not row["deleted"]]

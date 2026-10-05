@@ -62,10 +62,10 @@ class NameBareNumbers(Handler):
             return
         known = numbers(context)
         named = [str(n) for n in found if n in known]
-        sent = next((m for m in reversed(context.journal.get(Messages).summaries()) if m["seen"][:1] == [AGENT]), None)
+        sent = next((m for m in reversed(context.journal.get(Messages).rows.summaries()) if m["seen"][:1] == [AGENT]), None)
         if named and sent:
             context.agent.whisper("numbers", n=sent["n"], numbers=", ".join(named))
 
 
 def numbers(context: AgentContext) -> set[int]:
-    return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.get(CONTROLLERS[name]).summaries()}
+    return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.get(CONTROLLERS[name]).rows.summaries()}

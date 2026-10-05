@@ -80,7 +80,7 @@ def seat(root: Path) -> None:
     for home in sorted(p for p in environments(root).glob("*") if p.is_dir()):
         record = Record(root, home.name)
         rows = Features(record, actor=SYSTEM)
-        known = {r.title: r for r in rows._every()}
+        known = {r.title: r for r in rows.rows.every()}
         for name, feature in FEATURES.items():
             if name not in known:
                 rows.create(name, enabled=feature.default_for(root))

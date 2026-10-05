@@ -9,10 +9,10 @@ class Works(Controller):
 
     @action
     def active(self):
-        return next((w for w in self._standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
+        return next((w for w in self.rows.standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
 
     def _unparked(self) -> list:
-        return [w for w in self._standing() if not w.parked]
+        return [w for w in self.rows.standing() if not w.parked]
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):

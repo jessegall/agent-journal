@@ -14,7 +14,7 @@ from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.files import Files
 from controllers.links import Links
 from controllers import marks
-from controllers.stored import Stored
+from controllers.stored import RowStore
 from engine.wording import noun
 
 WORDS = ("title", "abstract", "brief")
@@ -58,12 +58,13 @@ def word_parameters(controller: type, name: str) -> list[inspect.Parameter]:
     return list(inspect.signature(word_function(controller, name)).parameters.values())[1:]
 
 
-class Controller(Stored, Files, Links, Discussed):
+class Controller(Files, Links, Discussed):
     resource = Resource
     actor = "user"
 
     def __init__(self, record: Record, actor: str | None = None, session: str = "", agent: str = "", force: str = ""):
         self.record = record
+        self.rows = RowStore(record, self.resource, self._ordered, self._visible, self._also, self._damaged)
         self.session = session
         self.agent = agent
         self.force = force
@@ -89,7 +90,7 @@ class Controller(Stored, Files, Links, Discussed):
 
     def _guarded(self, r: Resource, action: str) -> None:
         allowed = self.resource.editors.get(r.author)
-        if allowed is None or self.actor in allowed or not self._exists(r.n):
+        if allowed is None or self.actor in allowed or not self.rows.exists(r.n):
             return
         stored = self.load(r.n)
         parts = [section[SECTION.title] for section in stored.sections]
@@ -98,7 +99,7 @@ class Controller(Stored, Files, Links, Discussed):
             self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answer_command} {r.n} \"<text>\" instead of changing it")
 
     def _shipped(self, r: Resource, action: str) -> None:
-        if self.actor == SYSTEM or not self._exists(r.n):
+        if self.actor == SYSTEM or not self.rows.exists(r.n):
             return
         stored = self.load(r.n)
         if not stored.data.get("system"):
@@ -117,7 +118,7 @@ class Controller(Stored, Files, Links, Discussed):
         if self.actor not in r.seen:
             r.seen.append(self.actor)
         r.updated = time.time()
-        self._persist(r)
+        self.rows.persist(r)
         self._emit(r.n, action, **event)
         return r
 
@@ -157,7 +158,7 @@ class Controller(Stored, Files, Links, Discussed):
         if not self.resource.deduplicates:
             return None
         since = time.time() - TWICE_WITHIN
-        lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]
+        lately = [row["n"] for row in self.rows.summaries() if not row["deleted"] and row["updated"] >= since]
         recent = (self.load(n) for n in reversed(lately[-20:]))
         return next((r for r in recent if r.created >= since and r.title == title and r.brief == brief
                      and r.author == self.actor and (not about or about in r.refs)
@@ -175,7 +176,7 @@ class Controller(Stored, Files, Links, Discussed):
             if not data.get(name):
                 self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
         with self.record.locked(self.resource.scope):
-            n = (self.numbers() or [0])[-1] + 1
+            n = (self.rows.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             fields = self._shaped(data)
             if self.agent:
@@ -320,15 +321,15 @@ class Controller(Stored, Files, Links, Discussed):
         return self.save(r, "updated", restored=True)
 
     def _prune(self) -> None:
-        prunable = sorted((r for r in self._every(deleted=True) if self.resource.pruned_when.admits(r)), key=lambda r: r.created, reverse=True)
+        prunable = sorted((r for r in self.rows.every(deleted=True) if self.resource.pruned_when.admits(r)), key=lambda r: r.created, reverse=True)
         for r in prunable[self.resource.kept:]:
             self.force_delete(r.n)
 
     @marks.action
     def force_delete(self, n: int) -> None:
         self.load(n)
-        self._remove(n)
-        files = self._row_folder(n)
+        self.rows.remove(n)
+        files = self.rows.row_folder(n)
         if files.is_dir():
             shutil.rmtree(files)
         self._emit(n, "deleted", force=True)
@@ -340,7 +341,7 @@ class Controller(Stored, Files, Links, Discussed):
         self._guarded(r, "deleted")
         there = type(self)(Record(self.record.root, env), actor=self.actor)
         with there.record.locked(self.resource.scope):
-            m = (there.numbers() or [0])[-1] + 1
+            m = (there.rows.numbers() or [0])[-1] + 1
             moved = self.resource(**{**asdict(r), "n": m})
             if any(self.folder(n).iterdir()):
                 shutil.copytree(self.folder(n), there.folder(m), dirs_exist_ok=True)
@@ -371,7 +372,7 @@ class Controller(Stored, Files, Links, Discussed):
                     continue
                 r.seen.append(self.actor)
                 r.updated = time.time()
-                self._persist(r)
+                self.rows.persist(r)
                 changed.append(r)
             if changed:
                 self._emit(changed[0].n, "updated", numbers=[r.n for r in changed], seen=self.actor, by="read")
@@ -380,14 +381,14 @@ class Controller(Stored, Files, Links, Discussed):
     @marks.action
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
-        return [self.load(row["n"]) for row in self.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
+        return [self.load(row["n"]) for row in self.rows.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
 
     @marks.action
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
-        if not deleted and int(last) and type(self)._ordered is Stored._ordered:
-            listed = [row["n"] for row in self.summaries() if not row["deleted"] and (not row["completed"] or completed and not row.get(PART_OF))]
+        if not deleted and int(last) and type(self)._ordered is Controller._ordered:
+            listed = [row["n"] for row in self.rows.summaries() if not row["deleted"] and (not row["completed"] or completed and not row.get(PART_OF))]
             return [self.load(n) for n in listed[-int(last):]]
-        rows = self._every(deleted) if completed or deleted else self._standing()
+        rows = self.rows.every(deleted) if completed or deleted else self.rows.standing()
         rows = rows if completed else [r for r in rows if not r.completed]
         return rows[-int(last):] if int(last) else rows
 
@@ -398,26 +399,41 @@ class Controller(Stored, Files, Links, Discussed):
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
         texts = self._texts()
-        hits = (row["n"] for row in reversed(self.summaries()) if not row["deleted"] and want in texts.get(row["n"], ""))
-        return [self._peek(n).fork() for n, _ in zip(hits, range(LAST))]
+        hits = (row["n"] for row in reversed(self.rows.summaries()) if not row["deleted"] and want in texts.get(row["n"], ""))
+        return [self.rows.peek(n).fork() for n, _ in zip(hits, range(LAST))]
+
+    def load(self, n: int | str) -> Resource:
+        return self.rows.load(n)
+
+    def path(self, n: int):
+        return self.rows.path(n)
+
+    def _ordered(self, rows: list[Resource]) -> list[Resource]:
+        return rows
+
+    def _visible(self, row: Resource) -> bool:
+        return True
+
+    def _also(self) -> list[Resource]:
+        return []
 
     def _warm(self) -> None:
-        super()._warm()
+        self.rows.warm()
         self._texts()
 
     def _texts(self) -> dict[int, str]:
-        kept = SEARCHABLE.setdefault(str(self._folder()), {})
-        for row in self.summaries():
+        kept = SEARCHABLE.setdefault(str(self.rows.folder()), {})
+        for row in self.rows.summaries():
             if row["deleted"] or kept.get(row["n"], (None,))[0] == row["updated"]:
                 continue
-            kept[row["n"]] = (row["updated"], searchable(self._peek(row["n"])))
+            kept[row["n"]] = (row["updated"], searchable(self.rows.peek(row["n"])))
         return {n: text for n, (_, text) in kept.items()}
 
     @marks.action
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
             return self.load(name)
-        hits = [row["n"] for row in self.summaries() if not row["deleted"] and name.lower() in row["title"].lower()]
+        hits = [row["n"] for row in self.rows.summaries() if not row["deleted"] and name.lower() in row["title"].lower()]
         if len(hits) != 1:
             raise Refused(f"{'no' if not hits else len(hits)} {noun(len(hits), self.type)} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
         return self.load(hits[0])

@@ -147,7 +147,7 @@ def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
     assert column == [first, third, second], f"the dropped card sits right before the one it was dropped on: {column}"
     todos.place(third, before=first)
     assert todos.load(third).priority == todos.load(first).priority, "dropped above a higher one, it takes that priority, so auto mode works it in that order"
-    assert [t.n for t in todos._standing()][:2] == [third, first], "and the order the board shows is the order the journal hands out"
+    assert [t.n for t in todos.rows.standing()][:2] == [third, first], "and the order the board shows is the order the journal hands out"
     todos.complete(second, how="done")
     assert "same column" in refused(lambda: todos.place(first, before=second)), "a card is only placed among the open cards of its column"
 

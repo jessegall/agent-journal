@@ -37,7 +37,7 @@ class Questions(Controller):
         return super().complete(n, how=how, **{**data, "kept": False, ANSWERED_BY: self.actor, CHOSEN: self.load(n).chosen_for(how)})
 
     def about(self, ref: str) -> list:
-        return [r for r in self._kept(closed_since=time.time() - ANSWERED_SHOWN) if ref in r.refs]
+        return [r for r in self.rows.kept(closed_since=time.time() - ANSWERED_SHOWN) if ref in r.refs]
 
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):

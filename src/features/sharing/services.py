@@ -17,7 +17,7 @@ KEEP_UP = Extension()
 
 def open_shares(root: Path) -> list:
     shares = Shares(Record(root, runtime.env(root)), actor=SYSTEM)
-    return [row for row in shares.summaries() if row.get("token") and row.get("approved") and not row["deleted"]
+    return [row for row in shares.rows.summaries() if row.get("token") and row.get("approved") and not row["deleted"]
             and not ended(row["completed"], row.get("expires"))]
 
 

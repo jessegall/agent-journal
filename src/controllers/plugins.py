@@ -6,4 +6,4 @@ class Plugins(Controller):
     resource = types.Plugin
 
     def _installed(self) -> list:
-        return [r for r in self._standing() if r.enabled and r.manifest]
+        return [r for r in self.rows.standing() if r.enabled and r.manifest]

@@ -163,7 +163,7 @@ class Throwaway:
         yield from reads.items()
 
     def phone(self, phones: Phones, env: str) -> Phone:
-        connected = [phone for phone in (phones.load(row["n"]) for row in phones.summaries() if not row["deleted"]) if phone.connected]
+        connected = [phone for phone in (phones.load(row["n"]) for row in phones.rows.summaries() if not row["deleted"]) if phone.connected]
         return connected[-1] if connected else Phone(n=0, title="A phone", data={"environment": env, "key": "demo", "expires": NEVER})
 
     def phone_reads(self, phones: Phones, phone: Phone) -> Iterator[tuple[str, object]]:

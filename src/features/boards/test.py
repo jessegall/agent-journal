@@ -20,7 +20,7 @@ def test_a_board_question_is_seen_only_on_its_board():
     asked = Boards(record, actor=AGENT).ask(board.n, "You want to build a shareable journal?", options=[{"title": "Others work in it"}])
     questions = Questions(record, actor=USER)
     assert (asked.hidden, asked.refs) == (True, [board.ref]), "a board question is about its board and hidden"
-    assert asked.n not in [r.n for r in questions._standing()], "the Questions list and the waiting count leave it out"
+    assert asked.n not in [r.n for r in questions.rows.standing()], "the Questions list and the waiting count leave it out"
     assert [q.n for q in Tickets(record, actor=USER).board(board.n)["questions"]] == [asked.n], "the board's own data carries it for New work"
 
 
@@ -86,7 +86,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
     Tickets(record, actor=USER).confirm(kept.n)
     boards.cancel(board.n)
     assert "since" not in boards.load(board.n).drafting, "cancel ends the session"
-    assert [t.n for t in drafter._standing() if t.board == board.n] == [kept.n], "cancel deletes the drafts nobody added"
+    assert [t.n for t in drafter.rows.standing() if t.board == board.n] == [kept.n], "cancel deletes the drafts nobody added"
     assert not any(made.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "cancel gives up the running sequence"
     assert "stop drafting" in refused(lambda: drafter.create("Late", abstract="Late", board=board.n, draft=True)), "a draft after cancel is refused"
 
@@ -127,7 +127,7 @@ def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
     assert agent.built(board.n, "1 stage, 1 ticket").building["log"][0]["text"] == "Made the stages from section 1"
     assert "not being built" in refused(lambda: agent.log(board.n, "Late")), "a finished build takes no more lines"
     boards.discard(board.n)
-    assert not [t for t in Tickets(record, actor=USER)._standing() if t.board == board.n], "removing the board removes its tickets"
+    assert not [t for t in Tickets(record, actor=USER).rows.standing() if t.board == board.n], "removing the board removes its tickets"
     assert not any(board.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "and gives up the build"
 
 

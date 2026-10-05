@@ -11,7 +11,7 @@ class Collections(Controller):
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        if any(row["title"].lower() == title.strip().lower() for row in self.summaries() if not row["deleted"] and not row["completed"]):
+        if any(row["title"].lower() == title.strip().lower() for row in self.rows.summaries() if not row["deleted"] and not row["completed"]):
             raise Refused(f"a collection called {title.strip()!r} is already open")
         return super().create(title, abstract, brief, **data)
 

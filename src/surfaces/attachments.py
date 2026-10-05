@@ -46,6 +46,6 @@ def listed_attachments(record, type_: str, controller) -> list[AttachedFile]:
 
 def attachments(record) -> list[AttachedFile]:
     controllers = [(type_, CONTROLLERS[type_](record, actor=USER)) for type_ in listed_types()]
-    summaries = tuple(c.summaries() for _, c in controllers)
+    summaries = tuple(c.rows.summaries() for _, c in controllers)
     return ATTACHED.get(str(record.home), summaries,
                         lambda: sorted((f for type_, c in controllers for f in listed_attachments(record, type_, c)), key=lambda x: -x["at"]))

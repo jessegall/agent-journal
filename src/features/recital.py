@@ -57,7 +57,7 @@ KEPT_WHISPERS = 50
 
 def recite(context: AgentContext, controller: type, text_of) -> None:
     rows = context.journal.get(controller)
-    for row in rows._standing():
+    for row in rows.rows.standing():
         if not mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) or not whisper_due(context, row.ref):
             continue
         context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
@@ -98,7 +98,7 @@ class RepeatStanding(Handler):
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         resources = context.journal.get(self.controller)
-        rows = [r for r in resources._standing() if r.data.get(WHOM, context.agent.session) == context.agent.session]
+        rows = [r for r in resources.rows.standing() if r.data.get(WHOM, context.agent.session) == context.agent.session]
         if rows:
             context.agent.say("standing", count=plural(len(rows), resources.type),
                               rows="; ".join(f"{r.n}. {r.title}" for r in rows))

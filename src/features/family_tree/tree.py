@@ -66,14 +66,14 @@ class Family(TypedDict):
 
 
 def family(record) -> Family:
-    rows = {env.title: env for env in Environments(record, actor=SYSTEM)._every() if not env.deleted}
+    rows = {env.title: env for env in Environments(record, actor=SYSTEM).rows.every() if not env.deleted}
     envs = [Place(title, rows[title].owner if title in rows else "", rows[title].launched_from if title in rows else "")
             for title in dict.fromkeys([record.env, *rows])]
     members, links = {}, []
     primary = {}
     for env in envs:
         agents = Agents(Record(record.root, env.title), actor=SYSTEM)
-        for row in (row for row in agents._standing() if not row.parent):
+        for row in (row for row in agents.rows.standing() if not row.parent):
             key = agent_id(env.title, row.title)
             members[key] = Member(key, f"{env.title} · {row.provider or 'agent'}", env.owner.split(":", 1)[0] if env.owner else "main",
                                   env.title, row.status, env.owner, row.n, loops=len(row.data.get("loops") or {}))

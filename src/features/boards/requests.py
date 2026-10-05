@@ -92,7 +92,7 @@ class DraftingBoards:
 
     def _drafted(self, board, tickets: str) -> list[int]:
         numbers = numbers_in(tickets)
-        drafts = {t.n for t in self._cards(self.actor)._standing() if t.draft and int(t.board) == board.n}
+        drafts = {t.n for t in self._cards(self.actor).rows.standing() if t.draft and int(t.board) == board.n}
         stray = [n for n in numbers if n not in drafts]
         if not numbers or stray:
             raise Refused(f"name drafts on board {board.n}, like \"12, 13\"; not {stray or tickets!r}")
@@ -111,7 +111,7 @@ class DraftingBoards:
 
     def _drafts(self, board) -> list:
         since = board.drafting_since
-        return [t for t in self._cards(SYSTEM)._standing() if t.draft and int(t.board) == board.n and t.created >= since]
+        return [t for t in self._cards(SYSTEM).rows.standing() if t.draft and int(t.board) == board.n and t.created >= since]
 
     def _drafting(self, n: int):
         board = self.load(n)
@@ -139,11 +139,11 @@ class DraftingBoards:
             raise Refused(f"board {board.n} is past exploring: the request is {board.phase}")
         about, turns, rated = board.asked[0], int(board.drafting.get("turns", 0)) + 1, int(score)
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        exploring = sequences._titled(EXPLORATION.title)
+        exploring = sequences.rows.by_title(EXPLORATION.title)
         handed = 0
         if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
             sequences.finish(exploring.n, about)
-            handed = sequences.run(sequences._titled(DRAFTING.title).n, about=about).n
+            handed = sequences.run(sequences.rows.by_title(DRAFTING.title).n, about=about).n
             phase = DRAFTING_PHASE
         elif turns >= MOST_TURNS:
             sequences.finish(exploring.n, about)

@@ -72,17 +72,26 @@ class Stamped:
     inodes: dict
     noted: int
 
-class Stored:
-    def path(self, n: int) -> Path:
-        return self._row_folder(n) / f"{self.type}.md" if self.resource.own_folder else self._folder() / member(n)
+class RowStore:
+    def __init__(self, record, resource, order, visible, also, on_damage):
+        self.record = record
+        self.resource = resource
+        self.type = resource.type
+        self.order = order
+        self.visible = visible
+        self.also = also
+        self.on_damage = on_damage
 
-    def _folder(self) -> Path:
+    def path(self, n: int) -> Path:
+        return self.row_folder(n) / f"{self.type}.md" if self.resource.own_folder else self.folder() / member(n)
+
+    def folder(self) -> Path:
         return self.record.folder(self.type, self.resource.scope)
 
-    def _row_folder(self, n: int) -> Path:
-        return self._folder() / numbered(n)
+    def row_folder(self, n: int) -> Path:
+        return self.folder() / numbered(n)
 
-    def _write_file(self, r: Resource) -> None:
+    def write_file(self, r: Resource) -> None:
         p = self.path(r.n)
         if self.resource.own_folder:
             p.parent.mkdir(parents=True, exist_ok=True)
@@ -90,16 +99,16 @@ class Stored:
             self._note(r.n)
         write_text(p, r.dump())
         if self.resource.own_folder:
-            os.utime(self._folder())
+            os.utime(self.folder())
 
-    def _persist(self, r: Resource) -> None:
-        folder = self._folder()
+    def persist(self, r: Resource) -> None:
+        folder = self.folder()
         before = self._moved(folder) if folder.is_dir() else None
-        self._write_file(r)
-        self._reindexed(r.n, before, r)
+        self.write_file(r)
+        self.reindexed(r.n, before, r)
 
     def _note(self, n: int) -> None:
-        append_text(self._folder() / CHANGES, f"{n}\n")
+        append_text(self.folder() / CHANGES, f"{n}\n")
 
     @staticmethod
     def _noted_end(folder: Path) -> int:
@@ -123,11 +132,11 @@ class Stored:
         return {int(line) for line in whole.splitlines() if line.isdigit()}, since + len(whole.encode())
 
     def numbers(self) -> list[int]:
-        folder = self._folder()
-        return sorted(set(self._stamps(folder)) | set(self._packed()))
+        folder = self.folder()
+        return sorted(set(self._stamps(folder)) | set(self.packed()))
 
     def summaries(self) -> list[dict]:
-        folder = self._folder()
+        folder = self.folder()
         moved = self._moved(folder)
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
@@ -141,7 +150,7 @@ class Stored:
 
     def _differing(self, held: list[dict], loose: dict[int, dict]) -> set[int]:
         listed = {row["n"]: row for row in held}
-        packed = self._packed()
+        packed = self.packed()
         shown = {n: row for n, row in loose.items() if not (row.get(DAMAGED) or is_part(row))}
         return {n for n, row in shown.items() if listed.get(n) is not row} | {n for n in listed if n not in shown and n not in packed}
 
@@ -151,7 +160,7 @@ class Stored:
             at = bisect_left(rows, n, key=lambda row: row["n"])
             if at < len(rows) and rows[at]["n"] == n:
                 del rows[at]
-            row = loose.get(n) or self._packed().get(n)
+            row = loose.get(n) or self.packed().get(n)
             if row and not row.get(DAMAGED) and not is_part(row):
                 rows.insert(at, row)
         SUMMARIES[str(folder)] = (moved, rows)
@@ -162,13 +171,13 @@ class Stored:
 
     def _summarised(self, folder: Path, moved: tuple, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
-        packed = [row for n, row in self._packed().items() if n not in seen]
+        packed = [row for n, row in self.packed().items() if n not in seen]
         rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
-    def _reindexed(self, n: int, before: tuple | None, r: Resource | None = None) -> None:
-        folder = self._folder()
+    def reindexed(self, n: int, before: tuple | None, r: Resource | None = None) -> None:
+        folder = self.folder()
         held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
         if not held or known is None or held[0] != before:
             return
@@ -189,8 +198,8 @@ class Stored:
                 "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
                 **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
-    def _packed(self) -> dict[int, dict]:
-        index = self._folder() / PACKED / INDEX
+    def packed(self) -> dict[int, dict]:
+        index = self.folder() / PACKED / INDEX
         stamp = mtime(index)
         if not stamp:
             return {}
@@ -262,7 +271,7 @@ class Stored:
                 r = self.load(n)
             except (Refused, OSError) as error:
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
-                self._damaged(str(self.path(n)), str(error))
+                self.on_damage(str(self.path(n)), str(error))
                 continue
             rows[n] = self._row(r, stamp)
         changed = sum(1 for n, row in rows.items() if known.get(n) is not row) + len(known.keys() - rows.keys())
@@ -273,37 +282,37 @@ class Stored:
         INDEXED[str(folder)] = rows
         return rows
 
-    def _titled(self, title: str, standing: bool = False) -> Resource | None:
+    def by_title(self, title: str, standing: bool = False) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
         return self.load(found) if found else None
 
     def load(self, n: int | str) -> Resource:
-        r = self._peek(int(n))
+        r = self.peek(int(n))
         return r.fork() if self.resource.loading == MEMORY else r
 
-    def _peek(self, n: int) -> Resource:
+    def peek(self, n: int) -> Resource:
         p = self.path(n)
         try:
             found = p.stat()
             stamp, where = (found.st_mtime_ns, found.st_size), str(p)
         except OSError as error:
-            entry = self._packed().get(n)
+            entry = self.packed().get(n)
             if not entry:
                 raise Missing(f"no {self.type} {n}") from error
-            archive = self._folder() / PACKED / entry[ARCHIVE]
+            archive = self.folder() / PACKED / entry[ARCHIVE]
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
         if self.resource.loading != MEMORY:
             return self._parsed(n)
         return HELD.get(where, stamp, lambda: self._parsed(n))
 
-    def _text(self, n: int) -> str:
+    def text(self, n: int) -> str:
         p = self.path(n)
         if p.is_file():
             return p.read_text()
-        entry = self._packed().get(n)
+        entry = self.packed().get(n)
         if not entry:
             raise Refused(f"no {self.type} {n}")
-        archive = self._folder() / PACKED / entry[ARCHIVE]
+        archive = self.folder() / PACKED / entry[ARCHIVE]
         try:
             return opened(archive).read(member(n)).decode()
         except (OSError, KeyError, zipfile.BadZipFile) as error:
@@ -311,15 +320,15 @@ class Stored:
 
     def _parsed(self, n: int) -> Resource:
         try:
-            return self.resource.load(self._text(n))
+            return self.resource.load(self.text(n))
         except (ValueError, TypeError) as error:
             raise Refused(f"{self.type} {n} is damaged: {self.path(n)}") from error
 
-    def _exists(self, n: int) -> bool:
-        return self.path(n).is_file() or n in self._packed()
+    def exists(self, n: int) -> bool:
+        return self.path(n).is_file() or n in self.packed()
 
-    def _remove(self, n: int) -> None:
-        folder = self._folder()
+    def remove(self, n: int) -> None:
+        folder = self.folder()
         before = self._moved(folder) if folder.is_dir() else None
         HELD.forget(str(self.path(n)))
         self.path(n).unlink(missing_ok=True)
@@ -327,13 +336,13 @@ class Stored:
             os.utime(folder)
         elif folder.is_dir():
             self._note(n)
-        packed = self._packed()
+        packed = self.packed()
         if n in packed:
             write_json(folder / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})
-        self._reindexed(n, before)
+        self.reindexed(n, before)
 
-    def _pack(self, before: float) -> int:
-        folder = self._folder()
+    def pack(self, before: float) -> int:
+        folder = self.folder()
         chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before]
         days: dict[str, list[dict]] = {}
         for row in chosen:
@@ -347,7 +356,7 @@ class Stored:
         archive = folder / PACKED / name
         archive.parent.mkdir(parents=True, exist_ok=True)
         texts = {row["n"]: (folder / member(row["n"])).read_bytes() for row in rows}
-        index = self._packed()
+        index = self.packed()
         kept = {n for n, entry in index.items() if entry[ARCHIVE] == name and n not in texts}
         building = archive.with_suffix(".new")
         with zipfile.ZipFile(building, "w", zipfile.ZIP_DEFLATED) as out:
@@ -367,7 +376,7 @@ class Stored:
                 HELD.forget(str(p))
                 p.unlink()
 
-    def _warm(self) -> None:
+    def warm(self) -> None:
         rows = self.summaries()
         if self.resource.loading == LAZY:
             return
@@ -375,27 +384,25 @@ class Stored:
             if self.resource.loading == MEMORY:
                 self.load(row["n"])
 
-    def _viewed(self) -> list[Resource]:
-        return [self._peek(row["n"]) for row in self.summaries() if not row["deleted"]]
+    def viewed(self) -> list[Resource]:
+        return [self.peek(row["n"]) for row in self.summaries() if not row["deleted"]]
 
-    def _every(self, deleted: bool = False) -> list[Resource]:
+    def every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
-            rows = [(self.load if memo is None else self._peek)(row["n"]) for row in self.summaries()]
+            rows = [(self.load if memo is None else self.peek)(row["n"]) for row in self.summaries()]
             rows = wholes([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
-                return rows
+                return self.order(rows)
             memo[self.type, deleted] = rows
-        return [r.fork() for r in memo[self.type, deleted]]
+        return self.order([r.fork() for r in memo[self.type, deleted]])
 
-    def _standing(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
-        return [r for r in self._kept(closed_since, closed_last) if self.resource.hidden_listed or not r.hidden]
+    def standing(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
+        own = [r for r in self.kept(closed_since, closed_last) if (self.resource.hidden_listed or not r.hidden) and self.visible(r)]
+        return [*own, *self.also()]
 
-    def _kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
+    def kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
         rows = [row for row in self.summaries() if not row["deleted"]]
         closed = [row for row in rows if row["completed"] and closed_since and row["completed"] >= closed_since]
         kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
-        return self._ordered([self.load(row["n"]) for row in rows if not row["completed"]] + [self.load(row["n"]) for row in kept])
-
-    def _ordered(self, rows: list[Resource]) -> list[Resource]:
-        return rows
+        return self.order([self.load(row["n"]) for row in rows if not row["completed"]] + [self.load(row["n"]) for row in kept])

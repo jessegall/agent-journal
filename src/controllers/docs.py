@@ -34,8 +34,8 @@ class Docs(Controller):
     def unhide(self, n: int):
         return self.update(int(n), hidden=False)
 
-    def _standing(self, closed_since: float = 0, closed_last: int = 0):
-        return [r for r in super()._standing(closed_since, closed_last) if not r.hidden]
+    def _visible(self, row) -> bool:
+        return not row.hidden
 
     @action
     def search(self, term: str):

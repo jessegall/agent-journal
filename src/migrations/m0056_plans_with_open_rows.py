@@ -10,7 +10,7 @@ def run(root: Path) -> list[str]:
     reopened = []
     for record in environment_records(Path(root)):
         plans = Plans(record, actor=SYSTEM)
-        for plan in [p for p in plans._every() if p.status == DONE and not p.deleted]:
+        for plan in [p for p in plans.rows.every() if p.status == DONE and not p.deleted]:
             phase = first_open_phase(record, plan)
             if not phase:
                 continue

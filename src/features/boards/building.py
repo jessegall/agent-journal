@@ -32,7 +32,7 @@ class BuildingBoards:
         board = self.load(n)
         Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent).give_up(board.ref, why=why)
         tickets = self._cards(self.actor)
-        for ticket in [t for t in tickets._standing() if int(t.board) == board.n]:
+        for ticket in [t for t in tickets.rows.standing() if int(t.board) == board.n]:
             tickets.delete(ticket.n, why=why)
         return self.delete(board.n, why=why)
 

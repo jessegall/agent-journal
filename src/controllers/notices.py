@@ -21,12 +21,12 @@ class Notices(Controller):
 
     def raise_once(self, title: str, brief: str, which: str = "") -> bool:
         with ONCE:
-            if any(n.title == title and n.data.get(WHICH, "") == which for n in self._standing()):
+            if any(n.title == title and n.data.get(WHICH, "") == which for n in self.rows.standing()):
                 return False
             self.create(title, brief=brief, tone="warn", **{WHICH: which})
             return True
 
     def close_titled(self, title: str, how: str) -> None:
-        for n in self._every():
+        for n in self.rows.every():
             if not n.completed and n.title == title:
                 self.complete(n.n, how)

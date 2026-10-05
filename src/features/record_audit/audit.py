@@ -62,7 +62,7 @@ def claim_evidence(record) -> list[Evidence]:
     found = []
     for claims in CLAIMS:
         controller = claims(record, actor=SYSTEM)
-        for r in controller._standing():
+        for r in controller.rows.standing():
             text = f"{r.title}\n{r.brief}"
             found += [Evidence(r.ref, f"names {what}, which is gone", retiring(controller, r)) for what in missing_paths(project, text)]
             found += [Evidence(r.ref, f"names {what}, which the CLI does not answer to", retiring(controller, r)) for what in unknown_verbs(text, words)]
@@ -70,9 +70,9 @@ def claim_evidence(record) -> list[Evidence]:
 
 
 def waiting_evidence(record) -> list[Evidence]:
-    questions, todos = Questions(record, actor=SYSTEM)._standing(), Todos(record, actor=SYSTEM)
+    questions, todos = Questions(record, actor=SYSTEM).rows.standing(), Todos(record, actor=SYSTEM)
     found = []
-    for t in todos._standing():
+    for t in todos.rows.standing():
         waiting = [q for q in questions if t.ref in q.refs]
         if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * DAY:
             found.append(Evidence(t.ref, f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", retiring(todos, t)))

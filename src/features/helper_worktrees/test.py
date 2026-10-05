@@ -19,7 +19,7 @@ def test_a_helper_is_not_told_about_another_environments_worktrees():
     record = fresh("main")
     row = Worktrees(record, actor=SYSTEM).create("main-helper")
     helper = Record(record.root, "main-helper")
-    assert Worktrees(helper, actor=SYSTEM).summaries()[0]["environment"] == "main"
+    assert Worktrees(helper, actor=SYSTEM).rows.summaries()[0]["environment"] == "main"
     assert f"unread worktree {row.n}" in Engine(record, DRIVERS["claude"](record, "main")).owed()
     assert "unread worktree" not in Engine(helper, DRIVERS["claude"](helper, "helper")).owed()
 

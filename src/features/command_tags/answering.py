@@ -6,7 +6,7 @@ from resources.base import SYSTEM
 
 def answered(numbers: list, record, **_) -> str:
     messages = Messages(record, actor=SYSTEM)
-    rows = [messages.load(n) for n in numbers if messages._exists(n)]
+    rows = [messages.load(n) for n in numbers if messages.rows.exists(n)]
     panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
     told = [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
     acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]

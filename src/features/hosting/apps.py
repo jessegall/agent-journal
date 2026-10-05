@@ -20,7 +20,7 @@ def worktree_of(project: Path, ticket) -> Path:
 
 
 def hosted(root: Path) -> list:
-    return [r for r in Tickets(Record(root, runtime.env(root)), actor=SYSTEM)._standing() if r.hosted and r.work_environment]
+    return [r for r in Tickets(Record(root, runtime.env(root)), actor=SYSTEM).rows.standing() if r.hosted and r.work_environment]
 
 
 class AppAddress(TypedDict):

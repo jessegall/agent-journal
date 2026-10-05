@@ -180,5 +180,5 @@ class ActionInterceptor:
 
 
 def in_background(record) -> bool:
-    row = Environments(record, actor=SYSTEM)._titled(record.env)
+    row = Environments(record, actor=SYSTEM).rows.by_title(record.env)
     return bool(row and row.owner)

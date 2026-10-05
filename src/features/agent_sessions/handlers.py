@@ -69,7 +69,7 @@ class MarkSilentStopped(Handler):
         agents = context.journal.get(Agents)
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
-        for row in agents._every():
+        for row in agents.rows.every():
             if row.live and float(row.at) < silent and not live(sessions.read(row.title)):
                 agents.stamp(row.n, status=STOPPED)
 
@@ -119,12 +119,12 @@ class ClearLapsedAssignments(Handler):
     behaviour = "subagents"
 
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        subagents = {a.title: a for a in context.journal.get(Agents)._standing() if a.status == SUBAGENT}
+        subagents = {a.title: a for a in context.journal.get(Agents).rows.standing() if a.status == SUBAGENT}
         if not subagents:
             return
         limit = context.settings.lapse * MINUTE
         todos = context.journal.get(Todos)
-        for t in todos._standing():
+        for t in todos.rows.standing():
             who = t.assigned
             if not who or who not in subagents or time.time() - float(subagents[who].active) < limit:
                 continue

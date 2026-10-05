@@ -6,7 +6,7 @@ from features.trigger import DAY
 
 
 def standing(record) -> list:
-    return [r for controller in (Rules, Facts) for r in controller(record, actor=SYSTEM)._standing()]
+    return [r for controller in (Rules, Facts) for r in controller(record, actor=SYSTEM).rows.standing()]
 
 
 def owed(record, days: int = 7) -> bool:

@@ -50,7 +50,7 @@ def test_a_trigger_message_does_not_fire_the_trigger_again():
     report(record, "working", "PreToolUse")
     Triggers(record, actor="user").create("release reminder", brief="release checklist", **{"words": ["release"], "does": "message"})
     Messages(record, actor="user").create("release time")
-    messages = Messages(record, actor="system")._every()
+    messages = Messages(record, actor="system").rows.every()
     assert len(messages) == 2
     assert messages[-1].data["trigger"] == 1
 

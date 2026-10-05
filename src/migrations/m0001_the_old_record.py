@@ -71,7 +71,7 @@ class Migration:
         self.done.append(f"{record.env}/{type_}:{n}")
 
     def fresh(self, record: Record, type_: str) -> bool:
-        return not CONTROLLERS[type_](record, actor=SYSTEM).numbers()
+        return not CONTROLLERS[type_](record, actor=SYSTEM).rows.numbers()
 
     def environments(self) -> list[str]:
         home = self.root / "environments"

@@ -112,7 +112,7 @@ class Checks(Controller):
 
     @action
     def sweep(self, wait: bool = False):
-        return [self.run(check.n, wait=wait) for check in self._standing() if check.command]
+        return [self.run(check.n, wait=wait) for check in self.rows.standing() if check.command]
 
     def _in_background(self, n: int) -> bool:
         held = claim(runtime.folder(self.record.root) / REPORTS / f"{n}.lock")
@@ -160,7 +160,7 @@ class Checks(Controller):
         return self.save(check, "updated", ran=True)
 
     def _due(self, now: float) -> list:
-        return [check for check in self._standing()
+        return [check for check in self.rows.standing()
                 if check.command and check.every and now - (check.last_run.at if check.last_run.at else check.created) >= float(check.every) * 60]
 
 

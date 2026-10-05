@@ -6,7 +6,7 @@ from tests.conftest import fresh, refused
 
 
 def open_notices(record):
-    return [r.title for r in Notifications(record, actor=SYSTEM)._every() if not r.completed]
+    return [r.title for r in Notifications(record, actor=SYSTEM).rows.every() if not r.completed]
 
 
 def test_a_check_runs_its_command_and_a_failure_is_filed_until_it_passes():
@@ -24,7 +24,7 @@ def test_a_check_runs_its_command_and_a_failure_is_filed_until_it_passes():
     worded = Checks(record, actor=USER).create("Sins", command="echo '3 sins across 1 skill.'; exit 1", failure="The checker found {summary}")
     Checks(record, actor=USER).run(worded.n, wait=True)
     assert "The checker found 3 sins across 1 skill." in open_notices(record), "a check says in its own words what failed, with its last line"
-    filed = next(r for r in Notifications(record, actor=SYSTEM)._every() if r.title.startswith("The checker found"))
+    filed = next(r for r in Notifications(record, actor=SYSTEM).rows.every() if r.title.startswith("The checker found"))
     assert filed.data["label"] == "Check failed", "and the activity list heads it as a failed check, not as a notification"
 
 

@@ -17,7 +17,7 @@ class StopIdleApps(Handler):
             return
         tickets = Tickets(context.record, actor=SYSTEM)
         now = time.time()
-        for ticket in (r for r in tickets._standing() if r.hosted):
+        for ticket in (r for r in tickets.rows.standing() if r.hosted):
             if tickets.agent_session(ticket.n):
                 tickets.update(ticket.n, idle_since=0.0)
             elif not ticket.idle_since:

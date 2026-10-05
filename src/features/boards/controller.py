@@ -49,7 +49,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         return self.update(board.n, meanings=with_meaning(board.meanings, stage, meaning))
 
     def paused(self) -> set[int]:
-        return {board.n for board in self._standing() if board.paused}
+        return {board.n for board in self.rows.standing() if board.paused}
 
     def of_message(self, message) -> int:
         return next((ref.n for ref in map(Ref.parse, message.refs) if ref.type == Board.type), 0)
@@ -84,7 +84,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
 
     def _uncovered(self, board) -> list[str]:
         tickets = self._cards(SYSTEM)
-        present = {row["n"] for row in tickets.summaries() if not row["deleted"]}
+        present = {row["n"] for row in tickets.rows.summaries() if not row["deleted"]}
         kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers if str(number).isdigit()}
         return [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]
 

@@ -41,7 +41,7 @@ class Asks(Controller):
 
     @action
     def pending(self) -> list:
-        return self._standing()
+        return self.rows.standing()
 
     @action
     def answer(self, n: int, text: str, ok: bool = True, files: tuple = ()):

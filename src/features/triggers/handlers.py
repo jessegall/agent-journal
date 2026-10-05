@@ -15,7 +15,7 @@ DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instruc
 
 
 def firing(context, text_of, from_user: bool = False) -> list:
-    return [row for row in context.journal.acting(SYSTEM).get(Triggers)._standing()
+    return [row for row in context.journal.acting(SYSTEM).get(Triggers).rows.standing()
             if (from_user or row.words_in != FROM_USER) and mentioned(row.words, text_of(str(row.words_in or "both")))]
 
 

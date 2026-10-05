@@ -17,10 +17,10 @@ class Suggestions(Controller):
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        waiting = self._standing()
+        waiting = self.rows.standing()
         if len(waiting) >= OPEN_SUGGESTIONS:
             self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
-        declined = [s for s in self._every() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
+        declined = [s for s in self.rows.every() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
         if declined and not data.pop("despite", None):
             s = declined[-1]
             self._refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")

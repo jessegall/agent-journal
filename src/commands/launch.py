@@ -23,7 +23,7 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
     from controllers.types import Environments
     from engine.sessions import Sessions
     from engine.worktree import linked
-    names = [r["title"] for r in Environments(record, actor=SYSTEM).summaries() if not r["deleted"] and not r["completed"]]
+    names = [r["title"] for r in Environments(record, actor=SYSTEM).rows.summaries() if not r["deleted"] and not r["completed"]]
     if not answering:
         sessions = Sessions(record.root)
         return record.env if not sessions.holder(record.env) else next((name for name in names if not sessions.holder(name)), record.env)
@@ -126,7 +126,7 @@ def asked_history(record: Record, agent: str, conversation: str, ask=input, answ
     from features.agent_sessions.history import history
     answering = sys.stdin.isatty() if answering is None else answering
     provider = PROVIDERS[agent]()
-    seen = conversation and (Sessions(record.root).known(conversation) or Agents(record, actor=SYSTEM)._titled(conversation))
+    seen = conversation and (Sessions(record.root).known(conversation) or Agents(record, actor=SYSTEM).rows.by_title(conversation))
     path = provider.conversation_file(conversation) if conversation and not seen else None
     if not answering or not path:
         return

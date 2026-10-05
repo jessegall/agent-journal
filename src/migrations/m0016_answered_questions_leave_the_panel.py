@@ -9,7 +9,7 @@ def run(root: Path) -> str:
     cleared = 0
     for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
         rows = Questions(Record(root, home.name), actor=SYSTEM)
-        for r in rows._every():
+        for r in rows.rows.every():
             if not r.completed or not r.data.get("kept"):
                 continue
             rows.stamp(r.n, kept=False)

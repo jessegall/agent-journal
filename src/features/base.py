@@ -145,7 +145,7 @@ class Feature(ABC):
         return self.on_for(record)
 
     def standing(self, record, controller: type) -> list:
-        return controller(record, actor=SYSTEM)._standing()
+        return controller(record, actor=SYSTEM).rows.standing()
 
     def keyed(self, key: str = "") -> str:
         return f"{self.name}.{key}" if key else self.name
@@ -184,7 +184,7 @@ class Feature(ABC):
         return record.setting(self.name, {}).get(key, default)
 
     def reached(self, record, reach: Reach) -> list:
-        return [agent for agent in Agents(record, actor=SYSTEM)._standing() if reach.reaches(agent.subagent)]
+        return [agent for agent in Agents(record, actor=SYSTEM).rows.standing() if reach.reaches(agent.subagent)]
 
     def declared_line(self, name: str) -> Line:
         if name not in self.lines:
@@ -206,7 +206,7 @@ class Feature(ABC):
         self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach), key, agent)
 
     def _gate(self, record, given: Hold, key: str, agent) -> None:
-        for row in [agent] if agent else Agents(record, actor=SYSTEM)._standing():
+        for row in [agent] if agent else Agents(record, actor=SYSTEM).rows.standing():
             if given.reach.reaches(row.subagent):
                 hold(record.root, record.env, row.title, self.keyed(key), given)
 

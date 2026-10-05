@@ -45,14 +45,14 @@ class Environments(Controller):
         return super().update(n, **data)
 
     def _seat(self, name: str, session: str):
-        row = self._titled(name) or self.create(name)
+        row = self.rows.by_title(name) or self.create(name)
         return self.update(row.n, holder=session)
 
     @action
     def unused(self, name: str, hint: str = "") -> str:
         if name in ROUTED:
             raise Refused(f"{name!r} is a word the viewer's own addresses use; choose another name")
-        if self._titled(name):
+        if self.rows.by_title(name):
             raise Refused(f"environment {name!r} exists{hint}")
         return name
 
@@ -60,7 +60,7 @@ class Environments(Controller):
     def vacant(self, title: str, mine: str = "") -> None:
         holder = self._sessions.holder(title)
         if holder and holder != mine:
-            found = self._titled(title)
+            found = self.rows.by_title(title)
             ending = f"journal environment stop {found.n} ends its agent" if found else "its agent ends"
             self._refuse(f"environment {title!r} is held by session {holder}; {ending} first")
 
@@ -132,7 +132,7 @@ class Environments(Controller):
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         env = self.load(n)
         record = self._record_of(env)
-        held = {c.resource.type: len(c(record, actor=SYSTEM)._standing()) for c in self.OPEN_BEFORE_REMOVING}
+        held = {c.resource.type: len(c(record, actor=SYSTEM).rows.standing()) for c in self.OPEN_BEFORE_REMOVING}
         self.vacant(env.title)
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
@@ -146,7 +146,7 @@ class Environments(Controller):
     def sweep(self, n: int, yes: bool = False):
         env = self.load(n)
         record = self._record_of(env)
-        chosen = [(rows, row["n"]) for rows in self._sweepable(record) for row in rows.summaries()
+        chosen = [(rows, row["n"]) for rows in self._sweepable(record) for row in rows.rows.summaries()
                   if rows.type in SWEPT or row["completed"] or row["deleted"]]
         counted = Counter(rows.type for rows, _ in chosen)
         summary = ", ".join(plural(count, kind) for kind, count in sorted(counted.items())) or "nothing"
@@ -159,8 +159,8 @@ class Environments(Controller):
         for rows, number in chosen:
             kept = stage / rows.type
             kept.mkdir(parents=True, exist_ok=True)
-            (kept / rows.path(number).name).write_text(rows._text(number))
-            rows._remove(number)
+            (kept / rows.path(number).name).write_text(rows.rows.text(number))
+            rows.rows.remove(number)
             files = rows.path(number).with_suffix("")
             if files.is_dir():
                 shutil.move(str(files), kept / files.name)
@@ -204,8 +204,8 @@ class Environments(Controller):
         record = self._record_of(env)
         self._bound_session()
         return {"environment": env.title, "holder": self._sessions.holder(env.title),
-                **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM)._standing()][:10] for c in self.PICKED_UP},
-                "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM)._standing()][:10]}
+                **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM).rows.standing()][:10] for c in self.PICKED_UP},
+                "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM).rows.standing()][:10]}
 
     @action
     def claim(self, n: int, why: str):

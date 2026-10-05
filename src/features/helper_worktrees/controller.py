@@ -52,7 +52,7 @@ class Worktrees(Controller):
         project = self._project()
         working = self._working(project)
         folder, branch = project.joinpath(*workspace_folders().worktree_home, name), f"{BRANCH}{name}"
-        if self._titled(name, standing=True) or folder.exists() or present(project, f"refs/heads/{branch}"):
+        if self.rows.by_title(name, standing=True) or folder.exists() or present(project, f"refs/heads/{branch}"):
             raise Refused(f"the worktree {name} is taken: drop it, or choose another name")
         base = tip(project, working)
         made = git(project, "worktree", "add", "-q", "-b", branch, str(folder), base)
@@ -119,7 +119,7 @@ class Worktrees(Controller):
 
     def _drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]):
         project = self._project()
-        for row in self._standing():
+        for row in self.rows.standing():
             if not row.path or not within(Path(row.path), places, commands) or row.told == tip(project, row.working):
                 continue
             found = self._drift(row)

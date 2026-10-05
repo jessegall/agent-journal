@@ -78,31 +78,31 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
         monkeypatch.setattr(provider_cls, "facts", crash)
         body = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}}
         dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
-        lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
+        lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM).rows.every()]
         assert any("hit an error" in line and f"TypeError: {name} crashed" in line for line in lines), \
             f"{name}: a crash inside the hook reaches the agent, with the error"
         dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
-        assert len([line for line in lines if "crashed" in line]) == len([n for n in Nudges(record, actor=SYSTEM)._every() if "crashed" in n.brief]), \
+        assert len([line for line in lines if "crashed" in line]) == len([n for n in Nudges(record, actor=SYSTEM).rows.every() if "crashed" in n.brief]), \
             f"{name}: the same error again is not told twice"
-        for notice in Notices(record, actor=SYSTEM)._standing():
+        for notice in Notices(record, actor=SYSTEM).rows.standing():
             Notices(record, actor=SYSTEM).complete(notice.n, "fixed")
     monkeypatch.undo()
     from engine import runtime
     runtime.hook_failures(record.root).write_text(f"1790000000 000 claude {record.env}\n1790000001 500 claude {record.env}\n")
     commands.http.unanswered(record.root)
-    lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
+    lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM).rows.every()]
     assert any("no answer from the server 2 times (codes 000, 500)" in line for line in lines), \
         "hooks the server never answered are told once it answers again"
     assert not runtime.hook_failures(record.root).exists(), "and are told only once"
     monkeypatch.setattr(runtime, "STARTED", [1790000100.0])
     runtime.hook_failures(record.root).write_text(f"1790000095 000 claude {record.env}\n")
     commands.http.unanswered(record.root)
-    assert len([n for n in Nudges(record, actor=SYSTEM)._every() if "no answer from the server" in n.brief]) == 1, \
+    assert len([n for n in Nudges(record, actor=SYSTEM).rows.every() if "no answer from the server" in n.brief]) == 1, \
         "a hook missed while the server was restarting is not an error"
     runtime.restarting(record.root).write_text("1790000060")
     runtime.hook_failures(record.root).write_text(f"1790000070 000 claude {record.env}\n")
     commands.http.unanswered(record.root)
-    assert len([n for n in Nudges(record, actor=SYSTEM)._every() if "no answer from the server" in n.brief]) == 1, \
+    assert len([n for n in Nudges(record, actor=SYSTEM).rows.every() if "no answer from the server" in n.brief]) == 1, \
         "however long a restart the journal began itself takes, the hooks it missed are not an error"
 
 

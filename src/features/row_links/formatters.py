@@ -43,7 +43,7 @@ ENVIRONMENT_NAMES = Memo()
 def environments(record) -> tuple:
     from controllers.types import Environments
     from resources.base import SYSTEM
-    rows = Environments(record, actor=SYSTEM).summaries()
+    rows = Environments(record, actor=SYSTEM).rows.summaries()
     return ENVIRONMENT_NAMES.get(str(record.home), rows, lambda: tuple(row["title"] for row in rows if not row["deleted"] and row["title"] != record.env))
 
 
@@ -51,7 +51,7 @@ def exists(record, env: str | None, name: str, n: int) -> bool:
     from controllers.types import CONTROLLERS
     from engine.record import Record
     from resources.base import SYSTEM
-    return CONTROLLERS[name](record if env is None else Record(record.root, env), actor=SYSTEM)._exists(n)
+    return CONTROLLERS[name](record if env is None else Record(record.root, env), actor=SYSTEM).rows.exists(n)
 
 
 def chipped(text: str, record=None) -> str:

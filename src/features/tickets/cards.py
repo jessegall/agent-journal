@@ -62,7 +62,7 @@ class TicketCards:
     @action
     def board(self, n: int) -> dict:
         stages = self._stages(n)
-        tickets = sorted((r for r in self._standing(closed_since=1) if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
+        tickets = sorted((r for r in self.rows.standing(closed_since=1) if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
         sessions = Sessions(self.record.root).all()
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
@@ -88,14 +88,14 @@ class TicketCards:
             plan = self._plan_owner(place)
             shown = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
             todos = Todos(Record(self.record.root, place), actor=SYSTEM)
-            for todo in todos._standing():
+            for todo in todos.rows.standing():
                 if todo.data.get("role") and todo.data.get("status") == "started":
                     working.setdefault((todo.data["domain"], todo.data["role"]), []).append(
                         {"n": ticket.n, **shown, "env": todo.data.get("role_environment", ""), "worktree": place})
         return working
 
     def _slots(self, running: list, sessions: dict) -> Slots:
-        kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self._standing()]
+        kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self.rows.standing()]
         return Slots([{"n": ticket.n, "title": ticket.title, "board": int(ticket.board)} for ticket in running],
                      self._limit(), kinds.count("queued"), kinds.count("you"))
 
@@ -159,13 +159,13 @@ class TicketCards:
         return CardState(state.kind, f"{state.text} in {place}" + (f" · {state.age}" if state.age else ""), session)
 
     def _waited_run(self, row, place: str) -> str:
-        awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM)._standing() if w.awaiting), "")
+        awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM).rows.standing() if w.awaiting), "")
         text = awaited or row.background_run
         return clipped(text, RUN_TEXT)
 
     def _reporting(self, place: str, sessions: dict):
         agents = Agents(Record(self.record.root, place), actor=SYSTEM)
-        rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents._titled(name))]
+        rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents.rows.by_title(name))]
         return max(rows, key=lambda row: float(row.at), default=None)
 
     def _agent_state(self, ticket, row, running: int) -> CardState:

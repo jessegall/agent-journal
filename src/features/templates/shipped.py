@@ -58,7 +58,7 @@ SHIPPED = (FUNCTIONAL, FIND_MISTAKES, FIND_GAPS, CHALLENGE)
 
 def ship(record) -> list[str]:
     templates = Templates(record, actor=SYSTEM)
-    known = {row["title"] for row in templates.summaries()}
+    known = {row["title"] for row in templates.rows.summaries()}
     made = []
     for shipped in SHIPPED:
         if shipped.title in known:

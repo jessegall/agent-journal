@@ -68,8 +68,8 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     ship(record)
     sequences = Sequences(record, actor=SYSTEM)
-    writing = next(s for s in sequences.summaries() if s["title"] == "Writing an update")
-    trigger = next(t for t in Triggers(record, actor=SYSTEM)._every() if t.title == "Writing an update")
+    writing = next(s for s in sequences.rows.summaries() if s["title"] == "Writing an update")
+    trigger = next(t for t in Triggers(record, actor=SYSTEM).rows.every() if t.title == "Writing an update")
     assert (trigger.words_in, sequences.load(writing["n"]).starts_on) == ("user", f"trigger:{trigger.n}"), \
         "the sequence starts on its own trigger, which watches only what the user writes"
 
@@ -104,7 +104,7 @@ def test_an_update_report_never_starts_the_sequence_for_research_reports():
     record = fresh()
     report(record, "idle", "Stop")
     ship(record)
-    writing = Sequences(record, actor=SYSTEM)._titled("Writing a report")
+    writing = Sequences(record, actor=SYSTEM).rows.by_title("Writing a report")
     Reports(record, actor=AGENT).action("recap")("Two fixes landed.")
     assert not Sequences(record, actor=SYSTEM).load(writing.n).runs, "an update is written by recap, not part by part"
     Reports(record, actor=AGENT).create("What the review found", brief="the answer")

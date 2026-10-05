@@ -21,7 +21,7 @@ def back(context: AgentContext, ref: str) -> str | None:
 class ReturnWhenAwaitedReport(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         works = context.journal.get(Works)
-        for w in (w for w in works._standing() if w.awaiting_on and not w.parked):
+        for w in (w for w in works.rows.standing() if w.awaiting_on and not w.parked):
             found = [back(context, ref) for ref in w.awaiting_on.split(",")]
             if None in found:
                 continue
