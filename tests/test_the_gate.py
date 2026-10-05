@@ -1,20 +1,30 @@
-from dataclasses import replace
 import inspect
 import json
-
+import os
+import threading
+import time
+from dataclasses import replace
 
 import features
-from controllers.types import Agents, Works
-from runner.gate import gated
-from runner.hooks import handle
-from engine.gates import AFTERWARDS, CANCELERS, LONG_COMMAND, POLICIES, HookCall, cancelled, gate_file
-from engine.gates import held
+from commands.cli import context
+from commands.dispatch import dispatch
+from commands.http import dispatch as request
+from commands.parser import parser
+from controllers.types import Agents, Notices, Nudges, Works
+from engine import runtime
+from engine.gates import AFTERWARDS, CANCELERS, HookCall, LONG_COMMAND, POLICIES, cancelled, gate_file, held
+from engine.sessions import ACTIVE_ENV, Sessions
 from engine.wording import APPENDS
-from providers import PROVIDERS
+from providers import PROVIDERS, claude_channel as channel
+from providers.claude_channel import Asked
 from providers.payload import Hook
 from resources.base import AGENT, SYSTEM
 from resources.types import SUBAGENT
+from runner.gate import gated
+from runner.hooks import handle
 from tests.conftest import fresh
+from tests.kit import report
+import commands.http  # noqa: F401
 
 
 
@@ -37,7 +47,6 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         assert hook("PreToolUse", "Bash", command="cat x.py | grep y") == {}, f"{name}: a Bash read passes"
         assert hook("PreToolUse", "Edit", file_path="x.py") == provider.blocking(REFUSED), \
             f"{name}: an edit is refused, in the harness's shape"
-        from engine import runtime
         runtime.OFF.raise_flag(root)
         try:
             assert hook("PreToolUse", "Edit", file_path="x.py") == {}, f"{name}: with the journal switched off nothing is held, the escape hatch"
@@ -69,11 +78,6 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
 
 
 def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch):
-    from commands.dispatch import dispatch
-    import commands.http  # noqa: F401
-    from controllers.types import Notices, Nudges
-    from resources.base import SYSTEM
-    from tests.kit import report
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
@@ -93,7 +97,6 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
         for notice in Notices(record, actor=SYSTEM).rows.standing():
             Notices(record, actor=SYSTEM).complete(notice.n, "fixed")
     monkeypatch.undo()
-    from engine import runtime
     runtime.hook_failures(record.root).write_text(f"1790000000 000 claude {record.env}\n1790000001 500 claude {record.env}\n")
     commands.http.unanswered(record.root)
     lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM).rows.every()]
@@ -113,10 +116,6 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
 
 
 def test_a_command_runs_as_the_session_its_own_shell_names_for_every_provider(monkeypatch):
-    import os
-    from commands.cli import context
-    from commands.parser import parser
-    from engine.sessions import Sessions
     record = fresh()
     sessions = Sessions(record.root)
     for session in ("first-agent", "second-agent"):
@@ -165,11 +164,11 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
     for point, entries in zip(points, kept):
         point.entries = [replace(entry, value=spied(entry.value.guard, asked)) for entry in entries]
     every = [entry.value.guard for entries in kept for entry in entries]
-    dispatch = {"subagent_type": "general-purpose", "model": "haiku", "description": "look", "prompt": "look"}
+    job = {"subagent_type": "general-purpose", "model": "haiku", "description": "look", "prompt": "look"}
     try:
         for subagent in (False, True):
             asked.clear()
-            called = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Agent", "tool_input": dispatch}
+            called = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Agent", "tool_input": job}
             hook = Hook.read({**called, "agent_id": "helper"} if subagent else called, provider.tool_kinds)
             call = HookCall(provider, record, hook, main)
             gated(call)
@@ -282,12 +281,6 @@ def test_a_codex_child_thread_is_handled_by_its_hooks_as_a_subagent_like_claudes
 
 
 def test_the_claude_channel_answers_its_handshake_and_delivers_each_queued_line_once(tmp_path, monkeypatch):
-    import threading
-    import time
-    from engine.sessions import ACTIVE_ENV
-    from engine import runtime
-    from providers import claude_channel as channel
-    from providers.claude_channel import Asked
     monkeypatch.delenv(ACTIVE_ENV, raising=False)
     assert channel.answer(Asked("initialize", 1))["capabilities"] == {}, "a channel the journal did not launch offers no channel capability"
     monkeypatch.setenv(ACTIVE_ENV, "1")
@@ -348,3 +341,22 @@ def test_the_claude_channel_answers_its_handshake_and_delivers_each_queued_line_
     assert [message["params"]["content"] for message in sent] == ["first", "second"], "a line appended to the queue arrives as one notification, each once"
     assert (sent[0]["method"], sent[0]["params"]["meta"], runtime.channel_alive(root, 4242).is_file()) == ("notifications/claude/channel", {"from": "journal"}, True), \
         "the notification is the channel one, from the journal, and the channel marks itself alive"
+
+
+def test_the_hook_route_refuses_in_the_providers_shape_and_a_stranger_with_409():
+    features.load()
+    blocked = features.FEATURES["work_tracking"].line("undeclared held", {})[0]
+    record = fresh()
+    query = {"root": str(record.root), "env": record.env, "pid": "0"}
+    wrong = {}
+    for name, provider in PROVIDERS.items():
+        hook = {"session_id": f"{name}-9"}
+        handle(provider(), record.root, record.env, {**hook, "hook_event_name": "SessionStart"})
+        edit = {**hook, "hook_event_name": "PreToolUse", "tool_name": "Edit", "tool_input": {"file_path": "x.py"}}
+        refusal = request("POST", f"/api/hook/{name}", record.root, query, edit)
+        elsewhere = request("POST", f"/api/hook/{name}", record.root, {**query, "root": str(record.root.parent / "elsewhere")}, edit)
+        facts = {"a refused write is a 403 carrying the provider's blocking body": (refusal.code, refusal.body) == (403, provider().blocking(blocked)),
+                 "a hook meant for another journal's root is a 409": elsewhere.code == 409}
+        wrong[name] = [fact for fact, ok in facts.items() if not ok]
+    assert {name: lapsed for name, lapsed in wrong.items() if lapsed} == {}, "every provider's hook route answers a refusal in its own shape and a stranger with 409"
+    assert request("POST", "/api/hook/nobody", record.root, query, {}).code == 409, "a provider the journal does not know is a 409"
