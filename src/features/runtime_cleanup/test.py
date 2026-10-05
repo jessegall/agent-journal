@@ -1,3 +1,4 @@
+import json
 import os
 import time
 
@@ -51,8 +52,7 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(mon
     assert big.read_bytes().endswith(b"THE END+more") is True, "an append after the trim continues the tail"
 
 
-def test_spent_launch_logs_and_the_captures_of_ended_sessions_go(monkeypatch):
-    import json
+def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monkeypatch):
     record = fresh()
     monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
     launches = runtime.folder(record.root) / "launches"
@@ -61,7 +61,18 @@ def test_spent_launch_logs_and_the_captures_of_ended_sessions_go(monkeypatch):
     spent.write_bytes(b"done")
     aged(spent, 3)
     running.write_bytes(b"x" * (2 * 1024 * 1024) + b"still going\n")
-    captured = {}
+
+    tidy(record.root, 2)
+
+    assert not spent.exists(), "a launch log quiet past the days goes"
+    assert running.stat().st_size == 1024 * 1024, "a running launch log is cut to its last megabyte"
+    assert running.read_bytes().endswith(b"still going\n"), "and ends as it did"
+
+
+def test_an_ended_session_loses_its_terminal_captures_after_a_day(monkeypatch):
+    record = fresh()
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    sessions = {}
     for name, pid in (("claude-ended", 999_999_999), ("claude-live", os.getpid())):
         folder = runtime.sessions(record.root) / name
         folder.mkdir(parents=True)
@@ -69,14 +80,12 @@ def test_spent_launch_logs_and_the_captures_of_ended_sessions_go(monkeypatch):
         for capture in ("printed", "screen"):
             (folder / capture).write_bytes(b"frames")
         aged(folder, 1.5)
-        captured[name] = folder
+        sessions[name] = folder
 
     tidy(record.root, 2)
 
-    assert (spent.exists(), running.stat().st_size, running.read_bytes().endswith(b"still going\n")) == (False, 1024 * 1024, True), \
-        "a launch log quiet past the days goes, and a running one keeps its last megabyte"
-    assert sorted(f.name for f in captured["claude-ended"].iterdir()) == ["session.json"], "an ended session's terminal captures go after a day"
-    assert sorted(f.name for f in captured["claude-live"].iterdir()) == ["printed", "screen", "session.json"], "a live session keeps them"
+    assert sorted(f.name for f in sessions["claude-ended"].iterdir()) == ["session.json"], "an ended session's captures go after a day"
+    assert sorted(f.name for f in sessions["claude-live"].iterdir()) == ["printed", "screen", "session.json"], "a live session keeps them"
 
 
 def test_the_days_to_keep_is_a_setting():

@@ -2,7 +2,7 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import NOTICES, Trigger
 from features.groups import Group
 
-SHOP, REMIND, SPOKEN_OF = "shop", "remind", "spoken_of"
+SHOP, REMIND, THIRD_PERSON = "shop", "remind", "third person"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
@@ -74,7 +74,7 @@ class ChatEtiquetteDetails(FeatureDetails):
             """,
         ),
         Line(
-            name=SPOKEN_OF,
+            name=THIRD_PERSON,
             title='your chat spoke about the user instead of to them - "{{words}}"',
             brief="you are talking to them: say \"you asked\" or \"you want\", and keep their name for addressing them",
         ),

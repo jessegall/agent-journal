@@ -3,7 +3,7 @@ import re
 from engine.events.engine import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from features import trigger
-from features.chat_etiquette.details import REMIND, SHOP, SPOKEN_OF
+from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
 from features.form_of_address.address import called, first_name
 from features.parts import AgentContext, Handler
 
@@ -33,16 +33,16 @@ class NameShopTalk(Handler):
             context.agent.whisper(SHOP, words=found.group(0))
 
 
-def spoken_of(record) -> re.Pattern:
+def third_person(record) -> re.Pattern:
     names = sorted({name for name in (called(record), first_name(record), "the user") if name}, key=len, reverse=True)
     return re.compile(rf"\b(?:{'|'.join(map(re.escape, names))})\s+{ABOUT_THEM}\b", re.IGNORECASE)
 
 
 class NameThirdPerson(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        found = next((m for m in spoken_of(context.record).finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
+        found = next((m for m in third_person(context.record).finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
         if found:
-            context.agent.whisper(SPOKEN_OF, words=found.group(0))
+            context.agent.whisper(THIRD_PERSON, words=found.group(0))
 
 
 class RemindOfEtiquette(Handler):
