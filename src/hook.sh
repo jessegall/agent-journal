@@ -1,5 +1,6 @@
 #!/bin/sh
 [ "$AGENT_JOURNAL_ACTIVE" = 1 ] || exit 0
+agent=$1
 root=$2
 body=$(mktemp) || exit 0
 cat > "$body"
@@ -10,8 +11,12 @@ keep() {
   rm -f "$body"
   exit 0
 }
-read -r at url < "$root/runtime/heartbeat" 2>/dev/null || keep
-[ $(( $(date +%s) - at )) -le 5 ] || keep
+down() {
+  mkdir -p "$root/runtime" && printf '%s down %s %s\n' "$(date +%s)" "$agent" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"
+  keep
+}
+read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
+[ $(( $(date +%s) - at )) -le 5 ] || down
 tries=0
 while :; do
   reply=$(curl -s -m 10 -w '\n%{http_code}' -H 'Content-Type: application/json' \
@@ -27,7 +32,7 @@ out=${reply%
 *}
 case "$code" in
   200|403) [ -z "$out" ] || [ "$out" = "{}" ] || printf '%s\n' "$out" ;;
-  *) printf '%s %s %s %s\n' "$(date +%s)" "${code:-000}" "$1" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"; keep ;;
+  *) printf '%s %s %s %s\n' "$(date +%s)" "${code:-000}" "$agent" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"; keep ;;
 esac
 rm -f "$body"
 exit 0

@@ -254,6 +254,12 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
                          env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1"}, timeout=20)
     assert ran.stdout.strip() == '{"reason": "served"}', (ran.stdout, ran.stderr)
     assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
+    (tmp_path / "runtime" / "upgrading").unlink()
+    (tmp_path / "runtime" / "heartbeat").write_text(f"{int(time.time()) - 60} http://127.0.0.1:{port}/\n")
+    quiet = subprocess.run(["sh", str(hook), "claude", str(tmp_path)], input='{"hook_event_name": "PreToolUse"}', capture_output=True, text=True,
+                           env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main"}, timeout=20)
+    logged = (tmp_path / "runtime" / "hook-failures.log").read_text().split()
+    assert (quiet.stdout, logged[1:]) == ("", ["down", "claude", "main"]), "a hook that finds the server down lets the agent go on, and says so in the log"
 
 
 def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_tag(tmp_path):
