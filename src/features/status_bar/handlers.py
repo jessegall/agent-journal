@@ -11,7 +11,10 @@ from controllers.types import Agents
 class WriteBar(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         newest = context.journal.get(Agents).primary()
-        context.record.state("status_bar").set("bar", bar(newest, time.time()) if newest else EMPTY)
+        drawn = bar(newest, time.time()) if newest else EMPTY
+        state = context.record.state("status_bar")
+        if state.get("bar") != drawn:
+            state.set("bar", drawn)
 
 
 class RefreshUsage(Handler):
