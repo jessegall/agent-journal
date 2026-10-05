@@ -43,9 +43,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
     from controllers.types import Todos
-    record.set_setting("features", {"messages.linking": False})
     filed = Todos(record, actor=AGENT).create("wire the last route")
-    record.set_setting("features", {})
     Messages(record, actor=AGENT).process(m.n, "how is it going?", f"todo {filed.n}")
     report(record, "idle", "Stop")
     assert not Messages(record).load(m.n).completed, "a question filed as a to-do is not answered: it stays open until a written reply"
@@ -53,14 +51,13 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     report(record, "working", "PreToolUse")
     assert not holds(record).get("status"), "a reply settles it and lifts the hold"
     assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
-    assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "a to-do filed after reading the message and linked nowhere is linked to it when it is answered"
-    first, second = (Messages(record, actor=USER).create(words) for words in ("first ask", "second ask"))
-    Messages(record, actor=AGENT).read(first.n)
-    Messages(record, actor=AGENT).read(second.n)
-    unsure = Todos(record, actor=AGENT).create("which message is this from")
-    Messages(record, actor=AGENT).reply(second.n, "done")
-    assert all(f"todo:{unsure.n}" not in Messages(record).load(n).refs for n in (first.n, second.n)), \
-        "a row filed while two messages are in hand is linked to neither, never to a guess"
+    assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "the to-do the agent processed the message into is linked to it"
+    asked = Messages(record, actor=USER).create("one more ask")
+    Messages(record, actor=AGENT).read(asked.n)
+    unrelated = Todos(record, actor=AGENT).create("work for another message")
+    Messages(record, actor=AGENT).reply(asked.n, "done")
+    assert f"todo:{unrelated.n}" not in Messages(record).load(asked.n).refs, \
+        "a row filed while a message is in hand is not linked to it: only processing links, never a guess"
 
 
 def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read():

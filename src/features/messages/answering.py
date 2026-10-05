@@ -42,10 +42,5 @@ def read_and_open(journal) -> list:
     return [m for m in journal.get(Messages).rows.standing() if AGENT in m.seen and theirs(m)]
 
 
-def in_hand(journal):
-    held = read_and_open(journal)
-    return held[0] if len(held) == 1 else None
-
-
 def unanswered(journal) -> list:
     return [m for m in read_and_open(journal) if not answered(journal, m)]
