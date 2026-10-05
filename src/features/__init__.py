@@ -96,10 +96,12 @@ def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
     from features.switches import rebooted
     from engine.extension import clear_all
+    from engine.memo import forget_all
     COMMANDS.clear()
     HANDLERS.clear()
     bus.clear()
     clear_all()
+    forget_all()
     FEATURES.clear()
     SWITCHED.clear()
     SEATED.clear()

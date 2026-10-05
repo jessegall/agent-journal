@@ -41,8 +41,8 @@ def tell_watchers(event: Event, record=None) -> None:
 
 
 def emit(event: Event, record=None) -> None:
-    if WORK.queue is not None:
-        WORK.queue.append((event, record))
+    if WORK.bus_queue is not None:
+        WORK.bus_queue.append((event, record))
         return
     run(event, record)
 
@@ -92,16 +92,16 @@ def run(event: Event, record=None) -> None:
 
 @contextmanager
 def held():
-    WORK.queue = []
+    previous, WORK.bus_queue = WORK.bus_queue, []
     try:
-        yield WORK.queue
+        yield WORK.bus_queue
     finally:
-        WORK.queue = None
+        WORK.bus_queue = previous
 
 
 @contextmanager
 def settled():
-    if WORK.queue is not None:
+    if WORK.bus_queue is not None:
         yield
         return
     queue: list = []
@@ -112,15 +112,21 @@ def settled():
         release(queue)
 
 
+@contextmanager
+def unit():
+    with settled(), undoable():
+        yield
+
+
 def defer(job: Callable[[], None]) -> None:
-    if WORK.queue is None:
+    if WORK.bus_queue is None:
         job()
         return
-    WORK.queue.append((job, None))
+    WORK.bus_queue.append((job, None))
 
 
 def defer_once(key: str, job: Callable[[], None]) -> None:
-    queue, after = WORK.queue, WORK.after
+    queue, after = WORK.bus_queue, WORK.bus_after
     if queue is not None:
         if key not in (held for item, held in queue if callable(item)):
             queue.append((job, key))
@@ -132,7 +138,7 @@ def defer_once(key: str, job: Callable[[], None]) -> None:
 
 
 def release(queue: list) -> None:
-    WORK.after = {}
+    previous, WORK.bus_after = WORK.bus_after, {}
     try:
         for item, record in queue:
             if callable(item):
@@ -140,7 +146,7 @@ def release(queue: list) -> None:
                 continue
             emit(item, record)
     finally:
-        after, WORK.after = WORK.after, None
+        after, WORK.bus_after = WORK.bus_after, previous
     for job in after.values():
         job()
 
@@ -156,9 +162,3 @@ def heard(pattern: str) -> bool:
 def clear() -> None:
     _listeners.clear()
     _watchers.clear()
-
-
-@contextmanager
-def unit():
-    with settled(), undoable():
-        yield

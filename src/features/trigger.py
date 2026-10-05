@@ -64,6 +64,10 @@ def last(record, session: str, name: str) -> Mark:
     return HELD.get(f, stamp, lambda: read_json(f, Mark.from_json, Mark.from_json({})))
 
 
+def held(f: str, mark: Mark) -> None:
+    HELD.put(f, stamped(f), mark)
+
+
 def stamped(f: str) -> int:
     try:
         return os.stat(f).st_mtime_ns
@@ -109,15 +113,14 @@ def write(record, agent, name: str, **fields) -> None:
     was = last(record, agent.title, name)
     now = replace(was, **fields)
     if now != was:
-        f = _file(record, agent.title, name)
+        f = str(_file(record, agent.title, name))
         write_json(f, asdict(now))
-        HELD.put(str(f), stamped(str(f)), now)
+        held(f, now)
 
 
 def observe(record, agent, name: str, was: Mark) -> None:
     if (was.status, was.event) != (agent.status, agent.event):
-        f = str(_file(record, agent.title, name))
-        HELD.put(f, stamped(f), replace(was, status=agent.status, event=agent.event))
+        held(str(_file(record, agent.title, name)), replace(was, status=agent.status, event=agent.event))
 
 
 def fired(record, agent, name: str) -> None:

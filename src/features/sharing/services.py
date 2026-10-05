@@ -27,7 +27,7 @@ def wanted(root: Path) -> bool:
     record = Record(root, runtime.env(root))
     feature = running(SharingFeature)
     sharing = bool(feature) and feature.enabled(record)
-    return (sharing and bool(open_shares(root))) or any(keep(root) for keep in KEEP_UP.each(root))
+    return (sharing and bool(open_shares(root))) or any(keep(root) for keep in KEEP_UP.each(record))
 
 
 def share_services(root: Path, taken: set) -> list:

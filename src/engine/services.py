@@ -10,10 +10,11 @@ from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
 from engine.package import ARCHIVE, entry
 from engine.ports import free
-from engine.runtime import folder
+from engine.runtime import env, folder
 from engine.sessions import alive
 from typing import TypedDict
 from engine.extension import Extension
+from engine.record import Record
 
 PORTS = range(8440, 8500)
 UP, DOWN = "up", "down"
@@ -131,7 +132,7 @@ def service_spec(root: Path, sid: str, **fields) -> ServiceSpec:
 
 def specs(root: Path, sources) -> list[ServiceSpec]:
     taken: set[int] = set()
-    return [spec for source in (*sources, *SOURCES.each(root)) for spec in source(root, taken)]
+    return [spec for source in (*sources, *SOURCES.each(Record(root, env(root)))) for spec in source(root, taken)]
 
 
 def spawn(spec: ServiceSpec, lifeline: int) -> int:

@@ -7,10 +7,10 @@ from engine.disk import replace
 
 class Work(threading.local):
     def __init__(self):
-        self.saved: dict | None = None
-        self.events: list | None = None
-        self.queue: list | None = None
-        self.after: dict | None = None
+        self.undo_snapshots: dict | None = None
+        self.undo_releases: list | None = None
+        self.bus_queue: list | None = None
+        self.bus_after: dict | None = None
 
 
 WORK = Work()
@@ -18,42 +18,42 @@ WORK = Work()
 
 @contextmanager
 def undoable():
-    if WORK.saved is not None:
-        yield WORK
+    if WORK.undo_snapshots is not None:
+        yield
         return
-    WORK.saved, WORK.events = {}, []
+    WORK.undo_snapshots, WORK.undo_releases = {}, []
     try:
-        yield WORK
+        yield
     except BaseException:
-        for path, before in WORK.saved.items():
+        for path, before in WORK.undo_snapshots.items():
             if before is None:
                 Path(path).unlink(missing_ok=True)
             else:
                 replace(Path(path), before)
-        WORK.saved, WORK.events = None, None
+        WORK.undo_snapshots, WORK.undo_releases = None, None
         raise
-    events, WORK.saved, WORK.events = WORK.events, None, None
+    events, WORK.undo_snapshots, WORK.undo_releases = WORK.undo_releases, None, None
     for release in events:
         release()
 
 
 @contextmanager
 def apart():
-    held = WORK.saved, WORK.events
-    WORK.saved, WORK.events = None, None
+    held = WORK.undo_snapshots, WORK.undo_releases
+    WORK.undo_snapshots, WORK.undo_releases = None, None
     try:
         yield
     finally:
-        WORK.saved, WORK.events = held
+        WORK.undo_snapshots, WORK.undo_releases = held
 
 
 def held_back(release) -> bool:
-    if WORK.events is None:
+    if WORK.undo_releases is None:
         return False
-    WORK.events.append(release)
+    WORK.undo_releases.append(release)
     return True
 
 
 def snapshot(path: Path) -> None:
-    if WORK.saved is not None and str(path) not in WORK.saved:
-        WORK.saved[str(path)] = path.read_bytes() if path.is_file() else None
+    if WORK.undo_snapshots is not None and str(path) not in WORK.undo_snapshots:
+        WORK.undo_snapshots[str(path)] = path.read_bytes() if path.is_file() else None

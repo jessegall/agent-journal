@@ -47,10 +47,12 @@ class ListedRows(TypedDict):
 
 def listing(controller, record, wanted: Listing) -> ListedRows:
     summaries, stamp = controller.summaries(), settled(record)
-    make = lambda: _listed(controller, record, wanted, summaries, stamp)
+
+    def listed() -> ListedRows:
+        return _listed(controller, record, wanted, summaries, stamp)
     if wanted.since:
-        return make()
-    return LISTED.get((str(record.home), controller.type, wanted), (summaries, stamp), make)
+        return listed()
+    return LISTED.get((str(record.home), controller.type, wanted), (summaries, stamp), listed)
 
 
 def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> ListedRows:
