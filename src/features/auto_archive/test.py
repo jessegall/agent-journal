@@ -86,3 +86,29 @@ def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_re
         pass
     todos.complete(rows[0].n, how="done again")
     assert todos.rows.pack(time.time() + 1) == 1 and todos.load(rows[0].n).completed, "packing into the same day again keeps the zip readable"
+
+
+def test_packing_refuses_a_zip_that_does_not_read_back_and_a_damaged_zip_refuses_in_words(monkeypatch):
+    import zipfile
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    row = todos.create("a row to pack")
+    todos.complete(row.n, how="done")
+    folder = todos.path(row.n).parent
+    with monkeypatch.context() as bad:
+        bad.setattr(zipfile.ZipFile, "read", lambda self, name: b"not what was written")
+        try:
+            todos.rows.pack(time.time() + 1)
+            raise AssertionError("a zip that reads back wrong is refused")
+        except OSError as error:
+            assert "did not read back" in str(error), "the refusal says the zip did not read back as written"
+    assert (todos.path(row.n).is_file(), list((folder / "packed").glob("*.zip")), todos.load(row.n).title) == (True, [], "a row to pack"), \
+        "a wrong read-back keeps the loose file and leaves no zip"
+    assert todos.rows.pack(time.time() + 1) == 1, "the row packs on the next try"
+    (archive,) = (folder / "packed").glob("*.zip")
+    archive.write_bytes(b"this is not a zip")
+    try:
+        todos.load(row.n)
+        raise AssertionError("a damaged zip is refused")
+    except (Refused, zipfile.BadZipFile) as error:
+        assert isinstance(error, Refused) and "missing from" in str(error), "a damaged zip refuses in words on load, naming the zip"

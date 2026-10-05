@@ -12,9 +12,9 @@ from commands.http import dispatch
 from commands.invoke import spread
 from controllers.base import actions
 from controllers.types import CONTROLLERS
-from resources.base import Refused, SYSTEM, USER
+from resources.base import AGENT, Refused, SYSTEM, USER
 from resources.types import TYPES
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
 RECORDER = Path(__file__).with_name("viewer_calls.mjs")
@@ -402,3 +402,276 @@ def test_unloading_the_features_empties_every_extension_point():
         assert [extension for extension in EXTENSIONS if extension.entries] == [], "a feature leaves nothing behind once it is unloaded"
     finally:
         features.load()
+
+
+def test_a_row_moved_to_another_environment_keeps_its_file_and_leaves_an_archived_original(tmp_path):
+    from engine.record import Record
+    features.load()
+    record = fresh("east")
+    west = Record(record.root, "west")
+    source = tmp_path / "note.txt"
+    source.write_text("kept")
+    for type_ in ("todo", "doc"):
+        controller = CONTROLLERS[type_](record, actor=USER)
+        row = controller.create(f"a {type_} to carry", brief="the brief", **needed(type_))
+        controller.attach(row.n, str(source))
+        moved = controller.move(row.n, "west")
+        there = CONTROLLERS[type_](west, actor=USER)
+        assert (there.load(moved.n).title, there.load(moved.n).brief) == (row.title, "the brief"), f"the moved {type_} keeps its words"
+        assert (there.folder(moved.n) / "note.txt").read_text() == "kept", f"the moved {type_} keeps its file"
+        whys = [e.data["why"] for e in record.event_log.events() if e.type == type_ and e.action == "deleted" and e.n == row.n]
+        assert (controller.load(row.n).deleted > 0, whys) == (True, [f"moved to west as {type_} {moved.n}"]), \
+            f"the original {type_} is archived with where it went"
+
+
+def test_a_row_made_twice_in_ten_seconds_is_one_row_unless_the_words_author_or_target_differ():
+    features.load()
+    record = fresh()
+    users, agents = (CONTROLLERS["message"](record, actor=who) for who in (USER, AGENT))
+    first = users.create("same words", brief="same brief")
+    assert users.create("same words", brief="same brief").n == first.n, "the same author and words make one row"
+    assert agents.create("same words", brief="same brief").n != first.n, "a different author makes a new row"
+    assert users.create("same words", brief="other brief").n != first.n, "different words make a new row"
+    keyed = users.create("keyed", idempotency="a")
+    assert (users.create("keyed", idempotency="a").n, users.create("keyed", idempotency="b").n) == (keyed.n, keyed.n + 1), \
+        "a message with the same key is the same row, and a different key is a new one"
+    comments, others = (CONTROLLERS["comment"](record, actor=who) for who in (USER, AGENT))
+    about = comments.create("same note", about="todo:1")
+    assert (comments.create("same note", about="todo:1").n, comments.create("same note", about="todo:2").n, others.create("same note", about="todo:1").n) == \
+        (about.n, about.n + 1, about.n + 2), "a comment about the same row by the same author is one row; another target or author is new"
+
+
+def test_a_row_that_ships_with_the_journal_refuses_removal_and_new_words_but_keeps_its_progress_open():
+    features.load()
+    record = fresh()
+    system = CONTROLLERS["sequence"](record, actor=SYSTEM)
+    shipped = system.create("a shipped sequence", system=True)
+    users = CONTROLLERS["sequence"](record, actor=USER)
+    for name, change in (("delete", lambda: users.delete(shipped.n)), ("complete", lambda: users.complete(shipped.n, how="done")),
+                         ("title", lambda: users.update(shipped.n, title="another")), ("brief", lambda: users.update(shipped.n, brief="another"))):
+        assert "ships with the journal" in refused(change), f"a shipped row refuses a change by {name}"
+    users.stamp(shipped.n, kept=True, runs={"a": {}})
+    stored = users.load(shipped.n)
+    assert (stored.data["kept"], stored.data["runs"]) == (True, {"a": {}}), "a shipped row still lets its kept and progress fields change"
+    assert "ships with the journal" in refused(lambda: users.stamp(shipped.n, starts_on="todo.created")), "a field outside progress is refused"
+
+
+def test_closing_reopening_restoring_and_deleting_a_row_refuse_what_the_row_cannot_do():
+    features.load()
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    row = todos.create("a row to close")
+    todos.complete(row.n, how="done")
+    assert "already closed" in refused(lambda: todos.complete(row.n, how="again")), "closing a closed row twice is refused"
+    todos.delete(row.n, why="gone")
+    assert "archived" in refused(lambda: todos.reopen(row.n, why="back")), "an archived row cannot be reopened"
+    todos.restore(row.n)
+    assert (refused(lambda: todos.reopen(row.n, why="back")), "not done" in refused(lambda: todos.reopen(row.n, why="again"))) == ("", True), \
+        "a restored row keeps its closed state, so it reopens once and then refuses as not done"
+    open_row = todos.create("an open row")
+    assert "not done" in refused(lambda: todos.reopen(open_row.n, why="back")), "an open row cannot be reopened"
+    facts = CONTROLLERS["fact"](record, actor=USER)
+    fact = facts.create("a claim", brief="why", keywords="word,other")
+    assert USER in facts.load(fact.n).seen, "the user's own row is seen by the user"
+    CONTROLLERS["fact"](record, actor=AGENT).complete(fact.n, how="closed by the agent")
+    assert USER not in facts.load(fact.n).seen, "a row listed as completed-unread loses the user's seen mark when the agent closes it"
+
+
+def test_finding_a_row_by_title_takes_an_exact_title_or_number_and_refuses_a_shared_prefix():
+    features.load()
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    one, two = todos.create("tidy the shelves"), todos.create("tidy the garden")
+    assert (todos.find("tidy the shelves").n, todos.find(str(two.n)).n) == (one.n, two.n), "a title and a number each load their row"
+    assert "say more of the title" in refused(lambda: todos.find("tidy")), "a shared prefix refuses and asks for more"
+    assert "no todos match" in refused(lambda: todos.find("nothing like it")), "a title nothing has refuses in words"
+
+
+def test_linking_twice_keeps_one_ref_unlinking_removes_it_and_superseding_closes_the_old_row():
+    features.load()
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    one, two = todos.create("one"), todos.create("two")
+    todos.link(one.n, "todo:2")
+    todos.link(one.n, "todo:2")
+    assert (todos.load(one.n).refs, [r.n for r in todos.linked_to("todo:2")]) == (["todo:2"], [one.n]), "linking twice keeps one ref, and the target finds its linker"
+    todos.unlink(one.n, "todo:2")
+    assert (todos.load(one.n).refs, todos.linked_to("todo:2")) == ([], []), "unlinking removes the ref from the row and from linked_to"
+    docs = CONTROLLERS["doc"](record, actor=SYSTEM)
+    old, new = docs.create("the old doc"), docs.create("the new doc")
+    docs.supersede(old.n, new.n)
+    assert (docs.load(old.n).completed > 0, "doc:1" in docs.load(new.n).refs, docs.load(old.n).outcome) == (True, True, "superseded by doc 2"), \
+        "superseding closes the old row with where it went and links the new one to it"
+    assert two.n == 2, "the second to-do keeps its number"
+
+
+def test_pruning_deletes_old_closed_to_dos_with_a_reason_and_placing_and_waiting_refuse_what_is_not_there():
+    features.load()
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    old, recent, open_row = todos.create("old"), todos.create("recent"), todos.create("still open")
+    todos.complete(old.n, how="done")
+    todos.complete(recent.n, how="done")
+    stale = todos.load(old.n)
+    stale.completed = time.time() - 40 * 86400
+    todos.rows.persist(stale)
+    assert [r.n for r in todos.prune(days=30)] == [old.n], "prune takes only the rows closed longer ago than the days"
+    reasons = [e.data["why"] for e in record.event_log.events() if e.type == "todo" and e.action == "deleted"]
+    assert (reasons, [r.n for r in todos.all(completed=True)]) == (["pruned after 30 days"], [recent.n, open_row.n]), \
+        "the pruned row is archived with a reason and the others stay"
+    assert "not in the same column" in refused(lambda: todos.place(open_row.n, recent.n)), "placing before a closed row is refused"
+    high = todos.create("high")
+    todos.priority(high.n, "high")
+    todos.place(open_row.n, high.n)
+    assert todos.load(open_row.n).priority == todos.load(high.n).priority, "placing before a row puts the row in that row's column"
+    assert "no todo 99" in refused(lambda: todos.after(open_row.n, "99")), "waiting on a to-do that is not there is refused in words"
+    assert "wait on itself" in refused(lambda: todos.after(open_row.n, str(open_row.n))), "a to-do cannot wait on itself"
+
+
+def test_a_field_given_the_wrong_type_is_refused_in_words_and_nothing_is_stored():
+    from resources.shapes import normalize_options
+    features.load()
+    unrefused = []
+    for type_, resource in TYPES.items():
+        record = fresh(type_[:2])
+        controller = CONTROLLERS[type_](record, actor=SYSTEM)
+        row = controller.create(f"a {type_} to change", **needed(type_))
+        for name, spec in resource.fields.items():
+            wrong = "wrong" if isinstance(spec, dict) else {"wrong": "type"}
+            said = refused(lambda: controller.update(row.n, **{name: wrong}))
+            if not said or controller.load(row.n).data.get(name) == wrong:
+                unrefused.append(f"{type_}.{name}")
+    assert unrefused == [], "every field of every type refuses a value of the wrong type, and stores nothing"
+    assert "options.title is required" in refused(lambda: normalize_options([{"description": "no title"}])), "an option without a title is refused"
+    assert normalize_options([{"label": "Yes", "value": "y"}, "plain"]) == [{"title": "Yes", "code": "y"}, "plain"], \
+        "an option's label and value become its title and code, and a plain word stays"
+
+
+def test_renaming_an_environment_moves_its_rows_and_refuses_a_folder_that_holds_rows():
+    import tarfile
+    from engine.record import Record
+    features.load()
+    record = fresh()
+    environments = CONTROLLERS["environment"](record, actor=SYSTEM)
+    old, other = environments.create("old"), environments.create("other")
+    CONTROLLERS["todo"](Record(record.root, "old"), actor=SYSTEM).create("a row that travels")
+    seeded = record.root / "environments" / "new" / "feature"
+    seeded.mkdir(parents=True)
+    (seeded / "001.md").write_text("a seeded row")
+    environments.rename(old.n, "new")
+    assert [t.title for t in CONTROLLERS["todo"](Record(record.root, "new"), actor=SYSTEM).all()] == ["a row that travels"], \
+        "renaming onto a seeded folder moves the rows over it"
+    assert (not (record.root / "environments" / "old").exists(), len(list((record.root / "attic").glob("new-seed-*.tar.gz")))) == (True, 1), \
+        "the old folder is gone and what the seeded folder held is packed in the attic"
+    with tarfile.open(next((record.root / "attic").glob("new-seed-*.tar.gz"))) as packed:
+        assert any(name.endswith("feature/001.md") for name in packed.getnames()), "the packed seed holds its row"
+    CONTROLLERS["todo"](Record(record.root, "plain"), actor=SYSTEM).create("a row already here")
+    assert "already holds rows" in refused(lambda: environments.rename(other.n, "plain")), "a folder that holds real rows is never written over"
+    assert "exists" in refused(lambda: environments.rename(other.n, "new")), "a name another environment has is refused"
+
+
+def test_sweeping_an_environment_packs_every_swept_row_into_the_attic_and_keeps_the_open_ones():
+    import tarfile
+    from engine.record import Record
+    features.load()
+    record = fresh()
+    environments = CONTROLLERS["environment"](record, actor=SYSTEM)
+    env = environments.create("busy")
+    there = Record(record.root, "busy")
+    todos = CONTROLLERS["todo"](there, actor=SYSTEM)
+    closed, open_row = todos.create("a closed row"), todos.create("an open row")
+    todos.complete(closed.n, how="done")
+    CONTROLLERS["message"](there, actor=SYSTEM).create("a message", brief="swept whatever its state")
+    assert "--yes sweeps" in environments.sweep(env.n), "without --yes a sweep only says what it would do"
+    assert len(todos.rows.summaries()) == 2, "the sweep without --yes removes nothing"
+    environments.sweep(env.n, yes=True)
+    assert ([t.n for t in todos.all(completed=True)], CONTROLLERS["message"](there, actor=SYSTEM).rows.summaries()) == ([open_row.n], []), \
+        "the closed row and the message are swept and the open row stays"
+    with tarfile.open(next((record.root / "attic").glob("busy-swept-*.tar.gz"))) as packed:
+        kept = [name for name in packed.getnames() if name.endswith(".md")]
+    assert sorted(name.split("/")[-2] for name in kept) == ["message", "todo"], "every swept row is in the attic"
+    assert "nothing to sweep" in environments.sweep(env.n, yes=True), "sweeping again finds nothing"
+
+
+def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out():
+    from overview.counts import tally
+    from overview.summary import environment, summarize
+    from controllers.types import Environments
+    features.load()
+    rows = [{"deleted": 0, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [USER]}, {"deleted": 0, "completed": 5, "seen": []},
+            {"deleted": 5, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [], "hidden": True}]
+    assert tally(rows) == {"all": 3, "open": 2, "unread": 1}, "deleted and hidden rows are not counted, closed rows are all but not open, and a seen row is not unread"
+    record = fresh()
+    todos, messages = (CONTROLLERS[type_](record, actor=SYSTEM) for type_ in ("todo", "message"))
+    todos.create("kept")
+    closed, struck = todos.create("closed"), todos.create("struck")
+    todos.complete(closed.n, how="done")
+    todos.delete(struck.n, why="gone")
+    messages.create("unread", brief="from the agent")
+    messages.create("read", brief="already seen")
+    CONTROLLERS["message"](record, actor=USER).read(2)
+    counted = environment(record)["counts"]
+    assert (counted["todos"], counted["messages"]) == (1, 1), "an environment counts its open to-dos and its unread messages, never a closed or archived row"
+    environments = Environments(record, actor=SYSTEM)
+    environments.create("helped", owner="helper:1")
+    environments.create("plain")
+    found = summarize(record.root)
+    assert ([e["name"] for e in found["helpers"]], "helped" in [e["name"] for e in found["environments"]], "plain" in [e["name"] for e in found["environments"]]) == \
+        (["helped"], False, True), "a helper's environment is listed with the helpers, not among the environments"
+
+
+def test_a_row_written_behind_the_stores_back_shows_up_in_lists_fresh_stale_or_in_bulk(monkeypatch):
+    import controllers.stored as stored
+    from engine.stored import read_json, write_text
+    features.load()
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    todos.create("the first row")
+    assert [t.n for t in todos.all()] == [1], "the list is warm before another process writes"
+
+    def written_elsewhere(n: int, title: str) -> None:
+        row = todos.load(1)
+        row.n, row.title = n, title
+        write_text(todos.path(n), row.dump())
+    written_elsewhere(2, "written by another process")
+    assert [t.title for t in todos.all()] == ["the first row", "written by another process"], "a new row file shows up while the stamps are fresh"
+    written_elsewhere(1, "edited by another process")
+    monkeypatch.setattr(stored, "STAMPS_FRESH", 0.0)
+    assert [t.title for t in todos.all()] == ["edited by another process", "written by another process"], "an edited row file shows once the stamps are stale"
+    monkeypatch.setattr(stored, "FLUSH_ROWS", 5)
+    for n in range(3, 10):
+        written_elsewhere(n, f"bulk row {n}")
+    assert [t.n for t in todos.all(last=0)] == list(range(1, 10)), "a bulk of rows past the flush count all show up"
+    assert sorted(int(n) for n in read_json(todos.rows.folder() / stored.INDEX, dict, {})) == list(range(1, 10)), "a bulk past the flush count is written to the index"
+
+
+def test_picture_dimensions_are_read_from_tiny_files_and_search_sees_an_edit_that_kept_its_updated_stamp(tmp_path):
+    import struct
+    from engine.stored import write_text
+    from resources.pictures import dimensions
+    riff = lambda kind, body: b"RIFF" + struct.pack("<I", 4 + 8 + len(body)) + b"WEBP" + kind + struct.pack("<I", len(body)) + body
+    vp8l_bits = (640 - 1) | ((480 - 1) << 14)
+    pictures = {
+        "a.png": b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1390, 486) + b"\x08\x06\x00\x00\x00",
+        "a.gif": b"GIF89a" + struct.pack("<HH", 320, 200) + b"\x00\x00\x00;",
+        "x.webp": riff(b"VP8X", b"\0" * 4 + (799).to_bytes(3, "little") + (599).to_bytes(3, "little")),
+        "l.webp": riff(b"VP8L", b"\x2f" + struct.pack("<I", vp8l_bits)),
+        "v.webp": riff(b"VP8 ", b"\0\0\0\x9d\x01\x2a" + struct.pack("<HH", 400, 300) + b"\0" * 4),
+        "a.jpg": b"\xff\xd8\xff\xe0" + struct.pack(">H", 16) + b"JFIF\0" + b"\0" * 9 + b"\xff\xc0" + struct.pack(">H", 17) + b"\x08" + struct.pack(">HH", 480, 640) + b"\x03" + b"\0" * 9 + b"\xff\xd9",
+    }
+    wanted = {"a.png": (1390, 486), "a.gif": (320, 200), "x.webp": (800, 600), "l.webp": (640, 480), "v.webp": (400, 300), "a.jpg": (640, 480)}
+    for name, data in pictures.items():
+        (tmp_path / name).write_bytes(data)
+    (tmp_path / "text.png").write_bytes(b"not a picture at all")
+    assert {name: dimensions(tmp_path / name) for name in pictures} == wanted, "each picture type gives its width and height from its first bytes"
+    assert (dimensions(tmp_path / "text.png"), dimensions(tmp_path / "gone.png")) == (None, None), "a file that is no picture, or is not there, has no dimensions"
+    features.load()
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    row = todos.create("alpha")
+    assert [t.n for t in todos.search("alpha")] == [row.n], "search finds a row by its words"
+    edited = todos.load(row.n)
+    edited.title = "omega"
+    write_text(todos.path(row.n), edited.dump())
+    assert ([t.n for t in todos.search("omega")], todos.search("alpha")) == ([row.n], []), \
+        "search finds the new words after an edit that kept the same updated stamp, and not the old"
