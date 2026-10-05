@@ -3,9 +3,11 @@ import os
 import sys
 import time
 from pathlib import Path
-from engine.record import Record
-from engine.wording import digest
-from providers import workspace_folders
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from engine.record import Record  # noqa: E402
+from engine.wording import digest  # noqa: E402
+from providers import workspace_folders  # noqa: E402
 
 POLL = 0.5
 PRUNED = {"runtime", "attic", "node_modules", "__pycache__", ".git"}
