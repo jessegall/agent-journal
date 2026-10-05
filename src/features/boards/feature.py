@@ -3,6 +3,7 @@ from resources.base import SYSTEM
 from features.boards.controller import Boards
 from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards, boards_wanting_ideas
+from features.boards.shipped import SEQUENCES
 from features.boards.limits import BoardWorkStaysOnTheBoard, FillerKeepsToTheBoard, PanelRepliesStayShort
 from features.journal import Journal
 from features.nudges import Nudge
@@ -22,6 +23,7 @@ def board_of_message(record, message) -> int:
 class BoardsFeature(Feature):
     details = BoardsDetails
     nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas),)
+    sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:
         START_PARTS.add(self, orchestration, key=ORCHESTRATION)
