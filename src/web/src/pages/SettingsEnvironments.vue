@@ -14,7 +14,7 @@ import {polled} from "../sync/polled.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {matches} from "./featureSettings.js";
+import {matches} from "../domain/settingsCatalog.js";
 
 const props = defineProps({query: {type: String, default: ""}});
 const summary = computed(() => store.summary);

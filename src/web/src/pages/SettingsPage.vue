@@ -1,159 +1,86 @@
 <script setup>
-import {saveSettings} from "../actions/settings.js";
+import {saveSetting} from "../actions/settings.js";
 import {demo} from "../platform/demo.js";
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {narrow} from "../platform/view.js";
+import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import ListBox from "../kit/ListBox.vue";
+import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
-import SettingRow from "../kit/SettingRow.vue";
-import Switch from "../kit/Switch.vue";
+import Segmented from "../kit/Segmented.vue";
+import SettingGroup from "../kit/SettingGroup.vue";
+import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
-import FeaturePanel from "./FeaturePanel.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
-import JournalSettingControl from "./JournalSettingControl.vue";
-import {changed, features, flip, haystack, isOn, matches, whenWords} from "./featureSettings.js";
-import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
+import {LINKS, catalog, counted, counts, narrowed} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../composables/remembered.js";
+import {useScrollSpy} from "../composables/scrollSpy.js";
+import {useSlashFocus} from "../composables/slashFocus.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {rows} from "../sync/rows.js";
 
-const TAB = "journal.settings.tab";
-const tab = ref(remembered(TAB, "options"));
+const VIEW = "journal.settings.view";
+const view = ref(remembered(VIEW, "groups"));
 const query = ref("");
 const filter = ref("all");
 const field = ref(null);
+const current = ref("");
 const chosen = ref("");
 const services = ref(false);
-const extension = ref(null);
 const stopping = ref(false);
-const fixedOpen = ref(false);
-const feature = computed(() => features.value.find((f) => f.name === chosen.value) || null);
+const extension = ref(null);
 
-const delivers = (how) => {
-    const set = (store.settings && store.settings.delivery) || {};
-    return how in set ? !!set[how] : true;
-};
+const sections = computed(() =>
+    catalog(store.spec || {}, store.settings || {}, {
+        identity: store.identity,
+        extension: extension.value,
+        extensionZip: api.extensionZip(),
+        demo,
+        stopping: stopping.value,
+    })
+);
+const shown = computed(() => narrowed(sections.value, query.value, filter.value));
+const groups = computed(() => shown.value.flatMap((s) => s.groups));
+const searching = computed(() => Boolean(query.value.trim()) || filter.value !== "all");
+const total = computed(() => counts(sections.value));
+const found = computed(() => groups.value.reduce((n, g) => n + counted(g), 0));
+const filters = computed(() => [
+    {key: "all", label: "All"},
+    {key: "changed", label: "Changed", count: total.value.changed, dot: true},
+    {key: "off", label: "Off", count: total.value.off},
+]);
+const screen = computed(() => {
+    if (!narrow.value || searching.value || view.value !== "groups") return "page";
+    return chosen.value ? "group" : "list";
+});
+const back = computed(() => narrow.value && (screen.value === "group" || view.value !== "groups"));
+const phoneGroup = computed(() => groups.value.find((g) => g.key === chosen.value) || null);
+const spied = computed(() => (screen.value === "page" && view.value === "groups" ? groups.value.map((g) => g.key) : []));
 
-async function setDelivery(how, value) {
-    await saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
+useScrollSpy(spied, current);
+useSlashFocus(field);
+watch(view, (key) => remember(VIEW, key));
+
+function pick(key) {
+    view.value = "groups";
+    chosen.value = key;
+    current.value = key;
+    if (!narrow.value) requestAnimationFrame(() => document.querySelector(`[data-spy="${key}"]`)?.scrollIntoView({block: "start"}));
 }
 
-const viewerOn = (key) => (store.settings?.viewer || {})[key] !== false;
+function open(key) {
+    view.value = key;
+    current.value = key;
+}
 
-const worded = (row) => ({...row, words: `${row.title} ${row.text} ${row.keywords || ""}`});
-
-const viewerRows = computed(() =>
-    [
-        {
-            key: "away",
-            kind: "switch",
-            title: "While you were away card",
-            text: "When you come back to this tab, a card lists what the agent did meanwhile.",
-            on: viewerOn("away"),
-            changed: !viewerOn("away"),
-            set: (v) => saveViewerSetting("away", v),
-        },
-        {
-            key: "tour",
-            kind: "switch",
-            title: "Home tour",
-            text: "A few short steps that show you around Home. Turns off once you finish or skip it.",
-            on: !viewerSetting("tour_seen", false),
-            changed: false,
-            set: (v) => saveViewerSetting("tour_seen", !v),
-        },
-    ].map(worded)
-);
-
-const journalRows = computed(() =>
-    [
-        {
-            key: "color",
-            kind: "color",
-            title: "Project color",
-            text: "The colored band that tells this project apart from other open journals.",
-            keywords: "colour band identity",
-            changed: Boolean(store.identity && store.identity.custom_color),
-        },
-        {
-            key: "channel",
-            kind: "switch",
-            title: "Send lines through the channel",
-            text: "The agent reads your lines mid-turn. When off, they are typed into its terminal instead.",
-            keywords: "delivery",
-            on: delivers("channel"),
-            changed: !delivers("channel"),
-            set: (v) => setDelivery("channel", v),
-        },
-        {
-            key: "extension",
-            kind: "extension",
-            title: "Chrome extension",
-            text: "Puts the chat on any web page and lets the agent see and use the tab.",
-            keywords: "browser download",
-        },
-        {
-            key: "services",
-            kind: "services",
-            title: "Services",
-            text: "The processes the journal and its plugins keep running: start, stop, restart and read their logs.",
-            keywords: "processes server tunnel plugin log restart",
-        },
-    ].map(worded)
-);
-
-const featureRows = computed(() =>
-    [...features.value]
-        .sort((a, b) => a.title.localeCompare(b.title))
-        .map((f) => ({
-            key: f.name,
-            feature: f,
-            title: f.title,
-            text: f.abstract,
-            words: haystack(f),
-            on: f.fixed ? undefined : isOn(f),
-            changed: changed(f),
-            when: isOn(f) ? whenWords(f.when) : "",
-        }))
-);
-
-const stopRow = {
-    key: "stop",
-    title: "Stop the journal",
-    text: "Closes the viewer, the engine and every plugin service. Nothing is deleted; journal claude starts it again.",
-    words: "stop the journal shut down quit engine viewer",
-};
-
-const passes = (row) =>
-    matches(row.words, query.value) && (filter.value === "all" || (filter.value === "changed" ? row.changed : row.on === false));
-const shown = (list) => list.filter(passes);
-const everything = computed(() => [...viewerRows.value, ...journalRows.value, ...featureRows.value]);
-const filters = computed(() => [
-    {key: "all", title: "All"},
-    {key: "changed", title: "Changed", count: everything.value.filter((row) => row.changed).length},
-    {key: "off", title: "Off", count: everything.value.filter((row) => row.on === false).length},
-]);
-const sections = computed(() => ({
-    viewer: shown(viewerRows.value),
-    journal: shown(journalRows.value),
-    features: shown(featureRows.value).filter((row) => !row.feature.fixed),
-    fixed: shown(featureRows.value).filter((row) => row.feature.fixed),
-    stop: shown([stopRow]),
-}));
-const pageTabs = computed(() => [
-    {key: "options", title: "Options"},
-    {key: "environments", title: "Environments", count: rows("environment").filter((e) => !e.completed).length},
-    {key: "tunnel", title: "Tunler"},
-]);
-watch(tab, (key) => remember(TAB, key));
-const nothing = computed(() => Object.values(sections.value).every((list) => !list.length));
+function goBack() {
+    chosen.value = "";
+    view.value = "groups";
+}
 
 function showAll() {
     query.value = "";
@@ -169,153 +96,99 @@ async function stop() {
     }
 }
 
-async function saveColor(color) {
-    store.identity = await api.saveIdentity({color});
-}
-
-function onKey(e) {
-    if (e.key !== "/" || e.target.closest("input,textarea,[contenteditable]")) return;
-    e.preventDefault();
-    field.value && field.value.focus();
-}
+const BUTTON_ACTIONS = {services: () => (services.value = true), stop};
+const save = (row, value) => saveSetting(row.target, value);
+const saveTiming = (row, next) => saveSetting(row.timing.target, next);
+const act = (row, key) => BUTTON_ACTIONS[key]();
 
 onMounted(async () => {
-    window.addEventListener("keydown", onKey);
     extension.value = await api.extension();
 });
-onUnmounted(() => window.removeEventListener("keydown", onKey));
 </script>
 
 <template>
-    <section class="settings">
+    <section :class="['settings', {narrow}]">
         <PageBar>
-            <TabBar v-model="tab" :tabs="pageTabs" />
-            <template v-if="tab !== 'tunnel'">
-                <TextInput
-                    ref="field"
-                    class="settings-find"
-                    icon="search"
-                    :value="query"
-                    :placeholder="tab === 'environments' ? 'Find an environment' : 'Find a setting'"
-                    :aria-label="tab === 'environments' ? 'Find an environment' : 'Find a setting'"
-                    @input="query = $event.target.value"
-                    @keydown.esc="query = ''"
-                />
+            <TextInput
+                ref="field"
+                class="settings-find"
+                icon="search"
+                :value="query"
+                :placeholder="view === 'environments' ? 'Find an environment' : 'Find a setting'"
+                :aria-label="view === 'environments' ? 'Find an environment' : 'Find a setting'"
+                @input="query = $event.target.value"
+                @keydown.esc="query = ''"
+            />
+            <template v-if="view === 'groups'">
+                <Segmented :options="filters" :value="filter" :fill="narrow" @pick="filter = $event" />
             </template>
-            <template v-if="tab === 'options'">
-                <TabBar v-model="filter" :tabs="filters" />
-            </template>
+            <span class="settings-scope">
+                Applies to environment
+                <span class="settings-env">{{ route.env }}</span>
+            </span>
         </PageBar>
 
-        <SwitchCase :value="tab">
-            <template #environments>
-                <SettingsEnvironments :query="query" />
+        <template v-if="back">
+            <button type="button" class="settings-back" @click="goBack">
+                <Icon name="back" :size="14" />
+                Settings
+            </button>
+        </template>
+        <SwitchCase :value="screen">
+            <template #list>
+                <SettingNav class="settings-phone-list" sheet :sections="sections" :links="LINKS" @pick="pick" @open="open" />
             </template>
-            <template #tunnel>
-                <SettingsTunnel />
+            <template #group>
+                <div class="settings-phone-group">
+                    <template v-if="phoneGroup">
+                        <SettingGroup sheet :group="phoneGroup" @change="save" @timing="saveTiming" @act="act" />
+                    </template>
+                </div>
             </template>
-            <template #options>
-                <template v-if="sections.viewer.length">
-                    <ListBox sticky title="This viewer" :count="sections.viewer.length">
-                        <template v-for="row in sections.viewer" :key="row.key">
-                            <SettingRow :title="row.title" :text="row.text" :tag="row.changed ? 'Changed' : ''">
-                                <template #control>
-                                    <Switch :on="row.on" @change="row.set" />
-                                </template>
-                            </SettingRow>
-                        </template>
-                    </ListBox>
-                </template>
-
-                <template v-if="sections.journal.length">
-                    <ListBox sticky title="This journal" :count="sections.journal.length">
-                        <template v-for="row in sections.journal" :key="row.key">
-                            <SettingRow
-                                :title="row.title"
-                                :text="row.text"
-                                :tag="row.changed ? 'Changed' : ''"
-                                :opens="row.kind === 'services'"
-                                @open="services = true"
-                            >
-                                <template #control>
-                                    <JournalSettingControl :row="row" :extension="extension" @save-color="saveColor" />
-                                </template>
-                            </SettingRow>
-                        </template>
-                    </ListBox>
-                </template>
-
-                <template v-if="sections.features.length">
-                    <ListBox sticky :title="`Features on ${route.env}`" :count="sections.features.length">
-                        <template v-for="row in sections.features" :key="row.key">
-                            <SettingRow
-                                compact
-                                :title="row.title"
-                                :text="row.text"
-                                :tag="row.changed ? 'Changed' : ''"
-                                opens
-                                @open="chosen = row.key"
-                            >
-                                <template v-if="row.when">
-                                    <span>Runs {{ row.when }}</span>
-                                </template>
-                                <template #control>
-                                    <Switch :on="row.on" @change="(v) => flip(row.key, v)" />
-                                </template>
-                            </SettingRow>
-                        </template>
-                    </ListBox>
-                </template>
-
-                <template v-if="sections.fixed.length">
-                    <ListBox
-                        sticky
-                        folds
-                        title="Always on"
-                        :count="sections.fixed.length"
-                        :open="fixedOpen || Boolean(query)"
-                        @toggle="fixedOpen = !fixedOpen"
-                    >
-                        <template v-for="row in sections.fixed" :key="row.key">
-                            <SettingRow
-                                compact
-                                :title="row.title"
-                                :text="row.text"
-                                :tag="row.changed ? 'Changed' : ''"
-                                opens
-                                @open="chosen = row.key"
-                            >
-                                <template v-if="row.when">
-                                    <span>Runs {{ row.when }}</span>
-                                </template>
-                            </SettingRow>
-                        </template>
-                    </ListBox>
-                </template>
-
-                <template v-if="sections.stop.length && !demo">
-                    <ListBox sticky title="Shut down">
-                        <SettingRow :title="stopRow.title" :text="stopRow.text">
-                            <template #control>
-                                <Btn kind="danger" small :disabled="stopping" @click="stop">{{ stopping ? "Stopping" : "Stop" }}</Btn>
+            <template #page>
+                <div class="settings-body">
+                    <template v-if="!narrow">
+                        <SettingNav
+                            class="settings-nav"
+                            :sections="shown"
+                            :links="LINKS"
+                            :current="current"
+                            :searching="searching"
+                            @pick="pick"
+                            @open="open"
+                        />
+                    </template>
+                    <div class="settings-content">
+                        <SwitchCase :value="view">
+                            <template #environments>
+                                <SettingsEnvironments :query="query" />
                             </template>
-                        </SettingRow>
-                    </ListBox>
-                </template>
-
-                <template v-if="nothing">
-                    <EmptyState class="settings-empty" title="No setting matches">
-                        Try other words, or
-                        <Btn class="settings-reset" @click="showAll">show every setting</Btn>
-                        .
-                    </EmptyState>
-                </template>
+                            <template #tunnel>
+                                <SettingsTunnel />
+                            </template>
+                            <template #default>
+                                <div class="settings-column">
+                                    <template v-if="searching && groups.length">
+                                        <div class="settings-found">{{ found }} settings in {{ groups.length }} groups</div>
+                                    </template>
+                                    <template v-for="group in groups" :key="group.key">
+                                        <SettingGroup :group="group" :sheet="narrow" @change="save" @timing="saveTiming" @act="act" />
+                                    </template>
+                                    <template v-if="!groups.length">
+                                        <EmptyState class="settings-empty" title="No setting matches">
+                                            Try other words, or
+                                            <Btn class="settings-reset" @click="showAll">show every setting</Btn>
+                                            .
+                                        </EmptyState>
+                                    </template>
+                                </div>
+                            </template>
+                        </SwitchCase>
+                    </div>
+                </div>
             </template>
         </SwitchCase>
 
-        <template v-if="feature">
-            <FeaturePanel :feature="feature" @close="chosen = ''" />
-        </template>
         <template v-if="services">
             <ServicesPanel @close="services = false" />
         </template>
@@ -330,8 +203,67 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 }
 
 .settings-find {
-    flex: 1 1 260px;
-    max-width: 440px;
+    flex: 0 1 300px;
+}
+
+.settings-scope {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.settings-env {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    color: var(--text-2);
+}
+
+.settings-env::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.settings-body {
+    display: grid;
+    grid-template-columns: 216px minmax(0, 1fr);
+    align-items: start;
+}
+
+.settings-nav {
+    position: sticky;
+    top: var(--page-bar-height, 52px);
+    max-height: calc(100vh - var(--page-bar-height, 52px) - 48px);
+    overflow-y: auto;
+    padding: 14px 10px;
+}
+
+.settings-content {
+    min-width: 0;
+    min-height: 100%;
+    padding: 26px 40px 40px;
+    border-left: 1px solid var(--border);
+}
+
+.settings-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 760px;
+}
+
+.settings-found {
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .settings-empty {
@@ -349,5 +281,47 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 
 .settings-reset:hover {
     color: var(--text);
+}
+
+.settings-back {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 6px;
+    margin: 16px 16px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.settings.narrow .settings-body {
+    display: block;
+}
+
+.settings.narrow .settings-content {
+    padding: 16px;
+    border-left: 0;
+}
+
+.settings.narrow .settings-scope {
+    display: none;
+}
+
+.settings.narrow .settings-find {
+    flex: 1 1 100%;
+}
+
+.settings-phone-list {
+    padding: 0 16px 16px;
+}
+
+.settings-phone-group {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
 }
 </style>
