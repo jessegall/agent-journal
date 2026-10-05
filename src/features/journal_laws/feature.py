@@ -18,7 +18,7 @@ class JournalLaws(Feature):
     nudges = (Nudge(TOO_LONG, behaviour=TOO_LONG, about=long_briefings),)
 
     def register(self, journal: Journal) -> None:
-        self.register_global(START_PARTS, carry, str, LAW)
+        START_PARTS.add(self, carry, key=LAW)
         if output_lines not in OUTPUT_LINES:
             OUTPUT_LINES.append(output_lines)
         journal.agent.canceler(EnforceDispatchLaw())

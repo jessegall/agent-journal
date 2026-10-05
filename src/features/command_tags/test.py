@@ -87,12 +87,13 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     assert any(n.brief.startswith("answer by opening your turn with [!reply:1]") for n in Nudges(record).all() if "before you write" in n.title), \
         "the line naming a read message still to answer says how to answer it, in its brief"
     from engine.wording import APPENDS, appended
-    APPENDS.setdefault("work_tracking.open", []).append(lambda n, **_: f"work {n} can be ended from the board")
+    addition = lambda n, **_: f"work {n} can be ended from the board"
+    APPENDS.add(None, addition, key="work_tracking.open")
     try:
         assert appended("work_tracking.open", {"n": 7}, "work 7 is still open") == "work 7 is still open - work 7 can be ended from the board", \
             "any registered line takes an addition by its feature and name"
     finally:
-        APPENDS["work_tracking.open"].pop()
+        APPENDS.remove(addition)
 
 def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
     from providers import PROVIDERS

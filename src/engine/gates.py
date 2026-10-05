@@ -5,11 +5,12 @@ from engine import runtime
 from engine.fields import Loaded
 from engine.reach import Reach
 from engine.stored import read_json, write_json
+from engine.extension import Extension
 
-POLICIES: list = []
-AFTERWARDS: list = []
-CANCELERS: dict[str, list] = {}
-RESPONDERS: dict[str, list] = {}
+POLICIES = Extension()
+AFTERWARDS = Extension()
+CANCELERS = Extension()
+RESPONDERS = Extension()
 DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
 CANCELABLE = (DISPATCHING, LONG_COMMAND)
 
@@ -37,12 +38,12 @@ class Hold(Loaded):
 
 
 def cancelled(name: str, call: HookCall, data: dict) -> str:
-    reasons = [reason for cancel in CANCELERS.get(name, []) if cancel.guard.reaches(call.subagent) and (reason := cancel(call, data))]
+    reasons = [reason for cancel in CANCELERS.each(key=name) if cancel.guard.reaches(call.subagent) and (reason := cancel(call, data))]
     return "; ".join(reasons)
 
 
 def responded(call: HookCall) -> str:
-    return "".join(respond(call) for respond in RESPONDERS.get(call.hook.event, []))
+    return "".join(respond(call) for respond in RESPONDERS.each(key=call.hook.event))
 
 
 def start_file(root: Path, env: str, compacted: bool = False) -> Path:

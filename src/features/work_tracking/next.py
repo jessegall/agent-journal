@@ -1,13 +1,14 @@
 from controllers.types import Questions, Todos, Works
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
+from engine.extension import Extension
 
 
-ROW_HOLDS: list = []
+ROW_HOLDS = Extension()
 
 
 def held(record, todo) -> bool:
-    return any(hold(record, todo) for hold in ROW_HOLDS)
+    return any(hold(record, todo) for hold in ROW_HOLDS.each(record))
 
 
 def open_rows(record) -> list:

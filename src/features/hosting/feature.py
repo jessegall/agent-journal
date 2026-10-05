@@ -1,6 +1,6 @@
 from engine.services import SOURCES
 from features.base import Feature
-from features.hosting.card import CardExtra, app_on_card
+from features.hosting.card import app_on_card
 from features.hosting.commands import HostApp, ShowApp, StopApp
 from features.hosting.details import HostingDetails
 from features.hosting.handlers import StopIdleApps
@@ -17,5 +17,5 @@ class HostingFeature(Feature):
         journal.commands.add("ticket", StopApp())
         journal.commands.add("ticket", ShowApp())
         journal.events.handler(StopIdleApps())
-        self.register_global(SOURCES, ticket_apps, list)
-        self.register_global(CARD_EXTRAS, app_on_card, lambda: CardExtra([]))
+        SOURCES.add(self, ticket_apps)
+        CARD_EXTRAS.add(self, app_on_card)

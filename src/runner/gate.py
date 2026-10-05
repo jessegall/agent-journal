@@ -50,8 +50,8 @@ def paused(call: HookCall) -> bool:
 def gated(call: HookCall) -> str | None:
     dispatch = call.provider.dispatch(call.hook.tool)
     reason = cancelled(DISPATCHING, call, dispatch) if dispatch else None
-    bus.defer(lambda: [policy(call) for policy in AFTERWARDS if serving(policy, call)])
-    return reason or next((reason for policy in POLICIES if serving(policy, call) and (reason := policy(call))), None)
+    bus.defer(lambda: [policy(call) for policy in AFTERWARDS.each() if serving(policy, call)])
+    return reason or next((reason for policy in POLICIES.each() if serving(policy, call) and (reason := policy(call))), None)
 
 
 def refusal(call: HookCall) -> str | None:

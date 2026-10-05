@@ -34,9 +34,9 @@ class TicketsFeature(Feature):
     )
 
     def register(self, journal: Journal) -> None:
-        self.register_always(PHASE_ROWS, Tickets, PHASE.tickets)
-        self.register_global(PHASE_STARTS, start_tickets_of_phase, list)
-        self.register_global(PLAN_STARTS, start_worker, str)
+        PHASE_ROWS.add(None, Tickets, key=PHASE.tickets)
+        PHASE_STARTS.add(self, start_tickets_of_phase)
+        PLAN_STARTS.add(self, start_worker)
         journal.commands.add("ticket", ShowTicketTodos())
         journal.events.handler(LookAfterTickets())
         journal.events.handler(WakeTheTicketAgent())

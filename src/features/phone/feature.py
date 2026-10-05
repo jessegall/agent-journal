@@ -13,6 +13,6 @@ class PhoneFeature(Feature):
     details = PhoneDetails
 
     def register(self, journal: Journal) -> None:
-        self.register_switched(ROUTES, ROUTE, PhoneRoutes())
-        self.register_global(KEEP_UP, phones_live, lambda: False)
-        self.register_global(TICKS, phones_told, lambda: None)
+        ROUTES.add(self, PhoneRoutes(), key=ROUTE)
+        KEEP_UP.add(self, phones_live)
+        TICKS.add(self, phones_told)

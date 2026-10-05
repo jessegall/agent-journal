@@ -1,6 +1,7 @@
 from controllers.types import CONTROLLERS, Works
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
+from engine.extension import Extension
 
 
 def standing(record, type_: str) -> list:
@@ -35,13 +36,13 @@ QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's wo
          "A line that starts with [journal] is the journal speaking, not the user: act on it, and never answer it in the chat.")
 
 
-START_PARTS: dict = {}
+START_PARTS = Extension()
 ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
 
 
 def start_block(record) -> str:
     parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", QUIET,
-             *(START_PARTS[place](record) for place in sorted(START_PARTS))]
+             *(part(record) for _, part in sorted(START_PARTS.keyed(record).items()))]
     for type_ in reversed(priority()):
         kind = TYPES[type_]
         rows = handed(record, type_) if kind.start_heading else []
