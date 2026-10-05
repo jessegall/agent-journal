@@ -1,6 +1,6 @@
 <script setup>
 import {ui} from "../state/ui.js";
-import {replayBlocks} from "../platform/demo.js";
+import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
@@ -133,7 +133,6 @@ function unpick(i) {
 
 async function go() {
     if (draft.sending || !draft.text.trim()) return;
-    if (replayBlocks(draft.text.trim(), ui.prefill.trim())) return;
     const text = draft.text.trim();
     const files = draft.files;
     draft.sending = true;
@@ -208,6 +207,7 @@ async function use(tool) {
                 @keydown.esc="escaped"
                 @keydown.meta.enter.prevent="go"
                 @keydown.ctrl.enter.prevent="go"
+                @beforeinput="keepRecordedWords"
                 @paste="pasted"
             />
             <div class="compose-foot">

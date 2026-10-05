@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import Btn from "./Btn.vue";
+import Outline from "./Outline.vue";
 import {clamp} from "../format/number.js";
 
 const props = defineProps({
@@ -15,13 +16,6 @@ const emit = defineEmits(["next", "skip"]);
 const WIDTH = 280;
 const GAP = 14;
 const EDGE = 8;
-
-const ring = computed(() => ({
-    left: `${props.rect.l - 4}px`,
-    top: `${props.rect.t - 4}px`,
-    width: `${props.rect.r - props.rect.l + 8}px`,
-    height: `${props.rect.b - props.rect.t + 8}px`,
-}));
 
 const place = computed(() => {
     const r = props.rect;
@@ -40,7 +34,7 @@ const place = computed(() => {
 
 <template>
     <Teleport to="body">
-        <div class="tour-ring" :style="ring" />
+        <Outline :rect="rect" />
         <div class="tour-card" :style="place.card" role="dialog" :aria-label="title" @click.stop>
             <span :class="['tour-arrow', place.arrow]" :style="place.at" />
             <p class="tour-count">{{ count }}</p>
@@ -56,20 +50,6 @@ const place = computed(() => {
 </template>
 
 <style scoped>
-.tour-ring {
-    position: fixed;
-    z-index: 500;
-    border: 1.5px solid var(--accent);
-    border-radius: 8px;
-    pointer-events: none;
-    animation: tour-in 0.2s both;
-    transition:
-        left 0.3s var(--ease),
-        top 0.3s var(--ease),
-        width 0.3s var(--ease),
-        height 0.3s var(--ease);
-}
-
 .tour-card {
     position: fixed;
     z-index: 501;
@@ -150,12 +130,6 @@ const place = computed(() => {
     color: var(--text-3);
 }
 
-@keyframes tour-in {
-    from {
-        opacity: 0;
-    }
-}
-
 @keyframes tour-rise {
     from {
         opacity: 0;
@@ -164,7 +138,7 @@ const place = computed(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .tour-ring,
+
     .tour-card,
     .tour-arrow {
         transition: none;

@@ -1,20 +1,12 @@
 import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {onUnmounted, ref, watch} from "vue";
+import {boxAround} from "../platform/boxes.js";
 
 const KEY = "tour_seen";
 const START_AFTER = 800;
 const FOLLOW = 250;
 
-function around(selector) {
-    const boxes = [...document.querySelectorAll(selector)].map((el) => el.getBoundingClientRect()).filter((r) => r.width > 4);
-    if (!boxes.length) return null;
-    return {
-        l: Math.min(...boxes.map((r) => r.left)),
-        t: Math.min(...boxes.map((r) => r.top)),
-        r: Math.max(...boxes.map((r) => r.right)),
-        b: Math.max(...boxes.map((r) => r.bottom)),
-    };
-}
+const around = (selector) => boxAround([...document.querySelectorAll(selector)]);
 
 export function useTour(steps, menu) {
     const step = ref(-1);
