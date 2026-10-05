@@ -30,6 +30,7 @@ PERMISSION = HookEvent.PERMISSION_REQUEST
 DISPLAYED = HookEvent.MESSAGE_DISPLAY
 EVENTS = tuple(STATUS)
 OUTPUT_KEYS = ("stdout", "stderr", "content", "result", "text", "output")
+RECOMMENDED = "(Recommended)"
 SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/(journal(?:-[\w-]+)?)/SKILL\.md")
 
 
@@ -67,7 +68,11 @@ class AskedQuestion(Loaded):
 
     @property
     def options(self) -> list[dict]:
-        return [{"title": choice.label, "description": choice.description} for choice in self.choices if choice.label]
+        return [{"title": choice.label.removesuffix(RECOMMENDED).strip(), "description": choice.description} for choice in self.choices if choice.label]
+
+    @property
+    def pick(self) -> int:
+        return next((at for at, label in enumerate(self.labels, 1) if label.endswith(RECOMMENDED)), 0)
 
 
 @dataclass(frozen=True)

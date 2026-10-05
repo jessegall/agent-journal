@@ -1,5 +1,5 @@
 from features.trigger import IDLE, MINUTES, Trigger
-from features.ask_questions.interceptors import FILED
+from features.ask_questions.interceptors import FILED, UNPICKED
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.groups import Group
@@ -39,12 +39,14 @@ class AskQuestionsDetails(FeatureDetails):
 
         Each option carries its own title and text; the question's title, abstract and brief
         give the context only. A question that lists its options again, as A/B/C or numbered
-        lines or one line per option name, is refused.
+        lines or one line per option name, is refused. Every question with options names the one
+        you would pick, --set pick=<its number>, which the card marks as the agent's pick; one
+        without it is refused.
 
         A question tool the provider offers, such as Claude Code's AskUserQuestion, never opens
         in the terminal: each question in the call is filed as a journal question with its
-        options, and the call is refused with the numbers, so you carry on and hear the
-        answer as an event.
+        options and the one labelled (Recommended) as your pick, and the call is refused with the
+        numbers, so you carry on and hear the answer as an event.
     """
 
     fixed = True
@@ -83,6 +85,11 @@ class AskQuestionsDetails(FeatureDetails):
             """,
         ),
         Line(
+            name=UNPICKED,
+            title="question {{question}} names no pick",
+            brief="label the option you would pick (Recommended) and ask again; the card marks it as the agent's pick",
+        ),
+        Line(
             name=FILED,
             title="asked in the journal as question {{numbers}}",
             brief="the user answers it in the viewer and the answer reaches you as an event; carry on with what does not depend on it",
@@ -100,7 +107,7 @@ class AskQuestionsDetails(FeatureDetails):
             name="prose held",
             title="""
                 your last message offered the user choices in prose: ask them through journal
-                question ask --set options=… before any other write
+                question ask --set options=… --set pick=<n> before any other write
             """,
         ),
     ]
