@@ -2,6 +2,7 @@ import importlib.util
 import json
 import pickle
 import pkgutil
+import shlex
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
@@ -55,7 +56,22 @@ JOURNAL, PERSON = "journal", "person"
 
 
 def journal_hook(text: str) -> bool:
-    return LEGACY in text or ("/hook.sh " in text and "/.journal" in text)
+    return LEGACY in text or ("/hook.sh" in text and "/.journal" in text)
+
+
+@dataclass(frozen=True)
+class HookCommand:
+    script: Path
+    provider: str
+    root: Path
+
+    @property
+    def line(self) -> str:
+        return shlex.join(["sh", str(self.script), self.provider, str(self.root)])
+
+    @property
+    def endings(self) -> tuple[str, str]:
+        return f" {self.provider} {self.root}", " " + shlex.join([self.provider, str(self.root)])
 
 
 KEPT_ENDED = 20
@@ -505,14 +521,16 @@ class Provider(ABC):
         write_text(f, json.dumps(settings, indent=2) + "\n")
         return f
 
-    def wire(self, project: Path, command: str) -> Path:
+    def wire(self, project: Path, hook: HookCommand) -> Path:
         had = self.settings(project)
         hooks = had.setdefault("hooks", {})
-        name, root = command.split("/hook.", 1)[1].split()[1:3]
-        ours = f" {name} {root}"
-        for event, blocks in self.wiring(command)["hooks"].items():
-            mine = [b for b in hooks.get(event, []) if command in json.dumps(b) or not (("/hook." in json.dumps(b) and ours in json.dumps(b)) or LEGACY in json.dumps(b))]
+        command = hook.line
+        for event, blocks in self.wiring(hook.line)["hooks"].items():
+            mine = [b for b in hooks.get(event, []) if command in json.dumps(b) or not self._replaced(json.dumps(b), hook)]
             if not any(command in json.dumps(b) for b in mine):
                 mine.extend(blocks)
             hooks[event] = mine
         return self.save(project, had)
+
+    def _replaced(self, block: str, hook: HookCommand) -> bool:
+        return LEGACY in block or ("/hook." in block and any(ending in block for ending in hook.endings))

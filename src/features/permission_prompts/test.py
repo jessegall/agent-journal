@@ -136,11 +136,13 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
 
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):
     from providers import PROVIDERS
+    from providers.base import HookCommand
     from providers.claude import RECORD_FILES
     claude = PROVIDERS["claude"]()
     claude.save(tmp_path, {"permissions": {"deny": ["Read(./.env)"]}})
-    claude.wire(tmp_path, f"sh {tmp_path}/.journal/src/hook.sh claude {tmp_path}/.journal")
-    claude.wire(tmp_path, f"sh {tmp_path}/.journal/src/hook.sh claude {tmp_path}/.journal")
+    hook = HookCommand(tmp_path / ".journal" / "src" / "hook.sh", "claude", tmp_path / ".journal")
+    claude.wire(tmp_path, hook)
+    claude.wire(tmp_path, hook)
     deny = claude.settings(tmp_path)["permissions"]["deny"]
     assert deny == ["Read(./.env)", *RECORD_FILES], "rows are denied once, beside what the project already denied"
     assert all("*/*.md" in rule for rule in RECORD_FILES), "only the row files: an attached picture a folder deeper stays readable"
