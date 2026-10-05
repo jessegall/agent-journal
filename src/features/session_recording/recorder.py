@@ -48,7 +48,7 @@ class Recorder:
         for log in sorted((self.root / "environments").glob("*/events.jsonl")):
             env = log.parent.name
             record = self.records.setdefault(env, Record(self.root, env))
-            arrived = [event.to_json() for event in record.events(since=self.newest.get(env, 0))]
+            arrived = [event.to_json() for event in record.event_log.events(since=self.newest.get(env, 0))]
             if arrived:
                 self.newest[env] = arrived[-1]["id"]
             events += arrived

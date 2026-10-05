@@ -3,13 +3,14 @@ import re
 from controllers.types import Agents, Comments
 from engine.events.engine import CommandRan
 from engine.events.resources import CommentCreated
-from engine.journal_calls import GLOBAL_OPTIONS, parsed
+from engine.journal_calls import parsed
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.sharing.visitors import AGREEMENT, UNAGREED, hold, read_now
 from resources.base import SYSTEM
 from engine.reach import Reach
 
 PLAIN = re.compile(r"[\w .:@/+-]+")
+AGREE_OPTIONS = {"--env", "--agent", "--root"}
 USER_ACTOR = re.compile(r"(?:^|[\s?&])(?:--as(?:=|\s+)|JOURNAL_ACTOR\s*=|actor\s*=)\s*['\"]?user\b", re.I)
 
 
@@ -24,7 +25,7 @@ class RefuseClaimedUser(ToolInterceptor):
 
 def only_agree(command: str) -> bool:
     call = parsed(command)
-    return (call is not None and set(call.options) <= set(GLOBAL_OPTIONS) and all(PLAIN.fullmatch(value) for value in call.options.values())
+    return (call is not None and set(call.options) <= AGREE_OPTIONS and all(PLAIN.fullmatch(value) for value in call.options.values())
             and call.matches("share", "agree") and len(call.arguments) == 2 and call.arguments[0].isdigit() and call.arguments[1] == AGREEMENT)
 
 
