@@ -230,6 +230,13 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
     command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
     with log.open("a") as output:
         server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
+    url, code = answered(root, server)
+    if code is None:
+        threading.Thread(target=server.wait, daemon=True).start()
+    return url, code
+
+
+def answered(root: Path, server: subprocess.Popen) -> tuple[str, int | None]:
     for _ in range(60):
         time.sleep(0.1)
         url = running(root)

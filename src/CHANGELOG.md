@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.6 — a project path with a space works, and a killed server makes way
+
+**A project whose path has a space in it works.** The hook commands were written without quotes, so the shell cut the
+path at the space and every hook failed, and `.mcp.json` got its arguments cut up the same way. Hooks are now written
+quoted, and the channel's arguments are kept as a list. Run `journal upgrade` in such a project to rewrite them.
+**The journal runs the Python that installed it.** `.mcp.json` and the `journal` command in `~/.local/bin` called a
+bare `python3`, which on a stock Mac is Apple's 3.9 while the journal needs 3.10 or newer; both now name the
+interpreter the journal was installed with.
+**A killed server no longer blocks a new one.** The process that started the server never waited for it, so a server
+that was killed stayed behind as a zombie that still looked alive, and a new `journal serve` stopped with "already
+served". The starter now reaps its server. Reported by Johannes Jan Prins.
+
 ## 2.249.5 — a long message no longer hangs the server
 
 **The server no longer hangs at 100% CPU on a long message with many flags.** To decide whether a `--flag` belongs to

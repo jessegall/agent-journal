@@ -135,7 +135,7 @@ while [ "$dir" != "/" ]; do
 for src in "$dir/.journal/src" "$dir/.journal"; do
 if [ -f "$src/journal.py" ]; then
 root="$dir/.journal"
-__ASKS__exec python3 "$src/journal.py" --root "$root" "$@"
+__ASKS__exec "__PYTHON__" "$src/journal.py" --root "$root" "$@"
 fi
 done
 dir="$(dirname "$dir")"
@@ -163,7 +163,7 @@ def alias(project: Path, root: Path) -> Path:
     bin_ = Path.home() / ".local" / "bin"
     bin_.mkdir(parents=True, exist_ok=True)
     shim = bin_ / "journal"
-    shim.write_text(SHIM.replace("__ASKS__", asks()))
+    shim.write_text(SHIM.replace("__ASKS__", asks()).replace("__PYTHON__", sys.executable))
     shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 
@@ -205,7 +205,7 @@ def configure(project: Path, root: Path) -> list[str]:
         provider = cls()
         if not provider.present(project):
             continue
-        f = provider.wire(project, f"sh {code(root) / 'hook.sh'} {name} {root}")
+        f = provider.wire(project, HookCommand(code(root) / "hook.sh", name, root))
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         present.append(name)
     if not done:
@@ -469,6 +469,7 @@ def heal() -> None:
 
 class Package(TypedDict):
     PROVIDERS: dict
+    HookCommand: type
     LIBRARY: str
     LINKED: dict
     agent_types: Callable
@@ -493,12 +494,12 @@ def package() -> Package:
     from migrations import run as migrate
     from migrations import shipped
     from providers import PROVIDERS
-    from providers.base import LIBRARY
+    from providers.base import LIBRARY, HookCommand
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
     from engine.runtime import default_env
-    return {"agent_types": agent_types, "Record": Record, "default_env": default_env, "served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS,
+    return {"agent_types": agent_types, "Record": Record, "default_env": default_env, "served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS, "HookCommand": HookCommand,
             "LIBRARY": LIBRARY, "LINKED": LINKED, "publish": publish}
 
 

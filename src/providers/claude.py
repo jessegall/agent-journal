@@ -1,7 +1,9 @@
 import json
 import os
 import re
+import shlex
 import shutil
+import sys
 import time
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
@@ -9,7 +11,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
-from providers.base import BackgroundTasks, Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
+from providers.base import BackgroundTasks, HookCommand, Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
@@ -202,25 +204,24 @@ class Claude(Provider):
         configured = self.setting(Path(hook.cwd or "."), "model")
         return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
 
-    def channel(self, project: Path, command: str) -> None:
+    def channel(self, project: Path, hook: HookCommand) -> None:
         f = project / ".mcp.json"
         known = read_json(f, dict, {})
         servers = known.get("mcpServers") or {}
-        words = command.split()
-        servers[SERVER] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
+        servers[SERVER] = {"command": sys.executable, "args": [str(hook.root / "journal.py"), "-m", "channel", str(hook.root)]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def journal_typed(self, prompt: str) -> bool:
         return CHANNEL_MARK in prompt or super().journal_typed(prompt)
 
-    def wire(self, project: Path, command: str) -> Path:
+    def wire(self, project: Path, hook: HookCommand) -> Path:
         self.shared(project)
-        wired = super().wire(project, command)
-        self.channel(project, command)
+        wired = super().wire(project, hook)
+        self.channel(project, hook)
         settings = self.settings(project)
         if "statusLine" not in settings:
-            script = Path(command.split()[1]).with_name(STATUS_SCRIPT)
-            self.save(project, {**settings, "statusLine": {"type": "command", "command": f"sh {script}", "padding": 0}})
+            script = hook.script.with_name(STATUS_SCRIPT)
+            self.save(project, {**settings, "statusLine": {"type": "command", "command": shlex.join(["sh", str(script)]), "padding": 0}})
         settings = self.settings(project)
         permissions = settings.get("permissions") or {}
         deny = list(permissions.get("deny") or [])
