@@ -26,7 +26,7 @@ class RefuseHelperInSolo(ToolInterceptor):
         shell = call.shell_command
         if not shell or mode_of(context.record) != SOLO:
             return ""
-        return REFUSED if any(made.matches("helper", "dispatch") for made in calls(shell)) else ""
+        return REFUSED if any(made.names("helper", "dispatch") for made in calls(shell)) else ""
 
 
 class RemindOrchestrator(ToolInterceptor):

@@ -3,6 +3,7 @@ import time
 from engine import runtime
 from engine.events.engine import ClockTicked
 from controllers.types import Messages
+from controllers.stored import mtime
 from engine.keeper import READY, STARTING
 from engine.services import UP, log_file, status, want
 from engine.sessions import alive
@@ -21,7 +22,9 @@ PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
 READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
 ADDRESS_REFUSED, SETTINGS_UNREADABLE, HOST_IS_DOWN = "address_refused", "settings_unreadable", "host_down"
-MISSES, RESTARTED_AT = "misses", "restarted"
+MISSES, RESTARTED_AT, UNREACHABLE_SINCE = "misses", "restarted", "unreachable_since"
+HOLD_FOR = 60.0
+GIVE_UP_AFTER = 600.0
 
 
 class KeepTunnelAnswering(Handler):
@@ -49,7 +52,10 @@ class KeepTunnelAnswering(Handler):
         if answering:
             state.set(MISSES, 0)
             state.set(HOST_IS_DOWN, 0)
+            state.set(UNREACHABLE_SINCE, 0)
             return
+        unreachable = float(state.get(UNREACHABLE_SINCE, 0)) or time.time()
+        state.set(UNREACHABLE_SINCE, unreachable)
         misses = int(state.get(MISSES, 0)) + 1
         state.set(MISSES, misses)
         if misses < MISSES_BEFORE_RESTART or time.time() - float(state.get(RESTARTED_AT, 0)) < RESTART_EVERY:
@@ -60,7 +66,7 @@ class KeepTunnelAnswering(Handler):
             alert_once(state, HOST_IS_DOWN, lambda: speaking and speaking.agent.say(HOST_DOWN, host=shares._host()))
             return
         down = TUNNEL if serving(context.record.root) else SERVER
-        if down == TUNNEL and tunnel_holding(context.record.root):
+        if down == TUNNEL and time.time() - unreachable < GIVE_UP_AFTER and tunnel_holding(context.record.root):
             return
         want(context.record.root, down, UP, nonce=time.time())
         state.set(RESTARTED_AT, time.time())
@@ -75,8 +81,9 @@ def alert_once(state: State, key: str, alert) -> None:
 
 
 def tunnel_holding(root) -> bool:
-    kept = status(root, TUNNEL)
-    return held_by_server(log_file(root, TUNNEL)) or (kept.state in (STARTING, READY) and alive(kept.pgid))
+    kept, log = status(root, TUNNEL), log_file(root, TUNNEL)
+    fresh = time.time() - mtime(log) / 1e9 < HOLD_FOR
+    return fresh and held_by_server(log) and kept.state in (STARTING, READY) and alive(kept.pgid)
 
 
 def serving(root) -> bool:

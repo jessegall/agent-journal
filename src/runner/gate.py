@@ -1,61 +1,22 @@
-import shlex
 import time
 from dataclasses import dataclass
 
 from commands.cli import captured
 from engine import bus
+from engine.journal_calls import JournalCall, pieces
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
 from engine.reach import Reach
 from resources.base import AGENT
 
 PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."
 PAUSE = Reach.BOTH
-SEPARATORS = frozenset(";&|()\n")
-PUNCTUATION = "".join(SEPARATORS) + "<>"
 EXPANDING = ("$", "`", "<<")
-VALUED = frozenset({"--root", "--env", "--as", "--session", "--agent", "--cwd"})
 ANSWERED, KEPT_ANSWERED = "answers_ran", 200
 ANSWERING = frozenset({("message", "reply"), ("message", "react"), ("message", "read"), ("message", "process"), ("message", "processed"), ("todo", "create")})
 
 
-@dataclass(frozen=True)
-class JournalCall:
-    words: tuple[str, ...]
-
-    @property
-    def line(self) -> str:
-        return shlex.join(self.words)
-
-    @property
-    def command(self) -> tuple[str, ...]:
-        found, rest = [], list(self.words[1:])
-        while rest:
-            word = rest.pop(0)
-            if word in VALUED:
-                rest = rest[1:]
-            elif not word.startswith("-"):
-                found.append(word)
-        return tuple(found[:2])
-
-    @property
-    def is_answering(self) -> bool:
-        return self.command in ANSWERING and not any(set(word) <= set(PUNCTUATION) or word.split("=", 1)[0] in VALUED for word in self.words)
-
-
-def pieces(shell: str) -> list[tuple[str, ...]]:
-    lexer = shlex.shlex(shell, posix=True, punctuation_chars=PUNCTUATION)
-    lexer.whitespace = " \t\r"
-    lexer.commenters = ""
-    lexer.whitespace_split = True
-    found, piece = [], []
-    for token in lexer:
-        if set(token) <= SEPARATORS:
-            found.append(tuple(piece))
-            piece = []
-        else:
-            piece.append(token)
-    found.append(tuple(piece))
-    return [one for one in found if one]
+def answers(journal: JournalCall) -> bool:
+    return journal.command in ANSWERING and journal.plain
 
 
 @dataclass(frozen=True)
@@ -75,7 +36,7 @@ class ShellLine:
 
     @property
     def is_answering_only(self) -> bool:
-        return self.runnable and bool(self.calls) and not self.others and all(call.is_answering for call in self.calls)
+        return self.runnable and bool(self.calls) and not self.others and all(answers(call) for call in self.calls)
 
 
 def serving(policy, call: HookCall) -> bool:
@@ -116,7 +77,7 @@ def first_try(call: HookCall) -> bool:
 
 
 def alongside(call: HookCall, line: ShellLine) -> str:
-    answering = [journal for journal in line.calls if line.runnable and journal.is_answering and call.hook.tool_use]
+    answering = [journal for journal in line.calls if line.runnable and answers(journal) and call.hook.tool_use]
     retried = bool(answering) and not first_try(call)
     done = [journal for journal in answering if retried or run_answer(call, journal)]
     left = [journal for journal in line.calls if journal not in done]

@@ -227,15 +227,31 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
         tick(record)
     assert (len(asked), len([n for n in Nudges(record, actor=USER).all() if "answers for no address" in n.title])) == (restarts, 1), \
         "with the tunnel server answering for no address at all, nothing is restarted and the agent is told once"
+    import time
+    from engine.keeper import ServiceState
     from engine.services import log_file
     monkeypatch.setattr(watchdog, "reached", lambda url, wait=0: True)
     monkeypatch.setattr(watchdog, "serving", lambda root: True)
+    monkeypatch.setattr(watchdog, "status", lambda root, sid: ServiceState(state="ready", pgid=1))
+    monkeypatch.setattr(watchdog, "alive", lambda pid: True)
     log_file(record.root, watchdog.TUNNEL).write_text("domain already has an active tunnel (409 Conflict); reconnecting in 2s\n")
+    tunnel = watchdog.State(record.root / "runtime" / "sharing-tunnel.json")
+
+    def missed(times: int) -> None:
+        for _ in range(times):
+            tunnel.set("restarted", 0)
+            tick(record)
+
     restarts = len(asked)
-    for _ in range(6):
-        watchdog.State(record.root / "runtime" / "sharing-tunnel.json").set("restarted", 0)
-        tick(record)
-    assert len(asked) == restarts, "a tunnel waiting out the server's hold on its address is left to reconnect, never restarted into another 409"
+    missed(6)
+    assert len(asked) == restarts, "a live tunnel waiting out the server's hold on its address is left to reconnect, never restarted into another 409"
+    tunnel.set("unreachable_since", time.time() - 700)
+    missed(3)
+    assert len(asked) == restarts + 1, "but an address unreachable for over ten minutes gets its tunnel restarted anyway"
+    monkeypatch.setattr(watchdog, "alive", lambda pid: False)
+    tunnel.set("unreachable_since", time.time())
+    missed(3)
+    assert len(asked) == restarts + 2, "and a tunnel whose process died after its 409 is restarted"
 
 
 def test_a_layout_link_hands_the_layout_once_to_any_viewer():
