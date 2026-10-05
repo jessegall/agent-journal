@@ -9,7 +9,8 @@ def run(root: Path) -> list[str]:
     for record in environment_records(Path(root)):
         kept = record.setting(KEY) or {}
         if kept.get("moved"):
-            keep_moved(record, [*moved(record), *kept["moved"]])
+            held = moved(record)
+            keep_moved(record, [*held, *(entry for entry in kept["moved"] if entry not in held)])
             record.set_setting(KEY, {key: value for key, value in kept.items() if key != "moved"})
             folded.append(f"{record.env}: clean slate's set-aside list moved into its file")
     return folded
