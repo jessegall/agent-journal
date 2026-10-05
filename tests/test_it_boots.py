@@ -403,3 +403,27 @@ def test_the_event_stream_opens_carries_an_event_and_frees_its_watcher_on_discon
             Todos(record, actor=SYSTEM).create("wakes the stream so it notices the disconnect")
             time.sleep(0.2)
         assert len(bus._watchers) == watching, "the watcher is released once the reader is gone"
+
+
+def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_other_write(tmp_path, monkeypatch):
+    from engine import locks
+    from engine.stored import write_text
+    root = tmp_path / ".journal"
+    monkeypatch.setattr(locks, "LOCK_WAIT", 0.3)
+    outcomes = {}
+
+    def writing(name: str, path: Path) -> None:
+        try:
+            write_text(path, "written")
+            outcomes[name] = "written"
+        except TimeoutError:
+            outcomes[name] = "timed out"
+
+    with locks.hold_record_writes(root):
+        for name, path in (("runtime", root / "runtime" / "flag"), ("record", root / "environments" / "main" / "todo" / "001.md")):
+            worker = threading.Thread(target=writing, args=(name, path))
+            worker.start()
+            worker.join(WAIT)
+    assert outcomes == {"runtime": "written", "record": "timed out"}, "a migration holds record writes back until they time out, and never the runtime folder"
+    writing("after", root / "environments" / "main" / "todo" / "001.md")
+    assert outcomes["after"] == "written", "once the migration lets go the same write goes through"

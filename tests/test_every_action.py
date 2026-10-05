@@ -718,3 +718,43 @@ def test_a_command_over_the_run_route_is_a_409_when_local_a_400_when_refused_and
     assert (named.code, plain.code, plugin.code) == (200, 200, 200), "a valid command is a 200"
     assert (row(named)["seen"], row(plain)["seen"]) == (["user"], ["agent"]), "the actor is the one the query names, and the agent when it names none"
     assert row(plugin)["data"]["plugin"] == "clock", "the plugin the query names is the one the command runs as"
+
+
+def test_an_action_that_raises_restores_every_file_it_wrote_and_removes_every_file_it_made(tmp_path, monkeypatch):
+    import os
+    import controllers.files as files
+    from engine.stored import write_text
+    from engine.transaction import snapshot, undoable
+    kept, made = tmp_path / "kept.txt", tmp_path / "made.txt"
+    kept.write_text("before")
+    try:
+        with undoable():
+            for path in (kept, made):
+                snapshot(path)
+                path.write_text("during")
+            raise RuntimeError("the action broke")
+    except RuntimeError:
+        pass
+    assert (kept.read_text(), made.exists()) == ("before", False), "a failed action puts back the file it changed and removes the one it made"
+    record = fresh()
+    todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+    row = todos.create("a row with a file")
+    source = tmp_path / "note.txt"
+    write_text(source, "first")
+    todos.attach(row.n, str(source), "the first")
+    write_text(source, "second")
+    moves = []
+    real = os.replace
+
+    def failing(src, dst):
+        moves.append(dst)
+        if len(moves) == 2:
+            raise OSError("the disk refused the move")
+        real(src, dst)
+    monkeypatch.setattr(files.os, "replace", failing)
+    try:
+        todos.attach(row.n, str(source), "the second")
+    except OSError:
+        pass
+    monkeypatch.undo()
+    assert ((todos.folder(row.n) / "note.txt").read_text(), todos.load(row.n).files) == ("first", {"note.txt": "the first"}), "a failed move leaves the attached file and its description as they were"
