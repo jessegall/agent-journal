@@ -100,6 +100,14 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (len(older.edits), older.older) == (1, False), "the page before it holds the rest"
     whole = edited_file(project.record, project.agent, older.edits[0].id, Side.AFTER)
     assert (whole.path, whole.text) == ("a.py", "1\n"), "an edit gives the file as it stood after it"
+    from commands.http import dispatch
+    asked = lambda query: dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/file", project.record.root, query, {})
+    served = asked({"id": older.edits[0].id, "side": Side.AFTER})
+    assert (served.code, served.body["text"]) == (200, "1\n"), "the viewer's request for an edited file is served whole"
+    assert asked({"id": older.edits[0].id, "side": "sideways"}).code == 400, "a side that is neither before nor after is refused"
+    assert asked({"id": "no-such-edit", "side": Side.AFTER}).code == 404, "an edit nobody made is not found"
+    listed = dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/older", project.record.root, {"before": str(newest.edits[0].at), "last": "2"}, {})
+    assert (listed.code, len(listed.body["edits"])) == (200, 1), "the older page is served as the viewer asks for it"
 
 
 def test_a_project_folder_of_repositories_feeds_the_edits_of_each():

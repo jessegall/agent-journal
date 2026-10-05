@@ -58,7 +58,7 @@ def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everyt
     kept_at = slate.place(record) / "skill-0-graphify"
     kept_at.mkdir(parents=True)
     home = project / ".claude" / "skills" / "graphify"
-    record.set_setting(KEY, {**state(record), "moved": [{"from": str(home), "to": str(kept_at), "tracked": []}]})
+    record.set_setting(KEY, {**state(record), "moved": [{"from": str(home), "to": str(kept_at)}]})
     run(record.root)
     put_back(record)
     assert (home.is_dir(), kept_at.exists()) == (True, False), "a skill set aside before this version is put back"

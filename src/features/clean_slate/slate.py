@@ -5,7 +5,6 @@ from pathlib import Path
 from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
-from engine.proc import git
 from engine.wording import plural
 from engine.stored import read_json, write_json
 from providers import PROVIDERS
@@ -37,11 +36,6 @@ def keep_moved(record: Record, entries: list[dict]) -> None:
 
 def others(project: Path, agent: str) -> list[Path]:
     return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, dict, {})) != read_json(f, dict, {})]
-
-
-def hide(folder: Path, files: list[str], hidden: bool) -> None:
-    if files:
-        git(["update-index", "--skip-worktree" if hidden else "--no-skip-worktree", "--", *files], folder, timeout=30)
 
 
 def kept(settings) -> dict:
@@ -88,7 +82,6 @@ def put_back(record: Record) -> int:
             kept_at.unlink()
         elif not (home.exists() or home.is_symlink()):
             shutil.move(str(kept_at), str(home))
-            hide(home.parent, m.get("tracked") or [], False)
     if entries:
         keep_moved(record, [])
     return len(entries)
