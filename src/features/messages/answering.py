@@ -44,7 +44,7 @@ def read_and_open(journal) -> list:
 
 def in_hand(journal):
     held = read_and_open(journal)
-    return held[-1] if held else None
+    return held[0] if len(held) == 1 else None
 
 
 def unanswered(journal) -> list:
