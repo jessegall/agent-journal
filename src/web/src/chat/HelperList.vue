@@ -11,7 +11,7 @@ const props = defineProps({rows: {type: Array, default: () => []}});
 const emit = defineEmits(["changed"]);
 const listed = computed(() => helpersInOrder(props.rows));
 const busy = ref(0);
-const told = ref("");
+const refusal = ref({n: 0, text: ""});
 const inspected = ref(null);
 const cardOf = (row) => ({
     type: "helper",
@@ -24,12 +24,12 @@ const cardOf = (row) => ({
 
 async function act(row, action) {
     busy.value = row.n;
-    told.value = "";
+    refusal.value = {n: 0, text: ""};
     try {
         await api.act("helper", row.n, action);
         emit("changed");
     } catch (e) {
-        told.value = e.message;
+        refusal.value = {n: row.n, text: e.message};
     } finally {
         busy.value = 0;
     }
@@ -40,9 +40,6 @@ async function act(row, action) {
     <h4 class="helpers-heading">Helpers</h4>
     <template v-if="!listed.length">
         <p class="helpers-none">No helper has been dispatched here.</p>
-    </template>
-    <template v-if="told">
-        <p class="helpers-told">{{ told }}</p>
     </template>
     <template v-for="row in listed" :key="row.n">
         <div :class="['helper', helperState(row)]">
@@ -64,9 +61,20 @@ async function act(row, action) {
                     />
                 </template>
                 <template v-else-if="helperState(row) === 'reported'">
-                    <Btn small kind="primary" :busy="busy === row.n" @click="act(row, 'complete')">Finish</Btn>
+                    <Btn
+                        small
+                        kind="primary"
+                        :busy="busy === row.n"
+                        title="Close this helper: its environment is packed away and its worktree removed, its last commit kept"
+                        @click="act(row, 'complete')"
+                    >
+                        Finish
+                    </Btn>
                 </template>
             </div>
+            <template v-if="refusal.n === row.n">
+                <p class="helper-refusal">{{ refusal.text }}</p>
+            </template>
             <template v-if="row.data?.report">
                 <TextDisplay class="helper-report" :text="row.data.report" />
             </template>
@@ -93,10 +101,15 @@ async function act(row, action) {
     text-transform: uppercase;
 }
 
-.helpers-none,
-.helpers-told {
+.helpers-none {
     margin: 0 0 6px;
     color: var(--text-3);
+    font-size: 12px;
+}
+
+.helper-refusal {
+    margin: 6px 0 0;
+    color: var(--danger);
     font-size: 12px;
 }
 
