@@ -250,8 +250,9 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     assert not any("take it up" in refused(line) for line in (f"journal sequence follow {made.n}", "journal message reply 3 'on it'", "journal todo create 'other work'")), \
         "taking the step up, answering the user and filing a to-do are never held"
     assert all("take it up" in refused(line) for line in ("journal message reply 3 a#; journal work start 'other work'", "journal --env other todo create other",
-                                                          "journal todo create other --session other")), \
-        "a '#' inside a word hides nothing, and a line naming its own environment or session is held"
+                                                          "journal todo create other --session other", "journal --en other todo create other",
+                                                          "journal --ro /tmp/other todo create other", "journal --plugin x todo create other")), \
+        "a '#' inside a word hides nothing, and a line naming its own environment, root, session or plugin, even abbreviated, is held"
     assert "ran" not in refused("/tmp/journal message reply 3 x; journal work start 'other work'"), "only the bare journal command runs, never another program by that name"
     mixed = lambda: refused("journal todo create filed; journal work start 'other work'", "use-mixed")
     first, again = mixed(), mixed()

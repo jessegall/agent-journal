@@ -2,7 +2,7 @@ import re
 import shlex
 from dataclasses import dataclass
 
-GLOBAL_OPTIONS = frozenset({"--root", "--env", "--as", "--session", "--agent", "--cwd"})
+GLOBAL_OPTIONS = frozenset({"--root", "--env", "--default-env", "--as", "--session", "--agent", "--cwd", "--plugin"})
 SEPARATORS = frozenset(";&|()\n")
 PUNCTUATION = "".join(SEPARATORS) + "<>"
 NAMED = re.compile(r"(?:^|(?<=[\s/;&|()'\"`=]))journal(?:\.py)?(?=\s)")
