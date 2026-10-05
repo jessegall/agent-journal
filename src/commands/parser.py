@@ -10,7 +10,7 @@ from features.switches import generation
 from features.session_briefing import start as briefing
 from providers import DRIVERS
 from engine.transcript import conversation, user
-from resources.base import AGENT
+from resources.base import ACTORS, AGENT
 from engine.version import version
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.tidy import tidy
@@ -89,7 +89,7 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
     top.add_argument("--env", dest="bound", default="")
     top.add_argument("--default-env", dest="fallback", default=os.environ.get("JOURNAL_ENV", ""), help=argparse.SUPPRESS)
-    top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
+    top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT), choices=ACTORS)
     top.add_argument("--session", dest="as_session", default=os.environ.get("JOURNAL_SESSION") or os.environ.get(os.environ.get("JOURNAL_SESSION_VARIABLE", ""), ""))
     top.add_argument("--cwd", default="", help=argparse.SUPPRESS)
     top.add_argument("--agent", dest="as_agent", default=os.environ.get("JOURNAL_AGENT", ""))
