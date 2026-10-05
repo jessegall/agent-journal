@@ -30,6 +30,8 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     repo = project_on("phone-connection")
     record, project = repo.record, repo.project
     working_tip = commit(project, "later.txt", "later\n")
+    (project / "deps").mkdir()
+    (project / ".worktreelinks").write_text("deps\n")
     said = Worktrees(record, actor=AGENT).cut("rhea", helper="Rhea")
     row = Worktrees(record, actor=AGENT).all()[0]
     folder = Path(row.path)
@@ -39,6 +41,7 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
         "the worktree starts at the working branch's tip, with its latest commit, not at main"
     assert str(folder) in said and "helper-rhea" in said, "the path and branch are printed for the dispatch prompt"
     assert (folder / ".journal").resolve() == record.root.resolve(), "the helper writes to the project's journal"
+    assert (folder / "deps").resolve() == (project / "deps").resolve(), "a folder .worktreelinks lists, like node_modules, is linked in, not copied"
     assert refused(lambda: Worktrees(record, actor=AGENT).cut("rhea")).startswith("the worktree rhea is taken"), "a name is cut once"
 
 

@@ -14,6 +14,7 @@ from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
 
 INCLUDED = ".worktreeinclude"
+LINKED = ".worktreelinks"
 BRANCHED = "worktree-"
 KEPT = "refs/journal/worktrees"
 GIT_WAIT = 60
@@ -220,13 +221,24 @@ def matched(project: Path, pattern: str) -> list[Path]:
 
 
 def included(project: Path, folder: Path) -> None:
-    listed = project / INCLUDED
-    patterns = [line.strip() for line in listed.read_text().splitlines() if line.strip() and not line.startswith("#")] if listed.is_file() else []
-    for found in (path for pattern in patterns for path in matched(project, pattern)):
+    for found in (path for pattern in listed(project, INCLUDED) for path in matched(project, pattern)):
         copy = folder / found.relative_to(project)
         if not copy.exists():
             copy.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(found, copy)
+
+
+def listed(project: Path, name: str) -> list[str]:
+    found = project / name
+    return [line.strip() for line in found.read_text().splitlines() if line.strip() and not line.startswith("#")] if found.is_file() else []
+
+
+def link_folders(project: Path, folder: Path) -> None:
+    for path in (project / line.strip("/") for line in listed(project, LINKED)):
+        link = folder / path.relative_to(project)
+        if path.exists() and not link.exists():
+            link.parent.mkdir(parents=True, exist_ok=True)
+            link.symlink_to(path)
 
 
 def git(project: Path, *args: str) -> subprocess.CompletedProcess:
