@@ -8,6 +8,7 @@ from engine.record import Record
 from providers.base import asking_row
 from providers.payload import PERMISSION, STATUS, Hook, HookEvent
 from resources.base import SYSTEM
+from resources.types import AgentRow
 from runner import chat_mirror
 from runner.gate import refusal
 from runner.hook_report import report
@@ -33,6 +34,9 @@ def handle(provider, root: Path, env: str, hook) -> dict:
 def subagent_answer(provider, record: Record, hook: Hook) -> dict:
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(hook.session)
+    parent = provider.session(hook.transcript).get(AgentRow.parent, "") if not row.parent else ""
+    if parent:
+        row = agents.update(row.n, parent=parent)
     if hook.event == PERMISSION or row.asking:
         agents.update(row.n, asking=asking_row(provider.asking(hook)))
     if hook.event != HookEvent.PRE_TOOL_USE:

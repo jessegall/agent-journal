@@ -257,7 +257,7 @@ def test_a_session_start_reads_session_model_and_context_from_each_providers_own
     assert (row.model, row.context, row.uses) == ("", 0, 0), "claude: a hook from a subagent's transcript leaves its row without the main agent's facts"
 
 
-def test_a_codex_child_thread_is_handled_by_its_hooks_as_a_main_agent_while_its_row_is_a_subagent(tmp_path):
+def test_a_codex_child_thread_is_handled_by_its_hooks_as_a_subagent_like_claudes(tmp_path):
     features.load()
     record = fresh()
     child = tmp_path / "rollout-2026-10-06T10-00-00-child.jsonl"
@@ -268,14 +268,13 @@ def test_a_codex_child_thread_is_handled_by_its_hooks_as_a_main_agent_while_its_
     def hook(event, **more):
         return handle(codex, record.root, record.env, {"hook_event_name": event, "session_id": "child", "transcript_path": str(child), "cwd": str(record.root.parent), **more})
     raw = {"hook_event_name": "PreToolUse", "session_id": "child", "transcript_path": str(child)}
-    assert codex.is_subagent(Hook.read(raw, codex.tool_kinds)) is False, "codex: a hook never says it comes from a subagent, even for a child thread's transcript"
+    assert codex.is_subagent(Hook.read(raw, codex.tool_kinds)) is True, "codex: a hook whose transcript names a parent thread comes from a subagent"
     hook("SessionStart")
-    held = hook("PreToolUse", tool_name="apply_patch", tool_input={"input": PATCH})
-    assert held["decision"] == "block" and "load journal before anything else" in held["reason"], \
-        "codex: a child thread's tool use is held until it loads the journal skill, as a main agent's is"
+    assert hook("PreToolUse", tool_name="apply_patch", tool_input={"input": PATCH}) == {}, \
+        "codex: a child thread's write is held by neither the open-work gate nor the skill hold, as a Claude subagent's is not"
     row = Agents(record, actor=SYSTEM).by_session(child.stem)
-    assert (row.parent, row.subagent, row.uses) == ("the-parent", True, 1), \
-        "codex: the child's row names its parent and counts as a subagent, and its own tool use is reported on it as a main agent's is"
+    assert (row.parent, row.subagent, row.uses) == ("the-parent", True, 0), \
+        "codex: the child's row names its parent and counts as a subagent, and its tool use is not counted as a main agent's"
     claude = PROVIDERS["claude"]()
     assert claude.is_subagent(Hook.read({**raw, "agent_id": "sub1"}, claude.tool_kinds)) is True, "claude: a hook with an agent id is a subagent's"
     asked = {"hook_event_name": "PreToolUse", "session_id": "sub1", "agent_id": "sub1", "tool_name": "Edit", "tool_input": {"file_path": "web/x.py"}, "cwd": str(record.root.parent)}

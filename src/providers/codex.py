@@ -23,6 +23,7 @@ TAIL_BYTES = 262144
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
 SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
+PARENT_THREADS: dict[str, str] = {}
 SPAWNED = re.compile(r'"agent_id"\s*:\s*"([^"]+)"(?:\s*,\s*"nickname"\s*:\s*"([^"]*)")?')
 CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"},
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
@@ -491,6 +492,15 @@ class Codex(Provider):
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return self.configuration().effort
+
+    def is_subagent(self, hook) -> bool:
+        return bool(hook.transcript) and bool(self._parent_thread(hook.transcript))
+
+    def _parent_thread(self, path: Path) -> str:
+        key = str(path)
+        if key not in PARENT_THREADS and Path(path).is_file():
+            PARENT_THREADS[key] = self.session(path).get(AgentRow.parent, "")
+        return PARENT_THREADS.get(key, "")
 
     def session(self, path: Path | None) -> dict:
         if path is None or not Path(path).is_file():
