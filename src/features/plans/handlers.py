@@ -108,8 +108,7 @@ class ReopenPlansWithTheirRows(Handler):
             found = plan.phase_of(event.type, event.n)
             if not found or plan.status == ABANDONED or (plan.status in RUNNING and plan.current <= found):
                 continue
-            if plan.completed:
-                plan = plans.reopen(plan.n, why=f"{event.type} {event.n} of phase {found} was reopened")
+            plan = plans.reopen(plan.n, why=f"{event.type} {event.n} of phase {found} was reopened") if plan.completed else plans.load(plan.n)
             plan.status, plan.current = ACTIVE, found
             plans.save(plan, "updated", phase=found, status=ACTIVE)
 

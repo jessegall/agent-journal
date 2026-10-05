@@ -282,7 +282,8 @@ class Plans(Controller):
         return not (last or waits)
 
     def _catch_up(self) -> None:
-        for plan in self._running():
+        for running in self._running():
+            plan = self.load(running.n)
             while self._step(plan):
                 pass
 

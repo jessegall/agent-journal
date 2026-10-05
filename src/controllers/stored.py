@@ -390,12 +390,12 @@ class RowStore:
     def every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
-            rows = [(self.load if memo is None else self.peek)(row["n"]) for row in self.summaries()]
+            rows = [self.peek(row["n"]) for row in self.summaries()]
             rows = wholes([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
                 return self.order(rows)
             memo[self.type, deleted] = rows
-        return self.order([r.fork() for r in memo[self.type, deleted]])
+        return self.order(list(memo[self.type, deleted]))
 
     def standing(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
         own = [r for r in self.kept(closed_since, closed_last) if (self.resource.hidden_listed or not r.hidden) and self.visible(r)]
@@ -405,4 +405,4 @@ class RowStore:
         rows = [row for row in self.summaries() if not row["deleted"]]
         closed = [row for row in rows if row["completed"] and closed_since and row["completed"] >= closed_since]
         kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
-        return self.order([self.load(row["n"]) for row in rows if not row["completed"]] + [self.load(row["n"]) for row in kept])
+        return self.order([self.peek(row["n"]) for row in rows if not row["completed"]] + [self.peek(row["n"]) for row in kept])

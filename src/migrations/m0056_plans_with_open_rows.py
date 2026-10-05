@@ -14,8 +14,7 @@ def run(root: Path) -> list[str]:
             phase = first_open_phase(record, plan)
             if not phase:
                 continue
-            if plan.completed:
-                plan = plans.reopen(plan.n, why=f"phase {phase} still has open rows")
+            plan = plans.reopen(plan.n, why=f"phase {phase} still has open rows") if plan.completed else plans.load(plan.n)
             plan.status, plan.current = ACTIVE, phase
             plans.save(plan, "updated", phase=phase, status=ACTIVE)
             reopened.append(f"{record.env} {plan.ref}")
