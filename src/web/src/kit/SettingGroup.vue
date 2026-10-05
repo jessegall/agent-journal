@@ -4,6 +4,7 @@ import {useToggledSet} from "../composables/toggledSet.js";
 import Chip from "./Chip.vue";
 import SettingControl from "./SettingControl.vue";
 import Switch from "./Switch.vue";
+import TextDisplay from "./TextDisplay.vue";
 
 const props = defineProps({group: {type: Object, required: true}, sheet: Boolean});
 const emit = defineEmits(["change", "timing", "act"]);
@@ -48,7 +49,7 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
             </header>
         </template>
         <template v-if="opened.has(group.key)">
-            <p class="setting-help">{{ group.help }}</p>
+            <TextDisplay class="setting-help" :text="group.help" />
         </template>
         <template v-if="!bare">
             <div class="setting-card">
@@ -74,7 +75,7 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
                             </template>
                         </SettingControl>
                         <template v-if="opened.has(item.key)">
-                            <p class="setting-help inside">{{ helps[item.key] }}</p>
+                            <TextDisplay class="setting-help inside" :text="helps[item.key]" />
                         </template>
                         <template v-for="row in item.rows" :key="row.key">
                             <SettingControl

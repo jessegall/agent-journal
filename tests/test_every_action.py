@@ -210,6 +210,8 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     }
     wrong = {path: sorted(keys[path] ^ set(reply.body)) for path in keys if (reply := get(record, path)).code != 200 or set(reply.body) != keys[path]}
     assert wrong == {}, "each object the viewer reads has the keys it reads, and nothing else"
+    assert "`journal plan create`" in get(record, "/api/manifest").body["features"]["plans"]["help"], \
+        "a feature's help reaches the viewer through the formatters, its commands set as code"
     lists = {"/api/pages": set(), "/api/services": set(), "/api/journals": {"current", "port", "project", "root", "running", "version"},
              "/api/{env}/events": {"action", "actor", "at", "data", "handled", "id", "n", "pid", "type"},
              "/api/{env}/search": {"matches", "n", "ref", "title", "type"}}

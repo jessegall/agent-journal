@@ -3,6 +3,8 @@ from dataclasses import fields
 from pathlib import Path
 
 import features
+from engine.record import Record
+from features.format import catalogue
 from features import groups
 from controllers.base import actions
 from controllers.base import Controller
@@ -52,6 +54,6 @@ def manifest(root: Path | None = None) -> Manifest:
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
         "types": described_types(),
-        "features": features.describe(),
+        "features": catalogue(features.describe(), Record(root, runtime.env(root))) if root else features.describe(),
         "groups": groups.describe(),
     }
