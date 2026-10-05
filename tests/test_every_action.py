@@ -258,6 +258,8 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
     assert (code, "takes the reason" in said) == (1, True), "--force without its reason exits 1 and says it takes one"
     code, said = refused("todo", "bogus")
     assert (code, "invalid choice" in said or "bogus" in said) == (2, True), "a word the noun does not have exits 2 and names it"
+    code, said = refused("--as", "bogus", "todo", "all")
+    assert (code, "choose from 'user', 'agent', 'system', 'plugin'" in said) == (2, True), "an unknown actor exits 2 and names the actors there are"
     code, said = refused("--agent", "sub-1", "todo", "create", "a title")
     assert (code, said.startswith("! ")) == (1, True), f"a subagent that was never lent the environment is refused in words: {said}"
     assert CONTROLLERS["todo"](record, actor=SYSTEM).all() == [], "and nothing was written by the refused command"
