@@ -21,13 +21,13 @@ def appoint(root: Path, env: str, session: str) -> dict:
     seat, candidate = found
     before = Sessions(root).environment(session)
     environments = Environments(Record(root, before or env), actor=SYSTEM, session=session)
-    target = environments._titled(env)
+    target = environments.rows.by_title(env)
     if not target:
         raise Refused(f"no environment {env!r}")
     environments.switch(target.n, move=session)
     if before and before != env:
         previous = Agents(Record(root, before), actor=SYSTEM)
-        row = previous._titled(session)
+        row = previous.rows.by_title(session)
         if row:
             previous.update(row.n, status=STOPPED, at=time.time())
     agents = Agents(Record(root, env), actor=SYSTEM)

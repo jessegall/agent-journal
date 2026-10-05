@@ -84,7 +84,7 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert writing(record) == CLAUDE.blocking("guardian: src/Generated is generated; edit the stub instead"), \
         "the plugin's reason is given to the agent, under its name"
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
-    guardian = Plugins(record, actor=SYSTEM)._titled("guardian")
+    guardian = Plugins(record, actor=SYSTEM).rows.by_title("guardian")
     assert "src/Generated is generated" in log(record.root, "guardian").read_text(), "every answer the plugin gives is written to its log"
     with pytest.raises(Refused):
         log(record.root, "..%2Foutside")

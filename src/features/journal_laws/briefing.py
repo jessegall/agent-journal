@@ -64,7 +64,7 @@ def block(record=None, rules: tuple[str, ...] = ()) -> str:
 
 
 def injected(record) -> tuple[str, ...]:
-    return tuple(rule.title for rule in Rules(record, actor=SYSTEM)._standing() if rule.injected)
+    return tuple(rule.title for rule in Rules(record, actor=SYSTEM).rows.standing() if rule.injected)
 
 
 def brief(project: Path, record) -> Briefing:

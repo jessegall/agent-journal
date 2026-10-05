@@ -418,7 +418,7 @@ class Driver(ABC):
         return last.title if last and last.title else ""
 
     def _report(self):
-        rows = [r for r in Agents(self.record, actor=SYSTEM)._viewed()
+        rows = [r for r in Agents(self.record, actor=SYSTEM).rows.viewed()
                 if r.event and (r.title == self.session or self.owns(r) or (r.provider == self.name and float(r.at) >= self.born - 1))]
         return max(rows, key=lambda r: float(r.at)).fork() if rows else None
 

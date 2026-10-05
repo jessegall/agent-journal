@@ -31,7 +31,7 @@ class RunningBoards:
             from features.sequences.resource import RunKey
             sequences = Sequences(self.record, actor=SYSTEM)
             for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
-                sequence = sequences._titled(shipped.title)
+                sequence = sequences.rows.by_title(shipped.title)
                 for key in [RunKey.of(key) for key in (sequence.runs if sequence else {})]:
                     if key.here(self.record.env):
                         sequences.finish(sequence.n, key.about)

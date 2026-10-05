@@ -21,4 +21,4 @@ class NameUncitedSource(Handler):
 
     def lately(self, context: Context) -> list:
         since = time.time() - context.settings.within * 60
-        return [r for kind in SOURCES for r in context.journal.get(kind)._every() if AGENT in r.seen and not r.deleted and r.updated >= since]
+        return [r for kind in SOURCES for r in context.journal.get(kind).rows.every() if AGENT in r.seen and not r.deleted and r.updated >= since]

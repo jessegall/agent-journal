@@ -54,7 +54,7 @@ class TicketLanding:
 
     @action
     def keep_branches(self) -> None:
-        for ticket in (r for r in self._standing() if r.work_environment):
+        for ticket in (r for r in self.rows.standing() if r.work_environment):
             for _, place, _ in self._repositories(ticket):
                 keep(place, ticket.work_environment, self._branch(ticket))
 

@@ -13,7 +13,7 @@ def run(root: Path) -> list[str]:
     named = []
     for record in environment_records(Path(root)):
         collections = Collections(record, actor=SYSTEM)
-        for collection, source in [(c, ref) for c in collections._every() if not c.source for ref in made_by(c)]:
+        for collection, source in [(c, ref) for c in collections.rows.every() if not c.source for ref in made_by(c)]:
             collections.update(collection.n, source=source)
             named.append(f"{record.env} {collection.ref} came from {source}")
     return named

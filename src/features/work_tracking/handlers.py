@@ -44,7 +44,7 @@ class WorkLogged(ResourceEvent):
 
 
 def working(context: Context) -> list:
-    return [w for w in context.journal.get(Works)._standing() if not w.parked]
+    return [w for w in context.journal.get(Works).rows.standing() if not w.parked]
 
 
 class HoldUntilDeclared(Handler):
@@ -89,7 +89,7 @@ class CloseWork(Handler):
 
 
 def name_parked(context: Context) -> None:
-    parked = [w for w in context.journal.get(Works)._standing() if w.parked]
+    parked = [w for w in context.journal.get(Works).rows.standing() if w.parked]
     agent = context.journal.get(Agents).primary()
     state, now = context.record.state(context.feature.name), time.time()
     if not parked or not agent or now - float(state.get("parked_named", 0)) <= ASKED_AGAIN_AFTER:
@@ -101,7 +101,7 @@ def name_parked(context: Context) -> None:
 
 class NameParkedOnTodoDone(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not any(int(w.todo) == event.n for w in context.journal.get(Works)._standing()):
+        if not any(int(w.todo) == event.n for w in context.journal.get(Works).rows.standing()):
             name_parked(context)
 
 
@@ -109,7 +109,7 @@ def name_unblocked(context: Context, ref: str) -> None:
     todos, agent = context.journal.get(Todos), context.journal.get(Agents).primary()
     if not agent:
         return
-    for row in [r for r in todos._standing() if ref in r.after and not r.blocked and not todos.waits(r)]:
+    for row in [r for r in todos.rows.standing() if ref in r.after and not r.blocked and not todos.waits(r)]:
         context.speaking_to(agent).agent.say("unblocked", n=row.n, title=row.title, closed=ref.replace(":", " "))
 
 
@@ -133,7 +133,7 @@ class AskStillBlocked(Handler):
         if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
             return
         asked_at, now = state.get("asked", {}), time.time()
-        due = [r for r in context.journal.get(Todos)._standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
+        due = [r for r in context.journal.get(Todos).rows.standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
         for row in [r for r in due if not asked(context.record, r)]:
             context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked.rstrip("."))
             asked_at[str(row.n)] = now
@@ -143,7 +143,7 @@ class AskStillBlocked(Handler):
 class EndWorkWithTodo(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
         works = context.journal.get(Works)
-        for work in works._standing():
+        for work in works.rows.standing():
             if int(work.todo) == event.n:
                 works.complete(work.n, how=context.journal.get(Todos).load(event.n).outcome or f"todo {event.n} done")
 

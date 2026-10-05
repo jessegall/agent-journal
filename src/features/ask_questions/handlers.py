@@ -58,11 +58,11 @@ class DismissSettledQuestions(Handler):
         if event.type not in WAITED_ON or event.action not in GONE:
             return
         ref, questions = Ref(event.type, event.n), Questions(context.record, actor=SYSTEM)
-        for question in [q for q in questions._standing() if str(ref) in q.refs]:
+        for question in [q for q in questions.rows.standing() if str(ref) in q.refs]:
             questions.dismiss(question.n, why=f"{ref.spoken}, which it was about, is {GONE[event.action]}")
 
 
 def open_a_day(context, agent) -> list[Sent]:
     now = time.time()
-    return [Sent(str(q.n), {"n": q.n, "title": q.title}) for q in Questions(context.record, actor=SYSTEM)._standing()
+    return [Sent(str(q.n), {"n": q.n, "title": q.title}) for q in Questions(context.record, actor=SYSTEM).rows.standing()
             if not q.hidden and now - q.created > DAY]

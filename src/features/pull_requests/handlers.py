@@ -16,6 +16,6 @@ class PinPullRequests(Handler):
         if pull.pull == OPENED and pull.url:
             context.journal.notice(OPEN, number=pull.number, link=pull.url, label="Open the pull request", pull=pull.number, tone="note")
             return
-        for notice in context.journal.get(Notices)._standing():
+        for notice in context.journal.get(Notices).rows.standing():
             if notice.data.get("pull") and (not pull.number or notice.data.get("pull") == pull.number):
                 context.journal.clear(notice, f"pull request {pull.pull}d")

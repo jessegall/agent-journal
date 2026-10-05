@@ -182,7 +182,7 @@ class Sequences(Controller):
         self.update_run(sequence, key, {**handed, "stepped": time.time()})
 
     def open_rows(self) -> list[dict]:
-        return [row for row in self.summaries() if not row["completed"] and not row["deleted"]]
+        return [row for row in self.rows.summaries() if not row["completed"] and not row["deleted"]]
 
     def _here(self, keys) -> list[str]:
         return [key for key in keys or {} if RunKey.of(key).here(self.record.env)]

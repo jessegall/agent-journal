@@ -68,7 +68,7 @@ class Critiques(Controller):
         return settings
 
     def _model(self, model: str) -> str:
-        caller = Agents(self.record, actor=SYSTEM)._titled(self.session) if self.session else None
+        caller = Agents(self.record, actor=SYSTEM).rows.by_title(self.session) if self.session else None
         return dispatch_model(caller.provider, model) if caller else model
 
     def _briefed(self, folder, what: str, chosen: list[str]) -> list[dict]:

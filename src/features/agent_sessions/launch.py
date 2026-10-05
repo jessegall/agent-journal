@@ -25,7 +25,7 @@ def start_in(record, name: str, abstract: str, owner: str, provider: str, args: 
 
 def prepared(record, name: str, abstract: str, owner: str) -> Record:
     environments = Environments(record, actor=SYSTEM)
-    if not environments._titled(name):
+    if not environments.rows.by_title(name):
         environments.create(name, abstract=abstract, owner=owner, launched_from=record.env)
     place = Record(record.root, name)
     prompted(place)

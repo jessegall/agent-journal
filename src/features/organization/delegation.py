@@ -13,7 +13,7 @@ def missing(names: list, text: str) -> list:
 def queued_behind(todos, domain: Domain, role: Role):
     if role.cardinality != WORKTREE:
         return None
-    return max((r for r in todos._standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.n, default=None)
+    return max((r for r in todos.rows.standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.n, default=None)
 
 
 def role_of(record, todo) -> Role | None:
@@ -24,7 +24,7 @@ def everywhere(root, domain: str, role: str) -> list[tuple[str, object]]:
     found = []
     for record in Record.every(root):
         todos = Todos(record, actor=SYSTEM)
-        found += [(record.env, todos.load(row["n"])) for row in todos.summaries() if not row["completed"] and not row["deleted"]]
+        found += [(record.env, todos.load(row["n"])) for row in todos.rows.summaries() if not row["completed"] and not row["deleted"]]
     return [(env, r) for env, r in found if r.data.get("domain") == domain and r.data.get("role") == role]
 
 

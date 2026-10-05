@@ -19,7 +19,7 @@ class Agents(Controller):
 
     @action
     def by_session(self, session: str):
-        return self._titled(session) or self.create(session, status="stopped")
+        return self.rows.by_title(session) or self.create(session, status="stopped")
 
     def _shared(self, session: str):
         memo = self.record.memo
@@ -52,7 +52,7 @@ class Agents(Controller):
         return self._stopping(int(n), task=task.strip(), description=description.strip() or task.strip())
 
     def _session_or_primary(self, session: str):
-        return self._titled(session) if session else self.primary()
+        return self.rows.by_title(session) if session else self.primary()
 
     @action
     def primary(self):
@@ -61,10 +61,10 @@ class Agents(Controller):
 
     def _primary_to_read(self):
         n = self._primary_n()
-        return self._peek(n) if n is not None else None
+        return self.rows.peek(n) if n is not None else None
 
     def _primary_n(self) -> int | None:
-        standing = [row for row in self.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
+        standing = [row for row in self.rows.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
         latest = max(standing, key=lambda row: 0.0 if row["at"] is None else float(row["at"]), default=None)
         return latest["n"] if latest is not None else None
 
@@ -73,7 +73,7 @@ class Agents(Controller):
         holder = sessions.holder(environment)
         if not holder:
             return OFFLINE
-        row = self._titled(holder)
+        row = self.rows.by_title(holder)
         if row is not None and row.data.get("status") in (types.BUSY, types.WORKING):
             return WORKING_STATE
         if (row is None or not row.data.get("event")) and time.time() - sessions.read(holder).since > REPORT_WITHIN:

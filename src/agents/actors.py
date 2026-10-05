@@ -103,7 +103,7 @@ class Agent(Actor):
 
     def delivered(self, done: list[Event]) -> None:
         reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)
-        row = agents._titled(reported.title) if reported is not None else None
+        row = agents.rows.by_title(reported.title) if reported is not None else None
         if row is None:
             return
         earlier = [] if row.status in (IDLE, STOPPED) else list(row.delivered)
@@ -147,7 +147,7 @@ class Agent(Actor):
         return self.active()
 
     def active(self) -> str:
-        return WORKING if Works(self.record, actor=SYSTEM)._standing() else BUSY
+        return WORKING if Works(self.record, actor=SYSTEM).rows.standing() else BUSY
 
     def mark(self, status: str, event: str, **more) -> None:
         agents = Agents(self.record, actor=SYSTEM)

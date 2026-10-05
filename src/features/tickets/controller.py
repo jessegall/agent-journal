@@ -53,7 +53,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         if data.get("draft") and self.actor == AGENT and Boards(self.record, actor=self.actor).cancelled_lately(data["board"]):
             self._refuse(f"the request on board {data['board']} was cancelled, so stop drafting")
         after = [word.strip() for word in str(data.pop("after", "")).split(",") if word.strip()]
-        unknown = [word for word in after if not word.isdigit() or not self._exists(int(word))]
+        unknown = [word for word in after if not word.isdigit() or not self.rows.exists(int(word))]
         if unknown:
             self._refuse(f"a card waits only on cards already made; not {', '.join(unknown)}")
         if isinstance(data.get("covers"), int):
@@ -146,7 +146,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
-        started = [ticket for ticket in self._standing() if ticket.work_environment and not ticket.halted and (ticket.agent_seen or ticket.launched)
+        started = [ticket for ticket in self.rows.standing() if ticket.work_environment and not ticket.halted and (ticket.agent_seen or ticket.launched)
                    and time.time() - ticket.launched > LAUNCHING_FOR and ticket.board and int(ticket.board) in boards]
         looked = [(ticket, self._runtime(ticket, sessions, running)) for ticket in started]
         return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._plan_waits(ticket)] + \
@@ -165,7 +165,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             return ticket
         name = f"{self.type}-{ticket.n}"
         environments = Environments(self.record, actor=self.actor)
-        if not environments._titled(name):
+        if not environments.rows.by_title(name):
             environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref, launched_from=self.record.env)
         place = Record(self.record.root, name)
         prompted(place)
@@ -181,7 +181,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self._owned_by(name, "plan")
 
     def _owned_by(self, name: str, kind: str) -> int:
-        place = Environments(self.record, actor=SYSTEM)._titled(name) if name else None
+        place = Environments(self.record, actor=SYSTEM).rows.by_title(name) if name else None
         owner = str(place.owner) if place else ""
         return int(owner.split(":")[1]) if owner.startswith(f"{kind}:") else 0
 
@@ -192,9 +192,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return Plans(self.record, actor=SYSTEM)
 
     def _close_plan_worktree(self, place: str) -> None:
-        if any(r.work_environment == place for r in self._standing()):
+        if any(r.work_environment == place for r in self.rows.standing()):
             return
-        for env in Environments(self.record, actor=SYSTEM)._every():
+        for env in Environments(self.record, actor=SYSTEM).rows.every():
             session = Sessions(self.record.root).holder(env.title) if env.title == place or env.launched_from == place else ""
             if session:
                 self._ask_to_stop(session)
@@ -226,7 +226,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 rows.delete(proposal.n, f"{self.type} {closed.n} closed without its branch merged")
         self._stop(closed)
         environments = Environments(self.record, actor=self.actor)
-        place = environments._titled(closed.work_environment) if closed.work_environment else None
+        place = environments.rows.by_title(closed.work_environment) if closed.work_environment else None
         if place:
             try:
                 environments.complete(place.n, how=f"{self.type} {closed.n} closed", yes=True)
@@ -238,17 +238,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         self.record.emit(self.type, n, moment, SYSTEM, **data)
 
     def hold(self, type_: str, n: int) -> None:
-        owner = Environments(self.record, actor=self.actor)._titled(self.record.env)
+        owner = Environments(self.record, actor=self.actor).rows.by_title(self.record.env)
         if owner and owner.owner.startswith(f"{self.type}:"):
             CONTROLLERS[type_](self.record, actor=self.actor).complete(n, how=f"proposed for {owner.owner.replace(':', ' ')}; it counts once that branch is merged",
                                                                       proposed_for=owner.owner)
 
     def _proposals(self, ticket) -> list:
-        return [(rows, r) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD) for r in rows._every() if r.data.get("proposed_for") == ticket.ref]
+        return [(rows, r) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD) for r in rows.rows.every() if r.data.get("proposed_for") == ticket.ref]
 
     def _stop_orphaned(self) -> list[str]:
-        kept = {row.ref for row in self._every() if not row.deleted}
-        owned = [env.title for env in Environments(self.record, actor=SYSTEM)._every()
+        kept = {row.ref for row in self.rows.every() if not row.deleted}
+        owned = [env.title for env in Environments(self.record, actor=SYSTEM).rows.every()
                  if not env.deleted and env.owner.startswith(f"{self.type}:") and env.owner not in kept]
         stopped = [place for place in owned if Sessions(self.record.root).holder(place)]
         for place in stopped:
@@ -256,7 +256,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return stopped
 
     def close_merged(self) -> list:
-        return self._closed([r for r in self._standing() if r.work_environment and self._ran(r) and self._merged(r)])
+        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._merged(r)])
 
     def _closed(self, merged: list) -> list:
         for ticket in merged:
@@ -461,7 +461,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 continue
 
     def _queue(self) -> list:
-        return [r.n for r in sorted((r for r in self._standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.queued_at)]
+        return [r.n for r in sorted((r for r in self.rows.standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.queued_at)]
 
     @action
     def queue_before(self, n: int, other: int):
@@ -478,7 +478,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         ticket, target = self.load(n), self.load(before)
         if ticket.queued and target.queued:
             return self.queue_before(ticket.n, target.n)
-        column = sorted((r for r in self._standing() if r.n != ticket.n and int(r.board) == int(target.board) and r.stage == target.stage), key=lambda r: r.position)
+        column = sorted((r for r in self.rows.standing() if r.n != ticket.n and int(r.board) == int(target.board) and r.stage == target.stage), key=lambda r: r.position)
         return self.update(ticket.n, rank=rank_before(column, target.n))
 
     @action
@@ -490,13 +490,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self.update(ticket.n, queued_at=first - 1)
 
     def _running(self) -> list:
-        return [r for r in self._standing() if r.work_environment and self._live(r)]
+        return [r for r in self.rows.standing() if r.work_environment and self._live(r)]
 
     def _live(self, ticket) -> bool:
         return bool(self.agent_session(ticket.n)) or time.time() - ticket.launched < LAUNCHING_FOR
 
     def mark_seen(self) -> None:
-        for ticket in self._standing():
+        for ticket in self.rows.standing():
             if ticket.work_environment and (ticket.launched or not ticket.agent_seen) and self.agent_session(ticket.n):
                 self.update(ticket.n, launched=0.0, agent_seen=time.time())
 
@@ -507,7 +507,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _field_choices(self, r: Resource) -> dict:
         from engine.organization import organization
         boards = [{"key": str(board.n), "label": board.title, "first_stage": (board.stages or [""])[0]}
-                  for board in Boards(self.record, actor=SYSTEM)._standing()]
+                  for board in Boards(self.record, actor=SYSTEM).rows.standing()]
         try:
             domains = [{"key": domain.name, "label": domain.title or domain.name} for domain in organization(self.record.root.parent).domains]
         except Refused:
@@ -523,7 +523,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _from_source(self, source: str, source_id: str | None):
         if not source_id:
             return None
-        return next((r for r in self._standing() if r.source == source and r.source_id == source_id), None)
+        return next((r for r in self.rows.standing() if r.source == source and r.source_id == source_id), None)
 
 
 resources_module.register(Ticket)

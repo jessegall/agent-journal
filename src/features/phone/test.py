@@ -83,7 +83,7 @@ def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
     call(base, "/p/")
     assert call(base, "/p/pair", {"code": code, "device": "Pixel"})[0] == 200, "looking at the page first does not use the code up"
     assert call(base, "/p/pair", {"code": code, "device": "Other"})[0] == 410, "a code connects one phone, once"
-    assert any("A phone connected" in row["title"] for row in Notices(record, actor=SYSTEM).summaries()), "a new phone is announced in the chat"
+    assert any("A phone connected" in row["title"] for row in Notices(record, actor=SYSTEM).rows.summaries()), "a new phone is announced in the chat"
     with pytest.raises(Refused):
         Phones(record, actor=USER).connect(7)
 
@@ -101,7 +101,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
                    capture_output=True, timeout=60, check=True)
     ticked = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
     assert ticked and "agent" in ticked[0]["seen"], "a read made in another process shows on the phone's next poll, so its ticks change"
-    assert len([m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
+    assert len([m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
     nods = {Messages(record, actor=AGENT).create(f"Noted {i}.", brief=f"Noted {i}.", acknowledgement=True).ref for i in range(45)}
     refs = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
     assert (f"message:{made['n']}" in refs, refs & nods) == (True, set()), \
@@ -153,7 +153,7 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
     assert call(base, "/p/message", words, key, **{"Content-Type": "text/plain"})[0] == 403, "a form post is refused"
     assert call(base, "/p/message", words, "not-a-key")[0] == 401, "a guessed key opens nothing"
     assert call(base, "/p/", {}, key)[0] == 404, "a phone post without an action has no route"
-    assert not [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "x"]
+    assert not [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "x"]
 
 
 def test_a_disconnected_or_expired_phone_is_refused_on_its_next_tap(served):
@@ -198,8 +198,8 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     other = Record(record.root, "elsewhere")
     mine, key = paired(record, base)
     call(base, "/p/message", {"brief": "Here only", "idempotency": "z"}, key)
-    assert [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "it lands where the phone connected"
-    assert not [m for m in Messages(other, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "and nowhere else"
+    assert [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "z"], "it lands where the phone connected"
+    assert not [m for m in Messages(other, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "z"], "and nowhere else"
     here, there = Docs(record, actor=AGENT).create("Here"), Docs(other, actor=AGENT).create("There")
     assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
@@ -301,7 +301,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
         assert "Proposal" in sent.headers["Content-Disposition"] and sent.read(), "a document leaves the phone as a file named for it"
     shared = call(base, "/p/share", {"ref": f"doc:{proposal.n}"}, key)
     assert shared.status == 201 and "/s/" in shared.body["link"], "and as a share link the user made, open at once"
-    said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
+    said = [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
     now = time.time()

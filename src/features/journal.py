@@ -21,7 +21,7 @@ class Message:
 
 def waiting(record, agent) -> bool:
     from controllers.types import Works
-    return any(w.awaiting for w in Works(record, actor=SYSTEM)._standing() if w.agent in ("", agent.title))
+    return any(w.awaiting for w in Works(record, actor=SYSTEM).rows.standing() if w.agent in ("", agent.title))
 
 
 class BoundJournal:

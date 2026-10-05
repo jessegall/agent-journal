@@ -43,7 +43,7 @@ class SourcedTurn:
 def environment_transcript(record) -> list[SourcedTurn]:
     seen = set()
     turns = []
-    for row in Agents(record, actor=SYSTEM)._every():
+    for row in Agents(record, actor=SYSTEM).rows.every():
         provider = PROVIDERS.get(row.provider)
         path = Path(row.transcript).expanduser() if row.transcript else None
         try:
@@ -63,7 +63,7 @@ def search_text(record, term: str, page: int) -> str:
     transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
                                    for hit in search_transcript(environment_transcript(record), term, page))
     file_hits = [f"  file  {r.ref}  {name}" + (f" — {tags}" if tags else "")
-                 for type_, controller in CONTROLLERS.items() for r in controller(record)._every()
+                 for type_, controller in CONTROLLERS.items() for r in controller(record).rows.every()
                  for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
     return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
 
@@ -137,7 +137,7 @@ def still_open(record) -> list[str]:
     from features import FEATURES
     from features.messages.answering import unanswered
     works = [f"work {w.n} is still open: {w.title} - journal work end {w.n} --how \"<what landed>\", or journal work park \"<why>\" --n {w.n}"
-             for w in Works(record, actor=SYSTEM)._standing()]
+             for w in Works(record, actor=SYSTEM).rows.standing()]
     messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(FEATURES["messages"].journal.at(record))]
     return works + messages
 
@@ -224,7 +224,7 @@ def serve_forever(ctx) -> str:
 
 def decided(ctx) -> str:
     agents = Agents(ctx["record"], actor=SYSTEM)
-    named = agents._titled(ctx["session"]) if ctx["session"] else None
+    named = agents.rows.by_title(ctx["session"]) if ctx["session"] else None
     row = named if named is not None and named.at else agents.primary()
     if row is None:
         raise Refused("no agent session is running on this environment to note it on")

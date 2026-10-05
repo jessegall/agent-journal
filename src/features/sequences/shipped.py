@@ -186,13 +186,13 @@ SHIPPED_FIELDS = ("brief", "starts_on", "started_by", "only_when_idle", "talks_i
 
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
-    numbers = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
+    numbers = {row["title"]: row["n"] for row in sequences.rows.summaries() if not row["deleted"]}
     retire(sequences, {shipped.title for shipped in SHIPPED})
     return [shipped.title for shipped in SHIPPED if in_step(sequences, shipped, numbers)]
 
 
 def retire(sequences: Sequences, titles: set[str]) -> None:
-    for row in sequences._every():
+    for row in sequences.rows.every():
         if row.system and not row.deleted and row.title not in titles:
             sequences.delete(row.n, why="the journal no longer ships it")
 

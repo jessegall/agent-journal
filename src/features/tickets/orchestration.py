@@ -23,16 +23,16 @@ class TicketOrchestration:
         if not BoardsDetails.values(self.record).orchestrating:
             return []
         from features.boards.orchestrating import ORCHESTRATION
-        sequence = Sequences(self.record, actor=SYSTEM)._titled(ORCHESTRATION.title)
+        sequence = Sequences(self.record, actor=SYSTEM).rows.by_title(ORCHESTRATION.title)
         keys = [RunKey.of(key) for key in (sequence.runs if sequence else {})]
         running = {int(key.about.split(":")[1]) for key in keys if key.here(self.record.env) and key.about.startswith("board:")}
-        held = {board.n for board in Boards(self.record, actor=SYSTEM)._standing()
+        held = {board.n for board in Boards(self.record, actor=SYSTEM).rows.standing()
                 if not board.finished and board.orchestrator == self.record.env}
         return sorted(running | held)
 
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()
-        return [ticket for ticket in self._standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
+        return [ticket for ticket in self.rows.standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
                 and self._orchestrator_may(ticket, PLANS) and self._plan_status(ticket) in (READY, WAITING)]
 
     def _orchestrator_may(self, ticket, permission: str) -> bool:
@@ -41,7 +41,7 @@ class TicketOrchestration:
 
     def _awaiting_decisions(self) -> list:
         boards = self._orchestrating()
-        on_board = [ticket for ticket in self._standing() if ticket.board and int(ticket.board) in boards]
+        on_board = [ticket for ticket in self.rows.standing() if ticket.board and int(ticket.board) in boards]
         return [(ticket, WAITS) for ticket in on_board if PROPOSED in ticket.dependencies.values() and self._orchestrator_may(ticket, WAITS)] + \
                [(ticket, DRAFTS) for ticket in on_board if ticket.draft and self._orchestrator_may(ticket, DRAFTS)]
 

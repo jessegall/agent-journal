@@ -33,7 +33,7 @@ def expire(record) -> None:
             continue
         rows = controller(record, actor=SYSTEM)
         cutoff = time.time() - days * DAY
-        for r in rows._every():
+        for r in rows.rows.every():
             expired(rows, r, cutoff, days)
 
 
@@ -49,7 +49,7 @@ def pack(record) -> None:
         return
     for controller in CONTROLLERS.values():
         if controller.resource.scope == ENVIRONMENT and controller.resource.type not in UNPACKED:
-            controller(record, actor=SYSTEM)._pack(time.time() - days * DAY)
+            controller(record, actor=SYSTEM).rows.pack(time.time() - days * DAY)
 
 
 class ExpireOldRows(Handler):

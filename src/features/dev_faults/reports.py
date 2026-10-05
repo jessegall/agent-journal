@@ -35,7 +35,7 @@ class FaultReports:
 
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
-        standing = rows._titled(title, standing=True)
+        standing = rows.rows.by_title(title, standing=True)
         agent = Agents(record, actor=SYSTEM).primary()
         if standing and not self._due(standing, agent):
             rows.stamp(standing.n, times=int(standing.data["times"]) + 1, **data)

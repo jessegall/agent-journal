@@ -72,7 +72,7 @@ class PassCheckpointsInAuto(Handler):
         if not passes_checkpoints(context.record):
             return
         plans = context.journal.get(Plans)
-        for plan in plans._every():
+        for plan in plans.rows.every():
             if plan.status == WAITING:
                 plans.resume(plan.n)
 
@@ -82,7 +82,7 @@ class TakeStruckRowsOutOfUnapprovedPlans(Handler):
         if not context.journal.get(Todos).load(event.n).data.get("struck"):
             return
         plans = context.journal.get(Plans)
-        for plan in plans._every():
+        for plan in plans.rows.every():
             p = plan.phase_of("todo", event.n)
             if p and plan.status in (BUILDING, DRAFT, READY):
                 plans.place(plan.n, p, [event.n], off=True)
@@ -104,7 +104,7 @@ class ReopenPlansWithTheirRows(Handler):
         if event.type not in PHASE_FIELDS:
             return
         plans = Plans(context.record, actor=SYSTEM)
-        for plan in plans._every():
+        for plan in plans.rows.every():
             found = plan.phase_of(event.type, event.n)
             if not found or plan.status == ABANDONED or (plan.status in RUNNING and plan.current <= found):
                 continue
@@ -127,7 +127,7 @@ def doable(record, plan) -> str:
     if phase is None:
         return ""
     mine = set(phase[PHASE.todos])
-    going = [f"to-do {w.todo}" for w in Works(record, actor=SYSTEM)._standing() if int(w.todo) in mine and not w.parked and not w.awaiting]
+    going = [f"to-do {w.todo}" for w in Works(record, actor=SYSTEM).rows.standing() if int(w.todo) in mine and not w.parked and not w.awaiting]
     taking = [f"to-do {t.n}" for t in ready(record) if t.n in mine]
     parts = []
     if going:

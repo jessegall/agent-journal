@@ -134,7 +134,7 @@ class Children:
     def unheard(self, env: str) -> None:
         record = Record(self.root, env)
         messages = Messages(record, actor=SYSTEM)
-        waiting = [row["n"] for row in messages.summaries() if not row["deleted"] and not row["completed"] and AGENT not in row["seen"]
+        waiting = [row["n"] for row in messages.rows.summaries() if not row["deleted"] and not row["completed"] and AGENT not in row["seen"]
                    and f"{env}:{row['n']}" not in self.alarmed]
         for row in [messages.load(n) for n in waiting]:
             if row.seen[:1] != [USER] or row.data.get("delivered") or time.time() - row.created < UNHEARD_AFTER:

@@ -46,7 +46,7 @@ class ListedRows(TypedDict):
 
 
 def listing(controller, record, wanted: Listing) -> ListedRows:
-    summaries, stamp = controller.summaries(), settled(record)
+    summaries, stamp = controller.rows.summaries(), settled(record)
 
     def listed() -> ListedRows:
         return _listed(controller, record, wanted, summaries, stamp)
@@ -88,7 +88,7 @@ def counted(record, types) -> dict:
 
 
 def counts(controller) -> dict:
-    summaries = controller.summaries()
+    summaries = controller.rows.summaries()
     return TALLIED.get((str(controller.record.home), controller.type), summaries, lambda: tally(summaries))
 
 

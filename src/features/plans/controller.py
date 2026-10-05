@@ -162,7 +162,7 @@ class Plans(Controller):
             self._refuse(f"plan {n} waits for the user to approve it")
         self._allowed(r, ACTIVE, APPROVED, PARKED)
         first_start = r.status == APPROVED
-        for other in self._every():
+        for other in self.rows.every():
             if other.n != r.n and other.status in RUNNING:
                 self._status(other, PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
@@ -210,7 +210,7 @@ class Plans(Controller):
         r = self.load(n)
         numbers = {t for phase in r.phases for t in phase[PHASE.todos]}
         todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).load, numbers)}
-        works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).summaries()
+        works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).rows.summaries()
                  if not row["deleted"] and row.get("todo") in numbers]
         items = [Moment.of(t, t.completed, "done", t.outcome) for t in todos.values() if t.completed]
         for work in works:
@@ -236,16 +236,16 @@ class Plans(Controller):
         return r.phases[int(p) - 1]
 
     def _running(self) -> list:
-        return [p for p in self._every() if p.status in RUNNING]
+        return [p for p in self.rows.every() if p.status in RUNNING]
 
     def _active(self) -> list:
-        return [p for p in self._every() if p.status == ACTIVE]
+        return [p for p in self.rows.every() if p.status == ACTIVE]
 
     def _members(self, phase: dict) -> list:
         found = []
         for key, kind in {PHASE.todos: Todos, **PHASE_ROWS.keyed()}.items():
             rows = kind(self.record, actor=self.actor)
-            found += [rows.load(n) for n in phase.get(key, []) if rows._exists(int(n))]
+            found += [rows.load(n) for n in phase.get(key, []) if rows.rows.exists(int(n))]
         return found
 
     def _complete(self, phase: dict) -> bool:
@@ -255,7 +255,7 @@ class Plans(Controller):
         return next((p for p, phase in enumerate(plan.phases, 1) if not self._complete(phase)), 0)
 
     def _holds(self, todo) -> bool:
-        plans = self._every()
+        plans = self.rows.every()
         placements = [found for found in (plan.placement(todo) for plan in plans) if found]
         if placements:
             return all(found.holds for found in placements)
@@ -291,7 +291,7 @@ class Plans(Controller):
             self._refuse(f"only the user can {word} a plan: they do it in the viewer{self._orchestrator_route(word)}")
 
     def _orchestrator_route(self, word: str) -> str:
-        place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
+        place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         n = place.owned_by("ticket") if place else 0
         if not n:
             return ""

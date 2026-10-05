@@ -77,7 +77,7 @@ class Helpers(Controller):
             self._told(place, text)
 
     def _helping(self):
-        place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
+        place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         return place if place and place.helping else None
 
     def _helper(self, place) -> Helper:
@@ -96,7 +96,7 @@ class Helpers(Controller):
         if self.actor == USER:
             row = self.update(n, stopped_by_user=True)
         places = Environments(self.record, actor=SYSTEM)
-        place = places._titled(row.environment)
+        place = places.rows.by_title(row.environment)
         if not place:
             raise Refused(f"helper {n}, {row.name}, has no environment left to stop")
         return places.stop(place.n)
@@ -105,7 +105,7 @@ class Helpers(Controller):
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
-        place = places._titled(row.environment)
+        place = places.rows.by_title(row.environment)
         if Sessions(self.record.root).holder(row.environment):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
         if place:

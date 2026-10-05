@@ -13,7 +13,7 @@ def sender(record: Record) -> str:
     if key in SENDERS:
         return SENDERS[key]
     from controllers.environments import Environments
-    place = Environments(record, actor=SYSTEM)._titled(record.env)
+    place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
     if place is None:
         return ""
     SENDERS[key] = place.launched_from if place.helping else ""
@@ -23,10 +23,9 @@ def sender(record: Record) -> str:
 class Facts(Controller):
     resource = types.Fact
 
-    def _standing(self, closed_since: float = 0, closed_last: int = 0):
-        own = super()._standing(closed_since, closed_last)
+    def _also(self) -> list:
         sent_from = sender(self.record)
-        return [*own, *Facts(Record(self.record.root, sent_from), actor=SYSTEM)._standing()] if sent_from else own
+        return Facts(Record(self.record.root, sent_from), actor=SYSTEM).rows.standing() if sent_from else []
 
     @action
     def promote(self, n: int):

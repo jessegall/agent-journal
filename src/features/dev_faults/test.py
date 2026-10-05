@@ -15,7 +15,7 @@ def turned(record, on: bool):
 
 
 def notified(record):
-    return [r.title for r in Notifications(record, actor=SYSTEM)._every()]
+    return [r.title for r in Notifications(record, actor=SYSTEM).rows.every()]
 
 
 
@@ -62,7 +62,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     for _ in range(2):
         with measured(record.root, record.env, "command", "message all"):
             busy(0.08)
-    rows = Notifications(record, actor=SYSTEM)._every()
+    rows = Notifications(record, actor=SYSTEM).rows.every()
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
     events = [e for e in record.event_log.events() if e.type == "notification" and e.action == "updated" and e.data.get("fields")]
     assert events == [], "a repeat inside the window is stamped quietly, with no update line in the chat"

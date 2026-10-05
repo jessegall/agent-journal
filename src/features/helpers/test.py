@@ -36,9 +36,9 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
         "its job waits as a to-do on its own list, the kickoff names it, and auto mode keeps it going"
     from controllers.types import Facts
     Facts(record, actor=AGENT).create("The viewer runs on port 8421", keywords=["port"])
-    assert [f.title for f in Facts(home, actor=SYSTEM)._standing()] == ["The viewer runs on port 8421"], "it reads the facts of the environment that sent it"
+    assert [f.title for f in Facts(home, actor=SYSTEM).rows.standing()] == ["The viewer runs on port 8421"], "it reads the facts of the environment that sent it"
     assert cwd == record.root.resolve().parent and "helper 1" in said, "without a worktree it works in the project"
-    place = Environments(record, actor=SYSTEM)._titled(f"{record.env}-rhea-lovelace")
+    place = Environments(record, actor=SYSTEM).rows.by_title(f"{record.env}-rhea-lovelace")
     assert place.helping and place.launched_from == record.env, "its environment is marked as the helper's and names the dispatcher"
     summary = summarize(record.root)
     assert f"{record.env}-rhea-lovelace" not in [e["name"] for e in summary["environments"]], "the hub's summary leaves it out"
@@ -111,6 +111,6 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     monkeypatch.setattr(Places, "stop", lambda self, n: "stopped")
     assert helpers.stop(1) == "stopped", "the agent stops a running helper"
     helpers.complete(1)
-    assert not Environments(repo.record, actor=SYSTEM)._titled(f"{repo.record.env}-rhea"), "its environment is packed away"
+    assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
     assert "is finished" in refused(lambda: helpers.say(1, "more")), "a finished helper takes no follow-up"

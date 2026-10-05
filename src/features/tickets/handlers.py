@@ -21,7 +21,7 @@ LOOK_AGAIN = 15
 
 def all_parked(record) -> bool:
     works = Works(record, actor=SYSTEM)
-    return bool(works._standing()) and not works._unparked()
+    return bool(works.rows.standing()) and not works._unparked()
 
 
 class LookAfterTickets(Handler):
@@ -96,7 +96,7 @@ class FinishTheBoardWithItsLastTicket(Handler):
         board = tickets._board(tickets.load(event.n))
         if not board or not board.started or board.finished:
             return
-        if any(int(other.board) == board.n for other in tickets._standing()):
+        if any(int(other.board) == board.n for other in tickets.rows.standing()):
             return
         Boards(context.record, actor=SYSTEM).finish(board.n)
 
@@ -104,7 +104,7 @@ class FinishTheBoardWithItsLastTicket(Handler):
 def watched(tickets: Tickets) -> list:
     boards = tickets._orchestrating()
     paused = Boards(tickets.record, actor=SYSTEM).paused()
-    return [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards and int(t.board) not in paused]
+    return [t for t in tickets.rows.standing() if t.work_environment and t.board and int(t.board) in boards and int(t.board) not in paused]
 
 
 def ticket_calls(kind: str):

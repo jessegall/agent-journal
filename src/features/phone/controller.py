@@ -73,7 +73,7 @@ class Phones(Controller):
         active = self._active()
         if active is not None:
             raise Refused(f"{active.title} is connected: stop that session first, one phone at a time")
-        for row in self.summaries():
+        for row in self.rows.summaries():
             if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"]:
                 self.complete(row["n"], how="a newer code replaced it")
         code = secrets.token_urlsafe(24)
@@ -87,7 +87,7 @@ class Phones(Controller):
         now = time.time()
         with self.record.locked(PROJECT):
             given = {hashed(code), hashed(typed(code))}
-            found = next((row["n"] for row in self.summaries() if given & {row.get("code"), row.get("short")} - {"", None}
+            found = next((row["n"] for row in self.rows.summaries() if given & {row.get("code"), row.get("short")} - {"", None}
                           and not row["completed"] and not row["deleted"]), None)
             if found is None:
                 self._missed()
@@ -103,7 +103,7 @@ class Phones(Controller):
         return paired, key
 
     def _missed(self) -> None:
-        for row in self.summaries():
+        for row in self.rows.summaries():
             if not row.get("code") or row["completed"] or row["deleted"]:
                 continue
             tries = self.load(row["n"]).tries + 1
@@ -113,11 +113,11 @@ class Phones(Controller):
 
     def _active(self) -> Phone | None:
         now = time.time()
-        found = next((row["n"] for row in self.summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]), None)
+        found = next((row["n"] for row in self.rows.summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]), None)
         return self.load(found) if found else None
 
     def _by_key(self, key: str) -> Phone | None:
-        found = next((row["n"] for row in self.summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
+        found = next((row["n"] for row in self.rows.summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
         if found is None:
             return None
         phone = self.load(found)
@@ -176,7 +176,7 @@ class Phones(Controller):
 
     def _live(self) -> list[dict]:
         now = time.time()
-        return [row for row in self.summaries() if not row["completed"] and not row["deleted"]
+        return [row for row in self.rows.summaries() if not row["completed"] and not row["deleted"]
                 and ((row.get("key") and row.get("expires", 0) > now) or row.get("code_until", 0) > now)]
 
 

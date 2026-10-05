@@ -30,4 +30,4 @@ class OfferAnUpdate(Handler):
     @staticmethod
     def _unread(context: AgentContext) -> bool:
         return any(r.data.get("kind") == UPDATE and not r.data.get("dismissed") and USER not in r.seen
-                   for r in context.journal.get(Reports)._standing())
+                   for r in context.journal.get(Reports).rows.standing())

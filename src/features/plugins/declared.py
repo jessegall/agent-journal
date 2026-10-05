@@ -206,7 +206,7 @@ def called(row) -> str:
 
 
 def named(plugins, name: str):
-    return next((row for row in plugins._standing() if called(row) == name), None)
+    return next((row for row in plugins.rows.standing() if called(row) == name), None)
 
 
 @dataclass(frozen=True)

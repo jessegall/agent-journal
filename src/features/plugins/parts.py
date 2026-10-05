@@ -50,11 +50,11 @@ class PluginChatRules(TextFormatter):
 
     def kept_rules(self, context: Context) -> list:
         plugins = context.journal.get(Plugins)
-        stamp = tuple((row["n"], row["stamp"]) for row in plugins.summaries())
+        stamp = tuple((row["n"], row["stamp"]) for row in plugins.rows.summaries())
         kept = KEPT_RULES.get(str(context.record.home))
         if kept and kept[0] == stamp:
             return kept[1]
-        found = [(rule.find, rule.replacement) for row in plugins._standing() if row.enabled for rule in declared(row).chat]
+        found = [(rule.find, rule.replacement) for row in plugins.rows.standing() if row.enabled for rule in declared(row).chat]
         KEPT_RULES[str(context.record.home)] = (stamp, found)
         return found
 
@@ -65,7 +65,7 @@ class AskPluginsToRefuse(ToolInterceptor):
         record, hook = context.record, context.hook
         writes = command_effects.writes(hook)
         left = ALTOGETHER
-        for row in context.journal.get(Plugins)._standing():
+        for row in context.journal.get(Plugins).rows.standing():
             manifest = declared(row)
             asking = manifest.refuse
             if not row.enabled or row.completed or not asking or left <= 0:
@@ -99,7 +99,7 @@ class AskPluginsToCancel(Canceler):
 
     def cancel(self, context: Context, data) -> str:
         record = context.record
-        for row in context.journal.get(Plugins)._standing():
+        for row in context.journal.get(Plugins).rows.standing():
             manifest = declared(row)
             asking = manifest.cancels.get(self.event)
             if not row.enabled or row.completed or not asking:
@@ -116,7 +116,7 @@ class AskPluginsToCancel(Canceler):
 def forgotten(record, name: str) -> None:
     for controller in CONTROLLERS.values():
         rows = controller(record, actor=SYSTEM)
-        for row in rows.summaries():
+        for row in rows.rows.summaries():
             if row.get(OWNER) == name and controller.resource.type != "plugin":
                 rows.force_delete(row["n"])
 
@@ -126,7 +126,7 @@ class ClearRemovedPlugin(Handler):
         rows = context.journal.get(Plugins)
         row = rows.load(event.n)
         name = called(row)
-        still = any(r.n != event.n and called(r) == name for r in rows._standing())
+        still = any(r.n != event.n and called(r) == name for r in rows.rows.standing())
         if name and not still:
             for service in declared(row).services:
                 want(context.record.root, f"{name}.{service.name}", DOWN)
@@ -155,7 +155,7 @@ class OneRowPerTitle(ActionInterceptor):
         name = data.get(OWNER)
         if not name:
             return None
-        found = next((row for row in controller.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)
+        found = next((row for row in controller.rows.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)
         if found is None:
             return None
         return controller.update(found["n"], abstract=abstract or None, brief=brief or None, **data)
@@ -164,6 +164,6 @@ class OneRowPerTitle(ActionInterceptor):
 class ReadLinkedManifests(Handler):
     def handle(self, context: Context, event: ClockTicked) -> None:
         plugins = Plugins(context.record, actor=SYSTEM)
-        for row in plugins._standing():
+        for row in plugins.rows.standing():
             if changed_on_disk(plugins, row):
                 reread(plugins, row)

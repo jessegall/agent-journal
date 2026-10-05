@@ -29,7 +29,7 @@ class Outputs(Controller):
         made = self.create(title, command=command_line, lines=lines)
         self.attach(made.n, path, f"{lines} lines")
         source.unlink()
-        agent = Agents(self.record, actor=self.actor)._titled(session_id) if session_id else None
+        agent = Agents(self.record, actor=self.actor).rows.by_title(session_id) if session_id else None
         if agent:
             Agents(self.record, actor=self.actor).card(agent.n, label=f"Cut {lines - shown:,} of {lines:,} lines from a long output, kept whole as output {made.n}",
                                                        icon="terminal", command=command_line)

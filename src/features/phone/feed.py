@@ -154,7 +154,7 @@ def reaches(home: Record, phone, row) -> bool:
     environment = row.data.get("environment")
     if environment in (phone.environment, None, ""):
         return True
-    place = Environments(home, actor=SYSTEM)._titled(environment)
+    place = Environments(home, actor=SYSTEM).rows.by_title(environment)
     return bool(place and place.helping and place.launched_from == phone.environment)
 
 
@@ -162,7 +162,7 @@ def waiting(home: Record, phone) -> list[Waiting]:
     found = []
     for kind in WAITED:
         controller = CONTROLLERS[kind](home, actor=SYSTEM)
-        for n in [row["n"] for row in controller.summaries() if not row["deleted"] and not row["completed"]]:
+        for n in [row["n"] for row in controller.rows.summaries() if not row["deleted"] and not row["completed"]]:
             row = controller.load(n)
             if reaches(home, phone, row) and owed(row):
                 found.append(Waiting(ref=row.ref, type=kind, n=row.n, title=row.title, created=row.created))
@@ -196,7 +196,7 @@ def plan_strip(home: Record) -> PlanStrip | None:
 
 def marks(home: Record, since: float) -> list[Mark]:
     agents = Agents(home, actor=SYSTEM)
-    rows = [shaped(agents.load(row["n"]), home, VIEWER) for row in agents.summaries() if not row["deleted"] and row["updated"] >= since]
+    rows = [shaped(agents.load(row["n"]), home, VIEWER) for row in agents.rows.summaries() if not row["deleted"] and row["updated"] >= since]
     found = [made for row in rows if not row["data"].get("parent") for made in Session.from_view(row).marks()]
     return [made for made in found if made["created"] >= since]
 
@@ -204,7 +204,7 @@ def marks(home: Record, since: float) -> list[Mark]:
 def faces(home: Record, refs: set[str]) -> dict[str, list[dict]]:
     reactions = Reactions(home, actor=SYSTEM)
     found: dict[str, list[dict]] = {}
-    for n in [row["n"] for row in reactions.summaries() if not row["deleted"] and set(row.get("refs", [])) & refs]:
+    for n in [row["n"] for row in reactions.rows.summaries() if not row["deleted"] and set(row.get("refs", [])) & refs]:
         made = reactions.load(n)
         for ref in set(made.refs) & refs:
             found.setdefault(ref, []).append({"face": made.face, "who": made.author})
@@ -213,7 +213,7 @@ def faces(home: Record, refs: set[str]) -> dict[str, list[dict]]:
 
 def latest(home: Record, kind: str, before: float) -> list:
     rows = POSTED[kind](home, actor=SYSTEM)
-    loaded = (rows.load(row["n"]) for row in reversed(rows.summaries()) if not row["deleted"])
+    loaded = (rows.load(row["n"]) for row in reversed(rows.rows.summaries()) if not row["deleted"])
     return list(islice((row for row in loaded if row.created < before and in_feed(kind, row)), FEED))[::-1]
 
 
@@ -226,7 +226,7 @@ def entry(home: Record, kind: str, row) -> dict:
 
 def running(home: Record, environment: str) -> Running:
     holder = Sessions(home.root).holder(environment)
-    row = Agents(home, actor=SYSTEM)._titled(holder) if holder else None
+    row = Agents(home, actor=SYSTEM).rows.by_title(holder) if holder else None
     summary = lately_summarized(home.root)
     shared = dict(state=Agents(home, actor=SYSTEM).state(environment), prompt=prompt(summary, environment), auto=automatic(home), mode=mode_of(home),
                   helpers=helpers_of(home, summary), subagents=subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())))
@@ -303,9 +303,9 @@ def helper(home: Record, phone, n: int) -> dict:
 
 
 def task_names(home: Record) -> dict[str, str]:
-    return {sub["task_id"]: sub["task"] for row in Agents(home, actor=SYSTEM)._standing() for sub in row.data.get("subagent_rows") or [] if sub.get("task_id")}
+    return {sub["task_id"]: sub["task"] for row in Agents(home, actor=SYSTEM).rows.standing() for sub in row.data.get("subagent_rows") or [] if sub.get("task_id")}
 
 
 def notices(home: Record) -> list[dict]:
-    return [shaped(row, home, VIEWER) for row in Notices(home, actor=SYSTEM)._standing() if not row.data.get("agent")]
+    return [shaped(row, home, VIEWER) for row in Notices(home, actor=SYSTEM).rows.standing() if not row.data.get("agent")]
 

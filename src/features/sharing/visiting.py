@@ -83,7 +83,7 @@ class ShareVisits:
     def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
         from controllers.types import Comments
         comments = Comments(self._home(share), actor=SYSTEM)
-        rows = [row for row in comments.summaries() if not row["deleted"]]
+        rows = [row for row in comments.rows.summaries() if not row["deleted"]]
 
         def about(refs: set[str]) -> list:
             return [comments.load(row["n"]) for row in rows if refs.intersection(row["refs"])]

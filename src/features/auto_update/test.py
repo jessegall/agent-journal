@@ -127,7 +127,7 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     assert announce(record.root, "1.0.1") == "1.0.1"
     from engine.runtime import default_env
     from engine.record import Record
-    notified = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
+    notified = [n for n in Notifications(Record(record.root, default_env(record.root))).rows.every() if n.title == "Journal updated to 1.0.1"]
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
 
 

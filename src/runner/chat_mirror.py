@@ -181,7 +181,7 @@ def send_to_chat(root: Path, session: str, text: str, turn: str | None = None, s
     if not text.strip():
         return False
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
-    row = Agents(record, actor=SYSTEM)._titled(session)
+    row = Agents(record, actor=SYSTEM).rows.by_title(session)
     if row is None:
         return False
     ledger = DisplayedLedger(root, session)

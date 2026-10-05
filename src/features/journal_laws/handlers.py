@@ -32,6 +32,6 @@ class CheckChangedInstructions(Handler):
         if not known:
             return
         sequences = context.journal.get(Sequences)
-        found = sequences._titled(CHECKING_THE_INSTRUCTION_FILES.title)
+        found = sequences.rows.by_title(CHECKING_THE_INSTRUCTION_FILES.title)
         if found is not None:
             sequences.run(found.n)

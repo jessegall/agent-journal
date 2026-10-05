@@ -5,7 +5,7 @@ from engine.extension import Extension
 
 
 def standing(record, type_: str) -> list:
-    return CONTROLLERS[type_](record, actor=SYSTEM)._standing()
+    return CONTROLLERS[type_](record, actor=SYSTEM).rows.standing()
 
 
 def counts(record) -> dict[str, int]:
@@ -13,7 +13,7 @@ def counts(record) -> dict[str, int]:
 
 
 def open_work(record) -> list:
-    return Works(record, actor=SYSTEM)._standing()
+    return Works(record, actor=SYSTEM).rows.standing()
 
 
 def lines(rows: list, how=lambda r: r.title) -> str:

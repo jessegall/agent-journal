@@ -13,7 +13,7 @@ def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answer
     hook = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "git push"}}
 
     def waiting():
-        return [n.title for n in Notices(record, actor=SYSTEM)._standing() if n.data.get("action") == "permission"]
+        return [n.title for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
 
     handle(provider, record.root, record.env, {**hook, "hook_event_name": "PreToolUse"})
     assert waiting() == [], "a tool use alone asks for nothing"

@@ -50,7 +50,7 @@ RESUMED = "The user paused you and has resumed you now: carry on with what you w
 
 def delivered(record, sessions: set[str], action: str, label: str) -> None:
     notices = Notices(record, actor=SYSTEM)
-    for notice in notices._every():
+    for notice in notices.rows.every():
         if not notice.completed and notice.data.get("action") == action and notice.data.get("session") in sessions:
             notices.complete(notice.n, how="delivered")
     Notifications(record, actor=SYSTEM)._logged(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
@@ -452,7 +452,7 @@ class Engine:
         for type_ in priority():
             if AGENT not in TYPES[type_].notified or TYPES[type_].typed_as_title:
                 continue
-            unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).summaries()
+            unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).rows.summaries()
                       if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]
                       and (type_ != "worktree" or row.get("environment") == self.record.env)]
             if unread:

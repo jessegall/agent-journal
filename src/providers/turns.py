@@ -54,6 +54,6 @@ def last_text(agent) -> str:
 
 def read_transcripts(root: Path) -> None:
     for record in environment_records(root):
-        for agent in Agents(record, actor=SYSTEM)._standing():
+        for agent in Agents(record, actor=SYSTEM).rows.standing():
             if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
                 PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))

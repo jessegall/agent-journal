@@ -12,7 +12,7 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     report(record, "working", "PreToolUse")
     assert (ship(record), ship(record)) == ([shipped.title for shipped in SHIPPED], []), "shipped once, never twice"
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    filing = next(r for r in sequences.summaries() if r["title"] == "Filing a dump")
+    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Filing a dump")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     steps = lambda: [n for n in nudges(record) if n.startswith(f"sequence {filing['n']}")]
     assert steps() == [f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything"], "a dump starts the sequence about it"
@@ -107,7 +107,7 @@ def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
     agents.by_session("holder")
     agents.by_session("newer")
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    filing = next(r for r in sequences.summaries() if r["title"] == "Filing a dump")
+    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Filing a dump")
     CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing['n']}")]
     assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
@@ -153,7 +153,7 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     report(record, "working", "PreToolUse")
     ship(record)
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    titled = lambda title: sequences.load(next(r["n"] for r in sequences.summaries() if r["title"] == title))
+    titled = lambda title: sequences.load(next(r["n"] for r in sequences.rows.summaries() if r["title"] == title))
     closing = [s["title"] for s in sequences.steps_of(titled("Finishing what you wrote"))]
     assert [s["title"] for s in sequences.steps_of(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
         "a shipped sequence reuses the closing steps it shares"

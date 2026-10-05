@@ -58,5 +58,5 @@ def test_moving_a_real_record_into_doc_folders_keeps_every_doc_file_and_revision
         except (ValueError, TypeError):
             return False
     docs_ = Docs(Record(tmp_path, "main"), actor=USER)
-    assert sorted(f"{n:03d}" for n in docs_.numbers() if readable(docs_._text(n))) == sorted(n for n, text in before.items() if readable(text)), \
+    assert sorted(f"{n:03d}" for n in docs_.rows.numbers() if readable(docs_.rows.text(n))) == sorted(n for n, text in before.items() if readable(text)), \
         "the store reads every moved doc back by its number, as readable as it was"

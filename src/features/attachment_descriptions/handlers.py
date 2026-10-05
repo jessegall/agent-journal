@@ -37,7 +37,7 @@ class TagNewMedia(Handler):
         row = context.journal.get(CONTROLLERS[event.type]).load(event.n)
         if event.file not in row.files or row.files.get(event.file):
             return
-        for agent in context.journal.get(Agents)._every():
+        for agent in context.journal.get(Agents).rows.every():
             if agent.live:
                 tell(context.speaking_to(agent), event.type, row, event.file)
 
@@ -46,7 +46,7 @@ class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.get(CONTROLLERS[type_])._every()
+        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.get(CONTROLLERS[type_]).rows.every()
                     for name, tags in row.files.items() if (not tags or str(tags).startswith(TAGGED)) and media(name))
         for type_, row, name in untagged:
             tell(context, type_, row, name)

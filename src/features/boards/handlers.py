@@ -45,7 +45,7 @@ QUIET_FILL = 90
 class MarkQuietFillingStalled(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         boards = Boards(context.record, actor=SYSTEM)
-        for board in boards._standing():
+        for board in boards.rows.standing():
             if board.phase != DRAFTING_PHASE:
                 continue
             quiet = time.time() - max([float(board.updated)] + [float(t.updated) for t in boards._drafts(board)])
@@ -55,5 +55,5 @@ class MarkQuietFillingStalled(Handler):
 
 def boards_wanting_ideas(context, agent) -> list[Sent]:
     every = context.feature.interval(context.record, "ideas")
-    return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.get(Boards)._standing()
+    return [Sent(str(board.n), {"n": board.n, "title": board.title}) for board in context.journal.get(Boards).rows.standing()
             if board.environment == context.record.env and not board.finished and time.time() - float(board.ideas_at) >= every]

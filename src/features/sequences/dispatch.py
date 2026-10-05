@@ -38,7 +38,7 @@ def request_of(context: Context, about: str) -> str:
 
 def working_agent(context: Context):
     holder = Sessions(context.record.root).holder(context.record.env)
-    return (context.journal.get(Agents)._titled(holder) if holder else None) or context.journal.get(Agents).primary()
+    return (context.journal.get(Agents).rows.by_title(holder) if holder else None) or context.journal.get(Agents).primary()
 
 
 def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) -> None:

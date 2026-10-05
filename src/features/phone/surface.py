@@ -95,7 +95,7 @@ class PhoneSurface:
     def listing(self, kind: str) -> Listing:
         if kind not in CARDS:
             raise Refused(f"a phone's home screen shows {', '.join(CARDS)}, not {kind!r}")
-        rows = CONTROLLERS[kind](self.home, actor=SYSTEM).summaries()
+        rows = CONTROLLERS[kind](self.home, actor=SYSTEM).rows.summaries()
         kept = [row for row in rows if not row["deleted"] and not row["completed"] and row.get("environment") in (self.phone.environment, None, "")]
         newest = sorted(kept, key=lambda row: row["updated"], reverse=True)[:LISTED]
         return Listing(rows=[Listed(ref=f"{kind}:{row['n']}", type=kind, n=row["n"], title=row["title"], updated=row["updated"]) for row in newest],

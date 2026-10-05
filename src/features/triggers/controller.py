@@ -19,12 +19,12 @@ class Triggers(Controller):
         self.record.emit("trigger", n, FIRED, SYSTEM, about=about)
 
     def watch_for(self, title: str, words: list[str]) -> Resource:
-        row = next((t for t in self._every() if t.title == title and not t.deleted), None) or self.create(
+        row = next((t for t in self.rows.every() if t.title == title and not t.deleted), None) or self.create(
             title, brief=f"Starts the sequence {title}", words=list(words), words_in=FROM_USER, does=START, system=True)
         return row if row.system else self.update(row.n, system=True)
 
     def unwatch(self, title: str, why: str) -> None:
-        for row in self._every():
+        for row in self.rows.every():
             if row.title == title and row.system and not row.deleted:
                 self.delete(row.n, why=why)
 
