@@ -177,3 +177,13 @@ def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
             run.join()
         assert len(made) == len(set(made)), f"{type_} rows made at once from two environments share a number: {sorted(made)}"
 
+
+def test_every_type_with_its_own_word_for_create_is_created_over_http():
+    from commands.dispatch import dispatch
+    features.load()
+    record = fresh()
+    renamed = [type_ for type_, resource in TYPES.items() if "create" in resource.command_names]
+    answers = {type_: dispatch("POST", f"/api/{record.env}/{type_}", record.root, {}, {"title": f"a {type_} from the viewer", "brief": "why", **needed(type_)})
+               for type_ in renamed}
+    assert {type_: reply.code for type_, reply in answers.items()} == {type_: 201 for type_ in renamed}, \
+        {type_: reply.body for type_, reply in answers.items() if reply.code != 201}
