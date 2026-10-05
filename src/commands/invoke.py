@@ -8,21 +8,22 @@ ORDERED = (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KE
 NAMED = (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
 
 
-def spread(fn, positional: list, named: dict, extra: dict) -> tuple[list, dict]:
+def spread(fn, positional: tuple, named: dict, extra: dict) -> tuple[list, dict]:
     params = list(inspect.signature(fn).parameters.values())
     names = {p.name for p in params if p.kind in NAMED}
-    for key in [key for key in extra if key in names and named.get(key) is None]:
-        named[key] = extra.pop(key)
+    moved = {key: value for key, value in extra.items() if key in names and named.get(key) is None}
+    keyed = {**named, **moved}
+    ordered = list(positional)
     rest = next((i for i, p in enumerate(params) if p.kind is inspect.Parameter.VAR_POSITIONAL), None)
-    if rest is not None:
-        positional.extend(named.pop(p.name) for p in params[:rest] if p.kind in ORDERED and p.name in named)
-        positional.extend(named.pop(params[rest].name, None) or ())
-    return positional, {**named, **extra}
+    if rest is not None and isinstance(keyed.get(params[rest].name), (list, tuple)):
+        ordered.extend(keyed.pop(p.name) for p in params[:rest] if p.kind in ORDERED and p.name in keyed)
+        ordered.extend(keyed.pop(params[rest].name))
+    return ordered, {**keyed, **{key: value for key, value in extra.items() if key not in moved}}
 
 
 def invoked(controller, word: str, positional: tuple = (), named: dict | None = None, extra: dict | None = None):
     fn = controller.method(word)
-    ordered, keyed = spread(fn, list(positional), dict(named or {}), dict(extra or {}))
+    ordered, keyed = spread(fn, positional, named or {}, extra or {})
     try:
         call = inspect.signature(fn).bind(*ordered, **keyed)
     except TypeError as error:
