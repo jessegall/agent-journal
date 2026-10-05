@@ -15,7 +15,6 @@ from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
 from resources.base import Refused, SYSTEM
-from engine.wording import plural
 
 REGISTRY: dict[str, type] = {}
 
@@ -221,9 +220,6 @@ class Feature(ABC):
     def renamed_from(cls) -> dict[str, str]:
         pairs = (alias if isinstance(alias, tuple) else (alias, "") for alias in cls.aliases)
         return {old: f"{cls.name}.{key}" if key else cls.name for old, key in pairs}
-
-    def plural(self, n: int, word: str) -> str:
-        return plural(n, word)
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
