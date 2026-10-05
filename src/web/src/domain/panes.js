@@ -27,7 +27,7 @@ export const PRESETS = [
     {
         key: "jesse",
         name: "Jesse's setup",
-        text: "Chat, the file feed with questions and to-dos, the terminal",
+        text: "The developer's favourite setup",
         shape: split(
             "row",
             0.62,

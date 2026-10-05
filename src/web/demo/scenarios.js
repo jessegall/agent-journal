@@ -23,6 +23,18 @@ export const LESSONS = [
         teaches: "Hand writing jobs to helpers on Codex and Claude, each in a place of its own. Follow them while they work, set one straight when it goes off track, and bring the work back.",
         load: () => import("./scenarios/helpers.json"),
     },
+    {
+        key: "docs",
+        title: "How to keep a document",
+        teaches: "Ask for a volunteer handbook page. The agent asks which source to use, then writes it chapter by chapter or files the approved draft whole, and puts it in a collection you can open.",
+        load: () => import("./scenarios/docs.json"),
+    },
+    {
+        key: "memory",
+        title: "How the agent remembers",
+        teaches: "Tell the agent something once while it builds a theatre's home page. When you ask for the show schedule later, it still knows, because it kept what you said as a fact.",
+        load: () => import("./scenarios/memory.json"),
+    },
 ];
 
 const LESSON = "scenario";

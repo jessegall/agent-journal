@@ -224,7 +224,7 @@ class Session:
         features.load(self.root)
         helping.launched = lambda record, name, provider, args, cwd: name
         for driver in DRIVERS.values():
-            driver.enter = lambda self, text: True
+            driver._deliver = lambda self, line, by: True
         self.url = self.served()
 
     def served(self) -> str:
@@ -492,11 +492,11 @@ class Session:
 
     def helper_seat(self, name: str, provider: str, worktree: bool = False) -> Seat:
         env = "main-" + "-".join(name.lower().split()[:2])
-        cwd = Path(Worktrees(self.record(), actor=SYSTEM)._titled(env, standing=True).path) if worktree else self.project
+        cwd = Path(Worktrees(self.record(), actor=SYSTEM).rows.by_title(env, standing=True).path) if worktree else self.project
         return Seat(f"{self.name}-{name.split()[0].lower()}", provider, env, cwd)
 
     def worktree(self, seat: Seat) -> int:
-        return Worktrees(self.record(), actor=SYSTEM)._titled(seat.env, standing=True).n
+        return Worktrees(self.record(), actor=SYSTEM).rows.by_title(seat.env, standing=True).n
 
     def finish(self) -> None:
         for presence in self.present.values():

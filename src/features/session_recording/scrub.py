@@ -14,6 +14,8 @@ KEPT_EMAIL = "demo@example.com"
 HOME = "/home/demo"
 PROJECT = "/home/demo/project"
 SHORTEST_NAME = 4
+STAND_IN, HOST_STAND_IN = "demo", "demo-host"
+STAND_INS = (STAND_IN, HOST_STAND_IN)
 NAMED = re.compile(r"[-_\d]|^\w{10,}$")
 WORDS = "/usr/share/dict/words"
 
@@ -31,7 +33,7 @@ def word(name: str) -> bool:
 
 
 def private(name: str) -> bool:
-    return len(name) >= SHORTEST_NAME and not name.startswith("tmp") and not TUNNEL.search(f"{name}.com") and (bool(NAMED.search(name)) or not word(name))
+    return len(name) >= SHORTEST_NAME and name.lower() not in STAND_INS and not name.startswith("tmp") and not TUNNEL.search(f"{name}.com") and (bool(NAMED.search(name)) or not word(name))
 
 
 
@@ -42,12 +44,12 @@ class Scrubber:
         self.sessions: dict[str, str] = {}
         self.paths = {str(Path.home()): HOME, **dict.fromkeys(folders or [], PROJECT)}
         git_name = git(["config", "user.name"], Path(folders[0]) if folders else Path.cwd()).strip()
-        self.names = {name: "demo" for name in (getpass.getuser(), Path.home().name) if len(name) >= SHORTEST_NAME}
-        self.names.update({name: "demo" for name in (git_name, *git_name.split()) if name})
-        self.names.update({name: "demo" for journal in known() for name in (journal.project, Path(journal.root).parent.name) if private(name)})
+        self.names = {name: STAND_IN for name in (getpass.getuser(), Path.home().name) if len(name) >= SHORTEST_NAME}
+        self.names.update({name: STAND_IN for name in (git_name, *git_name.split()) if name})
+        self.names.update({name: STAND_IN for journal in known() for name in (journal.project, Path(journal.root).parent.name) if private(name)})
         host = socket.gethostname().split(".")[0]
         if len(host) >= SHORTEST_NAME:
-            self.names[host] = "demo-host"
+            self.names[host] = HOST_STAND_IN
 
     def text(self, raw: str) -> str:
         for path in sorted(self.paths, key=len, reverse=True):
