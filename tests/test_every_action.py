@@ -184,6 +184,63 @@ def test_every_call_the_viewer_makes_is_answered_by_the_api_as_the_user():
     assert broken == [], "every request the viewer sends reaches a route, binds its body to the method and never fails with a 500"
 
 
+def get(record, path: str, **query):
+    return dispatch("GET", path.format(env=record.env), record.root, query, {})
+
+
+def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
+    from controllers.types import Todos
+    from engine.package import code
+    from tests.kit import report
+    features.load()
+    record = fresh()
+    Todos(record, actor=SYSTEM).create("a row to find")
+    report(record, "working", "PreToolUse")
+    code(record.root).mkdir(parents=True, exist_ok=True)
+    (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
+    keys = {
+        "/api/manifest": {"actions", "actors", "build", "environment", "features", "fields", "groups", "methods", "priority", "project", "scopes", "types", "version", "views"},
+        "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "version"},
+        "/api/{env}/bar": {"queue"},
+        "/api/{env}/family": {"links", "members"},
+        "/api/agent-controls/claude": {"groups", "note", "provider"},
+        "/api/{env}/agent": {"more", "rows"},
+        "/api/{env}/agent/1/transcript": {"first", "total", "turns"},
+        "/api/changelog": {"changelog", "checking", "latest", "newer", "repository", "updating", "version"},
+    }
+    wrong = {path: sorted(keys[path] ^ set(reply.body)) for path in keys if (reply := get(record, path)).code != 200 or set(reply.body) != keys[path]}
+    assert wrong == {}, "each object the viewer reads has the keys it reads, and nothing else"
+    lists = {"/api/pages": set(), "/api/services": set(), "/api/journals": {"current", "port", "project", "root", "running", "version"},
+             "/api/{env}/events": {"action", "actor", "at", "data", "handled", "id", "n", "pid", "type"},
+             "/api/{env}/search": {"matches", "n", "ref", "title", "type"}}
+    asked = {"/api/{env}/events": {"since": "0"}, "/api/{env}/search": {"q": "row"}}
+    bad = {}
+    for path, shape in lists.items():
+        reply = get(record, path, **asked.get(path, {}))
+        if reply.code != 200 or not isinstance(reply.body, list) or any(not shape <= set(row) for row in reply.body) or (path in asked and not reply.body):
+            bad[path] = (reply.code, reply.body)
+    assert bad == {}, "each list the viewer reads is a list, and its rows have the keys it reads"
+    assert (reply := get(record, "/api/{env}/todo/1/choices")).code == 200 and isinstance(reply.body, dict), "a row's field choices are an object keyed by field"
+
+
+def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500():
+    features.load()
+    record = fresh()
+    todo = CONTROLLERS["todo"](record, actor=SYSTEM).create("a row")
+    post = lambda path, body=None: dispatch("POST", f"/api/{record.env}/{path}", record.root, {}, body or {}).code
+    assert dispatch("GET", "/api/nowhere/todo", record.root, {}, {}).code == 404, "an environment that is not there is a 404"
+    assert (post("todo/99/done", {"how": "x"}), dispatch("GET", f"/api/{record.env}/todo/99", record.root, {}, {}).code, post("nonsense/create")) == (404, 404, 404), \
+        "a row or a type that is not there is a 404"
+    assert (post("todo/create"), post(f"todo/{todo.n}/bogus"), post(f"todo/{todo.n}/priority", {"value": "urgentest"})) == (400, 400, 400), \
+        "a missing argument, an unknown action and a value the action refuses are each a 400"
+    assert (post("work/start", {"title": "one"}), post("work/start", {"title": "two"})) == (201, 400), "an action the row's state refuses is a 400"
+    answered = {}
+    for type_, resource in TYPES.items():
+        if resource.required and type_ not in ("work", "board"):
+            answered[type_] = post(f"{type_}/{resource.command_names.get('create', 'create')}")
+    assert set(answered.values()) == {400}, f"creating any type without what it needs is refused in words, never a 500: {answered}"
+
+
 def test_no_command_argument_shares_a_name_with_a_global_option():
     features.load()
     from commands.parser import parser
