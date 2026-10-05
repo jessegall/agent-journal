@@ -25,7 +25,8 @@ function watched(phase, method, url, body) {
     const href = new URL(url, location.origin);
     if (href.pathname.endsWith(CONSOLE)) return;
     const where = `${method} ${href.pathname}`;
-    const same = body instanceof FormData ? where : `${where} ${JSON.stringify(body ?? null)}`;
+    const asking = body instanceof FormData ? where : `${where} ${JSON.stringify(body ?? null)}`;
+    const same = `${href.origin} ${asking}`;
     if (phase === "answered") {
         flying.set(same, flying.get(same) - 1);
         return;
