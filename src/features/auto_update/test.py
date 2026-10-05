@@ -54,7 +54,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
         "a failed install is told to the agent and filed as a notice"
-    assert updates.claimed(record.root, "3.0.1") and not updates.claimed(record.root, "3.0.1"), "a release just tried waits before it is tried again"
+    assert updates.claimed(record.root, "3.0.1", "patches") and not updates.claimed(record.root, "3.0.1", "patches"), "a release just tried waits before it is tried again"
+    with updates.ledger(record.root).changing() as tried:
+        tried["3.0.2"] = {"at": __import__("time").time() - 3600, "tries": 2, "ok": False}
+    assert not updates.claimed(record.root, "3.0.2", "major versions") and updates.claimed(record.root, "3.0.2", "always"), \
+        "Always tries a failed install again after 30 minutes however often it failed, major versions wait longer each time"
     from commands.http import dispatch
     monkeypatch.setattr(updates, "journal_repository", lambda project: True)
     assert dispatch("POST", "/api/update", record.root, {}, {}).code == 400, "the journal's own repository is never updated from a release"

@@ -25,8 +25,8 @@ class AutoUpdateDetails(FeatureDetails):
 
         With auto-update on, the newest release is installed in the background, one install per
         journal at a time, and the session reloads itself. The setting chooses how big a step
-        installs by itself: patches only (2.249.4 to 2.249.5), minor versions too (to 2.250.0), or
-        every release (to 3.0.0 and beyond); a bigger one waits on Home. A failed install is filed as a notice
+        installs by itself: patches (2.249.4 to 2.249.5), minor versions (to 2.250.0), major versions
+        (to 3.0.0) or always, which also tries a failed install again every 30 minutes; a bigger one waits on Home. A failed install is filed as a notice
         and tried again after 30 minutes, then 2 hours, then 6. With it off, Home shows a banner
         when a newer release is out, with Update and Update and turn on auto-update, and the agent
         is told to run journal upgrade. The journal's own repository never installs itself.
@@ -48,12 +48,13 @@ class AutoUpdateDetails(FeatureDetails):
             default="always",
             title="Which updates install by themselves",
             abstract="A bigger update waits on Home with an Update button",
-            choices=("patches", "minor versions", "always"),
-            labels=(("patches", "Patches only"), ("minor versions", "Minor versions too"), ("always", "Every release")),
+            choices=("patches", "minor versions", "major versions", "always"),
+            labels=(("patches", "Patches"), ("minor versions", "Minor versions"), ("major versions", "Major versions"), ("always", "Always")),
             examples=(
                 ("patches", "2.249.5 installs by itself. 2.250.0 and 3.0.0 wait for you on Home, with an Update button."),
                 ("minor versions", "2.249.5 and 2.250.0 install by themselves. 3.0.0 waits for you on Home, with an Update button."),
-                ("always", "Every new release installs by itself, whatever its number."),
+                ("major versions", "2.249.5, 2.250.0 and 3.0.0 all install by themselves. A failed install is tried again after 30 minutes, then 2 hours, then 6."),
+                ("always", "Every new release installs by itself, whatever its number. A failed install is tried again every 30 minutes."),
             ),
         ),
     ]

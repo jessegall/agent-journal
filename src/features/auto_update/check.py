@@ -45,10 +45,10 @@ def ledger(root: Path) -> State:
     return State(runtime.folder(root) / "auto_update.json")
 
 
-def claimed(root: Path, latest: str) -> bool:
+def claimed(root: Path, latest: str, installs: str) -> bool:
     with ledger(root).changing() as tried:
         last = tried.get(latest) or {}
-        wait = TRIED_AGAIN_AFTER[min(last.get("tries", 1), len(TRIED_AGAIN_AFTER)) - 1]
+        wait = TRIED_AGAIN_AFTER[0 if installs == "always" else min(last.get("tries", 1), len(TRIED_AGAIN_AFTER)) - 1]
         if last.get("ok") or (last and time.time() - last.get("at", 0) < wait):
             return False
         tried[latest] = {"at": time.time(), "tries": last.get("tries", 0) + 1, "ok": False}
@@ -104,7 +104,7 @@ class UpdateCheck:
             if first_refusal(root, latest):
                 self.tell(feature, "failed", latest=latest, why="it would not start here, so the journal went back to the build that works; it is tried again in 12 hours")
             return ""
-        if not claimed(root, latest):
+        if not claimed(root, latest, feature.values(record).installs):
             return ""
         if feature.on(record) and within(installed, latest, feature.values(record).installs) and not journal_repository(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
