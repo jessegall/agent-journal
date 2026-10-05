@@ -14,7 +14,7 @@ export const HELPER_WORDS = {
 
 export const FINISHED_STATES = new Set(["finished", "stopped", "ended", "refused"]);
 export const stateRank = (state) => ({needs: 0, working: 1, running: 1, idle: 2, reported: 3})[state] ?? 4;
-export const stateAt = (row) => row.completed_at || row.ended || row.at || row.started || 0;
+export const stateAt = (row) => row.completed || row.completed_at || row.ended || row.at || row.started || 0;
 
 export function agentsInOrder(rows) {
     return [...rows].sort((a, b) => stateRank(a.state) - stateRank(b.state) || stateAt(b) - stateAt(a));

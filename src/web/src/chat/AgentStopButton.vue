@@ -12,6 +12,7 @@ const props = defineProps({
     work: {type: String, default: ""},
     stop: {type: Function, required: true},
     quiet: {type: Boolean, default: false},
+    label: {type: String, default: "Stop"},
 });
 const emit = defineEmits(["stopped"]);
 const {anchor, error, busy, toggle, run} = useAnchoredAction();
@@ -35,7 +36,7 @@ async function stopped() {
             @click.stop="toggle"
         >
             <Icon name="stop" />
-            <template v-if="quiet">Stop</template>
+            <template v-if="quiet">{{ label }}</template>
         </Btn>
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="280" :max-width="340" @click.stop @close="anchor = null">
