@@ -3,18 +3,20 @@ import time
 from engine import runtime
 from engine.events.engine import ClockTicked
 from controllers.types import Messages
+from engine.keeper import READY, STARTING
 from engine.services import UP, log_file, status, want
+from engine.sessions import alive
 from engine.state import State
 from features.parts import Context, Handler
 from engine.ports import answers, reached
 from features.sharing.controller import HEALTH, Shares
 from features.sharing.details import HOST_DOWN, RESTARTED
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import refused_address, tunler
+from features.sharing.tunnel import held_by_server, refused_address, tunler
 from resources.base import SYSTEM, Refused
 
 MISSES_BEFORE_RESTART = 3
-PATIENCE = 10.0
+PATIENCE = 30.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
 READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
@@ -58,6 +60,8 @@ class KeepTunnelAnswering(Handler):
             alert_once(state, HOST_IS_DOWN, lambda: speaking and speaking.agent.say(HOST_DOWN, host=shares._host()))
             return
         down = TUNNEL if serving(context.record.root) else SERVER
+        if down == TUNNEL and tunnel_holding(context.record.root):
+            return
         want(context.record.root, down, UP, nonce=time.time())
         state.set(RESTARTED_AT, time.time())
         if speaking:
@@ -68,6 +72,11 @@ def alert_once(state: State, key: str, alert) -> None:
     if not state.get(key):
         state.set(key, time.time())
         alert()
+
+
+def tunnel_holding(root) -> bool:
+    kept = status(root, TUNNEL)
+    return held_by_server(log_file(root, TUNNEL)) or (kept.state in (STARTING, READY) and alive(kept.pgid))
 
 
 def serving(root) -> bool:
