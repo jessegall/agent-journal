@@ -1,5 +1,5 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {eventWords, meta} from "../domain/spec.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
@@ -11,7 +11,7 @@ const props = defineProps({resource: Object});
 const startsWhen = (start) => {
     if (!start) return "run by hand";
     if (start.startsWith("trigger:")) return `starts when trigger ${start.slice(8)} fires`;
-    return `starts when a ${start.replace(".completed", " is closed").replace(".created", " is created").replace(".", " ")}`;
+    return `starts when ${eventWords(start)}`;
 };
 const plan = computed(() => {
     if (props.resource.type !== "plan") return null;
