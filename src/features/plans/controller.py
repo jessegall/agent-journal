@@ -7,7 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs, Environments, Todos, Works
 from features.plans.resource import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, PARKED, PHASE, PHASE_FIELDS, READY, RUNNING, WAITING, Plan,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, RUNNING, WAITING, Plan,
 )
 from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
@@ -69,7 +69,6 @@ class Plans(Controller):
 
     @action
     def from_doc(self, doc: int):
-        from features.templates.shipped import MUST_HAVE
         source = Docs(self.record, actor=self.actor).load(doc)
         must = next((s[SECTION.body] for s in source.sections if s[SECTION.title].lower() == MUST_HAVE.lower()), "")
         brief = (f"Built from the functional design, doc {source.n}. Every row names the must-have points it covers, and the plan is "

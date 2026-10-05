@@ -1,17 +1,15 @@
 from engine.sessions import Sessions
 from engine.wording import clipped
-from features.boards.controller import Boards
 from features.parts import Context
 from features.sequences.details import DISPATCH
-from features.boards.exploration import FILLER
 from features.sequences.resource import RunKey
 from providers import dispatch_model
-from resources.base import SYSTEM
 from controllers.types import Agents, Messages
 from engine.extension import Extension
 
 REQUEST_TEXT = 400
 DISPATCH_MODELS = Extension()
+BOARD_OF_MESSAGE = Extension()
 
 
 def unchosen(record) -> str:
@@ -24,7 +22,8 @@ def board_of(context: Context, about: str) -> int:
         return int(n)
     if kind != "message" or not n.isdigit():
         return 0
-    return Boards(context.record, actor=SYSTEM).of_message(context.journal.get(Messages).load(n))
+    message = context.journal.get(Messages).load(n)
+    return next((board for board in (found(context.record, message) for found in BOARD_OF_MESSAGE.each(context.record)) if board), 0)
 
 
 def request_of(context: Context, about: str) -> str:
@@ -51,5 +50,5 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=dispatch_model(agent.provider, models.get(sequence.dispatch, models.get(FILLER, unchosen))(context.record)), why=why,
+        model=dispatch_model(agent.provider, models.get(sequence.dispatch, unchosen)(context.record)), why=why,
         request=request_of(context, about)))
