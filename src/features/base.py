@@ -4,6 +4,7 @@ from dataclasses import asdict
 from functools import cached_property
 from typing import ClassVar
 
+from controllers.features import SETTING_KEYS
 from controllers.types import Agents
 from features import trigger
 from features.switches import switches
@@ -124,6 +125,8 @@ class Feature(ABC):
 
     def wire(self) -> None:
         self.register(self.journal)
+        if self.settings:
+            SETTING_KEYS.add(None, tuple(setting.name for setting in self.settings), key=self.name)
         if self.nudges:
             from features.nudges import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))
