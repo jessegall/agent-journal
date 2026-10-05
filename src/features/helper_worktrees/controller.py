@@ -7,7 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from engine.wording import plural
 from features.agent_sessions.launch import running_at
-from engine.worktree import contains, current_branch, git, included, lines, present, share_journal, tip
+from engine.worktree import contains, current_branch, git, included, lines, link_folders, present, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from resources.base import Refused
@@ -60,6 +60,7 @@ class Worktrees(Controller):
         if made.returncode:
             raise Refused(f"the worktree {name} could not be made: {made.stderr.strip()}")
         included(project, folder)
+        link_folders(project, folder)
         share_journal(folder, self.record.root, workspace_folders())
         return self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
 
