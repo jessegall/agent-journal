@@ -1,10 +1,10 @@
 from dataclasses import dataclass, replace
-from typing import Callable
+from typing import Callable, ClassVar
 
 from engine.events.agents import AgentReported
 from engine.events.engine import ClockTicked
 from features import trigger
-from features.parts import AgentContext, Handler
+from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Handler
 
 
 @dataclass(frozen=True)
@@ -67,6 +67,7 @@ class SendOnTheClock(Handler):
 
 @dataclass
 class SendOnToolUse(Handler):
+    hooks: ClassVar[tuple[str, ...]] = ANY_BUT_POST_TOOL_USE
     nudges: tuple
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:

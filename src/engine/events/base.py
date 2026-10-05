@@ -16,6 +16,10 @@ class TypedEvent(Loaded):
     def name(cls) -> str:
         return cls.on
 
+    @classmethod
+    def patterns(cls, hooks: tuple[str, ...]) -> tuple[str, ...]:
+        return (cls.on,)
+
     def wanted(self) -> bool:
         return True
 

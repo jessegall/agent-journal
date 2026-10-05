@@ -8,6 +8,7 @@ from engine.events.resources import AgentChanged
 from engine.reach import Reach
 from engine.state import State
 from engine.wording import digest
+from providers.payload import STATUS, HookEvent
 from features import trigger
 from features.settings import Settings
 from resources.base import SYSTEM
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
     from features.journal import BoundJournal
 
 ONCE_KEPT = 1000
+ANY_BUT_PRE_TOOL_USE = tuple(hook for hook in STATUS if hook != HookEvent.PRE_TOOL_USE)
+ANY_BUT_POST_TOOL_USE = tuple(hook for hook in STATUS if hook != HookEvent.POST_TOOL_USE)
 
 
 class Speaker:
@@ -123,6 +126,7 @@ WHOLE_FEATURE = ""
 
 class Handler:
     behaviour: ClassVar[str | None] = None
+    hooks: ClassVar[tuple[str, ...]] = ()
 
     def handle(self, context: Context, event) -> None:
         raise NotImplementedError

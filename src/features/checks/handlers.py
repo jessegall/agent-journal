@@ -6,6 +6,7 @@ from engine.command_runs import CommandRun
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceEvent
 from features.checks.output import summary
+from providers.payload import HookEvent
 from features.parts import AgentContext, Context, Handler
 from features.checks.controller import Checks
 from controllers.types import Agents, Notifications
@@ -47,6 +48,7 @@ class ReportCheckResult(Handler):
 
 
 class MarkTestRuns(Handler):
+    hooks = (HookEvent.PRE_TOOL_USE, HookEvent.POST_TOOL_USE)
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
         run = CommandRun.from_json(row.running) if row.running else None

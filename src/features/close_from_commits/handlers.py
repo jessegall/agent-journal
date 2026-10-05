@@ -3,7 +3,7 @@ import re
 from engine.events.agents import AgentReported
 from engine.git import Checkout, checkout_of
 from engine.proc import git
-from features.parts import AgentContext, Handler
+from features.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler
 from resources.base import Refused
 from engine.wording import digest
 from controllers.types import Agents, Todos, Works
@@ -13,6 +13,7 @@ TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +
 
 
 class CloseRowsFromCommits(Handler):
+    hooks = ANY_BUT_PRE_TOOL_USE
     def __init__(self):
         self.seen: dict[tuple[str, str], int] = {}
 

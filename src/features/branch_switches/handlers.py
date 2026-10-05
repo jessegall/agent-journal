@@ -1,10 +1,11 @@
 from engine.events.agents import AgentReported
 from engine.git import checkout_of
-from features.parts import AgentContext, Handler
+from features.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler
 from controllers.types import Agents
 
 
 class MarkBranchSwitches(Handler):
+    hooks = ANY_BUT_PRE_TOOL_USE
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         checkout = checkout_of(context.working_folder)
         if not checkout:

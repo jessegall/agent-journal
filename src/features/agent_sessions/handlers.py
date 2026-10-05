@@ -5,6 +5,7 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from engine.events.resources import AgentChanged, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions, live
+from providers.payload import HookEvent
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 from resources.types import COMPACTING, STOPPED, SUBAGENT
@@ -39,6 +40,7 @@ class HoldEvicted(Handler):
 
 
 class RecordCompactions(Handler):
+    hooks = (HookEvent.PRE_COMPACT,)
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
         kept = row.data.get("compactions") or []
