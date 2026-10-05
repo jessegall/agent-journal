@@ -19,7 +19,8 @@ CODE = HERE / "src"
 
 
 def installed(place: Path) -> Path:
-    (place / PROJECT / ".claude").mkdir(parents=True)
+    for agent in (".claude", ".codex"):
+        (place / PROJECT / agent).mkdir(parents=True)
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, timeout=120)
     return place / PROJECT / ".journal"
@@ -171,8 +172,16 @@ def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_
     from providers import PROVIDERS
     root = installed(tmp_path)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+    settings = root.parent / ".claude" / "settings.local.json"
+    wired = json.loads(settings.read_text())
+    wired["hooks"]["PreToolUse"].append({"hooks": [{"type": "command", "command": "my-own-lint"}]})
+    settings.write_text(json.dumps(wired))
     again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)], env=env, capture_output=True, text=True, timeout=120)
-    assert "hooks checked: claude" in again.stdout, again.stdout
+    assert "hooks checked: claude, codex" in again.stdout, again.stdout
+    rewired = json.loads(settings.read_text())["hooks"]
+    ours = {event: sum("/hook.sh" in hook["command"] for block in blocks for hook in block["hooks"]) for event, blocks in rewired.items()}
+    assert set(ours.values()) == {1}, f"installing again keeps one journal hook per event: {ours}"
+    assert any(hook["command"] == "my-own-lint" for block in rewired["PreToolUse"] for hook in block["hooks"]), "and the user's own hook stays"
     verified = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "verify"], cwd=root.parent, env=env, capture_output=True, text=True, timeout=WAIT)
     assert (verified.returncode, "Traceback" in verified.stderr, "claude" in verified.stdout.lower()) == (0, False, True), verified.stdout + verified.stderr
     claude = PROVIDERS["claude"]()
