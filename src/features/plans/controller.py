@@ -164,7 +164,7 @@ class Plans(Controller):
         first_start = r.status == APPROVED
         for other in self.rows.every():
             if other.n != r.n and other.status in RUNNING:
-                self._status(other, PARKED, *RUNNING, parked_for=r.n)
+                self._status(self.load(other.n), PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
         if first_start:
             for begin in PLAN_STARTS.each(self.record):
