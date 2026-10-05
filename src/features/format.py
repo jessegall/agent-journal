@@ -11,6 +11,7 @@ SHARED = "shared"
 TEXT_FIELDS = ("title", "abstract", "brief", "outcome")
 PLAIN_FIELDS = ("title", "abstract")
 SHAPED: dict = {}
+CATALOGUES: dict = {}
 KEEP_SHAPED = 5000
 
 
@@ -67,3 +68,11 @@ def markdown(row, record=None) -> str:
     parts += [shaped_row["brief"]] if row.brief else []
     parts += [f"## {s[SECTION.title]}\n\n{s[SECTION.body]}" for s in shaped_row.get("sections", [])]
     return "\n\n".join(part.strip() for part in parts) + "\n"
+
+
+def catalogue(described: dict, record) -> dict:
+    key = (str(record.home), settled(record))
+    if key not in CATALOGUES:
+        CATALOGUES.clear()
+        CATALOGUES[key] = {name: {**feature, "help": formatted(feature["help"], record, VIEWER)} for name, feature in described.items()}
+    return CATALOGUES[key]
