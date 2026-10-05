@@ -5,7 +5,7 @@ import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, route, swap, unpeek} from "../route.js";
-import {holding, rows} from "../sync/rows.js";
+import {PAGE, holding, rows} from "../sync/rows.js";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -47,7 +47,7 @@ async function readElsewhere() {
         "ticket",
         phases.flatMap((p) => p.tickets || [])
     );
-    await scope.recent("comment", 100);
+    await scope.recent("comment", PAGE);
 }
 if (scope) usePoll(`elsewhere:${props.env}:${props.type}:${props.n}`, readElsewhere, ELSEWHERE_EVERY);
 const broken = computed(() => (!resource.value && props.type ? store.damaged[`${props.type}:${props.n}`] : "") || "");

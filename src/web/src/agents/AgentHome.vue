@@ -92,7 +92,7 @@ usePoll(
     async () => {
         if (!scope) return null;
         if (props.plan) await scope.holding("plan", [props.plan]);
-        return scope.recentAll(CHAT_TYPES, 80);
+        return scope.recentAll(CHAT_TYPES, PAGE);
     },
     EVERY,
     () => {}
