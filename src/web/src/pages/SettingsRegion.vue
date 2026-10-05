@@ -24,6 +24,10 @@ defineEmits(["change", "timing", "act"]);
             />
         </template>
         <template v-if="region.key === 'sharing' && !across">
+            <div class="settings-region-head">
+                <h3 class="settings-subhead">Tunler account</h3>
+                <p class="settings-line">The account that share links and phones connect through.</p>
+            </div>
             <SettingsTunnel />
         </template>
     </div>
@@ -50,8 +54,18 @@ defineEmits(["change", "timing", "act"]);
 
 .settings-in {
     margin: 0;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.settings-subhead {
+    margin: 0;
     color: var(--text);
     font-size: 15px;
     font-weight: 600;
+    letter-spacing: -0.005em;
 }
 </style>

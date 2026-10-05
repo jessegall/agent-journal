@@ -154,7 +154,9 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
         </ListBox>
     </template>
     <template v-if="!envRows.length">
-        <EmptyState class="settings-environments-empty">No environment matches.</EmptyState>
+        <EmptyState class="settings-environments-empty">
+            {{ query.trim() ? "No environment matches." : "There are no environments yet." }}
+        </EmptyState>
     </template>
 </template>
 
