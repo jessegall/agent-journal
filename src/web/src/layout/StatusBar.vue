@@ -23,7 +23,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
 import {useHelpers} from "../composables/helpers.js";
 import {helperState} from "../domain/helpers.js";
-import {MODES, modeOf} from "../domain/modes.js";
+import {MODES} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
 import AgentStopButton from "../chat/AgentStopButton.vue";
 import {runPlan, setAuto} from "../actions/work.js";
@@ -47,10 +47,11 @@ const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
 const helpersOpen = ref(false);
 const helpersAnchor = ref(null);
-const modeTitle = computed(() =>
-    mode.value === "solo" && helpersOut.value
-        ? `${modeOf(mode.value).note} Helpers already out keep going until they finish.`
-        : modeOf(mode.value).note
+const modeOptions = computed(() =>
+    MODES.map((one) => ({
+        ...one,
+        title: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note,
+    }))
 );
 
 function toggleHelpers(e) {
@@ -169,7 +170,7 @@ async function runBar(p) {
                         "
                         @change="setAuto"
                     />
-                    <Segmented class="statusbar-mode" :options="MODES" :value="mode" :title="modeTitle" @pick="pickMode" />
+                    <Segmented class="statusbar-mode" :options="modeOptions" :value="mode" @pick="pickMode" />
                     <button
                         type="button"
                         :class="['statusbar-helpers', {none: !helpers.length}]"
