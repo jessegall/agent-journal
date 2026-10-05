@@ -22,6 +22,7 @@ from engine.wording import digest
 EVERYTHING = 100000
 EVENTS = 1000
 NEVER = 4e9
+DEMO_KEY = "demo"
 PHONE = "phone."
 BRANCHES = "branches"
 APP = {"manifest": "/api/manifest", "identity": "/api/identity", "pages": "/api/pages", "summary": "/api/summary", "agents": "/api/agents"}
@@ -130,58 +131,59 @@ class Throwaway:
     def folders(self) -> list[str]:
         return [*(str(project.resolve()) for project in self.lived), *(str(project) for project in self.lived)]
 
-    def ask(self, path: str, query: dict | None = None) -> object:
-        reply = dispatch("GET", path, self.root, query or {}, {})
-        if reply.code != 200:
-            raise Refused(f"the server answered {reply.code} to GET {path}: {reply.body}")
-        return reply.body
 
-    def answers(self, env: str) -> Iterator[tuple[str, object]]:
-        manifest = self.ask(APP["manifest"])
-        yield from ((name, self.ask(path)) for name, path in APP.items())
-        yield from ((name, self.ask(f"/api/{env}/{path}")) for name, path in ENVIRONMENT.items())
-        events = [Event(**raw) for raw in self.ask(f"/api/{env}/events", {"since": "0", "last": str(EVENTS)})]
-        yield "events", [event.to_json() for event in events if shown(event)]
-        rows = {kind: self.ask(f"/api/{env}/{kind}", {"completed": "1", "last": str(EVERYTHING)}) for kind in manifest["types"]}
-        yield from ((f"rows.{kind}", listed) for kind, listed in rows.items())
-        yield from self.edits(env, [agent["n"] for agent in rows["agent"]["rows"]])
-        yield from self.phoned(env)
-
-    def edits(self, env: str, agents: list[int]) -> Iterator[tuple[str, object]]:
-        for n in agents:
-            feed = self.ask(f"/api/{env}/agent/{n}/edits", {"since": "0", "last": str(EVERYTHING)})
-            yield f"edits.{n}", feed
-            yield f"edited.{n}", {card["id"]: self.ask(f"/api/{env}/agent/{n}/edits/file", {"id": card["id"], "side": "after"}) for card in feed["edits"]}
+def ask(root: Path, path: str, query: dict | None = None) -> object:
+    reply = dispatch("GET", path, root, query or {}, {})
+    if reply.code != 200:
+        raise Refused(f"the server answered {reply.code} to GET {path}: {reply.body}")
+    return reply.body
 
 
-    def phoned(self, env: str) -> Iterator[tuple[str, object]]:
-        phones = Phones(Record(self.root, env), actor=SYSTEM)
+def server_answers(root: Path, env: str) -> Iterator[tuple[str, object]]:
+    manifest = ask(root, APP["manifest"])
+    yield from ((name, ask(root, path)) for name, path in APP.items())
+    yield from ((name, ask(root, f"/api/{env}/{path}")) for name, path in ENVIRONMENT.items())
+    events = [Event(**raw) for raw in ask(root, f"/api/{env}/events", {"since": "0", "last": str(EVENTS)})]
+    yield "events", [event.to_json() for event in events if shown(event)]
+    rows = {kind: ask(root, f"/api/{env}/{kind}", {"completed": "1", "last": str(EVERYTHING)}) for kind in manifest["types"]}
+    yield from ((f"rows.{kind}", listed) for kind, listed in rows.items())
+    yield from edits(root, env, [agent["n"] for agent in rows["agent"]["rows"]])
+    yield from phoned(root, env)
+
+
+def edits(root: Path, env: str, agents: list[int]) -> Iterator[tuple[str, object]]:
+    for n in agents:
+        feed = ask(root, f"/api/{env}/agent/{n}/edits", {"since": "0", "last": str(EVERYTHING)})
+        yield f"edits.{n}", feed
+        yield f"edited.{n}", {card["id"]: ask(root, f"/api/{env}/agent/{n}/edits/file", {"id": card["id"], "side": "after"}) for card in feed["edits"]}
+
+
+def phoned(root: Path, env: str) -> Iterator[tuple[str, object]]:
+    phones = Phones(Record(root, env), actor=SYSTEM)
+    connected = phones.connected()
+    try:
+        reads = dict(phone_reads(root, phones, connected[-1] if connected else phones.stand_in(DEMO_KEY, NEVER)))
+    except Refused:
+        return
+    yield from reads.items()
+
+
+def phone_reads(root: Path, phones: Phones, phone: Phone) -> Iterator[tuple[str, object]]:
+    feed = read_body(phones, phone, ["feed"], {})
+    yield "phone.feed", feed
+    yield from ((f"phone.{path}", read_body(phones, phone, [path], {})) for path in ("state", "bar"))
+    places = read_body(phones, phone, ["places"], {})
+    recorded = str(root.resolve())
+    yield "phone.places", {**places, "at": recorded, "places": [place for place in places["places"] if Path(place["root"]).resolve() == root.resolve()]}
+    lists = {kind: read_body(phones, phone, ["list"], {"type": [kind]}) for kind in CARDS}
+    yield from ((f"phone.list.{kind}", listed) for kind, listed in lists.items())
+    named = [*feed["items"], *feed["waiting"], *(row for listed in lists.values() for row in listed["rows"])]
+    for ref in dict.fromkeys(item["ref"] for item in named if "ref" in item):
+        kind, _, n = ref.partition(":")
         try:
-            reads = dict(self.phone_reads(phones, self.phone(phones, env)))
+            yield f"phone.row.{ref}", read_body(phones, phone, ["row", kind, n], {})
         except Refused:
-            return
-        yield from reads.items()
-
-    def phone(self, phones: Phones, env: str) -> Phone:
-        connected = [phone for phone in (phones.load(row["n"]) for row in phones.rows.summaries() if not row["deleted"]) if phone.connected]
-        return connected[-1] if connected else Phone(n=0, title="A phone", data={"environment": env, "key": "demo", "expires": NEVER})
-
-    def phone_reads(self, phones: Phones, phone: Phone) -> Iterator[tuple[str, object]]:
-        feed = read_body(phones, phone, ["feed"], {})
-        yield "phone.feed", feed
-        yield from ((f"phone.{path}", read_body(phones, phone, [path], {})) for path in ("state", "bar"))
-        places = read_body(phones, phone, ["places"], {})
-        recorded = str(self.root.resolve())
-        yield "phone.places", {**places, "at": recorded, "places": [place for place in places["places"] if Path(place["root"]).resolve() == self.root.resolve()]}
-        lists = {kind: read_body(phones, phone, ["list"], {"type": [kind]}) for kind in CARDS}
-        yield from ((f"phone.list.{kind}", listed) for kind, listed in lists.items())
-        named = [*feed["items"], *feed["waiting"], *(row for listed in lists.values() for row in listed["rows"])]
-        for ref in dict.fromkeys(item["ref"] for item in named if "ref" in item):
-            kind, _, n = ref.partition(":")
-            try:
-                yield f"phone.row.{ref}", read_body(phones, phone, ["row", kind, n], {})
-            except Refused:
-                continue
+            continue
 
 
 def branched(folder: Path, env: str, name: str) -> dict:
@@ -217,7 +219,7 @@ def built(folder: Path, env: str = "", name: str | None = None) -> dict:
             world.restore(frame)
             env = env or world.environments()[0]
             answers = {}
-            for name, answer in world.answers(env):
+            for name, answer in server_answers(world.root, env):
                 text = json.dumps(answer, sort_keys=True)
                 answers[name] = digest(text, 12)
                 stored[answers[name]] = json.loads(text)

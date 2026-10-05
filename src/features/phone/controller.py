@@ -51,6 +51,12 @@ def hashed(secret: str) -> str:
 class Phones(Controller):
     resource = Phone
 
+    def connected(self) -> list[Phone]:
+        return [phone for phone in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"]) if phone.connected]
+
+    def stand_in(self, key: str, expires: float) -> Phone:
+        return Phone(n=0, title="A phone", data={"environment": self.record.env, "key": key, "expires": expires})
+
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         self._untouched(data)
