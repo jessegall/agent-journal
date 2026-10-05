@@ -15,13 +15,11 @@ defineProps({revisions: Object});
                 <template v-if="revisions.hidden > 0">
                     <span class="earlier">+{{ revisions.hidden }}</span>
                 </template>
-                <template v-for="i in revisions.shown" :key="i">
+                <template v-for="i in revisions.indexes" :key="i">
                     <button
                         type="button"
                         :class="['tick', {current: i === revisions.at, open: revisions.open && i === revisions.count - 1}]"
-                        :title="
-                            revisions.open && i === revisions.count - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`
-                        "
+                        :title="revisions.open && i === revisions.count - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`"
                         :aria-current="i === revisions.at ? 'true' : undefined"
                         @click="revisions.go(i)"
                     />

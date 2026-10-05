@@ -44,9 +44,9 @@ const measures = ref(null);
 const widths = reactive({idle: 0, submit: 0});
 
 function measure() {
-    const shown = measures.value ? [...measures.value.children] : [];
-    widths.idle = shown[0]?.offsetWidth || 0;
-    widths.submit = shown[shown.length - 1]?.offsetWidth || 0;
+    const children = measures.value ? [...measures.value.children] : [];
+    widths.idle = children[0]?.offsetWidth || 0;
+    widths.submit = children[children.length - 1]?.offsetWidth || 0;
 }
 
 onMounted(() => nextTick(measure));

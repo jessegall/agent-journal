@@ -29,7 +29,7 @@ const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
 const previewText = ref("");
-const shown = ref(null);
+const previewed = ref(null);
 const removing = ref(null);
 const outcome = ref(null);
 const viewing = ref(null);
@@ -60,9 +60,9 @@ watch(busy, () => look());
 async function preview() {
     busy.value = "preview";
     previewText.value = "";
-    shown.value = null;
+    previewed.value = null;
     try {
-        shown.value = await api.previewPlugin(source.value);
+        previewed.value = await api.previewPlugin(source.value);
     } catch (e) {
         previewText.value = e.message;
     }
@@ -86,14 +86,14 @@ async function follow(name, skipped) {
 async function install() {
     busy.value = "install";
     live.value = "";
-    const name = shown.value.name;
+    const name = previewed.value.name;
     const skipped = (await logLines(name)).length;
     following = true;
     follow(name, skipped);
     try {
-        const upgrading = shown.value.upgrading;
-        const installed = upgrading ? await api.upgradePlugin(upgrading, shown.value.current) : await api.installPlugin(source.value);
-        outcome.value = {ok: true, text: typeof installed === "string" ? installed : `${shown.value.title} is up to date.`};
+        const upgrading = previewed.value.upgrading;
+        const installed = upgrading ? await api.upgradePlugin(upgrading, previewed.value.current) : await api.installPlugin(source.value);
+        outcome.value = {ok: true, text: typeof installed === "string" ? installed : `${previewed.value.title} is up to date.`};
         if (!upgrading) source.value = "";
         if (!upgrading && installed && installed.n) {
             closeShown();
@@ -110,7 +110,7 @@ async function install() {
 async function upgrade(p) {
     busy.value = `${p.n}`;
     try {
-        shown.value = {...(await api.previewUpgrade(p.n)), upgrading: p.n};
+        previewed.value = {...(await api.previewUpgrade(p.n)), upgrading: p.n};
         outcome.value = null;
     } catch (e) {
         previewText.value = e.message;
@@ -119,7 +119,7 @@ async function upgrade(p) {
 }
 
 function closeShown() {
-    shown.value = null;
+    previewed.value = null;
     outcome.value = null;
 }
 
@@ -255,9 +255,9 @@ async function askAgent() {
                 @ask="askAgent"
             />
         </template>
-        <template v-if="shown">
+        <template v-if="previewed">
             <PluginInstallDialog
-                :shown="shown"
+                :previewed="previewed"
                 :outcome="outcome"
                 :live="live"
                 :busy="busy"
