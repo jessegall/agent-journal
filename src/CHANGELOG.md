@@ -4,6 +4,29 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.251.0 — one job per module
+
+**The codebase is refactored so each module does one job, and each kind of operation has one funnel.** The CLI and HTTP
+run an action the same way, and an HTTP action is now all-or-nothing. A method is an action only when it is marked
+`@action`. Routes resolve the same way whatever order they were registered in, and each feature's routes live in that
+feature. Row storage is a part of each controller, not its parent class, and a reader shares the stored row while a
+writer works on a copy. A feature that is switched off leaves nothing behind. The hook path holds no logic; a hook
+reaches only the handlers that care about it, which makes tool hooks about a fifth faster. A busy dashboard is about
+twice as fast.
+
+**The Settings page is redesigned**: one scrolling page of plain-named groups with a list on the left, one control per
+setting, timing shown as a chip, and search with a Changed and Off filter. The lines a feature says to the agent are
+no longer listed there. **Triggers and suggestions sit in the sidebar**, question cards span the full bubble, and danger
+buttons are red before you hover them.
+
+**The viewer is gentler on a slow server**: it backs off when the server is slow or down, fetches other journals'
+summaries only while they are on screen, keeps a shared poll running for its other users, and fetches less on each poll.
+
+**Fixed**: the phone tunnel no longer restarts itself into a lockout; a hold never drops a reply, a reaction or a new
+to-do written on the same line, and nothing else gets through on such a line; reading a file whole is refused only past
+600 lines; a check that runs out of time says so; dropping a worktree no longer kills the helper inside it; a ticket
+from an outside source no longer breaks its panel.
+
 ## 2.250.0 — round nine
 
 **The API runs only an action a type really has**: a name starting with an underscore, or any other method that is
