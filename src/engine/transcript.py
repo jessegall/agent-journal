@@ -15,8 +15,8 @@ SUMMARY, SUPERSEDED = "summary", "superseded"
 @dataclass(frozen=True)
 class PeerNote:
     direction: str
-    name: str
     address: str
+    name: str | None = None
 
 
 @dataclass

@@ -138,7 +138,7 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
-        with measured(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if not networked(command, method) else nullcontext():
+        with measured(ctx["record"], "command", f"{command} {method}") if not networked(command, method) else nullcontext():
             got = invoked(controller, word, named=args, extra=extra)
     except Refused as e:
         print(f"! {e}", file=err)

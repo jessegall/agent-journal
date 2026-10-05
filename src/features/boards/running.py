@@ -26,16 +26,20 @@ class RunningBoards:
             raise Refused(f"orchestrating is on or off; not {mode!r}")
         self._set_orchestrating(mode == "on")
         if mode == "off":
-            from features.sequences.controller import Sequences
-            from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
-            from features.sequences.resource import RunKey
-            sequences = Sequences(self.record, actor=SYSTEM)
-            for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
-                sequence = sequences.rows.by_title(shipped.title)
-                for key in [RunKey.of(key) for key in (sequence.runs if sequence else {})]:
-                    if key.here(self.record.env):
-                        sequences.finish(sequence.n, key.about)
+            self._finish_orchestration_runs()
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
+
+    def _finish_orchestration_runs(self) -> None:
+        from features.sequences.controller import Sequences
+        from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
+        from features.sequences.resource import RunKey
+        sequences = Sequences(self.record, actor=SYSTEM)
+        for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
+            sequence = sequences.rows.by_title(shipped.title)
+            if not sequence:
+                continue
+            for run in [run for run in map(RunKey.of, sequence.runs) if run.here(self.record.env)]:
+                sequences.finish(sequence.n, run.about)
 
     def _set_orchestrating(self, on: bool) -> None:
         from features.session_briefing.block import rebuild

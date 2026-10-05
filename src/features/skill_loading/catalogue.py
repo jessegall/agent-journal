@@ -6,7 +6,7 @@ from pathlib import Path
 import features
 from controllers.types import Agents
 from engine.record import Record
-from providers import PROVIDERS
+from providers import PROVIDERS, transcript_reader
 from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
@@ -111,18 +111,13 @@ def available(root: Path) -> set[str]:
     return {f.parent.name for f in skill_files(root / LIBRARY)}
 
 
-def provider_of(agent):
-    provider = PROVIDERS.get(agent.provider)
-    return provider() if provider and agent.transcript else None
-
-
 def loaded_at(agent) -> dict[str, float]:
-    provider = provider_of(agent)
+    provider = transcript_reader(agent)
     return provider.loaded_skills(Path(agent.transcript)) if provider else {}
 
 
 def loaded_before_compaction(agent) -> dict[str, float]:
-    provider = provider_of(agent)
+    provider = transcript_reader(agent)
     return provider.prior_window(Path(agent.transcript)).prior_loads if provider else {}
 
 

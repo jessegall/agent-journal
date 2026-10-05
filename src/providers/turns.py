@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.transcript import IDLE
 from controllers.types import Agents, environment_records
-from providers import PROVIDERS
+from providers import PROVIDERS, transcript_reader
 from resources.base import SYSTEM
 
 SETTLE, SETTLE_STEP = 1.5, 0.05
@@ -17,10 +17,9 @@ def settled(provider, path: Path, agent) -> None:
 
 
 def _settled_provider(agent):
-    kind = PROVIDERS.get(agent.provider)
-    if not kind or not agent.transcript:
+    provider = transcript_reader(agent)
+    if provider is None:
         return None
-    provider = kind()
     settled(provider, Path(agent.transcript), agent)
     return provider
 
