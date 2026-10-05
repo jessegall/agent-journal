@@ -8,14 +8,13 @@ from http.cookies import SimpleCookie
 
 from engine.record import Record
 from engine.fields import Loaded
-from features.message_buttons.pressing import Spent
 from features.phone.controller import Phones
-from features.phone.surface import PhoneSurface, Stale
+from features.phone.surface import PhoneSurface
 from engine.color import identity
 from features.sharing.page import PICTURES, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
-from resources.base import SYSTEM, Refused
+from resources.base import SYSTEM, Refused, Stale
 from features.trigger import DAY
 from engine.wording import digest
 
@@ -60,12 +59,8 @@ class Reacting(Loaded):
 
 
 @dataclass(frozen=True)
-class Switching:
-    on: bool
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Switching":
-        return cls(on=given.get("on") is True)
+class Switching(Loaded):
+    on: bool = False
 
 
 @dataclass(frozen=True)
@@ -287,7 +282,7 @@ class PhoneRoutes:
             return handler.answer(404, "no such action")
         try:
             reply = acts[name]()
-        except (Stale, Spent) as stale:
+        except Stale as stale:
             return handler.answer(409, str(stale))
         except (Refused, ValueError) as refused:
             return handler.answer(422, str(refused))
@@ -298,7 +293,7 @@ class PhoneRoutes:
         return {"pause": lambda: done("pause", surface.pause()),
                 "resume": lambda: done("resume", surface.resume()),
                 "stop": lambda: done("stop", surface.stop()),
-                "auto": lambda: {"auto": surface.auto(Switching.from_payload(body).on)},
+                "auto": lambda: {"auto": surface.auto(Switching.from_json(body).on)},
                 "helper/stop": lambda: done("stop", surface.stop_helper(Numbered.from_json(body).n)),
                 "permit": lambda: permitted(surface, Permitting.from_json(body)),
                 "mode": lambda: {"mode": surface.mode(Choosing.from_json(body).mode)},

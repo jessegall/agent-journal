@@ -22,7 +22,7 @@ from features.sharing.controller import Shares
 from features.status_bar.bar import current
 from features.work_modes.modes import pick
 from features.work_tracking.auto import automatic
-from resources.base import AGENT, SYSTEM, USER, Refused, titled
+from resources.base import AGENT, SYSTEM, USER, Refused, Stale, titled
 from resources.shapes import level_named
 
 CARDS = ("todo", "question", "suggestion", "plan", "report", "doc", "work", "agent")
@@ -49,10 +49,6 @@ class Source(TypedDict):
     kind: str
     text: str
     lines: int
-
-
-class Stale(Refused):
-    pass
 
 
 def readable(kind: str) -> bool:
