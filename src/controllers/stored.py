@@ -28,6 +28,7 @@ STAMPS_FRESH = 60.0
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
 OPEN: dict[str, tuple] = {}
+KEEP_OPEN = 64
 
 
 def mtime(path: Path) -> int:
@@ -59,9 +60,18 @@ def opened(archive: Path) -> zipfile.ZipFile:
     if not held or held[0] != stamp:
         if held:
             held[1].close()
+        elif len(OPEN) >= KEEP_OPEN:
+            OPEN.pop(next(iter(OPEN)))[1].close()
         held = OPEN[str(archive)] = (stamp, zipfile.ZipFile(archive))
     return held[1]
 
+
+
+@dataclass(frozen=True)
+class Moved:
+    folder: int
+    index: int
+    rows: tuple[tuple[int, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -142,7 +152,7 @@ class RowStore:
         if held and held[0] == moved:
             return held[1]
         loose = self._loose(folder)
-        if held and held[0][1] == moved[1]:
+        if held and held[0].index == moved.index:
             touched = self._differing(held[1], loose)
             if len(touched) < FLUSH_ROWS:
                 return self._patched(folder, moved, held[1], loose, touched)
@@ -154,7 +164,7 @@ class RowStore:
         shown = {n: row for n, row in loose.items() if not (row.get(DAMAGED) or is_part(row))}
         return {n for n, row in shown.items() if listed.get(n) is not row} | {n for n in listed if n not in shown and n not in packed}
 
-    def _patched(self, folder: Path, moved: tuple, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
+    def _patched(self, folder: Path, moved: Moved, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
         rows = list(held)
         for n in sorted(touched):
             at = bisect_left(rows, n, key=lambda row: row["n"])
@@ -166,17 +176,18 @@ class RowStore:
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
-    def _moved(self, folder: Path) -> tuple:
-        return (folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX))
+    def _moved(self, folder: Path) -> Moved:
+        rows = tuple(sorted(self._stamps(folder).items())) if self.resource.own_folder else ()
+        return Moved(folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX), rows)
 
-    def _summarised(self, folder: Path, moved: tuple, loose: list[dict]) -> list[dict]:
+    def _summarised(self, folder: Path, moved: Moved, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
         packed = [row for n, row in self.packed().items() if n not in seen]
         rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
-    def reindexed(self, n: int, before: tuple | None, r: Resource | None = None) -> None:
+    def reindexed(self, n: int, before: Moved | None, r: Resource | None = None) -> None:
         folder = self.folder()
         held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
         if not held or known is None or held[0] != before:
