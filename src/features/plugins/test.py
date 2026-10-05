@@ -11,7 +11,7 @@ import pytest
 
 from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
-from engine.services import Manager, status_file
+from engine.services import UP, Manager, status_file, want
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
@@ -268,6 +268,10 @@ def test_stopping_a_service_stops_every_process_it_forked():
     idle = json.loads(status_file(record.root, "idle.web").read_text())
     assert (started, idle["state"], "no C# here" in idle["why"]) == (["busy.web"], "not needed", True), \
         "a service whose when-command fails is left unstarted as not needed, with the command's own words; one that answers 0 starts"
+    want(record.root, "busy.web", UP, nonce=time.time())
+    manager.one(ServiceSpec(id="busy.web", plugin="busy", service="web", run=["true"], when="echo none here; exit 1", **files_for(record.root, "busy.web")))
+    assert json.loads(status_file(record.root, "busy.web").read_text())["state"] == "not needed", \
+        "a restart, as after a plugin upgrade, asks the when-command again instead of keeping the old answer"
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]

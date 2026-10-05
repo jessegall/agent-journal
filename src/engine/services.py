@@ -223,6 +223,7 @@ class Manager:
             self.remove(sid)
             self.crashes.pop(sid, None)
             self.waiting.pop(sid, None)
+            self.needed.pop(sid, None)
             current = ServiceState(nonce=asked.nonce)
             current.write(spec.status)
         if self.living(current.keeper) and current.state not in RESTING:
