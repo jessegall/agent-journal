@@ -60,6 +60,10 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     assert start("startup") == plain, "a fresh start is handed the plain block"
     assert start("compact") == compacted, "a start after a compaction is handed the recovery steps first"
     assert start("resume") == plain, "a resume is a fresh start"
+    from engine import bus
+    start_file(record.root, record.env).unlink()
+    with bus.held():
+        assert start("startup") == plain, "with the block not yet written and the bus held, as inside a request, the start writes it and hands it over"
 
 
 def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts():
