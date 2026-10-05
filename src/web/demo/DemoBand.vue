@@ -1,5 +1,6 @@
 <script setup>
 import Btn from "../src/kit/Btn.vue";
+import DemoOutline from "./DemoOutline.vue";
 import {lessons, scenario} from "./scenarios.js";
 import {restart} from "./storage.js";
 import {insideFrame, viewAs} from "./view.js";
@@ -27,6 +28,7 @@ const framed = insideFrame();
             <Btn small @click="open(INSTALL)">Install</Btn>
             <Btn small @click="open(REPOSITORY)">View on GitHub</Btn>
         </span>
+        <DemoOutline />
     </div>
 </template>
 

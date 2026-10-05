@@ -1,7 +1,6 @@
 <script setup>
-import {ui} from "../state/ui.js";
 import {remember, remembered} from "../platform/storage.js";
-import {replayBlocks} from "../platform/demo.js";
+import {keepRecordedWords} from "../platform/demo.js";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
@@ -74,7 +73,6 @@ function grow() {
 
 async function send() {
     if (!ready.value || sending.value) return;
-    if (replayBlocks(messageText.value, ui.prefill.trim())) return;
     sending.value = true;
     const text = messageText.value || `Sent ${files.value.map((file) => file.name).join(", ")}`;
     const line = hold(text, props.about, files.value);
@@ -138,6 +136,7 @@ async function send() {
             rows="1"
             placeholder="Message the agent"
             aria-label="Message the agent"
+            @beforeinput="keepRecordedWords"
             @input="grow"
             @focus="emit('focused')"
         />

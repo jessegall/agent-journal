@@ -1,5 +1,5 @@
 const SHOWN_FOR = 3200;
-const SAID = "This is a replay, so your own words are not sent: press Send to send the recorded message.";
+const SAID = "This is a replay, so the message is already written: press Send to send it.";
 
 export function noticeOwnWords() {
     let shown = null;
