@@ -15,6 +15,7 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
+from features.routing import Reply  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
@@ -72,10 +73,10 @@ class Handler(BaseHTTPRequestHandler):
         kind = self.headers.get("Content-Type") or ""
         try:
             body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") or kind.startswith("text/plain") else json.loads(raw or b"{}")
-        except ValueError:
-            self.send_error(400)
-            return
-        reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
+        except (json.JSONDecodeError, UnicodeDecodeError) as error:
+            reply = Reply(400, {"error": f"the request body is not JSON: {error}"})
+        else:
+            reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
         self.send_response(reply.code)
         self.sibling()
         self.send_header("Content-Type", reply.kind)

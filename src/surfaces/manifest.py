@@ -40,10 +40,10 @@ class Manifest(TypedDict):
     groups: list[groups.Described]
 
 
-def manifest(root: Path | None = None) -> Manifest:
+def manifest(root: Path) -> Manifest:
     return {
-        "project": root.resolve().parent.name if root else "",
-        "environment": runtime.env(root) if root else runtime.DEFAULT_ENV,
+        "project": root.resolve().parent.name,
+        "environment": runtime.env(root),
         "version": version(),
         "build": built(),
         "actions": list(ACTIONS),
@@ -54,6 +54,6 @@ def manifest(root: Path | None = None) -> Manifest:
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
         "types": described_types(),
-        "features": catalogue(features.describe(), Record(root, runtime.env(root))) if root else features.describe(),
+        "features": catalogue(features.describe(), Record(root, runtime.env(root))),
         "groups": groups.describe(),
     }

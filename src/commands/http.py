@@ -641,7 +641,7 @@ def post_action_bare(req: Request) -> Reply:
 def post_action(req: Request) -> Reply:
     controller, action = req.controller(), req.params["action"]
     if not takes_row(controller.method(action)):
-        raise Refused(f"{controller.type} {action} takes no row number: POST /api/{req.params['env']}/{controller.type}/{action}")
+        raise Refused(f"{controller.type} {action} takes no row number: POST /api/{controller.record.env}/{controller.type}/{action}")
     got = invoked(controller, action, (int(req.params["n"]),), req.body)
     return Reply(200, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))
 

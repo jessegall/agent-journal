@@ -203,7 +203,7 @@ class RowStore:
         stamp = mtime(index)
         if not stamp:
             return {}
-        return PACKS.get(str(index), stamp, lambda: {int(n): row for n, row in read_json(index, dict, {}).items()})
+        return PACKS.get(str(index), stamp, lambda: {int(n): {**row, "stamp": stamp} for n, row in read_json(index, dict, {}).items()})
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:

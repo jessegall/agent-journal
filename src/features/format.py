@@ -12,6 +12,7 @@ TEXT_FIELDS = ("title", "abstract", "brief", "outcome")
 PLAIN_FIELDS = ("title", "abstract")
 SHAPED: dict = {}
 CATALOGUES: dict = {}
+KEEP_CATALOGUES = 8
 KEEP_SHAPED = 5000
 
 
@@ -72,7 +73,9 @@ def markdown(row, record=None) -> str:
 
 def catalogue(described: dict, record) -> dict:
     key = (str(record.home), settled(record))
-    if key not in CATALOGUES:
+    if key in CATALOGUES:
+        return CATALOGUES[key]
+    if len(CATALOGUES) >= KEEP_CATALOGUES:
         CATALOGUES.clear()
-        CATALOGUES[key] = {name: {**feature, "help": formatted(feature["help"], record, VIEWER)} for name, feature in described.items()}
+    CATALOGUES[key] = {name: {**feature, "help": formatted(feature["help"], record, VIEWER)} for name, feature in described.items()}
     return CATALOGUES[key]
