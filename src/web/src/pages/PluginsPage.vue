@@ -96,7 +96,7 @@ async function install() {
         outcome.value = {ok: true, text: typeof installed === "string" ? installed : `${previewed.value.title} is up to date.`};
         if (!upgrading) source.value = "";
         if (!upgrading && installed && installed.n) {
-            closeShown();
+            closePreview();
             settingsOf(name);
         }
     } catch (e) {
@@ -118,7 +118,7 @@ async function upgrade(p) {
     busy.value = "";
 }
 
-function closeShown() {
+function closePreview() {
     previewed.value = null;
     outcome.value = null;
 }
@@ -261,7 +261,7 @@ async function askAgent() {
                 :outcome="outcome"
                 :live="live"
                 :busy="busy"
-                @close="closeShown"
+                @close="closePreview"
                 @back="outcome = null"
                 @install="install"
             />

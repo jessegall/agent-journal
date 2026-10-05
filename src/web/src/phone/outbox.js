@@ -169,6 +169,6 @@ export function discard(idempotency) {
 }
 
 export function settle(items) {
-    const shown = new Set(items.map((item) => item.data && item.data.idempotency).filter(Boolean));
-    justSent.value = justSent.value.filter((line) => !shown.has(line.idempotency));
+    const sentKeys = new Set(items.map((item) => item.data && item.data.idempotency).filter(Boolean));
+    justSent.value = justSent.value.filter((line) => !sentKeys.has(line.idempotency));
 }

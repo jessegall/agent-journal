@@ -6,11 +6,11 @@ import MenuLabel from "../kit/MenuLabel.vue";
 import PaneMenuBack from "./PaneMenuBack.vue";
 import PaneMenuLine from "./PaneMenuLine.vue";
 import PaneMenuToggle from "./PaneMenuToggle.vue";
-import {shownChoices, toggled} from "../domain/chatShown.js";
+import {visibilityChoices, toggled} from "../domain/chatVisibility.js";
 
 const props = defineProps({hidden: {type: Array, required: true}});
 const emit = defineEmits(["back", "hide"]);
-const choices = computed(() => shownChoices(props.hidden));
+const choices = computed(() => visibilityChoices(props.hidden));
 </script>
 
 <template>

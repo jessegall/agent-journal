@@ -31,23 +31,29 @@ const visible = (p) => {
 const words = (s) => `${s.title} ${s.help} ${s.group}`;
 
 function groupsOf(p) {
-    const shown = visible(p);
+    const visibleSettings = visible(p);
     const out = new Map();
-    for (const s of shown.filter((setting) => !setting.parent)) {
+    for (const s of visibleSettings.filter((setting) => !setting.parent)) {
         const name = s.group || UNGROUPED;
         out.set(name, [...(out.get(name) || []), s]);
     }
     return [...out].map(([name, settings]) => {
-        const all = settings.flatMap((s) => [s, ...shown.filter((child) => child.parent === s.key)]);
+        const all = settings.flatMap((s) => [s, ...visibleSettings.filter((child) => child.parent === s.key)]);
         const flags = flagsOf(all);
         const found = props.query.trim()
-            ? settings.filter((s) => [s, ...childrenOf(shown, s)].some((x) => matches(words(x), props.query)))
+            ? settings.filter((s) => [s, ...childrenOf(visibleSettings, s)].some((x) => matches(words(x), props.query)))
             : settings;
-        return {name, settings: found, shown, flags, folded: toggled[name] ?? (settings.every((s) => s.detail) && !props.query.trim())};
+        return {
+            name,
+            settings: found,
+            visibleSettings,
+            flags,
+            folded: toggled[name] ?? (settings.every((s) => s.detail) && !props.query.trim()),
+        };
     });
 }
 
-const childrenOf = (shown, s) => shown.filter((child) => child.parent === s.key);
+const childrenOf = (visibleSettings, s) => visibleSettings.filter((child) => child.parent === s.key);
 const groups = computed(() => (plugin.value ? groupsOf(plugin.value).filter((g) => g.settings.length) : []));
 const onLine = (g) => (g.flags.length ? `${g.flags.filter((s) => s.value === "true").length} of ${g.flags.length} on` : g.settings.length);
 const sections = computed(() =>
@@ -129,7 +135,7 @@ watch(
                                 </div>
                             </template>
                             <template v-for="s in group.settings" :key="s.key">
-                                <PluginSetting :setting="s" :children="childrenOf(group.shown, s)" @change="change" />
+                                <PluginSetting :setting="s" :children="childrenOf(group.visibleSettings, s)" @change="change" />
                             </template>
                         </ListBox>
                     </div>

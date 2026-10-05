@@ -20,7 +20,7 @@ const emit = defineEmits(["close", "share"]);
             <Icon name="chevronRight" bold facing="left" :size="18" />
             {{ back }}
         </button>
-        <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ title }}</span>
+        <span :class="['reader-name', {visible: titled}]" aria-hidden="true">{{ title }}</span>
         <template v-if="shareable">
             <button type="button" class="reader-share" aria-label="Share" @click="emit('share')"><Icon name="share" :size="20" /></button>
         </template>
@@ -103,7 +103,7 @@ const emit = defineEmits(["close", "share"]);
     transition: opacity 200ms linear;
 }
 
-.reader-name.shown {
+.reader-name.visible {
     opacity: 1;
 }
 

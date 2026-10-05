@@ -3,7 +3,7 @@ import {useWindowEvent} from "./composables/windowEvent.js";
 import {chatOnly, narrow, soloView} from "./platform/view.js";
 import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
-import {activityShown, closeOverlays} from "./actions/panels.js";
+import {activityVisible, closeOverlays} from "./actions/panels.js";
 
 import {computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
@@ -229,7 +229,7 @@ watch(
                     </Transition>
                 </div>
                 <Transition name="column">
-                    <Activity v-if="activityShown() && !drawnWide && !full" />
+                    <Activity v-if="activityVisible() && !drawnWide && !full" />
                 </Transition>
                 <template v-if="narrow && (store.sideOpen || store.activityOpen)">
                     <div class="narrow-scrim" @click="closeOverlays" />

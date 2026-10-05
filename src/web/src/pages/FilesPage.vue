@@ -49,16 +49,20 @@ const shelves = computed(() => {
 });
 const searched = computed(() => searchTerms(query.value));
 const text = (f) => `${f.name} ${f.description || ""} ${f.title || ""} ${meta(f.type).title} ${f.n}`.toLowerCase();
-const shown = computed(() =>
+const listedFiles = computed(() =>
     ofKind.value
         .filter((f) => !shelf.value || f.type === shelf.value)
         .filter((f) => searched.value.every((w) => text(f).includes(w)))
         .sort((a, b) => b.at - a.at)
 );
 const groups = computed(() =>
-    ageGroups(shown.value, (f) => f.at).map((g) => ({...g, images: g.list.filter((f) => f.image), others: g.list.filter((f) => !f.image)}))
+    ageGroups(listedFiles.value, (f) => f.at).map((g) => ({
+        ...g,
+        images: g.list.filter((f) => f.image),
+        others: g.list.filter((f) => !f.image),
+    }))
 );
-const pictures = computed(() => shown.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
+const pictures = computed(() => listedFiles.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
 const view = (f) =>
     openPictures(
         pictures.value,
@@ -98,15 +102,15 @@ const pickKind = (key) => {
                 <span class="shelves-label">Attached to</span>
                 <Segmented :options="shelves" :value="shelf" @pick="shelf = $event" />
             </nav>
-            <template v-if="!shown.length">
+            <template v-if="!listedFiles.length">
                 <EmptyState class="none">
                     No file matches “{{ query.trim() }}”.
                     <Btn small @click="query = ''">Clear the search</Btn>
                 </EmptyState>
             </template>
-            <template v-if="searched.length && shown.length">
+            <template v-if="searched.length && listedFiles.length">
                 <SectionHeading class="group-head">
-                    {{ shown.length }} {{ shown.length === 1 ? "file matches" : "files match" }}
+                    {{ listedFiles.length }} {{ listedFiles.length === 1 ? "file matches" : "files match" }}
                 </SectionHeading>
             </template>
             <template v-for="g in groups" :key="g.title">

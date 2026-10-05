@@ -79,13 +79,13 @@ const ASKING = {environments: "Find an environment", plugins: "Find a setting of
 const asking = computed(() => ASKING[tab.value] || "Find a setting in every tab");
 const tabGroups = computed(() => navSections.value.flatMap((s) => s.groups));
 const onlyGroup = computed(() => (tabGroups.value.length === 1 ? tabGroups.value[0].key : ""));
-const shownGroup = computed(() => chosen.value || onlyGroup.value);
+const activeGroup = computed(() => chosen.value || onlyGroup.value);
 const screen = computed(() => {
     if (!narrow.value || searching.value || !listed.value) return "page";
-    return shownGroup.value ? "group" : "list";
+    return activeGroup.value ? "group" : "list";
 });
 const back = computed(() => narrow.value && screen.value === "group" && Boolean(chosen.value));
-const phoneGroup = computed(() => groups.value.find((g) => g.key === shownGroup.value) || null);
+const phoneGroup = computed(() => groups.value.find((g) => g.key === activeGroup.value) || null);
 const spied = computed(() => (screen.value === "page" && listed.value ? groups.value.map((g) => g.key) : []));
 
 useScrollSpy(spied, current);

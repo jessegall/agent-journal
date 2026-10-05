@@ -4,13 +4,13 @@ import PinsToggle from "./PinsToggle.vue";
 import {usePins} from "./pins.js";
 
 const props = defineProps({notices: {type: Array, required: true}, withoutToggle: Boolean});
-const {shown} = usePins(() => props.notices);
+const {visible} = usePins(() => props.notices);
 </script>
 
 <template>
     <div class="pinned">
         <TransitionGroup name="act">
-            <template v-for="x in shown" :key="x.n">
+            <template v-for="x in visible" :key="x.n">
                 <ChatNotice :notice="x" />
             </template>
         </TransitionGroup>

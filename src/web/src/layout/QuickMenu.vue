@@ -14,7 +14,7 @@ import {open} from "../domain/records.js";
 import {showAway} from "../platform/visibility.js";
 import {setAuto} from "../actions/work.js";
 import {useNavigation} from "../composables/navigation.js";
-import {activityShown, toggleActivity} from "../actions/panels.js";
+import {activityVisible, toggleActivity} from "../actions/panels.js";
 
 const props = defineProps({opening: {type: String, default: "menu"}});
 const emit = defineEmits(["close"]);
@@ -218,7 +218,7 @@ const commands = computed(() => {
         },
     });
     rows.push({
-        label: activityShown() ? "Hide the activity column" : "Show the activity column",
+        label: activityVisible() ? "Hide the activity column" : "Show the activity column",
         keys: "activity column",
         icon: "activity",
         run: () => {

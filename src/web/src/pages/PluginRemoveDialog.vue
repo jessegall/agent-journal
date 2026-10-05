@@ -8,7 +8,7 @@ const emit = defineEmits(["close", "remove"]);
 
 <template>
     <Dialog :title="`Remove ${title}`" fits @close="emit('close')">
-        <p class="shown-lead">
+        <p class="remove-lead">
             Its services stop, its hooks and refusals no longer run, and its folder is taken away. What it kept of its own — settings,
             caches, anything it wrote in its data folder — can stay, in case you install it again, or go with it.
         </p>
@@ -21,7 +21,7 @@ const emit = defineEmits(["close", "remove"]);
 </template>
 
 <style scoped>
-.shown-lead {
+.remove-lead {
     margin: 0 0 8px;
     color: var(--text-3);
     font-size: 12.5px;

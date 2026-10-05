@@ -48,7 +48,7 @@ const blocked = computed(() => props.resource.data.blocked || "");
 const seenBy = computed(() => props.resource.seen.join(", ") || "nobody");
 const briefLabel = computed(() => kind.value.labels.brief || "");
 const buttons = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
-const fieldsShown = computed(() => kind.value.shown_fields.length > 0);
+const hasFields = computed(() => kind.value.shown_fields.length > 0);
 const optioned = computed(() => !!kind.value.fields.options);
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
@@ -79,7 +79,7 @@ async function save() {
     }
 }
 const state = computed(() => (props.resource.type === "doc" ? standing(props.resource) : null));
-const outcomeShown = computed(() => !!props.resource.completed && !state.value?.said);
+const hasOutcome = computed(() => !!props.resource.completed && !state.value?.said);
 const WITHOUT_DOC_CARDS = ["doc", "collection"];
 const docs = computed(() =>
     WITHOUT_DOC_CARDS.includes(props.resource.type)
@@ -159,7 +159,7 @@ async function follow() {
         <template v-if="buttons.length && !readOnly">
             <Buttons :resource="resource" />
         </template>
-        <template v-if="fieldsShown">
+        <template v-if="hasFields">
             <DataFields :resource="resource" />
         </template>
         <template v-if="optioned">
@@ -193,7 +193,7 @@ async function follow() {
         <template v-if="traced">
             <Trace :resource="resource" />
         </template>
-        <template v-if="outcomeShown">
+        <template v-if="hasOutcome">
             <ResourceOutcome :resource="resource" :documented="Boolean(state)" />
         </template>
         <template v-if="files.length">

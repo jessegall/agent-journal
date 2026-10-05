@@ -14,7 +14,7 @@ import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
 import {connectedPhones} from "../composables/phones.js";
 import {useOutside} from "../composables/outside.js";
-import {activityShown, toggleActivity} from "../actions/panels.js";
+import {activityVisible, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
 import {project, tint} from "../state/identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
@@ -22,7 +22,7 @@ import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js
 
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
-const phoneShown = ref(false);
+const phoneOpen = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const full = computed(() => route.value.page === "kanban");
@@ -90,17 +90,17 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <ShareTunnel />
                 <button
                     type="button"
-                    :class="['icon-btn', {on: phoneShown}]"
+                    :class="['icon-btn', {on: phoneOpen}]"
                     :title="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
-                    @click="phoneShown = true"
+                    @click="phoneOpen = true"
                 >
                     <Icon name="phone" />
                     <template v-if="connectedPhones.length">
                         <span class="phone-dot" />
                     </template>
                 </button>
-                <template v-if="phoneShown">
-                    <PhoneDialog @close="phoneShown = false" />
+                <template v-if="phoneOpen">
+                    <PhoneDialog @close="phoneOpen = false" />
                 </template>
             </template>
             <a class="icon-btn" :href="href.page(route.env, 'search')" title="Search"><Icon name="search" /></a>
@@ -121,8 +121,8 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             <template v-if="!full">
                 <button
                     type="button"
-                    :class="['icon-btn', {on: activityShown()}]"
-                    :title="activityShown() ? 'Hide Activity' : 'Show Activity'"
+                    :class="['icon-btn', {on: activityVisible()}]"
+                    :title="activityVisible() ? 'Hide Activity' : 'Show Activity'"
                     @click="toggleActivity"
                 >
                     <Icon name="activity" />

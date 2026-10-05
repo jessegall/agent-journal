@@ -8,7 +8,7 @@ const ALL_UP_TO = 2;
 const opened = ref(false);
 const newestFirst = computed(() => [...props.notices].sort((a, b) => (b.created || 0) - (a.created || 0)));
 const folded = computed(() => props.notices.length > ALL_UP_TO && !opened.value);
-const shown = computed(() => (folded.value ? newestFirst.value.slice(0, 1) : newestFirst.value));
+const listed = computed(() => (folded.value ? newestFirst.value.slice(0, 1) : newestFirst.value));
 const TONES = ["good", "warn", "danger"];
 const TONE_WORDS = {good: "Done: ", warn: "Warning: ", danger: "Problem: ", plain: ""};
 const tone = (notice) => (TONES.includes(notice.data?.tone) ? notice.data.tone : "plain");
@@ -18,7 +18,7 @@ const said = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${notice.dat
 <template>
     <template v-if="notices.length">
         <div class="notices" role="region" aria-label="Pinned notices">
-            <template v-for="notice in shown" :key="notice.n">
+            <template v-for="notice in listed" :key="notice.n">
                 <div :class="['notice', tone(notice)]">
                     <button type="button" class="notice-open" :aria-label="said(notice)" @click="emit('open', notice)">
                         <span class="notice-mark" aria-hidden="true" />

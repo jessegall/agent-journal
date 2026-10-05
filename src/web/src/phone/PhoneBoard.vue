@@ -10,7 +10,7 @@ import PhoneBoardList from "./PhoneBoardList.vue";
 import {useUnder} from "./under.js";
 
 const LIST_EVERY = 15000;
-const SHOWN = 5;
+const PREVIEW_ROWS = 5;
 const WAITING = "waiting";
 const DEFAULT = [WAITING, "todo", "question", "plan", "report", "doc", "agent"];
 const props = defineProps({
@@ -68,7 +68,7 @@ function undoRemove() {
     removed.value = null;
     arranged(before);
 }
-const shown = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, SHOWN));
+const visibleRows = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, PREVIEW_ROWS));
 
 function more(kind) {
     opened.value = new Set([...opened.value, kind]);
@@ -145,7 +145,7 @@ function moved(i, by) {
                         <PhoneBoardList
                             :loaded="loaded(kind)"
                             :rows="rows(kind)"
-                            :shown="shown(kind)"
+                            :visibleRows="visibleRows(kind)"
                             :total="total(kind)"
                             :fresh="kind === 'waiting' ? [] : [...newRefs]"
                             :mark="kind === 'question' ? 'Waiting' : 'New'"

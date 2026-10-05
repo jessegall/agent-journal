@@ -14,7 +14,7 @@ import {usePlanRows} from "../composables/planRows.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
 
-const SHOWN_PHASES = 5;
+const PREVIEW_PHASES = 5;
 const props = defineProps({plan: Object, folded: Boolean});
 const dock = ref(null);
 const listing = ref(false);
@@ -25,7 +25,7 @@ const parked = computed(() => status.value === "parked");
 const building = computed(() => status.value === "building" || status.value === "draft");
 const others = computed(() => otherPlans(rows("plan")));
 const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
-const hidden = computed(() => Math.max(0, phases.value.length - SHOWN_PHASES));
+const hidden = computed(() => Math.max(0, phases.value.length - PREVIEW_PHASES));
 const adding = computed(() => (props.plan.data.stage === "todos" ? "Adding to-dos…" : "Adding phases…"));
 usePlanRows(() => [props.plan]);
 
@@ -80,7 +80,7 @@ async function start() {
         </template>
         <template v-if="!parked && (phases.length || building)">
             <ol class="plan-card-phases" data-fades>
-                <template v-for="ph in phases.slice(0, SHOWN_PHASES)" :key="ph.n">
+                <template v-for="ph in phases.slice(0, PREVIEW_PHASES)" :key="ph.n">
                     <li class="plan-card-phase">
                         <span class="plan-card-n">{{ ph.n }}</span>
                         <span class="plan-card-name">{{ ph.title }}</span>

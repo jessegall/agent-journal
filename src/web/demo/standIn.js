@@ -35,8 +35,8 @@ export class StandIn {
         const clock = this.state.clock;
         const after = clock.findIndex(([, at]) => at >= wall);
         if (after === 0 || after === -1) {
-            const [at, shown] = clock[after === 0 ? 0 : clock.length - 1];
-            return at + (wall - shown);
+            const [at, stamp] = clock[after === 0 ? 0 : clock.length - 1];
+            return at + (wall - stamp);
         }
         const [[from, fromWall], [to, toWall]] = [clock[after - 1], clock[after]];
         return from + ((wall - fromWall) * (to - from)) / (toWall - fromWall || 1);

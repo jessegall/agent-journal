@@ -7,7 +7,7 @@ import {sharesOf, waitingOf} from "../composables/shares.js";
 import ShareDialog from "./ShareDialog.vue";
 
 const props = defineProps({resource: {type: Object, required: true}});
-const shown = ref(false);
+const asking = ref(false);
 const open = computed(() => sharesOf(`${props.resource.type}:${props.resource.n}`).value);
 const waiting = computed(() => waitingOf(`${props.resource.type}:${props.resource.n}`).value);
 </script>
@@ -18,7 +18,7 @@ const waiting = computed(() => waitingOf(`${props.resource.type}:${props.resourc
         :class="['share-toggle', {live: open.length}]"
         :disabled="demo"
         :title="unlessDemo(open.length ? `${open.length} open link` : 'Share a link to this')"
-        @click="shown = true"
+        @click="asking = true"
     >
         <Icon name="share" :size="12" />
         Share
@@ -29,8 +29,8 @@ const waiting = computed(() => waitingOf(`${props.resource.type}:${props.resourc
             <span class="share-waiting" title="A share waits for your Accept" />
         </template>
     </Btn>
-    <template v-if="shown">
-        <ShareDialog :resource="resource" @close="shown = false" />
+    <template v-if="asking">
+        <ShareDialog :resource="resource" @close="asking = false" />
     </template>
 </template>
 

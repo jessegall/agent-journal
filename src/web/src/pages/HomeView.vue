@@ -1,6 +1,6 @@
 <script setup>
 import {agent} from "../composables/leadAgent.js";
-import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
+import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import AgentGrid from "../agents/AgentGrid.vue";
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";

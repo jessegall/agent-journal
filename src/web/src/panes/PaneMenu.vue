@@ -12,7 +12,7 @@ import PaneMenuFloating from "./PaneMenuFloating.vue";
 import PaneMenuLevels from "./PaneMenuLevels.vue";
 import PaneMenuMove from "./PaneMenuMove.vue";
 import PaneMenuPane from "./PaneMenuPane.vue";
-import PaneMenuShown from "./PaneMenuShown.vue";
+import PaneMenuVisible from "./PaneMenuVisible.vue";
 
 const props = defineProps({
     pane: {type: Number, required: true},
@@ -80,8 +80,8 @@ function pick(event, ...args) {
             <template #agentView>
                 <PaneMenuAgentView @back="list = ''" />
             </template>
-            <template #shown>
-                <PaneMenuShown :hidden="hidden" @back="list = ''" @hide="hide" />
+            <template #visible>
+                <PaneMenuVisible :hidden="hidden" @back="list = ''" @hide="hide" />
             </template>
             <template #schemes>
                 <PaneMenuBack @click="list = ''">Colour scheme</PaneMenuBack>

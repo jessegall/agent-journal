@@ -31,7 +31,7 @@ const emit = defineEmits(["rename"]);
         </template>
         <span class="grow" />
         <template v-if="dump">
-            <Btn small @click="store.dumpShown = 0">New dump</Btn>
+            <Btn small @click="store.dumpSelected = 0">New dump</Btn>
         </template>
         <Btn small @click="store.dumping = false">Back to chat</Btn>
     </header>

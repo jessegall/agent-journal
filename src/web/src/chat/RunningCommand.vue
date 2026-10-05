@@ -12,7 +12,7 @@ const counted = ref({});
 const frames = {};
 onUnmounted(() => Object.values(frames).forEach(cancelAnimationFrame));
 
-const shownLine = computed(() => line(message.value, elapsed.value));
+const runningLine = computed(() => line(message.value, elapsed.value));
 
 function countTo(sign, to) {
     cancelAnimationFrame(frames[sign]);
@@ -38,29 +38,29 @@ watch(
     () => state.value.at,
     () => (counted.value = {})
 );
-watch(shownLine, (now) => {
+watch(runningLine, (now) => {
     for (const part of (now && now.parts) || []) if (part.increments) countTo(part.prefix, part.value);
 });
 </script>
 
 <template>
-    <span :class="['running', {ending: !shownLine}]">
+    <span :class="['running', {ending: !runningLine}]">
         <Transition name="roll">
-            <span v-if="shownLine" :key="shownLine.key" :class="['running-line', {done: shownLine.done}]">
-                <TransitionGroup tag="span" name="token" class="running-text" :title="shownLine.text">
-                    <span v-for="(part, i) in shownLine.parts" :key="`${i}-${part.value}`" :class="['running-token', part.color]">
+            <span v-if="runningLine" :key="runningLine.key" :class="['running-line', {done: runningLine.done}]">
+                <TransitionGroup tag="span" name="token" class="running-text" :title="runningLine.text">
+                    <span v-for="(part, i) in runningLine.parts" :key="`${i}-${part.value}`" :class="['running-token', part.color]">
                         <template v-if="part.increments">{{ amount(part) }}</template>
                         <template v-else>{{ part.value }}</template>
                     </span>
                 </TransitionGroup>
                 <span class="running-slot">
                     <Transition name="clock">
-                        <span v-if="shownLine.clock" class="running-for">{{ shownLine.clock }}</span>
+                        <span v-if="runningLine.clock" class="running-for">{{ runningLine.clock }}</span>
                     </Transition>
                 </span>
             </span>
         </Transition>
-        <template v-if="!shownLine">
+        <template v-if="!runningLine">
             <span class="running-idle">{{ idle }}</span>
         </template>
     </span>

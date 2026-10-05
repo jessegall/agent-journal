@@ -6,7 +6,7 @@ export const laneTitle = (key) => (store.board.lanes.find((lane) => lane.key ===
 
 export const named = (text) => (card) => !text.trim() || `#${card.n} ${card.title}`.toLowerCase().includes(text.trim().toLowerCase());
 
-export const shownLanes = (meaningOf, keep) =>
+export const visibleLanes = (meaningOf, keep) =>
     store.board.loaded
         ? store.board.lanes
               .filter((lane) => store.board.lens.done !== false || meaningOf(lane.key) !== "done")

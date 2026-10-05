@@ -7,7 +7,7 @@ import PaneMenuBack from "./PaneMenuBack.vue";
 import PaneMenuLine from "./PaneMenuLine.vue";
 import PaneMenuPick from "./PaneMenuPick.vue";
 import PaneMenuToggle from "./PaneMenuToggle.vue";
-import {resetAgentView} from "../composables/agentsShown.js";
+import {resetAgentView} from "../composables/agentsVisible.js";
 import {ui} from "../state/ui.js";
 import {KIND_SWITCHES, ORDERS, STATE_SWITCHES} from "../domain/orchestra.js";
 

@@ -15,7 +15,7 @@ const now = useNow(3000);
 const ageOf = (at) => (now.value, age(at));
 
 watch(
-    () => [store.dumpShown, props.timeline.length, props.thinking],
+    () => [store.dumpSelected, props.timeline.length, props.thinking],
     async () => {
         await nextTick();
         if (box.value) box.value.scrollTop = box.value.scrollHeight;

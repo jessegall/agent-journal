@@ -1,4 +1,4 @@
-export const SHOWN_GROUPS = [
+export const VISIBILITY_GROUPS = [
     {
         title: "The agent at work",
         kinds: [
@@ -51,9 +51,9 @@ const KINDS = {
 
 export const kindOf = (turn) => (KINDS[turn.type] ? KINDS[turn.type](turn) : "");
 
-export const shownIn = (hidden) => (turn) => !hidden.includes(kindOf(turn));
+export const visibleIn = (hidden) => (turn) => !hidden.includes(kindOf(turn));
 
-export const shownChoices = (hidden) =>
-    SHOWN_GROUPS.map((group) => ({...group, kinds: group.kinds.map((kind) => ({...kind, on: !hidden.includes(kind.key)}))}));
+export const visibilityChoices = (hidden) =>
+    VISIBILITY_GROUPS.map((group) => ({...group, kinds: group.kinds.map((kind) => ({...kind, on: !hidden.includes(kind.key)}))}));
 
 export const toggled = (hidden, key) => (hidden.includes(key) ? hidden.filter((k) => k !== key) : [...hidden, key]);

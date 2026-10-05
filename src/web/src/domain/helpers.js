@@ -20,7 +20,7 @@ export function agentsInOrder(rows) {
     return [...rows].sort((a, b) => stateRank(a.state) - stateRank(b.state) || stateAt(b) - stateAt(a));
 }
 
-export function agentsShown(rows, older = false) {
+export function agentsListed(rows, older = false) {
     const open = agentsInOrder(rows.filter((row) => !FINISHED_STATES.has(row.state)));
     const finished = agentsInOrder(rows.filter((row) => FINISHED_STATES.has(row.state)));
     return older ? [...open, ...finished] : [...open, ...finished.slice(0, 3)];

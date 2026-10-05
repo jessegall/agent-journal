@@ -16,8 +16,8 @@ const layer = ref(null);
 const ghost = ref(null);
 const scroller = ref(null);
 const origin = updateView.n;
-const shown = ref(origin);
-const report = computed(() => rows("report").find((r) => r.n === shown.value) || null);
+const current = ref(origin);
+const report = computed(() => rows("report").find((r) => r.n === current.value) || null);
 let busy = false;
 
 const tone = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -40,7 +40,7 @@ function lay(el) {
 }
 
 async function grow() {
-    markSeen("report", [shown.value]);
+    markSeen("report", [current.value]);
     await nextTick();
     const from = updateView.owner;
     if (still() || !from?.isConnected) return;
@@ -108,7 +108,7 @@ async function shrink() {
 }
 
 async function step(n) {
-    shown.value = n;
+    current.value = n;
     markSeen("report", [n]);
     await nextTick();
     scroller.value.scrollTop = 0;
@@ -118,7 +118,7 @@ async function step(n) {
 async function toPanel() {
     if (busy) return;
     busy = true;
-    peek("report", shown.value);
+    peek("report", current.value);
     try {
         if (!still())
             await layer.value

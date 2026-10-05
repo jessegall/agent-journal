@@ -58,7 +58,7 @@ export class Player {
     offer() {
         const move = this.waiting;
         ui.prefill = move && move.kind === "send" ? this.asked(move.at) : "";
-        if (move && move.type === "dump") Object.assign(store, {pane: "chat", dumpShown: move.n, dumping: true});
+        if (move && move.type === "dump") Object.assign(store, {pane: "chat", dumpSelected: move.n, dumping: true});
         if (this.finished) store.dumping = false;
     }
 

@@ -14,13 +14,13 @@ import Highlight from "./Highlight.vue";
 const props = defineProps({
     resource: Object,
     focus: {type: Number, default: 0},
-    shown: {type: Array, default: () => []},
+    linked: {type: Array, default: () => []},
     readOnly: Boolean,
 });
 const emit = defineEmits(["close"]);
 const quote = ref("");
-const shownAlready = computed(() => [
-    ...props.shown,
+const listedAlready = computed(() => [
+    ...props.linked,
     ...((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)),
 ]);
 const scope = useScope();
@@ -119,7 +119,7 @@ watch(
                 </slot>
                 <template v-if="!readOnly">
                     <div class="document-links">
-                        <Links :resource="resource" :except="shownAlready" />
+                        <Links :resource="resource" :except="listedAlready" />
                     </div>
                 </template>
                 <slot name="foot" />

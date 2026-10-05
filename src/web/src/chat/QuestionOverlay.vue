@@ -18,7 +18,7 @@ const n = questionView.n;
 const question = computed(() => answered(rows("question").find((q) => q.n === n) || null));
 const leaving = ref(false);
 const kept = ref(null);
-const shown = computed(() => (leaving.value ? kept.value : question.value || kept.value));
+const current = computed(() => (leaving.value ? kept.value : question.value || kept.value));
 let height = 0;
 let growing = null;
 
@@ -102,15 +102,15 @@ onUnmounted(() => sized.disconnect());
 <template>
     <div class="question-layer">
         <div ref="veil" class="question-veil" @click="leave" />
-        <template v-if="shown">
+        <template v-if="current">
             <section ref="card" class="question-card" role="dialog" aria-label="Question">
                 <div ref="inner">
                     <p class="question-label">Question</p>
-                    <h3 class="question-title">{{ shown.title }}</h3>
-                    <template v-if="shown.abstract">
-                        <TextDisplay class="question-context" :text="shown.abstract" />
+                    <h3 class="question-title">{{ current.title }}</h3>
+                    <template v-if="current.abstract">
+                        <TextDisplay class="question-context" :text="current.abstract" />
                     </template>
-                    <OptionsPicker :resource="shown" @elaborated="leave" />
+                    <OptionsPicker :resource="current" @elaborated="leave" />
                 </div>
             </section>
         </template>
