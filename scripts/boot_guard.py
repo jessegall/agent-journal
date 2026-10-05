@@ -18,19 +18,20 @@ from providers import DRIVERS
 STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
            "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
 WAIT = 45.0
+PROJECT = "Project builds"
 LIMIT = 15.0
 
 
 def launches(place: Path, entry: Path, name: str, during=None, alone: bool = True) -> None:
     (place / "bin").mkdir(parents=True, exist_ok=True)
-    (place / "project" / f".{name}").mkdir(parents=True, exist_ok=True)
+    (place / PROJECT / f".{name}").mkdir(parents=True, exist_ok=True)
     standin = place / "bin" / name
     standin.write_text(STANDIN)
     standin.chmod(0o755)
     env = {**os.environ, "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home")}
     env.pop("JOURNAL_ENV", None)
-    journal = [sys.executable, str(entry), "--root", str(place / "project" / ".journal")]
-    launched = subprocess.Popen([*journal, name], cwd=place / "project", env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    journal = [sys.executable, str(entry), "--root", str(place / PROJECT / ".journal")]
+    launched = subprocess.Popen([*journal, name], cwd=place / PROJECT, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     try:
         began = time.time()
         awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].opening(b"Ask Codex to do anything") else f"{name}.started")
@@ -43,7 +44,7 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
         left = lingering(place) if alone else []
     finally:
         if alone:
-            subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
+            subprocess.run([*journal, "stop"], cwd=place / PROJECT, env=env, capture_output=True, timeout=WAIT)
         (place / "bin" / f"{name}.quit").touch()
         launched.kill()
         launched.wait(WAIT)
@@ -95,16 +96,16 @@ def guard() -> float:
     began = time.time()
     place = Path(tempfile.mkdtemp(prefix="guard-"))
     try:
-        (place / "project").mkdir()
+        (place / PROJECT).mkdir()
         env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
         env.pop("JOURNAL_ENV", None)
-        installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=WAIT)
-        root = place / "project" / ".journal"
+        installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=WAIT)
+        root = place / PROJECT / ".journal"
         assert installed.returncode == 0 and (root / "journal.pyz").is_file(), f"the install failed:\n{installed.stdout}{installed.stderr}"
         journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
-        created = subprocess.run([*journal, "todo", "create", "a row"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT)
+        created = subprocess.run([*journal, "todo", "create", "a row"], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=WAIT)
         assert created.returncode == 0, f"journal todo create failed:\n{created.stdout}{created.stderr}"
-        serves(journal, place / "project", env)
+        serves(journal, place / PROJECT, env)
         with ThreadPoolExecutor() as pool:
             for running in [pool.submit(launches, place, root / "journal.py", name, alone=False) for name in DRIVERS]:
                 running.result()

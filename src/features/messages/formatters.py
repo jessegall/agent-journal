@@ -5,7 +5,15 @@ from resources.types import TYPES
 from engine.command_line import command_line
 
 CODE = re.compile(r"(?<![`\w./-])(?:journal\s+([a-z_]+)(?:\s+([a-z_]+))?|--[a-z][a-z-]*)(?![`\w])")
-FOREIGN = re.compile(r"[./]\S*\s+$")
+
+
+def after_path(text: str, at: int) -> bool:
+    before = text[:at]
+    kept = before.rstrip()
+    if kept == before or not kept:
+        return False
+    word = kept.rsplit(None, 1)[-1]
+    return "." in word or "/" in word
 
 
 class CommandsAsCode(TextFormatter):
@@ -18,7 +26,7 @@ class CommandsAsCode(TextFormatter):
             line.parser()
         noun, word = found.group(1), found.group(2)
         if noun is None:
-            return found.group(0) if FOREIGN.search(found.string[:found.start()]) else f"`{found.group(0)}`"
+            return found.group(0) if after_path(found.string, found.start()) else f"`{found.group(0)}`"
         if noun in TYPES:
             if word in line.words(noun):
                 return f"`{found.group(0)}`"

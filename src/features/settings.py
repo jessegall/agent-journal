@@ -20,9 +20,13 @@ class Setting:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "default": self.default, "unit": self.unit, "kind": self.kind(),
                 "under": self.under, "choices": list(self.choices)}
 
+    def allows(self, value) -> bool:
+        return not self.choices or value in self.choices
+
 
 class Settings(dict):
     def __init__(self, declared: list[Setting], saved: dict):
+        saved = {name: value for name, value in saved.items() if all(s.allows(value) for s in declared if s.name == name)}
         merged = {s.name: {**s.default, **saved[s.name]} for s in declared if isinstance(s.default, dict) and isinstance(saved.get(s.name), dict)}
         super().__init__({**{s.name: s.default for s in declared}, **saved, **merged})
 

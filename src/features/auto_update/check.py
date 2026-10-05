@@ -15,9 +15,18 @@ from features import running
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from engine.upgrades import newer, stale, upstream
+from install import version_key
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
+
+
+KEPT_PARTS = {"patches": 2, "minor versions": 1, "major versions": 0, "always": 0}
+
+
+def within(installed: str, latest: str, installs: str) -> bool:
+    kept = KEPT_PARTS[installs]
+    return version_key(latest)[:kept] == version_key(installed)[:kept]
 
 
 def journal_repository(project: Path) -> bool:
@@ -97,7 +106,7 @@ class UpdateCheck:
             return ""
         if not claimed(root, latest):
             return ""
-        if feature.on(record) and not journal_repository(root.parent):
+        if feature.on(record) and within(installed, latest, feature.values(record).installs) and not journal_repository(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
             return f"installing {latest}"
         self.tell(feature, "newer", latest=latest, installed=installed)

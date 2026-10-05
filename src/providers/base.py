@@ -1,4 +1,5 @@
 import json
+import shlex
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
@@ -22,7 +23,7 @@ KEPT_ENDED = 20
 
 
 def journal_hook(text: str) -> bool:
-    return LEGACY in text or ("/hook.sh " in text and "/.journal" in text)
+    return LEGACY in text or ("/hook.sh" in text and "/.journal" in text)
 
 
 def running_and_latest(rows: list[dict]) -> list[dict]:
@@ -32,24 +33,21 @@ def running_and_latest(rows: list[dict]) -> list[dict]:
 
 @dataclass(frozen=True)
 class HookCommand:
-    script: str
+    script: Path
     provider: str
-    root: str
-
-    @classmethod
-    def parse(cls, text: str) -> "HookCommand":
-        return cls(*text.split()[1:4])
+    root: Path
 
     @property
     def text(self) -> str:
-        return f"sh {self.script} {self.provider} {self.root}"
+        return shlex.join(["sh", str(self.script), self.provider, str(self.root)])
 
     def wired_in(self, block: dict) -> bool:
         return self.text in json.dumps(block)
 
     def replaces(self, block: dict) -> bool:
         found = json.dumps(block)
-        return self.text not in found and (LEGACY in found or ("/hook." in found and f" {self.provider} {self.root}" in found))
+        endings = (f" {self.provider} {self.root}", " " + shlex.join([self.provider, str(self.root)]))
+        return self.text not in found and (LEGACY in found or ("/hook." in found and any(ending in found for ending in endings)))
 
 
 @dataclass(frozen=True)
@@ -421,11 +419,10 @@ class Provider(ABC):
         write_text(f, json.dumps(settings, indent=2) + "\n")
         return f
 
-    def wire(self, project: Path, command: str) -> Path:
-        hook = HookCommand.parse(command)
+    def wire(self, project: Path, hook: HookCommand) -> Path:
         had = self.settings(project)
         hooks = had.setdefault("hooks", {})
-        for event, blocks in self.wiring(command)["hooks"].items():
+        for event, blocks in self.wiring(hook.text)["hooks"].items():
             kept = [b for b in hooks.get(event, []) if not hook.replaces(b)]
             if not any(hook.wired_in(b) for b in kept):
                 kept.extend(blocks)

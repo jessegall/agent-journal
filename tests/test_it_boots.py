@@ -11,7 +11,7 @@ from engine.package import point
 from engine.sessions import hold_build
 from install import STUBS
 from providers import DRIVERS
-from scripts.boot_guard import WAIT, launches
+from scripts.boot_guard import PROJECT, WAIT, launches
 from scripts.checks.imports import imports, missing
 
 HERE = Path(__file__).resolve().parents[1]
@@ -19,10 +19,10 @@ CODE = HERE / "src"
 
 
 def installed(place: Path) -> Path:
-    (place / "project").mkdir()
+    (place / PROJECT / ".claude").mkdir(parents=True)
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
-    return place / "project" / ".journal"
+    subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, timeout=120)
+    return place / PROJECT / ".journal"
 
 
 def test_every_import_in_the_package_resolves():
@@ -37,7 +37,7 @@ def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
 def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
     from engine import runtime
     from agents.terminal import relaunch
-    root = tmp_path / "project" / ".journal"
+    root = tmp_path / PROJECT / ".journal"
     moved = []
 
     def restarted():
@@ -55,10 +55,10 @@ def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
 
 def test_every_agent_launches_from_an_installed_zip(tmp_path):
     place = tmp_path
-    (place / "project").mkdir()
+    (place / PROJECT).mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    installed = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
-    root = place / "project" / ".journal"
+    installed = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=120)
+    root = place / PROJECT / ".journal"
     left = sorted(f.relative_to(root / "src").as_posix() for f in (root / "src").rglob("*.py"))
     assert ((root / "journal.pyz").is_file(), left) == (True, sorted(STUBS)), f"the Python is packed into one zip, a stub left at each old entry:\n{installed.stdout}{installed.stderr}"
     from engine import runtime
@@ -67,9 +67,9 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
     assert runtime.upgrading(root), "while one is under way, the mark holds the supervisor's reload back"
     (root / "runtime" / "upgrading").unlink()
     journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
-    subprocess.run([*journal, "doc", "create", "Kept across upgrades"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
-    again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
-    listed = subprocess.run([*journal, "doc", "all"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT).stdout
+    subprocess.run([*journal, "doc", "create", "Kept across upgrades"], cwd=place / PROJECT, env=env, capture_output=True, timeout=WAIT)
+    again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=120)
+    listed = subprocess.run([*journal, "doc", "all"], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=WAIT).stdout
     assert "Kept across upgrades" in listed, f"a project record survives an upgrade:\n{again.stdout}{again.stderr}"
     repository = place / "release"
     shipped = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=HERE, capture_output=True, text=True, timeout=WAIT).stdout.split()
@@ -79,9 +79,9 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
             (repository / name).write_bytes((HERE / name).read_bytes())
     for step in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "release"]):
         subprocess.run(["git", *step], cwd=repository, capture_output=True, timeout=WAIT)
-    itself = subprocess.run([*journal, "upgrade"], cwd=place / "project", env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
+    itself = subprocess.run([*journal, "upgrade"], cwd=place / PROJECT, env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
                             capture_output=True, text=True, timeout=180)
-    listed = subprocess.run([*journal, "doc", "all"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT).stdout
+    listed = subprocess.run([*journal, "doc", "all"], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=WAIT).stdout
     assert ("Traceback" not in itself.stdout + itself.stderr, "Kept across upgrades" in listed, (root / "journal.pyz").resolve().name.startswith("journal-")) == (True, True, True), \
         f"an installed journal upgrades itself from a release, keeps its records, and runs from a versioned build:\n{itself.stdout}{itself.stderr}"
     for name in DRIVERS:
@@ -92,7 +92,7 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
     moved = []
 
     def upgraded():
-        subprocess.run([*journal, "upgrade"], cwd=place / "project", env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
+        subprocess.run([*journal, "upgrade"], cwd=place / PROJECT, env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
                        capture_output=True, timeout=180)
         newest, began = (root / "journal.pyz").resolve().name, time.time()
         while not moved and time.time() - began < WAIT:
@@ -167,11 +167,42 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
+def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
+    import signal
+    from engine import viewer
+    from engine.sessions import alive
+    root = installed(tmp_path)
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    starter = subprocess.Popen([sys.executable, "-c", f"import sys, time; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine import viewer; "
+                                f"root = Path({str(root)!r}); print(viewer.launch(root, root.parent)[0], flush=True); time.sleep({WAIT})"],
+                               stdout=subprocess.PIPE, text=True)
+    try:
+        assert starter.stdout.readline().strip(), "the server answers"
+        killed = viewer.last(root).pid
+        os.kill(killed, signal.SIGKILL)
+        began = time.time()
+        while alive(killed) and time.time() - began < WAIT / 3:
+            time.sleep(0.1)
+        assert not alive(killed), "the process that started the server reaps it, so it is not left a zombie that looks alive"
+    finally:
+        starter.kill()
+        starter.wait(WAIT)
+    url = viewer.launch(root, root.parent)[0]
+    try:
+        assert url, "a new server starts where the killed one was"
+    finally:
+        os.kill(viewer.last(root).pid, signal.SIGTERM)
+
+
 def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_back(tmp_path):
     root = installed(tmp_path)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
     journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
-    hook = lambda body: subprocess.run(["sh", str(root / "src" / "hook.sh"), "claude", str(root)], input=json.dumps(body), text=True, env=env, capture_output=True, timeout=WAIT)
+    wired = json.loads((root.parent / ".claude" / "settings.local.json").read_text())["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+    hook = lambda body: subprocess.run(["sh", "-c", wired], input=json.dumps(body), text=True, env=env, capture_output=True, timeout=WAIT)
+    channel = json.loads((root.parent / ".mcp.json").read_text())["mcpServers"]["journal"]
+    assert channel == {"command": sys.executable, "args": [str(root / "journal.py"), "-m", "channel", str(root)]}, \
+        "the channel runs the interpreter that installed it, with a path that has a space in it kept whole"
     shown = {"hook_event_name": "MessageDisplay", "session_id": "s1", "message_id": "m1", "index": 0, "final": True, "delta": "said while the server was down"}
 
     def serving():
