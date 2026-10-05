@@ -6,18 +6,18 @@ from features.groups import Group
 class MemoryCheckpointsDetails(FeatureDetails):
     name = "memory_checkpoints"
     group = Group.MEMORY
-    label = "Memory checkpoints"
+    label = "Ask the agent to save facts and rules as its context fills"
     skill_of = "memory"
     when = "a context mark holds your writes until you record a fact, a rule or nothing"
 
-    title = "Memory checkpoints"
+    title = "Save to memory as context fills"
 
     aliases = ("context",)
 
 
     abstract = """
-        At each mark of the context window the agent decides — fact, rule or nothing — before
-        any other write; and every week it reads every rule and fact again
+        Each time the agent's context reaches a mark, it decides whether to save a fact or a rule
+        before it changes files. Once a week it rereads every rule and fact.
     """
 
     help = """
@@ -35,7 +35,8 @@ class MemoryCheckpointsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="rereading",
-            title="Reread every rule and fact each week",
+            title="Reread every rule and fact once a week",
+            prefix="checks",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]

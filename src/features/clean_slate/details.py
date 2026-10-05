@@ -4,17 +4,17 @@ from features.groups import Group
 
 class CleanSlateDetails(FeatureDetails):
     name = "clean_slate"
-    group = Group.JOURNAL
-    label = "Set other hooks aside at launch"
-    hint = "They are put back when the agent exits"
+    group = Group.PROJECT
+    label = "Turn off other hooks while the agent runs"
+    hint = "They are turned back on when the agent exits. Skills are not touched."
     has_skill = False
 
-    title = "Clean slate"
+    title = "Turn off other hooks"
 
 
     abstract = """
-        At launch, every hook that is not the journal's can be set aside, and is put back when
-        the agent exits or the journal stops; skills are never touched
+        Turns off every hook that is not the journal's while the agent runs. They are turned back on
+        when the agent exits or the journal stops. Skills are not touched.
     """
 
     help = """

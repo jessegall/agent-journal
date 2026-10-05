@@ -8,11 +8,11 @@ NAME = "critique"
 class CritiqueDetails(FeatureDetails):
     name = NAME
     group = Group.DEVELOPER
-    label = "Critique rounds"
+    label = "Run design critique rounds"
     skill_of = "reports"
     when = "a new design needs its critique round, or the designer revised it and the critics should look again"
 
-    title = "Critique rounds"
+    title = "Run design critique rounds"
 
     abstract = """
         One command sends critics through the app, each with a lens of their own, and gathers what
@@ -33,9 +33,9 @@ class CritiqueDetails(FeatureDetails):
     """
 
     settings = [
-        Setting(name="app", default="", title="App address"),
-        Setting(name="login", default="", title="Login file"),
-        Setting(name="seed", default="", title="Demo data command"),
-        Setting(name="browsers", default="", title="Playwright folder"),
+        Setting(name="app", default="", title="Address of the app the critics open"),
+        Setting(name="login", default="", title="Login file the critics' browser starts with"),
+        Setting(name="seed", default="", title="Command that loads the demo data"),
+        Setting(name="browsers", default="", title="Folder with Playwright installed"),
     ]
 

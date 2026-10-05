@@ -14,8 +14,8 @@ class AgentSessionsDetails(FeatureDetails):
 
 
     abstract = """
-        Every agent session is tracked: one pushed out of its environment has its writes held, one
-        silent too long is marked stopped, and a subagent's assigned rows come back when it goes silent
+        Tracks every agent session. A session whose environment another one takes is paused, a
+        session silent too long is marked stopped, and a silent subagent's to-dos are given back.
     """
 
     help = """
@@ -33,17 +33,17 @@ class AgentSessionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="eviction",
-            title="Pause a session pushed out of its environment",
-            abstract="Its writes wait until it claims the environment back",
+            title="Pause a session when another takes its environment",
+            abstract="Its file changes wait until it takes the environment back",
         ),
         Behaviour(
             name="liveness",
-            title="Mark silent sessions stopped",
+            title="Mark a silent session stopped",
             trigger=Trigger(every=60, unit=MINUTES),
         ),
         Behaviour(
             name="subagents",
-            title="Release a silent subagent's rows",
+            title="Give a silent subagent's to-dos back",
         ),
     ]
 
@@ -51,14 +51,14 @@ class AgentSessionsDetails(FeatureDetails):
         Setting(
             name="quiet",
             default=60,
-            title="Silent for",
+            title="After it has been silent for",
             under="liveness",
             unit="minutes",
         ),
         Setting(
             name="lapse",
             default=20,
-            title="Silent for",
+            title="After it has been silent for",
             under="subagents",
             unit="minutes",
         ),

@@ -25,7 +25,7 @@ class SourceLinksDetails(FeatureDetails):
         Setting(
             name="within",
             default=30,
-            title="Count what was read in the last",
+            title="Count what the agent read in the last",
             unit="minutes",
         ),
     ]

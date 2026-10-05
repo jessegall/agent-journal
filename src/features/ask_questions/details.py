@@ -10,13 +10,13 @@ class AskQuestionsDetails(FeatureDetails):
     group = Group.QUESTIONS
     when = "a decision only the user can make comes up, or before offering the user choices"
 
-    title = "Questions, not prose choices"
+    title = "Ask choices as questions"
 
     speaks_while_waiting = True
 
     abstract = """
-        A decision only the user can make is asked as a question, never offered in prose, and
-        the answer they pick is held for a moment before it is saved
+        A choice only you can make is asked as a question with options, not written into a reply. A
+        picked answer can be undone for a few seconds.
     """
 
     help = """
@@ -55,7 +55,7 @@ class AskQuestionsDetails(FeatureDetails):
         Setting(
             name="hold",
             default=3,
-            title="Undo a picked answer within",
+            title="Time to undo a picked answer",
             unit="seconds",
         ),
     ]
@@ -63,12 +63,12 @@ class AskQuestionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="asking",
-            title="Pause writes until choices are asked as a question",
+            title="Block file changes until a choice written in a reply is asked as a question",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="settled",
-            title="Recheck questions open longer than a day",
+            title="Ask whether a question open for a day is still needed",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]

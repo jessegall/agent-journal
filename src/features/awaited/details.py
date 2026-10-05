@@ -5,16 +5,16 @@ from features.groups import Group
 class AwaitedDetails(FeatureDetails):
     name = "awaited"
     group = Group.SESSIONS
-    label = "Wait for named agents and runs"
-    hint = "Results come back when they all finish"
+    label = "Wait for named agents and background commands"
+    hint = "Their results come back when all of them finish"
     skill_of = "todos"
     when = "you wait on a subagent, a helper or a background run"
 
-    title = "Waiting on agents and runs"
+    title = "Wait for agents and background commands"
 
     abstract = """
-        A wait that names the subagents, helpers or background runs it is on stands until they
-        have all finished, then hands their results back and the work carries on
+        The agent can wait for named subagents, helpers or background commands. When all of them
+        finish, their results come back and the work goes on.
     """
 
     help = """

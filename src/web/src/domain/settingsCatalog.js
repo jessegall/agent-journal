@@ -1,13 +1,13 @@
 export const COUNTED = ["percent", "uses", "minutes"];
 export const EVENTS = ["idle", "worked", "start"];
 
-const UNIT_WORDS = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "journal lines"};
-const EVENT_WORDS = {idle: "when the agent rests", worked: "after the agent works", start: "at session start"};
+const UNIT_WORDS = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "journal reminders"};
+const EVENT_WORDS = {idle: "when the agent stops", worked: "when the agent stops after using tools", start: "when a session starts"};
 const HOURS = {60: "every hour", 1440: "every day"};
 const OFF_LINE = "Off. Turn it on to change these.";
 
-export const UNIT_CHOICES = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "journal lines"};
-export const EVENT_CHOICES = {idle: "the agent rests", worked: "after work", start: "a session starts"};
+export const UNIT_CHOICES = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "journal reminders"};
+export const EVENT_CHOICES = {idle: "the agent stops", worked: "it stops after using tools", start: "a session starts"};
 
 const sorted = (value) =>
     value && typeof value === "object" && !Array.isArray(value)
@@ -70,13 +70,10 @@ export function settingChanges(target, value, settings) {
 
 const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
-function choiceOptions(choices, value) {
-    const options = choices.map((key) => ({key, label: capital(key)}));
-    return choices.includes(value) || !value ? options : [...options, {key: value, label: value}];
-}
+const choiceOptions = (setting) => setting.choices.map((key) => ({key, label: (setting.labels || {})[key] || capital(key)}));
 
 function row(fields) {
-    const complete = {indent: false, hint: "", words: "", ...fields};
+    const complete = {indent: false, hint: "", words: "", example: "", prefix: "", ...fields};
     const changed = fields.changed ?? (fields.shipped !== undefined && !same(fields.value, fields.shipped));
     const timed = Boolean(complete.timing && complete.timing.changed);
     return {
@@ -114,12 +111,14 @@ function behaviourRow(f, key, b, settings) {
         value: switchValue(settings, name, b.default),
         shipped: b.default,
         timing: timing(name, b.trigger, settings),
+        prefix: b.prefix,
         target: {path: ["features", name]},
     });
 }
 
 function settingRow(f, setting, settings) {
-    const value = (settings[f.name] || {})[setting.name] ?? setting.default;
+    const saved = (settings[f.name] || {})[setting.name] ?? setting.default;
+    const value = setting.kind !== "choice" || setting.choices.includes(saved) ? saved : setting.default;
     const defaults = Object.fromEntries(f.settings.map((s) => [s.name, s.default]));
     return row({
         key: `${f.name}:${setting.name}`,
@@ -128,7 +127,8 @@ function settingRow(f, setting, settings) {
         hint: setting.abstract,
         unit: setting.unit,
         indent: Boolean(setting.under),
-        options: setting.kind === "choice" ? choiceOptions(setting.choices, value) : [],
+        options: setting.kind === "choice" ? choiceOptions(setting) : [],
+        example: (setting.examples || {})[value] || "",
         value,
         shipped: setting.default,
         target: {path: [f.name, setting.name], sparse: true, shipped: setting.default, defaults},
@@ -189,8 +189,9 @@ function group(g, members, settings, loose) {
     const lead = members.find((f) => f.name === g.lead);
     const rest = members.filter((f) => f !== lead).sort((a, b) => a.label.localeCompare(b.label));
     const extras = loose.extras;
-    const always = rest.filter((f) => f.fixed && !f.parts);
-    const flat = rest.filter((f) => !always.includes(f) && plain(f, extras));
+    const listed = g.key === "always";
+    const always = listed ? [] : rest.filter((f) => f.fixed && !f.parts);
+    const flat = rest.filter((f) => !always.includes(f) && (listed ? !f.parts : plain(f, extras)));
     const blocks = rest.filter((f) => !always.includes(f) && !flat.includes(f));
     const head = lead ? featureHead(lead, g.title, g.line, settings) : null;
     return {
@@ -198,6 +199,7 @@ function group(g, members, settings, loose) {
         title: g.title,
         line: head && head.off ? OFF_LINE : g.line,
         section: g.section,
+        tab: g.tab,
         help: lead ? lead.help : "",
         head,
         items: [
@@ -231,12 +233,12 @@ function looseRows(settings, context) {
         });
     return {
         rows: {
-            journal: [
+            project: [
                 row({
                     key: "color",
                     kind: "color",
                     label: "Project color",
-                    hint: "The band that tells this project apart from other open journals",
+                    hint: "The color band that tells this project apart from other open journals",
                     words: "colour identity",
                     value: identity.color,
                     shipped: null,
@@ -247,7 +249,7 @@ function looseRows(settings, context) {
                     key: "channel",
                     kind: "switch",
                     label: "Deliver messages while the agent works",
-                    hint: "Off: they are typed into its terminal instead",
+                    hint: "Off: messages are typed into its terminal instead",
                     words: "channel delivery",
                     value: delivery.channel ?? true,
                     shipped: true,
@@ -257,7 +259,7 @@ function looseRows(settings, context) {
                     key: "extension",
                     kind: "buttons",
                     label: "Chrome extension",
-                    hint: "The chat on any page; the agent can see and use the tab",
+                    hint: "Puts the chat on any web page and lets the agent see and use that tab",
                     words: "browser download",
                     buttons: extension.available
                         ? [
@@ -275,7 +277,7 @@ function looseRows(settings, context) {
                     buttons: [{key: "services", label: "Show services"}],
                 }),
             ],
-            viewer: [
+            browser: [
                 row({
                     key: "away",
                     kind: "switch",
@@ -289,6 +291,7 @@ function looseRows(settings, context) {
                     key: "tour",
                     kind: "switch",
                     label: "Show the Home tour",
+                    hint: "A few short steps that show you around Home",
                     value: !viewer.tour_seen,
                     changed: false,
                     target: {path: ["viewer", "tour_seen"], invert: true},
@@ -310,8 +313,8 @@ function looseRows(settings, context) {
                   ]
                 : [],
             auto_archive: [
-                keepRow("report", "Keep reports for", "0 keeps them listed", 14),
-                keepRow("todo", "Keep finished to-dos for", "", 7),
+                keepRow("report", "Keep reports for", "0 never archives them", 14),
+                keepRow("todo", "Keep closed to-dos for", "", 7),
             ],
             dev_faults: [
                 row({
@@ -325,7 +328,7 @@ function looseRows(settings, context) {
             ],
         },
         danger: {
-            journal: context.demo
+            stop: context.demo
                 ? []
                 : [
                       row({
@@ -340,11 +343,6 @@ function looseRows(settings, context) {
         },
     };
 }
-
-export const LINKS = [
-    {key: "environments", title: "Environments", line: "Opens the list of environments"},
-    {key: "tunnel", title: "Tunler", line: "Opens the tunler account and its domains"},
-];
 
 export function catalog(spec, settings, context) {
     const features = Object.values(spec.features || {}).map(normalised);
@@ -401,6 +399,27 @@ export function narrowed(sections, query, filter) {
     return sections
         .map((s) => ({...s, groups: s.groups.map((g) => pruned(g, test, whole)).filter(Boolean)}))
         .filter((s) => s.groups.length);
+}
+
+export const TABS = [
+    {key: "features", title: "Features", line: "What the agent and the journal do. Each feature can be switched off on its own."},
+    {key: "system", title: "System", line: "This project, updates, this browser, and the parts that are always on."},
+    {key: "sharing", title: "Sharing", line: "Share links, and the tunler account they go through."},
+    {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
+    {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
+    {key: "developer", title: "Developer", line: "Only needed when you work on the journal itself."},
+];
+
+export const tabLine = (key) => TABS.find((t) => t.key === key).line;
+
+export function inTab(sections, tab) {
+    return sections.map((s) => ({...s, groups: s.groups.filter((g) => g.tab === tab)})).filter((s) => s.groups.length);
+}
+
+export function tabCounts(sections) {
+    const found = Object.fromEntries(TABS.map((t) => [t.key, 0]));
+    sections.forEach((s) => s.groups.forEach((g) => (found[g.tab] += counted(g))));
+    return found;
 }
 
 export function navMark(g, searching) {

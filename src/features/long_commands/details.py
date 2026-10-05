@@ -35,7 +35,7 @@ class LongCommandsDetails(FeatureDetails):
         Behaviour(
             name=WATCHED,
             title="Tell the agent about commands it left running",
-            abstract="When one ends or has run ten minutes",
+            abstract="When one ends, or after it has run ten minutes",
         ),
     ]
 
@@ -43,7 +43,7 @@ class LongCommandsDetails(FeatureDetails):
         Setting(
             name="after_seconds",
             default=30,
-            title="Move to the background after",
+            title="Move it to the background after",
             unit="seconds",
         ),
     ]

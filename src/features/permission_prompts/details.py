@@ -5,8 +5,8 @@ from features.groups import Group
 class PermissionsDetails(FeatureDetails):
     name = "permission_prompts"
     group = Group.CHAT
-    label = "Show permission prompts"
-    hint = "Allow and Deny in the chat"
+    label = "Show permission prompts in the chat"
+    hint = "With Allow and Deny buttons"
     has_skill = False
 
     title = "Permission prompts"

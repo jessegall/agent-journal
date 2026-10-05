@@ -13,11 +13,11 @@ class LawDetails(FeatureDetails):
     group = Group.LAWS
     has_skill = False
 
-    title = "Journal laws"
+    title = "Built-in rules"
 
     aliases = ("law",)
 
-    abstract = "The laws the journal ships to every agent and project: how to dispatch, and how to read"
+    abstract = "Rules every agent follows: how it starts subagents, and how much it reads at once."
 
     help = """
         Always on. The laws are handed to every session, kept in AGENTS.md and CLAUDE.md, and
@@ -62,11 +62,11 @@ class LawDetails(FeatureDetails):
         *whispering("law"),
         Behaviour(
             name=LARGEST_RESULT,
-            title="Name the largest tool result of the session",
+            title="Tell the agent about the largest tool result so far",
         ),
         Behaviour(
             name=TOO_LONG,
-            title="Warn when an instruction file is too long",
+            title="Warn when CLAUDE.md or AGENTS.md is longer than the provider reads",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]
@@ -80,13 +80,13 @@ class LawDetails(FeatureDetails):
         Setting(
             name="whole_read_lines",
             default=600,
-            title="Refuse to read a whole file longer than",
+            title="Block reading a whole file longer than",
             unit="lines",
         ),
         Setting(
             name="output_lines",
             default=200,
-            title="Keep lines at each end of long output",
+            title="Lines kept from each end of long output",
             abstract="0 keeps every line",
             unit="lines",
         ),

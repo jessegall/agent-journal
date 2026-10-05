@@ -10,13 +10,13 @@ class RuntimeCleanupDetails(FeatureDetails):
     label = "Clean the runtime folder"
     has_skill = False
 
-    title = "Runtime cleanup"
+    title = "Clean the runtime folder"
 
     aliases = ("housekeeping",)
 
     abstract = """
-        The runtime folder is kept small: terminal captures and logs are cut to their tail, and
-        files of sessions gone quiet are removed
+        Keeps the runtime folder small: terminal captures and logs are cut to their last lines, and
+        files of quiet sessions are deleted.
     """
 
     help = """
@@ -33,7 +33,7 @@ class RuntimeCleanupDetails(FeatureDetails):
         Setting(
             name="days",
             default=2,
-            title="Remove a quiet session's files after",
+            title="Delete a quiet session's files after",
             unit="days",
         ),
     ]

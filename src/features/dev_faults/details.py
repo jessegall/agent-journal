@@ -5,15 +5,15 @@ from features.groups import Group
 class DevFaultsDetails(FeatureDetails):
     name = "dev_faults"
     group = Group.DEVELOPER
-    label = "Report developer faults"
+    label = "Report developer errors"
     has_skill = False
 
-    title = "Developer fault reports"
+    title = "Developer error reports"
 
 
     abstract = """
-        While developing, what would otherwise pass in silence is reported: anything local that
-        runs past its budget, and any error the viewer throws
+        While you work on the journal, it reports what would otherwise go unnoticed: anything slower
+        than its time limit, and errors the viewer throws.
     """
 
     help = """
@@ -34,7 +34,7 @@ class DevFaultsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="budget",
-            title="Report anything slower than its budget",
+            title="Report anything slower than its time limit",
         ),
         Behaviour(
             name="console",

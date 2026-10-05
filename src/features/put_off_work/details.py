@@ -7,14 +7,14 @@ class PutOffWorkDetails(FeatureDetails):
     name = "put_off_work"
     group = Group.WORK_TRACKING
     label = "Catch work put off for later"
-    hint = "Said once when a later has no to-do"
+    hint = "Tells the agent once when it says “later” without filing a to-do"
     has_skill = False
 
-    title = "Catch put-off work"
+    title = "Catch work put off for later"
 
     aliases = ("deferral",)
 
-    abstract = "If you say you will do something later without filing a to-do for it, you are told once"
+    abstract = "When the agent says it will do something later without filing a to-do, it is told once."
 
     help = """
         A sentence like 'I'll do that after this' is the title of a to-do; file it immediately

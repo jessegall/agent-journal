@@ -21,11 +21,14 @@ REGISTRY: dict[str, type] = {}
 
 
 class Behaviour:
-    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = ""):
+    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = "",
+                 prefix: str = ""):
         self.name, self.title, self.abstract, self.default, self.trigger = name, paragraphs(title), paragraphs(abstract), default, trigger
+        self.prefix = prefix
 
     def describe(self) -> dict:
-        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": self.trigger.described()}
+        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": self.trigger.described(),
+                "prefix": self.prefix}
 
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")

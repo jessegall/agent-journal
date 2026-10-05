@@ -11,9 +11,9 @@ class FactsDetails(FeatureDetails):
     skill_of = "memory"
     when = "you learn something a later session would get wrong without, or at a context mark"
 
-    title = "Facts"
+    title = "Repeat facts"
 
-    abstract = "What is true about the environment, said again to the agent as the window fills"
+    abstract = "Facts about this environment are repeated to the agent as its context fills."
 
     help = """
         A fact belongs to this environment. When you learn something about it that a later session would get wrong without,

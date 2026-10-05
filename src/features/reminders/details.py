@@ -11,9 +11,9 @@ class RemindersDetails(FeatureDetails):
     skill_of = "memory"
     when = "you keep forgetting something, or leave an instruction for another agent"
 
-    title = "Reminders"
+    title = "Repeat reminders"
 
-    abstract = "The standing reminders said again to the agent when it comes to rest after work"
+    abstract = "Your standing reminders are repeated to the agent when it stops after working."
 
     help = """
         A reminder belongs to this environment. When you keep forgetting to do something you already know, write a

@@ -9,19 +9,19 @@ class CommandTagsDetails(FeatureDetails):
     name = "command_tags"
     group = Group.AGENT
     label = "Run commands from tags"
-    hint = "A tag the agent writes runs the command it stands for"
+    hint = "When the agent writes a tag such as [!reply:12], the journal runs the command it stands for: here, reply to message 12"
     skill_of = "messages"
     when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
 
-    title = "Command tags"
+    title = "Commands from tags"
 
     aliases = ("tags",)
 
     speaks_while_waiting = True
 
     abstract = """
-        Everything the agent writes reaches the chat, and a tag carrying a number or a name
-        runs the command it stands for
+        When the agent writes a tag such as [!reply:12], the journal runs the command it stands for:
+        here, reply to message 12.
     """
 
     help = """
@@ -61,7 +61,7 @@ class CommandTagsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="hint",
-            title="Show the agent the tag for a command",
+            title="Remind the agent which tag runs which command",
             trigger=Trigger(every=30, unit=MINUTES),
         ),
     ]

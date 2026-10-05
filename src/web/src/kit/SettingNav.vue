@@ -5,12 +5,11 @@ import SwitchCase from "./SwitchCase.vue";
 
 defineProps({
     sections: {type: Array, required: true},
-    links: {type: Array, default: () => []},
     current: {type: String, default: ""},
     searching: Boolean,
     sheet: Boolean,
 });
-const emit = defineEmits(["pick", "open"]);
+const emit = defineEmits(["pick"]);
 </script>
 
 <template>
@@ -36,14 +35,6 @@ const emit = defineEmits(["pick", "open"]);
                             <Icon name="chevron" :size="14" class="setting-nav-chevron" />
                         </template>
                     </button>
-                </template>
-                <template v-if="section.title === 'More'">
-                    <template v-for="link in links" :key="link.key">
-                        <button type="button" :class="['setting-nav-item', {on: link.key === current}]" @click="emit('open', link.key)">
-                            <span class="setting-nav-name">{{ link.title }}</span>
-                            <span class="setting-nav-off">↗</span>
-                        </button>
-                    </template>
                 </template>
             </div>
         </template>

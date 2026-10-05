@@ -7,14 +7,14 @@ class TriggersDetails(FeatureDetails):
     name = "triggers"
     group = Group.RECORDS
     label = "Triggers"
-    hint = "Your watch words and what they do"
+    hint = "Words you choose, and what happens when they come up"
     when = "the user wants words watched for, or a trigger fires"
 
     title = "Triggers"
 
     speaks_while_waiting = True
 
-    abstract = "Words the user watches for, and what the journal does when they come up"
+    abstract = "Words you choose, and what the journal does when they come up."
 
     help = f"""
         journal trigger create "<what it is for>" --set words="git push,force" --set
@@ -31,7 +31,7 @@ class TriggersDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="watching",
-            title="Fire a trigger when its word comes up",
+            title="Run a trigger when its word comes up",
         ),
     ]
 

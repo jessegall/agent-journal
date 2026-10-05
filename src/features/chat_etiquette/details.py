@@ -11,11 +11,11 @@ class ChatEtiquetteDetails(FeatureDetails):
     label = "Keep journal talk out of the chat"
     when = "you write anything the user will read in the chat"
 
-    title = "Chat etiquette"
+    title = "Keep journal talk out of the chat"
 
     speaks_while_waiting = True
 
-    abstract = "How the agent talks in the chat: about the work, never about the journal's own workings"
+    abstract = "In the chat the agent talks about the work, not about the journal's own commands and reminders."
 
     help = """
         The user sees every reply, reaction, pill, question, to-do and whether a message is read
@@ -58,7 +58,7 @@ class ChatEtiquetteDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=REMIND,
-            title="Remind the agent",
+            title="Remind the agent to keep journal talk out of the chat",
             trigger=Trigger(every=20, unit=NOTICES),
         ),
     ]

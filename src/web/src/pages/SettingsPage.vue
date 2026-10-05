@@ -2,30 +2,33 @@
 import {saveSetting} from "../actions/settings.js";
 import {demo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
-import SettingGroup from "../kit/SettingGroup.vue";
 import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
+import Toast from "../kit/Toast.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
-import SettingsTunnel from "./SettingsTunnel.vue";
-import {LINKS, catalog, counted, counts, narrowed} from "../domain/settingsCatalog.js";
+import SettingsRegion from "./SettingsRegion.vue";
+import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../platform/storage.js";
 import {useScrollSpy} from "../composables/scrollSpy.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 
-const VIEW = "journal.settings.view";
-const view = ref(remembered(VIEW, "groups"));
+const TAB = "journal.settings.tab";
+const LISTED = ["features", "system", "sharing", "developer"];
+const known = (key) => TABS.some((t) => t.key === key);
+const tab = ref(known(route.value.sub) ? route.value.sub : remembered(TAB, "features"));
 const query = ref("");
 const filter = ref("all");
 const field = ref(null);
@@ -35,6 +38,7 @@ const services = ref(false);
 const diagnostics = ref(false);
 const stopping = ref(false);
 const extension = ref(null);
+const saved = ref(null);
 
 const sections = computed(() =>
     catalog(store.spec || {}, store.settings || {}, {
@@ -45,43 +49,59 @@ const sections = computed(() =>
         stopping: stopping.value,
     })
 );
-const shown = computed(() => narrowed(sections.value, query.value, filter.value));
-const groups = computed(() => shown.value.flatMap((s) => s.groups));
+const matched = computed(() => narrowed(sections.value, query.value, filter.value));
 const searching = computed(() => Boolean(query.value.trim()) || filter.value !== "all");
+const listed = computed(() => LISTED.includes(tab.value));
+const across = computed(() => searching.value && listed.value);
+const regions = computed(() => {
+    const keys = across.value ? LISTED : [tab.value];
+    return TABS.filter((t) => keys.includes(t.key))
+        .map((t) => ({...t, sections: inTab(matched.value, t.key)}))
+        .map((r) => ({...r, groups: r.sections.flatMap((s) => s.groups)}))
+        .filter((r) => r.groups.length || !across.value);
+});
+const navSections = computed(() => (across.value ? matched.value : inTab(matched.value, tab.value)));
+const groups = computed(() => regions.value.flatMap((r) => r.groups));
 const total = computed(() => counts(sections.value));
-const found = computed(() => groups.value.reduce((n, g) => n + counted(g), 0));
+const found = computed(() => tabCounts(matched.value));
+const tabs = computed(() =>
+    TABS.map((t) => ({key: t.key, title: t.title, count: across.value && LISTED.includes(t.key) ? found.value[t.key] : undefined}))
+);
 const filters = computed(() => [
     {key: "all", label: "All"},
-    {key: "changed", label: "Changed", count: total.value.changed, dot: true},
+    {key: "changed", label: "Changed", title: "Settings you changed from their default", count: total.value.changed, dot: true},
     {key: "off", label: "Off", count: total.value.off},
 ]);
+const asking = computed(() => (tab.value === "environments" ? "Find an environment" : "Find a setting in every tab"));
 const screen = computed(() => {
-    if (!narrow.value || searching.value || view.value !== "groups") return "page";
+    if (!narrow.value || searching.value || !listed.value) return "page";
     return chosen.value ? "group" : "list";
 });
-const back = computed(() => narrow.value && (screen.value === "group" || view.value !== "groups"));
+const back = computed(() => narrow.value && screen.value === "group");
 const phoneGroup = computed(() => groups.value.find((g) => g.key === chosen.value) || null);
-const spied = computed(() => (screen.value === "page" && view.value === "groups" ? groups.value.map((g) => g.key) : []));
+const spied = computed(() => (screen.value === "page" && listed.value ? groups.value.map((g) => g.key) : []));
 
 useScrollSpy(spied, current);
 useSlashFocus(field);
-watch(view, (key) => remember(VIEW, key));
+watch(tab, (key) => {
+    remember(TAB, key);
+    chosen.value = "";
+});
+watch(
+    () => route.value.sub,
+    (key) => known(key) && (tab.value = key)
+);
+
+function openTab(key) {
+    tab.value = key;
+    location.replace(`#/${route.value.env}/settings?sub=${key}`);
+    if (across.value) nextTick(() => document.querySelector(`[data-tab="${key}"]`)?.scrollIntoView({block: "start"}));
+}
 
 function pick(key) {
-    view.value = "groups";
     chosen.value = key;
     current.value = key;
     if (!narrow.value) requestAnimationFrame(() => document.querySelector(`[data-spy="${key}"]`)?.scrollIntoView({block: "start"}));
-}
-
-function open(key) {
-    view.value = key;
-    current.value = key;
-}
-
-function goBack() {
-    chosen.value = "";
-    view.value = "groups";
 }
 
 function showAll() {
@@ -99,8 +119,14 @@ async function stop() {
 }
 
 const BUTTON_ACTIONS = {services: () => (services.value = true), diagnostics: () => (diagnostics.value = true), stop};
-const save = (row, value) => saveSetting(row.target, value);
-const saveTiming = (row, next) => saveSetting(row.timing.target, next);
+
+async function change(target, label, value) {
+    await saveSetting(target, value);
+    saved.value = {text: `Saved: ${label}`};
+}
+
+const save = (row, value) => change(row.target, row.label, value);
+const saveTiming = (row, next) => change(row.timing.target, row.label, next);
 const act = (row, key) => BUTTON_ACTIONS[key]();
 
 onMounted(async () => {
@@ -111,34 +137,39 @@ onMounted(async () => {
 <template>
     <section :class="['settings', {narrow}]">
         <PageBar>
-            <TextInput
-                ref="field"
-                class="settings-find"
-                icon="search"
-                :value="query"
-                :placeholder="view === 'environments' ? 'Find an environment' : 'Find a setting'"
-                :aria-label="view === 'environments' ? 'Find an environment' : 'Find a setting'"
-                @input="query = $event.target.value"
-                @keydown.esc="query = ''"
-            />
-            <template v-if="view === 'groups'">
-                <Segmented :options="filters" :value="filter" :fill="narrow" @pick="filter = $event" />
-            </template>
+            <TabBar :tabs="tabs" :model-value="tab" @update:model-value="openTab" />
             <span class="settings-scope">
                 Applies to environment
                 <span class="settings-env">{{ route.env }}</span>
             </span>
         </PageBar>
+        <PageBar>
+            <TextInput
+                ref="field"
+                class="settings-find"
+                icon="search"
+                :value="query"
+                :placeholder="asking"
+                :aria-label="asking"
+                @input="query = $event.target.value"
+                @keydown.esc="query = ''"
+            />
+            <template v-if="listed">
+                <Segmented :options="filters" :value="filter" :fill="narrow" @pick="filter = $event" />
+            </template>
+            <span class="settings-saved">Changes are saved as you make them</span>
+        </PageBar>
 
         <template v-if="back">
-            <button type="button" class="settings-back" @click="goBack">
+            <button type="button" class="settings-back" @click="chosen = ''">
                 <Icon name="back" :size="14" />
-                Settings
+                {{ TABS.find((t) => t.key === tab).title }}
             </button>
         </template>
         <SwitchCase :value="screen">
             <template #list>
-                <SettingNav class="settings-phone-list" sheet :sections="sections" :links="LINKS" @pick="pick" @open="open" />
+                <p class="settings-line phone">{{ tabLine(tab) }}</p>
+                <SettingNav class="settings-phone-list" sheet :sections="navSections" @pick="pick" />
             </template>
             <template #group>
                 <div class="settings-phone-group">
@@ -148,33 +179,33 @@ onMounted(async () => {
                 </div>
             </template>
             <template #page>
-                <div class="settings-body">
-                    <template v-if="!narrow">
-                        <SettingNav
-                            class="settings-nav"
-                            :sections="shown"
-                            :links="LINKS"
-                            :current="current"
-                            :searching="searching"
-                            @pick="pick"
-                            @open="open"
-                        />
+                <div :class="['settings-body', {plain: !listed}]">
+                    <template v-if="!narrow && listed">
+                        <SettingNav class="settings-nav" :sections="navSections" :current="current" :searching="searching" @pick="pick" />
                     </template>
                     <div class="settings-content">
-                        <SwitchCase :value="view">
+                        <SwitchCase :value="tab">
                             <template #environments>
+                                <p class="settings-line">{{ tabLine("environments") }}</p>
                                 <SettingsEnvironments :query="query" />
                             </template>
-                            <template #tunnel>
-                                <SettingsTunnel />
+                            <template #plugins>
+                                <p class="settings-line">{{ tabLine("plugins") }}</p>
+                                <EmptyState class="settings-empty" title="Plugin settings open from the Plugins page">
+                                    Each plugin's card has a Settings button.
+                                </EmptyState>
                             </template>
                             <template #default>
                                 <div class="settings-column">
-                                    <template v-if="searching && groups.length">
-                                        <div class="settings-found">{{ found }} settings in {{ groups.length }} groups</div>
-                                    </template>
-                                    <template v-for="group in groups" :key="group.key">
-                                        <SettingGroup :group="group" :sheet="narrow" @change="save" @timing="saveTiming" @act="act" />
+                                    <template v-for="region in regions" :key="region.key">
+                                        <SettingsRegion
+                                            :region="region"
+                                            :across="across"
+                                            :sheet="narrow"
+                                            @change="save"
+                                            @timing="saveTiming"
+                                            @act="act"
+                                        />
                                     </template>
                                     <template v-if="!groups.length">
                                         <EmptyState class="settings-empty" title="No setting matches">
@@ -197,6 +228,7 @@ onMounted(async () => {
         <template v-if="diagnostics">
             <DiagnosticsLog @close="diagnostics = false" />
         </template>
+        <Toast :toast="saved" :lasts="2500" @done="saved = null" />
     </section>
 </template>
 
@@ -209,6 +241,31 @@ onMounted(async () => {
 
 .settings-find {
     flex: 0 1 300px;
+}
+
+.settings-saved {
+    margin-left: auto;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.settings-line {
+    margin: 0 0 18px;
+    color: var(--text-2);
+    font-size: 13px;
+}
+
+.settings-line.phone {
+    margin: 0;
+    padding: 12px 16px 4px;
+}
+
+.settings-body.plain {
+    display: block;
+}
+
+.settings-body.plain .settings-content {
+    border-left: 0;
 }
 
 .settings-scope {
@@ -264,11 +321,6 @@ onMounted(async () => {
     flex-direction: column;
     gap: 30px;
     max-width: 760px;
-}
-
-.settings-found {
-    color: var(--text-3);
-    font-size: 12.5px;
 }
 
 .settings-empty {

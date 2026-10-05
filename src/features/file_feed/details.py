@@ -5,12 +5,12 @@ from features.groups import Group
 class FileFeedDetails(FeatureDetails):
     name = "file_feed"
     group = Group.CHAT
-    label = "Show file edits as they land"
+    label = "Show file edits as they happen"
     has_skill = False
 
-    title = "File feed"
+    title = "File edits in the chat"
 
-    abstract = "The chat can show the agent's file edits as they land, one diff card per file"
+    abstract = "The chat shows each file the agent edits as a card with the change."
 
     help = """
         The chat's strip switches between the chat, the file feed and the terminal. After every tool call

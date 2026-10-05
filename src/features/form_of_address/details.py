@@ -6,12 +6,12 @@ from features.groups import Group
 class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
     group = Group.AGENT
-    label = "Address you by title"
+    label = "Call you by a title"
     has_skill = False
 
-    title = "How the agent addresses you"
+    title = "Your title and name"
 
-    abstract = "The agent calls you by the title you choose, Sir unless you pick another, with your first name when it is known"
+    abstract = "The agent calls you by the title you choose (Sir unless you change it) and your first name."
 
     help = """
         Every session start, and every start after a compaction, tells the agent how to address you, as a good butler would, in its answers and now and then, never in every message:
@@ -26,12 +26,12 @@ class FormOfAddressDetails(FeatureDetails):
             name="title",
             default="Sir",
             title="Title",
-            abstract="Empty: your first name alone",
+            abstract="Leave it empty to use your first name only",
         ),
         Setting(
             name="first_name",
             default="",
             title="First name",
-            abstract="Empty: the name git knows you by",
+            abstract="Leave it empty to use the name git knows you by",
         ),
     ]

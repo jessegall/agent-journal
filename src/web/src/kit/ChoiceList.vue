@@ -6,12 +6,13 @@ defineProps({
     choices: {type: Array, default: () => []},
     busy: {type: Function, default: () => false},
     disabled: {type: Boolean, default: false},
+    stacked: Boolean,
 });
 const emit = defineEmits(["pick"]);
 </script>
 
 <template>
-    <div class="choices" role="listbox">
+    <div :class="['choices', {stacked}]" role="listbox">
         <template v-for="choice in choices" :key="choice.value">
             <button
                 type="button"
@@ -39,6 +40,15 @@ const emit = defineEmits(["pick"]);
     flex-wrap: wrap;
     gap: 4px;
     padding: 2px 6px 5px;
+}
+
+.choices.stacked {
+    flex-direction: column;
+    padding: 0;
+}
+
+.choices.stacked .choice {
+    padding: 7px 10px;
 }
 
 .choice {

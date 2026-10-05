@@ -97,8 +97,8 @@ class TicketsDetails(FeatureDetails):
 
     behaviours = [
         Behaviour(name="asks", title="Remind the orchestrator of a ticket's open question", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="awaits", title="Remind it of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="decisions", title="Remind it of decisions it may take", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="awaits", title="Remind the orchestrator of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="decisions", title="Remind the orchestrator of decisions it can make itself", trigger=Trigger(every=5, unit=MINUTES)),
         Behaviour(name="board check", title="Ask an idle orchestrator to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
     ]
 
@@ -106,14 +106,14 @@ class TicketsDetails(FeatureDetails):
         Setting(
             name="remind_every",
             default=5,
-            title="Repeat that a ticket's plan is done every",
+            title="Remind the orchestrator that a ticket's plan is done, every",
             unit="minutes",
         ),
         Setting(
             name="running",
             default=3,
             title="Tickets running at once",
-            abstract="0: no limit",
+            abstract="0 means no limit",
             unit="tickets",
         ),
     ]
