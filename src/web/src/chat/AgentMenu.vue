@@ -14,6 +14,7 @@ const props = defineProps({agent: {type: Object, required: true}});
 const emit = defineEmits(["done"]);
 const stopping = ref(false);
 const {busy, error, run} = useAnchoredAction();
+const environment = computed(() => route.value.env);
 const work = computed(() => currentWork(rows("work"))?.title || "");
 
 function openPage() {
@@ -22,13 +23,13 @@ function openPage() {
 }
 
 async function stop() {
-    if (await run(() => stopAgentNamed(api, route.value.env))) emit("done");
+    if (await run(() => stopAgentNamed(api, environment.value))) emit("done");
 }
 </script>
 
 <template>
     <template v-if="stopping">
-        <AgentStopConfirm :environment="route.env" :work="work" :busy="busy" :error="error" @cancel="stopping = false" @stop="stop" />
+        <AgentStopConfirm :environment="environment" :work="work" :busy="busy" :error="error" @cancel="stopping = false" @stop="stop" />
     </template>
     <template v-else>
         <MenuItem @click="openPage">
