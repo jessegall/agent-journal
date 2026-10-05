@@ -9,6 +9,7 @@ import AgentAppoint from "./AgentAppoint.vue";
 import AgentBarViews from "./AgentBarViews.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentFacts from "./AgentFacts.vue";
+import AgentMenu from "./AgentMenu.vue";
 import AgentPresets from "./AgentPresets.vue";
 import AgentSkills from "./AgentSkills.vue";
 import AgentUsage from "./AgentUsage.vue";
@@ -77,6 +78,9 @@ function openSkills() {
                 <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
                     <template #appoint>
                         <AgentAppoint @done="open = ''" />
+                    </template>
+                    <template #agent>
+                        <AgentMenu :agent="agent" @done="open = ''" />
                     </template>
                     <template #skills>
                         <AgentSkills :skills="skills" @read="readSkill" @browse="openSkills" />
