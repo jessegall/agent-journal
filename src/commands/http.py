@@ -844,7 +844,8 @@ def get_all(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}")
 def post_create(req: Request) -> Reply:
-    created = invoked(req.controller(), "create", named={**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))})
+    controller = req.controller()
+    created = invoked(controller, controller.named("create"), named={**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))})
     return Reply(201, shaped(created, req.record(), VIEWER))
 
 
