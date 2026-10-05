@@ -27,6 +27,8 @@ from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, build_file, code_stamp, entry
 
 DEFAULT_PORT = 8430
+REQUEST_BACKLOG = 128
+SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
 
@@ -108,6 +110,10 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
+class JournalServer(ThreadingHTTPServer):
+    request_queue_size = REQUEST_BACKLOG
+
+
 def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     Handler.root = root
     other = elsewhere(root)
@@ -118,7 +124,7 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
     features.load(root)
     updates.announce(root)
     features.FEATURES["plugins"].host(root)
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    server = JournalServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
     heartbeat(root, server.server_address[1])
     return server
@@ -181,6 +187,7 @@ def warm_viewer(root: Path, env: str) -> None:
 
 
 def run(root: Path, port: int = DEFAULT_PORT) -> None:
+    sys.setswitchinterval(SWITCH_INTERVAL)
     runtime.STARTED[0] = time.time()
     server = serve(root, port)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
