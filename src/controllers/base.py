@@ -347,7 +347,7 @@ class Controller(Files, Links, Discussed):
             m = (there.rows.numbers() or [0])[-1] + 1
             moved = self.resource(**{**asdict(r), "n": m})
             if any(self.folder(n).iterdir()):
-                shutil.copytree(self.folder(n), there.folder(m), dirs_exist_ok=True)
+                shutil.copytree(self.folder(n), there.rows.row_folder(m), dirs_exist_ok=True)
             there.save(moved, "created", moved_from=f"{self.record.env}/{n}")
         self.delete(n, why=f"moved to {env} as {self.type} {m}")
         return moved
@@ -427,9 +427,10 @@ class Controller(Files, Links, Discussed):
     def _texts(self) -> dict[int, str]:
         kept = SEARCHABLE.setdefault(str(self.rows.folder()), {})
         for row in self.rows.summaries():
-            if row["deleted"] or kept.get(row["n"], (None,))[0] == row["updated"]:
+            version = row.get("stamp") or row["updated"]
+            if row["deleted"] or kept.get(row["n"], (None,))[0] == version:
                 continue
-            kept[row["n"]] = (row["updated"], searchable(self.rows.peek(row["n"])))
+            kept[row["n"]] = (version, searchable(self.rows.peek(row["n"])))
         return {n: text for n, (_, text) in kept.items()}
 
     @marks.action
