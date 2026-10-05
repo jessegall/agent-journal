@@ -264,6 +264,14 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
     assert (code, said.startswith("! ")) == (1, True), f"a subagent that was never lent the environment is refused in words: {said}"
     assert CONTROLLERS["todo"](record, actor=SYSTEM).all() == [], "and nothing was written by the refused command"
 
+    def answered(*argv: str) -> str:
+        out = io.StringIO()
+        run(["--root", str(record.root), "--env", record.env, *argv], out=out, err=io.StringIO())
+        return out.getvalue()
+    assert "in force" in answered("verify") and f"settings on {record.env}" in answered("settings"), "verify and settings answer without raising"
+    assert "usage:" in answered("help") and "usage:" in answered("help", "todo") and "no command" in answered("help", "nonsense"), "help answers for the whole journal, for one noun and for a word it does not have"
+    assert answered("services", "list") != "" and refused("services", "bogus")[0] == 1, "services lists, and a word it does not know is refused in words"
+
 
 def test_no_command_argument_shares_a_name_with_a_global_option():
     features.load()
