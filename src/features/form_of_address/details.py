@@ -1,25 +1,28 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Line
+from features.form_of_address.voices import KEYS, SHIPPED
 from features.settings import Setting
 from features.groups import Group
+
+VOICE_SET = "voice set"
 
 
 class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
     group = Group.AGENT
-    label = "Call you by a title"
+    label = "How the agent talks to you"
     position = 1
     has_skill = False
 
-    title = "Your title and name"
+    title = "Your profile, title and name"
 
-    abstract = "The agent calls you by the title you choose (Sir unless you change it) and your first name."
+    abstract = "The agent talks to you in the voice of the profile you choose, by your title and first name."
 
     help = """
-        Every session start, and every start after a compaction, tells the agent how to address you, as a good butler would, in its answers and now and then, never in every message:
-        the title from Settings, Sir by default, followed by your first name when it is known, like
-        Sir Example. The name is the one set here, or else the first name git knows you by. The title is
-        only ever what you set here, never guessed from a name. Now and then, when it fits, the agent answers
-        with a sense of humor: a 🎩 when you call it sir, or a funny reaction on a message, never on every one.
+        Every session start, and every start after a compaction, tells the agent how to talk to you, in the voice of
+        the profile you choose: Butler, Homie, Colleague or Coach. Until you choose, it talks as the Butler: your
+        title, Sir by default, and your first name, like Sir Example, now and then a 🎩. The name is the one set
+        here, or else the first name git knows you by; the title is only ever what you set here. A change here
+        reaches the running agent at once.
     """
 
     settings = [
@@ -34,5 +37,22 @@ class FormOfAddressDetails(FeatureDetails):
             default="",
             title="First name",
             abstract="Leave it empty to use the name git knows you by",
+        ),
+        Setting(
+            name="profile",
+            default="",
+            title="Profile",
+            abstract="How the agent talks to you; until you choose, it talks as the Butler",
+            choices=("", *KEYS),
+            labels=(("", "Not chosen yet"), *((voice.key, voice.title) for voice in SHIPPED)),
+        ),
+    ]
+
+    lines = [
+        Line(
+            name=VOICE_SET,
+            while_waiting=True,
+            title="the user changed how you talk to them",
+            brief="From now on: {{voice}}",
         ),
     ]
