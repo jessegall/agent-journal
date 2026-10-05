@@ -5,7 +5,7 @@ import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {parkedFor, state, waitsOn} from "../domain/records.js";
-import {age} from "../format/time.js";
+import {age, ago} from "../format/time.js";
 import {computed} from "vue";
 
 const props = defineProps({resource: Object, selected: Boolean});
@@ -44,7 +44,7 @@ const held = computed(() => {
         <template v-if="held">
             <span class="held" :title="held">{{ held }}</span>
         </template>
-        <span class="age">{{ age(resource.updated || resource.created) }}</span>
+        <span class="age">{{ resource.completed ? `Closed ${ago(resource.completed)}` : age(resource.updated || resource.created) }}</span>
     </button>
 </template>
 

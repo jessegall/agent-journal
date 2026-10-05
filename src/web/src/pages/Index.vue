@@ -166,7 +166,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
             <template #document>
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">
-                        <div class="card-wrap">
+                        <div :class="['card-wrap', {shipped: r.data.system}]">
                             <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
                             <ResourceEnd :resource="r" />
                         </div>
@@ -253,6 +253,10 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
 
 .card-wrap > :first-child {
     flex: 1;
+}
+
+.card-wrap.shipped > :first-child {
+    padding-bottom: 36px;
 }
 
 .empty {

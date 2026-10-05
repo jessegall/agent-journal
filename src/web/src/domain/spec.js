@@ -21,3 +21,24 @@ const STOPS = {trigger: "It stops starting by itself.", sequence: "It stops star
 export const closeWord = (type) => NAMED_CLOSES[type] || "Close";
 export const closeNote = (type) => `Moves it to Closed. ${STOPS[type] ? `${STOPS[type]} ` : ""}You can reopen it.`;
 export const DELETE_NOTE = "It leaves every list. Its history stays in Activity.";
+
+const EVENT_PHRASES = {
+    created: "is created",
+    completed: "is closed",
+    requested: "is requested",
+    revised: "is revised",
+    commissioned: "is commissioned",
+    started: "is started",
+    paused: "is paused",
+    resumed: "is resumed",
+    finished: "is finished",
+    plan_waits: "waits for its plan to be approved",
+    checkpoint: "reaches a checkpoint",
+    escalated: "is escalated",
+};
+
+export function eventWords(event) {
+    const [type, action] = event.split(".");
+    const noun = store.spec.types[type] ? meta(type).title.toLowerCase() : type;
+    return action === "stuck" ? `a ${noun}'s agent is stuck` : `a ${noun} ${EVENT_PHRASES[action] || `has ${action}`}`;
+}
