@@ -15,9 +15,10 @@ from providers.skill_homes import skill_name
 from engine.package import data
 from controllers.stored import mtime
 from skills import frontmatter
+from engine.memo import Memo
 
-READ: dict[str, tuple] = {}
-LISTED: dict[str, tuple] = {}
+READ = Memo()
+LISTED = Memo()
 
 
 @dataclass(frozen=True)
@@ -52,13 +53,13 @@ def teaching_command(root: Path, noun: str) -> str:
 def described(f: Path, root: Path) -> dict:
     found = f.stat()
     stamp = (found.st_mtime_ns, found.st_size)
-    held = READ.get(str(f))
-    if not held or held[0] != stamp:
+
+    def make() -> dict:
         head = frontmatter(f.read_text(errors="replace"))
-        held = READ[str(f)] = (stamp, {SKILL.name: f.parent.name, SKILL.description: head.get("description", "").strip('"'), SKILL.path: str(f.relative_to(root)),
-                                       SKILL.changed: found.st_mtime, SKILL.size: found.st_size,
-                                       SKILL.keywords: listed_in(head.get("keywords", "")), SKILL.commands: listed_in(head.get("commands", ""))})
-    return held[1]
+        return {SKILL.name: f.parent.name, SKILL.description: head.get("description", "").strip('"'), SKILL.path: str(f.relative_to(root)),
+                SKILL.changed: found.st_mtime, SKILL.size: found.st_size,
+                SKILL.keywords: listed_in(head.get("keywords", "")), SKILL.commands: listed_in(head.get("commands", ""))}
+    return READ.get(str(f), stamp, make)
 
 
 def catalogue(root: Path) -> list[dict]:
@@ -84,10 +85,7 @@ def skill_files(home: Path) -> list[Path]:
     mark = mtime(home)
     if not mark:
         return []
-    held = LISTED.get(str(home))
-    if not held or held[0] != mark:
-        held = LISTED[str(home)] = (mark, [folder / "SKILL.md" for folder in sorted(p for p in home.iterdir() if p.is_dir()) if (folder / "SKILL.md").is_file()])
-    return held[1]
+    return LISTED.get(str(home), mark, lambda: [folder / "SKILL.md" for folder in sorted(p for p in home.iterdir() if p.is_dir()) if (folder / "SKILL.md").is_file()])
 
 
 @cache

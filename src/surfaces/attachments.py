@@ -6,8 +6,9 @@ from urllib.parse import quote
 from controllers.types import CONTROLLERS
 from engine.paths import contained
 from resources.base import AGENT, USER
+from engine.memo import Memo
 
-ATTACHED: dict[str, tuple] = {}
+ATTACHED = Memo()
 
 
 def listed_types() -> list[str]:
@@ -45,13 +46,6 @@ def listed_attachments(record, type_: str, controller) -> list[AttachedFile]:
 
 def attachments(record) -> list[AttachedFile]:
     controllers = [(type_, CONTROLLERS[type_](record, actor=USER)) for type_ in listed_types()]
-    summaries = [c.summaries() for _, c in controllers]
-    held = ATTACHED.get(str(record.home))
-    if held and all(a is b for a, b in zip(held[0], summaries, strict=True)):
-        return held[1]
-    out = []
-    for type_, c in controllers:
-        out.extend(listed_attachments(record, type_, c))
-    files = sorted(out, key=lambda x: -x["at"])
-    ATTACHED[str(record.home)] = (summaries, files)
-    return files
+    summaries = tuple(c.summaries() for _, c in controllers)
+    return ATTACHED.get(str(record.home), summaries,
+                        lambda: sorted((f for type_, c in controllers for f in listed_attachments(record, type_, c)), key=lambda x: -x["at"]))

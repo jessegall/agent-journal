@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from resources.base import LAZY, MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
+from engine.memo import Memo
 
 DAMAGED = "damaged"
 DRAFT_OF = "draft_of"
@@ -19,8 +20,8 @@ ARCHIVE = "zip"
 def wholes(rows: list, part_of) -> list:
     return [row for row in rows if not part_of(row)]
 SUMMARIES: dict[str, tuple] = {}
-HELD: dict[str, tuple] = {}
-PACKS: dict[str, tuple] = {}
+HELD = Memo()
+PACKS = Memo()
 INDEXED: dict[str, dict] = {}
 STAMPED: dict[str, "Stamped"] = {}
 STAMPS_FRESH = 60.0
@@ -193,10 +194,7 @@ class Stored:
         stamp = mtime(index)
         if not stamp:
             return {}
-        held = PACKS.get(str(index))
-        if not held or held[0] != stamp:
-            held = PACKS[str(index)] = (stamp, {int(n): row for n, row in read_json(index, dict, {}).items()})
-        return held[1]
+        return PACKS.get(str(index), stamp, lambda: {int(n): row for n, row in read_json(index, dict, {}).items()})
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:
@@ -296,10 +294,7 @@ class Stored:
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
         if self.resource.loading != MEMORY:
             return self._parsed(n)
-        held = HELD.get(where)
-        if not held or held[0] != stamp:
-            held = HELD[where] = (stamp, self._parsed(n))
-        return held[1]
+        return HELD.get(where, stamp, lambda: self._parsed(n))
 
     def _text(self, n: int) -> str:
         p = self.path(n)
@@ -326,7 +321,7 @@ class Stored:
     def _remove(self, n: int) -> None:
         folder = self._folder()
         before = self._moved(folder) if folder.is_dir() else None
-        HELD.pop(str(self.path(n)), None)
+        HELD.forget(str(self.path(n)))
         self.path(n).unlink(missing_ok=True)
         if self.resource.own_folder and folder.is_dir():
             os.utime(folder)
@@ -369,7 +364,7 @@ class Stored:
         for row in rows:
             p = folder / member(row["n"])
             if p.is_file() and p.read_bytes() == texts[row["n"]]:
-                HELD.pop(str(p), None)
+                HELD.forget(str(p))
                 p.unlink()
 
     def _warm(self) -> None:

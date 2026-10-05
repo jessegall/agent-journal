@@ -85,3 +85,10 @@ def viewer_ports(monkeypatch):
     yield
     for port in ours:
         isolation.release(port)
+
+
+@pytest.fixture(autouse=True)
+def forgotten_memos():
+    from engine.memo import forget_all
+    forget_all()
+    yield

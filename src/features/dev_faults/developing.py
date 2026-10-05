@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
+from engine.memo import Memo
 
-READ: dict[str, tuple] = {}
+READ = Memo()
 DEVELOPING = "DEVELOPMENT_MODE"
 
 
@@ -15,7 +16,4 @@ def declared(env: Path) -> str:
         mark = env.stat().st_mtime_ns
     except OSError:
         return ""
-    held = READ.get(str(env))
-    if not held or held[0] != mark:
-        held = READ[str(env)] = (mark, next((line.split("=", 1)[1] for line in env.read_text().splitlines() if line.strip().startswith(f"{DEVELOPING}=")), ""))
-    return held[1]
+    return READ.get(str(env), mark, lambda: next((line.split("=", 1)[1] for line in env.read_text().splitlines() if line.strip().startswith(f"{DEVELOPING}=")), ""))

@@ -6,10 +6,11 @@ from controllers.types import CONTROLLERS
 from engine.fields import Loaded
 from features.format import KEEP_SHAPED, VIEWER, settled, shaped
 from resources.base import USER, Refused
+from engine.memo import Memo
 
-LISTED: dict[tuple, tuple] = {}
-VIEWED: dict[tuple, tuple] = {}
-TALLIED: dict[tuple, tuple] = {}
+LISTED = Memo(KEEP_SHAPED)
+VIEWED = Memo(KEEP_SHAPED)
+TALLIED = Memo()
 
 
 @dataclass(frozen=True)
@@ -46,16 +47,10 @@ class ListedRows(TypedDict):
 
 def listing(controller, record, wanted: Listing) -> ListedRows:
     summaries, stamp = controller.summaries(), settled(record)
-    key = (str(record.home), controller.type, wanted)
-    held = LISTED.get(key)
-    if held and held[0] is summaries and held[1] == stamp:
-        return held[2]
-    listed = _listed(controller, record, wanted, summaries, stamp)
-    if not wanted.since:
-        if len(LISTED) >= KEEP_SHAPED:
-            LISTED.clear()
-        LISTED[key] = (summaries, stamp, listed)
-    return listed
+    make = lambda: _listed(controller, record, wanted, summaries, stamp)
+    if wanted.since:
+        return make()
+    return LISTED.get((str(record.home), controller.type, wanted), (summaries, stamp), make)
 
 
 def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> ListedRows:
@@ -81,13 +76,9 @@ def readable(controller, record, n: int, row_stamp, settings: tuple) -> dict | N
 
 def viewed(controller, record, n: int, row_stamp, settings: tuple) -> dict:
     key = (str(record.home), controller.type, n)
-    stamp = (row_stamp, settings)
-    held = VIEWED.get(key)
-    if not row_stamp or not held or held[0] != stamp:
-        if len(VIEWED) >= KEEP_SHAPED:
-            VIEWED.clear()
-        held = VIEWED[key] = (stamp, shaped(controller.load(n), record, VIEWER))
-    return held[1]
+    if not row_stamp:
+        VIEWED.forget(key)
+    return VIEWED.get(key, (row_stamp, settings), lambda: shaped(controller.load(n), record, VIEWER))
 
 
 def counted(record, types) -> dict:
@@ -96,17 +87,16 @@ def counted(record, types) -> dict:
 
 def counts(controller) -> dict:
     summaries = controller.summaries()
-    key = (str(controller.record.home), controller.type)
-    held = TALLIED.get(key)
-    if held and held[0] is summaries:
-        return held[1]
-    tally = {"all": 0, "open": 0, "unread": 0}
+    return TALLIED.get((str(controller.record.home), controller.type), summaries, lambda: tally(summaries))
+
+
+def tally(summaries: list) -> dict:
+    found = {"all": 0, "open": 0, "unread": 0}
     for row in summaries:
         if row["deleted"] or row.get("hidden"):
             continue
-        tally["all"] += 1
+        found["all"] += 1
         if not row["completed"]:
-            tally["open"] += 1
-            tally["unread"] += USER not in (row.get("seen") or [])
-    TALLIED[key] = (summaries, tally)
-    return tally
+            found["open"] += 1
+            found["unread"] += USER not in (row.get("seen") or [])
+    return found
