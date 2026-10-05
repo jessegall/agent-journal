@@ -40,7 +40,7 @@ def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
     except OSError:
         return [], at
     if size < at:
-        return [], size
+        at = 0
     if size == at:
         return [], at
     with f.open() as lines:

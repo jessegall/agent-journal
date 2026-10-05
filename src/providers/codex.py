@@ -40,7 +40,9 @@ TASK_EVENTS = re.compile(rb'"type":"(task_started|task_complete)"')
 class CodexShell(BashCall):
     @classmethod
     def from_payload(cls, name: str, given: dict, response: dict) -> "CodexShell":
-        command = next(given[key] for key in ("cmd", "input", "command") if key in given)
+        command = next((given[key] for key in ("cmd", "input", "command") if key in given), None)
+        if command is None:
+            raise KeyError("cmd")
         printed = "\n".join(str(response[key]) for key in ("stdout", "stderr") if response.get(key))
         return cls(name, given, response, command=" ".join(command) if isinstance(command, list) else str(command), printed=printed)
 

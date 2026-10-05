@@ -179,3 +179,172 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
     finally:
         for point, entries in zip(points, kept):
             point.entries = entries
+
+
+PATCH = "*** Begin Patch\n*** Add File: web/x.py\n+print(1)\n*** End Patch"
+OWN_SHAPES = {
+    "claude": {
+        "writes": [("Write", {"file_path": "web/x.py"}), ("Edit", {"file_path": "web/x.py"}), ("MultiEdit", {"file_path": "web/x.py"}), ("Bash", {"command": "echo x > web/x.py"})],
+        "reads": [("Read", {"file_path": "web/x.py"}), ("Bash", {"command": "cat web/x.py"})],
+        "malformed": [("Bash", {"nothing": 1}), ("Bash", "a string"), ("Write", {})],
+    },
+    "codex": {
+        "writes": [("apply_patch", {"input": PATCH}), ("exec_command", {"cmd": "echo x > web/x.py"}), ("shell", {"command": ["bash", "-lc", "echo x > web/x.py"]}),
+                   ("shell_command", {"command": "git commit -m x"})],
+        "reads": [("exec_command", {"cmd": "cat web/x.py"}), ("shell", {"command": ["bash", "-lc", "cat web/x.py"]})],
+        "malformed": [("exec_command", {"nothing": 1}), ("shell", "a string"), ("apply_patch", {})],
+    },
+}
+
+
+def test_the_gate_holds_each_providers_own_tool_shapes_and_lets_a_malformed_call_through():
+    features.load()
+    REFUSED = features.FEATURES["work_tracking"].line("undeclared held", {})[0]
+    record = fresh()
+    project = str(record.root.parent)
+    for name, provider_cls in PROVIDERS.items():
+        provider, shapes, session = provider_cls(), OWN_SHAPES[name], f"{name}-9"
+
+        def hook(tool, given):
+            return handle(provider, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": session, "tool_name": tool, "tool_input": given, "cwd": project})
+        handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": session, "cwd": project})
+        for tool, given in shapes["writes"]:
+            assert hook(tool, given) == provider.blocking(REFUSED), f"{name}: {tool} with {sorted(given)} is a write, and refused with nothing open"
+        for tool, given in shapes["reads"] + shapes["malformed"]:
+            assert hook(tool, given) == {}, f"{name}: {tool} with {given!r} is a read or a call the gate cannot read, and passes"
+        work = Works(record, actor=AGENT).create(f"work for {name}")
+        for tool, given in shapes["writes"]:
+            assert hook(tool, given) == {}, f"{name}: {tool} passes once work is open"
+        Works(record, actor=AGENT).complete(work.n, "done")
+
+
+def transcript_lines(*rows) -> str:
+    return "".join(json.dumps(row) + "\n" for row in rows)
+
+
+FIXTURES = {
+    "claude": ("main.jsonl", (
+        {"type": "user", "timestamp": "2026-10-06T10:00:00Z", "message": {"role": "user", "content": "hello"}},
+        {"type": "assistant", "timestamp": "2026-10-06T10:00:05Z", "message": {"id": "m1", "model": "claude-opus-5-5", "content": [{"type": "text", "text": "ok"}],
+                                                                        "usage": {"input_tokens": 20000, "cache_read_input_tokens": 80000, "cache_creation_input_tokens": 0}}})),
+    "codex": ("rollout-2026-10-06T10-00-00-main.jsonl", (
+        {"timestamp": "2026-10-06T10:00:00.000Z", "type": "session_meta", "payload": {"id": "main"}},
+        {"timestamp": "2026-10-06T10:00:01.000Z", "type": "event_msg",
+         "payload": {"type": "token_count", "info": {"last_token_usage": {"total_tokens": 50000}, "model_context_window": 200000}}})),
+}
+EXPECTED = {"claude": ("claude-opus-5-5", 50.0), "codex": ("the-hook-model", 25.0)}
+
+
+def test_a_session_start_reads_session_model_and_context_from_each_providers_own_transcript(tmp_path):
+    features.load()
+    record = fresh()
+    for name, provider_cls in PROVIDERS.items():
+        file, rows = FIXTURES[name]
+        path = tmp_path / name / file
+        path.parent.mkdir()
+        path.write_text(transcript_lines(*rows))
+        handle(provider_cls(), record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "ignored", "transcript_path": str(path),
+                                                         "cwd": str(record.root.parent), "model": "the-hook-model"})
+        row = Agents(record, actor=SYSTEM).by_session(path.stem)
+        assert (row.provider, row.model, row.context, row.parent, row.transcript) == (name, *EXPECTED[name], "", str(path)), \
+            f"{name}: the row is the transcript's session, with the model and the percent of the window its transcript says"
+    claude = PROVIDERS["claude"]()
+    child = tmp_path / "claude" / "main" / "subagents" / "agent-sub1.jsonl"
+    child.parent.mkdir(parents=True)
+    child.write_text(transcript_lines(FIXTURES["claude"][1][1]))
+    handle(claude, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "sub1", "transcript_path": str(child), "cwd": str(record.root.parent)})
+    row = Agents(record, actor=SYSTEM).by_session(child.stem)
+    assert (row.model, row.context, row.uses) == ("", 0, 0), "claude: a hook from a subagent's transcript leaves its row without the main agent's facts"
+
+
+def test_a_codex_child_thread_is_handled_by_its_hooks_as_a_main_agent_while_its_row_is_a_subagent(tmp_path):
+    features.load()
+    record = fresh()
+    child = tmp_path / "rollout-2026-10-06T10-00-00-child.jsonl"
+    child.write_text(transcript_lines({"timestamp": "2026-10-06T10:00:00.000Z", "type": "session_meta",
+                                       "payload": {"id": "child", "source": {"subagent": {"thread_spawn": {"parent_thread_id": "the-parent"}}}}}))
+    codex = PROVIDERS["codex"]()
+
+    def hook(event, **more):
+        return handle(codex, record.root, record.env, {"hook_event_name": event, "session_id": "child", "transcript_path": str(child), "cwd": str(record.root.parent), **more})
+    raw = {"hook_event_name": "PreToolUse", "session_id": "child", "transcript_path": str(child)}
+    assert codex.is_subagent(Hook.read(raw, codex.tool_kinds)) is False, "codex: a hook never says it comes from a subagent, even for a child thread's transcript"
+    hook("SessionStart")
+    held = hook("PreToolUse", tool_name="apply_patch", tool_input={"input": PATCH})
+    assert held["decision"] == "block" and "load journal before anything else" in held["reason"], \
+        "codex: a child thread's tool use is held until it loads the journal skill, as a main agent's is"
+    row = Agents(record, actor=SYSTEM).by_session(child.stem)
+    assert (row.parent, row.subagent, row.uses) == ("the-parent", True, 1), \
+        "codex: the child's row names its parent and counts as a subagent, and its own tool use is reported on it as a main agent's is"
+    claude = PROVIDERS["claude"]()
+    assert claude.is_subagent(Hook.read({**raw, "agent_id": "sub1"}, claude.tool_kinds)) is True, "claude: a hook with an agent id is a subagent's"
+    asked = {"hook_event_name": "PreToolUse", "session_id": "sub1", "agent_id": "sub1", "tool_name": "Edit", "tool_input": {"file_path": "web/x.py"}, "cwd": str(record.root.parent)}
+    assert handle(claude, record.root, record.env, asked) == {}, "claude: a subagent's write is held by neither the open-work gate nor the skill hold, which reach main agents only"
+
+
+def test_the_claude_channel_answers_its_handshake_and_delivers_each_queued_line_once(tmp_path, monkeypatch):
+    import threading
+    import time
+    from engine.sessions import ACTIVE_ENV
+    from engine import runtime
+    from providers import claude_channel as channel
+    from providers.claude_channel import Asked
+    monkeypatch.delenv(ACTIVE_ENV, raising=False)
+    assert channel.answer(Asked("initialize", 1))["capabilities"] == {}, "a channel the journal did not launch offers no channel capability"
+    monkeypatch.setenv(ACTIVE_ENV, "1")
+    initialized = channel.answer(Asked("initialize", 1))
+    assert (initialized["capabilities"], initialized["serverInfo"]["name"]) == ({"experimental": {"claude/channel": {}}}, "journal"), \
+        "a launched channel answers initialize with the channel capability"
+    assert (channel.answer(Asked("tools/list", 2)), channel.answer(Asked("notifications/initialized")), channel.answer(Asked("ping", 3))) == ({"tools": []}, None, {}), \
+        "a list is empty, a notification is not answered and any other call gets an empty result"
+
+    queued = tmp_path / "queue.jsonl"
+    queued.write_text(json.dumps({"content": "queued before the channel started"}) + "\n")
+    at = channel.start(queued)
+    queued.write_text(queued.read_text() + json.dumps({"content": "one"}) + "\n" + json.dumps({"content": "two"}) + "\n")
+    lines, at = channel.fresh_lines(queued, at)
+    assert (channel.contents(lines), channel.fresh_lines(queued, at)) == (["one", "two"], ([], at)), "a line appended after the start arrives once, and not again"
+    queued.write_text(json.dumps({"content": "after a truncation"}) + "\n")
+    lines, at = channel.fresh_lines(queued, at + 100)
+    assert (channel.contents(lines), channel.fresh_lines(queued, at)) == (["after a truncation"], ([], at)), \
+        "a queue truncated and written again is read from its start: the new line is neither lost nor sent twice"
+    queued.write_text("")
+    assert channel.fresh_lines(queued, at) == ([], 0), "a queue truncated to nothing is read from its start"
+    assert channel.contents(["not json", json.dumps({"content": ""}), json.dumps({"content": "kept"})]) == ["kept"], "a line that is no message or says nothing is dropped"
+
+    sent, stopped = [], threading.Event()
+
+    class Stop(Exception):
+        pass
+
+    def pushing(*given):
+        try:
+            channel.push(*given)
+        except Stop:
+            pass
+
+    class Clock:
+        @staticmethod
+        def sleep(seconds: float) -> None:
+            if stopped.is_set():
+                raise Stop
+            time.sleep(0.01)
+    monkeypatch.setattr(channel, "time", Clock)
+    monkeypatch.setattr(channel, "say", sent.append)
+    root = tmp_path / ".journal"
+    queue = runtime.channel_queue(root, 4242)
+    queue.parent.mkdir(parents=True)
+    thread = threading.Thread(target=pushing, args=(root, 4242), daemon=True)
+    thread.start()
+    queue.write_text(json.dumps({"content": "first"}) + "\n")
+    waited = time.monotonic()
+    while len(sent) < 1 and time.monotonic() - waited < 10:
+        time.sleep(0.02)
+    queue.write_text(queue.read_text() + json.dumps({"content": "second"}) + "\n")
+    while len(sent) < 2 and time.monotonic() - waited < 10:
+        time.sleep(0.02)
+    stopped.set()
+    thread.join(timeout=10)
+    assert [message["params"]["content"] for message in sent] == ["first", "second"], "a line appended to the queue arrives as one notification, each once"
+    assert (sent[0]["method"], sent[0]["params"]["meta"], runtime.channel_alive(root, 4242).is_file()) == ("notifications/claude/channel", {"from": "journal"}, True), \
+        "the notification is the channel one, from the journal, and the channel marks itself alive"
