@@ -1,3 +1,4 @@
+import {store} from "../src/state/store.js";
 import {ui} from "../src/state/ui.js";
 import {QuietStream} from "./stream.js";
 
@@ -8,6 +9,7 @@ const MOVES = [
     ["send", (e) => e.type === "message" && e.action === "created"],
     ["approve", (e) => e.type === "plan" && e.action === "updated" && e.data.by === "approve"],
     ["answer", (e) => e.type === "question" && e.action === "completed"],
+    ["answer", (e) => e.type === "dump" && e.action === "updated" && e.data.by === "answer"],
 ];
 
 const newest = (moment) => Math.max(0, ...(moment.events || []).map((e) => e.id));
@@ -16,7 +18,7 @@ function moveIn(moment, before) {
     const fresh = (moment.events || []).filter((e) => e.id > newest(before) && e.actor === "user");
     for (const [kind, is] of MOVES) {
         const event = fresh.find(is);
-        if (event) return {kind, n: event.n};
+        if (event) return {kind, n: event.n, type: event.type};
     }
     return null;
 }
@@ -59,6 +61,8 @@ export class Player {
     offer() {
         const move = this.waiting;
         ui.prefill = move && move.kind === "send" ? this.asked(move.at) : "";
+        if (move && move.type === "dump") Object.assign(store, {pane: "chat", dumpShown: move.n, dumping: true});
+        if (this.finished) store.dumping = false;
     }
 
     asked(at) {

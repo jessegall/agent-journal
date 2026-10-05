@@ -19,7 +19,7 @@ from engine.attic import removed  # noqa: E402
 from features.session_recording.demo import BRANCHES  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
-SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers", "docs", "memory")
+SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers", "docs", "memory", "dumps")
 SHIPPED = SRC / "web" / "demo" / "scenarios"
 SETTLE = 3.0
 SERVED = ("heartbeat", "viewer.json")
@@ -101,7 +101,7 @@ def played(key: str, project: Path, pace: float, folder: Path | None = None) -> 
             restored(copy, project)
             session = Session(project, pace, key, alive=alive)
             with recorded(session, folder and folder / BRANCHES / str(at)):
-                session.answered(fork.question, label)
+                session.answered(fork, label)
                 branch(session, fork)
             labels[label] = str(at)
     finally:
