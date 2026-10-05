@@ -43,7 +43,7 @@ class Plan(Shape, Resource):
     choices = {"worktree": ["each", "shared"]}
     type = "plan"
     notify_actions = ("updated",)
-    event_labels = {"created": "Plan started", "completed": "Plan finished"}
+    event_labels = {"created": "Plan started", "completed": "Plan closed"}
     labels = {"abstract": "One line: what is true when it is done", "brief": "What you want, in your own words; the agent builds the plan with you from here"}
     status_labels = {"complete": "finishing"}
     start_heading = "PLANS running"

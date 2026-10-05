@@ -17,7 +17,7 @@ export const PLAN_STATES = {
     active: "Being worked on",
     waiting: "Waiting for you",
     parked: "Parked",
-    done: "Finished",
+    done: "Closed",
 };
 
 const openPlans = (plans) => plans.filter((p) => !p.completed && !p.deleted && p.data.status in PLAN_STATES).sort((a, b) => a.n - b.n);

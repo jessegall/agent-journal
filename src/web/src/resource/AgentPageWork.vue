@@ -10,7 +10,7 @@ defineProps({works: {type: Array, required: true}, subagent: {type: Boolean, def
             <div class="work">
                 <span :class="['dot', {open: !w.completed}]" />
                 <span class="work-title">{{ w.title }}</span>
-                <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
+                <span class="work-when">{{ w.completed ? "closed" : "open" }}</span>
             </div>
             <Trace :resource="w" />
         </template>

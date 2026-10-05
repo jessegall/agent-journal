@@ -1,5 +1,5 @@
 <script setup>
-import {meta, word} from "../domain/spec.js";
+import {closeWord, meta, word} from "../domain/spec.js";
 import TextInput from "../kit/TextInput.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";
@@ -117,7 +117,7 @@ async function run(method) {
                 @input="text = $event.target.value"
                 @keydown.esc="prompt = ''"
             />
-            <Btn small @click="run(prompt)">{{ word(resource.type, prompt) }}</Btn>
+            <Btn small @click="run(prompt)">{{ closeWord(resource.type) }}</Btn>
             <Btn small @click="prompt = ''">Cancel</Btn>
         </template>
         <template v-else>
@@ -141,7 +141,7 @@ async function run(method) {
             <template v-for="m in offered" :key="m">
                 <Btn :kind="m === 'complete' ? 'ghost' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
                     <Icon :name="m === 'complete' ? 'check' : 'close'" :size="12" />
-                    {{ word(resource.type, m).replace(/^\w/, (c) => c.toUpperCase()) }}
+                    {{ m === "complete" ? closeWord(resource.type) : "Delete" }}
                 </Btn>
             </template>
         </template>

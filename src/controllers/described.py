@@ -3,12 +3,11 @@ from controllers.types import CONTROLLERS
 from resources.base import CLOSED, EVERY, OPEN, UPDATES
 from resources.types import TYPES
 
-SHOWN = {OPEN: "Open", EVERY: "All", UPDATES: "Updates"}
+SHOWN = {OPEN: "Open", EVERY: "All", UPDATES: "Updates", CLOSED: "Closed"}
 
 
 def tabs(kind) -> list[dict]:
-    titles = {**SHOWN, CLOSED: kind.event_labels.get("completed", "Closed").split()[-1].capitalize()}
-    return [{"key": key, "title": titles[key], "shows": key} for key in kind.filters]
+    return [{"key": key, "title": SHOWN[key], "shows": key} for key in kind.filters]
 
 
 def described_types() -> dict[str, dict]:

@@ -67,7 +67,7 @@ class Dump(Shape, Resource):
     )
     listed_open = True
     type = "dump"
-    event_labels = {"created": "Dumped", "completed": "Dump filed"}
+    event_labels = {"created": "Dumped", "completed": "Dump closed"}
     status_labels = {"note": "reading a dump", "filed": "filing a dump"}
     needs_attention = True
     read_whole = True

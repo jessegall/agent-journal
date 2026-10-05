@@ -1,5 +1,5 @@
 <script setup>
-import {meta, word} from "../domain/spec.js";
+import {meta} from "../domain/spec.js";
 import {store} from "../state/store.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -57,7 +57,7 @@ function heading(e) {
     const labels = meta(e.type).event_labels || {};
     const own = labels[`${e.action}.${e.data?.by}`] || labels[did(e)];
     if (own) return own;
-    if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
+    if (e.action === "completed") return `${meta(e.type).title} closed`;
     return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;
 }
 const hooked = (e) => [e.data?.hook, e.data?.tool].filter(Boolean).join(" ");
