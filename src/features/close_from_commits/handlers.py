@@ -48,7 +48,7 @@ class CloseRowsFromCommits(Handler):
                 try:
                     if todos.load(n).completed:
                         continue
-                    open_work = [w.n for w in works.rows.standing() if int(w.todo) == int(n)]
+                    open_work = [w.n for w in works._for_todo(n)]
                     todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
                 except Refused:
                     continue

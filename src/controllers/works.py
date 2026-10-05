@@ -11,6 +11,9 @@ class Works(Controller):
     def active(self):
         return next((w for w in self.rows.standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
 
+    def _for_todo(self, n: int) -> list:
+        return [w for w in self.rows.standing() if int(w.todo) == int(n)]
+
     def _unparked(self) -> list:
         return [w for w in self.rows.standing() if not w.parked]
 
