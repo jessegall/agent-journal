@@ -49,8 +49,7 @@ HEADERS = {
 
 
 def routed(parts: list[str], record):
-    route = ROUTES.get(parts[0]) if parts else None
-    return route if route is not None and route.on(record) else None
+    return ROUTES.keyed(record).get(parts[0]) if parts else None
 
 
 @dataclass(frozen=True)
@@ -258,7 +257,7 @@ class ShareHandler(BaseHTTPRequestHandler):
 def ticking(shares) -> None:
     while True:
         time.sleep(TICK_EVERY)
-        for tick in TICKS:
+        for tick in TICKS.each(shares):
             try:
                 tick(shares)
             except Exception:

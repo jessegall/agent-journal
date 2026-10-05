@@ -2,8 +2,9 @@ from controllers.faults import threw
 from engine.markers import plain
 from features.switches import generation
 from resources.base import SECTION, as_dict
+from engine.extension import Extension
 
-FORMATTERS: list = []
+FORMATTERS = Extension()
 DOWNLOAD = "download"
 VIEWER = "viewer"
 SHARED = "shared"
@@ -15,7 +16,7 @@ KEEP_SHAPED = 5000
 
 def formatted(text: str, record=None, surface: str = "") -> str:
     text = "" if text is None else str(text)
-    for fn, where in FORMATTERS:
+    for fn, where in FORMATTERS.each():
         if where and surface not in where:
             continue
         try:

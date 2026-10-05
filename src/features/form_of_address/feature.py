@@ -9,5 +9,5 @@ class FormOfAddress(Feature):
     details = FormOfAddressDetails
 
     def register(self, journal: Journal) -> None:
-        self.register_global(START_PARTS, address, str, ADDRESS)
+        START_PARTS.add(self, address, key=ADDRESS)
 

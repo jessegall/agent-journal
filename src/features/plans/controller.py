@@ -13,11 +13,12 @@ from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
 from controllers.marks import action
+from engine.extension import Extension
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
-PHASE_ROWS: dict = {}
-PHASE_STARTS: list = []
-PLAN_STARTS: list = []
+PHASE_ROWS = Extension()
+PHASE_STARTS = Extension()
+PLAN_STARTS = Extension()
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
 DEPTHS = {
@@ -166,7 +167,7 @@ class Plans(Controller):
                 self._status(other, PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
         if first_start:
-            for begin in PLAN_STARTS:
+            for begin in PLAN_STARTS.each(self.record):
                 begin(self.record, started)
         self._start_phase(started)
         return started
@@ -242,7 +243,7 @@ class Plans(Controller):
 
     def _members(self, phase: dict) -> list:
         found = []
-        for key, kind in {PHASE.todos: Todos, **PHASE_ROWS}.items():
+        for key, kind in {PHASE.todos: Todos, **PHASE_ROWS.keyed()}.items():
             rows = kind(self.record, actor=self.actor)
             found += [rows.load(n) for n in phase.get(key, []) if rows._exists(int(n))]
         return found
@@ -261,7 +262,7 @@ class Plans(Controller):
         return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
 
     def _start_phase(self, plan) -> None:
-        for start in PHASE_STARTS:
+        for start in PHASE_STARTS.each(self.record):
             start(self.record, plan)
 
     def _step(self, plan) -> bool:

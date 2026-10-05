@@ -26,7 +26,7 @@ class PlansFeature(Feature):
     nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES), Nudge("blocked", behaviour="blocked", about=blocked_plans))
 
     def register(self, journal: Journal) -> None:
-        self.register_global(ROW_HOLDS, held, lambda: False)
+        ROW_HOLDS.add(self, held)
         journal.events.handler(StartBuilding())
         journal.events.handler(StartApproved())
         journal.events.handler(TellParkedAndPickedUp())

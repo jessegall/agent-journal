@@ -203,3 +203,13 @@ def test_an_action_is_marked_on_a_public_name_only():
     marked = {f"{type_} {name}" for type_, controller in CONTROLLERS.items()
               for name, fn in inspect.getmembers(controller, inspect.isfunction) if getattr(fn, "action", False) and name.startswith("_")}
     assert marked == set(), "an underscore name is a helper, never an action"
+
+
+def test_unloading_the_features_empties_every_extension_point():
+    from engine.extension import EXTENSIONS
+    features.load()
+    try:
+        features.unload()
+        assert [extension for extension in EXTENSIONS if extension.entries] == [], "a feature leaves nothing behind once it is unloaded"
+    finally:
+        features.load()

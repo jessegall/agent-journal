@@ -94,21 +94,12 @@ def seat(root: Path) -> None:
 
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
-    from features.base import clear_global_entries
     from features.switches import rebooted
-    from engine.gates import AFTERWARDS, CANCELERS, POLICIES, RESPONDERS
-    from features.format import FORMATTERS
-    from engine.wording import APPENDS
+    from engine.extension import clear_all
     COMMANDS.clear()
     HANDLERS.clear()
-    FORMATTERS.clear()
     bus.clear()
-    POLICIES.clear()
-    AFTERWARDS.clear()
-    CANCELERS.clear()
-    RESPONDERS.clear()
-    APPENDS.clear()
-    clear_global_entries()
+    clear_all()
     FEATURES.clear()
     SWITCHED.clear()
     SEATED.clear()

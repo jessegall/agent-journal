@@ -8,9 +8,10 @@ from features.sequences.resource import RunKey
 from providers import dispatch_model
 from resources.base import SYSTEM
 from controllers.types import Agents, Messages
+from engine.extension import Extension
 
 REQUEST_TEXT = 400
-DISPATCH_MODELS: dict = {}
+DISPATCH_MODELS = Extension()
 
 
 def unchosen(record) -> str:
@@ -46,8 +47,9 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     if not board:
         return
     Sessions(context.record.root).grant(agent.title, context.record.env)
+    models = DISPATCH_MODELS.keyed(context.record)
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=dispatch_model(agent.provider, DISPATCH_MODELS.get(sequence.dispatch, DISPATCH_MODELS.get(FILLER, unchosen))(context.record)), why=why,
+        model=dispatch_model(agent.provider, models.get(sequence.dispatch, models.get(FILLER, unchosen))(context.record)), why=why,
         request=request_of(context, about)))

@@ -9,9 +9,10 @@ from features.sharing.controller import Shares
 from features.sharing.resource import ended
 from features.sharing.tunnel import subdomain, tunler
 from resources.base import Refused, SYSTEM
+from engine.extension import Extension
 
 SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
-KEEP_UP: list = []
+KEEP_UP = Extension()
 
 
 def open_shares(root: Path) -> list:
@@ -26,7 +27,7 @@ def wanted(root: Path) -> bool:
     record = Record(root, runtime.env(root))
     feature = running(SharingFeature)
     sharing = bool(feature) and feature.enabled(record)
-    return (sharing and bool(open_shares(root))) or any(keep(root) for keep in KEEP_UP)
+    return (sharing and bool(open_shares(root))) or any(keep(root) for keep in KEEP_UP.each(root))
 
 
 def share_services(root: Path, taken: set) -> list:

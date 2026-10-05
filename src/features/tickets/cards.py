@@ -16,9 +16,10 @@ from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS
 from resources.types import IDLE
 from controllers.marks import action
+from engine.extension import Extension
 
 SILENT_AFTER = 300.0
-CARD_EXTRAS: list = []
+CARD_EXTRAS = Extension()
 REPOSITORY_STATES: dict = {}
 LOOK_AGAIN_AFTER = 30
 STATES_KEPT = 500
@@ -99,7 +100,7 @@ class TicketCards:
                      self._limit(), kinds.count("queued"), kinds.count("you"))
 
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
-        extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
+        extras = [extra(self.record, ticket) for extra in CARD_EXTRAS.each(self.record)]
         state = self._runtime(ticket, sessions, running)
         return Card(ticket.n, ticket.title, int(ticket.priority or LEVELS["default"]), stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,

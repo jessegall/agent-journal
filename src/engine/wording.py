@@ -1,5 +1,6 @@
 import hashlib
 import re
+from engine.extension import Extension
 
 SLUG = re.compile(r"[^a-z0-9]+")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -26,11 +27,11 @@ def slugged(name: str, sep: str = "-", limit: int = 0) -> str:
     return slug[:limit].strip(sep) if limit else slug
 
 
-APPENDS: dict[str, list] = {}
+APPENDS = Extension()
 
 
 def appended(on: str, values: dict, line: str) -> str:
-    return " - ".join([line, *(added for added in (append(**values) for append in APPENDS.get(on, [])) if added)])
+    return " - ".join([line, *(added for added in (append(**values) for append in APPENDS.each(key=on)) if added)])
 
 
 def counted(groups: dict[tuple, dict], record) -> list[str]:

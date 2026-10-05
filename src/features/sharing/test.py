@@ -369,7 +369,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     record = fresh()
     doc = Docs(record, actor=USER).create("Draft", brief="Words")
     marker = (lambda text, _: text.replace("Heading", Docs(record, actor=USER).load(doc.n).title), (SHARED,))
-    FORMATTERS.append(marker)
+    FORMATTERS.add(None, marker)
     try:
         page = Page("/s/key", {doc.ref}, record)
         assert "Draft" in page.title("Heading")

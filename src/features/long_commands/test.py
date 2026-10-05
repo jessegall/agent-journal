@@ -115,11 +115,11 @@ def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm run build", "tool": "Bash", "at": time.time() - 45}])
     keep = lambda call, data: "the build must stay in view"
     keep.guard = Guard("Keep the build in view", Reach.MAIN)
-    CANCELERS.setdefault(LONG_COMMAND, []).append(keep)
+    CANCELERS.add(None, keep, key=LONG_COMMAND)
     try:
         tick(record)
     finally:
-        CANCELERS[LONG_COMMAND].pop()
+        CANCELERS.remove(keep)
     from controllers.types import Nudges
     kept = [n.brief for n in Nudges(record).all() if n.title == "your long command stays in the foreground"]
     assert moved == [] and kept == ["it was not moved to the background because: the build must stay in view"], (moved, kept)

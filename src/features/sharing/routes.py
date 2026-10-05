@@ -1,2 +1,4 @@
-ROUTES: dict = {}
-TICKS: list = []
+from engine.extension import Extension
+
+ROUTES = Extension()
+TICKS = Extension()

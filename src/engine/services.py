@@ -13,6 +13,7 @@ from engine.ports import free
 from engine.runtime import folder
 from engine.sessions import alive
 from typing import TypedDict
+from engine.extension import Extension
 
 PORTS = range(8440, 8500)
 UP, DOWN = "up", "down"
@@ -110,7 +111,7 @@ def local_url(port: int) -> str:
     return f"http://127.0.0.1:{port}" if port else ""
 
 
-SOURCES: list = []
+SOURCES = Extension()
 
 
 class ServiceFiles(TypedDict):
@@ -130,7 +131,7 @@ def service_spec(root: Path, sid: str, **fields) -> ServiceSpec:
 
 def specs(root: Path, sources) -> list[ServiceSpec]:
     taken: set[int] = set()
-    return [spec for source in (*sources, *SOURCES) for spec in source(root, taken)]
+    return [spec for source in (*sources, *SOURCES.each(root)) for spec in source(root, taken)]
 
 
 def spawn(spec: ServiceSpec, lifeline: int) -> int:

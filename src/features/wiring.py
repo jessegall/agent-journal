@@ -58,7 +58,7 @@ class Client:
 
     def formatter(self, formatter: TextFormatter) -> None:
         feature = self.feature
-        FORMATTERS.append((lambda text, record: formatter.format(Context.of(feature, record), text)
+        FORMATTERS.add(None, (lambda text, record: formatter.format(Context.of(feature, record), text)
                            if not record or (feature.enabled(record) and wanted(formatter, feature, record, None, timed=False)) else text,
                            formatter.surfaces))
 
@@ -92,7 +92,7 @@ class AgentHooks:
         self.guards: list[Guard] = []
 
     def append_to_line(self, on: str, addition) -> None:
-        APPENDS.setdefault(on, []).append(addition)
+        APPENDS.add(None, addition, key=on)
 
     def interceptor(self, interceptor: ToolInterceptor) -> None:
         feature, guard = self.feature, Guard.of(interceptor)
@@ -108,9 +108,9 @@ class AgentHooks:
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.guard = guard
         if interceptor.before_checks:
-            POLICIES.insert(0, policy)
+            POLICIES.add(None, policy, first=True)
             return
-        (POLICIES if interceptor.refuses else AFTERWARDS).append(policy)
+        (POLICIES if interceptor.refuses else AFTERWARDS).add(None, policy)
 
     def canceler(self, canceler: Canceler) -> None:
         feature, guard = self.feature, Guard.of(canceler)
@@ -121,10 +121,10 @@ class AgentHooks:
                 return ""
             return canceler.cancel(hooked(feature, call), data) or ""
         cancel.guard = guard
-        CANCELERS.setdefault(canceler.event, []).append(cancel)
+        CANCELERS.add(None, cancel, key=canceler.event)
 
     def responder(self, event: str, respond) -> None:
-        RESPONDERS.setdefault(event, []).append(respond)
+        RESPONDERS.add(None, respond, key=event)
 
 
 class Commands:

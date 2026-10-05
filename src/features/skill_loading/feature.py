@@ -11,7 +11,7 @@ class SkillLoading(Feature):
     details = SkillLoadingDetails
 
     def register(self, journal: Journal) -> None:
-        self.register_global(START_PARTS, handed, str, SKILLS)
+        START_PARTS.add(self, handed, key=SKILLS)
         journal.events.handler(RemindUnloaded())
         journal.events.handler(HoldUntilReloaded())
         journal.events.handler(NameStaleSkills())

@@ -1,3 +1,4 @@
+from dataclasses import replace
 import inspect
 import json
 
@@ -126,7 +127,7 @@ def test_a_command_runs_as_the_session_its_own_shell_names_for_every_provider(mo
 
 
 def values_for(feature, key: str, line) -> dict:
-    appended = [p for append in APPENDS.get(f"{feature.name}.{key}", []) for p in inspect.signature(append).parameters.values()
+    appended = [p for append in APPENDS.each(key=f"{feature.name}.{key}") for p in inspect.signature(append).parameters.values()
                 if p.default is p.empty and p.kind is p.POSITIONAL_OR_KEYWORD and p.name != "record"]
     return {**{p.name: [1] if p.annotation is list else "1" for p in appended}, **{name: "1" for name in line.placeholders()}}
 
@@ -153,12 +154,11 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
 
     provider = PROVIDERS["claude"]()
     asked: list = []
-    kept = (list(POLICIES), list(AFTERWARDS), {name: list(each) for name, each in CANCELERS.items()})
-    POLICIES[:] = [spied(policy.guard, asked) for policy in kept[0]]
-    AFTERWARDS[:] = [spied(policy.guard, asked) for policy in kept[1]]
-    for name, each in kept[2].items():
-        CANCELERS[name] = [spied(cancel.guard, asked) for cancel in each]
-    every = [policy.guard for policy in (*kept[0], *kept[1], *(cancel for each in kept[2].values() for cancel in each))]
+    points = (POLICIES, AFTERWARDS, CANCELERS)
+    kept = [list(point.entries) for point in points]
+    for point, entries in zip(points, kept):
+        point.entries = [replace(entry, value=spied(entry.value.guard, asked)) for entry in entries]
+    every = [entry.value.guard for entries in kept for entry in entries]
     dispatch = {"subagent_type": "general-purpose", "model": "haiku", "description": "look", "prompt": "look"}
     try:
         for subagent in (False, True):
@@ -171,6 +171,5 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
             wanted = sorted((g for g in every if g.reaches(subagent)), key=repr)
             assert sorted(asked, key=repr) == wanted, f"a {'subagent' if subagent else 'main agent'}'s call asks exactly the guards that reach it"
     finally:
-        POLICIES[:], AFTERWARDS[:] = kept[0], kept[1]
-        CANCELERS.clear()
-        CANCELERS.update(kept[2])
+        for point, entries in zip(points, kept):
+            point.entries = entries
