@@ -151,6 +151,10 @@ def listening() -> bool:
     return any(_listeners.values())
 
 
+def heard(pattern: str) -> bool:
+    return bool(_listeners.get(pattern))
+
+
 def clear() -> None:
     _listeners.clear()
     _watchers.clear()

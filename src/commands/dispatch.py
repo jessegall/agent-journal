@@ -95,9 +95,12 @@ ROUTES: list[Route] = []
 def route(method: str, pattern: str):
     def register(fn):
         ROUTES.append(Route(method, pattern, fn))
-        ROUTES.sort(key=lambda r: r.rank)
         return fn
     return register
+
+
+def rank_routes() -> None:
+    ROUTES.sort(key=lambda r: r.rank)
 
 
 def resolve(method: str, path: str) -> tuple[Route, dict] | None:

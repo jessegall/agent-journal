@@ -9,6 +9,7 @@ from resources.base import SYSTEM
 
 TIMING = "timing"
 MEASURED = "measured"
+EVENT = f"{TIMING}.{MEASURED}"
 PROFILING = runtime.flag("profile-requests")
 
 
@@ -20,14 +21,17 @@ class Stopwatch:
     waiting: float = field(default_factory=waits.total)
 
     def announce(self, root, env: str, kind: str, name: str, profile: cProfile.Profile | None = None) -> None:
+        if not bus.heard(EVENT):
+            return
         bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
             "root": str(root), "env": env, "kind": kind, "target": name,
             "took": (time.perf_counter() - self.wall) * 1000, "working": (time.thread_time() - self.working) * 1000,
-            "garbage": (collecting() - self.garbage) * 1000, "waiting": waits.total() - self.waiting, "profile": profile})
+            "garbage": (collecting() - self.garbage) * 1000, "waiting": waits.total() - self.waiting,
+            **({"profile": profile} if profile else {})})
 
 
 def profiler(root) -> cProfile.Profile | None:
-    return cProfile.Profile() if PROFILING.is_raised(root) else None
+    return cProfile.Profile() if bus.heard(EVENT) and PROFILING.is_raised(root) else None
 
 
 @contextmanager

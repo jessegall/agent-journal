@@ -2,12 +2,15 @@ import threading
 import time
 from contextlib import contextmanager
 
-_spent = threading.local()
+class Spent(threading.local):
+    def __init__(self):
+        self.waits: dict[str, float] = {}
+
+
+_spent = Spent()
 
 
 def totals() -> dict[str, float]:
-    if not hasattr(_spent, "waits"):
-        _spent.waits = {}
     return _spent.waits
 
 
