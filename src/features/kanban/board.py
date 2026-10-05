@@ -7,7 +7,7 @@ from features.kanban.shifts import targets
 from features.plans.resource import ACTIVE
 from features.trigger import DAY
 from resources.base import Ref
-from surfaces.board import AgentChip, BoardLanes, Card
+from features.kanban.shapes import AgentChip, BoardLanes, Card
 from features.plans.controller import Plans
 from controllers.types import Agents, Questions, Todos, Works
 

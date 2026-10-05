@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from features.plans.resource import Placement
 from resources.base import Ref
-from surfaces.board import Lane
+from features.kanban.shapes import Lane
 
 TODO, HELD, DOING, ASKED, DONE = "todo", "held", "doing", "asked", "done"
 

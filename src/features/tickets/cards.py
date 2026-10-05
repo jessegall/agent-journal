@@ -9,7 +9,7 @@ from engine.wording import clipped
 from engine.worktree import spread
 from features.boards.controller import Boards
 from features.boards.resource import REVIEW
-from surfaces.board import BoardLanes, Card, Lane
+from features.kanban.shapes import BoardLanes, Card, Lane
 from features.tickets.landing import Landing
 from features.tickets.resource import PROPOSED
 from resources.base import SYSTEM, Refused

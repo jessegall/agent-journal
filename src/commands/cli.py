@@ -14,7 +14,7 @@ from resources.base import OWNER, Refused
 from resources.shapes import typed
 from commands.invoke import invoked
 from commands.parser import PRINTED, QUERIES, Misused, parser, words
-from features.command_line import CommandLine, wire
+from engine.command_line import CommandLine, wire
 from engine.timing import measured
 from engine.binding import bound_environment
 from engine.worktree import checkout
@@ -155,7 +155,7 @@ def run(argv: list[str], out=None, err=None) -> int:
     return 0
 
 
-wire(CommandLine(run=run, parser=parser, words=words, queries=QUERIES))
+wire(CommandLine(run=run, parser=parser, words=words, queries=QUERIES, captured=captured))
 
 
 if __name__ == "__main__":

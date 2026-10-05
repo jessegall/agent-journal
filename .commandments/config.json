@@ -84,7 +84,9 @@
                         "controllers",
                         "providers",
                         "agents",
-                        "supervisor"
+                        "supervisor",
+                        "features",
+                        "migrations"
                     ]
                 ]
             },
@@ -97,7 +99,6 @@
                         "controllers",
                         "providers",
                         "agents",
-                        "runner",
                         "supervisor"
                     ]
                 ]

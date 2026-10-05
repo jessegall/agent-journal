@@ -14,7 +14,7 @@ from providers.base import LIBRARY
 from providers.skill_homes import skill_name
 from engine.package import data
 from controllers.stored import mtime
-from skills import frontmatter
+from engine.frontmatter import frontmatter
 from engine.memo import Memo
 
 READ = Memo()

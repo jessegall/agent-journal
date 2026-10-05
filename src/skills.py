@@ -10,10 +10,10 @@ from providers.base import LIBRARY
 from engine.package import data
 from engine.reach import Reach
 from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name
+from engine.frontmatter import FRONTMATTER, frontmatter
 
 HERE = data()
 
-FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.S)
 
 def signature(controller: type, name: str) -> str:
     words = []
@@ -114,11 +114,6 @@ def feature_skill(f) -> str:
     loaded = f"Load it when {when}. {f.abstract}." if when else f"{f.abstract}. It runs by itself; load it to read how it works."
     return (head(f.name, loaded, [*f.keywords, *(w for g in folded for w in g.keywords)], nouns([f.name, *(g.name for g in folded)]))
             + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
-
-
-def frontmatter(text: str) -> dict:
-    front = FRONTMATTER.match(text)
-    return dict(re.findall(r"^(\w+):\s*(.*)$", front.group(1), re.M)) if front else {}
 
 
 def subject_skill(source: Path) -> str:

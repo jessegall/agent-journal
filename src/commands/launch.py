@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from agents.menu import Choice, choices_of, pick
+from commands.menu import Choice, choices_of, pick
 from engine.record import Record
 from engine.version import version as package_version
 from engine.wording import plural
@@ -157,7 +157,7 @@ def launch(record: Record, agent: str, given: list[str] | None) -> str:
     from features.clean_slate.slate import put_back, remember, set_aside, slate_of
     from engine.worktree import linked
     from engine.sessions import Sessions
-    from features.auto_update.launch import latest_first
+    from commands.launch_update import latest_first
     from engine.stop import clear
     project = Path.cwd()
     taken = carried()

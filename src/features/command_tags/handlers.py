@@ -4,7 +4,7 @@ from engine.events.engine import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
 from features.command_tags.reading import CARRIED, OPTIONS, named, reader, removed, replies, runs, tag_spelling, tag_for, visible, waits
 from resources.base import AGENT
-from features.command_line import command_line
+from engine.command_line import command_line
 
 
 class RunTagCommands(Handler):

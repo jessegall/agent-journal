@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from argparse import _SubParsersAction
 
-from features.command_line import command_line
+from engine.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.project_files import matching
 from resources.base import SYSTEM

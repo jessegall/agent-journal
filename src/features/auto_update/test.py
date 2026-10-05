@@ -133,7 +133,7 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
 
 def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypatch):
     import features
-    import features.auto_update.launch as launch
+    import commands.launch_update as launch
     features.load()
     record = fresh()
     ran = []
@@ -158,7 +158,7 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     import sys
     from pathlib import Path
     import features
-    import features.auto_update.launch as launch
+    import commands.launch_update as launch
     from controllers.types import Notices
     from engine.record import Record
     here = Path(__file__).resolve().parents[2]

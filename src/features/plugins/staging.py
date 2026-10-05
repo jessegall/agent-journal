@@ -8,7 +8,7 @@ from typing import NamedTuple
 from features.plugins.declared import Manifest
 from features.plugins.manifest import read
 from features.plugins.paths import busy_file, home
-from install import fetch
+from engine.upgrades import fetch
 from resources.base import Refused
 
 REPOSITORY = re.compile(r"[\w.-]+/[\w.-]+$")
