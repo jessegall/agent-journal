@@ -69,6 +69,16 @@ def test_a_request_opens_a_session_that_cancel_closes():
     tick(record)
     assert sum(f"on board {board.n}" in line and "think up" in line for line in said(record)) == 1, "stale ideas ask for new ones once"
     filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
+    import features.boards.handlers as board_handlers
+    quiet, board_handlers.QUIET_FILL = board_handlers.QUIET_FILL, -1
+    try:
+        tick(record)
+    finally:
+        board_handlers.QUIET_FILL = quiet
+    assert boards.load(board.n).drafting["phase"] == "stalled", "a board whose drafting went quiet is stalled, so it never sits filling forever"
+    filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
+    tick(record)
+    assert boards.load(board.n).drafting["phase"] == "drafting", "a board written to just now keeps drafting"
     filler_board.wait(board.n)
     assert boards.load(board.n).drafting["phase"] == "waiting", "the filler says it waits for the user's picks, and no stall is called"
     more = boards.follow_up(board.n, "Also by mail")

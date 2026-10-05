@@ -48,6 +48,18 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "upstream", lambda root: "3.0.0")
     check.checked_at = 0.0
     assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
+    from controllers.types import Notices
+    from features import FEATURES
+    monkeypatch.setattr(updates, "installed", lambda root: "package not refreshed: the network was down")
+    updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
+    assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
+        "a failed install is told to the agent and filed as a notice"
+    assert updates.claimed(record.root, "3.0.1") and not updates.claimed(record.root, "3.0.1"), "a release just tried waits before it is tried again"
+    from commands.http import dispatch
+    monkeypatch.setattr(updates, "journal_repository", lambda project: True)
+    assert dispatch("POST", "/api/update", record.root, {}, {}).code == 400, "the journal's own repository is never updated from a release"
+    monkeypatch.setattr(updates, "journal_repository", lambda project: False)
+    assert dispatch("POST", "/api/update", record.root, {}, {}).body == {"updating": True}, "the viewer's Update button starts an install"
     Features(record, actor=SYSTEM).switch("auto_update", False)
     record.set_setting("triggers", {"auto_update": {"every": 5, "unit": "minutes"}})
     monkeypatch.setattr(updates, "stale", lambda root: True)

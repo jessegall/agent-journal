@@ -1,3 +1,4 @@
+import os
 import pytest
 import subprocess
 import sys
@@ -8,7 +9,8 @@ from controllers.types import Agents, Environments, Works
 from engine.sessions import Sessions, allowed
 from engine.gates import held
 from resources.base import AGENT, USER
-from tests.kit import report
+from resources.types import STOPPED
+from tests.kit import report, tick
 from tests.conftest import fresh, refused
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
@@ -144,7 +146,7 @@ def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the
 
     record.set_setting("agent_sessions", {"lapse": 0})
     agents.update(agents.by_session("runner-1").n, active=time.time() - 120)
-    report(record, "idle", "Stop")
+    tick(record)
     assert (todos.load(row.n).data.get("assigned"), todos.load(row.n).data.get("lapsed"),
             any("went silent" in t for t in [n.title for n in Nudges(record).all()])) == \
         ("", "runner-1", True), "a silent subagent's row is back on the list, and the dispatcher told which"
@@ -203,6 +205,18 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     report(record, "compacting", "PreCompact")
     agent = Agents(record, actor="system").by_session("claude-1")
     assert len(agent.data.get("compactions") or []) == 1, "one compaction, one mark for the chat"
+    agents = Agents(record, actor="system")
+    record.set_setting("agent_sessions", {"quiet": 1})
+    record.set_setting("triggers", {"agent_sessions.liveness": {"every": 0, "unit": "minutes"}})
+    report(record, "working", "PreToolUse", session="claude-2")
+    held = agents.by_session("claude-2")
+    for row in (agent, held):
+        agents.stamp(row.n, at=time.time() - 3600)
+    Sessions(record.root).write("claude-1", pid=0, last_heard=0)
+    Sessions(record.root).write("claude-2", pid=os.getpid())
+    tick(record)
+    assert (agents.load(agent.n).status, agents.load(held.n).status) == (STOPPED, "working"), \
+        "an agent silent past the quiet setting is marked stopped, unless its session is still alive"
 
 
 def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():
