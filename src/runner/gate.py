@@ -16,7 +16,7 @@ ANSWERING = frozenset({("message", "reply"), ("message", "react"), ("message", "
 
 
 def answers(journal: JournalCall) -> bool:
-    return journal.command in ANSWERING and journal.plain
+    return journal.command in ANSWERING and journal.plain and not journal.options
 
 
 @dataclass(frozen=True)
