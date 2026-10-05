@@ -13,7 +13,7 @@ from engine.fields import Loaded
 from engine.worktree import checkout, environment, share_journal
 from typing import TypedDict
 
-from supervisor import LAUNCHED, SCREEN, SCREEN_SHAPE
+from supervisor import LAUNCHED
 
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
@@ -90,15 +90,19 @@ class TerminalSession:
     session: str
 
 
-def seated(seat: TerminalSession) -> TerminalSession:
+def seat_session(sessions: Sessions, env: str, session: str, **bound) -> None:
     from controllers.types import Environments
     from engine.record import Record
     from resources.base import SYSTEM
+    sessions.bind(session, env, **bound)
+    Environments(Record(sessions.root, env), actor=SYSTEM)._seat(env, session)
+
+
+def seated(seat: TerminalSession) -> TerminalSession:
     launched = Launched.read(seat.root, seat.session)
     sessions = Sessions(seat.root)
     if not sessions.known(seat.session):
-        sessions.bind(seat.session, seat.env)
-        Environments(Record(seat.root, seat.env), actor=SYSTEM)._seat(seat.env, seat.session)
+        seat_session(sessions, seat.env, seat.session)
     sessions.write(seat.session, pid=launched.pid, provider=seat.agent, args=list(launched.command), launch=launched.launch)
     return replace(seat, env=sessions.environment(seat.session) or seat.env)
 
@@ -165,69 +169,3 @@ def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conve
                                  stdin=subprocess.DEVNULL, stdout=kept, stderr=kept, start_new_session=True)
     hold_build(root, CODE, child.pid)
     return child.pid
-
-
-DETACH = b"\x1d"
-SHOWN_BACK = 65536
-
-
-@dataclass(frozen=True)
-class ScreenPart:
-    data: str
-    at: int
-    rows: int
-    cols: int
-
-    @classmethod
-    def blank(cls, rows: int, cols: int) -> "ScreenPart":
-        return cls("", 0, rows, cols)
-
-
-def screen_since(root: Path, terminal: str, since: int) -> ScreenPart:
-    import base64
-    screen = runtime.session_file(root, terminal, SCREEN)
-    shape = read_json(runtime.session_file(root, terminal, SCREEN_SHAPE), dict, {"rows": 40, "cols": 120})
-    if not screen.is_file():
-        return ScreenPart.blank(int(shape["rows"]), int(shape["cols"]))
-    size = screen.stat().st_size
-    at = max(0, size - SHOWN_BACK) if since < 0 or since > size else since
-    with screen.open("rb") as shown:
-        shown.seek(at)
-        fresh = shown.read(size - at)
-    return ScreenPart(base64.b64encode(fresh).decode(), at + len(fresh), int(shape["rows"]), int(shape["cols"]))
-
-
-def type_keys(root: Path, terminal: str, text: str) -> bool:
-    from engine import typist
-    return typist.send(root, terminal, text.encode())
-
-
-def attach(root: Path, session: str) -> str:
-    import select
-    import sys
-    import termios
-    import tty
-    from engine import typist
-    screen = runtime.session_file(root, session, SCREEN)
-    if not screen.is_file():
-        return f"journal: no session {session} to attach to"
-    at = max(0, screen.stat().st_size - SHOWN_BACK)
-    saved = termios.tcgetattr(sys.stdin.fileno())
-    tty.setraw(sys.stdin.fileno())
-    try:
-        while True:
-            with screen.open("rb") as shown:
-                shown.seek(at)
-                fresh = shown.read()
-            at += len(fresh)
-            os.write(sys.stdout.fileno(), fresh)
-            ready, _, _ = select.select([sys.stdin.fileno()], [], [], 0.2)
-            if ready:
-                keys = os.read(sys.stdin.fileno(), 4096)
-                if not keys or DETACH in keys:
-                    break
-                typist.send(root, session, keys)
-    finally:
-        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, saved)
-    return f"\njournal: left session {session}; it runs on"
-

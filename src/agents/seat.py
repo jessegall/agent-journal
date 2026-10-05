@@ -3,6 +3,7 @@ from functools import cached_property
 from pathlib import Path
 from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS, workspace_folders
+from agents.terminal import seat_session
 from engine import runtime
 from engine.record import Record
 from engine.sessions import SessionsSnapshot, agent_pid, alive
@@ -149,13 +150,10 @@ class HookBinding:
 
     def bound(self, session: str, worked: str, prefer: str) -> str:
         env = worked or prefer or self.sessions.choose(session, self.provider.name, runtime.default_env(self.root), self.owned)
-        self.sessions.bind(session, env, pid=self.pid, provider=self.provider.name)
-        environments = Environments(Record(self.root, env), actor=SYSTEM)
-        environments._seat(env, session)
+        seat_session(self.sessions, env, session, pid=self.pid, provider=self.provider.name)
         terminal = self.sessions.terminal(self.provider.name, self.pid)
         if worked and terminal:
-            self.sessions.bind(terminal, env)
-            environments._seat(env, terminal)
+            seat_session(self.sessions, env, terminal)
         return env
 
     def relaunched(self, session: str, old: int) -> None:

@@ -30,12 +30,12 @@ from features.terminal.log import EVERYTHING, LEVELS as TERMINAL_LEVELS, lines a
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Plugins
 from features.browser_control.controller import Asks
-from engine import bus, runtime, viewer
+from engine import bus, runtime, typist, viewer
 from surfaces.manifest import manifest
 from engine.version import version
 from engine.package import code
 from engine.seats import terminal_of
-from agents.terminal import screen_since, type_keys
+from agents.screen import screen_since
 from controllers.faults import broke, log_file
 from runner.chat_mirror import displayed
 from runner.hooks import answer
@@ -345,7 +345,7 @@ def get_agent_screen(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/agent/{session}/keys")
 def post_agent_keys(req: Request) -> Reply:
-    return Reply(200, {"sent": type_keys(req.root, terminal_or_missing(req), req.body_as(Keys).text)})
+    return Reply(200, {"sent": typist.send(req.root, terminal_or_missing(req), req.body_as(Keys).text.encode())})
 
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")
