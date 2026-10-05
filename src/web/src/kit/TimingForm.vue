@@ -11,6 +11,7 @@ import {
     timingUnit,
     timingWords,
 } from "../domain/settingsCatalog.js";
+import ResetButton from "./ResetButton.vue";
 import Segmented from "./Segmented.vue";
 import TextInput from "./TextInput.vue";
 
@@ -64,7 +65,7 @@ function pick(next) {
         <div class="timing-foot">
             <span>Default: {{ timingWords(timing.shipped) }}. Saved as you change it.</span>
             <template v-if="timing.changed">
-                <button type="button" class="timing-reset" @click="pick(timing.shipped)">Reset</button>
+                <ResetButton @click="pick(timing.shipped)" />
             </template>
         </div>
     </div>
@@ -112,15 +113,5 @@ function pick(next) {
     gap: 8px;
     color: var(--text-3);
     font-size: 11.5px;
-}
-
-.timing-reset {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
 }
 </style>
