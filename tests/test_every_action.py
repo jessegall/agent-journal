@@ -679,3 +679,34 @@ def test_picture_dimensions_are_read_from_tiny_files_and_search_sees_an_edit_tha
     write_text(todos.path(row.n), edited.dump())
     assert ([t.n for t in todos.search("omega")], todos.search("alpha")) == ([row.n], []), \
         "search finds the new words after an edit that kept the same updated stamp, and not the old"
+
+
+def test_the_hook_route_refuses_in_the_providers_shape_and_a_stranger_with_409():
+    from providers import PROVIDERS
+    from runner.hooks import handle
+    features.load()
+    refusal = features.FEATURES["work_tracking"].line("undeclared held", {})[0]
+    record = fresh()
+    query = {"root": str(record.root), "env": record.env, "pid": "0"}
+    for name, provider in PROVIDERS.items():
+        hook = {"session_id": f"{name}-9"}
+        handle(provider(), record.root, record.env, {**hook, "hook_event_name": "SessionStart"})
+        edit = {**hook, "hook_event_name": "PreToolUse", "tool_name": "Edit", "tool_input": {"file_path": "x.py"}}
+        refused = dispatch("POST", f"/api/hook/{name}", record.root, query, edit)
+        assert (refused.code, refused.body) == (403, provider().blocking(refusal)), f"{name}: a refused write is a 403 carrying the provider's blocking body"
+        elsewhere = dispatch("POST", f"/api/hook/{name}", record.root, {**query, "root": str(record.root.parent / "elsewhere")}, edit)
+        assert elsewhere.code == 409, f"{name}: a hook meant for another journal's root is a 409"
+    assert dispatch("POST", "/api/hook/nobody", record.root, query, {}).code == 409, "a provider the journal does not know is a 409"
+
+
+def test_a_command_over_the_run_route_is_a_409_when_local_a_400_when_refused_and_takes_its_actor_only_from_the_query():
+    record = fresh()
+    run = lambda *words, **query: dispatch("POST", "/api/run", record.root, {"env": record.env, **query}, {"_raw": "\0".join(words).encode(), "_type": "text/plain"})
+    row = lambda reply: json.loads(reply.body.split("---\n")[1])
+    assert run("browser", "open").code == 409, "a command that needs the user's own browser is not run by the server"
+    refused = run("todo", "done", "99", "--how", "x")
+    assert (refused.code, refused.body) == (400, "! no todo 99\n"), "a refused action is a 400 saying why"
+    named, plain, plugin = run("todo", "create", "one", actor=USER), run("todo", "create", "two"), run("todo", "create", "three", plugin="clock")
+    assert (named.code, plain.code, plugin.code) == (200, 200, 200), "a valid command is a 200"
+    assert (row(named)["seen"], row(plain)["seen"]) == (["user"], ["agent"]), "the actor is the one the query names, and the agent when it names none"
+    assert row(plugin)["data"]["plugin"] == "clock", "the plugin the query names is the one the command runs as"
