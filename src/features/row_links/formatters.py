@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from functools import cache
 
 from engine.markers import MARKER, marked
+from engine.memo import Memo
 from features.format import SHARED, VIEWER
 from features.parts import Context, TextFormatter
 from resources.types import TYPES
@@ -36,10 +37,14 @@ class Mention:
         return f"{self.name}:{n}" if self.env is None else f"{self.name}:{n}@{self.env}"
 
 
+ENVIRONMENT_NAMES = Memo()
+
+
 def environments(record) -> tuple:
     from controllers.types import Environments
     from resources.base import SYSTEM
-    return tuple(row["title"] for row in Environments(record, actor=SYSTEM).summaries() if not row["deleted"] and row["title"] != record.env)
+    rows = Environments(record, actor=SYSTEM).summaries()
+    return ENVIRONMENT_NAMES.get(str(record.home), rows, lambda: tuple(row["title"] for row in rows if not row["deleted"] and row["title"] != record.env))
 
 
 def exists(record, env: str | None, name: str, n: int) -> bool:
