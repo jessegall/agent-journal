@@ -15,6 +15,7 @@ from providers.jsonl import complete_lines, last_lines, parsed_row, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
+from engine.proc import run
 from engine.stored import JsonFiles, read_json, write_text
 
 SENDS = "SendMessage"
@@ -220,6 +221,15 @@ class Claude(Provider):
         servers = known.get("mcpServers") or {}
         servers[SERVER] = {"command": sys.executable, "args": [str(hook.root / "journal.py"), "-m", "channel", str(hook.root)]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
+
+    def wiring_trouble(self, project: Path) -> str:
+        found = super().wiring_trouble(project)
+        if found:
+            return found
+        python = ((read_json(project / ".mcp.json", dict, {}).get("mcpServers") or {}).get(SERVER) or {}).get("command", "")
+        if run([python, "-c", "import sys; print(sys.version_info >= (3, 10))"], timeout=10).strip() != "True":
+            return f"its channel runs {python or 'no Python'}, which is not Python 3.10 or newer"
+        return ""
 
     def journal_typed(self, prompt: str) -> bool:
         return CHANNEL_MARK in prompt or super().journal_typed(prompt)

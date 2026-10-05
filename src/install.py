@@ -218,6 +218,8 @@ def configure(project: Path, root: Path) -> list[str]:
         present.append(name)
     if not present:
         return [*done, f"no agent found here: neither {' nor '.join(name.capitalize() for name in LOADED.providers)}"]
+    troubles = [f"hook check failed for {name}: {trouble}" for name in present for trouble in [LOADED.providers[name]().wiring_trouble(project)] if trouble]
+    done += troubles or [f"hooks checked: {', '.join(present)}"]
     written, linked = LOADED.publish(project, tuple(present))
     done.append(f"{len(written)} skills in {LOADED.library}" + (f", linked from {', '.join(LOADED.linked[a] for a in present if a in LOADED.linked)}" if linked else ""))
     record = LOADED.record(root, LOADED.default_env(root))

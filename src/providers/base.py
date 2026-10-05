@@ -387,6 +387,23 @@ class Provider(ABC):
     def settings(self, project: Path) -> dict:
         return read_json(self.config(project), dict, {})
 
+    def wired(self, project: Path) -> str:
+        blocks = [block for listed in (self.settings(project).get("hooks") or {}).values() for block in listed]
+        return next((hook["command"] for block in blocks for hook in block.get("hooks", []) if journal_hook(hook.get("command", ""))), "")
+
+    def wiring_trouble(self, project: Path) -> str:
+        command = self.wired(project)
+        if not command:
+            return "no journal hook is wired"
+        words = shlex.split(command)
+        if len(words) != 4 or words[0] != "sh":
+            return f"its hook command does not split into sh, script, agent and journal: {command}"
+        if not Path(words[1]).is_file():
+            return f"its hook runs {words[1]}, which does not exist"
+        if not Path(words[3]).is_dir():
+            return f"its hook names the journal {words[3]}, which does not exist"
+        return ""
+
     def hook_files(self, project: Path) -> list[Path]:
         return [self.config(project)]
 

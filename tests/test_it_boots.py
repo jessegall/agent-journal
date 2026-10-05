@@ -167,6 +167,23 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
+def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_path):
+    from providers import PROVIDERS
+    root = installed(tmp_path)
+    env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+    again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)], env=env, capture_output=True, text=True, timeout=120)
+    assert "hooks checked: claude" in again.stdout, again.stdout
+    claude = PROVIDERS["claude"]()
+    settings = root.parent / ".claude" / "settings.local.json"
+    wired = json.loads(settings.read_text())
+    for blocks in wired["hooks"].values():
+        for block in blocks:
+            for hook in block["hooks"]:
+                hook["command"] = f"sh {root}/src/hook.sh claude {root}"
+    settings.write_text(json.dumps(wired))
+    assert "does not split" in claude.wiring_trouble(root.parent), "an unquoted hook on a path with a space is named, not run broken"
+
+
 def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
     here, there = installed(tmp_path / "here"), installed(tmp_path / "there")
     asked = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in; "
