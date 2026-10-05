@@ -1,6 +1,6 @@
-import subprocess
 import time
 
+from engine.git import commits_since
 from controllers.types import Docs, Questions, Reports, Todos, Works
 from features.plans.controller import READY, WAITING, Plans
 from resources.base import SYSTEM, USER
@@ -12,6 +12,7 @@ SECTIONS = (NEED, DONE, DOING, PLANS, COMMITS, ALSO)
 FIRST_LOOK = 24 * 3600
 GIT_WAIT = 3
 MOST_COMMITS = 30
+SHORT_SHA = 9
 
 
 class Item(TypedDict):
@@ -66,13 +67,7 @@ def moved(record, start: float, waiting_on: set) -> list[dict]:
 
 
 def commits(record, start: float) -> list[dict]:
-    try:
-        out = subprocess.run(["git", "-C", str(record.root.parent), "log", f"--since=@{int(start)}", "--format=%h%x09%s", f"-n{MOST_COMMITS}"],
-                             capture_output=True, text=True, timeout=GIT_WAIT).stdout
-    except (OSError, subprocess.SubprocessError):
-        return []
-    lines = [line.split("\t", 1) for line in out.splitlines() if "\t" in line]
-    return [item(COMMITS, f"commit:{sha}", subject) for sha, subject in lines]
+    return [item(COMMITS, f"commit:{sha[:SHORT_SHA]}", subject) for sha, subject in commits_since(record.root.parent, start, MOST_COMMITS, GIT_WAIT)]
 
 
 def written(record, start: float) -> list[dict]:
