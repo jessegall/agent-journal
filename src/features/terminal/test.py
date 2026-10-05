@@ -1,3 +1,4 @@
+from controllers.types import Agents
 from runner.hooks import handle
 from features.terminal.log import COMMANDS, JOURNAL, MOST_LINES, lines
 from providers import PROVIDERS
@@ -31,6 +32,11 @@ def test_a_poll_after_the_last_line_gets_only_the_newer_ones():
     seen = lines(record, "claude-1", COMMANDS)[-1]["at"]
     ran(record, "pwd", "/tmp")
     assert [line["command"] for line in lines(record, "claude-1", COMMANDS, seen)] == ["pwd"], "only the line after the last one seen comes back"
+    from commands.http import dispatch
+    agent = Agents(record, actor="system").by_session("claude-1").n
+    polled = lambda query: dispatch("GET", f"/api/{record.env}/agent/{agent}/terminal", record.root, query, {})
+    assert [line["command"] for line in polled({"level": COMMANDS, "after": str(seen)}).body["lines"]] == ["pwd"], "the viewer's poll gets the same"
+    assert polled({"level": "everything-and-more"}).code == 400, "a level the terminal does not know is refused"
 
 
 def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch):

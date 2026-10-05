@@ -50,6 +50,11 @@ def entry(module: str) -> list[str]:
     return [sys.executable, str(CODE.joinpath(*module.split("."))) + ".py"]
 
 
+def own_build(root: Path) -> bool:
+    built = Path(root) / ARCHIVE
+    return not ZIPPED or not built.is_file() or built.resolve() == CODE
+
+
 def entry_in(root: Path, module: str) -> list[str]:
     built = Path(root) / ARCHIVE
     return [sys.executable, str(built), "-m", module] if ZIPPED and built.is_file() else entry(module)
