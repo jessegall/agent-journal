@@ -2,6 +2,8 @@
 import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import TunlerInstall from "./TunlerInstall.vue";
+import {checkTunnel} from "../composables/shares.js";
 
 const version = ref(null);
 const busy = ref(false);
@@ -18,6 +20,12 @@ async function run(action) {
     } finally {
         busy.value = false;
     }
+}
+
+async function installed(outcome) {
+    told.value = outcome;
+    version.value = await api.tunlerVersion();
+    await checkTunnel();
 }
 
 onMounted(async () => (version.value = await api.tunlerVersion().catch(() => null)));
@@ -38,7 +46,7 @@ onMounted(async () => (version.value = await api.tunlerVersion().catch(() => nul
             </template>
             <template v-else>
                 <span class="tunler-version-new">tunler is not installed on this machine</span>
-                <Btn small kind="primary" :busy="busy" @click="run(() => api.installTunler())">Install tunler</Btn>
+                <TunlerInstall @installed="installed" />
             </template>
             <template v-if="told">
                 <span class="tunler-version-told">{{ told }}</span>

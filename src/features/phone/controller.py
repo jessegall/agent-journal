@@ -71,6 +71,7 @@ class Phones(Controller):
         if set(data) & set(KEPT):
             raise Refused(f"a phone's {', '.join(sorted(set(data) & set(KEPT)))} are set only by scanning the code in the viewer's Connect your phone dialog")
 
+    @action
     def connect(self, days: int = 7) -> Code:
         if self.actor != USER:
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")

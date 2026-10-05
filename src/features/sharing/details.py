@@ -90,7 +90,7 @@ class SharingDetails(FeatureDetails):
     settings = [
         Setting(
             name="host",
-            default="tunler.jessegall.nl",
+            default="",
             title="Tunler server",
         ),
     ]
