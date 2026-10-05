@@ -296,7 +296,8 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_ev
     record = fresh()
     assert get(record, "/api/nowhere/todo").code == 404, "an environment that is not there is a 404"
     assert post(record, "/api/{env}/nonsense/create").code == 404, "a type that is not there is a 404"
-    assert (post(record, "/api/{env}/work/start", {"title": "one"}).code, post(record, "/api/{env}/work/start", {"title": "two"}).code) == (201, 400), "an action the row's state refuses is a 400"
+    assert post(record, "/api/{env}/work/start", {"title": "one"}).code == 201, "the first work starts"
+    assert post(record, "/api/{env}/work/start", {"title": "two"}).code == 400, "an action the row's state refuses is a 400"
 
 
 def test_the_command_line_refuses_in_words_and_exits_nonzero():
@@ -307,13 +308,14 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
         err = io.StringIO()
         return run(["--root", str(record.root), "--env", record.env, *argv], out=io.StringIO(), err=err), err.getvalue()
     status, text = ran("todo", "all", "--force")
-    assert (status, "takes the reason" in text) == (1, True), "--force without its reason exits 1 and says it takes one"
+    assert {"exit": status, "names the reason": "takes the reason" in text} == {"exit": 1, "names the reason": True}, "--force without its reason exits 1 and says it takes one"
     status, text = ran("todo", "bogus")
-    assert (status, "invalid choice" in text or "bogus" in text) == (2, True), "a word the noun does not have exits 2 and names it"
+    assert {"exit": status, "names the word": "invalid choice" in text or "bogus" in text} == {"exit": 2, "names the word": True}, "a word the noun does not have exits 2 and names it"
     status, text = ran("--as", "bogus", "todo", "all")
-    assert (status, "choose from 'user', 'agent', 'system', 'plugin'" in text) == (2, True), "an unknown actor exits 2 and names the actors there are"
+    assert {"exit": status, "names the actors": "choose from 'user', 'agent', 'system', 'plugin'" in text} == {"exit": 2, "names the actors": True}, \
+        "an unknown actor exits 2 and names the actors there are"
     status, text = ran("--agent", "sub-1", "todo", "create", "a title")
-    assert (status, text.startswith("! ")) == (1, True), f"a subagent that was never lent the environment is ran in words: {text}"
+    assert {"exit": status, "in words": text.startswith("! ")} == {"exit": 1, "in words": True}, f"a subagent that was never lent the environment is refused in words: {text}"
     assert CONTROLLERS["todo"](record, actor=SYSTEM).all() == [], "and nothing was written by the ran command"
 
     def answered(*argv: str) -> str:
@@ -322,7 +324,8 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
         return out.getvalue()
     assert "in force" in answered("verify") and f"settings on {record.env}" in answered("settings"), "verify and settings answer without raising"
     assert "usage:" in answered("help") and "usage:" in answered("help", "todo") and "no command" in answered("help", "nonsense"), "help answers for the whole journal, for one noun and for a word it does not have"
-    assert answered("services", "list") != "" and ran("services", "bogus")[0] == 1, "services lists, and a word it does not know is ran in words"
+    assert answered("services", "list") != "", "services lists"
+    assert ran("services", "bogus")[0] == 1, "a services word it does not know is refused in words"
 
 
 def test_no_command_argument_shares_a_name_with_a_global_option():
@@ -397,7 +400,8 @@ def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
                 changed.append(type_)
             except Refused:
                 continue
-    assert (guarded, changed) != ([], []) and changed == [], "the agent answers what the user wrote and records what each part became; it never rewrites or deletes it"
+    assert guarded != [], "the agent answers what the user wrote and records what each part became"
+    assert changed == [], "it never rewrites or deletes what the user wrote"
 
 
 def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
@@ -469,7 +473,8 @@ def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out(
     messages.create("read", brief="already seen")
     CONTROLLERS["message"](record, actor=USER).read(2)
     counted = environment(record)["counts"]
-    assert (counted["todos"], counted["messages"]) == (1, 1), "an environment counts its open to-dos and its unread messages, never a closed or archived row"
+    assert {"todos": counted["todos"], "messages": counted["messages"]} == {"todos": 1, "messages": 1}, \
+        "an environment counts its open to-dos and its unread messages, never a closed or archived row"
     environments = Environments(record, actor=SYSTEM)
     environments.create("helped", owner="helper:1")
     environments.create("plain")

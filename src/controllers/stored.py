@@ -60,17 +60,27 @@ def opened(archive: Path) -> zipfile.ZipFile:
     if not held or held[0] != stamp:
         if held:
             held[1].close()
-        elif len(OPEN) >= KEEP_OPEN:
-            OPEN.pop(next(iter(OPEN)))[1].close()
+        else:
+            evict_oldest()
         held = OPEN[str(archive)] = (stamp, zipfile.ZipFile(archive))
     return held[1]
 
 
+def evict_oldest() -> None:
+    if len(OPEN) >= KEEP_OPEN:
+        OPEN.pop(next(iter(OPEN)))[1].close()
+
+
+def close_all() -> None:
+    for _, archive in OPEN.values():
+        archive.close()
+    OPEN.clear()
+
 
 @dataclass(frozen=True)
 class Moved:
-    folder: int
-    index: int
+    folder_stamp: int
+    index_stamp: int
     rows: tuple[tuple[int, str], ...] = ()
 
 
@@ -152,7 +162,7 @@ class RowStore:
         if held and held[0] == moved:
             return held[1]
         loose = self._loose(folder)
-        if held and held[0].index == moved.index:
+        if held and held[0].index_stamp == moved.index_stamp:
             touched = self._differing(held[1], loose)
             if len(touched) < FLUSH_ROWS:
                 return self._patched(folder, moved, held[1], loose, touched)

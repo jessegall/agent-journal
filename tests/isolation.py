@@ -22,9 +22,6 @@ SERIAL = {
 }
 
 
-VIEWER_BAND = range(8420, 8440)
-
-
 def worker() -> str:
     return os.environ.get("PYTEST_XDIST_WORKER", "master")
 
@@ -93,15 +90,19 @@ def sweep() -> None:
         shutil.rmtree(base(), ignore_errors=True)
 
 
+def ours(root: str) -> bool:
+    runs, served = Path(tempfile.gettempdir()).resolve(), Path(root).resolve()
+    return served.is_relative_to(runs) and served.relative_to(runs).parts[0].startswith("agent-journal-")
+
+
 def stop_strays() -> None:
-    from engine.viewer import identity
-    runs = Path(tempfile.gettempdir()).resolve()
-    for port in VIEWER_BAND:
+    from engine.viewer import PORTS, identity
+    for port in PORTS:
         found = identity(f"http://127.0.0.1:{port}/", timeout=0.2)
-        if found and found.pid and Path(found.root).resolve().is_relative_to(runs) and Path(found.root).resolve().relative_to(runs).parts[0].startswith("agent-journal-"):
+        if found and found.pid and ours(found.root):
             try:
                 os.kill(found.pid, signal.SIGTERM)
-            except OSError:
+            except ProcessLookupError:
                 pass
 
 

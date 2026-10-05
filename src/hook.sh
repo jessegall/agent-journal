@@ -2,6 +2,10 @@
 [ "$AGENT_JOURNAL_ACTIVE" = 1 ] || exit 0
 agent=$1
 root=$2
+heartbeat_age=5
+restart_window=30
+tries_when_waiting=16
+tries_otherwise=4
 body=$(mktemp) || exit 0
 cat > "$body"
 keep() {
@@ -16,8 +20,9 @@ down() {
   keep
 }
 read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
-[ $(( $(date +%s) - at )) -le 5 ] || down
-restarting() { read -r since < "$root/runtime/restarting" 2>/dev/null && [ $(( $(date +%s) - ${since%.*} )) -lt 30 ]; }
+[ $(( $(date +%s) - at )) -le $heartbeat_age ] || down
+# the server writes its restart time with a fraction; ${since%.*} keeps the whole seconds the shell can count with
+restarting() { read -r since < "$root/runtime/restarting" 2>/dev/null && [ $(( $(date +%s) - ${since%.*} )) -lt $restart_window ]; }
 tries=0
 while :; do
   reply=$(curl -s -m 10 -w '\n%{http_code}' -H 'Content-Type: application/json' \
@@ -26,7 +31,7 @@ while :; do
 }
   tries=$((tries + 1))
   [ "${code:-000}" = 000 ] || break
-  { [ -e "$root/runtime/upgrading" ] || restarting; } && [ $tries -lt 16 ] || [ $tries -lt 4 ] || break
+  { [ -e "$root/runtime/upgrading" ] || restarting; } && [ $tries -lt $tries_when_waiting ] || [ $tries -lt $tries_otherwise ] || break
   sleep 0.5
 done
 out=${reply%
