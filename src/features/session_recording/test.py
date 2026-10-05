@@ -11,7 +11,7 @@ import pytest
 
 import features
 from controllers.types import Agents, Todos
-from engine.stored import undoable
+from engine.transaction import undoable
 from features.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
 from features.session_recording.demo import leaks

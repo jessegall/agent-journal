@@ -71,7 +71,7 @@ def test_a_check_can_leave_a_report_of_findings_that_is_kept_with_its_run():
 
 def test_a_due_check_runs_in_one_engine_while_another_holds_it():
     from engine import runtime
-    from engine.stored import claim
+    from engine.locks import claim
     from features.checks.controller import REPORTS
     from tests.conftest import fresh
     record = fresh()

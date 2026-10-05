@@ -1,7 +1,8 @@
 import time
 from pathlib import Path
 
-from engine.stored import RUNTIME, read_json, write_json, write_text
+from engine.locks import RUNTIME
+from engine.stored import read_json, write_json, write_text
 
 DEFAULT_ENV = "main"
 WARM_UP = 20.0

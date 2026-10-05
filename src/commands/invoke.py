@@ -1,7 +1,6 @@
 import inspect
 
 from engine import bus
-from engine.stored import undoable
 from resources.base import Refused
 
 ORDERED = (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
@@ -28,5 +27,5 @@ def invoked(controller, word: str, positional: tuple = (), named: dict | None = 
         call = inspect.signature(fn).bind(*ordered, **keyed)
     except TypeError as error:
         raise Refused(f"{controller.type} {word}: {error}") from error
-    with bus.settled(), undoable():
+    with bus.unit():
         return fn(*call.args, **call.kwargs)

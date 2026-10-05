@@ -5,7 +5,7 @@ from pathlib import Path
 from resources.base import Refused, Resource
 from resources.pictures import dimensions
 from engine.paths import contained
-from engine.stored import undoable
+from engine.transaction import undoable
 from controllers.marks import action
 
 REVISIONS = "revisions"
