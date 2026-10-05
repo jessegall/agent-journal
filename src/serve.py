@@ -18,7 +18,6 @@ from commands.http import dispatch, unanswered  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
-from runner.engines import Children  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
 from runner.chat_mirror import replay  # noqa: E402
@@ -204,16 +203,11 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     threading.Thread(target=warm_commands, daemon=True).start()
-    engines = threading.Event()
-    children = Children(root)
-    threading.Thread(target=children.run, args=(engines,), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
-        engines.set()
-        children.stop()
         server.server_close()
     if halting.is_set():
         print("journal: stopped", flush=True)

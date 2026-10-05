@@ -17,11 +17,14 @@ from controllers.types import Messages, Notices
 from resources.base import AGENT, SYSTEM, USER
 from runner.engine import TICK, Engine
 from engine.package import CODE, ZIPPED, build_file
+from engine.locks import claim
 
 ENDING = 5.0
 UNHEARD_AFTER = 120.0
 LOOKED_EVERY = 30.0
 CHILD = "import commands.cli; from runner.engines import child"
+
+SUPERVISING = "engines-supervisor.lock"
 
 
 def always() -> bool:
@@ -69,10 +72,12 @@ class Engines:
 
     def run(self, stopping) -> None:
         with (runtime.folder(self.root) / f"engines-{self.env}.lock").open("a") as held:
-            while not stopping.is_set() and current(self.root) and not self.owned(held):
+            while not stopping.is_set() and self.going() and not self.owned(held):
                 stopping.wait(TICK)
-            keep_ticking(stopping, self.tick, lambda: threw(self.root, self.env, f"the engines of {self.env}"),
-                         lambda: os.getppid() == self.parent and current(self.root))
+            keep_ticking(stopping, self.tick, lambda: threw(self.root, self.env, f"the engines of {self.env}"), self.going)
+
+    def going(self) -> bool:
+        return os.getppid() == self.parent and current(self.root)
 
     def owned(self, held) -> bool:
         try:
@@ -162,8 +167,25 @@ class Children:
                 running.kill()
 
     def stop(self) -> None:
+        for running in self.running.values():
+            if running.poll() is None:
+                running.terminate()
         for env in list(self.running):
             self.end(env)
 
     def run(self, stopping) -> None:
         keep_ticking(stopping, self.tick, lambda: threw(self.root, runtime.env(self.root), "starting the engines"))
+
+
+def supervise(root: Path, stopping) -> None:
+    while not stopping.is_set():
+        held = claim(runtime.folder(root) / SUPERVISING)
+        if held is None:
+            stopping.wait(TICK)
+            continue
+        with held:
+            children = Children(root)
+            try:
+                children.run(stopping)
+            finally:
+                children.stop()
