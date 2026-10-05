@@ -6,6 +6,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from engine.wording import plural
+from features.agent_sessions.launch import running_at
 from engine.worktree import contains, current_branch, git, included, lines, present, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
@@ -101,6 +102,8 @@ class Worktrees(Controller):
         project = self._project()
         folder = Path(row.path) if row.path else None
         if folder and folder.is_dir():
+            if running_at(self.record.root, folder):
+                raise Refused(f"an agent is still running in {folder}: stop its helper first (journal helper stop <n>), then drop the worktree")
             if lines(folder, "status", "--porcelain"):
                 raise Refused(f"{folder} has uncommitted changes: commit them, or remove them, before dropping it")
             git(project, "worktree", "remove", str(folder))
