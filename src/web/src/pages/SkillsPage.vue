@@ -103,7 +103,7 @@ const keywords = (s, words) =>
                 @keydown.esc="query = ''"
             />
             <Segmented :options="filters" :value="filter" @pick="filter = $event" />
-            <span class="count">{{ loadedCount }} of {{ rows.length }} skills are loaded in the agent's current context</span>
+            <span class="count">{{ rows.length }} skills · {{ loadedCount }} loaded here</span>
             <template v-if="notice">
                 <span class="notice">{{ notice }}</span>
             </template>
@@ -161,6 +161,12 @@ const keywords = (s, words) =>
 
 .skills-find {
     flex: 0 1 280px;
+}
+
+@media (max-width: 640px) {
+    .skills-find {
+        flex: 1 1 100%;
+    }
 }
 
 .count {

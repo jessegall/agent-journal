@@ -44,12 +44,15 @@ watch(
                               : "Not loaded in the agent's current context."
                     }}
                 </span>
-                <Btn small :disabled="busy" @click="$emit('load', skill)">
+                <Btn small kind="primary" :disabled="busy" @click="$emit('load', skill)">
                     {{ skill.loaded ? "Ask the agent to reload it" : "Ask the agent to load it now" }}
                 </Btn>
             </div>
             <div class="skill-panel-switch">
-                <span>Load at session start</span>
+                <div class="skill-panel-switch-text">
+                    <span>Load at session start</span>
+                    <small>The agent loads it when each session starts.</small>
+                </div>
                 <Switch :on="skill.always" title="Load at session start" @change="$emit('always', skill, $event)" />
             </div>
             <FormField
@@ -109,6 +112,17 @@ watch(
 .skill-panel-switch {
     color: var(--text);
     font-size: 13px;
+}
+
+.skill-panel-switch-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.skill-panel-switch-text small {
+    color: var(--text-3);
+    font-size: 11.5px;
 }
 
 .skill-panel-head h3 {
