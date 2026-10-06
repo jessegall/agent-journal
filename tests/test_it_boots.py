@@ -11,6 +11,8 @@ import zipfile
 from contextlib import contextmanager
 from pathlib import Path
 
+import pytest
+
 import migrations
 from agents.terminal import relaunch
 from controllers.types import Todos
@@ -44,9 +46,9 @@ def test_every_import_in_the_package_resolves():
     assert [f"{path.name}:{node.lineno}" for path, node in imports() for alias in node.names if missing(node.module, alias.name)] == []
 
 
-def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
-    for name in DRIVERS:
-        launches(tmp_path / name, CODE / "journal.py", name)
+@pytest.mark.parametrize("name", list(DRIVERS))
+def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path, name):
+    launches(tmp_path, CODE / "journal.py", name)
 
 
 def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
@@ -66,7 +68,24 @@ def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
     assert moved == [True], "the supervisor stops the agent and starts it again in the same session, and nothing is left running after"
 
 
-def test_every_agent_launches_from_an_installed_zip(tmp_path):
+def released(place: Path) -> Path:
+    repository = place / "release"
+    shipped = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=HERE, capture_output=True, text=True, timeout=WAIT).stdout.split()
+    for name in shipped:
+        if (HERE / name).is_file():
+            (repository / name).parent.mkdir(parents=True, exist_ok=True)
+            (repository / name).write_bytes((HERE / name).read_bytes())
+    for step in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "release"]):
+        subprocess.run(["git", *step], cwd=repository, capture_output=True, timeout=WAIT)
+    return repository
+
+
+def upgrade_from(repository: Path, root: Path) -> subprocess.CompletedProcess:
+    env = {**os.environ, "HOME": str(root.parents[1] / "home"), "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""}
+    return subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], cwd=root.parent, env=env, capture_output=True, text=True, timeout=180)
+
+
+def test_an_installed_journal_keeps_its_records_and_upgrades_itself_from_a_release(tmp_path):
     place = tmp_path
     (place / PROJECT).mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
@@ -83,35 +102,33 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
     again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=120)
     listed = subprocess.run([*journal, "doc", "all"], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=WAIT).stdout
     assert "Kept across upgrades" in listed, f"a project record survives an upgrade:\n{again.stdout}{again.stderr}"
-    repository = place / "release"
-    shipped = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=HERE, capture_output=True, text=True, timeout=WAIT).stdout.split()
-    for name in shipped:
-        if (HERE / name).is_file():
-            (repository / name).parent.mkdir(parents=True, exist_ok=True)
-            (repository / name).write_bytes((HERE / name).read_bytes())
-    for step in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "release"]):
-        subprocess.run(["git", *step], cwd=repository, capture_output=True, timeout=WAIT)
-    itself = subprocess.run([*journal, "upgrade"], cwd=place / PROJECT, env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
-                            capture_output=True, text=True, timeout=180)
+    itself = upgrade_from(released(place), root)
     listed = subprocess.run([*journal, "doc", "all"], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=WAIT).stdout
     assert ("Traceback" not in itself.stdout + itself.stderr, "Kept across upgrades" in listed, (root / "journal.pyz").resolve().name.startswith("journal-")) == (True, True, True), \
         f"an installed journal upgrades itself from a release, keeps its records, and runs from a versioned build:\n{itself.stdout}{itself.stderr}"
-    for name in DRIVERS:
-        launches(place, root / "journal.py", name)
+
+
+@pytest.mark.parametrize("name", list(DRIVERS))
+def test_every_agent_launches_from_an_installed_zip(tmp_path, name):
+    launches(tmp_path, installed(tmp_path) / "journal.py", name)
+
+
+def test_the_launcher_carries_its_running_agent_over_to_a_new_build(tmp_path):
+    root = installed(tmp_path)
+    repository = released(tmp_path)
+    upgrade_from(repository, root)
     (repository / "src" / "channel.py").write_text((repository / "src" / "channel.py").read_text() + f"\nRELEASE = {os.urandom(4000).hex()!r}\n")
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
-
     moved = []
 
     def upgraded():
-        subprocess.run([*journal, "upgrade"], cwd=place / PROJECT, env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
-                       capture_output=True, timeout=180)
+        upgrade_from(repository, root)
         newest, began = (root / "journal.pyz").resolve().name, time.time()
         while not moved and time.time() - began < WAIT:
             moved.extend(marker for marker in (root / "runtime" / "builds").glob("*") if marker.read_text() == newest)
             time.sleep(0.2)
 
-    launches(place, root / "journal.py", "claude", during=upgraded)
+    launches(tmp_path, root / "journal.py", "claude", during=upgraded)
     assert moved, "the launcher carried its running agent over to the new build"
 
 

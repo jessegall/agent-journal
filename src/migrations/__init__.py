@@ -85,18 +85,23 @@ def run(root: Path) -> list[str]:
     import features
     features.load()
     root = Path(root)
+    if not pending(applied(root)):
+        return []
     with hold_record_writes(root):
         return run_locked(root)
 
 
+def pending(done: dict) -> list[str]:
+    return [name for name in names() if name not in done]
+
+
 def run_locked(root: Path) -> list[str]:
     done = applied(root)
-    pending = [name for name in names() if name not in done]
-    if not pending:
+    if not pending(done):
         return []
     backup = backed_up(root) if root.is_dir() and any((root / name).exists() for name in RECORD) else None
     ran = []
-    steps = {name: importlib.import_module(f"migrations.{name}").run for name in pending}
+    steps = {name: importlib.import_module(f"migrations.{name}").run for name in pending(done)}
     last = {step: name for name, step in steps.items()}
     try:
         for name, step in steps.items():
