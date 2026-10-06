@@ -47,7 +47,7 @@ const REMOVE = (who) => ({
     title: "Removes its environment and its copy of the code. Its report and commits are kept.",
     danger: true,
     confirm: {
-        text: `Remove the environment of ${who} and its working copy of the code? Its report stays in the Helpers list under Closed, and the commits it made are kept.`,
+        text: `Remove the environment of ${who} and its working copy of the code? Its report stays in the ${capitalised(helperWord(2))} list under Closed, and the commits it made are kept.`,
         button: "Remove it",
         cancel: "Cancel",
     },

@@ -1,6 +1,7 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {words} from "../composables/helperWords.js";
 import {callings, profileInUse, profiles, sampleOf} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -20,7 +21,15 @@ const emit = defineEmits(["close", "use", "duplicate", "remove", "create", "chan
 const isNew = computed(() => props.row === null);
 const locked = computed(() => !isNew.value && props.row.data.system);
 const inUse = computed(() => !isNew.value && props.row.n === profileInUse.value);
-const draft = reactive({title: "", brief: "", calling: "title and name", sample: "", helper: "helper", helpers: "helpers"});
+const blank = () => ({
+    title: "",
+    brief: "",
+    calling: "title and name",
+    sample: "",
+    helper: words.value.helper,
+    helpers: words.value.helpers,
+});
+const draft = reactive(blank());
 const start = ref(0);
 const failed = ref("");
 let timer = 0;
@@ -33,11 +42,7 @@ const copyOf = (row) => ({
     helper: row.data.helper,
     helpers: row.data.helpers,
 });
-const resetDraft = (row) =>
-    Object.assign(
-        draft,
-        row ? copyOf(row) : {title: "", brief: "", calling: "title and name", sample: "", helper: "helper", helpers: "helpers"}
-    );
+const resetDraft = (row) => Object.assign(draft, row ? copyOf(row) : blank());
 
 watch(
     () => props.row && props.row.n,
@@ -88,12 +93,7 @@ function edit(field, value) {
 
 function startFrom(row) {
     start.value = row ? row.n : 0;
-    Object.assign(
-        draft,
-        row
-            ? {...copyOf(row), title: ""}
-            : {title: draft.title, brief: "", calling: "title and name", sample: "", helper: "helper", helpers: "helpers"}
-    );
+    Object.assign(draft, row ? {...copyOf(row), title: ""} : {...blank(), title: draft.title});
 }
 </script>
 
