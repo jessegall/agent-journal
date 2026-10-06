@@ -70,4 +70,8 @@ def test_the_users_answer_shows_on_their_side_of_the_chat_and_no_can_be_taken_ba
     assert len(marks()) == 1, "an answer the agent gives leaves no mark on the user's side"
 
     assert theirs.note_window(s.n).data["window_seen"] > 0, "the window that opened is kept on the suggestion, once for every device"
+    assert (theirs.reopen(s.n).data["todo"], theirs.load(s.n).decision) == (0, ""), "a reopened yes no longer points at the to-do it added"
     assert "not a plugin" in refused(lambda: theirs.install(s2.n)), "only a plugin suggestion installs"
+    unpinned = mine.create("Install the Snake plugin", plugin="https://example.invalid/snake")
+    assert ("only you install" in refused(lambda: mine.install(unpinned.n)), "names no commit" in refused(lambda: theirs.install(unpinned.n))) == \
+        (True, True), "the agent never installs a suggested plugin, and one with no pinned commit is not installed at all"
