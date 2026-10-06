@@ -10,7 +10,7 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.features import Features
 from controllers.messages import Messages
-from engine.keeper import READY
+from engine.keeper import READY, STARTING
 from engine.ports import REACH_SECONDS, answers, reached, vouched
 from engine.record import Record
 from features.sharing.details import ALLOWED, SharingDetails
@@ -29,7 +29,7 @@ from controllers.marks import action
 
 NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
 LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
-OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler in Settings."
+OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler to go on."
 REJECTED = "tunler is logged in as {account}, but {host} does not accept that login. The server may be down, or the account was deleted after 30 days without use, together with its addresses. Log in again to make a new one."
 ELSEWHERE = "This project's tunnel address {old} belongs to another machine, so this machine now uses {new}. A phone paired on this machine has to be paired again, and share links made here have to be sent again."
 ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
@@ -184,9 +184,9 @@ class Shares(ShareVisits, SharePages, Controller):
     @action
     def tunnel_cause(self) -> TunnelCause:
         root, host = self.record.root, self._host()
-        if not reached(f"https://{host}/", REACH_SECONDS):
+        if host and not reached(f"https://{host}/", REACH_SECONDS):
             return TunnelCause(cause=Cause.HOST, text=f"The tunler server {host} does not answer, so the tunnel cannot open. Check the server in Settings, or try again once it is back.", lines=[])
-        if status(root, TUNNEL).state != READY:
+        if status(root, TUNNEL).state not in (STARTING, READY):
             return TunnelCause(cause=Cause.STOPPED, text="The tunnel is not running. The last lines it wrote:", lines=last_lines(log_file(root, TUNNEL)))
         version = versions(host)
         if version["update_available"]:
@@ -233,6 +233,9 @@ class Shares(ShareVisits, SharePages, Controller):
         root, claim = self.record.root, self._claim()
         kept = kept_address(root)
         name, kept_claim = kept.get("subdomain", ""), Claim.kept(kept)
+        if name and kept_claim != claim:
+            KEPT_STATUS.clear()
+            claim = self._claim()
         if not name:
             return addressed(root, {**kept, **claim.fields()})
         if kept_claim == claim or not claim.account:
