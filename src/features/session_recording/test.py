@@ -161,7 +161,7 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     assert names.text("Sir First Last; First; Last") == "Sir demo; demo; demo"
 
 
-def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path):
+def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path, monkeypatch):
     record, folder = recorded_session(tmp_path)
     recordings = Recordings(record, actor=SYSTEM)
     recordings.scrub(str(folder))
@@ -181,6 +181,13 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     assert got["first"] == ["first row"] and got["last"] == ["renamed row", "third row"], "stepping replays the recorded moments in order"
     assert got["stepped"] == [True, True, False]
     assert "rows" in got["dashboard"]
+    import commands.demo as demoing
+    with pytest.raises(Refused, match="the server answered 404"):
+        demoing.ask(record.root, "/api/no/such/page")
+    monkeypatch.setattr(demoing, "leaks", lambda *given: [])
+    monkeypatch.setattr(demoing.Scrubber, "leaks", lambda self, text: ["/home/someone"])
+    with undoable(), pytest.raises(Refused, match="still holds the machine"):
+        demo_built(folder, tmp_path / "again.json")
 
 
 PLAY = WEB / "play.mjs"

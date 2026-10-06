@@ -144,6 +144,9 @@ def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
     assert agent.built(board.n, "1 stage, 1 ticket").building["log"][0]["text"] == "Made the stages from section 1"
     assert "not being built" in refused(lambda: agent.log(board.n, "Late")), "a finished build takes no more lines"
     boards.discard(board.n)
+    named = boards.create("working title", stages=[])
+    boards.attach(named.n, str(document))
+    assert boards.build(named.n, name="Better title") and boards.load(named.n).building["name_it"] is False, "a board built under a name is not named again by the agent"
     assert not [t for t in Tickets(record, actor=USER).rows.standing() if t.board == board.n], "removing the board removes its tickets"
     assert not any(board.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "and gives up the build"
 
@@ -309,6 +312,10 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     assert any("Pausing a board, step 1 of 1" in line for line in nudges(record)), "pausing hands the orchestrator the pause"
     Boards(record, actor=USER).resume(board.n)
     assert any("Resuming a board, step 1 of 1" in line for line in nudges(record)), "resuming hands it the restart of the halted tickets"
+    from features.boards.controller import CARD_STORE
+    monkeypatch.setattr(CARD_STORE, "each", lambda: iter(()))
+    assert "tickets feature is not loaded" in refused(lambda: Boards(record, actor=USER)._cards(USER)), "boards keep their cards as tickets, so without that feature there is nowhere to keep them"
+    monkeypatch.undo()
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: self.load(n))
     tickets = Tickets(record, actor=AGENT)
     first, second = tickets.create("Port the core", board=board.n), tickets.create("Port the CLI", board=board.n)

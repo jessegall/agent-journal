@@ -281,6 +281,53 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     (command, options), = popped
     assert (json.loads(command[-1])["headless"], options["start_new_session"], terminal.launch_log(record.root, "t").parent.is_dir()) == (True, True, True), \
         "it runs headless in a session of its own and logs to a file of its own"
+    monkeypatch.undo()
+    import pty
+    import select
+    import threading
+    import commands.launch as launching
+    handed = []
+    monkeypatch.setattr(terminal, "supervise", lambda root, project, env, agent, args, taken=None: handed.append((env, args, taken)))
+    monkeypatch.setattr("engine.viewer.start", lambda root, project: "")
+    monkeypatch.setattr(launching.DRIVERS["claude"], "binary", classmethod(lambda cls, path: "claude"))
+    monkeypatch.setattr("commands.launch_update.latest_first", lambda record: "an update waits")
+    monkeypatch.chdir(record.root.parent)
+    assert launching.launch(record, "claude", [launching.NO_INTERACTION, "--model", "x"]) == "", "a start that asks nothing hands the agent to the supervisor"
+    out = capsys.readouterr().out
+    assert (handed[-1][:2], "carrying on with" in out, "the viewer did not start" in out) == ((record.env, ["--model", "x"]), True, True), \
+        "it says which update waits, and when the viewer did not come up"
+    monkeypatch.setenv(terminal.CARRIED, json.dumps({"env": "t", "args": ["--resume"], "pid": 7}))
+    launching.launch(record, "claude", None)
+    assert handed[-1] == ("t", ["--resume"], {"env": "t", "args": ["--resume"], "pid": 7}), "an agent an older build carried over is handed on as it was, with nothing asked"
+    master, slave = pty.openpty()
+    answering = threading.Event()
+
+    def press_enter():
+        until = time.time() + 20
+        while not answering.is_set() and time.time() < until:
+            if not select.select([master], [], [], 0.1)[0]:
+                continue
+            try:
+                wrote = os.read(master, 4096)
+            except OSError:
+                return
+            if b"to leave" in wrote:
+                os.write(master, b"\r")
+        os.close(master)
+
+    typist = threading.Thread(target=press_enter, daemon=True)
+    typist.start()
+    terminal_in, terminal_out = os.fdopen(slave, "r"), os.fdopen(os.dup(slave), "w")
+    monkeypatch.setattr("sys.stdin", terminal_in)
+    monkeypatch.setattr("sys.stdout", terminal_out)
+    monkeypatch.setattr(launching, "banner", lambda agent, project: "a banner")
+    try:
+        launching.launch(record, "claude", [])
+    finally:
+        answering.set()
+        typist.join(timeout=5)
+        monkeypatch.undo()
+    assert handed[-1][0] == record.env, "a start in a real terminal asks its questions there and takes the default on Enter"
 
 
 def test_stopping_the_journal_names_what_was_left_open_and_the_other_commands_answer_for_a_session_that_ended(monkeypatch, capsys):
@@ -308,7 +355,7 @@ def test_stopping_the_journal_names_what_was_left_open_and_the_other_commands_an
     assert "built shop" in read("demo", "recording", "shop"), "a demo is built into the folder asked for"
 
 
-def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the_server_does_not_run(capsys):
+def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the_server_does_not_run(capsys, monkeypatch):
     import features
     from commands.cli import captured, first_word, noun_of, run
     from tests.conftest import fresh
@@ -336,3 +383,12 @@ def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the
     assert (code, "is not a command the server runs" in out) == (None, True), "the server runs only the nouns it knows"
     out, code = captured(["todo", "show", "99"], record.root)
     assert code == 1 and out.startswith("!"), "a refusal comes back with its code"
+    out, code = captured(["todo", "show"], record.root)
+    assert code == 2 and "usage" in out.lower(), "a command missing its words comes back with the usage and the code of a misuse"
+    code, text = read("todo", "all", "--no-such-option")
+    assert code == 2 and "unrecognized arguments" in text, "an option the command does not know is refused"
+    import commands.cli as cli
+    monkeypatch.setattr(cli, "run", lambda argv, out=None, err=None: 1 / 0)
+    assert captured(["todo", "all"], record.root) == ("! ZeroDivisionError: division by zero", 1), "a command that crashes is answered in one line, not a trace"
+    monkeypatch.setattr(cli, "run", lambda argv, out=None, err=None: 3)
+    assert captured(["todo", "all"], record.root) == ("! todo all was refused and printed nothing", 3), "a refusal that said nothing is named"

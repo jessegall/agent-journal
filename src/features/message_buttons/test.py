@@ -48,6 +48,10 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
     assert rows.load(offered.n).data["pressed"] == ["New to-do"], "and the message remembers it was pressed"
     with pytest.raises(Stale):
         press(record, rows.load(offered.n), "New to-do", USER, "viewer")
+    target = Todos(record, actor=AGENT).create("close me from a button")
+    closing = rows.create("Close it?", buttons=[{"label": "Close it", "type": "todo", "n": target.n, "action": "complete", "body": {"how": "pressed"}}])
+    press(record, rows.load(closing.n), "Close it", USER, "viewer")
+    assert Todos(record, actor=AGENT).load(target.n).completed, "a button that names a row runs its action on that row"
 
 
 def test_a_document_carries_buttons_that_say_something_for_the_user():
