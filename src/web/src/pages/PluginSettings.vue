@@ -2,6 +2,7 @@
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {installedPlugins} from "../composables/plugins.js";
+import {childrenOf, settingGroups} from "../domain/pluginSettings.js";
 import {matches, tabLine} from "../domain/settingsCatalog.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
@@ -14,7 +15,6 @@ import PluginSetting from "./PluginSetting.vue";
 
 const props = defineProps({query: {type: String, default: ""}});
 const emit = defineEmits(["saved"]);
-const UNGROUPED = "";
 
 const plugins = installedPlugins();
 const configurable = computed(() => plugins.value.filter((p) => p.settings.length));
@@ -23,37 +23,22 @@ const toggled = reactive({});
 const current = ref("");
 
 const plugin = computed(() => configurable.value.find((p) => p.name === chosen.value) || configurable.value[0] || null);
-const flagsOf = (list) => list.filter((s) => s.type === "flag");
-const visible = (p) => {
-    const values = Object.fromEntries(p.settings.map((s) => [s.key, s.value]));
-    return p.settings.filter((s) => !s.when.length || s.when.some((choice) => choice.every(([other, value]) => values[other] === value)));
-};
 const words = (s) => `${s.title} ${s.help} ${s.group}`;
 
 function groupsOf(p) {
-    const visibleSettings = visible(p);
-    const out = new Map();
-    for (const s of visibleSettings.filter((setting) => !setting.parent)) {
-        const name = s.group || UNGROUPED;
-        out.set(name, [...(out.get(name) || []), s]);
-    }
-    return [...out].map(([name, settings]) => {
-        const all = settings.flatMap((s) => [s, ...visibleSettings.filter((child) => child.parent === s.key)]);
-        const flags = flagsOf(all);
+    return settingGroups(p).map((g) => {
         const found = props.query.trim()
-            ? settings.filter((s) => [s, ...childrenOf(visibleSettings, s)].some((x) => matches(words(x), props.query)))
-            : settings;
+            ? g.settings.filter((s) => [s, ...childrenOf(g.visible, s)].some((x) => matches(words(x), props.query)))
+            : g.settings;
         return {
-            name,
+            name: g.name,
             settings: found,
-            visibleSettings,
-            flags,
-            folded: toggled[name] ?? (settings.every((s) => s.detail) && !props.query.trim()),
+            visibleSettings: g.visible,
+            flags: g.flags,
+            folded: toggled[g.name] ?? (g.settings.every((s) => s.detail) && !props.query.trim()),
         };
     });
 }
-
-const childrenOf = (visibleSettings, s) => visibleSettings.filter((child) => child.parent === s.key);
 const groups = computed(() => (plugin.value ? groupsOf(plugin.value).filter((g) => g.settings.length) : []));
 const onLine = (g) => (g.flags.length ? `${g.flags.filter((s) => s.value === "true").length} of ${g.flags.length} on` : g.settings.length);
 const sections = computed(() =>
