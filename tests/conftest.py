@@ -86,14 +86,22 @@ def closed_handles():
 
 
 @pytest.fixture(autouse=True)
-def viewer_ports(monkeypatch):
+def ports_of_its_own(monkeypatch):
+    import engine.services as services
     import engine.viewer as viewer
-    ours = isolation.band()
+    ours, served = isolation.band(), isolation.band()
     monkeypatch.setattr(viewer, "PORTS", ours)
+    monkeypatch.setattr(services, "PORTS", served)
     monkeypatch.setenv("JOURNAL_VIEWER_PORTS", ",".join(map(str, ours)))
     yield
-    for port in ours:
+    for port in [*ours, *served]:
         isolation.release(port)
+
+
+@pytest.fixture(autouse=True)
+def outside_the_callers_session(monkeypatch):
+    for name in ("JOURNAL_ENV", "JOURNAL_SESSION", "JOURNAL_AGENT", "JOURNAL_ACTOR"):
+        monkeypatch.delenv(name, raising=False)
 
 
 @pytest.fixture(autouse=True)
@@ -107,12 +115,13 @@ _VIEWER_FUNCTIONS = {}
 
 
 @pytest.fixture(autouse=True)
-def viewer_functions_restored(request):
+def viewer_functions_restored(request, monkeypatch):
     import engine.viewer as viewer
     names = ("running", "start", "launch", "show", "identity", "answers", "elsewhere", "available", "free")
     if not _VIEWER_FUNCTIONS:
         _VIEWER_FUNCTIONS.update({name: getattr(viewer, name) for name in names})
     yield
+    monkeypatch.undo()
     changed = [name for name in names if getattr(viewer, name) is not _VIEWER_FUNCTIONS[name]]
     for name in changed:
         setattr(viewer, name, _VIEWER_FUNCTIONS[name])

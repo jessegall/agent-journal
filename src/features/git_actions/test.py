@@ -67,11 +67,12 @@ def test_each_git_command_the_agent_runs_is_marked_in_the_chat(tmp_path):
     ran_git("git branch -D helper-y", "")
     ran_git("git status && git log --oneline && git commit -m x && git stash list", "")
     ran_git("git merge nope", "fatal: nope - not something we can merge")
+    ran_git("""git commit -q -m "$(printf 'it'"'"'s done')" && git tag v1.3""", "")
     assert marks() == [
         "Stashed 2 changed files", "Popped the latest stash", "Dropped the latest stash",
         "Merged `feature-x` into `main`", "Rebased `main` onto `main`", "Cherry-picked `abc1234` onto `main`",
         "Reset `main` hard to `HEAD~1`", "Reverted `abc1234` on `main`", "Tagged `v1.2`",
         "Pushed `main` to `origin`", "Pulled `main` from `origin`", "Fetched from `origin`",
         "Added worktree `../wt` on branch `helper-x`", "Removed worktree `../wt`",
-        "Created branch `helper-y`", "Deleted branch `helper-y`",
-    ], "every other git action reads in plain words, a failed one and a plain read leave no mark"
+        "Created branch `helper-y`", "Deleted branch `helper-y`", "Tagged `v1.3`",
+    ], "every other git action reads in plain words, a failed one and a plain read leave no mark, and a command shlex cannot split is still read"

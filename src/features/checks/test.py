@@ -111,12 +111,12 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook" and "notes.txt" in git(repo.project, "status", "--short"), \
         "a pass commits exactly the named paths, never what else was staged"
     assert "old.txt" not in git(repo.project, "ls-files"), "a deleted path is committed as deleted, even when its removal was staged"
-    assert any("passed and" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "the agent is told it landed"
+    assert any("passed and" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "the agent is nudged it landed"
     checks.update(suite.n, command="false")
     (repo.project / "hooks" / "code.py").write_text("three\n")
     checks.gate(suite.n, "break the hook", paths="hooks/code.py", wait=True)
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook", "a failure commits nothing"
-    assert any("failed, nothing was committed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "and the agent is told why"
+    assert any("failed, nothing was committed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "and the agent is nudged why"
 
 
 def test_a_check_that_runs_out_of_time_says_so():
@@ -138,12 +138,12 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
     (record.root.parent / "said").write_text("issue 5 waits\n")
     checks = Checks(record, actor=USER)
     check = checks.create("Every issue is answered", command="cat said; exit 1")
-    told = lambda: [n.title for n in Nudges(record, actor=SYSTEM).rows.every() if n.title.startswith(f"check {check.n} failed")]
+    nudged = lambda: [n.title for n in Nudges(record, actor=SYSTEM).rows.every() if n.title.startswith(f"check {check.n} failed")]
     checks.run(check.n, wait=True)
-    assert told() == [f"check {check.n} failed - issue 5 waits"], "a failure reaches the agent while it waits on something else"
+    assert nudged() == [f"check {check.n} failed - issue 5 waits"], "a failure reaches the agent while it waits on something else"
     checks.run(check.n, wait=True)
-    assert len(told()) == 1 and len(open_notices(record)) == 1, "the same failure again is neither filed nor told twice"
+    assert len(nudged()) == 1 and len(open_notices(record)) == 1, "the same failure again is neither filed nor nudged twice"
     (record.root.parent / "said").write_text("issue 6 waits\n")
     checks.run(check.n, wait=True)
-    assert told()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
-        "a failure that reports something else is told again and replaces the one before"
+    assert nudged()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
+        "a failure that reports something else is nudged again and replaces the one before"
