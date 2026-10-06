@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
@@ -107,11 +108,11 @@ watch(tree, async (drawn) => {
                         <b class="family-live">{{ counts.live }} running</b>
                         ·
                     </template>
-                    {{ counts.agents }} agents · {{ counts.subagents }} subagents · {{ counts.messages }} messages
+                    {{ counts.agents }} agents · {{ helperCount(counts.subagents) }} · {{ counts.messages }} messages
                 </span>
                 <span class="family-key">
                     <span class="key key-started">started</span>
-                    <span class="key key-dispatched">started a subagent</span>
+                    <span class="key key-dispatched">started a {{ helperWord() }}</span>
                     <span class="key key-talk">sent a message</span>
                 </span>
                 <template v-if="folds.length">

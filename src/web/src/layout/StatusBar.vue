@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agent} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -48,7 +49,10 @@ const helpersAnchor = ref(null);
 const modeOptions = computed(() =>
     MODES.map((one) => ({
         ...one,
-        title: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note,
+        title:
+            one.key === "solo" && helpersOut.value
+                ? `${one.note} ${capitalised(helperWord(2))} already out keep going until they finish.`
+                : one.note,
     }))
 );
 
@@ -137,7 +141,11 @@ async function runBar(p) {
             <Btn
                 kind="icon"
                 :class="['statusbar-pause', {paused}]"
-                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'"
+                :title="
+                    paused
+                        ? 'Resume: tell the agent to carry on'
+                        : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'
+                "
                 @click="pauseOrResume"
             >
                 <template v-if="wanted !== null">
@@ -168,8 +176,8 @@ async function runBar(p) {
                         :class="['statusbar-helpers', {none: !helpers.length}]"
                         :title="
                             helpersOut
-                                ? `${helpersOut} helper(s) out: see what they do`
-                                : 'Helpers: agents on other providers this environment dispatched'
+                                ? `${helperCount(helpersOut)} out: see what they do`
+                                : `${capitalised(helperWord(2))}: agents on other providers this environment dispatched`
                         "
                         :aria-expanded="helpersOpen"
                         @click.stop="toggleHelpers"

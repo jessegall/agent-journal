@@ -44,7 +44,7 @@ import SkillPanel from "./layout/SkillPanel.vue";
 import PluginPagePanel from "./layout/PluginPagePanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
-import {firstChoice, loadProfiles, unchosen} from "./composables/profiles.js";
+import {firstChoice, loadProfiles, loadWords, profileInUse, unchosen} from "./composables/profiles.js";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
@@ -179,6 +179,7 @@ useWindowEvent("keydown", onWide);
 useWindowEvent("keydown", onOpenFile);
 
 watch(unchosen, (empty) => empty && loadProfiles(), {immediate: true});
+watch(profileInUse, loadWords, {immediate: true});
 onMounted(startBoot);
 onUnmounted(() => clearTimeout(bootTimer));
 watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);

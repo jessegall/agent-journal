@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
 import {store} from "../state/store.js";
@@ -14,7 +15,7 @@ const pick = (name) => (store.board.lens = {...store.board.lens, agent: store.bo
                     <span :class="['dot', agent.status]" />
                     <span class="name">{{ agent.title }}</span>
                     <template v-if="agent.status === 'subagent'">
-                        <span class="mark">subagent</span>
+                        <span class="mark">{{ helperWord() }}</span>
                     </template>
                     <template v-if="agent.todo">
                         <span class="works">#{{ agent.todo }}</span>
