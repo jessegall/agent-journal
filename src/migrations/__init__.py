@@ -96,10 +96,11 @@ def run_locked(root: Path) -> list[str]:
         return []
     backup = backed_up(root) if root.is_dir() and any((root / name).exists() for name in RECORD) else None
     ran = []
+    steps = {name: importlib.import_module(f"migrations.{name}").run for name in pending}
+    last = {step: name for name, step in steps.items()}
     try:
-        for name in pending:
-            module = importlib.import_module(f"migrations.{name}")
-            result = module.run(root)
+        for name, step in steps.items():
+            result = step(root) if last[step] == name else "runs once, at its last place in this batch"
             done[name] = {"at": time.time(), "result": result}
             root.mkdir(parents=True, exist_ok=True)
             write_text(ledger(root), json.dumps(done, indent=2))
