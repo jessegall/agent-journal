@@ -25,10 +25,10 @@ QUOTED = re.compile(r"`[^`]*`|\"[^\"]*\"|“[^”]*”")
 LISTED = re.compile(r"^\s*\d+[.)]\s", re.MULTILINE)
 NAMING = {"to-do", "to-dos", "version", "v", "line", "lines", "phase", "step", "port", "revision", "revisions", "number", "page", "row", "rows",
           "commit", "id", "of", "and", "or", "under", "over", "than", "above", "below", "about", "around", "least", "most", "nearly",
-          "only", "every", "first", "last", "top", "within", "past", "after"}
+          "only", "every", "first", "last", "top", "within", "past", "after", "http", "status", "code", "exit", "average", "averages"}
 VERBS = {"waits", "needs", "holds", "runs", "goes", "shows", "stays", "keeps", "closes", "opens", "starts", "ends", "lands", "takes",
          "gets", "makes", "sits", "asks", "says", "works", "fails", "passes", "comes", "becomes", "belongs", "covers", "lists", "reads"}
-COUNTING = {"passed", "failed", "more", "left", "of", "per", "out", "times", "ms", "kb", "mb", "px", "percent", "in"}
+COUNTING = {"passed", "failed", "more", "left", "of", "per", "out", "times", "ms", "s", "sec", "min", "h", "kb", "mb", "gb", "px", "percent", "in"}
 
 
 def typed_before(text: str) -> bool:
