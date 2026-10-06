@@ -11,6 +11,7 @@ import Segmented from "./Segmented.vue";
 import Switch from "./Switch.vue";
 import SwitchCase from "./SwitchCase.vue";
 import TextInput from "./TextInput.vue";
+import UnitTextInput from "./UnitTextInput.vue";
 import TimingChip from "./TimingChip.vue";
 
 const props = defineProps({row: {type: Object, required: true}, sheet: Boolean, dim: Boolean, head: Boolean, child: Boolean});
@@ -43,16 +44,15 @@ function reset() {
                 </template>
                 <SwitchCase :value="row.kind">
                     <template #number>
-                        <TextInput
+                        <UnitTextInput
                             :id="id"
                             class="setting-number"
                             type="number"
                             min="0"
+                            :unit="row.unit"
                             :value="row.value"
                             @change="emit('change', Number($event.target.value))"
-                        >
-                            <template #end>{{ row.unit }}</template>
-                        </TextInput>
+                        />
                     </template>
                     <template #text>
                         <TextInput :id="id" class="setting-text" :value="row.value" @change="emit('change', $event.target.value)" />

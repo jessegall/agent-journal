@@ -14,6 +14,7 @@ import {
 import ResetButton from "./ResetButton.vue";
 import Segmented from "./Segmented.vue";
 import TextInput from "./TextInput.vue";
+import UnitTextInput from "./UnitTextInput.vue";
 
 const props = defineProps({timing: {type: Object, required: true}, label: {type: String, default: ""}, sheet: Boolean});
 const emit = defineEmits(["change"]);
@@ -47,16 +48,18 @@ function pick(next) {
         <template v-else>
             <div class="timing-line">
                 <span class="timing-word">Every</span>
-                <TextInput
+                <UnitTextInput
                     class="timing-field"
                     type="number"
                     min="1"
                     :value="when.every || ''"
+                    :unit="when.unit || ''"
+                    :units="units"
                     aria-label="How many"
                     @change="pick(timingEvery(when, $event.target.value))"
+                    @unit="pick(timingUnit(when, $event))"
                 />
             </div>
-            <Segmented wrap :options="units" :value="when.unit || ''" @pick="pick(timingUnit(when, $event))" />
         </template>
         <div class="timing-line">
             <span class="timing-word">Or once, when</span>
@@ -100,7 +103,7 @@ function pick(next) {
 }
 
 .timing-field {
-    width: 62px;
+    width: 200px;
 }
 
 .timing-field.marks {
