@@ -66,6 +66,7 @@ class Identity(Loaded):
     root: str = ""
     project: str = ""
     version: str = ""
+    build: str = ""
     pid: int = 0
 
     def serves(self, root: Path) -> bool:

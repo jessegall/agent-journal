@@ -499,6 +499,15 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
         assert prints("restarting on the same port", touch), "a new build of the code restarts the server on the port it had"
         assert (root / "runtime" / "restarting").is_file(), "the server marks its restart before it stops serving, so a hook meanwhile retries"
         assert prints("http://127.0.0.1:", times=2), "the restarted server serves again"
+        repository = released(tmp_path)
+        (repository / "src" / "channel.py").write_text((repository / "src" / "channel.py").read_text() + f"\nRELEASE = {os.urandom(8).hex()!r}\n")
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
+        upgrade_from(repository, root)
+        newest, url = (root / "journal.pyz").resolve().name, next(line.strip() for line in printed if line.startswith("http://127.0.0.1:"))
+        began = time.time()
+        while time.time() - began < WAIT and getattr(viewer.identity(url, 1.0), "build", "") != newest:
+            time.sleep(0.5)
+        assert viewer.identity(url, 1.0).build == newest, "after an upgrade the running server answers from the new build"
         ask(root)
         assert prints("journal: stopped") and server.wait(WAIT) == 0, "writing the stop flag ends the server and says it stopped"
     finally:

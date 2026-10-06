@@ -25,6 +25,7 @@ from engine.files import found_files
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments
 from engine import bus, runtime, typist, viewer
+from engine.package import CODE
 from surfaces.manifest import manifest
 from engine.version import version
 from engine.seats import terminal_of
@@ -204,7 +205,7 @@ def post_update_check(req: Request) -> Reply:
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries() if not row["deleted"]]
-    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "pid": os.getpid(), "environments": names})
+    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "build": CODE.name, "pid": os.getpid(), "environments": names})
 
 
 @route("POST", "/api/identity")
