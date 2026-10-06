@@ -1,8 +1,11 @@
+import time
+
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from features.triggers.resource import DOES, FIRED, FROM_USER, START, Trigger
+from features.triggers.summary import summary
 from resources.base import SYSTEM, Refused, Resource
 
 
@@ -14,6 +17,8 @@ class Triggers(Controller):
             raise Refused(f"a trigger does one of {', '.join(DOES)}, not {r.does!r}")
         if not r.words:
             raise Refused('a trigger needs words to watch for: --set words="one,two"')
+        if not r.system:
+            r.brief = summary(r, self._starts(r.n))
         return super().save(r, action, **event)
 
     @action
@@ -21,15 +26,27 @@ class Triggers(Controller):
         self._stop_starting(n)
         return super().delete(n, why)
 
-    def _stop_starting(self, n: int) -> None:
+    def _sequences(self):
         from features.sequences.controller import Sequences
-        sequences = Sequences(self.record, actor=SYSTEM)
-        for row in sequences.rows.every():
-            if row.data.get("starts_on") == f"trigger:{n}" and not row.system:
-                sequences.update(row.n, starts_on="")
+        return Sequences(self.record, actor=SYSTEM)
+
+    def _starting(self, n: int) -> list[Resource]:
+        return [row for row in self._sequences().rows.standing() if row.data.get("starts_on") == f"trigger:{n}"]
+
+    def _starts(self, n: int) -> list[str]:
+        return [row.title for row in self._starting(n)]
+
+    def _stop_starting(self, n: int) -> None:
+        for row in self._starting(n):
+            if not row.system:
+                self._sequences().update(row.n, starts_on="")
 
     def fired(self, n: int, about: str = "") -> None:
-        self.record.emit("trigger", n, FIRED, SYSTEM, about=about)
+        with self.record.locked(self.resource.scope):
+            row = self.load(n)
+            row.matched += 1
+            row.matched_at = time.time()
+            self.save(row, FIRED, about=about)
 
     def watch_for(self, title: str, words: list[str]) -> Resource:
         row = next((t for t in self.rows.every() if t.title == title and not t.deleted), None) or self.create(

@@ -3,7 +3,9 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {DELETE_NOTE, MENUED, closeNote, closeWord, word} from "../domain/spec.js";
 import {startedBy} from "../domain/triggerWords.js";
+import AddToCollection from "./AddToCollection.vue";
 import AlertDialog from "../kit/AlertDialog.vue";
+import Dialog from "../kit/Dialog.vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
@@ -13,6 +15,7 @@ const props = defineProps({resource: {type: Object, required: true}});
 const emit = defineEmits(["gone"]);
 const open = ref(false);
 const asking = ref(false);
+const collecting = ref(false);
 const anchor = ref(null);
 const refusal = ref("");
 const closed = computed(() => Boolean(props.resource.completed));
@@ -30,6 +33,8 @@ async function run(method, data) {
         refusal.value = e.message;
     }
 }
+
+const collect = () => ((open.value = false), (collecting.value = true));
 
 const erase = () => (asks.value ? ((open.value = false), (asking.value = true)) : run("delete", {}));
 
@@ -49,6 +54,9 @@ function sure() {
         </template>
         <template v-if="open">
             <MenuPanel :anchor="anchor.$el" :min-width="260" align="right" @close="open = false">
+                <template v-if="asks">
+                    <MenuItem description="Groups it with other rows you collect." @click="collect">Add to collection</MenuItem>
+                </template>
                 <template v-if="closed">
                     <MenuItem description="Moves it back to Open" @click="run('reopen', {why: 'Reopened from the list'})">Reopen</MenuItem>
                 </template>
@@ -57,8 +65,15 @@ function sure() {
                         {{ closeWord(resource.type) }}
                     </MenuItem>
                 </template>
-                <MenuItem :description="asks ? `${DELETE_NOTE} Asks first.` : DELETE_NOTE" @click="erase">Delete</MenuItem>
+                <MenuItem danger :description="asks ? `${DELETE_NOTE} Asks first.` : DELETE_NOTE" @click="erase">Delete</MenuItem>
             </MenuPanel>
+        </template>
+        <template v-if="collecting">
+            <Teleport to="body">
+                <Dialog small title="Add to collection" @close="collecting = false">
+                    <AddToCollection :resource="resource" @done="collecting = false" />
+                </Dialog>
+            </Teleport>
         </template>
         <template v-if="asking">
             <Teleport to="body">

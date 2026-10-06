@@ -1,8 +1,17 @@
 <script setup>
 import {ago} from "../format/time.js";
+import {useFloatingChat} from "../composables/floatingChat.js";
 import {peek} from "../route.js";
+import {store} from "../state/store.js";
+import Btn from "../kit/Btn.vue";
 
-defineProps({answer: {type: Object, required: true}});
+const props = defineProps({answer: {type: Object, required: true}, about: {type: Object, required: true}});
+const {openChat} = useFloatingChat();
+
+function writeMore() {
+    store.quoting = {text: props.about.title, ref: props.about.ref};
+    openChat();
+}
 </script>
 
 <template>
@@ -19,6 +28,9 @@ defineProps({answer: {type: Object, required: true}});
             <template v-else>{{ answer.result }}</template>
         </p>
         <p class="note">Not chosen: {{ answer.passed.join(", ") }}</p>
+        <div>
+            <Btn small @click="writeMore">Write more about this</Btn>
+        </div>
     </div>
 </template>
 

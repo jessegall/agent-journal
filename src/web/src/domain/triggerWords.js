@@ -36,6 +36,7 @@ export const DOES = [
     {
         value: "message",
         label: "Send a message from you",
+        short: "It sends a message from you.",
         hint: "A message from you appears in the chat, and the agent answers it.",
         ask: "The message, as you would write it",
         example: "Please run the full test suite before you push.",
@@ -43,6 +44,7 @@ export const DOES = [
     {
         value: "nudge",
         label: "Remind the agent",
+        short: "It reminds the agent.",
         hint: "A short note only the agent sees. It carries on with its work.",
         ask: "What to remind the agent of",
         example: "Add the change to src/CHANGELOG.md in plain words.",
@@ -50,6 +52,7 @@ export const DOES = [
     {
         value: "instruct",
         label: "Tell the agent to do something now",
+        short: "It tells the agent to do something now.",
         hint: "The agent sees “Do this now:” followed by your text.",
         ask: "What the agent should do",
         example: "Stop and ask me before you touch the database.",
@@ -57,11 +60,19 @@ export const DOES = [
     {
         value: "deny",
         label: "Block it",
+        short: "It blocks the command.",
         hint: "The command or file change is refused, and the agent is given your reason. If the words are in the agent's chat message, it can't be unsaid, so the agent is told instead.",
         ask: "Reason the agent is given",
         example: "Never force-push. Ask me first.",
     },
-    {value: START, label: "Start a sequence", hint: "Starts the sequence you pick below. Nothing is sent.", ask: "", example: ""},
+    {
+        value: START,
+        label: "Start a sequence",
+        short: "It starts a sequence.",
+        hint: "Starts the sequence you pick below. Nothing is sent.",
+        ask: "",
+        example: "",
+    },
 ];
 
 export const EXAMPLES = [
@@ -138,7 +149,7 @@ function doing(trigger, sequences) {
         deny: [{text: "block it and tell the agent "}, ...text],
         start: sequences.length
             ? [{text: "start the sequence "}, ...titles]
-            : [{text: "start a sequence. "}, {text: "None is picked yet, so nothing happens", muted: true}],
+            : [{text: "start a sequence. "}, {text: "None is picked yet, so nothing happens", muted: true, stop: true}],
     }[trigger.does];
 }
 
@@ -149,7 +160,7 @@ export function sentence(trigger, sequences) {
     if (!trigger.words.length) return keyed([{text: EMPTY, muted: true}]);
     const parts = [{text: `${watching(wordsText(trigger.words), trigger.words_in)}, `}, ...doing(trigger, sequences)];
     const last = parts.at(-1);
-    return keyed(last.muted || /[.!?]”?$/.test(last.text) ? parts : [...parts, {text: "."}]);
+    return keyed(last.stop || /[.!?]”?$/.test(last.text) ? parts : [...parts, {text: "."}]);
 }
 
 export const plain = (parts) => parts.map((part) => part.text).join("");

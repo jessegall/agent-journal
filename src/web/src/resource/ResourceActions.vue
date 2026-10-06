@@ -4,9 +4,10 @@ import TextInput from "../kit/TextInput.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
+import AddToCollection from "./AddToCollection.vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import {linkedTo, open} from "../domain/records.js";
+import {linkedTo} from "../domain/records.js";
 import {peek} from "../route.js";
 
 const props = defineProps({resource: Object});
@@ -15,22 +16,6 @@ const error = ref("");
 const prompt = ref("");
 const text = ref("");
 const collecting = ref(false);
-const collections = computed(() => open("collection").map((c) => c.title));
-
-async function addToCollection() {
-    const name = text.value.trim();
-    if (!name) return;
-    error.value = "";
-    try {
-        const found =
-            open("collection").find((c) => c.title.toLowerCase() === name.toLowerCase()) || (await api.create("collection", {title: name}));
-        await api.addToCollection(found.n, [props.resource.ref]);
-        collecting.value = false;
-        text.value = "";
-    } catch (e) {
-        error.value = e.message;
-    }
-}
 
 const MUST_HAVE = "must have";
 const plannable = computed(
@@ -89,23 +74,7 @@ async function run(method) {
             </Chip>
         </template>
         <template v-if="collecting">
-            <TextInput
-                :value="text"
-                class="grow"
-                list="open-collections"
-                placeholder="A collection, or a new name"
-                autofocus
-                @keydown.enter="addToCollection"
-                @input="text = $event.target.value"
-                @keydown.esc="collecting = false"
-            />
-            <datalist id="open-collections">
-                <template v-for="c in collections" :key="c">
-                    <option :value="c" />
-                </template>
-            </datalist>
-            <Btn small @click="addToCollection">Add to collection</Btn>
-            <Btn small @click="collecting = false">Cancel</Btn>
+            <AddToCollection :resource="resource" @done="collecting = false" />
         </template>
         <template v-else-if="prompt">
             <TextInput
@@ -132,7 +101,7 @@ async function run(method) {
                     Edit
                 </Btn>
             </template>
-            <template v-if="resource.type !== 'collection' && !resource.data.system">
+            <template v-if="resource.type !== 'collection' && !resource.data.system && !MENUED.includes(resource.type)">
                 <Btn small @click="collecting = true">
                     <Icon name="folder" :size="12" />
                     Add to collection

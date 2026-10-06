@@ -68,11 +68,11 @@ async function submit() {
 </script>
 
 <template>
-    <Dialog :title="`New ${meta(type).title.toLowerCase()}`" @close="emit('close')">
-        <template v-if="type === 'trigger'">
-            <NewTrigger :sequence="sequence" @made="emit('made', $event)" @close="emit('close')" />
-        </template>
-        <template v-else>
+    <template v-if="type === 'trigger'">
+        <NewTrigger :sequence="sequence" @made="emit('made', $event)" @close="emit('close')" />
+    </template>
+    <template v-else>
+        <Dialog :title="`New ${meta(type).title.toLowerCase()}`" @close="emit('close')">
             <form class="new" @submit.prevent="submit">
                 <TextInput
                     :value="title"
@@ -152,8 +152,8 @@ async function submit() {
                     <Btn kind="primary" @click="submit">{{ word(type, "create").replace(/^\w/, (c) => c.toUpperCase()) }}</Btn>
                 </div>
             </form>
-        </template>
-    </Dialog>
+        </Dialog>
+    </template>
 </template>
 
 <style scoped>

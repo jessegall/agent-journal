@@ -1,9 +1,9 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
 import {api} from "../api/client.js";
-import {EXAMPLES, doesOf, plain, sentence} from "../domain/triggerWords.js";
-import {open} from "../domain/records.js";
+import {EXAMPLES, doesOf} from "../domain/triggerWords.js";
 import Btn from "../kit/Btn.vue";
+import Dialog from "../kit/Dialog.vue";
 import FormField from "../kit/FormField.vue";
 import TriggerEditor from "./TriggerEditor.vue";
 
@@ -12,7 +12,7 @@ const emit = defineEmits(["made", "close"]);
 const blank = () => ({
     title: "",
     words: [],
-    words_in: props.sequence ? "user" : "both",
+    words_in: "both",
     does: props.sequence ? "start" : "nudge",
     text: "",
     sequences: props.sequence ? [props.sequence] : [],
@@ -33,10 +33,8 @@ function start({name, ...fields}) {
 async function submit() {
     error.value = "";
     try {
-        const linked = open("sequence").filter((s) => draft.sequences.includes(s.n));
         const made = await api.create("trigger", {
             title: draft.title.trim(),
-            brief: plain(sentence(draft, linked)),
             words: draft.words,
             words_in: draft.words_in,
             does: draft.does,
@@ -51,7 +49,7 @@ async function submit() {
 </script>
 
 <template>
-    <div class="new-trigger">
+    <Dialog title="New trigger" @close="emit('close')">
         <TriggerEditor :draft="draft">
             <template #examples>
                 <FormField label="Start from an example">
@@ -63,32 +61,19 @@ async function submit() {
                 </FormField>
             </template>
         </TriggerEditor>
-        <div class="foot">
+        <template #foot>
             <span class="foot-note">{{ error || missing }}</span>
             <Btn @click="emit('close')">Cancel</Btn>
             <Btn kind="primary" :disabled="Boolean(missing)" @click="submit">Create trigger</Btn>
-        </div>
-    </div>
+        </template>
+    </Dialog>
 </template>
 
 <style scoped>
-.new-trigger {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
 .examples {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-}
-
-.foot {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
 }
 
 .foot-note {
