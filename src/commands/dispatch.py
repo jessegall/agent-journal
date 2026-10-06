@@ -52,11 +52,25 @@ def later(reply: Reply, then) -> Reply:
     return reply
 
 
+def sooner(reply: Reply, first) -> Reply:
+    rest = reply.after
+
+    def after() -> None:
+        first()
+        if rest:
+            rest()
+    reply.after = after
+    return reply
+
+
 def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None) -> Reply:
     if not reply.timed:
         return reply
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
-    return later(reply, lambda: began.announce(Record(root, env), "hook" if "/hook/" in path else "request", name, profile))
+    answered = []
+    kind = "hook" if "/hook/" in path else "request"
+    later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered[0] if answered else None))
+    return sooner(reply, lambda: answered.append(began.lap()))
 
 
 def known_environment(root: Path, env: str) -> bool:

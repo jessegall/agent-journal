@@ -69,11 +69,11 @@ async function start() {
                     small
                     class="plan-card-start"
                     :disabled="building"
-                    :title="building ? 'Start waits until the plan is ready' : 'Approve the plan and start it'"
+                    :title="building ? 'You can approve it once the plan is ready' : 'Approve the plan; the agent starts it'"
                     @click="start"
                 >
                     <Icon name="start" />
-                    {{ parked ? "Resume" : "Start" }}
+                    {{ parked ? "Resume" : "Approve" }}
                 </Btn>
             </span>
             <CloseButton title="Hide from chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />

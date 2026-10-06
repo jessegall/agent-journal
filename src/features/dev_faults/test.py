@@ -38,6 +38,13 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     with measured(record, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
+    from commands.dispatch import timed
+    from engine.timing import Stopwatch
+    from features.routing import Reply
+    for _ in range(2):
+        timed(Reply(200, {}, after=lambda: busy(0.08)), record.root, record.env, "POST", "/api/hook/claude", Stopwatch()).after()
+    assert notified(record) == ["request GET /api/main/message is slower than its budget"], \
+        "work done after the answer is sent is not held against the budget the agent waits on"
     log = record.root / "runtime" / "diagnostics.log"
     assert not log.exists(), "the diagnostic log is off by default"
     record.features = {**record.features, "dev_faults.log": True}
