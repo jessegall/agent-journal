@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.9 — a refused tunnel address is replaced by itself, and the phone dialog says why it cannot connect
+
+**A tunnel address owned by another tunler account is replaced without anyone pressing anything.** When the address
+in `.journal/sharing.json` was registered under a different tunler account than the one logged in, the tunnel server
+refused it on every start, the journal kept restarting the tunnel, and the phone and share links never worked. The
+journal now picks a new address itself, restarts the tunnel on it, and tells you once in the chat that the tunnel moved:
+share links sent before then stop working and a paired phone has to be paired again. It does this once per refusal;
+if the new address is refused as well, it asks you to choose another, with a button, instead of trying again.
+**The phone dialog and the sharing dropdown say why the tunnel is not connected.** tunler not installed, not logged in,
+an address owned by another account, or a tunnel that stopped and could not start again each show as one plain line,
+with a button to the tunler settings, instead of "Opening the tunnel" forever.
+**The phone code and share links use the tunler server you are logged in to.** A journal from before 2.249.4 assumed
+tunler.jessegall.nl, so with tunler logged in to another server the phone dialog waited for an address that never
+answered. The address now comes from the server saved in the sharing settings, and otherwise from the one tunler itself
+is logged in to; a successful login or install saves its server, so it is asked for once. Nothing to do: all of it
+applies once the journal is upgraded.
+
 ## 2.249.8 — Codex asks about the other hooks, dispatches its own subagents, and they show in the agent list
 
 **`journal codex` always asks about the other hooks.** The start menu asked only when it found hooks that are not the

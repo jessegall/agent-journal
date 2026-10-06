@@ -16,6 +16,10 @@ from resources.base import Refused
 
 TUNNEL_FILE = "sharing.json"
 OWNED = "domain is owned by another user"
+MOVED = "the journal moved the tunnel to a new address:"
+STARTED = " inspector: "
+LAST_LINES = 4
+SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
 ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
@@ -47,10 +51,16 @@ def addressed(root: Path, kept: dict) -> str:
 
 def refused_address(log: Path) -> bool:
     try:
-        lines = log.read_text(errors="ignore").splitlines()[-4:]
+        lines = log.read_text(errors="ignore").split(MOVED)[-1].split(STARTED)[-1].splitlines()[-LAST_LINES:]
     except OSError:
         return False
     return any(OWNED in line for line in lines)
+
+
+def moved(log: Path, name: str) -> None:
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("a") as written:
+        written.write(f"{MOVED} {name}\n")
 
 
 def tunler() -> str:

@@ -22,7 +22,8 @@ from controllers.described import described_types
 from engine.markers import MARKER
 from features.format import SHARED, formatted
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
+from engine.services import FAILED, UP, log_file, status, want
+from features.sharing.tunnel import TUNNEL, TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, moved, owned, refused_address, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
@@ -40,6 +41,10 @@ LAYOUT_FILE = "layout.json"
 HEALTH = "health"
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
+NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
+LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
+ADDRESS_TAKEN = "This journal's address belongs to another tunler account, so the tunnel cannot open on it."
+TUNNEL_STOPPED = "The tunnel to this journal stopped and could not start again."
 
 
 def member_refs(row) -> list[str]:
@@ -267,7 +272,19 @@ class Shares(Controller):
         return lines
 
     def tunnel(self) -> dict:
-        return {**tunler_status(), "address": self._address()}
+        standing = tunler_status()
+        return {**standing, "address": self._address(), "problems": self._problems(standing["installed"], standing["logged_in"])}
+
+    def _problems(self, installed: bool, logged_in: bool) -> list[str]:
+        if not installed:
+            return [NOT_INSTALLED]
+        if not logged_in:
+            return [LOGGED_OUT]
+        if refused_address(log_file(self.record.root, TUNNEL)):
+            return [ADDRESS_TAKEN]
+        if status(self.record.root, TUNNEL).state == FAILED:
+            return [TUNNEL_STOPPED]
+        return []
 
     def _address(self) -> str:
         host = self._host()
@@ -276,7 +293,10 @@ class Shares(Controller):
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
         host = endpoint.strip() if endpoint else self._host()
-        return {**log_in(host, username.strip(), password, master_password or None), **self.tunnel()}
+        made = log_in(host, username.strip(), password, master_password or None)
+        if made["connected"]:
+            self._keep_host(host)
+        return {**made, **self.tunnel()}
 
     def logout(self) -> dict:
         self._user_only("log tunler out")
@@ -292,9 +312,12 @@ class Shares(Controller):
         self._user_only("install tunler")
         server = server_name(host)
         outcome = install(server)
-        sharing = FEATURES["sharing"]
-        self.record.set_setting(sharing.name, {**self.record.setting(sharing.name, {}), "host": server})
+        self._keep_host(server)
         return outcome
+
+    def _keep_host(self, host: str) -> None:
+        sharing = FEATURES["sharing"]
+        self.record.set_setting(sharing.name, {**self.record.setting(sharing.name, {}), "host": host})
 
     def update_tunler(self) -> str:
         self._user_only("update tunler")
@@ -315,10 +338,12 @@ class Shares(Controller):
 
     def readdress(self) -> str:
         self._user_only("choose a new tunnel address")
-        from engine.services import UP, want
-        from features.sharing.services import TUNNEL
+        return self._readdress()
+
+    def _readdress(self) -> str:
         kept = read_json(self.record.root / TUNNEL_FILE, dict, {})
         name = addressed(self.record.root, {key: value for key, value in kept.items() if key != "subdomain"})
+        moved(log_file(self.record.root, TUNNEL), name)
         want(self.record.root, TUNNEL, UP, nonce=time.time())
         return name
 

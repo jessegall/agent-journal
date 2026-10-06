@@ -39,10 +39,9 @@ watch(drop, (open) => open && checkTunnel());
 
 const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL));
 const state = computed(() => {
+    if (tunnelStatus.value && tunnelStatus.value.problems.length) return {key: "down", word: "Not connected"};
     if (!openShares.value.length && !waitingShares.value.length) return {key: "idle", word: "Nothing shared"};
     if (!openShares.value.length) return {key: "waiting", word: "Waiting for you"};
-    if (tunnelStatus.value && !tunnelStatus.value.installed) return {key: "down", word: "tunler isn't installed"};
-    if (tunnelStatus.value && !tunnelStatus.value.logged_in) return {key: "down", word: "tunler isn't logged in"};
     if (!tunnel.value) return {key: "starting", word: "Starting"};
     if (tunnel.value.state === "ready") return {key: "up", word: "Open"};
     if (tunnel.value.state === "starting") return {key: "starting", word: "Starting"};
@@ -111,7 +110,7 @@ async function stop(shares) {
                 <template v-if="address">
                     <div class="tunnel-address" :title="address">{{ address }}</div>
                 </template>
-                <template v-if="tunnelStatus && (!tunnelStatus.installed || !tunnelStatus.logged_in)">
+                <template v-if="tunnelStatus && tunnelStatus.problems.length">
                     <div class="tunnel-problem-wrap">
                         <TunnelProblem :status="tunnelStatus" />
                     </div>
