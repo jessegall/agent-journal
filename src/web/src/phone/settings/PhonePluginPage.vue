@@ -2,7 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {useServiceAction} from "../../composables/service.js";
-import {RUNNING} from "../../domain/services.js";
+import {RUNNING, stateWord} from "../../domain/services.js";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import EmptyList from "../kit/EmptyList.vue";
@@ -26,7 +26,7 @@ async function copyLink() {
         await navigator.clipboard.writeText(src.value);
         toast("The link to this page is copied");
     } catch {
-        toast("The phone would not copy it");
+        toast("Could not copy the link");
     }
 }
 
@@ -36,16 +36,16 @@ onMounted(load);
 <template>
     <PhonePage :title="page ? page.title : 'Plugin page'" line="A page a plugin adds. It runs on your computer." :back="back" @back="emit('back')">
         <template v-if="!page">
-            <EmptyList icon="plug" title="That page is not installed" reason="No plugin page is installed under that name." />
+            <EmptyList icon="plug" title="Page not found" reason="No installed plugin adds this page." />
         </template>
         <template v-else-if="running && src">
             <iframe class="page-frame" :src="src" :title="page.title" />
-            <CellGroup foot="If the page stays blank, it needs your computer's screen. Copy the link and open it there.">
+            <CellGroup foot="Some pages only work on a computer. Copy the link and open it there.">
                 <Cell label="Copy the link to this page" :chevron="false" @pick="copyLink" />
             </CellGroup>
         </template>
         <template v-else>
-            <p class="page-why">{{ page.title }} is not running: its service {{ page.service }} is {{ page.state }}.</p>
+            <p class="page-why">{{ page.title }} is not running. Its service is {{ stateWord(page) }}.</p>
             <template v-if="error">
                 <p class="page-why">{{ error }}</p>
             </template>

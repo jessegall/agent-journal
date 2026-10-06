@@ -32,7 +32,7 @@ const home = async (page) => {
 const settings = async (page) => {
     await home(page);
     await everything(page, "Settings");
-    await page.getByText("Everything you can set").waitFor({timeout: SHOWN});
+    await page.getByText("All settings").waitFor({timeout: SHOWN});
 };
 
 const region = async (page, name) => {

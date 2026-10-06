@@ -1,4 +1,5 @@
 <script setup>
+import {GUIDE_LINE} from "../domain/pluginWords.js";
 import SidePanel from "../kit/SidePanel.vue";
 import PluginGuideBody from "./PluginGuideBody.vue";
 
@@ -8,7 +9,7 @@ const emit = defineEmits(["close"]);
 <template>
     <SidePanel
         title="Make a plugin"
-        abstract="A repository with one file that says what it listens to, runs and shows"
+        :abstract="GUIDE_LINE"
         @close="emit('close')"
     >
         <PluginGuideBody />

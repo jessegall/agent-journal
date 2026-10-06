@@ -61,7 +61,7 @@ async function remove(everything) {
 }
 
 const REMOVALS = [
-    {key: "keep", label: "Remove, keep what it kept", sub: "Its settings and caches stay in case you install it again", danger: true, run: () => remove(false)},
+    {key: "keep", label: "Remove, keep its settings and saved files", sub: "Its settings and caches stay in case you install it again", danger: true, run: () => remove(false)},
     {key: "all", label: "Remove everything", sub: "What it kept of its own goes too", danger: true, run: () => remove(true)},
 ];
 
@@ -80,7 +80,7 @@ onMounted(load);
         <template v-if="plugin">
             <CellGroup>
                 <Cell label="Version" :sub="`${plugin.version} · ${plugin.commit}`" still />
-                <Cell label="Comes from" :sub="plugin.source" still />
+                <Cell label="Installed from" :sub="plugin.source" still />
                 <Cell :label="plugin.enabled ? 'On' : 'Off'" sub="Turn the plugin on or off" still>
                     <template #end>
                         <Switch large :on="plugin.enabled" :title="plugin.title" @change="act($event ? 'enable' : 'disable')" />
@@ -97,22 +97,22 @@ onMounted(load);
                 <template v-for="page in pages" :key="page.name">
                     <Cell :label="page.title" sub="A page this plugin adds" icon="webpage" @pick="emit('open', `ppage:${page.plugin}.${page.name}`)" />
                 </template>
-                <Cell :label="reading ? 'Hide its log' : 'Its log'" icon="terminal" :chevron="false" @pick="readLog" />
+                <Cell :label="reading ? 'Hide the plugin log' : 'Plugin log'" icon="terminal" :chevron="false" @pick="readLog" />
             </CellGroup>
             <template v-if="reading">
                 <PhoneTerm :text="log || 'Nothing is logged yet.'" />
                 <CellGroup>
-                    <Cell label="Clear its log" :chevron="false" @pick="clearLog" />
+                    <Cell label="Clear the plugin log" :chevron="false" @pick="clearLog" />
                 </CellGroup>
             </template>
             <template v-if="services.length">
-                <CellGroup head="Its services">
+                <CellGroup head="Plugin services">
                     <template v-for="s in services" :key="s.id">
                         <Cell :label="s.service" :sub="s.why" :count="stateWord(s)" :hot="dotOf(s) === 'failed'" @pick="emit('open', `service:${s.id}`)" />
                     </template>
                 </CellGroup>
             </template>
-            <CellGroup head="Look after it">
+            <CellGroup head="Manage">
                 <Cell label="Check for updates" sub="Shows what changes before anything runs" tone="accent" :chevron="false" @pick="upgrade(plugin)" />
                 <Cell label="Run setup again" sub="Its settings stay. Its services restart." :chevron="false" @pick="asking = 'setup'" />
                 <Cell label="Remove" sub="Its pages, settings and services go" tone="danger" :chevron="false" @pick="asking = 'remove'" />

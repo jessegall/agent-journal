@@ -61,7 +61,7 @@ const line = computed(() => {
                     <Cell label="Open its address" :sub="service.url" icon="open" @pick="goTo(service.url)" />
                 </CellGroup>
             </template>
-            <h2 class="service-log-head">Its log</h2>
+            <h2 class="service-log-head">Service log</h2>
             <PhoneTerm :text="log || 'Nothing is logged yet.'" />
         </template>
     </PhonePage>
