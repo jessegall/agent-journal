@@ -26,6 +26,10 @@ def kickoff(row, folder: Path, todo: int, handed: list[Todo]) -> str:
             f"that is the only way your answer reaches the agent that dispatched you.")
 
 
+def numbers_in(text: str) -> tuple[int, ...]:
+    return tuple(int(n) for n in str(text).replace(",", " ").split())
+
+
 def held(record, helper) -> list[Todo]:
     return [t for t in Todos(record, actor=SYSTEM).rows.standing() if t.assigned == helper.ref]
 
@@ -59,7 +63,7 @@ class Helpers(Controller):
     @action(network=True)
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "",
                  todos: str = "") -> str:
-        row = self._dispatched(name, job, provider, model, brief, worktree, checkout, tuple(int(n) for n in str(todos).replace(",", " ").split()))
+        row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos))
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
 
     def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False, checkout: str = "",
@@ -92,10 +96,14 @@ class Helpers(Controller):
         driver = DRIVERS[provider]
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
-        launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n, handed)), folder)
         listed = Todos(self.record, actor=SYSTEM)
         for given in handed:
             listed.assign(given.n, to=row.ref)
+        try:
+            launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n, handed)), folder)
+        except Exception:
+            give_back(self.record, handed)
+            raise
         return row
 
     def _handable(self, numbers: tuple[int, ...]) -> list[Todo]:
@@ -167,10 +175,10 @@ class Helpers(Controller):
     def _helper(self, place) -> Helper:
         return Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).load(place.owned_by(HELPER))
 
-    def _told(self, place, text: str, added: str = "") -> None:
+    def _told(self, place, text: str, given_back_text: str = "") -> None:
         home = Record(self.record.root, place.launched_from)
         row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text)
-        told = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{added}", peer=row.name)
+        told = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{given_back_text}", peer=row.name)
         Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped")
 

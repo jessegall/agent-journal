@@ -6,7 +6,7 @@ from engine.record import Record
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on
 from features.helpers.controller import Helpers
-from resources.base import AGENT, SYSTEM
+from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
 from overview.summary import summarize
 from tests.conftest import fresh, refused
@@ -147,8 +147,9 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
     assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
     helper.done(dropped, "names the cause")
-    todos.reopen(dropped, "not yet")
-    assert not todos.load(dropped).pending and todos.load(dropped).assigned == row.ref, "a row waiting for its merge can be pulled back, and stays the helper's"
+    assert "gives it back first" in refused(lambda: todos.reopen(dropped, "not yet")), "the agent cannot unmark a row the helper marked"
+    Todos(repo.record, actor=USER).reopen(dropped, "not yet")
+    assert not todos.load(dropped).pending and todos.load(dropped).assigned == row.ref, "you can pull a row waiting for its merge back, and it stays the helper's"
     helper.done(dropped, "names the cause")
     monkeypatch.setattr(Environments, "stop", lambda self, n: "stopped")
     assert helpers.stop(1).endswith(f"given back: to-do {left}") and todos.load(left).assigned == "", "stopping the helper gives back what it did not mark"
