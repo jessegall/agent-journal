@@ -42,6 +42,7 @@ class Todo(Ranked, Placed, Resource):
         Field(default="", name="assigned"),
         Field(name="blocked"),
         Field(name="reported"),
+        Field(name="pending"),
         Field(default=list, name="after"),
         Field(name="struck"),
         Field(FLAG, False, name="hidden"),
