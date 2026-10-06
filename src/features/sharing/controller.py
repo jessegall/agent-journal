@@ -14,8 +14,8 @@ from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
-from engine.services import FAILED, log_file, status
-from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
+from engine.services import FAILED, UP, log_file, status, want
+from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, moved, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -231,9 +231,11 @@ class Shares(ShareVisits, SharePages, Controller):
     @action
     def readdress(self) -> str:
         self._user_only("choose a new tunnel address")
-        from engine.services import UP, want
-        from features.sharing.services import TUNNEL
+        return self._readdress()
+
+    def _readdress(self) -> str:
         name = new_address(self.record.root)
+        moved(log_file(self.record.root, TUNNEL), name)
         alerts(self.record.root).set(ADDRESS_REFUSED, 0)
         want(self.record.root, TUNNEL, UP, nonce=time.time())
         return name
