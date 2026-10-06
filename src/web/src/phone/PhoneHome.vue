@@ -2,6 +2,7 @@
 import {waitingInOrder} from "./waiting.js";
 import {scrollIntoRoom} from "./reveal.js";
 import {ui} from "../state/ui.js";
+import {replyQuote} from "../format/quote.js";
 import {plainText} from "../text/words.js";
 import {copyText} from "../platform/clipboard.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
@@ -532,11 +533,7 @@ watch(
 );
 
 function quoteIt(item) {
-    quote.value = plainText(item.brief || item.title)
-        .split("\n")
-        .filter((line) => !line.startsWith(">"))
-        .join(" ")
-        .slice(0, 200);
+    quote.value = replyQuote(item.brief || item.title);
     about.value = item.ref;
     held.value = null;
     screen.value = "chat";

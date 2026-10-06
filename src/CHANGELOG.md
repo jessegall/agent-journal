@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.2 — a reply on the phone quotes the answer you reply to
+
+**Replying on the phone to an answer that begins with a quote of your own message quotes only the answer.** The
+reply used to keep your own words from that quote. Nothing to do.
+
 ## 2.253.1 — the phone no longer stays loading after you switch journal
 
 **Switching journal on the phone loads the chat again.** A shared poll kept asking with the first screen that
