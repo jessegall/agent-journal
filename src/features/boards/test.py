@@ -22,6 +22,10 @@ def test_a_board_question_is_seen_only_on_its_board():
     assert (asked.hidden, asked.refs) == (True, [board.ref]), "a board question is about its board and hidden"
     assert asked.n not in [r.n for r in questions.rows.standing()], "the Questions list and the waiting count leave it out"
     assert [q.n for q in Tickets(record, actor=USER).board(board.n)["questions"]] == [asked.n], "the board's own data carries it for New work"
+    boards = Boards(record, actor=USER)
+    assert "nothing to pause" in refused(lambda: boards.pause(board.n)) and "is not paused" in refused(lambda: boards.resume(board.n)), \
+        "a board that is not running cannot be paused, and one that is not paused cannot be resumed"
+    assert "each stage once" in refused(lambda: boards.create("Twice", stages=["Ideas", "Ideas"])), "a board's stages are all different"
 
 
 def test_a_request_opens_a_session_that_cancel_closes():
@@ -59,6 +63,9 @@ def test_a_request_opens_a_session_that_cancel_closes():
     assert "writes cards, never a todo" in refused(lambda: Todos(record, actor=AGENT, agent="board-filler").create("Node cloud editor")), \
         "the board's agent turns a request into cards, never a to-do"
     assert "2 to 5" in refused(lambda: filler_board.ideas(board.n, ["Only one"])), "ideas come as a handful of chips"
+    assert "one chip" in refused(lambda: filler_board.ideas(board.n, ["x" * 300, "short"])), "an idea fits its chip"
+    assert "not stalled" in refused(lambda: boards.retry(board.n)), "only a stalled board is retried"
+    assert "say why" in refused(lambda: filler_board.stall(board.n, " ")), "a stall says why filling cannot go on"
     filler_board.ideas(board.n, ["Share by link", "Invite by mail", "Take a share back"])
     assert boards.load(board.n).ideas == ["Share by link", "Invite by mail", "Take a share back"], "the agent's ideas replace the board's chips"
     from tests.kit import nudges as said, tick
@@ -162,6 +169,11 @@ def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
     assert [(part["title"], part["state"], part["drafts"]) for part in boards.load(board.n).drafting["outline"]] == \
         [("Background", "", 0), ("Who can invite", "read", 2)], "the panel lists the sections and how far the reading got"
     assert "no section" in refused(lambda: agent.progress(board.n, "Pricing", "now")), "only a section of the outline is marked"
+    assert "name the document's sections" in refused(lambda: agent.outline(board.n, " | ")), "an outline names at least one section"
+    assert "is marked" in refused(lambda: agent.progress(board.n, "Background", "skimmed")), "a section is marked with one of the known states"
+    assert "name drafts on board" in refused(lambda: agent.pick(board.n, "")) and "name drafts on board" in refused(lambda: agent.group(board.n, "Invites", "999")), \
+        "only drafts of this board are picked or grouped"
+    assert "nothing is being drafted" in refused(lambda: agent.outline(boards.create("Quiet").n, "Background")), "a board nobody is drafting takes no outline"
 
 
 def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
@@ -198,6 +210,8 @@ def test_the_agent_answers_in_the_new_work_panel_with_board_say():
     assert [c.brief for c in Messages(record, actor=USER).comments(made.n)] == ["Three tickets drafted. Pick the ones to keep."], \
         "a board say line lands on the request, where the New work panel shows it"
     assert "short line" in refused(lambda: agent.say(board.n, "x" * 300)), "the panel takes one short line"
+    revised = boards.revise(board.n, "Make it three cards")
+    assert revised.brief == "Make it three cards", "the user revises a request in the panel and the revision is a message on the board"
 
 
 def test_added_cards_make_the_agent_offer_to_place_them():

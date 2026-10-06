@@ -21,6 +21,9 @@ def test_a_collection_holds_rows_of_any_type_and_a_row_can_sit_in_several():
     assert "already open" in refused(lambda: collections.create("launch")), "an open collection's name is not taken twice"
     assert "type:number" in refused(lambda: collections.add(launch.n, ["nothing"])), "a ref that is not a row is refused"
     assert refused(lambda: collections.add(launch.n, ["todo:99"])) != "", "a row that does not exist is refused"
+    collections.add(later.n, [doc.ref])
+    Docs(record, actor=AGENT).force_delete(doc.n)
+    assert collections.members(later.n) == ["todo 1  a task"], "a row that is gone for good is left out of its collection"
 
 
 def test_old_collections_filed_from_a_dump_name_their_dump():

@@ -27,6 +27,11 @@ def test_an_update_covers_what_happened_since_the_user_opened_the_last_one():
     assert (two.title, two.data["number"], two.data["since"]) == ("What happened since your last update", 2, one.data["until"]), \
         "the next starts where the last opened one ended"
     assert [i["ref"] for i in two.data["items"] if i["section"] == "done"] == [f"todo:{second.n}"], "and lists only what is new"
+    third = todos.create("Wording pass")
+    todos.start(third.n)
+    lines = Reports(record, actor=SYSTEM).action("changes")()
+    assert lines[0].startswith("since ") and any(f"doing todo:{third.n} Wording pass" in line for line in lines), \
+        "what changed since the last update lists what is being done"
 
 
 def test_notes_items_and_drops_change_only_an_update():
