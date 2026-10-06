@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from features.plans.resource import Placement
 from resources.base import Ref
 from features.kanban.shapes import Lane
+from features.helpers.resource import held_by_helper
 
 TODO, HELD, DOING, ASKED, DONE = "todo", "held", "doing", "asked", "done"
 
@@ -35,10 +36,6 @@ def lane_of(sources: Sources, todo) -> str:
     if todo.n in sources.works or todo.blocked or sources.todos.waits(todo) or sources.holding(todo):
         return HELD
     return TODO
-
-
-def held_by_helper(todo) -> bool:
-    return todo.assigned.startswith("helper:")
 
 
 def reason_of(sources: Sources, todo) -> str:

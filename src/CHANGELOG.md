@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.0 — to-dos handed to a helper are its alone
+
+**A helper can be handed rows of your list.** `journal helper dispatch … --todos 3001,3002` gives those to-dos to the
+helper, and its kickoff names them. Nobody else may start, close, strike or reassign them; you still can, and
+`journal helper stop <n>` gives them back. The helper marks one with `journal helper done <n> --how "<what landed>"`,
+and with a worktree the row shows as done, waiting for its merge: it sits in the board's Done lane and closes by itself
+when `journal worktree take` lands the work. Pulling it back out of Done unmarks it. Stopping the helper, or its turn
+ending in an error, gives back the rows it has not marked; dropping its worktree untaken gives back the rows that
+waited for it, and finishing the helper gives back the rest. `journal todo assign <n> --to` hands a row to one agent
+and `journal todo unassign <n>` gives it back.
+
 ## 2.252.0 — the overnight refactor lands, and the phone tunnel keeps itself up
 
 **This release brings the overnight refactor into main**: everything listed under 2.251.0 and 2.250.0 below, released

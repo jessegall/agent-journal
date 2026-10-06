@@ -112,10 +112,13 @@ class Worktrees(Controller):
 
     def _land(self, row) -> list[int]:
         listed = Todos(self.record, actor=SYSTEM)
-        pending = [t for t in listed.rows.standing() if t.pending and t.pending.get("worktree") == str(row.n)]
-        for todo in pending:
-            listed.complete(todo.n, f"{todo.pending['how']} (taken from {row.branch})", assigned="", pending=None)
-        return [t.n for t in pending]
+        waiting = self._waiting(row)
+        for todo in waiting:
+            listed.complete(todo.n, f"{todo.merge_wait.how} (taken from {row.branch})")
+        return [t.n for t in waiting]
+
+    def _waiting(self, row) -> list:
+        return [t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.merge_wait.worktree == str(row.n)]
 
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):
@@ -131,6 +134,9 @@ class Worktrees(Controller):
         if row.branch and present(project, f"refs/heads/{row.branch}"):
             git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
             git(project, "branch", "-D", row.branch)
+        listed = Todos(self.record, actor=SYSTEM)
+        for todo in self._waiting(row):
+            listed.unassign(todo.n)
         return super().complete(n, how or f"dropped; its last commit is kept at {KEPT}/{row.title}", **data)
 
     def _drift(self, row) -> Drift:

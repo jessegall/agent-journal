@@ -1,6 +1,9 @@
 import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import ClassVar
+
+from engine.fields import Loaded
 
 from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
@@ -35,6 +38,15 @@ class Message(Shape, Resource):
     command_names = {"complete": "processed"}
 
 
+@dataclass(frozen=True)
+class MergeWait(Loaded):
+    how: str = ""
+    worktree: str = ""
+
+    def to_json(self) -> dict:
+        return asdict(self)
+
+
 class Todo(Ranked, Placed, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
@@ -65,6 +77,10 @@ class Todo(Ranked, Placed, Resource):
     listed_under = SIDEBAR
     command_names = {"complete": "done"}
     labels = {"outcome": "How"}
+
+    @property
+    def merge_wait(self) -> MergeWait:
+        return MergeWait.from_json(self.pending)
 
 
 class Work(Traced, Resource):
