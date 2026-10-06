@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.runtime import folder, profiles, sessions
 from engine.sessions import Sessions, alive
-from providers.transcript_cache import FOLD_CACHE
+from providers.transcript_cache import FOLD_CACHE, code_mark
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
@@ -22,6 +22,7 @@ OUTPUTS_FOR = DAY
 ARCHIVES_FOR = 90 * DAY
 PROFILES_KEPT = 50
 FOLDS_FOR = 7 * DAY
+OTHER_MARKS_FOR = DAY
 
 
 @dataclass(frozen=True)
@@ -78,12 +79,14 @@ def leftovers(root: Path) -> int:
     archived = [f for f in older((root / "attic").glob("*.tar.gz"), ARCHIVES_FOR) if not f.name.startswith("before-")]
     unkept = older((folder(root) / "outputs").glob("output-*"), OUTPUTS_FOR)
     profiled = sorted(profiles(root).glob("*.txt"), key=mtime, reverse=True)[PROFILES_KEPT:]
-    folds = older(FOLD_CACHE.glob("*.pickle"), FOLDS_FOR)
-    for d in staged:
+    marks = [d for d in older(FOLD_CACHE.glob("*"), OTHER_MARKS_FOR) if d.is_dir() and d.name != code_mark()]
+    folds = [*FOLD_CACHE.glob("*.pickle"), *older((FOLD_CACHE / code_mark()).glob("*.pickle"), FOLDS_FOR),
+             *older((FOLD_CACHE / code_mark()).glob("*.tmp"), OTHER_MARKS_FOR)]
+    for d in staged + marks:
         shutil.rmtree(d, ignore_errors=True)
     for f in archived + unkept + profiled + folds:
         f.unlink(missing_ok=True)
-    return len(staged) + len(archived) + len(unkept) + len(profiled) + len(folds)
+    return len(staged) + len(marks) + len(archived) + len(unkept) + len(profiled) + len(folds)
 
 
 def trim(f: Path, keep: int) -> bool:

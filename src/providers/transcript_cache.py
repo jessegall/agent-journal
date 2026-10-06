@@ -3,7 +3,7 @@ import pickle
 import pkgutil
 import time
 from functools import cache
-from threading import Lock
+from threading import Lock, Thread, get_ident
 from pathlib import Path
 from typing import Callable
 
@@ -51,7 +51,7 @@ class TranscriptCache:
             return self.locks.setdefault(key, Lock())
 
     def file(self, key: tuple) -> Path:
-        return self.folder / f"{digest('|'.join(key), 20)}.pickle"
+        return self.folder / code_mark() / f"{digest('|'.join(key), 20)}.pickle"
 
     def stored(self, key: tuple) -> tuple | None:
         try:
@@ -59,13 +59,22 @@ class TranscriptCache:
         except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError, TypeError):
             return None
 
-    def keep(self, key: tuple, offset: int, state, every: float) -> None:
+    def keep(self, key: tuple, offset: int, state, every: float, behind: bool = False) -> None:
         if time.monotonic() - self.kept.get(key, 0.0) < every:
             return
         self.kept[key] = time.monotonic()
+        if behind:
+            Thread(target=self.write, args=(key, offset, state), daemon=True).start()
+            return
+        self.write(key, offset, state)
+
+    def write(self, key: tuple, offset: int, state) -> None:
+        target = self.file(key)
         try:
-            self.folder.mkdir(parents=True, exist_ok=True)
-            self.file(key).write_bytes(pickle.dumps((offset, state)))
+            target.parent.mkdir(parents=True, exist_ok=True)
+            writing = target.with_suffix(f".{get_ident()}.tmp")
+            writing.write_bytes(pickle.dumps((offset, state)))
+            writing.replace(target)
         except (OSError, pickle.PicklingError):
             return
 
@@ -100,7 +109,7 @@ class TranscriptCache:
             turns = extend(turns, lines, count)
             count += len(lines)
             seam = self.before(path, end, SEAM)
-            self.keep(key, end, (count, turns, seam), KEEP_TRANSCRIPT_EVERY)
+            self.keep(key, end, (count, list(turns), seam), KEEP_TRANSCRIPT_EVERY, behind=True)
         self.transcripts[str(path)] = (end, count, turns, seam)
         return turns
 
