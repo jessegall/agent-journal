@@ -42,3 +42,17 @@ test("focusing the message box measures the keyboard at once", () => {
     document.dispatchEvent(new Event("focusin"));
     expect(root()).toBe("320px");
 });
+
+test("focusing a field hides the tab bar until the field is left", async () => {
+    vi.useFakeTimers();
+    stubbed(800);
+    mounted();
+    const field = document.body.appendChild(document.createElement("input"));
+    field.focus();
+    expect(document.documentElement.classList.contains("typing")).toBe(true);
+    field.blur();
+    await vi.advanceTimersByTimeAsync(60);
+    expect(document.documentElement.classList.contains("typing")).toBe(false);
+    field.remove();
+    vi.useRealTimers();
+});

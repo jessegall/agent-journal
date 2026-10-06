@@ -128,7 +128,7 @@ function read(target) {
     inset: 0;
     display: flex;
     flex-direction: column;
-    padding: 0 var(--side) max(14px, env(safe-area-inset-bottom));
+    padding: 0 var(--side) max(14px, var(--safe-bottom));
     background: var(--raised);
     transition: transform var(--pop) var(--push);
 }

@@ -13,6 +13,7 @@ async function pairedState() {
     const page = await context.newPage();
     await page.goto(PAIR);
     await page.getByPlaceholder("Message the agent").waitFor();
+    await page.getByRole("button", {name: "Skip the tour"}).click();
     const state = await context.storageState();
     await browser.close();
     return state;
@@ -20,6 +21,8 @@ async function pairedState() {
 
 const state = await pairedState();
 const card = (page, title) => page.locator("article.question", {hasText: title});
+
+const tab = (page, name) => page.getByRole("tab", {name: new RegExp(`^${name}`)}).click();
 
 const home = async (page) => {
     await page.goto(new URL("./", PAIR).href);
@@ -64,6 +67,53 @@ await runScenarios(PAIR, {
         const counts = sent.filter((word) => word === "sent").length;
         if (counts !== 1) throw new Error(`the message was sent ${counts} times: ${sent.join(",")}`);
         if ((await page.getByText(words).count()) !== 1) throw new Error("the message shows more than once");
+    },
+    async "the four tabs open Chat, Home, To-dos and Everything"(page) {
+        await home(page);
+        await tab(page, "Home");
+        await page.getByRole("button", {name: "Change Home"}).waitFor({timeout: SHOWN});
+        await tab(page, "To-dos");
+        await page.getByRole("button", {name: "Water the plants"}).waitFor({timeout: SHOWN});
+        await tab(page, "Everything");
+        await page.getByText("Plans the agent wrote; approve one to start it").waitFor({timeout: SHOWN});
+        await page.getByText("Shared by every environment.").waitFor();
+        await page.getByRole("button", {name: /^Facts/}).click();
+        await page.getByText("Things the agent learned about this project and keeps in mind.").waitFor({timeout: SHOWN});
+        await page.getByText("No open facts").waitFor({timeout: SHOWN});
+        await tab(page, "Chat");
+        await page.getByPlaceholder("Message the agent").waitFor();
+    },
+    async "search finds places, commands and items"(page) {
+        await home(page);
+        await tab(page, "Everything");
+        await page.getByRole("button", {name: /Search everything/}).click();
+        await page.getByLabel("Search places, commands and items").fill("plants");
+        await page.getByRole("button", {name: /Water the plants/}).waitFor({timeout: SHOWN});
+        await page.getByLabel("Search places, commands and items").fill("tour");
+        await page.getByRole("button", {name: /Show the tour again/}).click();
+        await page.getByText("1 of 3").waitFor({timeout: SHOWN});
+        await page.getByRole("button", {name: "Next"}).click();
+        await page.locator(".tab.spot[data-tab=todos]").waitFor({timeout: SHOWN});
+        await page.getByRole("button", {name: "Next"}).click();
+        await page.locator(".tab.spot[data-tab=everything]").waitFor({timeout: SHOWN});
+        await page.getByRole("button", {name: "Close the tour"}).click();
+        if (await page.locator(".spot").count()) throw new Error("the tour left something lit after it closed");
+    },
+    async "a to-do swiped right is marked done, and Undo opens it again"(page) {
+        await home(page);
+        await tab(page, "To-dos");
+        const row = page.getByRole("button", {name: "Water the plants"});
+        await row.waitFor({timeout: SHOWN});
+        const box = await row.boundingBox();
+        const y = box.y + box.height / 2;
+        await page.mouse.move(box.x + 60, y);
+        await page.mouse.down();
+        for (const x of [70, 100, 140, 190, 240]) await page.mouse.move(box.x + x, y);
+        await page.mouse.up();
+        await page.getByText(/Marked to-do \d+ done/).waitFor({timeout: SHOWN});
+        await page.getByRole("button", {name: "Undo"}).click();
+        await page.getByText(/To-do \d+ is open again/).waitFor({timeout: SHOWN});
+        await row.waitFor({timeout: SHOWN});
     },
     async "an answer the computer refuses is said, with a way to try again"(page) {
         await home(page);

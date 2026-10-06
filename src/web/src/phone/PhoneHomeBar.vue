@@ -1,5 +1,8 @@
 <script setup>
-import PhoneAgent from "./PhoneAgent.vue";
+import {computed} from "vue";
+import {SILENT, SILENT_WORD} from "../domain/agentState.js";
+import {agentCounts} from "../domain/helpers.js";
+import {counted} from "../format/number.js";
 import PhoneAtWorkChip from "./PhoneAtWorkChip.vue";
 import Icon from "../kit/Icon.vue";
 import PhoneNotify from "./PhoneNotify.vue";
@@ -12,44 +15,56 @@ const props = defineProps({
     under: {type: Boolean, default: false},
     offline: {type: Boolean, default: false},
     current: {type: Boolean, default: false},
-    newer: {type: Boolean, default: false},
     notice: {type: String, default: ""},
     actionsHere: {type: Number, default: 0},
     go: {type: Object, required: true},
     away: {type: Boolean, default: false},
-    chat: {type: Boolean, default: true},
 });
-const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list", "plan"]);
+const emit = defineEmits(["places", "agent", "at-work", "open", "list", "plan"]);
+const AGENT_WORDS = {offline: "Not running", [SILENT]: SILENT_WORD};
+const jobs = computed(() => {
+    const live = props.feed.running || {};
+    return (props.feed.agent === "working" ? 1 : 0) + agentCounts(live.helpers || [], live.subagents || []).working;
+});
+const paused = computed(() => Boolean(props.feed.running?.paused));
+const agentWords = computed(() => {
+    if (AGENT_WORDS[props.feed.agent]) return AGENT_WORDS[props.feed.agent];
+    if (paused.value) return "Paused";
+    return jobs.value ? `Working on ${counted(jobs.value, "job", "jobs")}` : "Idle";
+});
+const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "working" : ""));
 </script>
 
 <template>
     <div :class="['home-top', {under}]">
-        <header class="home-bar">
-            <button type="button" class="home-names" aria-label="Switch journal or environment" @click="emit('places')">
-                <span class="home-title">
-                    <span class="home-dot" :style="{background: connection.color}" />
-                    <span class="home-project">{{ connection.project }}</span>
-                    <Icon name="chevronRight" bold facing="down" :size="12" class="home-chevron" />
+        <header class="home-bar chat-top">
+            <button type="button" class="top-btn" :aria-label="`Switch journal or environment, now ${connection.project}, ${connection.environment}`" @click="emit('places')">
+                <span class="top-line">
+                    <span class="top-dot" :style="{background: connection.color}" />
+                    <span class="top-name">{{ connection.project }}</span>
+                    <Icon name="chevronRight" bold facing="down" :size="12" class="top-chevron" />
                 </span>
-                <span :class="['home-note', {offline}]">
+                <span :class="['top-sub', {offline}]">
                     <template v-if="offline">
-                        <span class="home-offline-dot" aria-hidden="true" />
+                        <span class="top-offline-dot" aria-hidden="true" />
                     </template>
                     {{ connection.environment }}{{ offline ? " · Offline, waiting to reconnect" : current ? "" : " · Updating…" }}
                 </span>
             </button>
-            <PhoneAtWorkChip :live="feed.running || {}" @open="emit('at-work')" />
-            <button type="button" class="home-agent" aria-haspopup="dialog" @click="emit('agent')">
-                <span class="phone-hidden">Agent:</span>
-                <PhoneAgent :state="feed.agent" :auto="Boolean(feed.running?.auto)" />
+            <button type="button" class="top-btn" aria-haspopup="dialog" :aria-label="`Main agent, ${agentWords}. Open the agent's controls`" @click="emit('agent')">
+                <span class="top-line">
+                    <span class="top-name">Main agent</span>
+                    <Icon name="chevronRight" bold :size="12" class="top-chevron" />
+                </span>
+                <span class="top-sub">
+                    <span :class="['top-live', agentTone]" aria-hidden="true" />
+                    {{ agentWords }}
+                </span>
             </button>
         </header>
-        <template v-if="newer">
-            <p class="home-newer">
-                A newer version of this app is ready.
-                <button type="button" @click="emit('reload')">Reload now</button>
-            </p>
-        </template>
+        <div class="top-chips">
+            <PhoneAtWorkChip :live="feed.running || {}" @open="emit('at-work')" />
+        </div>
         <template v-if="notice">
             <p class="home-offline" role="status">{{ notice }}</p>
         </template>
@@ -59,7 +74,7 @@ const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list"
             </p>
         </template>
         <PhoneNotify />
-        <template v-if="feed.plan && chat">
+        <template v-if="feed.plan">
             <PhonePlanStrip :plan="feed.plan" :go="go" :away="away" @open="emit('plan')" />
         </template>
         <PhoneWaiting :waiting="feed.waiting" @open="(target) => emit('open', target)" @list="emit('list')" />
@@ -83,111 +98,108 @@ const emit = defineEmits(["places", "agent", "at-work", "reload", "open", "list"
 .home-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     min-height: 52px;
+    padding: 4px 0;
 }
 
-.home-names {
-    min-width: 0;
+.top-btn {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    align-items: flex-start;
-    min-height: 44px;
     justify-content: center;
-    padding: 0;
+    min-width: 0;
+    min-height: 48px;
+    padding: 4px 10px;
     border: 0;
-    background: transparent;
+    border-radius: 14px;
+    background: var(--sel);
     color: inherit;
     font: inherit;
     text-align: left;
 }
 
-.home-chevron {
-    flex: none;
-    color: var(--text-3);
+.top-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.home-dot {
+.top-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-dot,
+.top-live {
     flex: none;
-    width: 9px;
-    height: 9px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
 }
 
-.home-title {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 1rem;
-    font-weight: 600;
+.top-live {
+    background: var(--text-3);
 }
 
-.home-project {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.top-live.working {
+    background: var(--tone-good);
 }
 
-.home-note {
-    max-width: 100%;
-    overflow: hidden;
-    padding-left: 16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.top-live.paused {
+    background: var(--tone-warn);
+}
+
+.top-chevron {
+    flex: none;
     color: var(--text-3);
-    font-size: 0.765rem;
 }
 
-.home-agent {
-    flex: none;
-    min-height: 44px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-}
-
-.home-newer {
+.top-sub {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin: 0 0 8px;
-    padding: 6px 6px 6px 14px;
-    border-radius: 18px;
-    background: var(--accent-dim);
-    color: var(--text);
-    font-size: 0.765rem;
-    line-height: 1.3;
+    gap: 6px;
+    overflow: hidden;
+    color: var(--text-3);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.home-newer button {
-    flex: none;
-    min-height: 30px;
-    padding: 0 12px;
-    border: 0;
-    border-radius: 15px;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
-}
-
-.home-note.offline {
+.top-sub.offline {
     color: var(--text-2);
 }
 
-.home-offline-dot {
-    display: inline-block;
+.top-offline-dot {
+    flex: none;
     width: 7px;
     height: 7px;
-    margin-right: 4px;
     border-radius: 50%;
     background: var(--tone-warn);
-    vertical-align: middle;
 }
+
+.top-chips {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.top-chips:empty {
+    display: none;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 .home-pending {
     margin: 0 0 6px;

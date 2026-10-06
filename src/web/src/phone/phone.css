@@ -49,6 +49,7 @@ body {
 .phone {
     --text-4: var(--text-3);
     --side: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+    --safe-bottom: env(safe-area-inset-bottom);
     --push: cubic-bezier(0.32, 0.72, 0, 1);
     --out: cubic-bezier(0.4, 0, 1, 1);
     --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -205,8 +206,49 @@ body {
     user-select: text;
 }
 
-.keyboard-up .phone .tabs {
+.keyboard-up .phone .tabs,
+.typing .phone .tabs {
     display: none;
+}
+
+.typing .phone {
+    --safe-bottom: 0px;
+}
+
+.phone .screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.phone .screen-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 0 24px;
+}
+
+.phone .screen-foot {
+    flex: none;
+    margin: 0 calc(-1 * var(--side));
+    padding: 10px var(--side);
+    border-top: 1px solid var(--line);
+    background: var(--bg);
+}
+
+.phone .pressing {
+    background: var(--hover);
+}
+
+.phone .spot {
+    position: relative;
+    z-index: 56;
+    border-radius: 14px;
+    box-shadow:
+        0 0 0 3px var(--accent-text),
+        0 0 0 9999px rgb(0 0 0 / 55%);
 }
 
 .phone button {

@@ -1,8 +1,7 @@
 import {CONTROLS, sidewaysScroller, useDrag} from "./drag.js";
 import {tick} from "./haptic.js";
+import {CUE_AFTER, HOLD_FOR, SLIP} from "./kit/press.js";
 
-const HOLD_FOR = 450;
-const PRESS_AFTER = 120;
 const EDGE = 24;
 const REPLY_AT = 56;
 const REACH = 64;
@@ -28,7 +27,7 @@ export function useBubbles(list, {hold, reply}) {
             if (!el || event.target.closest(CONTROLS)) return null;
             const context = {el, held: false, crossed: false};
             context.swipes = first.clientX > EDGE && !("noswipe" in el.dataset) && !sidewaysScroller(event.target, el);
-            context.pressing = setTimeout(() => (el.dataset.pressing = ""), PRESS_AFTER);
+            context.pressing = setTimeout(() => (el.dataset.pressing = ""), CUE_AFTER);
             context.timer = setTimeout(() => {
                 calm(context);
                 context.held = true;
@@ -54,5 +53,6 @@ export function useBubbles(list, {hold, reply}) {
             if (d >= REPLY_AT) reply(context.el.dataset.hold);
         },
         drop: calm,
+        slip: (far, context) => far > SLIP && calm(context),
     });
 }

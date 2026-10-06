@@ -16,11 +16,23 @@ function measured() {
     if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
 }
 
+const FIELDS = "input, textarea, [contenteditable]";
+
+function focused(event) {
+    if (event.target.matches?.(FIELDS)) document.documentElement.classList.add("typing");
+}
+
+function blurred() {
+    setTimeout(() => document.documentElement.classList.toggle("typing", Boolean(document.activeElement?.matches?.(FIELDS))), 50);
+}
+
 export function useKeyboard() {
     const viewport = () => window.visualViewport;
     useWindowEvent("resize", measured, undefined, viewport);
     useWindowEvent("scroll", measured, undefined, viewport);
     useWindowEvent("scroll", measured, {passive: true});
     useWindowEvent("focusin", measured, undefined, () => document);
+    useWindowEvent("focusin", focused, undefined, () => document);
+    useWindowEvent("focusout", blurred, undefined, () => document);
     onMounted(measured);
 }
