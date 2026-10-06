@@ -2,6 +2,7 @@ import fcntl
 import re
 import secrets
 import shutil
+from contextlib import contextmanager
 from pathlib import Path
 from typing import NamedTuple
 
@@ -67,14 +68,23 @@ def staged(root: Path, source: str, revision: str, version: str) -> Staged:
 
 def alone(root: Path, name: str):
     lock = busy_file(root, name)
-    lock.parent.mkdir(parents=True, exist_ok=True)
-    held = lock.open("w")
+    with on_disk(name):
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        held = lock.open("w")
     try:
         fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError as error:
         held.close()
         raise Refused(f"{name} is being installed already; wait for that to finish") from error
     return held
+
+
+@contextmanager
+def on_disk(name: str):
+    try:
+        yield
+    except OSError as error:
+        raise Refused(f"{name} could not be written to disk: {error}") from error
 
 
 def token() -> str:

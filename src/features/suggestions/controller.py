@@ -6,7 +6,9 @@ from resources.base import SYSTEM
 
 ACCEPT, ADJUST, DECLINE, INSTALL = "Accept", "Adjust", "Decline", "Install"
 OPEN_SUGGESTIONS = 5
-
+ACCEPTING = {"title": ACCEPT, "description": "a to-do is filed from it", "code": ""}
+ADJUSTING = {"title": ADJUST, "description": "say what to do differently below; a to-do is filed from your words", "code": ""}
+DECLINING = {"title": DECLINE, "description": "it is not proposed again", "code": ""}
 
 
 def adjusted(how: str) -> str:
@@ -25,10 +27,8 @@ class Suggestions(Controller):
         if declined and not data.pop("despite", None):
             s = declined[-1]
             self._refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
-        options = [{"title": ACCEPT, "description": "a to-do is filed from it", "code": ""},
-                   {"title": ADJUST, "description": "say what to do differently below; a to-do is filed from your words", "code": ""},
-                   {"title": DECLINE, "description": "it is not proposed again", "code": ""}]
-        return super().create(title, abstract, brief, options=options[-1:] if data.get("buttons") else options, **data)
+        options = [DECLINING] if data.get("buttons") else [ACCEPTING, ADJUSTING, DECLINING]
+        return super().create(title, abstract, brief, options=options, **data)
 
     @action
     def complete(self, n: int, how: str = "", **data):

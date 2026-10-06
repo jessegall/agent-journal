@@ -224,15 +224,6 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
 
 
 
-def test_removing_a_plugin_stops_its_services_and_takes_its_folder():
-    from engine.services import DOWN, wanted
-    record = alone()
-    row = installed(record, "linter", "exit 0", services={"web": {"run": "sleep 30"}})
-    Plugins(record, actor=SYSTEM).complete(row.n, how="removed")
-    assert (wanted(record.root, "linter.web"), folder(record.root, "linter").exists()) == (DOWN, False), \
-        "its service is asked to stop and its folder is gone"
-
-
 def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.commands import Configure
     from features.plugins.declared import settings_of
@@ -704,9 +695,10 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
 
 
 def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
+    from engine.services import DOWN, wanted
     from tests.kit import run
     record = alone()
-    plugin = installed(record, "checker", "exit 0")
+    plugin = installed(record, "checker", "exit 0", services={"web": {"run": "sleep 30"}})
     assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check.sh"]) == 0
     assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check-v2.sh"]) == 0
     assert [c.data["command"] for c in CONTROLLERS["check"](record, actor=USER).all()] == ["sh check-v2.sh"], \
@@ -716,6 +708,8 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     assert "belongs to the checker plugin" in refused(lambda: CONTROLLERS["check"](record, actor=USER).delete(check.n, "tidy")), "nobody else removes it"
     Plugins(record, actor=USER).complete(plugin.n, "removed")
     assert [r.n for r in CONTROLLERS["check"](record, actor=USER).all(deleted=True, completed=True)] == [], "removing the plugin removes what it created"
+    assert (wanted(record.root, "checker.web"), folder(record.root, "checker").exists()) == (DOWN, False), \
+        "its service is asked to stop and its folder is gone"
     from http.server import BaseHTTPRequestHandler, HTTPServer
     from features import FEATURES
     from features.plugins.host import Host
@@ -787,6 +781,9 @@ def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_pa
                 "installed": "sh scan.sh"}
     made = rows.action("install")(repository(tmp_path, manifest, {"scan.sh": "echo '{\"settings\": {\"folders\": \"src\"}}'\n"}), yes=True)
     assert (rows.load(made.n).settings or {}).get("chosen") == {"folders": "src"}, "what the plugin found is chosen by the time the install is done"
+
+
+def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_showed(tmp_path, monkeypatch):
     from features.plugins import fitting
     from features.plugins.manifest import fits, read
     for given in ("PHP", {"languages": "PHP"}, {"language": ["PHP"]}, {"files": []}, {"files": [3]}):
@@ -831,8 +828,13 @@ def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_pa
     assert len(asked) == 1, "the official list is read once a day, not at every session start"
     assert "written" not in suggested["Install the Snake plugin"].brief and "Python" in suggested["Install the Snake plugin"].brief, "the suggestion says which part of the project fits"
     snake = suggested["Install the Snake plugin"]
+    assert "in its own words" in snake.brief and "setup" in snake.brief, f"the suggestion quotes the plugin and lists the commands it runs: {snake.brief}"
+    pinned = snake.data["buttons"][0]["body"]["ref"]
+    assert len(pinned) == 40, "the button names the commit the suggestion was read from"
+    git("commit", "-q", "--allow-empty", "-m", "later", cwd=tmp_path / "snake")
     press(repo.record, snake, fitting.YES, "user", "viewer")
-    assert [r.source for r in Plugins(repo.record, actor="system").rows.every()] == [snake.data["plugin"]], "pressing the button installs the plugin right away"
+    assert [(r.source, r.commit) for r in Plugins(repo.record, actor="system").rows.every()] == [(snake.data["plugin"], pinned)], \
+        "pressing the button installs exactly the commit the suggestion showed, right away"
     assert (Todos(repo.record, actor="system").rows.every(), Suggestions(repo.record, actor="system").load(snake.n).decision) == ([], "install"), \
         "and no to-do stands between the press and the install"
     marks = [c for c in Agents(repo.record, actor="system").primary().data["cards"] if c.get("side") == "user"]
