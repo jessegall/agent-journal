@@ -21,7 +21,8 @@ down() {
 }
 read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
 # a late heartbeat is a busy server as often as a dead one: try it once before giving up
-[ $(( $(date +%s) - at )) -le $heartbeat_age ] || { [ -e "$root/runtime/upgrading" ] || tries_otherwise=1; }
+stale=
+[ $(( $(date +%s) - at )) -le $heartbeat_age ] || { stale=1; [ -e "$root/runtime/upgrading" ] || tries_otherwise=1; }
 # the server writes its restart time with a fraction; ${since%.*} keeps the whole seconds the shell can count with
 restarting() { read -r since < "$root/runtime/restarting" 2>/dev/null && [ $(( $(date +%s) - ${since%.*} )) -lt $restart_window ]; }
 tries=0
@@ -46,7 +47,8 @@ out=${reply%
 *}
 case "$code" in
   200|403) [ -z "$out" ] || [ "$out" = "{}" ] || printf '%s\n' "$out" ;;
-  *) printf '%s %s %s %s\n' "$(date +%s)" "${code:-000}" "$agent" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"; keep ;;
+  *) { [ -z "$stale" ] || [ "${code:-000}" != 000 ]; } || down
+     printf '%s %s %s %s\n' "$(date +%s)" "${code:-000}" "$agent" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"; keep ;;
 esac
 rm -f "$body"
 exit 0

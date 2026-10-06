@@ -917,3 +917,67 @@ print(ZIPPED, ready, reached("stopped"))
 """
     ran = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, timeout=90)
     assert ran.stdout.split() == ["True", "ready", "stopped"], ran.stdout + ran.stderr
+
+
+def menu_in_terminal(*typed) -> tuple[str, int]:
+    import pty
+    import select as waiting
+    program = ("import sys, termios; sys.path.insert(0, %r); from commands.menu import pick\n"
+               "def attrs():\n    flags = termios.tcgetattr(0)\n    flags[3] &= ~getattr(termios, 'PENDIN', 0)\n    return flags\n"
+               "before = attrs()\n"
+               "try:\n    chosen = pick('Start where?', ['one note'], ['first', 'second', 'third'], 0)\n"
+               "except BaseException as stopped:\n    chosen = type(stopped).__name__ + ':' + str(stopped)\n"
+               "print('RESULT', chosen, 'RESTORED', attrs() == before)\n") % str(CODE)
+    pid, master = pty.fork()
+    if pid == 0:
+        os.execv(sys.executable, [sys.executable, "-c", program])
+    seen = b""
+    try:
+        for chunk in typed:
+            until = time.time() + 5
+            while b"to leave" not in seen and time.time() < until:
+                if waiting.select([master], [], [], 0.1)[0]:
+                    seen += os.read(master, 4096)
+            for piece in chunk.split("|"):
+                os.write(master, piece.encode())
+                time.sleep(0.02)
+            time.sleep(0.1)
+        until = time.time() + 10
+        while b"RESULT" not in seen and time.time() < until:
+            if waiting.select([master], [], [], 0.2)[0]:
+                try:
+                    more = os.read(master, 4096)
+                except OSError:
+                    break
+                if not more:
+                    break
+                seen += more
+    finally:
+        try:
+            os.kill(pid, 9)
+        except ProcessLookupError:
+            pass
+        os.waitpid(pid, 0)
+    return seen.decode(errors="replace"), 0
+
+
+@pytest.mark.parametrize("typed, expected", [
+    (["\x1b[B", "\r"], "1"),
+    (["\x1b|[B", "\x1b[|B", "\r"], "2"),
+    (["\x1b[B\x1b[B\r"], "2"),
+    (["3\r"], "2"),
+    (["\x1b"], "SystemExit:journal: left without starting"),
+    (["\x03"], "KeyboardInterrupt:"),
+])
+def test_the_start_menu_follows_the_keys_typed_in_a_real_terminal_and_gives_the_terminal_back(typed, expected):
+    shown, _ = menu_in_terminal(*typed)
+    assert f"RESULT {expected} RESTORED True" in shown.replace("\r", ""), shown
+
+
+def test_a_start_menu_whose_input_ends_leaves_instead_of_spinning():
+    from commands.menu import read_keys
+    reading, writing = os.pipe()
+    os.close(writing)
+    with pytest.raises(SystemExit, match="input ended"):
+        read_keys(reading)
+    os.close(reading)
