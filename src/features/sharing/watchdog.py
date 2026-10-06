@@ -1,81 +1,91 @@
 import time
 
-from engine import runtime
-from engine.events.engine import ClockTicked
 from controllers.types import Messages
 from controllers.stored import mtime
 from engine.keeper import READY, STARTING
 from engine.services import UP, log_file, status, want
 from engine.sessions import alive
 from engine.state import State
-from features.parts import Context, Handler
-from engine.ports import answers, reached
-from features.sharing.controller import HEALTH, Shares
+from engine.ports import reached, vouched
+from features.sharing.controller import HEALTH, HEALTH_MARKER, Shares
 from features.sharing.details import HOST_DOWN, RESTARTED
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import ADDRESS_REFUSED, alerts, held_by_server, refused_address, tunler_status
+from features.sharing.tunnel import ADDRESS_REFUSED, alerts, default_route, held_by_server, refused_address, tunler_status
 from resources.base import SYSTEM, Refused
 
-MISSES_BEFORE_RESTART = 3
-PATIENCE = 30.0
+MISSES_BEFORE_RESTART = 2
+CHECK_SECONDS = 5.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
-RESTART_EVERY = 300.0
+RESTART_GAPS = (30.0, 60.0, 120.0, 300.0)
+HELD_RETRY = 12.0
+JUMP_SECONDS = 20.0
+SLEEP_GAP = 60.0
 READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
 SETTINGS_UNREADABLE, HOST_IS_DOWN, TUNLER_UNUSABLE = "settings_unreadable", "host_down", "tunler_unusable"
-MISSES, RESTARTED_AT, UNREACHABLE_SINCE = "misses", "restarted", "unreachable_since"
+MISSES, RESTARTED_AT, UNREACHABLE_SINCE, RESTARTS = "misses", "restarted", "unreachable_since", "restarts"
 HOLD_FOR = 60.0
-GIVE_UP_AFTER = 600.0
 
 
-class KeepTunnelAnswering(Handler):
-    def handle(self, context: Context, event: ClockTicked) -> None:
-        if context.record.env != runtime.env(context.record.root):
+class TunnelWatch:
+    def __init__(self, feature):
+        self.feature = feature
+        self.wall, self.steady, self.route = time.time(), time.monotonic(), ""
+
+    def moved(self) -> bool:
+        wall, steady, route = time.time(), time.monotonic(), default_route()
+        slept = abs((wall - self.wall) - (steady - self.steady)) > JUMP_SECONDS or wall - self.wall > SLEEP_GAP
+        rerouted = bool(route and self.route and route != self.route)
+        self.wall, self.steady, self.route = wall, steady, route or self.route
+        return slept or rerouted
+
+    def __call__(self, shares: Shares) -> None:
+        record, moved = shares.record, self.moved()
+        if not wanted(record.root):
             return
-        if not wanted(context.record.root):
-            return
-        state, shares = alerts(context.record.root), Shares(context.record, actor=SYSTEM)
+        state = alerts(record.root)
         if unusable := shares._unusable(tunler_status()):
-            alert_once(state, TUNLER_UNUSABLE, lambda: Messages(context.record, actor=SYSTEM).create("The tunnel cannot start", brief=unusable))
+            alert_once(state, TUNLER_UNUSABLE, lambda: Messages(record, actor=SYSTEM).create("The tunnel cannot start", brief=unusable))
             return
         state.set(TUNLER_UNUSABLE, 0)
-        if refused_address(log_file(context.record.root, TUNNEL)):
-            alert_once(state, ADDRESS_REFUSED, lambda: Messages(context.record, actor=SYSTEM).create(
+        if refused_address(log_file(record.root, TUNNEL)):
+            alert_once(state, ADDRESS_REFUSED, lambda: Messages(record, actor=SYSTEM).create(
                 "The tunnel address is owned by another user", buttons=[READDRESS],
                 brief="The phone and share links cannot use this address. Choosing a new one changes the phone's address, so it has to be paired again."))
             return
         state.set(ADDRESS_REFUSED, 0)
         try:
-            answering = shares._answering(PATIENCE)
+            answering = shares._answering(CHECK_SECONDS)
         except Refused as error:
             unreadable = str(error)
-            alert_once(state, SETTINGS_UNREADABLE, lambda: Messages(context.record, actor=SYSTEM).create(
+            alert_once(state, SETTINGS_UNREADABLE, lambda: Messages(record, actor=SYSTEM).create(
                 "The tunnel address cannot be read", buttons=[READDRESS],
                 brief=f"{unreadable}. The address has not changed; choosing a new one means pairing the phone again."))
             return
         state.set(SETTINGS_UNREADABLE, 0)
         if answering:
-            state.set(MISSES, 0)
-            state.set(HOST_IS_DOWN, 0)
-            state.set(UNREACHABLE_SINCE, 0)
+            for key in (MISSES, HOST_IS_DOWN, UNREACHABLE_SINCE, RESTARTS):
+                state.set(key, 0)
             return
-        unreachable = float(state.get(UNREACHABLE_SINCE, 0)) or time.time()
-        state.set(UNREACHABLE_SINCE, unreachable)
+        state.set(UNREACHABLE_SINCE, float(state.get(UNREACHABLE_SINCE, 0)) or time.time())
         misses = int(state.get(MISSES, 0)) + 1
         state.set(MISSES, misses)
-        if misses < MISSES_BEFORE_RESTART or time.time() - float(state.get(RESTARTED_AT, 0)) < RESTART_EVERY:
+        if not moved and not self.due(state, misses, record.root):
             return
         state.set(MISSES, 0)
-        speaking = context.to_primary()
-        if not reached(f"https://{shares._host()}/", PATIENCE):
-            alert_once(state, HOST_IS_DOWN, lambda: speaking and speaking.agent.say(HOST_DOWN, host=shares._host()))
+        if not moved and not reached(f"https://{shares._host()}/", CHECK_SECONDS):
+            alert_once(state, HOST_IS_DOWN, lambda: self.feature.to_primary(record, HOST_DOWN, host=shares._host()))
             return
-        down = TUNNEL if serving(context.record.root) else SERVER
-        if down == TUNNEL and time.time() - unreachable < GIVE_UP_AFTER and tunnel_holding(context.record.root):
-            return
-        want(context.record.root, down, UP, nonce=time.time())
+        down = TUNNEL if serving(record.root) else SERVER
+        want(record.root, down, UP, nonce=time.time())
         state.set(RESTARTED_AT, time.time())
-        if speaking:
-            speaking.agent.say(RESTARTED, misses=MISSES_BEFORE_RESTART, part=PARTS[down])
+        state.set(RESTARTS, int(state.get(RESTARTS, 0)) + 1)
+        self.feature.to_primary(record, RESTARTED, misses=misses, part=PARTS[down])
+
+    def due(self, state: State, misses: int, root) -> bool:
+        since = time.time() - float(state.get(RESTARTED_AT, 0))
+        if tunnel_holding(root):
+            return since >= HELD_RETRY
+        return misses >= MISSES_BEFORE_RESTART and since >= RESTART_GAPS[min(int(state.get(RESTARTS, 0)), len(RESTART_GAPS) - 1)]
 
 
 def alert_once(state: State, key: str, alert) -> None:
@@ -92,4 +102,4 @@ def tunnel_holding(root) -> bool:
 
 def serving(root) -> bool:
     port = status(root, SERVER).port
-    return bool(port) and answers(f"http://127.0.0.1:{port}/{HEALTH}")
+    return bool(port) and vouched(f"http://127.0.0.1:{port}/{HEALTH}", HEALTH_MARKER, CHECK_SECONDS)

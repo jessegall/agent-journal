@@ -13,7 +13,7 @@ from urllib.parse import quote, unquote
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
 from features import running  # noqa: E402
-from features.sharing.controller import HEALTH, LAYOUT_FILE  # noqa: E402
+from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
 from features.sharing.passwords import unlocked  # noqa: E402
 from features.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
@@ -120,7 +120,7 @@ class ShareHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if parts == [HEALTH]:
-            return self.send(200, b"ok", {"Content-Type": "text/plain"})
+            return self.send(200, HEALTH_MARKER.encode(), {"Content-Type": "text/plain"})
         if (route := routed(parts, self.shares.record)) is not None:
             return route.get(self, parts[1:])
         if len(parts) < 2 or parts[0] != "s" or not self.sharing():

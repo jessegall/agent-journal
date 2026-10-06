@@ -5,7 +5,8 @@ from features.sharing.controller import Shares
 from features.sharing.details import SharingDetails
 from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseClaimedUser, RefuseUntilAgreed
 from features.sharing.services import share_services
-from features.sharing.watchdog import KeepTunnelAnswering
+from features.sharing.routes import TICKS
+from features.sharing.watchdog import TunnelWatch
 
 __all__ = ["Shares"]
 
@@ -17,6 +18,6 @@ class SharingFeature(Feature):
         SOURCES.add(None, share_services)
         journal.events.handler(HoldOnVisitorComment())
         journal.events.handler(NameVisitorComment())
-        journal.events.handler(KeepTunnelAnswering())
+        TICKS.add(self, TunnelWatch(self))
         journal.agent.interceptor(RefuseUntilAgreed())
         journal.agent.interceptor(RefuseClaimedUser())

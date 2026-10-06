@@ -7,7 +7,7 @@ from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
 from features.sharing.controller import ADDRESS_TAKEN, Shares
 from features.sharing.resource import ended
-from features.sharing.tunnel import SERVER, TUNNEL, refused_address, subdomain, tunler
+from features.sharing.tunnel import SERVER, TUNNEL, refused_address, subdomain, tunler, tunler_build
 from resources.base import Refused, SYSTEM
 from engine.extension import Extension
 
@@ -58,5 +58,5 @@ def share_services(root: Path, taken: set) -> list:
     specs.append(ServiceSpec(id=TUNNEL, plugin="sharing", service="tunnel", cwd=str(Path(root).parent), port=inspector, url=f"http://127.0.0.1:{inspector}",
                              blocked=ADDRESS_TAKEN if refused_address(log_file(root, TUNNEL)) else "", idle=idle,
                              run=[command, str(port), f"--domain={domain}", f"--inspect={inspector}"],
-                             env={BUILD: f"{current_build(root)}:{port}:{inspector}"}, **files_for(root, TUNNEL)))
+                             env={BUILD: f"{tunler_build(command)}:{port}:{inspector}"}, **files_for(root, TUNNEL)))
     return specs

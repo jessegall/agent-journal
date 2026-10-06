@@ -366,6 +366,10 @@ export class ApiClient {
         return this.command("share", "tunnel");
     }
 
+    tunnelRecheck() {
+        return this.command("share", "check_tunnel");
+    }
+
     shareReachable(n) {
         return this.command("share", "reachable", {n});
     }

@@ -8,14 +8,14 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.features import Features
 from controllers.messages import Messages
-from engine.ports import REACH_SECONDS, answers
+from engine.ports import REACH_SECONDS, answers, vouched
 from engine.record import Record
 from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
 from engine.services import FAILED, log_file, status
-from features.sharing.tunnel import ADDRESS_REFUSED, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -35,6 +35,7 @@ SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 LAYOUT_FILE = "layout.json"
 HEALTH = "health"
+HEALTH_MARKER = "journal-share-server"
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
 USER_SHARE_FIELDS = {"approved", "target", "password", "comments", "expires"}
 
@@ -155,10 +156,15 @@ class Shares(ShareVisits, SharePages, Controller):
         standing = tunler_status()
         return {**standing, "address": self._address(), "problems": self._problems(standing)}
 
+    @action
+    def check_tunnel(self) -> dict:
+        KEPT_STATUS.clear()
+        return self.tunnel()
+
     def _unusable(self, standing: TunnelStatus) -> str:
         if not standing["installed"]:
             return NOT_INSTALLED
-        return "" if standing["logged_in"] else LOGGED_OUT
+        return "" if standing["logged_in"] or standing["unreadable"] else LOGGED_OUT
 
     def _problems(self, standing: TunnelStatus) -> list[str]:
         if unusable := self._unusable(standing):
@@ -245,7 +251,7 @@ class Shares(ShareVisits, SharePages, Controller):
         return {"reachable": self._answering()}
 
     def _answering(self, wait: float = REACH_SECONDS) -> bool:
-        return answers(f"https://{self._address()}/{HEALTH}", wait)
+        return vouched(f"https://{self._address()}/{HEALTH}", HEALTH_MARKER, wait)
 
     def _link(self, token: str) -> str:
         return f"https://{self._address()}/s/{token}"
