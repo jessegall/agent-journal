@@ -269,14 +269,14 @@ onMounted(async () => {
                         </CellGroup>
                     </template>
                     <template v-if="touched.length">
-                        <CellGroup head="Files it touched">
+                        <CellGroup head="Files changed">
                             <template v-for="path in touched" :key="path">
                                 <Cell :label="path.split('/').pop()" :sub="path" icon="file" still />
                             </template>
                         </CellGroup>
                     </template>
                     <template v-if="commits.length">
-                        <CellGroup head="Its commits">
+                        <CellGroup head="Git commits">
                             <template v-for="commit in commits" :key="commit">
                                 <Cell :label="String(commit)" icon="branch" still />
                             </template>

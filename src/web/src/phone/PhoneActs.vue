@@ -16,9 +16,9 @@ const about = () => `${kindTitle(props.row.type)} ${props.row.n}`;
 
 async function go(action, body, value) {
     try {
-        await perform(props.row, action, body);
+        const got = await perform(props.row, action, body);
         const undo = action.undo?.(props.row);
-        toast(resultOf(action, props.row, value), undo ? () => again(undo) : null);
+        toast(resultOf(action, props.row, value, got), undo ? () => again(undo) : null);
         emit(action.gone ? "gone" : "changed");
     } catch (error) {
         toast(error.message);
@@ -36,7 +36,7 @@ async function again(undo) {
 }
 
 function ask(action, fields, choice = null) {
-    const button = action.button || (action.confirm && !fields.length ? action.label : choice ? "Move it" : action.label);
+    const button = action.button || (action.confirm && !fields.length ? action.label : choice ? "Move" : action.label);
     form.value = {action, fields, choice, button, values: valuesOf(fields, props.row)};
 }
 

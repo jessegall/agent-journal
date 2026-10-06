@@ -53,6 +53,45 @@ const HIDDEN = new Set([
     "gate",
     "touched",
     "configure",
+    "say",
+    "stop_task",
+    "grant",
+    "leave",
+    "pickup",
+    "sweep",
+    "switch",
+    "follow",
+    "include",
+    "next",
+    "drift",
+    "added",
+    "built",
+    "expect",
+    "group",
+    "ideas",
+    "outline",
+    "pick",
+    "score",
+    "stall",
+    "wait",
+    "hand",
+    "meaning",
+    "recheck",
+    "failed",
+    "filed",
+    "name",
+    "offer",
+    "split",
+    "start_next",
+    "screen",
+    "agent_session",
+    "app",
+    "bind",
+    "board",
+    "host",
+    "unhost",
+    "agree",
+    "reachable",
 ]);
 const PRIORITIES = [
     ["critical", "Critical"],
@@ -95,7 +134,7 @@ const CLOSES = {
     sequence: "Turn it off",
     work: "End it",
 };
-const LINK_HINT = "For example: todo:12 or doc:4";
+const LINK_HINT = "For example: to-do 12 or doc 4";
 
 const text = (name, label, more = {}) => ({name, label, required: true, ...more});
 const optional = (name, label, more = {}) => ({name, label, required: false, ...more});
@@ -139,6 +178,19 @@ const stepsOf = (text) =>
         .map((part) => part.trim().split("\n"))
         .filter(([title]) => title)
         .map(([title, ...body]) => ({title: title.trim(), body: body.join("\n").trim()}));
+const listed = (text) =>
+    text
+        .split(",")
+        .map((one) => one.trim())
+        .filter(Boolean);
+const PRIORITY = {
+    label: "Change priority",
+    when: standing,
+    pick: (row) => PRIORITIES.map(([value, label]) => ({value, label, check: (row.priority_name || "default") === value})),
+    name: "value",
+    result: (row, level) => `Priority of ${named(row)} is ${level.toLowerCase()}`,
+};
+const updated = (row, value, got) => (typeof got === "string" ? "No update" : `Updated to ${got.data.version || String(got.data.commit).slice(0, 12)}`);
 const refsOf = (row) => row.refs.map((ref) => ({value: ref, label: ref}));
 const filesOf = (row) => Object.keys(row.data.files || {}).map((name) => ({value: name, label: name}));
 
@@ -204,13 +256,7 @@ const OWN = {
             result: (row) => `Blocked ${named(row)}`,
         },
         unblock: {label: "Unblock", when: (row) => standing(row) && Boolean(row.data.blocked), result: (row) => `Unblocked ${named(row)}`},
-        priority: {
-            label: "Change priority",
-            when: standing,
-            pick: (row) => PRIORITIES.map(([value, label]) => ({value, label, check: (row.priority_name || "default") === value})),
-            name: "value",
-            result: (row, level) => `Priority of ${named(row)} is ${level.toLowerCase()}`,
-        },
+        priority: PRIORITY,
         assign: {
             label: "Assign to a role",
             when: standing,
@@ -237,6 +283,7 @@ const OWN = {
         },
     },
     plan: {
+        dismiss: {label: "Hide from the chat", result: () => "Hidden"},
         start: {label: "Start the plan", when: (row) => row.data.status === "approved", result: (row) => `Started ${named(row)}`},
         park: {label: "Pause the plan", when: standing, result: (row) => `Paused ${named(row)}`},
         continue: {label: "Go on to the next phase", when: (row) => row.data.status === "waiting", result: (row) => `${named(row)} goes on`},
@@ -257,7 +304,55 @@ const OWN = {
         supersede: {label: "Replaced by another document", fields: [text("by", "Which document replaces it?", {placeholder: "Its number"})], result: () => "Saved"},
     },
     report: {doc: {label: "Make a document from it", result: () => "Made a document"}, dismiss: {label: "Hide from the chat", when: standing, result: () => "Hidden"}},
-    ticket: {move: {label: "Move to another stage", fields: [text("stage", "Which stage?")], result: (row) => `Moved ${named(row)}`}},
+    ticket: {
+        move: {label: "Move to another stage", fields: [text("stage", "Which stage?")], result: (row) => `Moved ${named(row)}`},
+        priority: PRIORITY,
+        start: {
+            label: "Start its agent",
+            fields: [optional("provider", "Which provider?"), optional("model", "Which model?")],
+            result: (row) => `Started ${named(row)}`,
+        },
+        stop: {label: "Stop its agent", danger: true, confirm: true, result: (row) => `Stopped ${named(row)}`},
+        confirm: {label: "Confirm it", fields: [optional("why", "Why? You can leave this empty.")], result: (row) => `Confirmed ${named(row)}`},
+        merge: {label: "Merge it", confirm: true, result: (row) => `Merged ${named(row)}`},
+        approve_plan: {label: "Approve its plan", result: () => "Plan approved"},
+        continue_plan: {label: "Go on with its plan", result: () => "Its plan goes on"},
+        accept_dependencies: {label: "Accept its dependencies", result: () => "Dependencies accepted"},
+        decline_dependencies: {label: "Decline its dependencies", fields: [optional("why", "Why?")], result: () => "Dependencies declined"},
+        send_back: {label: "Send it back", fields: [text("note", "What should change?", {area: true})], result: (row) => `Sent ${named(row)} back`},
+        tell: {label: "Tell its agent", fields: [text("note", "Your words", {area: true})], result: () => "Sent"},
+        queue_before: {label: "Put it before another ticket", fields: [text("other", "Which ticket?", {placeholder: "Its number"})], result: () => "Moved up"},
+        depend: {label: "Wait on another ticket", fields: [text("on", "Which ticket?", {placeholder: "Its number"})], result: (row) => `${named(row)} waits now`},
+    },
+    work: {resume: {label: "Resume", result: (row) => `Resumed ${named(row)}`}},
+    environment: {
+        claim: {label: "Take it over", fields: [text("why", "Why take it over?")], result: () => "Taken over"},
+        launch: {label: "Start its agent", fields: [optional("agent", "Which agent?")], result: () => "Agent started"},
+        rename: {label: "Rename", fields: [text("name", "New name", {value: (row) => row.title})], result: () => "Renamed"},
+        stop: {label: "Stop its agent", danger: true, confirm: true, result: () => "Agent stopped"},
+    },
+    worktree: {take: {label: "Take its commits", confirm: true, result: () => "Commits taken"}},
+    board: {
+        start: {label: "Start the work", result: () => "Started"},
+        cancel: {label: "Cancel the work", danger: true, confirm: true, result: () => "Cancelled"},
+        discard: {label: "Throw the draft away", danger: true, fields: [optional("why", "Why?")], result: () => "Draft thrown away"},
+        keep: {label: "Keep the draft", result: () => "Draft kept"},
+        pause: {label: "Pause", result: () => "Paused"},
+        resume: {label: "Resume", result: () => "Resumed"},
+        retry: {label: "Try again", result: () => "Trying again"},
+        request: {label: "Ask for new work", fields: [text("text", "What should be done?", {area: true})], result: () => "Asked"},
+        revise: {label: "Ask for changes", fields: [text("text", "What should change?", {area: true})], result: () => "Asked"},
+        follow_up: {label: "Add a follow-up", fields: [text("text", "What comes next?", {area: true})], result: () => "Added"},
+    },
+    dump: {
+        choose: {label: "Pick an offer", fields: [text("pick", "Which offer?")], result: () => "Picked"},
+        decline: {label: "Turn down an offer", fields: [text("pick", "Which offer?")], result: () => "Turned down"},
+        direct: {label: "Say how to sort it", fields: [text("how", "How should it be sorted?", {area: true})], result: () => "Sent"},
+        dismiss: {label: "Dismiss", result: () => "Dismissed"},
+        remove: {label: "Remove it", danger: true, confirm: true, result: () => "Removed"},
+        stop: {label: "Stop sorting", result: () => "Stopped"},
+    },
+    share: {allow: {label: "Allow it", result: () => "Allowed"}},
     fact: {promote: {label: "Make it a rule", when: standing, result: () => "Made it a rule"}},
     rule: {
         pin: {label: "Pin to the chat", result: () => "Pinned to the chat"},
@@ -268,6 +363,7 @@ const OWN = {
     question: {dismiss: {label: "Dismiss", when: standing, fields: [optional("why", "Why dismiss it?")], result: () => "Dismissed"}, complete: null},
     suggestion: {complete: null},
     sequence: {
+        abandon: {label: "Stop the run", danger: true, fields: [optional("why", "Why stop it?")], body: {sure: true}, result: () => "Stopped"},
         run: {label: "Run it now", fields: [optional("about", "What is it about?")], result: () => "Started"},
         steps: {
             label: "Edit the steps",
@@ -280,11 +376,18 @@ const OWN = {
     tool: {run: {label: "Run it", fields: [optional("args", "With what?")], result: () => "Ran"}},
     profile: {duplicate: {label: "Make a copy", result: () => "Copied"}},
     collection: {
-        add: {label: "Add items", fields: [text("refs", "Which items?", {placeholder: LINK_HINT})], result: () => "Added"},
+        add: {
+            label: "Add items",
+            fields: [text("refs", "Which items? Separate them with commas.", {placeholder: LINK_HINT})],
+            shape: ({refs}) => ({refs: listed(refs)}),
+            result: () => "Added",
+        },
         remove: {label: "Take an item out", when: (row) => row.refs.length > 0, pick: refsOf, name: "ref", result: () => "Taken out"},
     },
     helper: {say: {label: "Send it a message", fields: [text("text", "Your words", {area: true})], result: () => "Sent"}, stop: {label: "Stop it", danger: true, result: () => "Stopped"}},
-    plugin: {upgrade: {label: "Check for updates", body: {yes: true}, result: () => "Updated"}, enable: {label: "Turn on", result: () => "Turned on"}, disable: {label: "Turn off", result: () => "Turned off"}, clear_log: {label: "Clear its log", result: () => "Log cleared"}},
+    plugin: {
+        upgrade: {label: "Check for updates", body: {yes: true}, result: updated},
+        purge: {label: "Remove it with its data", danger: true, confirm: true, result: () => "Removed"}, enable: {label: "Turn on", result: () => "Turned on"}, disable: {label: "Turn off", result: () => "Turned off"}, clear_log: {label: "Clear its log", result: () => "Log cleared"}},
 };
 
 const EXTRA = [
@@ -306,15 +409,14 @@ const EXTRA = [
     },
 ];
 
-const readable = (word) => word.replaceAll("_", " ").replace(/^./, (first) => first.toUpperCase());
+const sentenceOf = (word) => word.replaceAll("_", " ").replace(/^./, (first) => first.toUpperCase());
 
 const methodOf = (type, word) => Object.entries(meta(type).command_names).find(([, alias]) => alias === word)?.[0] || word;
 
-function guessed(word, parameters) {
+function guessed(parameters) {
     return {
-        label: readable(word),
         confirm: true,
-        fields: Object.entries(parameters).map(([name, required]) => ({name, label: readable(name), required})),
+        fields: Object.entries(parameters).map(([name, required]) => ({name, label: sentenceOf(name), required})),
     };
 }
 
@@ -324,10 +426,13 @@ function described(row, word, parameters) {
     if (method in own && !own[method]) return null;
     if (own[method] || own[word]) return own[method] || own[word];
     if (COMMON[method]) return COMMON[method];
-    return HIDDEN.has(method) ? null : guessed(word, parameters);
+    return HIDDEN.has(method) ? null : guessed(parameters);
 }
 
-const labelOf = (entry, row) => (typeof entry.label === "function" ? entry.label(row) : entry.label);
+function labelOf(entry, row, word) {
+    if (typeof entry.label === "function") return entry.label(row);
+    return entry.label || sentenceOf(word);
+}
 
 export function itemActions(row) {
     const kind = row && meta(row.type);
@@ -335,8 +440,8 @@ export function itemActions(row) {
     const words = Object.entries(kind.row_actions || {})
         .map(([word, parameters]) => ({word, entry: described(row, word, parameters)}))
         .filter(({entry}) => entry && (!entry.when || entry.when(row)))
-        .map(({word, entry}) => ({key: word, word, ...entry, label: labelOf(entry, row)}));
-    const extra = EXTRA.filter((entry) => entry.when(row)).map((entry) => ({...entry, label: labelOf(entry, row)}));
+        .map(({word, entry}) => ({key: word, word, ...entry, label: labelOf(entry, row, word)}));
+    const extra = EXTRA.filter((entry) => entry.when(row)).map((entry) => ({...entry, label: labelOf(entry, row, entry.key)}));
     return [...words, ...extra].sort((one, other) => rankOf(one, row) - rankOf(other, row));
 }
 
@@ -353,8 +458,8 @@ export async function perform(row, action, body = {}) {
     return api.act(row.type, row.n, action.word, {...(action.body || {}), ...(action.shape ? action.shape(body) : body)});
 }
 
-export function resultOf(action, row, value = "") {
-    return action.result ? action.result(row, value) : `Done: ${action.label.toLowerCase()} on ${named(row)}`;
+export function resultOf(action, row, value = "", got = null) {
+    return action.result ? action.result(row, value, got) : `Done: ${action.label.toLowerCase()} on ${named(row)}`;
 }
 
 export const laneQuestion = (choice) => shiftQuestion(choice.card, choice.value);

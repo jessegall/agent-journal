@@ -13,7 +13,7 @@ beforeEach(() => {
                 {done: {how: false}, block: {why: true}, unblock: {}, start: {}, stamp: {data: true}, delete: {why: false}, reopen: {why: true}},
                 {command_names: {complete: "done"}}
             ),
-            ticket: kind({merge: {}, send_back: {note: true}}),
+            launch: kind({lift_off: {}, count_down: {from_number: true}}),
         },
     };
 });
@@ -24,10 +24,10 @@ test("an item offers its controller's actions in the design's order, without the
     expect(labels(row("todo", {completed: 5}))).toEqual(["Reopen", "Delete"]);
 });
 
-test("an action the phone does not know yet shows by itself, asking for its words and a confirm", () => {
-    const [merge, sendBack] = itemActions(row("ticket"));
-    expect([merge.label, merge.confirm, merge.fields]).toEqual(["Merge", true, []]);
-    expect([sendBack.label, sendBack.word, sendBack.fields]).toEqual(["Send back", "send_back", [{name: "note", label: "Note", required: true}]]);
+test("an action the phone does not know yet shows by itself in sentence case, asking for its words and a confirm", () => {
+    const [liftOff, countDown] = itemActions(row("launch"));
+    expect([liftOff.label, liftOff.confirm, liftOff.fields]).toEqual(["Lift off", true, []]);
+    expect([countDown.label, countDown.word, countDown.fields]).toEqual(["Count down", "count_down", [{name: "from_number", label: "From number", required: true}]]);
 });
 
 test("an item of a type the phone was never told about offers nothing", () => {

@@ -1,10 +1,12 @@
 from resources.base import Resource
+from resources.types import ref_named
 from controllers.marks import action
 
 
 class Links:
     @action
     def link(self, n: int, ref: str) -> Resource:
+        ref = str(ref_named(ref))
         r = self.load(n)
         if ref not in r.refs:
             r.refs.append(ref)
@@ -12,6 +14,7 @@ class Links:
 
     @action
     def unlink(self, n: int, ref: str) -> Resource:
+        ref = str(ref_named(ref))
         r = self.load(n)
         r.refs = [x for x in r.refs if x != ref]
         return self.save(r, "linked", to=ref, off=True)
