@@ -292,3 +292,35 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     viewer.PROBED[0] = time.time() - viewer.PROBE_FOR - 1
     viewer.running_journals()
     assert viewer.PROBED[0] > time.time() - 5, "an old list is refreshed in the background"
+
+
+def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_identity():
+    from commands.http import dispatch
+    from controllers.types import Todos
+    from resources.base import USER
+    record = fresh()
+    ask = lambda method, path, query=None, body=None: dispatch(method, path, record.root, query or {}, body or {})
+    assert ask("GET", f"/api/{record.env}/settings").code == 200 and ask("POST", f"/api/{record.env}/settings", body={"ask_questions": {"hold": 1}}).code == 200, \
+        "the settings are read and written through the viewer"
+    assert ask("POST", "/api/identity", body={"color": "not-a-colour"}).code == 400, "an identity colour that is no colour is refused"
+    named = ask("POST", "/api/identity", body={"color": "#aa3355"}).body
+    assert named["root"] == str(record.root) and ask("GET", "/api/identity").body["root"] == str(record.root), "the identity names the root it serves"
+    assert ask("GET", "/api/agent-hooks/nobody").code == 404, "hooks of a provider that does not exist are not found"
+    wired = ask("GET", "/api/agent-hooks/claude").body
+    assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"
+    assert ask("POST", "/api/agent-hooks/claude", body={"hooks": {}}).code == 200, "the hooks can be set again from the viewer"
+    assert ask("GET", "/api/extension").code == 200 and ask("GET", "/extension.zip").code in (200, 404), "the browser extension is offered when it is in the package"
+    assert ask("POST", "/api/services/sharing.server", body={"want": "sideways"}).code == 404, "a service is only asked to be up, down or restart"
+    assert [ask("POST", "/api/services/sharing.server", body={"want": want}).code for want in ("up", "down", "restart")] == [200, 200, 200], "a service is asked to run, stop and restart"
+    assert ask("GET", "/api/services/sharing.server/log").body["id"] == "sharing.server", "a service's log is read by its id"
+    assert ask("GET", "/api/journals").code == 200, "the journals this machine knows are listed"
+    assert ask("GET", f"/api/{record.env}/search", {"q": ""}).body == [], "a search for nothing finds nothing"
+    row = Todos(record, actor=USER).create("a row with a file", brief="the brief")
+    sent = b"--b\r\nContent-Disposition: form-data; name=f; filename=notes.txt\r\n\r\nhello\r\n--b\r\nContent-Disposition: form-data; name=x\r\n\r\nskipped\r\n--b--\r\n"
+    uploaded = ask("POST", f"/api/{record.env}/todo/{row.n}/upload", body={"_type": "multipart/form-data; boundary=b", "_raw": sent})
+    assert uploaded.body == {"files": ["notes.txt"]}, "a file sent from the viewer is attached to the row, and a field with no file is left out"
+    fetched = ask("GET", f"/api/{record.env}/todo/{row.n}/files/notes.txt")
+    assert (fetched.code, fetched.body) == (200, b"hello"), "an attached file comes back as it was sent"
+    assert ask("GET", f"/api/{record.env}/todo/{row.n}/files/missing.txt").code == 404, "a file that is not attached is not found"
+    assert ask("GET", f"/api/{record.env}/todo/{row.n}/markdown").body.startswith(b"#"), "a row can be read as markdown"
+    assert ask("GET", f"/api/{record.env}/todo/{row.n}/choices").code == 200, "a row's field choices are read"

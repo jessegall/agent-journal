@@ -1,3 +1,4 @@
+import json
 import time
 
 import features
@@ -148,7 +149,7 @@ def test_a_slow_request_waits_while_the_agent_waits():
     assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
 
 
-def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
+def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(capsys):
     import os
     from commands.http import dispatch
     from controllers.types import Messages
@@ -174,6 +175,16 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
             call()
         assert (len(work.opened) <= opened, len(work.scanned) <= scanned) == (True, True), \
             f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"
+    from commands.cli import run
+    out = record.root.parent / "speed.json"
+    capsys.readouterr()
+    run(["--root", str(record.root), "--env", record.env, "speed", "--runs", "1", "--out", str(out)])
+    table = capsys.readouterr().out
+    rows = {line.rsplit(None, 1)[0].strip() for line in table.splitlines()}
+    assert {"engine tick", "journal status", "server start to its first answer", "runtime/ MB"} <= rows, "the speed table times the engine, a command, the server and the runtime folder"
+    assert any(row.startswith("list message (40)") for row in rows) and any(row.endswith("through the server") for row in rows), \
+        "it counts the rows it lists and times commands through the server as well"
+    assert json.loads(out.read_text())["runs"] == 1, "the numbers are also saved to the file asked for"
 
 
 def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_its_event(monkeypatch):
