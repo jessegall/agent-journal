@@ -188,3 +188,21 @@ def test_an_installed_update_tidies_at_once():
     os.utime(left, (old, old))
     Notifications(record, actor=SYSTEM)._logged("Journal updated to 9.9.9", brief="from 9.9.8", kind=KIND, version="9.9.9")
     assert not left.exists(), "a new version is housekept the moment it is announced, not an hour later"
+
+
+def test_tidy_drops_the_folds_of_an_old_code_mark_whole_and_keeps_the_current_one(monkeypatch):
+    from features.runtime_cleanup.tidy import OTHER_MARKS_FOR, leftovers
+    from providers.transcript_cache import code_mark
+    record = fresh()
+    folds = record.root.parent / "folds"
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", folds)
+    current, old, recent = folds / code_mark(), folds / "old-mark", folds / "another-build"
+    for place in (current, old, recent):
+        place.mkdir(parents=True)
+        (place / "turns.pickle").write_bytes(b"folded")
+    (folds / "flat.pickle").write_bytes(b"from before marks had folders")
+    stale = time.time() - OTHER_MARKS_FOR - 60
+    os.utime(old, (stale, stale))
+    leftovers(record.root)
+    assert (current.exists(), old.exists(), recent.exists(), (folds / "flat.pickle").exists()) == (True, False, True, False), \
+        "an old mark's folds go in one folder, another build still running keeps its own, and folds from before marks had folders go"
