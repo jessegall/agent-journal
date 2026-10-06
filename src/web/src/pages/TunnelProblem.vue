@@ -3,6 +3,10 @@ import Icon from "../kit/Icon.vue";
 import TunnelLogin from "./TunnelLogin.vue";
 import TunlerInstall from "./TunlerInstall.vue";
 import {checkTunnel} from "../composables/shares.js";
+import Btn from "../kit/Btn.vue";
+import {route} from "../route.js";
+
+const openSettings = () => (location.hash = `#/${route.value.env}/settings?sub=sharing`);
 
 defineProps({status: {type: Object, required: true}});
 const emit = defineEmits(["ready"]);
@@ -21,13 +25,21 @@ const emit = defineEmits(["ready"]);
                 <TunlerInstall @installed="checkTunnel" />
             </div>
         </template>
-        <template v-else>
+        <template v-else-if="!status.logged_in">
             <div class="tunnel-connect">
                 <p>
                     <b>tunler</b>
                     isn't connected on this machine. Connect once, and every journal here uses it:
                 </p>
                 <TunnelLogin :host="status.host" @ready="(got) => emit('ready', got)" />
+            </div>
+        </template>
+        <template v-else>
+            <div class="tunnel-connect">
+                <template v-for="problem in status.problems" :key="problem">
+                    <p>{{ problem }}</p>
+                </template>
+                <Btn small @click="openSettings">Open the sharing settings</Btn>
             </div>
         </template>
     </div>
