@@ -233,3 +233,21 @@ def test_a_helper_is_working_idle_needing_you_reported_stopped_or_finished_by_wh
     assert reasons == ["Asks a question: which?", "Wants a permission: which?"], "what a helper needs is said in its own words"
     assert (helper_reason(snapshot(silent=True, agent=running), 1000.0 + 20 * 60), helper_reason(snapshot(), 0.0)) == ("Silent for 20 min", ""), \
         "a silent helper says for how long, and one that needs nothing says nothing"
+
+
+def test_a_helper_in_a_checkout_named_unlike_its_environment_can_be_told_something(monkeypatch):
+    import os
+    from engine.sessions import Sessions
+    from providers import PROVIDERS
+    from runner.hooks import answer
+    features.load()
+    started(monkeypatch)
+    record = fresh()
+    project = record.root.resolve().parent
+    (project / "platform").mkdir()
+    (project / "platform" / ".git").write_text("gitdir: /elsewhere/.git/worktrees/platform")
+    Helpers(record, actor=AGENT).dispatch("Ada", "review the queue", "claude", "sonnet", checkout="platform")
+    place = Helpers(record, actor=AGENT).all()[0].environment
+    assert place != "platform"
+    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "SessionStart", "session_id": "ada-session", "cwd": str(project / "platform")}, os.getpid(), place)
+    assert Sessions(record.root).holder(place) == "ada-session", "its session binds to the environment it was launched for, so it is found and can be told"
