@@ -1,3 +1,4 @@
+import {PLAN_STATES} from "../domain/plans.js";
 import {ago} from "../format/time.js";
 
 const IN_HAND = ["doing", "started", "working", "work"];
@@ -17,7 +18,7 @@ const PRIORITY = {default: "Normal"};
 
 const named = (level) => (level ? level[0].toUpperCase() + level.slice(1) : "");
 
-export function todoFacts(row) {
+function todoFacts(row) {
     const data = row.data || {};
     const facts = [{label: "State", value: state(row)}];
     if (typeof data.blocked === "string" && data.blocked && !row.completed) facts.push({label: "Why", value: data.blocked, text: true});
@@ -32,9 +33,11 @@ const LANES = {Done: "done", Blocked: "held", Paused: "held", "In hand": "doing"
 
 export const todoLane = (row) => LANES[state(row)] || "todo";
 
+const stateOf = (row) => (row.completed ? "Closed" : (row.type === "plan" && PLAN_STATES[row.data.status]) || "Open");
+
 export function itemFacts(row) {
     if (row.type === "todo") return todoFacts(row);
-    const facts = [{label: "State", value: row.completed ? "Closed" : "Open"}, {label: "Made", value: ago(row.created)}];
+    const facts = [{label: "State", value: stateOf(row)}, {label: "Made", value: ago(row.created)}];
     if (row.updated && row.updated !== row.created) facts.push({label: "Changed", value: ago(row.updated)});
     if (row.completed) facts.push({label: "Closed", value: ago(row.completed)});
     return {facts, after: []};
