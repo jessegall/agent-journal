@@ -169,5 +169,5 @@ class HookBinding:
     def relaunched(self, session: str, old: int) -> None:
         terminal = self.sessions.terminal(self.provider.name, old)
         self.sessions.write(session, pid=self.pid)
-        if terminal:
-            self.sessions.write(terminal, pid=self.pid)
+        if terminal and terminal != self.sessions.terminal(self.provider.name, self.pid):
+            self.sessions.write(terminal, environment="", pid=0)
