@@ -399,12 +399,12 @@ def get_files(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/project-files")
 def get_project_files(req: Request) -> Reply:
-    return Reply(200, list_folder(req.root.parent.resolve(), req.query.get("folder", "")))
+    return Reply(200, list_folder(req.checkout, req.query.get("folder", "")))
 
 
 @route("GET", "/api/{env}/project-files/find")
 def get_project_files_found(req: Request) -> Reply:
-    project = req.root.parent.resolve()
+    project = req.checkout
     asked = req.query_as(FindQuery).q
     files = []
     for found in found_files(project, asked):
@@ -501,12 +501,12 @@ def post_service(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/commit/{sha}")
 def get_commit(req: Request) -> Reply:
-    return Reply(200, commit(req.root.parent.resolve(), req.params["sha"]))
+    return Reply(200, commit(req.checkout, req.params["sha"]))
 
 
 @route("GET", "/api/{env}/file")
 def get_file_text(req: Request) -> Reply:
-    project = req.root.parent.resolve()
+    project = req.checkout
     asked = req.query_as(FileQuery).path
     if asked and not Path(asked).is_absolute() and not (project / asked).is_file():
         matches = matching(project, asked)
@@ -517,7 +517,7 @@ def get_file_text(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/diff")
 def get_file_diff(req: Request) -> Reply:
-    return Reply(200, file_diff(req.root.parent.resolve(), req.query_as(FileQuery).path))
+    return Reply(200, file_diff(req.checkout, req.query_as(FileQuery).path))
 
 
 @route("GET", "/api/{env}/search")

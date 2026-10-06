@@ -4,12 +4,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterator
 
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Environments
 from engine import runtime
 from engine.extension import Extension
 from engine.fields import Loaded
 from engine.record import Record
-from resources.base import USER, Missing
+from resources.base import SYSTEM, USER, Missing
 
 FEATURE_ROUTES = Extension()
 
@@ -35,6 +35,12 @@ class Request:
         if self.kept is None:
             self.kept = Record(self.root, self.params["env"], memo=True)
         return self.kept
+
+    @property
+    def checkout(self) -> Path:
+        project = self.root.parent.resolve()
+        place = Environments(self.record(), actor=SYSTEM).rows.by_title(self.params["env"])
+        return place.checkout(project) if place else project
 
     def query_as(self, kind):
         return kind.from_json(self.query)

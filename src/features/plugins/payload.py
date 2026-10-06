@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from controllers.types import Agents, CONTROLLERS
+from features.plugins.paths import queue_path
 from resources.base import Refused, SYSTEM, as_dict
 
 VERSION = 1
@@ -37,11 +38,11 @@ def of(record, event, plugin: str, where: Path) -> dict:
             "env": record.env, "project": str(record.root.parent),
             "resource": resource(record, event),
             "agent": agent(record, session_of(event)),
-            "plugin": {"name": plugin, "dir": str(where)}}
+            "plugin": {"name": plugin, "dir": str(where), "queue": str(queue_path(record.root, plugin, record.env))}}
 
 
 def refusal(record, hook, plugin: str, where: Path, writes: bool) -> dict:
     return {"v": VERSION, "event": f"{HOOK}.{hook.event}", "env": record.env, "project": str(record.root.parent),
             "agent": agent(record, hook.session),
             "tool": {"name": hook.tool.name, "file": hook.tool.path or None, "command": hook.tool.shell_command, "writes": writes},
-            "plugin": {"name": plugin, "dir": str(where)}}
+            "plugin": {"name": plugin, "dir": str(where), "queue": str(queue_path(record.root, plugin, record.env))}}

@@ -22,14 +22,14 @@ def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, 
 
 
 def start_in(record, name: str, abstract: str, owner: str, provider: str, args: list[str], cwd: Path) -> str:
-    prepared(record, name, abstract, owner)
+    prepared(record, name, abstract, owner, cwd)
     return launched(record, name, provider, args, cwd)
 
 
-def prepared(record, name: str, abstract: str, owner: str) -> Record:
+def prepared(record, name: str, abstract: str, owner: str, folder: Path) -> Record:
     environments = Environments(record, actor=SYSTEM)
     if not environments.rows.by_title(name):
-        environments.create(name, abstract=abstract, owner=owner, launched_from=record.env)
+        environments.create(name, abstract=abstract, owner=owner, launched_from=record.env, folder=str(folder))
     place = Record(record.root, name)
     prompted(place)
     for feature in QUIET:

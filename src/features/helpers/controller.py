@@ -50,7 +50,7 @@ class Helpers(Controller):
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         driver = DRIVERS[provider]
-        home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref)
+        home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n)), folder)
         return row
