@@ -73,6 +73,18 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
     return f"set aside the other hooks in {plural(len(hooks), 'file')} until the journal stops"
 
 
+def without_hooks(settings: dict) -> dict:
+    return {key: value for key, value in settings.items() if key != "hooks"}
+
+
+def restore_hooks(kept_at: Path, home: Path) -> None:
+    original, current = read_json(kept_at, dict, {}), read_json(home, dict, {})
+    if not current or without_hooks(current) == without_hooks(original):
+        shutil.copy2(kept_at, home)
+        return
+    write_json(home, {**current, "hooks": original.get("hooks", {})}, indent=2)
+
+
 def put_back(record: Record) -> int:
     if Sessions(record.root).running():
         return 0
@@ -97,7 +109,7 @@ def restore(entries: list[dict]) -> None:
             continue
         home.parent.mkdir(parents=True, exist_ok=True)
         if m.get("copy"):
-            shutil.copy2(kept_at, home)
+            restore_hooks(kept_at, home)
             kept_at.unlink()
         elif not (home.exists() or home.is_symlink()):
             shutil.move(str(kept_at), str(home))

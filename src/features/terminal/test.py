@@ -228,3 +228,28 @@ def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_
 
     engine.moved_on()
     assert Agents(engine.record).by_session("claude-1").data.get("cards"), "a message typed while a command runs leaves a card"
+
+
+def test_a_worker_that_keeps_failing_with_no_earlier_build_is_retried_slower_then_the_session_ends(monkeypatch):
+    import os
+    import time
+    import supervisor
+
+    read, write = os.pipe()
+    ours = object.__new__(supervisor.Supervisor)
+    ours.cwd, ours.stdout, ours.heal_command, ours.unhealed, ours.worker, ours.worker_due = os.getcwd(), write, ["true"], 0, None, 0.0
+    ours.stop_agent = lambda: 99
+    delays = []
+    for _ in range(supervisor.UNHEALED_LIMIT - 1):
+        ours.worker_began = time.time()
+        assert ours.after_worker(1) is None
+        delays.append(ours.worker_due - time.time())
+    assert all(later > earlier for earlier, later in zip(delays, delays[1:])) and delays[0] > 1, "each retry waits longer than the one before"
+    ours.worker_began = time.time()
+    assert ours.after_worker(1) == 99, "after the cap the session ends instead of restarting the worker again"
+    os.close(write)
+    said = os.read(read, 4096).decode()
+    assert said.count("no earlier build to go back to") == 1, "one plain line says why"
+    ours.worker_began = time.time() - supervisor.QUICK - 1
+    ours.unhealed = 3
+    assert ours.after_worker(supervisor.RELOAD) is None and ours.unhealed == 0, "a worker that ran on resets the count"

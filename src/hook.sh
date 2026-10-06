@@ -24,9 +24,16 @@ read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
 # the server writes its restart time with a fraction; ${since%.*} keeps the whole seconds the shell can count with
 restarting() { read -r since < "$root/runtime/restarting" 2>/dev/null && [ $(( $(date +%s) - ${since%.*} )) -lt $restart_window ]; }
 tries=0
+sent_to=
 while :; do
-  reply=$(curl -s -m 10 -w '\n%{http_code}' -H 'Content-Type: application/json' \
-    --url-query "root=$root" --url-query "pid=$PPID" --url-query "env=$JOURNAL_ENV" --url-query "inbox=$CLAUDE_CODE_MESSAGING_SOCKET" --data-binary @"$body" "${url}api/hook/$1")
+  if [ -n "$sent_to" ]; then
+    reply=$(curl -s -m 10 -w '\n%{http_code}' -H 'Content-Type: application/json' --data-binary @"$body" "$sent_to")
+  else
+    reply=$(curl -s -m 10 -w '\n%{http_code}' -H 'Content-Type: application/json' \
+      --url-query "root=$root" --url-query "pid=$PPID" --url-query "env=$JOURNAL_ENV" --url-query "inbox=$CLAUDE_CODE_MESSAGING_SOCKET" --data-binary @"$body" "${url}api/hook/$1")
+    # curl before 7.87 has no --url-query and exits 2: build the address with --data-urlencode instead
+    [ $? -ne 2 ] || { sent_to=$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "root=$root" --data-urlencode "pid=$PPID" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "inbox=$CLAUDE_CODE_MESSAGING_SOCKET" "${url}api/hook/$1"); continue; }
+  fi
   code=${reply##*
 }
   tries=$((tries + 1))

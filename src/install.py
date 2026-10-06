@@ -1,10 +1,14 @@
+import sys
+
+if sys.version_info < (3, 10):
+    sys.exit(f"Python 3.10 or newer is needed, and this is Python {sys.version.split()[0]}")
+
 import fcntl
 import os
 import shutil
 import stat
 import tarfile
 import subprocess
-import sys
 import hashlib
 import json
 import marshal
@@ -218,6 +222,7 @@ def retire(root: Path) -> int:
 ASKS = """case "$1" in __SERVED__) ;; *) false ;; esac && if { read -r at url < "$root/runtime/heartbeat"; } 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
 session="$JOURNAL_SESSION"; [ -z "$session" ] && [ -n "$JOURNAL_SESSION_VARIABLE" ] && eval "session=\\${$JOURNAL_SESSION_VARIABLE:-}"
 reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --url-query "cwd=$PWD" --url-query "plugin=$JOURNAL_PLUGIN" --url-query "session=$session" --data-binary @- "${url}api/run")
+[ $? -ne 2 ] || reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --data-binary @- "$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "actor=$JOURNAL_ACTOR" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "cwd=$PWD" --data-urlencode "plugin=$JOURNAL_PLUGIN" --data-urlencode "session=$session" "${url}api/run")")
 said=${reply##*
 }
 body=${reply%

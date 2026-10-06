@@ -1,6 +1,7 @@
 import http.client
 import json
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -603,6 +604,7 @@ def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back
     assert exits == [1], "warming runs beside the server, so a failure in it must end the process for the supervisor to roll back"
 
 
+<<<<<<< HEAD
 def test_one_engine_runs_per_environment_and_an_orphan_or_a_stale_build_ends(tmp_path, monkeypatch):
     from runner import engines
     root = tmp_path / ".journal"
@@ -712,3 +714,83 @@ def test_a_second_journal_gets_a_free_viewer_port_and_a_journal_already_served_s
     with pytest.raises(SystemExit) as stopped:
         serve.serve(mine)
     assert stopped.value.code == 0 and "already served at http://127.0.0.1:8421/" in capsys.readouterr().out, "a journal that is already served says where and starts nothing"
+=======
+def old_curl(tmp_path: Path) -> Path:
+    stub = tmp_path / "bin"
+    stub.mkdir()
+    (stub / "curl").write_text(f'#!/bin/sh\nfor a in "$@"; do [ "$a" = --url-query ] && {{ echo "curl: option --url-query: is unknown" >&2; exit 2; }}; done\nexec {shutil.which("curl")} "$@"\n')
+    (stub / "curl").chmod(0o755)
+    return stub
+
+
+@contextmanager
+def answering(seen: list):
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Reply(BaseHTTPRequestHandler):
+        def do_POST(self):
+            seen.append(self.path)
+            self.rfile.read(int(self.headers.get("Content-Length") or 0))
+            self.send_response(200)
+            self.send_header("Content-Length", "2")
+            self.end_headers()
+            self.wfile.write(b"ok")
+
+        def log_message(self, *_):
+            pass
+
+    server = HTTPServer(("127.0.0.1", 0), Reply)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}/"
+    finally:
+        server.shutdown()
+
+
+def test_the_hooks_and_the_command_reach_the_server_through_a_curl_older_than_7_87(tmp_path):
+    from install import asks
+    seen: list = []
+    root = tmp_path / ".journal"
+    (root / "runtime").mkdir(parents=True)
+    env = {**os.environ, "PATH": f"{old_curl(tmp_path)}:{os.environ['PATH']}", "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main", "JOURNAL_ACTOR": "agent"}
+    with answering(seen) as url:
+        (root / "runtime" / "heartbeat").write_text(f"{int(time.time())} {url}\n")
+        hook = subprocess.run(["sh", str(CODE / "hook.sh"), "claude", str(root)], input='{"hook_event_name": "Stop"}', env=env, capture_output=True, text=True, timeout=60)
+        served = asks().split(") ;;")[0].split("case \"$1\" in ")[1].split("|")[0]
+        shim = subprocess.run(["sh", "-c", f"root={root}\n{asks()}", "sh", served], env=env, capture_output=True, text=True, timeout=60)
+    assert hook.returncode == 0 and not (root / "runtime" / "hook-failures.log").exists(), f"the hook was delivered: {hook.stderr}"
+    assert any(path.startswith("/api/hook/claude?") and "root=" in path and "env=main" in path for path in seen), f"the hook carried its parameters in the query: {seen}"
+    assert shim.stdout == "ok" and any(path.startswith("/api/run?") and "actor=agent" in path for path in seen), f"the command was delivered: {shim.stderr} {seen}"
+
+
+def test_an_installer_run_by_a_python_older_than_3_10_says_what_is_needed(tmp_path):
+    old = "/usr/bin/python3"
+    if not Path(old).exists() or subprocess.run([old, "-c", "import sys; sys.exit(sys.version_info >= (3, 10))"], timeout=30).returncode:
+        pytest.skip("no Python older than 3.10 here")
+    stub = tmp_path / "bin"
+    stub.mkdir()
+    (stub / "python3").symlink_to(old)
+    direct = subprocess.run([old, str(CODE / "install.py"), "upgrade", str(tmp_path)], capture_output=True, text=True, timeout=60)
+    assert direct.returncode and "Python 3.10" in direct.stderr and "Traceback" not in direct.stderr, direct.stderr
+    scripted = subprocess.run(["sh", str(HERE / "install.sh")], cwd=tmp_path, env={**os.environ, "PATH": f"{stub}:/usr/bin:/bin"}, capture_output=True, text=True, timeout=60)
+    assert scripted.returncode and "Python 3.10" in scripted.stdout + scripted.stderr and not (tmp_path / ".journal").exists(), scripted.stdout + scripted.stderr
+
+
+def test_install_sh_as_a_first_time_user_runs_it_installs_the_release_and_leaves_the_tests_behind(tmp_path):
+    repo = tmp_path / "repo"
+    shutil.copytree(HERE, repo, ignore=shutil.ignore_patterns(".git", ".venv", "node_modules", "__pycache__", ".journal", ".claude", "tests"), symlinks=False)
+    git = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    for command in (["init", "-q"], ["add", "-A", "-f"], ["commit", "-q", "-m", "release"]):
+        subprocess.run(["git", *command], cwd=repo, env=git, check=True, capture_output=True, timeout=120)
+    project, home = tmp_path / "project", tmp_path / "home"
+    for folder in (project / ".claude", home):
+        folder.mkdir(parents=True)
+    env = {**git, "HOME": str(home), "AGENT_JOURNAL_REPO": f"file://{repo}"}
+    done = subprocess.run(["sh", str(HERE / "install.sh")], cwd=project, env=env, capture_output=True, text=True, timeout=300)
+    release = (HERE / "VERSION").read_text().strip()
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert (project / ".journal" / "src" / "VERSION").read_text().strip() == release, "the release's version arrives with the code"
+    assert [p.name for p in (project / ".journal").glob("journal-*.pyz")] and all(p.name.startswith(f"journal-{release}-") for p in (project / ".journal").glob("journal-*.pyz")), \
+        "the build is packed under the release's own version"
+    assert not list((project / ".journal" / "src").rglob("test.py")), "no feature test is copied into a user's project"
+>>>>>>> 2550bb29b (First-time install and launch gaps: Python 3.9 is refused plainly, hooks work with curl before 7.87, restored hooks keep the session's changes, install.sh copies VERSION, a build that keeps failing with nothing to roll back to stops, a missing agent binary refuses before the menus, and running out of viewer ports says so)

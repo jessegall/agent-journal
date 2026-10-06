@@ -21,6 +21,7 @@ from engine.version import version
 from engine.package import entry
 from engine.ports import free, url_of
 from engine.fields import Loaded
+from resources.base import Refused
 
 PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
 RUNNING_FOR = 5.0
@@ -184,7 +185,7 @@ def available(root: Path, prefer: int = 0) -> int:
     for port in PORTS:
         if free(port):
             return port
-    raise OSError("no viewer port available from 8420 through 8439")
+    raise Refused("no viewer port is free from 8420 through 8439: close a journal viewer or another program that uses one of them")
 
 
 def free_from(start: int) -> int:

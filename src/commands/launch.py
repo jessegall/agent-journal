@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import sys
@@ -175,13 +176,14 @@ def launch(record: Record, agent: str, given: list[str] | None) -> str:
     held = latest_first(record)
     if held:
         print(f"journal: carrying on with {package_version()}: {held}")
+    driver = DRIVERS[agent]
+    driver.binary(os.environ.get("PATH", ""))
     quiet = NO_INTERACTION in (given or [])
     args = [arg for arg in given or [] if arg != NO_INTERACTION]
     ask, answering = (defaults, True) if quiet else (input, None)
     if sys.stdin.isatty() and not quiet:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
-    driver = DRIVERS[agent]
     resumed = driver.conversation(args) or driver.continued(args, project)
     env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, answering)
     here = Record(record.root, env)
