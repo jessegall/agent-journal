@@ -20,10 +20,23 @@ class Todos(Prioritised, Controller):
     resource = types.Todo
 
     @action
-    def assign(self, n: int, to: str = "", off: bool = False):
-        if not to and not off:
-            raise Refused("assign names an agent with --to, or --off to put the row back")
-        return self.update(n, assigned="" if off else to)
+    def assign(self, n: int, to: str):
+        return self.update(n, assigned=to, pending=None)
+
+    @action
+    def unassign(self, n: int, **data):
+        return self.update(n, assigned="", pending=None, **data)
+
+    @action
+    def complete(self, n: int, how: str = "", **data):
+        return super().complete(n, how, **{"pending": None, **data})
+
+    @action
+    def reopen(self, n: int, why: str):
+        row = self.load(n)
+        if row.pending and not row.completed:
+            return self.update(n, pending=None)
+        return super().reopen(n, why)
 
     @action
     def task(self, agent: str, title: str, brief: str = ""):

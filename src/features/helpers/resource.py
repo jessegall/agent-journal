@@ -29,3 +29,7 @@ class Helper(Shape, Resource):
     subagent_writable = False
     takes_comments = False
     command_names = {"complete": "finish"}
+
+
+def held_by_helper(todo) -> bool:
+    return todo.assigned.startswith(f"{HELPER}:")

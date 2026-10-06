@@ -128,7 +128,7 @@ class ClearLapsedAssignments(Handler):
             who = t.assigned
             if not who or who not in subagents or time.time() - float(subagents[who].active) < limit:
                 continue
-            todos.update(t.n, assigned="", lapsed=who)
+            todos.unassign(t.n, lapsed=who)
             dispatcher = context.journal.get(Agents).by_session(subagents[who].dispatcher)
             context.speaking_to(dispatcher).agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
 

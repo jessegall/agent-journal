@@ -131,21 +131,29 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     calls = started(monkeypatch)
     repo = project_on("phone-connection")
     todos = Todos(repo.record, actor=AGENT)
-    fixed, left = todos.create("fix the tunnel").n, todos.create("name the cause").n
+    fixed, dropped, left = (todos.create(title).n for title in ("fix the tunnel", "name the cause", "test the dialog"))
     helpers = Helpers(repo.record, actor=AGENT)
-    helpers.dispatch("Rhea", "The tunnel", "codex", "gpt-5.5", worktree=True, todos=f"{fixed},{left}")
+    helpers.dispatch("Rhea", "The tunnel", "codex", "gpt-5.5", worktree=True, todos=f"{fixed},{dropped},{left}")
     row = helpers.load(1)
+    helper = Helpers(Record(repo.record.root, row.environment), actor=AGENT)
     assert todos.load(fixed).assigned == row.ref and f"to-do {fixed}: fix the tunnel" in calls[0][3][-1], "the rows are handed over and the kickoff names them"
-    assert "only it marks it done" in refused(lambda: todos.complete(fixed, "done here")), "the agent that dispatched it cannot close a handed row"
+    for closing in (lambda: todos.complete(fixed, "done here"), lambda: todos.strike(fixed, "not needed"), lambda: todos.unassign(fixed)):
+        assert "journal helper stop 1 gives it back first" in refused(closing), "the agent that dispatched it cannot close, strike or take back a handed row"
     assert "assigned to helper:1" in refused(lambda: todos.start(fixed)), "nor start it"
-    assert "not handed to you" in refused(lambda: Helpers(Record(repo.record.root, row.environment), actor=AGENT).done(todos.create("another").n, "x"))
-    Helpers(Record(repo.record.root, row.environment), actor=AGENT).done(fixed, "restarts within seconds")
+    assert "not handed to you" in refused(lambda: helper.done(todos.create("another").n, "x"))
+    helper.done(fixed, "restarts within seconds")
     marked = todos.load(fixed)
     assert not marked.completed and lane_of(Sources(todos), marked) == DONE, "a row the helper marks shows as done, waiting for its merge"
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
     assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
+    helper.done(dropped, "names the cause")
+    todos.reopen(dropped, "not yet")
+    assert not todos.load(dropped).pending and todos.load(dropped).assigned == row.ref, "a row waiting for its merge can be pulled back, and stays the helper's"
+    helper.done(dropped, "names the cause")
     monkeypatch.setattr(Environments, "stop", lambda self, n: "stopped")
-    assert helpers.stop(1).endswith(f"given back: to-do {left}") and todos.load(left).assigned == "", "stopping the helper gives back what it did not finish"
+    assert helpers.stop(1).endswith(f"given back: to-do {left}") and todos.load(left).assigned == "", "stopping the helper gives back what it did not mark"
+    Worktrees(repo.record, actor=SYSTEM).complete(int(row.worktree))
+    assert (todos.load(dropped).assigned, todos.load(dropped).pending) == ("", None), "dropping its worktree untaken gives back what waited for the merge"
 
 
 def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, tmp_path):
