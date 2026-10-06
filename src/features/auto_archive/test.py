@@ -61,6 +61,9 @@ def test_keep_zero_leaves_reports_listed():
     age(Reports(kept), r.n, created=time.time() - 300 * 86400)
     tick(kept)
     assert Reports(kept).load(r.n).completed == 0.0, "keep 0 leaves reports listed"
+    kept.set_setting("keep", {"report": 0, "pack": 0})
+    tick(kept)
+    assert not any((kept.home / "report" / "packed").glob("*.zip")), "packing nothing is what keep 0 asks for the packing of closed rows"
 
 
 def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_removed():

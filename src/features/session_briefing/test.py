@@ -271,6 +271,8 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._post("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
     assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
+    alive.unlink()
+    assert driver._post("todo 8 next", "journal") is False, "a channel whose file is gone takes nothing, and the line is typed instead"
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
