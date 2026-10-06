@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.12 — the phone shows an answered question's chips as chips, and typing brings the chat down
+The phone's answered-question card now draws links to rows as chips, as the desktop card does, instead of their bare labels. Typing the first words in the chat box, on the phone and on the desktop, now scrolls the chat to the newest message. Nothing to do.
+
 ## 2.253.11 — a link with a question mark is not a question, and the briefing tests fit the cap
 The check for choices offered in prose now ignores web links, so a bullet list beside a link such as `?file=X` no longer holds the agent's writes. The briefing tests are folded back to ten. Nothing to do.
 

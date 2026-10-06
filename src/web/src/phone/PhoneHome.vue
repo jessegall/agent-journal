@@ -678,6 +678,7 @@ function pick(key) {
                             :draft="draft"
                             @sending="toBottom"
                             @focused="keptDown"
+                            @typing="toBottom"
                             @sent="sent"
                             @unabout="about = ''"
                             @unquote="((quote = ''), (about = ''))"

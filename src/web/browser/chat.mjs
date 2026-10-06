@@ -59,6 +59,20 @@ await runScenarios(process.argv[2], {
         await page.getByText(marker).first().waitFor();
         if ((await page.getByText(marker).count()) !== 1 || (await stored(page, marker)) !== 1) throw new Error("the message was doubled by a reload");
     },
+    async "typing the first words brings the chat to the newest message"(page, url) {
+        await home(page, url);
+        const gap = () => page.evaluate(() => { const s = document.querySelector(".thread-scroll"); return s.scrollHeight - s.clientHeight - s.scrollTop; });
+        await page.evaluate(() => {
+            const s = document.querySelector(".thread-scroll");
+            const filler = document.createElement("div");
+            filler.style.height = "3000px";
+            s.prepend(filler);
+            s.scrollTop = 0;
+        });
+        await compose(page).pressSequentially("hello");
+        await page.waitForTimeout(SETTLE);
+        if ((await gap()) > 40) throw new Error("typing did not bring the chat to the bottom");
+    },
     async "a message sent while the server is away is kept, and sent once when it is back"(page, url) {
         const marker = `away ${Date.now()}`;
         await home(page, url);

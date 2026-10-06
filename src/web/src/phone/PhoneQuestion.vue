@@ -85,7 +85,7 @@ async function dismiss() {
             <TextDisplay class="question-abstract" :text="question.abstract" />
         </template>
         <template v-if="question.completed || answered">
-            <p class="question-answer">{{ outcome }}</p>
+            <TextDisplay inline class="question-answer" :text="outcome" />
         </template>
         <template v-else>
             <OptionList ref="list" :options="options" :send="send" :hold-seconds="question.hold" large send-when-hidden>
@@ -176,6 +176,7 @@ async function dismiss() {
 }
 
 .question-answer {
+    display: block;
     margin: 0;
     color: var(--tone-good);
 }

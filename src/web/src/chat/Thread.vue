@@ -462,6 +462,7 @@ watch(
                     :quote="quote.text"
                     quote-label="Replying to"
                     @unquote="quote = {text: '', ref: ''}"
+                    @typing="toBottom(true)"
                     :preset="editing ? editing.text : ''"
                     :up="editLast"
                     :down="unedit"
