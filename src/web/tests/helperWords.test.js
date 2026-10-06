@@ -5,7 +5,7 @@ import {MODES} from "../src/domain/modes.js";
 import {KIND_SWITCHES} from "../src/domain/orchestra.js";
 
 afterEach(() => {
-    words.value = {helper: "helper", helpers: "helpers"};
+    words.value = {helper: "", helpers: ""};
 });
 
 describe("a profile's word for helpers", () => {

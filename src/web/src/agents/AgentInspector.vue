@@ -58,7 +58,12 @@ const VIEWS = {
     feed: {title: "Files changed", icon: "edits"},
     todos: {title: "To-dos", icon: "todos"},
     plan: {title: "Plan", icon: "flag"},
-    subagents: {title: "Subagents", icon: "agents"},
+    subagents: {
+        get title() {
+            return capitalised(helperWord(2));
+        },
+        icon: "agents",
+    },
     skills: {title: "Skills", icon: "book"},
     hooks: {title: "Hooks", icon: "activity"},
 };
@@ -227,7 +232,7 @@ const openSkills = () => go(route.value.env, "skills");
                         <p class="pane-note">
                             {{
                                 subagent
-                                    ? "What this subagent was asked and what it answered. It can't be messaged."
+                                    ? `What this ${helperWord()} was asked and what it answered. It can't be messaged.`
                                     : "The conversation with this agent."
                             }}
                         </p>
@@ -308,11 +313,12 @@ const openSkills = () => go(route.value.env, "skills");
                     </template>
                     <template #subagents>
                         <p class="pane-note">
-                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent and you
-                            can't send it messages. Helpers are different: separate agents with their own environment, listed under Helpers.
+                            A {{ helperWord() }} is a short job this agent hands off inside its own session. It answers only to this agent
+                            and you can't send it messages. Helper agents are different: separate agents with their own environment, listed
+                            under {{ capitalised(helperWord(2)) }}.
                         </p>
                         <template v-if="!subagents.length">
-                            <EmptyState title="No subagents yet">The jobs this agent hands off show here.</EmptyState>
+                            <EmptyState :title="`No ${helperWord(2)} yet`">The jobs this agent hands off show here.</EmptyState>
                         </template>
                         <div class="fill scroll">
                             <template v-for="row in subagents" :key="row.session">
