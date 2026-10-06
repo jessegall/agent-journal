@@ -29,11 +29,11 @@ class Helpers(Controller):
     resource = Helper
 
     @action(network=True)
-    def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False) -> str:
-        row = self._dispatched(name, job, provider, model, brief, worktree)
+    def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "") -> str:
+        row = self._dispatched(name, job, provider, model, brief, worktree, checkout)
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
 
-    def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False):
+    def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False, checkout: str = ""):
         from providers import DRIVERS, PROVIDERS
         if provider not in DRIVERS:
             raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
@@ -42,12 +42,15 @@ class Helpers(Controller):
         offered = PROVIDERS[provider]()
         if not offered.offers(model):
             raise Refused(f"{provider} does not offer {model}; choose one of {', '.join(offered.models())}")
+        if worktree and checkout:
+            raise Refused("a helper works either in a worktree of its own or in a checkout you name: give --worktree or --checkout, not both")
+        project = self.record.root.resolve().parent
+        folder = self._checkout(project, checkout) if checkout else project
         slug = slugged(name, limit=30)
         if not slug:
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")
         place = Environments(self.record, actor=SYSTEM).unused(slugged(f"{self.record.env}-{slug}", limit=30), ": finish that helper first, or choose another name")
-        row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place)
-        folder = self.record.root.resolve().parent
+        row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place, checkout=str(folder) if checkout else "")
         if worktree:
             given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name)
             folder = Path(given.path)
@@ -57,6 +60,15 @@ class Helpers(Controller):
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n)), folder)
         return row
+
+    @staticmethod
+    def _checkout(project: Path, path: str) -> Path:
+        folder = (project / path).resolve()
+        if folder != project and project not in folder.parents:
+            raise Refused(f"--checkout names a checkout inside the project, {project}; {folder} is outside it")
+        if not (folder / ".git").exists():
+            raise Refused(f"{folder} is not a git checkout: --checkout names the folder that holds .git, such as platform")
+        return folder
 
     @action(network=True)
     def say(self, n: int, text: str) -> str:
