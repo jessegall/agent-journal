@@ -7,6 +7,7 @@ import sys
 import tempfile
 import threading
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -17,6 +18,7 @@ from runner.engine import Engine
 from engine.record import Record
 from engine.sessions import ACTIVE_ENV
 from providers.base import JOURNAL
+from providers.transcript_cache import CACHE
 from serve import serve
 from engine.stored import write_text
 
@@ -96,6 +98,26 @@ def viewer(root: Path) -> str:
 def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -> str:
     live = Path(live).resolve()
     scratch = copy(live)
+    with folds_in(scratch.parent / "folds"):
+        rows = timings(live, scratch, env, runs, url)
+    shutil.rmtree(scratch.parent, ignore_errors=True)
+    rows["runtime/ MB"] = sum(f.stat().st_size for f in (live / "runtime").rglob("*") if f.is_file()) / 1e6
+    if out:
+        write_text(Path(out), json.dumps({"at": time.time(), "runs": runs, "median_ms": rows}, indent=2))
+    width = max(len(k) for k in rows)
+    return "\n".join(f"{name:<{width}}  {value:9.1f}" for name, value in rows.items())
+
+
+@contextmanager
+def folds_in(folder: Path):
+    kept, CACHE.folder = CACHE.folder, folder
+    try:
+        yield
+    finally:
+        CACHE.folder = kept
+
+
+def timings(live: Path, scratch: Path, env: str, runs: int, url: str) -> dict:
     rows = {}
     record = Record(scratch, env)
     for type_ in TYPES:
@@ -105,8 +127,11 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
     for argv in COMMANDS:
         rows[f"journal {' '.join(argv)}"] = cli(scratch, env, argv, runs)
     rows["engine tick"] = ticking(scratch, env, runs)
+    began = time.perf_counter()
     server = serve(scratch, 0)
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    urlopen(f"http://127.0.0.1:{server.server_address[1]}/api/identity", timeout=120).read()
+    rows["server start to its first answer"] = (time.perf_counter() - began) * 1000
     rows["hook via the server (hook.sh)"] = hook(scratch, env, runs, ["sh", str(HERE / "hook.sh")])
     here = f"http://127.0.0.1:{server.server_address[1]}"
     for argv in COMMANDS:
@@ -117,9 +142,4 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
     for path in PATHS if base else ():
         address = base + path.format(env=env)
         rows[f"GET {path}"] = timed(lambda: urlopen(address, timeout=30).read(), runs)
-    shutil.rmtree(scratch.parent, ignore_errors=True)
-    rows["runtime/ MB"] = sum(f.stat().st_size for f in (live / "runtime").rglob("*") if f.is_file()) / 1e6
-    if out:
-        write_text(Path(out), json.dumps({"at": time.time(), "viewer": base, "runs": runs, "median_ms": rows}, indent=2))
-    width = max(len(k) for k in rows)
-    return "\n".join(f"{name:<{width}}  {value:9.1f}" for name, value in rows.items())
+    return rows
