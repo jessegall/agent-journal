@@ -96,3 +96,32 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
     triggers.fired(row.n)
     triggers.fired(row.n)
     assert (triggers.load(row.n).matched, bool(triggers.load(row.n).matched_at)) == (2, True), "each match is counted and dated"
+
+
+def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger_may_read(monkeypatch):
+    from providers import PROVIDERS
+    from providers.payload import call_of, response_text
+    kinds = PROVIDERS["claude"].tool_kinds
+    called = lambda name, given, response=None: call_of({"tool_name": name, "tool_input": given, "tool_response": response or {}}, kinds)
+    web = called("WebSearch", {"query": "python typing"})
+    files = called("Grep", {"pattern": "def main"})
+    fetch = called("WebFetch", {"url": "https://example.com/docs/page"})
+    assert (web.doing, web.words, web.subject) == ("searching the web for python typing", ("python typing",), "python typing"), "a web search says what it looks up"
+    assert (files.doing, files.words, files.subject) == ("searching def main", ("def main",), "def main"), "a search of files says what it looks for"
+    assert (fetch.doing, fetch.words, fetch.subject, fetch.host) == ("fetching example.com", ("https://example.com/docs/page",), "example.com", "example.com"), "a fetch names the host"
+    assert called("WebFetch", {"url": "example.com"}).host == "example.com", "an address with no path is its own host"
+    skill = called("Skill", {"skill": "journal"})
+    assert (skill.doing, skill.words, skill.subject, skill.loaded_skill) == ("loading skill journal", ("journal",), "journal", "journal"), "a skill load names the skill"
+    sent = called("mcp__figma__get_design_context", {"node": "1"})
+    assert (sent.doing, sent.server_tool) == ("figma · get design context", ("figma", "get design context")), "a tool of an outside server is named with its server"
+    plain = called("Frobnicate", {})
+    assert (plain.doing, plain.server_tool) == ("frobnicate", None), "any other tool is named by itself"
+    written = called("Write", {"file_path": "a.py", "content": "x = 1"})
+    assert (written.output, written.writings) == ("", ("x = 1",)), "a write has no output and its text is what it writes"
+    cron = called("CronCreate", {"cron": "* * * * *", "prompt": "check"}, {"id": "job-9"})
+    other = called("CronCreate", {"cron": "* * * * *", "prompt": "check"}, {"stdout": "Scheduled loop abc12345"})
+    assert cron.loop == "job-9", "a loop is known by the id its tool answered with"
+    assert called("Read", {}).__class__.__name__ == "ToolUse", "a call that lacks what its kind needs is read as a plain tool use"
+    assert (response_text({"file": {"content": "inside"}}), response_text({"filenames": ["a", "b"]}), response_text(7), response_text(["x", "", "y"])) == \
+        ("inside", "a\nb", "", "x\ny"), "a tool's answer is read as text whatever shape it comes in"
+    assert other.loop == "abc12345", "a loop id written in the answer's text is found when it is not a field"
