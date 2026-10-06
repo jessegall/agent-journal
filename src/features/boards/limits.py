@@ -31,12 +31,12 @@ class BoardWorkStaysOnTheBoard(ActionInterceptor):
 
 
 class PanelRepliesStayShort(ActionInterceptor):
-    def intercept(self, context: Context, controller, **args):
+    def intercept(self, feature_context: Context, controller, **args):
         about = str(args.get("about", ""))
         if controller.type != "comment" or controller.actor != AGENT or not about.startswith("message:"):
             return None
-        message = context.journal.get(Messages).load(about.split(":")[1])
-        if not Boards(context.record, actor=SYSTEM).of_message(message):
+        message = feature_context.journal.get(Messages).load(about.split(":")[1])
+        if not Boards(feature_context.record, actor=SYSTEM).of_message(message):
             return None
         text = "\n".join(line for line in (args.get("brief") or "").split("\n") if not line.startswith(">")).strip()
         if len(text) > PANEL_REPLY:

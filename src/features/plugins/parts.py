@@ -140,7 +140,7 @@ def installed(record, name: str) -> bool:
 
 
 class KeepPluginRows(ActionInterceptor):
-    def intercept(self, context: Context, controller, n: int = 0, **_) -> None:
+    def intercept(self, feature_context: Context, controller, n: int = 0, **_) -> None:
         if not n or controller.actor in (SYSTEM, PLUGIN):
             return None
         row = controller.load(n)
@@ -151,7 +151,7 @@ class KeepPluginRows(ActionInterceptor):
 
 
 class OneRowPerTitle(ActionInterceptor):
-    def intercept(self, context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
+    def intercept(self, feature_context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
         name = data.get(OWNER)
         if not name:
             return None
