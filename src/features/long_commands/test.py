@@ -52,14 +52,14 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     shells = {row["command"]: row["running"] for row in Claude().crew(transcript)["shell_rows"]}
     assert shells == {"sleep 1": False, "sleep 2": True, "sleep 3": True}, \
         "a refused call never started; one that started, or was moved to the background, runs until it ends"
-    said = lambda text: {"type": "user", "timestamp": "2026-09-23T00:00:02Z", "message": {"content": text}}
-    wrote = lambda text: {"type": "assistant", "timestamp": "2026-09-23T00:00:03Z", "message": {"content": [{"type": "text", "text": text}]}}
+    user_row = lambda text: {"type": "user", "timestamp": "2026-09-23T00:00:02Z", "message": {"content": text}}
+    assistant_row = lambda text: {"type": "assistant", "timestamp": "2026-09-23T00:00:03Z", "message": {"content": [{"type": "text", "text": text}]}}
     with transcript.open("a") as more:
-        for row in (said("<task-notification><task-id>b3x</task-id><status>failed</status></task-notification>"),
-                    said("<bash-input>ls</bash-input>"), said("<bash-stdout>a.py</bash-stdout><bash-stderr></bash-stderr>"),
-                    said("<command-name>/model</command-name><command-args>opus</command-args>"),
-                    wrote("Pull request 8: https://github.com/jessegall/agent-journal/pull/8. Earlier draft https://github.com/jessegall/agent-journal/pull/8"),
-                    wrote("The design: https://claude.ai/design/abc?file=x.png and https://claude.ai/design/def?file=page.html")):
+        for row in (user_row("<task-notification><task-id>b3x</task-id><status>failed</status></task-notification>"),
+                    user_row("<bash-input>ls</bash-input>"), user_row("<bash-stdout>a.py</bash-stdout><bash-stderr></bash-stderr>"),
+                    user_row("<command-name>/model</command-name><command-args>opus</command-args>"),
+                    assistant_row("Pull request 8: https://github.com/jessegall/agent-journal/pull/8. Earlier draft https://github.com/jessegall/agent-journal/pull/8"),
+                    assistant_row("The design: https://claude.ai/design/abc?file=x.png and https://claude.ai/design/def?file=page.html")):
             more.write(json.dumps(row) + "\n")
     tasks = Claude().background_tasks(transcript)
     assert ("b3x" in tasks.started, "b3x" in tasks.ended, tasks.failed) == (True, True, {"b3x"}), "a task moved to the background is started, and its notice ends it, failed"
