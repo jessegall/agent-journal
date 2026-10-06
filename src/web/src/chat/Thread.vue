@@ -18,7 +18,6 @@ import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
-import {earlier} from "../sync/rows.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
@@ -152,10 +151,10 @@ let prepending = false;
 
 async function older() {
     const s = scroller.value;
-    if (!here || !ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
+    if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
     prepending = true;
     try {
-        await keepingPlace(scroller, () => earlier("message", "comment"));
+        await keepingPlace(scroller, () => scope.earlier("message", "comment"));
     } finally {
         prepending = false;
     }
