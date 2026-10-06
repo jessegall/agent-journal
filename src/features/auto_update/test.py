@@ -341,3 +341,24 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
     assert released(source) == "2.10.0", "the newest release is chosen by version, not by name"
     _, failed = fetch(tmp_path / "copy", source, f"refs/tags/v{released(source)}")
     assert (failed, (tmp_path / "copy" / "VERSION").read_text()) == ("", "2.10.0"), "the release tag is installed, not the commits after it"
+    import socket
+    import time
+    import install
+    stub = tmp_path / "bin"
+    stub.mkdir()
+    seen = tmp_path / "prompt"
+    (stub / "git").write_text(f'#!/bin/sh\necho "$GIT_TERMINAL_PROMPT" > {seen}\nexit 1\n')
+    (stub / "git").chmod(0o755)
+    with pytest.MonkeyPatch.context() as patched:
+        patched.setenv("PATH", f"{stub}:{__import__('os').environ['PATH']}")
+        install.released(source)
+    assert seen.read_text().strip() == "0", "a credential prompt never opens over the launch menu"
+    hanging = socket.socket()
+    hanging.bind(("127.0.0.1", 0))
+    hanging.listen(5)
+    began = time.time()
+    with pytest.MonkeyPatch.context() as patched:
+        patched.setattr(install, "LOOKUP_SECONDS", 1)
+        waited = install.released(f"http://127.0.0.1:{hanging.getsockname()[1]}/x.git")
+    hanging.close()
+    assert (waited, time.time() - began < 5) == ("", True), "an unanswering remote costs a bounded wait and no release"

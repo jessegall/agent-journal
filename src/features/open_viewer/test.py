@@ -200,6 +200,8 @@ def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back
     from providers import DRIVERS
     from features.clean_slate.slate import moved
     from tests.conftest import refused
+    import commands.launch_update
+    monkeypatch.setattr(commands.launch_update, "latest_first", lambda record: "")
     monkeypatch.setattr(viewer, "free", lambda port: False)
     assert "no viewer port is free" in refused(lambda: viewer.available(fresh().root)), "a plain line, not a traceback"
     record = fresh()

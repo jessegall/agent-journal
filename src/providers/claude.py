@@ -223,6 +223,8 @@ class Claude(Provider):
         if found:
             return found
         python = ((read_json(project / ".mcp.json", dict, {}).get("mcpServers") or {}).get(SERVER) or {}).get("command", "")
+        if not (python and Path(python).exists()):
+            return f"its channel runs {python or 'no Python'}, which is gone: reinstall: re-run install.sh"
         if run([python, "-c", "import sys; print(sys.version_info >= (3, 10))"], timeout=10).strip() != "True":
             return f"its channel runs {python or 'no Python'}, which is not Python 3.10 or newer"
         return ""

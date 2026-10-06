@@ -15,7 +15,7 @@ from urllib.request import urlopen
 
 from engine import runtime
 from engine.focus import existing_tab
-from engine.stored import read_json, write_json, write_text
+from engine.stored import append_text, read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
 from engine.package import entry
@@ -29,7 +29,8 @@ RUNNING: dict[str, tuple[float, str]] = {}
 SERVING: dict[str, str] = {}
 HEARTBEAT = 2.0
 LAUNCHING = "viewer.launching"
-COMING_UP = 30.0
+COMING_UP = 20.0
+HUNG = -signal.SIGKILL
 PORT_WAIT = 30.0
 SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
@@ -235,9 +236,18 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         with log.open("a") as output:
             server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
         url, code = answered(root, server)
+        if not url and code is None:
+            code = stopped(server, log)
         if code is None:
             threading.Thread(target=server.wait, daemon=True).start()
         return url, code
+
+
+def stopped(server: subprocess.Popen, log: Path) -> int:
+    server.kill()
+    server.wait()
+    append_text(log, f"journal: the server did not answer within {COMING_UP:g}s and was stopped\n")
+    return HUNG
 
 
 def answered(root: Path, server: subprocess.Popen) -> tuple[str, int | None]:
