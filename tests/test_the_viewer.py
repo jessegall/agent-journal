@@ -95,3 +95,11 @@ def test_a_paired_phone_answers_every_state_in_a_browser():
         run = subprocess.run(["node", "browser/phoneapp/page.mjs", page.pair], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+
+
+@needs_node_modules
+def test_a_paired_phone_settings_work_in_a_browser():
+    with phone_pages.served() as page:
+        run = subprocess.run(["node", "browser/phoneapp/settings.mjs", page.pair], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+    assert run.returncode == 0, run.stderr[-2000:]
+    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}

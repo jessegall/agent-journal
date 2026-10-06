@@ -2,7 +2,9 @@ import PhoneKindList from "./PhoneKindList.vue";
 import PhonePlaceSoon from "./PhonePlaceSoon.vue";
 import PhoneSearch from "./PhoneSearch.vue";
 
-export const SCREENS = {list: PhoneKindList, place: PhonePlaceSoon, search: PhoneSearch};
+import {SETTINGS_SCREENS} from "./settings/screens.js";
+
+export const SCREENS = {list: PhoneKindList, place: PhonePlaceSoon, search: PhoneSearch, ...SETTINGS_SCREENS};
 
 const kindOfRoute = (route) => route.split(":")[0];
 

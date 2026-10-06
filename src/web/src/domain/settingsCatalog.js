@@ -426,3 +426,12 @@ export function navMark(g, searching) {
     if (g.head && g.head.off) return {kind: "off", text: "Off"};
     return groupRows(g).some((r) => r.changed) ? {kind: "changed", text: ""} : {kind: "", text: ""};
 }
+
+export const resettable = (row) => Boolean(row.changed) && (row.shipped !== undefined || Boolean(row.timing));
+
+export function resets(row) {
+    const steps = [];
+    if (row.shipped !== undefined && !same(row.value, row.shipped)) steps.push(["change", row.shipped]);
+    if (row.timing && row.timing.changed) steps.push(["timing", row.timing.shipped]);
+    return steps;
+}

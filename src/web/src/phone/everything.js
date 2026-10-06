@@ -1,11 +1,13 @@
 import {kindOf} from "./kinds.js";
 
+const ROUTES = {plugin: "plugins", skill: "skills"};
+
 const kind = (type) => ({
     key: type,
     label: kindOf(type).many,
     sub: kindOf(type).description,
     icon: kindOf(type).icon,
-    route: `list:${type}`,
+    route: ROUTES[type] || `list:${type}`,
     type,
 });
 const place = (key, label, sub, icon, route = `place:${key}`) => ({key, label, sub, icon, route});
@@ -51,7 +53,7 @@ export const GROUPS = [
             kind("plugin"),
             kind("share"),
             place("files", "Project files", "Every file in the project, and what it is attached to", "folder"),
-            place("settings", "Settings", "Features, services, alerts, your title and name", "settings"),
+            place("settings", "Settings", "Features, services, alerts, your title and name", "settings", "settings"),
         ],
     },
 ];
