@@ -99,7 +99,7 @@ export const AGENT_VIEW = {
 
 export const STATE_SWITCHES = [
     {key: "working", label: "Working", icon: "agents", hidden: (n) => `${n} working`},
-    {key: "waiting", label: "Waiting for you or stuck", icon: "warn", hidden: (n) => `${n} waiting or stuck`},
+    {key: "waiting", label: "Blocked", icon: "warn", hidden: (n) => `${n} blocked`},
     {key: "idle", label: "Idle", icon: "pause", hidden: (n) => `${n} idle`},
     {key: "stopped", label: "Not running", icon: "x", hidden: (n) => `${n} not running`},
 ];

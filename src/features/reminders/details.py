@@ -12,7 +12,7 @@ class RemindersDetails(FeatureDetails):
     skill_of = "memory"
     when = "you keep forgetting something, or leave an instruction for another agent"
 
-    title = "Repeat reminders to the agent"
+    title = "Reminders"
 
     abstract = "Your standing reminders are repeated to the agent when it stops after working."
 

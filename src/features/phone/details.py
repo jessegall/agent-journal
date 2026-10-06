@@ -10,7 +10,7 @@ class PhoneDetails(FeatureDetails):
     hint = "Scan a code to use the chat on your phone"
     has_skill = False
 
-    title = "Phone connection"
+    title = "Phone"
 
     abstract = "Scan a code in the viewer and your phone shows the chat, answers questions, reads reports and approves plans, as you"
 

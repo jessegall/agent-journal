@@ -9,7 +9,7 @@ class DumpsDetails(FeatureDetails):
     label = "Sort dumped files into a collection"
     when = "the user drops items into a dump, or a dump is being worked"
 
-    title = "Sort dumped files"
+    title = "Dumps"
 
 
     abstract = "Drop many files at once. The agent sorts them by subject and files them into a collection."

@@ -308,7 +308,7 @@ def test_a_layout_link_hands_the_layout_once_to_any_viewer():
     features.load()
     record = fresh()
     shares = Shares(record, actor=USER)
-    link = shares.share_layout("Zen", json.dumps({"panes": ["chat"]}), once=True)
+    link = shares.share_layout("Chat only", json.dumps({"panes": ["chat"]}), once=True)
     handler = type("Bound", (ShareHandler,), {"shares": Shares(record, actor=USER)})
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()

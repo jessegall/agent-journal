@@ -9,10 +9,10 @@ const OWN_TABS = ["question", "suggestion"];
 export function useHomeViews() {
     const views = computed(() => ({
         chat: {title: "Chat", icon: "chat", all: {page: "message", label: "View all messages"}},
-        feed: {title: "File feed", icon: "edits", canFlush: true},
+        feed: {title: "File edits", icon: "edits", canFlush: true},
         terminal: {title: "Terminal", icon: "terminal"},
         family: {title: "Agent family tree", icon: "family"},
-        agents: {title: "Agents at work", icon: "agents"},
+        agents: {title: "Agents", icon: "agents"},
         waiting: {
             title: "Notifications",
             icon: "bell",

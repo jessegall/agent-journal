@@ -11,7 +11,7 @@ export const GROUPS = {
     blocked: "Blocked",
     planned: "Planned",
     waiting: "Waiting on others",
-    asked: "Waiting on you",
+    asked: "Needs you",
     open: "Open",
 };
 

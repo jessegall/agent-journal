@@ -16,7 +16,7 @@ export const PLAN_STATES = {
     reviewing: "Under review",
     approved: "Starting",
     active: "Being worked on",
-    waiting: "Waiting for you",
+    waiting: "Needs you",
     parked: "Paused",
     done: "Closed",
 };

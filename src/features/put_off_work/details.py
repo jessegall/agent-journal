@@ -11,7 +11,7 @@ class PutOffWorkDetails(FeatureDetails):
     hint = "Tells the agent once when it says “later” without filing a to-do"
     has_skill = False
 
-    title = "Remind the agent to file work it puts off"
+    title = "Deferred work"
 
     aliases = ("deferral",)
 

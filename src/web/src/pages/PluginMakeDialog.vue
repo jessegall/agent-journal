@@ -9,7 +9,7 @@ const emit = defineEmits(["close", "guide", "ask"]);
 </script>
 
 <template>
-    <Dialog title="Make a new plugin" small fits @close="emit('close')">
+    <Dialog title="Make a plugin" small fits @close="emit('close')">
         <div class="ask">
             <p class="ask-lead">The agent builds it for you and answers in the chat.</p>
             <TextInput

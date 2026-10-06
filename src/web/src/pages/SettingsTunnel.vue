@@ -83,7 +83,7 @@ onMounted(load);
             <TunlerVersion />
         </ListBox>
         <template v-if="domains.length">
-            <ListBox title="Domains this account owns" :count="domains.length">
+            <ListBox title="Domains" :count="domains.length">
                 <template v-for="domain in domains" :key="domain">
                     <TunnelDomain :domain="domain" @released="(left) => (domains = left)" />
                 </template>

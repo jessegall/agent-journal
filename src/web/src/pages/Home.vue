@@ -322,7 +322,7 @@ const TOUR = [
     {
         target: ".agent-presets",
         title: "Pick a preset",
-        text: "Presets opens a list of ready layouts, such as Default, Zen and Hacker, and arranges every pane in one step.",
+        text: "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.",
     },
     {
         target: '.menu-panel [data-step="split"]',

@@ -6,7 +6,7 @@ import PlaceholderCard from "../kit/PlaceholderCard.vue";
 <template>
     <PlaceholderCard class="make">
         <span class="make-mark"><Icon name="plus" :size="16" /></span>
-        <span class="make-title">Make a new plugin</span>
+        <span class="make-title">Make a plugin</span>
         <span class="make-text">Ask the agent to build one for you, or read how plugins are made.</span>
     </PlaceholderCard>
 </template>

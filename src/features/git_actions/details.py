@@ -10,7 +10,7 @@ class GitActionsDetails(FeatureDetails):
     label = "Show git actions"
     has_skill = False
 
-    title = "Git actions in the chat"
+    title = "Git actions"
 
     abstract = "Whenever the agent runs a git action, the chat shows a mark saying what happened"
 

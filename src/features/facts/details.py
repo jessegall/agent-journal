@@ -12,7 +12,7 @@ class FactsDetails(FeatureDetails):
     skill_of = "memory"
     when = "you learn something a later session would get wrong without, or at a context mark"
 
-    title = "Remind the agent of facts"
+    title = "Facts"
 
     abstract = "Facts about this environment are repeated to the agent as its context fills."
 

@@ -10,7 +10,7 @@ class RecordAuditDetails(FeatureDetails):
     label = "Find items that refer to missing files or commands"
     has_skill = False
 
-    title = "Find outdated items"
+    title = "Audit"
 
     aliases = ("cleanup",)
 

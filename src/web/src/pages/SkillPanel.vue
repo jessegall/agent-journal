@@ -56,7 +56,7 @@ watch(
                 <Switch :on="skill.always" title="Load at session start" @change="$emit('always', skill, $event)" />
             </div>
             <FormField
-                label="Load it when these words appear"
+                label="Trigger words"
                 :for="`skill-words-${skill.name}`"
                 help="Separate words with commas. Saved when you leave the field."
             >
@@ -69,7 +69,7 @@ watch(
             </FormField>
             <div class="skill-panel-text">
                 <div class="skill-panel-head">
-                    <h3>What the skill says</h3>
+                    <h3>Instructions</h3>
                     <Btn small @click="showFile(route.env, skill.path)">Open SKILL.md</Btn>
                 </div>
                 <template v-if="failed">

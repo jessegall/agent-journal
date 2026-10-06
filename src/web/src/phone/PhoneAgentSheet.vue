@@ -54,7 +54,7 @@ async function start(agent) {
 </script>
 
 <template>
-    <PhoneSheet v-slot="{close}" label="The agent" tall @close="emit('close')">
+    <PhoneSheet v-slot="{close}" label="Agent" tall @close="emit('close')">
         <h2 class="agent-title">The agent in {{ environment }}</h2>
         <dl class="agent-facts">
             <div class="agent-fact">

@@ -11,7 +11,11 @@ export const PAGES = {
 };
 
 export const RESOURCE_GROUPS = [
-    {key: "results", title: "Conversation and results", pages: []},
-    {key: "workings", title: "How the agent works", pages: ["skills"]},
-    {key: "setup", title: "Setup", pages: ["organization"]},
+    {key: "results", title: "Results", pages: []},
+    {key: "workings", title: "Agent", pages: ["skills"]},
+    {key: "setup", title: "Project", pages: ["organization"]},
 ];
+
+const UNCOUNTED = ["Work"];
+
+export const pluralTitle = (title) => (UNCOUNTED.includes(title) ? title : `${title}s`);

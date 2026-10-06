@@ -9,7 +9,7 @@ class FileFeedDetails(FeatureDetails):
     label = "Show file edits as they happen"
     has_skill = False
 
-    title = "File edits in the chat"
+    title = "File edits"
 
     abstract = "The chat shows each file the agent edits as a card with the change."
 

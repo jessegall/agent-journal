@@ -44,7 +44,7 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
             </template>
             <template v-if="waits">
                 <section class="plan-sheet-wait">
-                    <h3>Waiting for you</h3>
+                    <h3>Needs you</h3>
                     <p>
                         Phase {{ at }} is done.
                         <template v-if="next">
