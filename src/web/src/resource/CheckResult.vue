@@ -10,6 +10,7 @@ import {checkState, seconds, VERDICTS} from "../domain/checks.js";
 import CheckProgress from "./CheckProgress.vue";
 import CheckRuns from "./CheckRuns.vue";
 import CheckFindings from "./CheckFindings.vue";
+import UnitTextInput from "../kit/UnitTextInput.vue";
 
 const props = defineProps({resource: Object});
 const now = useNow();
@@ -85,8 +86,17 @@ async function save(key, value) {
                 <span class="label">Runs by itself every</span>
                 <span class="help">0 runs it only by hand or from its button</span>
             </span>
-            <input v-model.number="every" class="every" type="number" min="0" @change="save('every', every)" />
-            <span class="unit">minutes</span>
+            <UnitTextInput
+                class="every"
+                type="number"
+                min="0"
+                unit="minutes"
+                :value="every"
+                @change="
+                    every = Number($event.target.value);
+                    save('every', every);
+                "
+            />
         </label>
     </section>
     <template v-if="state.verdict !== 'running' && last.report">
@@ -194,7 +204,6 @@ async function save(key, value) {
 }
 
 .help,
-.unit,
 .lead {
     color: var(--text-3);
     font-size: 12px;
@@ -204,8 +213,7 @@ async function save(key, value) {
     margin: 0 0 8px;
 }
 
-.command,
-.every {
+.command {
     padding: 7px 9px;
     border: 1px solid var(--border-2);
     border-radius: 6px;
@@ -220,12 +228,10 @@ async function save(key, value) {
 }
 
 .every {
-    width: 72px;
-    text-align: right;
+    width: 160px;
 }
 
-.command:focus,
-.every:focus {
+.command:focus {
     border-color: var(--accent);
     outline: none;
 }
