@@ -68,6 +68,8 @@ def test_each_git_command_the_agent_runs_is_marked_in_the_chat(tmp_path):
     ran_git("git status && git log --oneline && git commit -m x && git stash list", "")
     ran_git("git merge nope", "fatal: nope - not something we can merge")
     ran_git("""git commit -q -m "$(printf 'it'"'"'s done')" && git tag v1.3""", "")
+    ran_git("git branch -D quote-hotfix 2>&1 | tail -1", "Deleted branch quote-hotfix (was abc1234).")
+    ran_git("git worktree remove $S/quote-hotfix", "")
     assert marks() == [
         "Stashed 2 changed files", "Popped the latest stash", "Dropped the latest stash",
         "Merged `feature-x` into `main`", "Rebased `main` onto `main`", "Cherry-picked `abc1234` onto `main`",
@@ -75,4 +77,5 @@ def test_each_git_command_the_agent_runs_is_marked_in_the_chat(tmp_path):
         "Pushed `main` to `origin`", "Pulled `main` from `origin`", "Fetched from `origin`",
         "Added worktree `../wt` on branch `helper-x`", "Removed worktree `../wt`",
         "Created branch `helper-y`", "Deleted branch `helper-y`", "Tagged `v1.3`",
+        "Deleted branch `quote-hotfix`", "Removed worktree `quote-hotfix`",
     ], "every other git action reads in plain words, a failed one and a plain read leave no mark, and a command shlex cannot split is still read"

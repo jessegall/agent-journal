@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.5 — the chat's git chips show branches and worktrees, never redirections or shell variables
+
+**The chat's git chips no longer show redirections or shell variables.** After `git branch -D x 2>&1 | tail -1` the chip
+read `Deleted branch x, 2, >&, 1`, and after `git worktree remove $S/x` it showed `$S/x`. Redirections (`2>&1`, `>file`,
+`>>file`, `&>file`, `<file`) are now dropped before a command is read, and a path that still holds a shell variable is
+shown by its last part, so the chips read `Deleted branch x` and `Removed worktree x`.
+
 ## 2.253.4 — an upgrade from an older version fills in every folder the release added
 
 **An upgrade now brings in every folder the new release added, however old the version you upgrade from.** Upgrading

@@ -1,4 +1,3 @@
-import re
 import time
 
 from controllers.types import Agents
@@ -12,7 +11,6 @@ TAKES_VALUE = {"--page", "--back"}
 OPEN = "open"
 OPENING = {"show", "read"}
 FOUND_LIMIT, READ_LIMIT, KEPT_READS = 4000, 2000, 20
-REDIRECT = re.compile(r"\s\d*[<>]+&?\s*[^\s|;&]*")
 
 
 def journal_call(piece: tuple[str, ...]) -> JournalCall | None:
@@ -54,7 +52,7 @@ def searches(command: str) -> list[str]:
     if "journal" not in command:
         return []
     try:
-        found = pieces(REDIRECT.sub(" ", command))
+        found = pieces(command)
     except ValueError:
         return []
     return [text for call in map(journal_call, found) if call is not None and (text := label(call))]
@@ -78,7 +76,7 @@ def opened(event: CommandRan) -> str:
         return f"Read {event.command.rsplit(' ', 1)[-1]}"
     if event.tool != SHELL:
         return ""
-    for piece in pieces(REDIRECT.sub(" ", event.command)):
+    for piece in pieces(event.command):
         call = journal_call(piece)
         words = asked(call) if call else []
         if len(words) > 2 and words[1] in OPENING:
