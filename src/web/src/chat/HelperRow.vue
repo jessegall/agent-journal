@@ -46,21 +46,23 @@ onMounted(() =>
         <div class="helper-head">
             <span :class="['helper-dot', state()]" />
             <Btn kind="text" class="helper-what" title="Open this helper's inspector" @click="emit('inspect')">
-                <strong>{{ name() }}</strong>
-                {{ row.title }}
+                <strong class="helper-name">{{ name() }}</strong>
+                <span class="helper-job" :title="row.title">{{ row.title }}</span>
                 <small>{{ helperLine(row) }}</small>
             </Btn>
-            <span :class="['helper-state', state()]">{{ stateLabel() }}</span>
-            <template v-if="state() === 'running'">
-                <AgentStopButton
-                    quiet
-                    label="Stop its agent"
-                    :environment="name()"
-                    :work="row.title"
-                    :stop="() => api.act('helper', row.n, 'stop')"
-                    @stopped="emit('changed')"
-                />
-            </template>
+            <div class="helper-side">
+                <span :class="['helper-state', state()]">{{ stateLabel() }}</span>
+                <template v-if="state() === 'running'">
+                    <AgentStopButton
+                        quiet
+                        label="Stop its agent"
+                        :environment="name()"
+                        :work="row.title"
+                        :stop="() => api.act('helper', row.n, 'stop')"
+                        @stopped="emit('changed')"
+                    />
+                </template>
+            </div>
         </div>
         <template v-if="report()">
             <TextDisplay ref="reportBox" :class="['helper-report', {whole}]" :text="report()" :style="{'--lines': LINES}" />
@@ -118,13 +120,23 @@ onMounted(() =>
 
 .helper-head {
     display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px 8px;
+    padding: 6px 0;
+}
+
+.helper-side {
+    display: flex;
+    flex: none;
     align-items: center;
     gap: 8px;
-    padding: 6px 0;
+    margin-left: auto;
 }
 
 .helper-dot {
     flex: none;
+    margin-top: 5px;
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -140,14 +152,26 @@ onMounted(() =>
 }
 
 .helper-what {
-    flex: 1;
+    flex: 1 1 200px;
     min-width: 0;
     color: var(--text);
     font-size: 12.5px;
 }
 
-.helper-what:hover strong {
-    text-decoration: underline;
+.helper-name {
+    display: block;
+}
+
+.helper-job {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-2);
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.helper-what:hover .helper-name {
+    color: var(--accent-text);
 }
 
 .helper-what small {
