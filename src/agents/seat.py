@@ -147,7 +147,7 @@ class HookBinding:
     def environment(self, hook, prefer: str) -> str:
         session = hook.session
         held = self.sessions.read(session)
-        worked = self.worked_in(hook)
+        worked = "" if prefer in self.owned else self.worked_in(hook)
         stays = bool(held.environment and held.provider) and (hook.event != HookEvent.SESSION_START or not self.moving(session, held.environment, worked))
         env = held.environment if stays else self.bound(session, worked, prefer)
         if stays and not alive(held.pid):

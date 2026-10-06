@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.15 — a helper dispatched into a checkout can be told something, stopped and finished
+A helper launched with --checkout bound its session to the checkout folder's name instead of the environment it was dispatched for, so helper say, stop and finish answered "not running" for a helper that was. A helper's session now binds to its own environment whatever folder it runs in. Nothing to do.
+
 ## 2.253.14 — a plugin that fits the project is suggested, and one press installs it
 A plugin can now say in its plugin.json which projects it fits, by language and by file. Once a day the journal reads an official list of plugins and suggests the ones that fit the project. The suggestion quotes the plugin's own description and lists every command the plugin runs. Pressing Yes, I want this installs exactly the version the suggestion showed. The chat then marks that it was installed, or why the install failed. Nothing to do.
 
