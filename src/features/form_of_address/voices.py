@@ -19,6 +19,8 @@ class Calling(Enum):
 
 
 YOU = "{you}"
+HELPER = "helper"
+HELPERS = "helpers"
 
 
 def filled(sample: str, you: str) -> str:
@@ -33,8 +35,8 @@ class Voice:
     text: str
     calling: Calling
     sample: str
-    helper: str = "helper"
-    helpers: str = "helpers"
+    helper: str = HELPER
+    helpers: str = HELPERS
 
     def helper_instruction(self) -> str:
         return f"Call your helpers and subagents {self.helpers}, each a {self.helper}."

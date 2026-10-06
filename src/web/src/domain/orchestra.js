@@ -58,7 +58,7 @@ function subagentsOf(e) {
         sub: true,
         parent: sub.parent,
         session: sub.session,
-        label: "Subagent",
+        label: capitalised(helperWord()),
         of: `of ${parent}`,
         title: sub.task || sub.session,
         now: [sub.type, sub.model].filter(Boolean).join(" · "),

@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from features.form_of_address.voices import HELPER, HELPERS
 from resources.base import DOCUMENT, PROJECT, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape
 
@@ -8,8 +9,8 @@ class Profile(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(default="", name="calling"),
         Field(default="", name="sample"),
-        Field(default="helper", name="helper"),
-        Field(default="helpers", name="helpers"),
+        Field(default=HELPER, name="helper"),
+        Field(default=HELPERS, name="helpers"),
         Field(FLAG, False, name="system"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
