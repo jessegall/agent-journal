@@ -38,8 +38,16 @@ export const approveShare = (share) => api.approveShare(share.n);
 
 export const tunnelStatus = computed(() => store.tunnel);
 
+const UNKNOWN_TUNNEL = {
+    installed: true,
+    logged_in: true,
+    host: "",
+    address: "",
+    problems: ["The journal could not find out whether sharing works. Check that it is running, then check again."],
+};
+
 export async function checkTunnel() {
-    store.tunnel = await api.tunnelStatus().catch(() => null);
+    store.tunnel = await api.tunnelStatus().catch(() => UNKNOWN_TUNNEL);
     return store.tunnel;
 }
 
