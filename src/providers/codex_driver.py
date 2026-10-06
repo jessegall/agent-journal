@@ -18,6 +18,7 @@ class CodexDriver(Driver):
     ASKED_COMMAND = re.compile(r"Would you like to run the following command\?.*\$ (.+?)\s*›\s*1\.\s*Yes, proceed", re.S)
     ALLOW = b"y"
     ASKS_ON_SCREEN = True
+    ENTER_CAN_MISS = True
     QUEUED = b"Messagestobesubmittedafternexttoolcall"
     RUNNING = b"backgroundterminalrunning"
     SEND_NOW = b"\x1b"
