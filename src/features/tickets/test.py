@@ -200,6 +200,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
     Comments(Record(record.root, f"ticket-{ticket.n}"), actor=AGENT).create("Measured", brief="parity holds", about=ticket.ref)
     assert "Measured" in [c.title for c in tickets.comments(ticket.n)], "a ticket agent's comment shows on its ticket from the main environment"
+    calls_fire_once_and_repeat_on_time(monkeypatch)
 
 
 def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkeypatch):
@@ -491,3 +492,46 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
     agent = Messages(record, actor=AGENT)
     assert "shorter" in refused(lambda: agent.reply(request.n, "y" * (PANEL_REPLY + 1))), "a reply the panel cannot show whole is refused"
     assert agent.reply(request.n, "Five tickets drafted, pick the ones to keep.").brief.endswith("pick the ones to keep."), "a short reply goes through"
+
+
+def calls_fire_once_and_repeat_on_time(monkeypatch):
+    import features
+    from features.tickets import calls as ticket_calls, handlers
+    from features.trigger import MINUTE
+    from features import trigger
+    from tests.kit import nudges, report, tick
+    features.load()
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    ticket = Tickets(record, actor=USER).create("Dark mode", board=board.n)
+    report(record, "working", "PreToolUse")
+    moments, held = [], [[("ticket_replied", "message:1", {"text": "done?"}, 0), (ticket_calls.PLAN_DONE_CALL, "plan:5", {}, 15), ("ticket_asks", "question:2", {"question": 2, "text": "which one", "env": "ticket-1"}, 15)]]
+    monkeypatch.setattr(handlers, "watched", lambda tickets: [ticket])
+    monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
+    monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
+    now = [time.time()]
+    monkeypatch.setattr(trigger.time, "time", lambda: now[0])
+    sent = lambda: [n for n in nudges(record) if "Dark mode, answered" in n]
+    tick(record)
+    assert [moment for moment in moments if moment == "finished"] == ["finished"] and len(sent()) == 1, \
+        "a reply is told once and a finished plan raises its moment, while a question is left to the nudge that repeats it"
+    tick(record)
+    assert moments.count("finished") == 1 and len(sent()) == 1, "nothing is said again at once"
+    now[0] += 16 * MINUTE
+    tick(record)
+    assert moments.count("finished") == 2 and len(sent()) == 1, "the plan that is still finished raises its moment again after its window, and the reply is not repeated"
+    held[0] = []
+    now[0] += 16 * MINUTE
+    tick(record)
+    assert moments.count("finished") == 2, "a ticket with nothing to call about raises nothing"
+
+    root = record.root
+    ticket_calls.PEOPLE[str(root)] = ["jesse"]
+    assert [ticket_calls.waits_on_people(root, text) for text in ("waits for jesse", "asks the user", "the build runs")] == [True, True, False], \
+        "a wait is on a person when it names the user, an approval or the one who owns the git config"
+    monkeypatch.setattr(Tickets, "_plan_status", lambda self, found: ticket_calls.PLAN_DONE)
+    monkeypatch.setattr(Tickets, "_clean", lambda self, found: True)
+    tickets = Tickets(record, actor=SYSTEM)
+    assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
+    monkeypatch.setattr(Tickets, "_clean", lambda self, found: False)
+    assert not ticket_calls.handed_in(tickets, ticket), "a dirty branch is not handed in"
