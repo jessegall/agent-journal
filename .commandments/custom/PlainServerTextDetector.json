@@ -1,0 +1,46 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "inside": {
+                    "extendsAny": "FeatureDetails"
+                }
+            },
+            {
+                "of": "parent",
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "nameIn": [
+                                "label",
+                                "hint",
+                                "explains",
+                                "trigger_label"
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed)|rows?|inject(ed|s)?|dispatch(ed|es)?|ships with|parked?|dismiss(ed)?|handled|abandon(ed)?)\\b)"
+            }
+        ],
+        "reject": [
+            {
+                "textLike": "For example*"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plain-server-text",
+        "description": "A feature's label, hint or explanation shown in Settings speaks as the app or uses an internal word.",
+        "rule": "Write every text a person reads in plain, ordinary words: name who acts, say what it does, and use the house words.",
+        "skill": "plain-viewer-text"
+    }
+}

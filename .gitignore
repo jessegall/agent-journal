@@ -62,3 +62,9 @@ __pycache__/
 .codex/hooks.json
 src/web/dist-demo/
 src/web/demo-check/
+
+# code-commandments skill library (regenerated on composer update)
+.agents/skills/commandments-*/
+
+# code-commandments published skills (regenerated on composer update)
+.claude/skills/commandments-*

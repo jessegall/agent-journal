@@ -17,6 +17,10 @@
             "csharp"
         ]
     },
+    "detectors": [
+        "PlainViewerTextDetector",
+        "PlainServerTextDetector"
+    ],
     "parallel": 2,
     "configure": {
         "frontend/ComponentBudgetDetector": [

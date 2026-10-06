@@ -55,7 +55,7 @@ function sure() {
         <template v-if="open">
             <MenuPanel :anchor="anchor.$el" :min-width="260" align="right" @close="open = false">
                 <template v-if="asks">
-                    <MenuItem description="Groups it with other rows you collect." @click="collect">Add to collection</MenuItem>
+                    <MenuItem description="Puts it in a collection with related items." @click="collect">Add to collection</MenuItem>
                 </template>
                 <template v-if="closed">
                     <MenuItem description="Moves it back to Open" @click="run('reopen', {why: 'Reopened from the list'})">Reopen</MenuItem>
