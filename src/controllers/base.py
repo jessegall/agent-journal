@@ -40,7 +40,7 @@ def checked_field(fields: dict, key: str, value):
         return value
     return check(key, fields[key], normalize_options(value) if key == Options.options else value)
 
-@cache
+
 @cache
 def actions(controller: type) -> tuple[str, ...]:
     return tuple(sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction) if getattr(f, "action", False)))
