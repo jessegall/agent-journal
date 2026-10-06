@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from typing import ClassVar
 
 from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Resource, ResourceDetails
@@ -494,7 +495,7 @@ class Environment(Shape, Resource):
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
         help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
     )
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched")]
+    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched"), Field(TEXT, "", name="folder")]
     listed_open = True
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment closed"}
@@ -512,6 +513,10 @@ class Environment(Shape, Resource):
 
     def owned_by(self, kind: str) -> int:
         return int(self.owner.split(":")[1]) if self.owner.startswith(f"{kind}:") else 0
+
+    def checkout(self, project: Path) -> Path:
+        own = Path(self.folder) if self.folder else project
+        return own if own.is_dir() else project
 
 
 class Ask(Shape, Resource):

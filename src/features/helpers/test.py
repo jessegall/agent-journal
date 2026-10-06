@@ -96,6 +96,11 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     row = helpers.load(1)
     cut = Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree))
     assert calls[0][0] == Path(cut.path) and cut.helper == "Rhea", "a code-changing helper works in a worktree cut for it"
+    (Path(cut.path) / "only-here.txt").write_text("in the worktree\n")
+    from commands.http import dispatch
+    assert dispatch("GET", f"/api/{row.environment}/file", repo.record.root, {"path": "only-here.txt"}, {}).body["text"] == "in the worktree\n", \
+        "a file named in the helper's environment opens from its worktree"
+    (Path(cut.path) / "only-here.txt").unlink()
     from engine.worktree import checkout, environment
     from providers import workspace_folders
     assert environment(checkout(Path(cut.path), workspace_folders())) == row.environment, "its worktree is named after its environment, so its session binds there and nowhere else"
