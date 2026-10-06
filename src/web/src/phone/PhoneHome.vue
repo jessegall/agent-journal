@@ -504,7 +504,7 @@ async function react(face) {
     item.reactions = removing ? had.filter((r) => !mine(r, face)) : [...had, {face, who: "user"}];
     try {
         const went = await perform({kind: "react", n: item.n, face, type: item.type});
-        announce(went === "held" ? "Reaction waits to send" : removing ? `Removed ${face}` : `Reacted ${face}`);
+        announce(went === "held" ? "Your reaction sends when you are back online" : removing ? `Removed ${face}` : `Reacted ${face}`);
         refresh();
     } catch (error) {
         item.reactions = had;

@@ -13,7 +13,7 @@ const place = (key, label, sub, icon, route = `place:${key}`) => ({key, label, s
 export const GROUPS = [
     {
         key: "environment",
-        head: (environment) => `Environment · ${environment}`,
+        head: (environment) => `Only in ${environment}`,
         line: "Only in this environment; each environment has its own.",
         places: ["plan", "suggestion", "question", "collection", "work", "agent"].map(kind),
     },
