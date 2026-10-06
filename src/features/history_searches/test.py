@@ -110,3 +110,62 @@ def test_an_agents_transcript_and_the_links_in_it_are_read_for_it_and_for_its_su
     assert [t["text"] for t in at(row.n, "subagent", "abc", "transcript").body["turns"]] == ["Design at https://claude.ai/design/p/xyz"], "so are a subagent's"
     assert (at(bare.n, "links").body, at(bare.n, "transcript").body["turns"]) == ({"links": []}, []), "an agent with no transcript has no turns and no links"
     assert at(row.n, "subagent", "gone", "transcript").code == 404, "a subagent that never ran is not found"
+
+
+def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a_time(tmp_path):
+    import json
+    import features
+    from datetime import datetime, timezone
+    from controllers.types import Agents
+    from providers.jsonl import complete_lines, parsed
+    from providers.turns import last_text, last_turn, read_transcripts, turns
+    from resources.base import SYSTEM
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    assert (parsed("not json", dict), parsed("[1]", lambda raw: raw["a"]), parsed('{"a": 2}', lambda raw: raw["a"])) == (None, None, 2), "a line that is no row of the shape is passed over"
+    path = tmp_path / "t.jsonl"
+    path.write_bytes(b'{"a": 1}\n{"b"')
+    assert complete_lines(path, 0) == ([b'{"a": 1}'], 9), "only whole lines are read, and the offset stops before the half-written one"
+    assert complete_lines(tmp_path / "missing.jsonl", 4) == ([], 4), "a file that is gone reads nothing and keeps its place"
+    stamp = datetime.now(timezone.utc).isoformat()
+    transcript = tmp_path / "claude-1.jsonl"
+    transcript.write_text(json.dumps({"type": "assistant", "timestamp": stamp, "message": {"content": [{"type": "text", "text": "All done."}]}}) + "\n")
+    agents = Agents(record, actor=SYSTEM)
+    row = agents.create("claude-1", provider="claude", transcript=str(transcript), status="idle", at=1.0)
+    agent = agents.load(row.n)
+    assert [t.text for t in turns(agent)] == ["All done."], "the turns the agent spoke are read from its transcript"
+    assert (last_text(agent), last_turn(agent).text) == ("All done.", "All done."), "the last of them is the agent's last word"
+    nobody = agents.load(agents.create("claude-2").n)
+    assert (turns(nobody), last_turn(nobody), last_text(nobody)) == ([], None, ""), "an agent with no transcript has no turns and no last word"
+    agents.update(row.n, transcript=str(tmp_path / "gone.jsonl"))
+    assert turns(agents.load(row.n)) == [], "a transcript that was removed has no turns"
+    agents.update(row.n, transcript=str(transcript), status="working")
+    read_transcripts(record.root)
+
+
+def test_a_provider_that_knows_nothing_extra_answers_neutrally(tmp_path):
+    from pathlib import Path
+    from providers.base import Provider
+    from providers.codex import Codex
+    from providers.claude import Claude
+
+    class Bare(Provider):
+        name = "bare"
+        def agent_file(self, project, name): return project / name
+        def agent_text(self, kind, model): return ""
+        def config(self, project): return project / "bare.json"
+        def present(self, project): return True
+        def wiring(self, *a, **k): return None
+
+    bare, path = Bare(), tmp_path / "none.jsonl"
+    assert (bare.shell_wrapper(Path("x.sh")), bare.unwrapped_command("ls -la"), bare.shell_runs(path), bare.typed_runs(path), bare.work_links(path)) == ({}, "ls -la", [], [], []), \
+        "a provider that wraps no shell and reads no commands, runs or links answers with nothing"
+    assert (bare.failure(path), bare.dispatch(object()), bare.context(object()), bare.usage(path), bare.effort(tmp_path)) == (None, None, None, None, ""), \
+        "one that cannot tell a failure, a dispatch, the context, the usage or the effort answers with nothing"
+    assert bare.background_tasks(path).started == {}, "one that reads no background tasks finds none"
+    assert (bare.row_of({"a": 1}), bare.turn(object(), 1), bare.tool_uses({}), bare.crew(path), bare.stop_instruction("b1")) == ({"a": 1}, None, [], {}, "stop task b1 now"), \
+        "its rows stay as they are, it has no turns, tool uses or crew, and a task is stopped in plain words"
+    assert (bare.conversation_file("c"), bare.subagent_transcript(path, "s"), bare.is_subagent(object()), bare.thoughts(path, 7), bare.skill_load("journal")) == (None, None, False, ([], 7), "Skill: journal"), \
+        "it finds no conversation file or subagent, no thoughts, and names a loaded skill plainly"
+    assert bare.commands_for("effort", "high", "m") == [], "one with no controls types nothing to choose an effort"

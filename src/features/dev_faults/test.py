@@ -101,6 +101,35 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch():
     turned(record, True)
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
+    from controllers import faults
+    from controllers.types import Notices
+    record = fresh()
+    assert faults.why(record.root) == "", "an engine that logged nothing has no last words"
+    faults.log_file(record.root).parent.mkdir(parents=True, exist_ok=True)
+    faults.log_file(record.root).write_text("\n".join(f"line {i}" for i in range(30)))
+    assert faults.why(record.root).splitlines() == [f"line {i}" for i in range(16, 30)], "the last words are the last lines of its log"
+    assert (faults.crashed(1, __import__("time").time()), faults.crashed(0, 0.0), faults.crashed(None, 0.0)) == (True, False, False), "only a quick non-zero exit is a crash"
+    assert faults.notice_stopped(record.root, record.env, "") is True and faults.notice_stopped(record.root, record.env, "") is False, "a stopped engine is noticed once"
+    faults.cleared(record.root, record.env)
+    assert [n.title for n in Notices(record, actor=SYSTEM).rows.standing()] == [], "the notice closes when the engine runs again"
+    try:
+        raise ValueError("bad row")
+    except ValueError:
+        sent_lines = []
+        voice = type("Voice", (), {"alive": lambda self: True, "send": lambda self, line: sent_lines.append(line)})()
+        faults.threw(record.root, record.env, "the engine", voice)
+        faults.threw(record.root, record.env, "the engine", voice)
+    assert [n.title for n in Notices(record, actor=SYSTEM).rows.standing()] == [faults.FAULT], "the same fault is filed once"
+    assert len(sent_lines) == 1 and "ValueError: bad row" in sent_lines[0], "and the agent is told once, with the fault"
+    faults.steady(record)
+    assert Notices(record, actor=SYSTEM).rows.standing() == [], "a steady engine closes the fault"
+    faults.damaged(record, "todo/3.md", "bad yaml")
+    assert any(faults.DAMAGED == n.title for n in Notices(record, actor=SYSTEM).rows.standing()), "a row that cannot be read is filed"
+    assert faults.place_of("no frames here\nValueError: x") == "ValueError: x", "a fault with no frame is placed by its last line"
+    assert faults.fault_of("") == "", "no trouble has no fault"
+    notices = Notices(record, actor=SYSTEM)
+    done = notices.create("a notice", brief="x")
+    assert notices.complete(done.n, "ok").completed and notices.complete(done.n, "again").completed, "completing a closed notice leaves it closed"
 
 
 def test_a_switch_sent_under_its_old_name_too_keeps_the_new_names_value():

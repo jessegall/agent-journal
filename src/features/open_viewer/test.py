@@ -294,7 +294,7 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     assert viewer.PROBED[0] > time.time() - 5, "an old list is refreshed in the background"
 
 
-def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_identity():
+def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_identity(tmp_path, monkeypatch):
     from commands.http import dispatch
     from controllers.types import Todos
     from resources.base import USER
@@ -324,3 +324,29 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert ask("GET", f"/api/{record.env}/todo/{row.n}/files/missing.txt").code == 404, "a file that is not attached is not found"
     assert ask("GET", f"/api/{record.env}/todo/{row.n}/markdown").body.startswith(b"#"), "a row can be read as markdown"
     assert ask("GET", f"/api/{record.env}/todo/{row.n}/choices").code == 200, "a row's field choices are read"
+    import features
+    import commands.dispatch as dispatching
+    from commands.dispatch import dispatch, guarded, later, known_environment
+    from commands.http import Reply
+    features.load()
+    assert dispatch("POST", "/no/such/route/at/all/x/y/z", record.root, {}, {}).code == 404, "an address nothing serves is not found"
+    assert dispatch("GET", "/../../etc/passwd", record.root, {}, {}).code == 400, "a path out of the viewer's folder is refused"
+    site = tmp_path / "web"
+    site.mkdir()
+    monkeypatch.setattr(dispatching, "WEB", site)
+    assert dispatch("GET", "/anything", record.root, {}, {}).code == 404, "with no build of the viewer there is nothing to show"
+    (site / "index.html").write_text("<p>viewer</p>")
+    (site / "app.js").write_text("1")
+    assert (dispatch("GET", "/app.js", record.root, {}, {}).body, dispatch("GET", "/some/page", record.root, {}, {}).body) == (b"1", b"<p>viewer</p>"), \
+        "a file of the build is served as it is and any other page is the viewer itself"
+    ran = []
+    reply = Reply(200, {}, after=lambda: ran.append("first"))
+    later(reply, lambda: ran.append("second"))
+    reply.after()
+    assert ran == ["first", "second"], "what must follow a reply runs after what the reply already had to do"
+    assert known_environment(record.root, record.env) is True and known_environment(record.root, "never-made") is False, "an environment is known by its folder"
+    broken = Reply(200, {}, after=lambda: 1 / 0)
+    guarded(broken, record.root, record.env, "after GET /x").after()
+    assert guarded(Reply(200, {}), record.root, record.env, "x").after is None, "a reply with nothing after it is left as it is"
+
+

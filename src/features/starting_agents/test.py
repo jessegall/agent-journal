@@ -274,3 +274,33 @@ def test_stopping_the_journal_names_what_was_left_open_and_the_other_commands_an
     assert "upgraded" in read("upgrade", "--yes") and "True" in read("upgrade", "--yes"), "an upgrade prints what it did"
     monkeypatch.setattr("commands.demo.demo_built", lambda folder, into, environment, name: f"built {into.name}")
     assert "built shop" in read("demo", "recording", "shop"), "a demo is built into the folder asked for"
+
+
+def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the_server_does_not_run(capsys):
+    import features
+    from commands.cli import captured, first_word, noun_of, run
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    base = ["--root", str(record.root), "--env", record.env]
+    read = lambda *words: (run([*base, *words]), (lambda seen: seen.out + seen.err)(capsys.readouterr()))
+    code, text = read("--force")
+    assert code == 1 and "--force takes the reason" in text, "forcing past a hold needs a reason"
+    code, text = read("todo", "all", "--force", "because the user said so")
+    assert code == 0, "a forced command with its reason runs"
+    code, text = read()
+    assert code == 0 and "usage" in text.lower(), "no command shows the help"
+    code, text = read("todo", "frobnicate")
+    assert code != 0, "a word the noun lacks is refused"
+    assert (first_word(["--env", "x", "todo"]), first_word(["-h"]), noun_of(["--agent", "a", "todo", "all"]), noun_of(["banana"])) == ("todo", "", "todo", "-"), \
+        "the first word skips the options that take a value"
+    code, text = read("--plugin", "demo", "todo", "create", "a first row")
+    assert code == 0, "a row made by a plugin is created: " + text
+    code, text = read("todo", "all")
+    assert "a first row" in text, "a list prints one row to a line"
+    code, text = read("todo", "show", "1")
+    assert code == 0 and "a first row" in text, "a row prints in full"
+    out, code = captured(["banana"], record.root)
+    assert (code, "is not a command the server runs" in out) == (None, True), "the server runs only the nouns it knows"
+    out, code = captured(["todo", "show", "99"], record.root)
+    assert code == 1 and out.startswith("!"), "a refusal comes back with its code"
