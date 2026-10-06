@@ -48,7 +48,7 @@ class AskInTheJournal(ToolInterceptor):
 
 
 class QuestionInterceptor(ActionInterceptor):
-    def intercept(self, context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
+    def intercept(self, feature_context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
         if controller.type != "question":
             return None
         self.asked(controller, f"{title}\n{abstract}\n{brief}", given_options(data.get("options")), given_pick(data.get("pick")))

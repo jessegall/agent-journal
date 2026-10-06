@@ -175,7 +175,7 @@ class Command:
 
 
 class ActionInterceptor:
-    def intercept(self, context: Context, controller, **args):
+    def intercept(self, feature_context: Context, controller, **args):
         raise NotImplementedError
 
 

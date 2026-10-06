@@ -9,8 +9,8 @@ from features.templates.controller import Templates
 
 
 class CheckTemplate(ActionInterceptor):
-    def intercept(self, context: Context, controller, **args):
-        template = context.journal.get(Templates).chosen(args.get("template"))
+    def intercept(self, feature_context: Context, controller, **args):
+        template = feature_context.journal.get(Templates).chosen(args.get("template"))
         if template and template.applies_to and controller.type not in template.applies_to:
             raise Refused(f"template {template.n} is for {', '.join(template.applies_to)}, not a {controller.type}")
         return None

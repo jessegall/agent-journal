@@ -177,3 +177,10 @@ def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day
     tick(record)
     assert [n for n in nudges(record) if "waited a day" in n] == [f"question {other.n}, Which font for the menu?, has waited a day for an answer"], \
         "a question open for a day is put to the agent, to dismiss if the work settled it"
+
+
+def test_a_row_can_carry_a_field_named_context():
+    record = fresh()
+    options = [{"title": "the blue one", "description": "", "code": ""}, {"title": "the red one", "description": "", "code": ""}]
+    question = Questions(record, actor=AGENT).create("Which one?", options=options, pick=1, context="42")
+    assert question.data["context"] == "42", "an action interceptor does not take the row's field for its own context"

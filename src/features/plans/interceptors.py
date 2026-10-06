@@ -15,7 +15,7 @@ class RefusePlanMode(ToolInterceptor):
 
 
 class HoldWhilePlanned(ActionInterceptor):
-    def intercept(self, context: Context, controller, todo: int = 0) -> None:
+    def intercept(self, feature_context: Context, controller, todo: int = 0) -> None:
         plans = Plans(controller.record, actor=SYSTEM)
         if todo and plans._holds(Todos(controller.record, actor=controller.actor).load(todo)):
             controller._refuse(f"todo {todo} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")

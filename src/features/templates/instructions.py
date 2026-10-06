@@ -32,8 +32,8 @@ def preface(template, values: dict | None = None) -> str:
 
 
 class PrefaceShow(ActionInterceptor):
-    def intercept(self, context: Context, controller, row=None, **args):
-        template = template_of(context.journal, row) if row is not None else None
+    def intercept(self, feature_context: Context, controller, row=None, **args):
+        template = template_of(feature_context.journal, row) if row is not None else None
         if template and template.brief.strip():
             row.preface = preface(template, row.data.get("template_values"))
         return None
