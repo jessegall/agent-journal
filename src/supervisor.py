@@ -154,11 +154,13 @@ class Supervisor:
         return pid, fd
 
     def socket_path(self) -> Path:
-        return Path("/tmp") / f"journal-{hashlib.sha1(str(self.root.resolve()).encode()).hexdigest()[:16]}" / f"typist-{self.session}.sock"
+        shared = Path("/tmp") / f"journal-{hashlib.sha1(str(self.root.resolve()).encode()).hexdigest()[:16]}"
+        folder = shared if not shared.exists() or shared.stat().st_uid == os.getuid() else shared.with_name(f"{shared.name}-{os.getuid()}")
+        return folder / f"typist-{self.session}.sock"
 
     def listen(self) -> socket.socket:
         where = self.socket_path()
-        where.parent.mkdir(parents=True, exist_ok=True)
+        where.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         where.unlink(missing_ok=True)
         inbox = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         inbox.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, INBOX)

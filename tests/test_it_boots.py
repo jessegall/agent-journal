@@ -872,3 +872,48 @@ def test_a_server_that_starts_but_never_answers_is_stopped_and_counted_as_a_cras
         assert (url, bool(code)) == ("", True), "a server that never answers fails the launch"
     assert crashing(exits), "three hung starts in a row roll the build back"
     assert "did not answer" in runtime.viewer_log(root).read_text(), "and the log says why in a line"
+
+
+@pytest.mark.parametrize("present", [".claude", ".codex"])
+def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_path, monkeypatch, present):
+    import serve
+    root = tmp_path / PROJECT / ".journal"
+    root.mkdir(parents=True)
+    (tmp_path / PROJECT / present).mkdir()
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+    exits = []
+    monkeypatch.setattr(serve.os, "_exit", exits.append)
+    serve.warmed(root)
+    assert exits == [], f"warming a machine with only {present} must not end the server and make the supervisor roll back"
+
+
+def test_a_plugin_service_runs_from_the_packed_build_and_stops_when_the_last_session_ends(tmp_path, free_port):
+    root = installed(tmp_path)
+    port = free_port()
+    program = f"""
+import json, os, sys, time
+from pathlib import Path
+sys.path.insert(0, {str(root / 'journal.pyz')!r})
+from engine.services import Manager, service_spec, status_file
+from engine.package import ZIPPED
+root = Path({str(root)!r})
+read, write = os.pipe()
+os.set_inheritable(read, True)
+service = service_spec(root, "demo.web", plugin="demo", service="web", port={port}, run=[sys.executable, "-m", "http.server", "{port}", "--bind", "127.0.0.1"])
+Manager(root, read).one(service)
+def state():
+    f = status_file(root, "demo.web")
+    return json.loads(f.read_text()).get("state") if f.is_file() else ""
+def reached(wanted):
+    until = time.time() + 20
+    while time.time() < until and state() != wanted:
+        time.sleep(0.2)
+    return state()
+ready = reached("ready")
+os.close(write)
+print(ZIPPED, ready, reached("stopped"))
+"""
+    ran = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, timeout=90)
+    assert ran.stdout.split() == ["True", "ready", "stopped"], ran.stdout + ran.stderr
