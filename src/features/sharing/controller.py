@@ -16,7 +16,7 @@ from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
 from engine.services import DOWN, FAILED, UP, log_file, status, want
 from features.sharing.address import Claim, relied_on, this_machine
-from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -26,6 +26,7 @@ from controllers.marks import action
 
 NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
 LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
+OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler in Settings."
 REJECTED = "tunler is logged in as {account}, but {host} does not accept that login. The server may be down, or the account was deleted after 30 days without use, together with its addresses. Log in again to make a new one."
 ELSEWHERE = "This project's tunnel address {old} belongs to another machine, so this machine now uses {new}. A phone paired on this machine has to be paired again, and share links made here have to be sent again."
 ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
@@ -158,7 +159,7 @@ class Shares(ShareVisits, SharePages, Controller):
 
     @action
     def tunnel(self) -> dict:
-        standing = tunler_status()
+        standing = {**tunler_status(), "server": self._host() or DEFAULT_SERVER}
         try:
             return {**standing, "address": self._address(), "problems": self._problems(standing)}
         except Refused as unreadable:
@@ -172,6 +173,8 @@ class Shares(ShareVisits, SharePages, Controller):
     def _unusable(self, standing: TunnelStatus) -> str:
         if not standing["installed"]:
             return NOT_INSTALLED
+        if standing["outdated"]:
+            return OUTDATED
         if standing["rejected"]:
             return REJECTED.format(account=standing["account"], host=standing["host"])
         return "" if standing["logged_in"] or standing["unreadable"] else LOGGED_OUT

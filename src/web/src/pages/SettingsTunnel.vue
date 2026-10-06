@@ -58,6 +58,10 @@ onMounted(load);
                         <b>{{ tunnelStatus.host }}</b>
                         . Every journal on this machine uses this login.
                     </p>
+                    <p class="tunnel-line">
+                        tunler is installed at
+                        <code>{{ tunnelStatus.command }}</code>
+                    </p>
                     <div class="tunnel-actions">
                         <Btn small @click="switching = true">Use another account</Btn>
                         <Btn small :busy="leaving" @click="logOut">Log out</Btn>
@@ -71,7 +75,7 @@ onMounted(load);
                                 : "Not connected. Connect once, and every journal on this machine uses it."
                         }}
                     </p>
-                    <TunnelLogin :host="tunnelStatus.host" @ready="ready" />
+                    <TunnelLogin :host="tunnelStatus.host || tunnelStatus.server" @ready="ready" />
                     <template v-if="switching">
                         <Btn small @click="switching = false">Keep the current account</Btn>
                     </template>

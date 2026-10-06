@@ -3,6 +3,7 @@ import os
 import platform
 import secrets
 import shutil
+import ssl
 import time
 import urllib.request
 from pathlib import Path
@@ -23,8 +24,14 @@ MOVED = "the journal moved the tunnel to a new address:"
 LAST_LINES = 4
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
+ELSEWHERE_BINS = (Path("/opt/homebrew/bin/tunler"), Path("/usr/local/bin/tunler"), Path.home() / "go" / "bin" / "tunler")
+DEFAULT_SERVER = "tunler.jessegall.nl"
+KILLED = -9
+CERTIFICATES = ("Python on this machine has no root certificates, so it cannot check the tunler server, and curl could not download tunler either. "
+                "On macOS, open the Python folder under Applications and run Install Certificates.command, then try again.")
+BLOCKED = "macOS stopped the downloaded tunler from running, even after signing it on this machine. The tunler already here, if any, is kept."
 SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
-ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
+ARCHES = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}
 DOWNLOAD_SECONDS = 60
 ROUTE_LINES = ("gateway", "interface")
 
@@ -120,7 +127,7 @@ def tunler() -> str:
     found = shutil.which("tunler")
     if found:
         return found
-    return str(LOCAL_BIN) if LOCAL_BIN.is_file() else ""
+    return next((str(path) for path in (LOCAL_BIN, *ELSEWHERE_BINS) if path.is_file()), "")
 
 STATUS_SECONDS = 5
 STATUS_KEPT = 60
@@ -139,8 +146,10 @@ def tunler_status() -> dict:
 
 class TunnelStatus(TypedDict):
     installed: bool
+    command: str
     logged_in: bool
     rejected: bool
+    outdated: bool
     account: str
     host: str
     unreadable: bool
@@ -155,17 +164,18 @@ class Login(TypedDict):
 def asked_status() -> TunnelStatus:
     command = tunler()
     if not command:
-        return TunnelStatus(installed=False, logged_in=False, rejected=False, account="", host="", unreadable=False)
+        return TunnelStatus(installed=False, command="", logged_in=False, rejected=False, outdated=False, account="", host="", unreadable=False)
     done = ran_command([command, "status", "--json"], timeout=STATUS_SECONDS)
     try:
         fields = json.loads(done.stdout) if done else None
     except ValueError:
         fields = None
     if not isinstance(fields, dict):
-        return TunnelStatus(installed=True, logged_in=False, rejected=False, account="", host="", unreadable=True)
+        return TunnelStatus(installed=True, command=command, logged_in=False, rejected=False, outdated=False, account="", host="", unreadable=True)
     saved = bool(fields.get("logged_in"))
-    return TunnelStatus(installed=True, logged_in=saved and bool(fields.get("auth_ok")), rejected=saved and not fields.get("auth_ok"),
-                        account=fields.get("user") or fields.get("email", ""), host=fields.get("host", ""), unreadable=False)
+    return TunnelStatus(installed=True, command=command, logged_in=saved and bool(fields.get("auth_ok")), rejected=saved and fields.get("auth_ok") is False,
+                        outdated=saved and "auth_ok" not in fields, account=fields.get("user") or fields.get("email", ""), host=fields.get("host", ""),
+                        unreadable=False)
 
 
 LOGIN_SECONDS = 30
@@ -183,11 +193,11 @@ def ran(*words: str, hidden: dict | None = None) -> tuple[bool, str]:
 
 
 def log_in(host: str, username: str, password: str, master: str | None = None) -> Login:
-    ok, said = ran("login", username, f"--host={host}", hidden=given(TUNLER_PASSWORD=password, TUNLER_MASTER_PASSWORD=master))
+    ok, output = ran("login", username, f"--host={host}", hidden=given(TUNLER_PASSWORD=password, TUNLER_MASTER_PASSWORD=master))
     if ok:
         return Login(connected=True, needs_master=False, error="")
-    lines = said.splitlines() or ["tunler refused the login"]
-    needs = "master password" in said.lower() and master is None
+    lines = output.splitlines() or ["tunler refused the login"]
+    needs = "master password" in output.lower() and master is None
     return Login(connected=False, needs_master=needs, error=lines[0] if needs else lines[-1])
 
 
@@ -198,8 +208,8 @@ class TunlerVersion(TypedDict):
 
 
 def installed() -> str:
-    ok, said = ran("version")
-    return said.split()[-1] if ok and said else ""
+    ok, output = ran("version")
+    return output.split()[-1] if ok and output else ""
 
 
 def latest(host: str) -> str:
@@ -211,13 +221,13 @@ def latest(host: str) -> str:
 
 
 def versions(host: str) -> TunlerVersion:
-    ok, said = ran("update", "--check", "--json", f"--host={host}")
+    ok, output = ran("update", "--check", "--json", f"--host={host}")
     try:
-        told = json.loads(said) if ok else {}
+        reported = json.loads(output) if ok else {}
     except ValueError:
-        told = {}
-    if "update_available" in told:
-        return TunlerVersion(current=told.get("current", ""), latest=told.get("latest", ""), update_available=bool(told["update_available"]))
+        reported = {}
+    if "update_available" in reported:
+        return TunlerVersion(current=reported.get("current", ""), latest=reported.get("latest", ""), update_available=bool(reported["update_available"]))
     current, newest = installed(), latest(host)
     return TunlerVersion(current=current, latest=newest, update_available=bool(current and newest and current != newest))
 
@@ -234,34 +244,60 @@ def install(host: str) -> str:
     build = f"tunler-{platform.system().lower()}-{ARCHES.get(machine, machine)}"
     part = LOCAL_BIN.with_name("tunler.part")
     LOCAL_BIN.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with urllib.request.urlopen(f"https://{host}/dl/{build}", timeout=DOWNLOAD_SECONDS) as answer:
-            part.write_bytes(answer.read())
-    except OSError as error:
-        part.unlink(missing_ok=True)
-        raise Refused(f"tunler could not be downloaded from {host}: {error}") from error
+    download(f"https://{host}/dl/{build}", part, host)
     part.chmod(0o700)
+    version = verified(part)
     part.replace(LOCAL_BIN)
-    return f"tunler {installed()} is installed"
+    KEPT_STATUS.clear()
+    return f"tunler {version} is installed"
+
+
+def download(url: str, part: Path, host: str) -> None:
+    try:
+        with urllib.request.urlopen(url, timeout=DOWNLOAD_SECONDS) as answer:
+            part.write_bytes(answer.read())
+        return
+    except OSError as error:
+        if not isinstance(getattr(error, "reason", error), ssl.SSLCertVerificationError):
+            part.unlink(missing_ok=True)
+            raise Refused(f"tunler could not be downloaded from {host}: {error}") from error
+    curl = shutil.which("curl")
+    done = ran_command([curl, "-fsSL", "-o", str(part), url], timeout=DOWNLOAD_SECONDS) if curl else None
+    if not done or done.returncode:
+        part.unlink(missing_ok=True)
+        raise Refused(CERTIFICATES)
+
+
+def verified(binary: Path) -> str:
+    done = ran_command([str(binary), "version"], timeout=STATUS_SECONDS)
+    if done and done.returncode == KILLED and platform.system() == "Darwin":
+        ran_command(["codesign", "--force", "--sign", "-", str(binary)], timeout=STATUS_SECONDS)
+        done = ran_command([str(binary), "version"], timeout=STATUS_SECONDS)
+    if done and done.returncode == 0 and done.stdout.startswith("tunler "):
+        return done.stdout.split()[-1]
+    binary.unlink(missing_ok=True)
+    if done and done.returncode == KILLED:
+        raise Refused(BLOCKED)
+    raise Refused("what the server sent is not a working tunler, so nothing was replaced: the tunler already here, if any, is kept")
 
 
 def updated() -> str:
-    ok, said = ran("update")
+    ok, output = ran("update")
     if not ok:
-        return said or "tunler did not update"
-    return said.splitlines()[-1] if said else "tunler is up to date"
+        return output or "tunler did not update"
+    return output.splitlines()[-1] if output else "tunler is up to date"
 
 
 def log_out() -> str:
-    ok, said = ran("logout")
-    return "" if ok else said or "tunler did not log out"
+    ok, output = ran("logout")
+    return "" if ok else output or "tunler did not log out"
 
 
 def owned() -> list[str]:
-    ok, said = ran("domains")
-    return [line.strip() for line in said.splitlines() if line.strip()] if ok else []
+    ok, output = ran("domains")
+    return [line.strip() for line in output.splitlines() if line.strip()] if ok else []
 
 
 def unclaim(domain: str, host: str) -> str:
-    ok, said = ran("release", domain.removesuffix(f".{host}"))
-    return "" if ok else said or f"tunler did not release {domain}"
+    ok, output = ran("release", domain.removesuffix(f".{host}"))
+    return "" if ok else output or f"tunler did not release {domain}"
