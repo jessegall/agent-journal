@@ -32,6 +32,7 @@ const matchIn = (value) => api.act(noun.value, props.resource.n, "set", {key: "k
             :scopes="KEYWORD_WHERE"
             :readonly="closed"
             :label="`Repeat this ${noun} to the agent when these words come up`"
+            :scope-label="`Repeat the ${noun} when`"
             :help="help"
             :yes="`The ${noun} would be repeated to the agent.`"
             :no="`The ${noun} would not be repeated.`"
