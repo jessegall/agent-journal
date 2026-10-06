@@ -295,6 +295,11 @@ def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_onc
     by_agent.place(building.n, 1, [kept, dropped])
     todos.strike(dropped, "no longer part of it")
     assert by_agent.load(building.n).phases[0]["todos"] == [kept], "a row struck before approval leaves the plan"
+    todos.complete(kept, "done early")
+    by_agent.ready(building.n)
+    todos.reopen(kept, "half of it is still to do")
+    assert (by_agent.load(building.n).data["status"], by_agent.load(building.n).data["current"]) == ("ready", 1), \
+        "a row reopened before approval leaves the plan waiting for the user's go"
     approved = by_agent.create("approved", goal="rows stay on the record")
     by_agent.phase(approved.n, "only phase", when="its rows close")
     row = todos.create("struck after approval").n
