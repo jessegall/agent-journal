@@ -17,6 +17,10 @@ JSON = "application/json"
 
 PLAIN = "text/plain; charset=utf-8"
 
+PHONE_ENVIRONMENT = "X-Phone-Environment"
+
+PHONE_REFUSED = (("POST", "/api/hook/{provider}"), ("POST", "/api/run"), ("POST", "/api/agent-hooks/{provider}"))
+
 
 @dataclass(frozen=True)
 class Named(Loaded):

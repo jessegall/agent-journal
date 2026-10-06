@@ -1,0 +1,50 @@
+from http.client import HTTPConnection, HTTPException
+from urllib.parse import urlsplit
+
+from engine.viewer import lately_running
+from features.routing import PHONE_ENVIRONMENT
+from features.sharing.server import APP_HEADERS
+
+CARRIED = ("Content-Type", "Accept", "Last-Event-ID")
+KEPT = ("Content-Type", "Cache-Control", "Content-Disposition")
+STREAMED = "text/event-stream"
+WAIT_SECONDS = 600
+CHUNK = 65536
+
+
+class Desktop:
+    """The desktop viewer's /api on this computer, reached for a paired phone in its own environment."""
+
+    def __init__(self, handler, environment: str) -> None:
+        self.handler = handler
+        self.environment = environment
+
+    def forward(self, body: bytes) -> None:
+        reached = urlsplit(lately_running(self.handler.shares.record.root))
+        if not reached.port:
+            return self.handler.answer(503, "the journal on your computer is not running")
+        connection = HTTPConnection(reached.hostname, reached.port, timeout=WAIT_SECONDS)
+        try:
+            connection.request(self.handler.command, self.handler.path.removeprefix("/p"), body or None, self.carried())
+            reply = connection.getresponse()
+            headers = {name: reply.getheader(name) for name in KEPT if reply.getheader(name)}
+            if reply.getheader("Content-Type", "").startswith(STREAMED):
+                return self.stream(reply, headers)
+            return self.handler.packed(reply.status, reply.read(), {**headers, **APP_HEADERS})
+        except (OSError, HTTPException):
+            return self.handler.answer(502, "the journal on your computer did not answer")
+        finally:
+            connection.close()
+
+    def carried(self) -> dict:
+        given = {name: self.handler.headers[name] for name in CARRIED if name in self.handler.headers}
+        return {**given, PHONE_ENVIRONMENT: self.environment}
+
+    def stream(self, reply, headers: dict) -> None:
+        self.handler.send_response(reply.status)
+        for name, value in {**headers, **APP_HEADERS, "Cache-Control": "no-cache", "X-Accel-Buffering": "no"}.items():
+            self.handler.send_header(name, value)
+        self.handler.end_headers()
+        while chunk := reply.read1(CHUNK):
+            self.handler.wfile.write(chunk)
+            self.handler.wfile.flush()
