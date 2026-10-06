@@ -93,6 +93,21 @@ def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
     (project / "unrelated.txt").write_text("someone else's work\n")
     assert worktrees.take(row.n).startswith("took 1 commit"), "an unrelated uncommitted file does not stop the take"
     assert (project / "unrelated.txt").read_text() == "someone else's work\n", "and it is left as it was"
+    worktrees.cut("gus")
+    other = next(found for found in worktrees.all() if found.title == "gus")
+    assert "nothing to take" in refused(lambda: worktrees.take(other.n)), "a worktree with no commits of its own has nothing to take"
+    side = Path(other.path)
+    git(side, "checkout", "-q", "-b", "side")
+    commit(side, "side.txt", "aside\n")
+    git(side, "checkout", "-q", other.branch)
+    commit(side, "own.txt", "own\n")
+    git(side, "merge", "--no-ff", "-q", "-m", "merge the side", "side")
+    assert "carries merge commits" in refused(lambda: worktrees.take(other.n)), "a branch with a merge in it is rebased flat before it is taken"
+    git(project, "checkout", "-q", "-b", "elsewhere")
+    assert "switch it back before taking" in refused(lambda: worktrees.take(other.n)), "a main checkout that moved to another branch takes nothing"
+    git(project, "checkout", "-q", "phone-connection")
+    worktrees.update(other.n, base="")
+    assert "no working branch to measure against" in refused(lambda: worktrees.drift(other.n)), "a worktree that lost its base cannot be measured"
 
 
 def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never():

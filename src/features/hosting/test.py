@@ -9,7 +9,7 @@ from resources.base import USER
 from tests.conftest import fresh, refused
 
 
-def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_idle():
+def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_idle(monkeypatch):
     from features import FEATURES
     from features.hosting.handlers import StopIdleApps
     from features.parts import AgentContext
@@ -18,11 +18,22 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
     tickets = Tickets(record, actor=USER)
     ticket = tickets.create("Dark mode")
     host = lambda n: COMMANDS["ticket"]["host"](tickets, n)
+    from features.hosting import card
     assert "names no app" in refused(lambda: host(ticket.n)), "without a hosting file there is nothing to run"
+    assert card.app_on_card(record, ticket).actions == [], "a ticket's card offers no app while the project names none"
     folder = record.root.parent / "agentic-organization"
     folder.mkdir()
     (folder / "hosting.toml").write_text('run = "npm run dev -- --port {port}"\nready = "/health"\nidle_minutes = 5\n')
+    assert [action["action"] for action in card.app_on_card(record, ticket).actions] == ["host"], "a card offers to run its app once the project names one"
     host(ticket.n)
+    hosted = tickets.load(ticket.n)
+    assert [action["action"] for action in card.app_on_card(record, hosted).actions] == ["unhost"], "a card whose app runs offers to stop it"
+    for state, extra in (({"state": card.READY, "url": "http://app.example"}, ("http://app.example", "Open app")), ({"state": "starting", "why": ""}, ("", "App starting")),
+                         ({"state": "crashed", "why": "port taken"}, ("", "App stopped: port taken"))):
+        monkeypatch.setattr(card, "address", lambda root, found, state=state: state)
+        assert (card.app_on_card(record, hosted).link, card.app_on_card(record, hosted).link_label) == extra, "a card links to its app once ready and says why it is not"
+    monkeypatch.undo()
+    assert COMMANDS["ticket"]["app"](tickets, ticket.n) == {"url": "", "state": "not started", "why": ""}, "the address of an app that was never started says so"
     [app] = ticket_apps(record.root, set())
     assert (app.id, app.cwd.endswith(f".claude/worktrees/ticket-{ticket.n}"), app.run, app.path) == \
         (f"ticket-{ticket.n}.app", True, f"npm run dev -- --port {app.port}", "/health"), "the app runs from the ticket's worktree on a port of its own"
@@ -32,6 +43,9 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
     sweep()
     assert (tickets.load(ticket.n).hosted, ticket_apps(record.root, set())) == (False, []), \
         "an app whose ticket's agent is gone past the idle minutes stops"
+    host(ticket.n)
+    COMMANDS["ticket"]["unhost"](tickets, ticket.n)
+    assert (tickets.load(ticket.n).hosted, ticket_apps(record.root, set())) == (False, []), "an app stopped by hand stops at once"
 
 
 def test_hosting_services_follow_the_feature_switch():
