@@ -20,7 +20,8 @@ down() {
   keep
 }
 read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
-[ $(( $(date +%s) - at )) -le $heartbeat_age ] || down
+# a late heartbeat is a busy server as often as a dead one: try it once before giving up
+[ $(( $(date +%s) - at )) -le $heartbeat_age ] || { [ -e "$root/runtime/upgrading" ] || tries_otherwise=1; }
 # the server writes its restart time with a fraction; ${since%.*} keeps the whole seconds the shell can count with
 restarting() { read -r since < "$root/runtime/restarting" 2>/dev/null && [ $(( $(date +%s) - ${since%.*} )) -lt $restart_window ]; }
 tries=0

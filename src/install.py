@@ -31,6 +31,7 @@ LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 REPOSITORY_ENV = "AGENT_JOURNAL_REPO"
+LOOKUP_SECONDS = 10
 BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
 HEALED = "AGENT_JOURNAL_HEALED"
 SRC = "src"
@@ -245,7 +246,8 @@ while [ "$dir" != "/" ]; do
 for src in "$dir/.journal/src" "$dir/.journal"; do
 if [ -f "$src/journal.py" ]; then
 root="$dir/.journal"
-__ASKS__exec "__PYTHON__" "$src/journal.py" --root "$root" "$@"
+__ASKS__[ -x "__PYTHON__" ] || { echo "journal: Python at __PYTHON__ is gone (moved or upgraded), so reinstall: re-run install.sh" >&2; exit 1; }
+exec "__PYTHON__" "$src/journal.py" --root "$root" "$@"
 fi
 done
 dir="$(dirname "$dir")"
@@ -256,7 +258,8 @@ exit 1
 
 LAUNCHER = """#!/bin/sh
 root="__ROOT__"
-__ASKS__exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
+__ASKS__[ -x "__PYTHON__" ] || { echo "journal: Python at __PYTHON__ is gone (moved or upgraded), so reinstall: re-run install.sh" >&2; exit 1; }
+exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
 """
 
 
@@ -364,13 +367,17 @@ def redacted(text: str, secret: str) -> str:
     return text.replace(secret, "the token") if secret else text
 
 
+def without_prompt() -> dict:
+    return {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+
+
 def version_key(version: str) -> tuple:
     return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
 def released(repository: str = REPOSITORY) -> str:
     try:
-        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=10)
+        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=without_prompt())
     except (OSError, subprocess.TimeoutExpired):
         return ""
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
@@ -384,7 +391,7 @@ def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
     into.mkdir(parents=True, exist_ok=True)
     try:
         for step in (["init", "-q"], ["fetch", "-q", "--depth", "1", source, ref or "HEAD"], ["checkout", "-q", "FETCH_HEAD"]):
-            done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120)
+            done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120, env=without_prompt())
             if done.returncode:
                 return "", redacted(done.stderr.strip() or f"git {step[0]} failed", secret)
         return subprocess.run(["git", "rev-parse", "HEAD"], cwd=into, capture_output=True, text=True, timeout=30).stdout.strip(), ""
@@ -452,7 +459,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
             shutil.rmtree(temporary, ignore_errors=True)
             return [f"package not refreshed: {failed}"]
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
-        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
+        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=without_prompt())
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     try:
         changed, gone = refresh(source, code(root))

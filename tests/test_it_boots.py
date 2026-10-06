@@ -604,7 +604,6 @@ def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back
     assert exits == [1], "warming runs beside the server, so a failure in it must end the process for the supervisor to roll back"
 
 
-<<<<<<< HEAD
 def test_one_engine_runs_per_environment_and_an_orphan_or_a_stale_build_ends(tmp_path, monkeypatch):
     from runner import engines
     root = tmp_path / ".journal"
@@ -714,7 +713,8 @@ def test_a_second_journal_gets_a_free_viewer_port_and_a_journal_already_served_s
     with pytest.raises(SystemExit) as stopped:
         serve.serve(mine)
     assert stopped.value.code == 0 and "already served at http://127.0.0.1:8421/" in capsys.readouterr().out, "a journal that is already served says where and starts nothing"
-=======
+
+
 def old_curl(tmp_path: Path) -> Path:
     stub = tmp_path / "bin"
     stub.mkdir()
@@ -793,4 +793,82 @@ def test_install_sh_as_a_first_time_user_runs_it_installs_the_release_and_leaves
     assert [p.name for p in (project / ".journal").glob("journal-*.pyz")] and all(p.name.startswith(f"journal-{release}-") for p in (project / ".journal").glob("journal-*.pyz")), \
         "the build is packed under the release's own version"
     assert not list((project / ".journal" / "src").rglob("test.py")), "no feature test is copied into a user's project"
->>>>>>> 2550bb29b (First-time install and launch gaps: Python 3.9 is refused plainly, hooks work with curl before 7.87, restored hooks keep the session's changes, install.sh copies VERSION, a build that keeps failing with nothing to roll back to stops, a missing agent binary refuses before the menus, and running out of viewer ports says so)
+
+
+
+
+def test_a_moved_or_upgraded_python_is_named_by_the_command_and_the_channel_check(tmp_path):
+    root = installed(tmp_path)
+    gone = tmp_path / "python-gone" / "bin" / "python3"
+    for command in (root / "journal", tmp_path / "home" / ".local" / "bin" / "journal"):
+        command.write_text(command.read_text().replace(sys.executable, str(gone)))
+        ran = subprocess.run(["sh", str(command), "version"], cwd=root.parent, env={**os.environ, "HOME": str(tmp_path / "home")}, capture_output=True, text=True, timeout=60)
+        assert (ran.returncode, "reinstall: re-run install.sh" in ran.stderr) == (1, True), f"{command}: {ran.stderr}"
+    mcp = root.parent / ".mcp.json"
+    config = json.loads(mcp.read_text())
+    config["mcpServers"]["journal"]["command"] = str(gone)
+    mcp.write_text(json.dumps(config))
+    assert "reinstall: re-run install.sh" in PROVIDERS["claude"]().wiring_trouble(root.parent)
+
+
+def test_a_hook_reaches_a_busy_server_whose_heartbeat_is_late_and_no_second_server_is_started(tmp_path, monkeypatch):
+    seen: list = []
+    root = tmp_path / ".journal"
+    (root / "runtime").mkdir(parents=True)
+    env = {**os.environ, "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main"}
+    with answering(seen) as url:
+        (root / "runtime" / "heartbeat").write_text(f"{int(time.time()) - 6} {url}\n")
+        hook = subprocess.run(["sh", str(CODE / "hook.sh"), "claude", str(root)], input='{"hook_event_name": "Stop"}', env=env, capture_output=True, text=True, timeout=60)
+        assert (hook.returncode, any(path.startswith("/api/hook/claude") for path in seen), (root / "runtime" / "hook-failures.log").exists()) == (0, True, False), \
+            f"a heartbeat six seconds late is a busy server, not a dead one: {seen}"
+        dead = tmp_path / "dead" / ".journal"
+        (dead / "runtime").mkdir(parents=True)
+        (dead / "runtime" / "heartbeat").write_text(f"{int(time.time()) - 6} http://127.0.0.1:1/\n")
+        began = time.time()
+        subprocess.run(["sh", str(CODE / "hook.sh"), "claude", str(dead)], input='{"hook_event_name": "Stop"}', env=env, capture_output=True, text=True, timeout=60)
+        assert time.time() - began < 3 and "down" in (dead / "runtime" / "hook-failures.log").read_text() or "000" in (dead / "runtime" / "hook-failures.log").read_text(), "a dead server is still given up on at once"
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Slow(BaseHTTPRequestHandler):
+        def do_GET(self):
+            time.sleep(0.3)
+            body = json.dumps({"root": str(root), "version": viewer.version(), "pid": slow.pid}).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_):
+            pass
+
+    server = HTTPServer(("127.0.0.1", 0), Slow)
+    slow = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", "serve", str(root)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    server.pid = slow.pid
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        slow.__class__  # keep the stand-in process alive for the whole check
+        Slow.pid = slow.pid
+        slow_url = f"http://127.0.0.1:{server.server_port}/"
+        write_text(viewer.marker(root), json.dumps({"url": slow_url, "at": time.time(), "port": server.server_port, "pid": slow.pid}))
+        monkeypatch.setattr(viewer, "RESTARTING", 1.0)
+        monkeypatch.setattr(viewer, "available", lambda *a, **k: pytest.fail("a second server was started"))
+        assert viewer.launch(root, tmp_path) == (slow_url, None)
+    finally:
+        server.shutdown()
+        slow.kill()
+        slow.wait(timeout=10)
+
+
+def test_a_server_that_starts_but_never_answers_is_stopped_and_counted_as_a_crash(tmp_path, monkeypatch):
+    from runner.worker import crashing
+    root = tmp_path / ".journal"
+    (root / "runtime").mkdir(parents=True)
+    monkeypatch.setattr(viewer, "COMING_UP", 1.0)
+    monkeypatch.setattr(viewer, "entry", lambda name: [sys.executable, "-c", "import time; time.sleep(600)"])
+    exits = []
+    for _ in range(3):
+        url, code = viewer.launch(root, tmp_path)
+        exits.append(code)
+        assert (url, bool(code)) == ("", True), "a server that never answers fails the launch"
+    assert crashing(exits), "three hung starts in a row roll the build back"
+    assert "did not answer" in runtime.viewer_log(root).read_text(), "and the log says why in a line"
