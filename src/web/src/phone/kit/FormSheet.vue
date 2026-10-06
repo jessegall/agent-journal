@@ -1,6 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, reactive, ref} from "vue";
 import Btn from "../../kit/Btn.vue";
+import Segmented from "../../kit/Segmented.vue";
 import PhoneSheet from "../PhoneSheet.vue";
 
 const props = defineProps({
@@ -14,14 +15,14 @@ const props = defineProps({
 const emit = defineEmits(["close", "submit"]);
 const values = reactive(Object.fromEntries(props.fields.map((field) => [field.key, field.value || ""])));
 const form = ref(null);
-const ready = computed(() => props.fields.every((field) => !field.required || values[field.key].trim()));
+const ready = computed(() => props.fields.every((field) => !field.required || String(values[field.key]).trim()));
 let sent = null;
 
 onMounted(() => nextTick(() => form.value?.querySelector("input, textarea")?.focus({preventScroll: true})));
 
 function submit(close) {
     if (!ready.value) return;
-    sent = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value.trim()]));
+    sent = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, String(value).trim()]));
     close();
 }
 
@@ -39,7 +40,13 @@ function closed() {
         </template>
         <form ref="form" class="form-body" @submit.prevent="submit(close)">
             <template v-for="field in fields" :key="field.key">
-                <label class="form-field">
+                <template v-if="field.options">
+                    <div class="form-field">
+                        <span :id="`form-${field.key}`" class="form-label">{{ field.label }}</span>
+                        <Segmented :options="field.options" :value="values[field.key]" fill :aria-labelledby="`form-${field.key}`" @pick="values[field.key] = $event" />
+                    </div>
+                </template>
+                <label v-else class="form-field">
                     <span class="form-label">{{ field.label }}</span>
                     <template v-if="field.area">
                         <textarea

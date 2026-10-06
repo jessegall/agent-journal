@@ -10,10 +10,16 @@ import PhoneQuestion from "./PhoneQuestion.vue";
 import {ago} from "../format/time.js";
 import {atThisPlace, ended, flush, hold, perform, waitingActions} from "./outbox.js";
 import PhoneComments from "./PhoneComments.vue";
-import PhoneCommentSheet from "./PhoneCommentSheet.vue";
+import FormSheet from "./kit/FormSheet.vue";
+import ActionSheet from "./kit/ActionSheet.vue";
+import CellGroup from "./kit/CellGroup.vue";
+import Cell from "./kit/Cell.vue";
+import PhoneActs from "./PhoneActs.vue";
+import PhoneVersions from "./PhoneVersions.vue";
+import {itemActions} from "./acts.js";
 import PhoneShareSheet from "./PhoneShareSheet.vue";
 import {chipOpener} from "./peeked.js";
-import {todoFacts} from "./todo.js";
+import {itemFacts, todoLane} from "./todo.js";
 import {kindTitle, kindWord} from "./kinds.js";
 import PhoneMissing from "./PhoneMissing.vue";
 import PhoneSkeletonPage from "./PhoneSkeletonPage.vue";
@@ -53,7 +59,7 @@ const root = ref(null);
 const under = useUnder(edge);
 const titled = useUnder(heading);
 const goal = computed(() => (row.value && row.value.data.goal) || "");
-const todo = computed(() => (row.value && row.value.type === "todo" ? todoFacts(row.value) : null));
+const facts = computed(() => (row.value && row.value.type !== "question" ? itemFacts(row.value) : null));
 const body = ref(null);
 const fade = useFades(body);
 const ready = computed(() => row.value && row.value.type === "plan" && row.value.data.status === "ready");
@@ -119,7 +125,29 @@ const comments = computed(() => [
     ...heldComments.value,
 ]);
 
-async function commented(text) {
+const COMMENT = [{name: "text", label: "Your comment", placeholder: "Write a comment", required: true, area: true}];
+const FIRST = {todo: "start", held: "unblock", doing: "done", asked: "done", done: "reopen"};
+const SECOND = ["block", "comment"];
+const acts = ref(null);
+const moreOpen = ref(false);
+const actions = computed(() =>
+    itemActions(row.value).map((action) => ({...action, run: () => (action.word === "comment" ? (commenting.value = true) : acts.value.begin(action))}))
+);
+const FIRSTS = {plan: ["start"], doc: ["plan", "share"], report: ["share"], collection: ["share"], plugin: ["upgrade"]};
+const firstKeys = computed(() => (row.value?.type === "todo" ? [FIRST[todoLane(row.value)]] : FIRSTS[row.value?.type] || []));
+const first = computed(() => firstKeys.value.map((key) => actions.value.find((action) => action.key === key)).find(Boolean) || null);
+const second = computed(() => actions.value.filter((action) => action !== first.value && SECOND.includes(action.key)));
+const linked = computed(() => (row.value?.refs || []).map((ref) => ({ref, label: `${kindTitle(ref.split(":")[0])} ${ref.split(":")[1]}`})));
+const files = computed(() => Object.keys(row.value?.data.files || {}));
+const touched = computed(() => row.value?.data.changed || []);
+const commits = computed(() => row.value?.data.commits || []);
+
+async function changed() {
+    await load();
+    refresh();
+}
+
+async function commented({text}) {
     const local = {key: `local-${Date.now()}`, who: "user", text, created: Date.now() / 1000, waiting: true};
     justCommented.value = [...justCommented.value, local];
     notice.value = "";
@@ -208,8 +236,11 @@ onMounted(async () => {
                     <template v-if="goal">
                         <p class="reader-goal">Goal: {{ goal }}</p>
                     </template>
-                    <template v-if="todo">
-                        <PhoneReaderFacts :facts="todo.facts" :after="todo.after" />
+                    <template v-if="row.type === 'doc'">
+                        <PhoneVersions :row="row" />
+                    </template>
+                    <template v-if="facts">
+                        <PhoneReaderFacts :facts="facts.facts" :after="facts.after" />
                     </template>
                     <template v-if="row.abstract">
                         <TextDisplay class="reader-abstract" :text="row.abstract" />
@@ -225,6 +256,34 @@ onMounted(async () => {
                         <TextDisplay :text="part.body" />
                     </template>
                     <PhoneReaderPhases :plan="row" />
+                    <template v-if="files.length">
+                        <CellGroup head="Files">
+                            <template v-for="name in files" :key="name">
+                                <Cell :label="name" icon="file" @pick="emit('open', `attachment:${row.type}/${row.n}/${encodeURIComponent(name)}`)" />
+                            </template>
+                        </CellGroup>
+                    </template>
+                    <template v-if="touched.length">
+                        <CellGroup head="Files it touched">
+                            <template v-for="path in touched" :key="path">
+                                <Cell :label="path.split('/').pop()" :sub="path" icon="file" still />
+                            </template>
+                        </CellGroup>
+                    </template>
+                    <template v-if="commits.length">
+                        <CellGroup head="Its commits">
+                            <template v-for="commit in commits" :key="commit">
+                                <Cell :label="String(commit)" icon="branch" still />
+                            </template>
+                        </CellGroup>
+                    </template>
+                    <template v-if="linked.length">
+                        <CellGroup head="Linked items">
+                            <template v-for="link in linked" :key="link.ref">
+                                <Cell :label="link.label" :sub="link.ref" @pick="emit('open', link.ref)" />
+                            </template>
+                        </CellGroup>
+                    </template>
                 </template>
                 <PhoneComments :comments="comments" />
             </div>
@@ -250,8 +309,16 @@ onMounted(async () => {
                         @reply="(start) => emit('reply', row.type + ':' + row.n, start)"
                     />
                 </template>
-                <template v-else-if="row.type !== 'question'">
-                    <Btn :kind="buttons.length || finished ? 'ghost' : 'primary'" large @click="commenting = true">Comment</Btn>
+                <template v-else-if="first && !finished">
+                    <Btn :kind="buttons.length ? 'ghost' : 'primary'" large @click="first.run()">{{ first.label }}</Btn>
+                </template>
+                <template v-if="actions.length">
+                    <div class="reader-row">
+                        <template v-for="action in second" :key="action.key">
+                            <Btn kind="ghost" @click="action.run()">{{ action.label }}</Btn>
+                        </template>
+                        <Btn kind="ghost" aria-haspopup="dialog" @click="moreOpen = true">More</Btn>
+                    </div>
                 </template>
                 <template v-if="row.type === 'plan' && !reviewing">
                     <Btn kind="plain" large @click="reviewing = true">Ask for a review</Btn>
@@ -281,7 +348,13 @@ onMounted(async () => {
             <PhoneShareSheet :target="`${row.type}:${row.n}`" :title="row.title" @close="sharing = false" />
         </template>
         <template v-if="commenting && row">
-            <PhoneCommentSheet :title="row.title" @close="commenting = false" @send="commented" />
+            <FormSheet title="Comment" :about="row.title" :fields="COMMENT" button="Comment" @close="commenting = false" @send="commented" />
+        </template>
+        <template v-if="moreOpen && row">
+            <ActionSheet :title="row.title" :about="`${kindTitle(row.type)} ${row.n}`" :actions="actions" @close="moreOpen = false" />
+        </template>
+        <template v-if="row">
+            <PhoneActs ref="acts" :row="row" @changed="changed" @gone="emit('close')" @share="sharing = true" />
         </template>
     </section>
 </template>
@@ -382,6 +455,17 @@ onMounted(async () => {
 
 .reader-foot:empty {
     display: none;
+}
+
+.reader-row {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 8px;
+}
+
+.reader-row :deep(.btn) {
+    min-height: 44px;
 }
 
 .reader-wait {

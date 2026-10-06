@@ -131,6 +131,53 @@ await runScenarios(
                 .first()
                 .waitFor({timeout: SHOWN});
         },
+        async "the To-dos tab lists the lanes, and the board moves a card to another lane"(page) {
+            await home(page);
+            await tab(page, "To-dos");
+            await page.getByRole("heading", {name: "Held · 1"}).waitFor({timeout: SHOWN});
+            await page.getByText("blocked: waits for the hinges").waitFor();
+            await page.getByRole("radio", {name: "Board"}).click();
+            await page.getByRole("button", {name: "Everything you can do with To-do 3"}).click();
+            await page.getByRole("button", {name: "Move to another lane"}).click();
+            await page.getByRole("button", {name: "Doing"}).click();
+            await page.getByText("Moved to-do 3 to Doing").waitFor({timeout: SHOWN});
+            await page.getByRole("tab", {name: /^Doing 1/}).waitFor({timeout: SHOWN});
+        },
+        async "a to-do's own page blocks it with a reason, unblocks it, and lists every action under More"(page) {
+            await home(page);
+            await tab(page, "To-dos");
+            await page.getByRole("button", {name: "Water the plants"}).click();
+            const item = page.locator(".reader-foot");
+            await item.getByRole("button", {name: "Block", exact: true}).click();
+            await page.getByLabel("Why is it blocked? A reason is needed.").fill("waits for rain");
+            await page.locator("form").getByRole("button", {name: "Block"}).click();
+            await page.getByText("Blocked to-do 1").waitFor({timeout: SHOWN});
+            await page.locator(".reader-body").getByText("waits for rain").waitFor({timeout: SHOWN});
+            await item.getByRole("button", {name: "Unblock"}).click();
+            await page.getByText("Unblocked to-do 1").waitFor({timeout: SHOWN});
+            await item.getByRole("button", {name: "More", exact: true}).click();
+            const actions = page.getByRole("dialog");
+            for (const action of ["Change priority", "Move to another lane", "Edit title and details", "Strike it", "Delete"])
+                await actions.getByRole("button", {name: action}).waitFor({timeout: SHOWN});
+        },
+        async "each tab keeps its own pages"(page) {
+            await home(page);
+            await tab(page, "To-dos");
+            await page.getByRole("button", {name: "Fix the gate"}).click();
+            await page.getByRole("heading", {name: "Fix the gate"}).waitFor({timeout: SHOWN});
+            await tab(page, "Chat");
+            await page.getByPlaceholder("Message the agent").waitFor();
+            await tab(page, "To-dos");
+            await page.getByRole("heading", {name: "Fix the gate"}).waitFor({timeout: SHOWN});
+        },
+        async "New makes a to-do and opens it"(page) {
+            await home(page);
+            await tab(page, "To-dos");
+            await page.getByRole("button", {name: "New to-do"}).click();
+            await page.getByLabel("Title").fill("Sweep the porch");
+            await page.getByRole("button", {name: "Add"}).click();
+            await page.getByRole("heading", {name: "Sweep the porch"}).waitFor({timeout: SHOWN});
+        },
     },
     {voice: false, device: {...PHONE, storageState: state}}
 );

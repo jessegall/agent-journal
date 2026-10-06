@@ -13,16 +13,29 @@ function state(row) {
 
 const waitsOn = (row) => (row.data?.after || []).map((one) => (String(one).includes(":") ? String(one) : `todo:${one}`));
 
+const PRIORITY = {default: "Normal"};
+
 const named = (level) => (level ? level[0].toUpperCase() + level.slice(1) : "");
 
 export function todoFacts(row) {
     const data = row.data || {};
     const facts = [{label: "State", value: state(row)}];
     if (typeof data.blocked === "string" && data.blocked && !row.completed) facts.push({label: "Why", value: data.blocked, text: true});
-    if (data.priority !== undefined && data.priority !== null && data.priority !== "")
-        facts.push({label: "Priority", value: named(row.priority_name) || String(data.priority)});
-    if (data.assigned) facts.push({label: "Assignee", value: data.assigned});
+    facts.push({label: "Priority", value: PRIORITY[row.priority_name] || named(row.priority_name) || String(data.priority ?? "Normal")});
+    facts.push({label: "Assigned to", value: data.assigned || "Nobody"});
     facts.push({label: "Made", value: ago(row.created)});
     if (row.updated && row.updated !== row.created) facts.push({label: "Updated", value: ago(row.updated)});
     return {facts, after: waitsOn(row)};
+}
+
+const LANES = {Done: "done", Blocked: "held", Paused: "held", "In hand": "doing"};
+
+export const todoLane = (row) => LANES[state(row)] || "todo";
+
+export function itemFacts(row) {
+    if (row.type === "todo") return todoFacts(row);
+    const facts = [{label: "State", value: row.completed ? "Closed" : "Open"}, {label: "Made", value: ago(row.created)}];
+    if (row.updated && row.updated !== row.created) facts.push({label: "Changed", value: ago(row.updated)});
+    if (row.completed) facts.push({label: "Closed", value: ago(row.completed)});
+    return {facts, after: []};
 }
