@@ -64,6 +64,21 @@ def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased(
         "the helper's commit lands on the working branch by cherry-pick"
 
 
+def test_take_asks_for_a_wording_review_when_the_helper_changed_viewer_text():
+    features.load()
+    repo = project_on("phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    folder = Path(row.path)
+    (folder / "src" / "web" / "src").mkdir(parents=True)
+    commit(folder, "src/web/src/Field.vue", '<FormField label="Watch for the words in" />\n')
+    asked = refused(lambda: worktrees.take(row.n))
+    assert "Watch for the words in" in asked and f"journal worktree take {row.n} --reviewed" in asked, \
+        "a helper's new viewer text is read against rule 59 before it is taken, and the refusal names a line and the way on"
+    assert worktrees.take(row.n, reviewed=True).startswith("took 1 commit"), "once reviewed, it is taken"
+
+
 def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
     features.load()
     repo = project_on("phone-connection")
