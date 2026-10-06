@@ -53,9 +53,10 @@ export function showFile(env, path, line = 0) {
 
 const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
 
-function opening(stack, sub = "") {
+export function opening(stack, sub = "") {
     const [path] = location.hash.replace(/^#/, "").split("?");
-    location.replace(`#${path}${stack.length ? `?open=${stack.map(entry).join(",")}` : ""}${sub ? `&sub=${sub}` : ""}`);
+    const query = [...(stack.length ? [`open=${stack.map(entry).join(",")}`] : []), ...(sub ? [`sub=${sub}`] : [])].join("&");
+    location.replace(`#${path}${query ? `?${query}` : ""}`);
 }
 
 const inChat = {};
