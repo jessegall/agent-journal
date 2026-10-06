@@ -41,6 +41,7 @@ class ChecksDetails(FeatureDetails):
         Line(
             name="failed",
             reply_kept=True,
+            while_waiting=True,
             title="{{title}}",
             brief="journal check show {{n}} says why; fix it, then journal check run {{n}}",
         ),
