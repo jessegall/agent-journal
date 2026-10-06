@@ -88,6 +88,19 @@ const page = computed(() =>
             : "home"
 );
 const full = computed(() => page.value === "kanban");
+let miniBefore = store.sideMini;
+watch(
+    full,
+    (now) => {
+        if (now) {
+            miniBefore = store.sideMini;
+            store.sideMini = true;
+            return;
+        }
+        store.sideMini = miniBefore;
+    },
+    {immediate: true}
+);
 followFullscreen();
 const opened = computed(() =>
     route.value.stack.length
@@ -314,10 +327,6 @@ watch(
 
 .app.wide.mini .rail {
     margin-left: -56px;
-}
-
-.app.full .rail {
-    display: none;
 }
 
 .app.wide .bar {

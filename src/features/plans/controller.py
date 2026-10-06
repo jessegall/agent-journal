@@ -267,6 +267,15 @@ class Plans(Controller):
     def _complete(self, phase: dict) -> bool:
         return all(row.completed for row in self._members(phase))
 
+    def _opened_early(self, found) -> bool:
+        plan = self.load(found.n)
+        phase = plan.current_phase
+        return plan.status == ACTIVE and phase is not None and found.phase == plan.current + 1 and self._only_waiting(phase)
+
+    def _only_waiting(self, phase: dict) -> bool:
+        open_rows = [row for row in self._members(phase) if not row.completed]
+        return bool(open_rows) and all(row.type == "todo" and row.blocked for row in open_rows)
+
     def _first_open(self, plan) -> int:
         return next((p for p, phase in enumerate(plan.phases, 1) if not self._complete(phase)), 0)
 
@@ -274,7 +283,7 @@ class Plans(Controller):
         plans = self.rows.every()
         placements = [found for found in (plan.placement(todo) for plan in plans) if found]
         if placements:
-            return all(found.holds for found in placements)
+            return all(found.holds and not self._opened_early(found) for found in placements)
         return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
 
     def _start_phase(self, plan) -> None:
