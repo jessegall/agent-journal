@@ -14,4 +14,4 @@ def voice_of(record) -> Voice:
 def address(record) -> str:
     voice = voice_of(record)
     instruction = voice.calling.instruction(voice.calling.called(title(record), first_name(record)))
-    return f"HOW TO TALK TO THE USER: {voice.text} {instruction}".strip()
+    return f"HOW THE USER WANTS YOU TO TALK, in their own words: {voice.text} {instruction}".strip()

@@ -1,8 +1,7 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {loadProfiles, profileInUse, profiles, standing, useProfile} from "../composables/profiles.js";
-import {store} from "../state/store.js";
+import {loadProfiles, person, profileInUse, profiles, standing, useProfile} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Notice from "../kit/Notice.vue";
@@ -17,7 +16,6 @@ const saved = ref(null);
 const shipped = computed(() => profiles.value.filter((row) => row.data.system));
 const own = computed(() => profiles.value.filter((row) => !row.data.system));
 const panelRow = computed(() => (open.value === NEW ? null : profiles.value.find((row) => row.n === open.value)));
-const person = computed(() => `${store.settings.form_of_address.title}|${store.settings.form_of_address.first_name}`);
 
 const tell = (text) => (saved.value = {text});
 const guarded = (call) => call().catch((e) => tell(e.message));
@@ -112,7 +110,7 @@ onMounted(loadProfiles);
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 18px;
+    margin: 18px 0 26px;
 }
 
 .profiles-head {

@@ -5,6 +5,7 @@ import {store} from "../state/store.js";
 
 export const profiles = ref([]);
 export const callings = ref({});
+export const samples = ref({});
 
 const form = () => (store.settings && store.settings.form_of_address) || {};
 
@@ -15,14 +16,17 @@ export const butler = computed(() => profiles.value.find((row) => row.data.syste
 export const firstChoice = computed(() => unchosen.value && butler.value !== null);
 export const standing = computed(() => profiles.value.find((row) => row.n === profileInUse.value) || butler.value);
 
+export const person = computed(() => `${form().title}|${form().first_name}`);
+
 export const calls = (row) => callings.value[row.data.calling] || "";
 
-export const sampleOf = (row) => row.data.sample.replaceAll("{you}", calls(row) || callings.value.name || "");
+export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
 export async function loadProfiles() {
-    const [rows, names] = await Promise.all([api.profiles(), api.profileCallings()]);
+    const [rows, names, lines] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples()]);
     profiles.value = rows.filter((row) => !row.deleted);
     callings.value = names;
+    samples.value = lines;
 }
 
 export const useProfile = (row) => saveSettings({form_of_address: {...form(), profile: row.n}});

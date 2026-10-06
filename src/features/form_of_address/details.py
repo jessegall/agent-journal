@@ -8,7 +8,7 @@ VOICE_SET = "voice set"
 class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
     group = Group.AGENT
-    label = "Your title and name"
+    label = "Tell the agent how to talk to you"
     position = 1
     has_skill = False
 

@@ -1,7 +1,7 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {callings, deleteReason, profileInUse, profiles, sampleOf} from "../composables/profiles.js";
+import {callings, profileInUse, profiles, sampleOf} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
@@ -25,7 +25,7 @@ const start = ref(0);
 const failed = ref("");
 let timer = 0;
 
-const copyOf = (row) => ({title: row.title, brief: row.brief, calling: row.data.calling, sample: row.data.sample});
+const copyOf = (row) => ({title: row.title, brief: row.brief, calling: row.data.calling, sample: sampleOf(row)});
 const resetDraft = (row) => Object.assign(draft, row ? copyOf(row) : {title: "", brief: "", calling: "title and name", sample: ""});
 
 watch(
@@ -50,7 +50,7 @@ const choices = computed(() => {
         {value: "none", label: "No name", hint: "It never addresses you by name."},
     ].map((choice) => ({...choice, current: choice.value === draft.calling}));
 });
-const sample = computed(() => sampleOf({data: draft}));
+const sample = computed(() => (locked.value ? sampleOf(props.row) : draft.sample));
 const missing = computed(() => {
     if (!draft.title.trim()) return "Give it a name.";
     if (!draft.brief.trim()) return "Write how it talks.";
@@ -141,7 +141,7 @@ function startFrom(row) {
                 :help="`You write it, in the voice above, as this profile would answer “${QUESTION}”. It is only an example: it is shown in How it sounds and when you choose a profile. The agent's real answers follow How it talks.`"
             >
                 <TextInput
-                    :value="locked ? sample : draft.sample"
+                    :value="sample"
                     :disabled="locked"
                     placeholder="For example: Yes, it's in. All tests pass."
                     @input="edit('sample', $event.target.value)"
