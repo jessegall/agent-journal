@@ -3,9 +3,7 @@ import {openUpdate} from "../state/overlays.js";
 import {meta, types} from "../domain/spec.js";
 import {store} from "../state/store.js";
 import {computed, ref} from "vue";
-import {unanswered} from "../domain/buttons.js";
 import ChoiceCard from "../resource/ChoiceCard.vue";
-import ChoiceNeeded from "../resource/ChoiceNeeded.vue";
 import Attachments from "./Attachments.vue";
 import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
@@ -27,7 +25,6 @@ import {render} from "../text/index.js";
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "grew", "pin"]);
 const picking = ref(false);
-const choice = ref(null);
 const bubble = ref(null);
 const FOLD_AT = 420;
 const PEER_FOLD_AT = 140;
@@ -208,10 +205,7 @@ async function drop() {
                 <TurnQuestion :turn="turn" />
             </template>
             <template v-if="turn.type === 'message'">
-                <template v-if="unanswered(turn)">
-                    <ChoiceNeeded :resource="turn" @go="choice.show()" />
-                </template>
-                <ChoiceCard ref="choice" :resource="turn" />
+                <ChoiceCard :resource="turn" />
             </template>
             <template v-if="files.length">
                 <Attachments :resource="turn" @grew="emit('grew')" />
