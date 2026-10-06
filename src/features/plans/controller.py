@@ -270,7 +270,7 @@ class Plans(Controller):
     def _opened_early(self, found) -> bool:
         plan = self.load(found.n)
         phase = plan.current_phase
-        return plan.status == ACTIVE and phase is not None and found.phase == plan.current + 1 and self._only_waiting(phase)
+        return plan.status == ACTIVE and phase is not None and found.phase > plan.current and self._only_waiting(phase)
 
     def _only_waiting(self, phase: dict) -> bool:
         open_rows = [row for row in self._members(phase) if not row.completed]

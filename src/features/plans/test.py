@@ -163,19 +163,21 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     assert gated.load(held.n).data["status"] == "waiting", \
         "a ticket's environment is always in auto, yet its plan's checkpoint waits for the orchestrator or the user"
     from features.work_tracking.next import ready
-    stuck, soon = auto_todos.create("waits on the production rollout").n, auto_todos.create("next phase work").n
+    stuck, soon, later = (auto_todos.create(title).n for title in ("waits on the production rollout", "next phase work", "independent work two phases on"))
     blocked_first = quick.create("Blocked first", goal="keeps moving")
     quick.phase(blocked_first.n, "Fix first")
     quick.phase(blocked_first.n, "Then")
+    quick.phase(blocked_first.n, "Last")
     quick.place(blocked_first.n, 1, [stuck])
     quick.place(blocked_first.n, 2, [soon])
+    quick.place(blocked_first.n, 3, [later])
     quick.ready(blocked_first.n)
     Plans(auto, actor=USER).approve(blocked_first.n)
     Plans(auto, actor=USER).start(blocked_first.n)
-    assert soon not in [r.n for r in ready(auto)], "while its phase has work to do, the next phase's row waits"
+    assert {soon, later}.isdisjoint(r.n for r in ready(auto)), "while its phase has work to do, the later phases' rows wait"
     auto_todos.block(stuck, "waits on the production rollout")
-    assert soon in [r.n for r in ready(auto)] and quick.load(blocked_first.n).data["current"] == 1, \
-        "once only blocked rows are left in a phase, the next phase's rows are offered, and the phase stays open until its row closes"
+    assert {soon, later} <= {r.n for r in ready(auto)} and quick.load(blocked_first.n).data["current"] == 1, \
+        "once only blocked rows are left in a phase, every later phase's rows are offered, and the phase stays open until its row closes"
 
 
 def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):

@@ -75,10 +75,11 @@ class PlansDetails(FeatureDetails):
             title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",
             brief="""
                 {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock
-                <n>) and work it; make one that waits on a person or a decision a question to them with
-                journal todo ask <n> "<who decides what>"; keep the reason of the rest up to date. Then take
-                the next ready row: a blocked row never ends the turn, and once only blocked rows are left in a
-                phase, the next phase's rows are ready.
+                <n>) and work it; a choice the user delegated to you, or one an earlier answer already settles,
+                is yours to decide now: decide it, say so on its row, and go on; make only a choice nobody has
+                settled a question, with journal todo ask <n> "<who decides what>"; keep the reason of the rest up
+                to date. Then take the next ready row: a blocked row never ends the turn, and once only blocked
+                rows are left in a phase, every later phase's rows whose own waits are done are ready.
             """,
         ),
         Line(
