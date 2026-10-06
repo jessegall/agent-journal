@@ -92,7 +92,7 @@ await runScenarios(
             await place(page, "Environments");
             await page.getByRole("button", {name: "New environment"}).click();
             await sheet(page).getByLabel("Name").fill("shed");
-            await sheet(page).getByRole("button", {name: "Make it"}).click();
+            await sheet(page).getByRole("button", {name: "Create"}).click();
             await page.getByRole("button", {name: /^shed/}).click();
             await sheet(page)
                 .getByRole("button", {name: /^Rename/})

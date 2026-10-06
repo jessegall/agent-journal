@@ -62,7 +62,7 @@ async function tried(work, done) {
 const make = ({title}) =>
     tried(
         () => api.create("environment", {title}),
-        () => `Made ${title}`
+        () => `Created ${title}`
     );
 
 function rename(row, {name}) {
@@ -93,7 +93,7 @@ function removing(row, refusal = "") {
         title: refusal ? `Archive ${row.title} anyway?` : `Archive ${row.title}?`,
         sub: refusal || removeWords({live: live(row), title: row.title}),
         button: refusal || live(row) ? "Archive anyway" : "Yes, archive",
-        keep: "Keep it",
+        keep: "Keep the environment",
         danger: true,
         done: () => remove(row, Boolean(refusal)),
     };
@@ -112,7 +112,7 @@ async function remove(row, forced) {
 const actionsOf = (row) => [
     {
         key: "open",
-        label: here(row) ? "See its agent" : "Switch to it",
+        label: here(row) ? "Open this environment's agent" : "Switch to it",
         sub: "Open it here, or start an agent in it",
         run: () => (opening.value = {root: place.value?.root, name: row.title}),
     },
@@ -152,7 +152,7 @@ const making = () =>
         title: "New environment",
         sub: "It has its own to-dos, agent and history.",
         fields: [{key: "title", label: "Name", required: true}],
-        button: "Make it",
+        button: "Create",
         done: make,
     });
 

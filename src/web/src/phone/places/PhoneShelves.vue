@@ -16,7 +16,7 @@ const shelves = computed(() => [
 </script>
 
 <template>
-    <div class="shelves" role="tablist" aria-label="Shelves">
+    <div class="shelves" role="tablist" aria-label="Collections">
         <template v-for="one in shelves" :key="one.key">
             <button
                 type="button"

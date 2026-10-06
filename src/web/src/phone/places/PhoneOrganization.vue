@@ -48,7 +48,7 @@ const facts = (role) =>
         ["Hands back", (role.outputs || []).join(", ")],
         ["Skills", (role.skills || []).join(", ")],
         ["Tools", (role.tools || []).join(", ")],
-        ["How many", [CARDINALITY[role.cardinality] || role.cardinality, role.model].filter(Boolean).join(" · ")],
+        ["How many at once", [CARDINALITY[role.cardinality] || role.cardinality, role.model].filter(Boolean).join(" · ")],
     ].filter(([, text]) => text);
 const workingRef = (agent) => (agent.plan ? `plan:${agent.plan}` : `ticket:${agent.n}`);
 </script>

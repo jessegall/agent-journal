@@ -80,11 +80,11 @@ async function ask({words}) {
                     <Diff class="file-diff" :text="diff" />
                 </template>
                 <template v-else-if="diff === ''">
-                    <EmptyList icon="check" title="No changes" reason="Nothing in this file changed since the last commit." />
+                    <EmptyList icon="check" title="No changes" reason="Nothing in this file changed since the last commit to git." />
                 </template>
             </template>
             <template v-else-if="file.kind.startsWith('image/')">
-                <EmptyList icon="camera" title="A picture" reason="Pictures open from Attached files when they are attached to an item." />
+                <EmptyList icon="camera" title="This is a picture" reason="Open pictures from Attached files." />
             </template>
             <template v-else>
                 <p class="file-hint">Tap a line to ask the agent about it; tap a second line for a range.</p>

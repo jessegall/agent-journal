@@ -7,7 +7,7 @@ import {phoneTime} from "../../composables/phones.js";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import {toast} from "../kit/toast.js";
-import PhoneAsk from "./PhoneAsk.vue";
+import FormSheet from "../kit/FormSheet.vue";
 
 const emit = defineEmits(["open"]);
 const connection = ref(null);
@@ -45,14 +45,14 @@ onMounted(async () => {
         <Cell label="Share links" sub="Pages you shared with other people" icon="share" @pick="emit('open', 'list:share')" />
     </CellGroup>
     <template v-if="leaving">
-        <PhoneAsk
+        <FormSheet
             title="Sign out of this journal?"
             sub="This phone stops reaching the journal until you pair it again."
             button="Sign out"
             keep="Keep it paired"
             danger
             @close="leaving = false"
-            @done="signOut"
+            @submit="signOut"
         />
     </template>
 </template>

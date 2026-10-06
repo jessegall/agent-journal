@@ -9,7 +9,7 @@ import ListScreen from "../kit/ListScreen.vue";
 import {newestFirst} from "../kit/listed.js";
 import {toast} from "../kit/toast.js";
 import {hold} from "../outbox.js";
-import PhoneAsk from "./PhoneAsk.vue";
+import FormSheet from "../kit/FormSheet.vue";
 import PhonePluginPreview from "./PhonePluginPreview.vue";
 
 defineProps({target: {type: String, default: ""}, back: {type: String, default: ""}});
@@ -55,25 +55,23 @@ function make(wish) {
         <ActionSheet title="Add a plugin" about="Plugins" :actions="ADDING" @close="adding = false" />
     </template>
     <template v-if="asking === 'install'">
-        <PhoneAsk
+        <FormSheet
             title="Install a plugin"
             sub="You see every command it would run before anything runs."
-            label="Where it comes from"
-            placeholder="owner/repo, a GitHub link or a folder"
+            :fields="[{key: 'source', label: 'Where it comes from', placeholder: 'owner/repo, a GitHub link or a folder', required: true, verbatim: true}]"
             button="Check before installing"
             @close="asking = ''"
-            @done="check"
+            @submit="(got) => check(got.source)"
         />
     </template>
     <template v-if="asking === 'make'">
-        <PhoneAsk
+        <FormSheet
             title="Make a plugin"
             sub="The agent builds it and tells you when it is ready."
-            label="What should the plugin do?"
-            placeholder="Describe it in a few lines"
+            :fields="[{key: 'wish', label: 'What should the plugin do?', placeholder: 'Describe it in a few lines', required: true, area: true}]"
             button="Send to the agent"
             @close="asking = ''"
-            @done="make"
+            @submit="(got) => make(got.wish)"
         />
     </template>
     <template v-if="previewed">
