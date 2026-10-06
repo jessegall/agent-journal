@@ -5,7 +5,7 @@ import ActionSheet from "./kit/ActionSheet.vue";
 import FormSheet from "./kit/FormSheet.vue";
 import {toast} from "./kit/toast.js";
 import {kindTitle} from "./kinds.js";
-import {laneQuestion, perform, resultOf, valuesOf} from "./acts.js";
+import {laneQuestion, perform, filled, resultOf} from "./acts.js";
 
 const props = defineProps({row: {type: Object, required: true}});
 const emit = defineEmits(["changed", "gone", "share"]);
@@ -37,7 +37,7 @@ async function again(undo) {
 
 function ask(action, fields, choice = null) {
     const button = action.button || (action.confirm && !fields.length ? action.label : choice ? "Move" : action.label);
-    form.value = {action, fields, choice, button, values: valuesOf(fields, props.row)};
+    form.value = {action, choice, button, fields: filled(fields, props.row)};
 }
 
 async function list(action) {
@@ -55,7 +55,7 @@ function chosen(action, choice) {
     const body = action.name ? {[action.name]: choice.value} : {value: choice.value};
     const question = action.ask ? laneQuestion(choice) : null;
     if (!question) return go(action, body, choice.label);
-    return ask({...action, body: {...(action.body || {}), ...body}}, [{name: question.word, label: question.title, required: question.required}], choice);
+    return ask({...action, body: {...(action.body || {}), ...body}}, [{key: question.word, label: question.title, required: question.required}], choice);
 }
 
 function begin(action) {
@@ -93,12 +93,11 @@ defineExpose({begin});
     <template v-if="form">
         <FormSheet
             :title="form.action.label"
-            :about="`${about()} · ${row.title}`"
+            :sub="`${about()} · ${row.title}`"
             :fields="form.fields"
-            :values="form.values"
             :button="form.button"
             :danger="Boolean(form.action.danger)"
-            @send="sent"
+            @submit="sent"
             @close="form = null"
         />
     </template>

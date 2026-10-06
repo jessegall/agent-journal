@@ -27,7 +27,7 @@ test("an item offers its controller's actions in the design's order, without the
 test("an action the phone does not know yet shows by itself in sentence case, asking for its words and a confirm", () => {
     const [liftOff, countDown] = itemActions(row("launch"));
     expect([liftOff.label, liftOff.confirm, liftOff.fields]).toEqual(["Lift off", true, []]);
-    expect([countDown.label, countDown.word, countDown.fields]).toEqual(["Count down", "count_down", [{name: "from_number", label: "From number", required: true}]]);
+    expect([countDown.label, countDown.word, countDown.fields]).toEqual(["Count down", "count_down", [{key: "from_number", label: "From number", required: true}]]);
 });
 
 test("an item of a type the phone was never told about offers nothing", () => {

@@ -103,8 +103,8 @@ function moved(card, target) {
     if (!question) return shift(card, target);
     asking.value = {
         title: `Move to-do ${card.n} to ${titleOf(target)}`,
-        about: card.title,
-        fields: [{name: question.word, label: question.title, required: question.required}],
+        sub: card.title,
+        fields: [{key: question.word, label: question.title, required: question.required}],
         send: (values) => shift(card, target, values),
     };
     return null;
@@ -235,7 +235,7 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
         <PhoneActs ref="acts" :row="acting" @changed="refresh" @gone="refresh" />
     </template>
     <template v-if="asking">
-        <FormSheet :title="asking.title" :about="asking.about" :fields="asking.fields" button="Move" @send="asking.send" @close="asking = null" />
+        <FormSheet :title="asking.title" :sub="asking.sub" :fields="asking.fields" button="Move" @submit="asking.send" @close="asking = null" />
     </template>
 </template>
 

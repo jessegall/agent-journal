@@ -136,8 +136,8 @@ const CLOSES = {
 };
 const LINK_HINT = "For example: to-do 12 or doc 4";
 
-const text = (name, label, more = {}) => ({name, label, required: true, ...more});
-const optional = (name, label, more = {}) => ({name, label, required: false, ...more});
+const text = (key, label, more = {}) => ({key, label, required: true, ...more});
+const optional = (key, label, more = {}) => ({key, label, required: false, ...more});
 const closed = (row) => Boolean(row.completed);
 const standing = (row) => !row.completed;
 const named = (row) => `${kindWord(row.type)} ${row.n}`;
@@ -416,7 +416,7 @@ const methodOf = (type, word) => Object.entries(meta(type).command_names).find((
 function guessed(parameters) {
     return {
         confirm: true,
-        fields: Object.entries(parameters).map(([name, required]) => ({name, label: sentenceOf(name), required})),
+        fields: Object.entries(parameters).map(([key, required]) => ({key, label: sentenceOf(key), required})),
     };
 }
 
@@ -451,7 +451,7 @@ function rankOf(action, row) {
     return ORDER.includes(method) ? ORDER.indexOf(method) : 500;
 }
 
-export const valuesOf = (fields, row) => Object.fromEntries(fields.map((field) => [field.name, field.value ? field.value(row) || "" : ""]));
+export const filled = (fields, row) => fields.map((field) => ({...field, value: field.value ? field.value(row) || "" : ""}));
 
 export async function perform(row, action, body = {}) {
     if (action.run) return action.run(row, body.value);
