@@ -192,3 +192,24 @@ def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     (tmp_path / "migrations.json").write_text("not json")
     with pytest.raises(Refused):
         applied(tmp_path)
+
+
+def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back(tmp_path, monkeypatch):
+    import json
+    from commands.launch import launch
+    from providers import DRIVERS
+    from features.clean_slate.slate import moved
+    from tests.conftest import refused
+    monkeypatch.setattr(viewer, "free", lambda port: False)
+    assert "no viewer port is free" in refused(lambda: viewer.available(fresh().root)), "a plain line, not a traceback"
+    record = fresh()
+    project = record.root.parent
+    (project / ".claude").mkdir()
+    hooks = project / ".claude" / "settings.local.json"
+    hooks.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
+    before = hooks.read_text()
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.chdir(project)
+    monkeypatch.setattr(DRIVERS["claude"], "binary", classmethod(lambda cls, path: "claude"))
+    assert "no viewer port is free" in refused(lambda: launch(record, "claude", ["--no-interaction"]))
+    assert moved(record) == [] and hooks.read_text() == before, "nothing stays set aside"

@@ -19,6 +19,8 @@ from pathlib import Path
 
 RELOAD, STOP, RELAUNCH, HEAL = 75, 76, 77, 78
 QUICK = 30.0
+UNHEALED_LIMIT = 5
+UNHEALED_BACKOFF = 2.0
 GRACE, STEP = 3.0, 0.05
 EXITING = 8.0
 CLEAR_LINE = b"\x05\x15"
@@ -124,6 +126,8 @@ class Supervisor:
         self.command, self.args, self.launch, self.exit = spec.start.command, spec.args, spec.start.launch, spec.start.exit
         self.worker = None
         self.worker_began = 0.0
+        self.unhealed = 0
+        self.worker_due = 0.0
         self.alive, self.lifeline = os.pipe()
         os.set_inheritable(self.alive, True)
         self.folder = self.root / "runtime" / "sessions" / self.session
@@ -296,8 +300,17 @@ class Supervisor:
         elif code == HEAL or (code != RELOAD and time.time() - self.worker_began < QUICK):
             line = self.delegate(self.heal_command)
             if line:
+                self.unhealed = 0
                 os.write(self.stdout, f"\r\n{line}\r\n".encode())
-        self.start_worker()
+            else:
+                self.unhealed += 1
+            if self.unhealed >= UNHEALED_LIMIT:
+                os.write(self.stdout, b"\r\njournal: this build keeps failing to start and there is no earlier build to go back to, so the session is ending\r\n")
+                return self.stop_agent()
+        else:
+            self.unhealed = 0
+        self.worker = None
+        self.worker_due = time.time() + (UNHEALED_BACKOFF * 2 ** (self.unhealed - 1) if self.unhealed else 0)
         return None
 
     def run(self) -> int:
@@ -318,6 +331,8 @@ class Supervisor:
                 code = self.worker_ended()
                 if status is None and code is not None:
                     status = self.after_worker(code)
+                if status is None and self.worker is None and time.time() >= self.worker_due:
+                    self.start_worker()
         finally:
             self.stop_worker()
             if status is None:

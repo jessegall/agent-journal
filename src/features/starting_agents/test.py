@@ -55,6 +55,27 @@ def test_the_agents_command_is_found_where_it_installs_itself_or_refused_in_word
     assert claude.binary(str(tmp_path / "empty")) == str(found), "a claude off the PATH, where Claude Code installs itself, is found"
 
 
+def test_an_agent_that_is_not_installed_is_refused_before_anything_is_changed(tmp_path, monkeypatch):
+    import json
+    from commands.launch import launch
+    from features.clean_slate.slate import moved
+    from tests.conftest import refused
+    record = fresh()
+    project = record.root.parent
+    (project / ".codex").mkdir()
+    hooks = project / ".codex" / "hooks.json"
+    hooks.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
+    before = hooks.read_text()
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("PATH", str(tmp_path / "empty"))
+    monkeypatch.chdir(project)
+    viewers = []
+    monkeypatch.setattr("engine.viewer.start", lambda root, cwd: viewers.append(root) or "")
+    for given in (["--no-interaction"], None):
+        assert "install" in refused(lambda: launch(record, "codex", given)), "the missing agent is refused in words"
+    assert viewers == [] and moved(record) == [] and hooks.read_text() == before, "no viewer started and no hook set aside"
+
+
 def test_the_start_offers_to_carry_on_the_environments_last_session():
     from tests.kit import asked_resume
     from engine.sessions import Sessions
