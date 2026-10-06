@@ -5,6 +5,7 @@ from dataclasses import dataclass
 GLOBAL_OPTIONS = frozenset({"--root", "--env", "--default-env", "--as", "--session", "--agent", "--cwd", "--plugin"})
 SEPARATORS = frozenset(";&|()\n")
 PUNCTUATION = "".join(SEPARATORS) + "<>"
+SEPARATED = re.compile("[" + re.escape("".join(SEPARATORS)) + "]+")
 NAMED = re.compile(r"(?:^|(?<=[\s/;&|()'\"`=]))journal(?:\.py)?(?=\s)")
 ENDS = re.compile(r"[;&|()\n\"'`]")
 
@@ -76,6 +77,13 @@ def tokens(text: str) -> list[str]:
 
 
 def pieces(shell: str) -> list[tuple[str, ...]]:
+    try:
+        return lexed(shell)
+    except ValueError:
+        return [tuple(part.split()) for part in SEPARATED.split(shell) if part.split()]
+
+
+def lexed(shell: str) -> list[tuple[str, ...]]:
     lexer = shlex.shlex(shell, posix=True, punctuation_chars=PUNCTUATION)
     lexer.whitespace = " \t\r"
     lexer.commenters = ""

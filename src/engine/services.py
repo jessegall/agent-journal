@@ -121,7 +121,7 @@ def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     for port in PORTS:
         if port not in taken and free(port) and reserve(port, f"{root}:{sid}"):
             return port, ""
-    return 0, f"no port free from {PORTS.start} through {PORTS.stop - 1}"
+    return 0, f"no port free from {PORTS[0]} through {PORTS[-1]}"
 
 
 def claimed(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:

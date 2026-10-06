@@ -32,7 +32,7 @@ async function release() {
     <div class="domain">
         <span class="domain-name">{{ domain }}</span>
         <template v-if="own">
-            <span class="domain-own">This journal's address</span>
+            <span class="domain-own">In use</span>
         </template>
         <template v-if="asking && own">
             <span class="domain-ask">

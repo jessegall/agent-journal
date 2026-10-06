@@ -27,7 +27,7 @@ class MessagesDetails(FeatureDetails):
         you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have not answered is mentioned again once it has waited ten tool uses, or
         once you are idle, a few times, without holding your writes.
         A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it.
-        A row you file from a message is linked to it only by journal message process: nothing is linked by guessing.
+        A row you file from a message is linked to it by journal message process, or by naming it in your reply while it is new.
     """
 
     aliases = (("inbox", "unread"), ("handled", "closing"), ("status", "answering"))
