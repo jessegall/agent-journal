@@ -13,6 +13,7 @@ const props = defineProps({
     unavailable: {type: Object, default: () => ({})},
     readonly: Boolean,
     label: {type: String, default: "Words to watch for"},
+    scopeLabel: {type: String, default: "Trigger when"},
     help: {type: String, default: "Whole words or phrases. Upper or lower case doesn't matter. Press Enter after each one."},
     yes: {type: String, default: "The trigger would act."},
     no: {type: String, default: "The trigger would not act."},
@@ -40,7 +41,7 @@ const choices = computed(() =>
             />
         </FormField>
         <WordTest :words="words" :yes="yes" :no="no" @text="tried = $event" />
-        <FormField label="Watch for the words in">
+        <FormField :label="scopeLabel">
             <ChoiceList stacked :choices="choices" :disabled="readonly" @pick="emit('where', $event)" />
             <slot />
         </FormField>

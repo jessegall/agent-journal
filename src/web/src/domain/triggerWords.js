@@ -6,28 +6,28 @@ const START = "start";
 const TRIGGERED = /^trigger:(\d+)$/;
 
 export const WHERE = [
-    {value: USER, label: "Your messages only", hint: "Only what you write to the agent."},
-    {value: "text", label: "Chat messages and files", hint: "Your messages, the agent's chat messages and the files it writes."},
-    {value: "commands", label: "Commands the agent runs", hint: "Only commands in the agent's terminal."},
+    {value: USER, label: "You write one of the words", hint: "Only in your own messages to the agent."},
+    {value: "text", label: "A word is written", hint: "In your messages, the agent's chat messages or a file the agent writes."},
+    {value: "commands", label: "The agent runs a command with a word in it", hint: "Only commands in the agent's terminal."},
     {
         value: "both",
-        label: "Chat messages, files and commands",
-        hint: "Your messages, the agent's chat messages, the files it writes and the commands it runs.",
+        label: "A word is written or run",
+        hint: "In your messages, the agent's chat messages, the files it writes or the commands it runs.",
     },
     {
         value: "everything",
-        label: "All watched activity",
+        label: "A word comes up anywhere",
         hint: "All of that, plus files the agent opens, what it searches for and web addresses it visits.",
     },
 ];
 
 export const KEYWORD_WHERE = [
-    {value: "text", label: "Chat messages and files", hint: "The agent's chat messages and the files it writes."},
-    {value: "commands", label: "Commands the agent runs", hint: "Only commands in the agent's terminal."},
-    {value: "both", label: "Chat messages, files and commands", hint: "The agent's chat messages, the files it writes and the commands it runs."},
+    {value: "text", label: "The agent writes one of the words", hint: "In a chat message or a file."},
+    {value: "commands", label: "The agent runs a command with a word in it", hint: "Only commands in the agent's terminal."},
+    {value: "both", label: "The agent writes or runs one of the words", hint: "In a chat message, a file or a command."},
     {
         value: "everything",
-        label: "All watched activity",
+        label: "One of the words comes up anywhere",
         hint: "All of that, plus files the agent opens, what it searches for and web addresses it visits.",
     },
 ];
