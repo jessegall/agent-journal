@@ -27,6 +27,8 @@ const CAN = [
 ];
 
 const ASK_EVERY = 1500;
+const OPEN_WAIT = 10000;
+const NOT_OPENED = "The secure connection did not open. Check that tunler is running, then make a new code.";
 const days = ref("7");
 const made = ref(null);
 const busy = ref(false);
@@ -36,6 +38,14 @@ const ready = computed(() => tunnelStatus.value && !tunnelStatus.value.problems.
 const active = computed(() => connectedPhones.value[0] || null);
 const reachable = ref(false);
 const connected = computed(() => made.value && reachable.value);
+const stalled = ref(false);
+
+watch([made, reachable], ([code, up], _, onCleanup) => {
+    stalled.value = false;
+    if (!code || up) return;
+    const timer = setTimeout(() => (stalled.value = true), OPEN_WAIT);
+    onCleanup(() => clearTimeout(timer));
+});
 
 usePoll(
     "phone-tunnel",
@@ -75,7 +85,10 @@ function pick(key) {
 }
 
 const opened = ref(false);
-watch(active, () => (made.value = null));
+watch(active, () => {
+    made.value = null;
+    opened.value = false;
+});
 watch(
     [ready, active],
     () => {
@@ -108,7 +121,10 @@ onMounted(checkTunnel);
                     </template>
                     <template v-else>
                         <div class="phone-code-empty">
-                            <template v-if="made || busy">
+                            <template v-if="stalled">
+                                <p class="phone-stalled">{{ NOT_OPENED }}</p>
+                            </template>
+                            <template v-else-if="made || busy">
                                 <Spinner />
                                 {{ made ? "Opening a secure connection" : "Making a code" }}
                             </template>

@@ -39,7 +39,10 @@ const emit = defineEmits(["ready"]);
                 <template v-for="problem in status.problems" :key="problem">
                     <p>{{ problem }}</p>
                 </template>
-                <Btn small @click="openSettings">Open the sharing settings</Btn>
+                <span class="tunnel-actions">
+                    <Btn small @click="checkTunnel">Check again</Btn>
+                    <Btn small @click="openSettings">Open the sharing settings</Btn>
+                </span>
             </div>
         </template>
     </div>
@@ -60,6 +63,11 @@ const emit = defineEmits(["ready"]);
 .tunnel-problem .ico {
     flex: none;
     margin-top: 2px;
+}
+
+.tunnel-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .tunnel-connect {
