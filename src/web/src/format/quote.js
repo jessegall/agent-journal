@@ -1,3 +1,5 @@
+import {plainText} from "../text/words.js";
+
 export function quoted(text) {
     const lines = String(text ?? "").split("\n");
     const quote = [];
@@ -7,4 +9,12 @@ export function quoted(text) {
 
 export function withQuote(quote, text) {
     return quote ? `> ${quote.replace(/\n/g, "\n> ")}\n\n${text}` : text;
+}
+
+export function replyQuote(text) {
+    return plainText(quoted(text).text)
+        .split("\n")
+        .filter((line) => !line.startsWith(">"))
+        .join(" ")
+        .slice(0, 200);
 }
