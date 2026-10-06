@@ -44,7 +44,7 @@ UNBOUND = ("unexpected keyword argument", "missing a required argument", "positi
 BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "page", "origin", "journal", "pluginUrl", "markdownUrl", "fileUrl",
          "extensionZip", "stream", "layoutFrom"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
-        "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "upgradePlugin", "previewPlugin",
+        "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",
         "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
@@ -60,7 +60,8 @@ CALLS = {
     "upgradePlugin": [1, False], "planTimeline": [1], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
     "board": [{}], "shift": [1, "Doing", {"why": "walked"}], "cancelWork": [1], "reviseWork": [1, "change one card", WALK],
     "followUpWork": [1, "and one more", WALK], "requestWork": [1, "a new card", WALK], "handWork": [1, "doc:1", "from this doc", WALK],
-    "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "moveTicket": [1, "Doing"], "stopTicket": [1], "confirmTicket": [1],
+    "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "noteSuggestionWindow": [1], "answerSuggestion": [1, "No, don't do this"],
+    "reopenSuggestion": [1], "installSuggested": [1], "moveTicket": [1, "Doing"], "stopTicket": [1], "confirmTicket": [1],
     "updateTicket": [1, {"title": "renamed"}], "deleteTicket": [1, "not needed"], "acceptDependencies": [1], "declineDependencies": [1],
     "buildBoard": [1, "a board", "steer it"], "startBoard": [1], "retryBoard": [1], "archiveBoard": [1], "restoreBoard": [1],
     "addedToBoard": [1, [1]], "markStage": [1, "Done", "done"], "stopShare": [1], "approveShare": [1], "tunnelStatus": [], "tunnelRecheck": [],

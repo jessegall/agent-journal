@@ -192,7 +192,7 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     from features.plugins import staging
     assert staging.address("owner/repo") == "https://github.com/owner/repo", "an owner and a repository name is a repository on GitHub"
     assert "neither a repository URL" in refused(lambda: staging.address("no such place")), "a source that is no repository and no folder is refused"
-    assert "could not be fetched" in refused(lambda: plugins.action("install")((tmp_path / "missing").as_uri(), yes=True)), "a repository that cannot be fetched is refused and leaves nothing behind"
+    assert "Could not reach" in refused(lambda: plugins.action("install")((tmp_path / "missing").as_uri(), yes=True)), "a repository that cannot be fetched is refused and leaves nothing behind"
     badly = repository(tmp_path, {"name": "X Y"}, name="badly")
     assert "name must be" in refused(lambda: plugins.action("install")(badly, yes=True)), "a repository whose manifest is wrong is refused"
     assert list(home(fine.root).glob(".staging-*")) == [], "and the copy fetched for it is taken away"
@@ -793,7 +793,6 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     (declaring / MANIFEST).write_text(json.dumps({**WORKS, "name": "declaring", "fits": {"languages": ["PHP"], "files": ["*.csproj"]}}))
     assert read(declaring).fits.found({"PHP"}, ["a/App.csproj", "b.txt"]) == ["PHP", "App.csproj"], "a declared fit names the languages and the files it matched"
     from engine.events.agents import SessionStarted
-    from features.message_buttons.pressing import press
     from features.parts import AgentContext
     from features.suggestions.controller import Suggestions
     from controllers.types import Todos
@@ -829,21 +828,25 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert "written" not in suggested["Install the Snake plugin"].brief and "Python" in suggested["Install the Snake plugin"].brief, "the suggestion says which part of the project fits"
     snake = suggested["Install the Snake plugin"]
     assert "in its own words" in snake.brief and "setup" in snake.brief, f"the suggestion quotes the plugin and lists the commands it runs: {snake.brief}"
-    pinned = snake.data["buttons"][0]["body"]["ref"]
-    assert len(pinned) == 40, "the button names the commit the suggestion was read from"
+    pinned = snake.data["commit"]
+    assert (len(pinned), snake.data["name"], [o["title"] for o in snake.data["options"]]) == (40, "Snake", ["Yes, I want this", "Change it first", "No, don't do this"]), \
+        "a plugin suggestion names the commit it was read from, the plugin and the three answers"
     git("commit", "-q", "--allow-empty", "-m", "later", cwd=tmp_path / "snake")
-    press(repo.record, snake, fitting.YES, "user", "viewer")
+    Suggestions(repo.record, actor=USER).install(snake.n)
     assert [(r.source, r.commit) for r in Plugins(repo.record, actor="system").rows.every()] == [(snake.data["plugin"], pinned)], \
-        "pressing the button installs exactly the commit the suggestion showed, right away"
-    assert (Todos(repo.record, actor="system").rows.every(), Suggestions(repo.record, actor="system").load(snake.n).decision) == ([], "install"), \
-        "and no to-do stands between the press and the install"
+        "yes installs exactly the commit the suggestion showed, right away"
+    installed = Suggestions(repo.record, actor="system").load(snake.n)
+    assert (Todos(repo.record, actor="system").rows.every(), installed.decision, installed.data["installed"]) == \
+        ([], "install", Plugins(repo.record, actor="system").rows.every()[0].ref), "and no to-do stands between the yes and the install, which the suggestion links"
     marks = [c for c in Agents(repo.record, actor="system").primary().data["cards"] if c.get("side") == "user"]
-    assert [m["label"] for m in marks] == ["You installed the snake plugin"], "the chat holds a mark, on the user's side, that it was installed"
+    assert [(m["key"], m["label"], m["name"], m["state"]) for m in marks] == [(f"install:{snake.n}:1", "Installed", "snake", "done")], \
+        f"the chat holds one install mark, on the user's side, that went from installing to installed: {marks}"
     broken = suggested["Install the Broken plugin"]
-    why = refused(lambda: press(repo.record, broken, fitting.YES, "user", "viewer"))
+    why = refused(lambda: Suggestions(repo.record, actor=USER).install(broken.n))
     card = Agents(repo.record, actor="system").primary().data["cards"][-1]
-    assert "boom" in why and "no disk left" in card["detail"] and card["label"].startswith("Could not install"), \
-        f"a failed install shows in the chat with its reason: {why} / {card}"
+    held = Suggestions(repo.record, actor="system").load(broken.n)
+    assert ("boom" in why, "no disk left" in card["detail"], card["label"], card["name"], held.completed, held.data["install"]["state"]) == \
+        (True, True, "Install failed for", "Broken", 0.0, "failed"), f"a failed install shows in the chat with its reason, and the suggestion stays open: {why} / {card}"
     assert [r.source for r in Plugins(repo.record, actor="system").rows.every()] == [snake.data["plugin"]], "and nothing is left half installed"
     release = threading.Event()
     monkeypatch.setattr(fitting, "official", lambda root: release.wait(30) and [])

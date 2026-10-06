@@ -2,11 +2,15 @@ import {nextTick, onMounted, onUnmounted} from "vue";
 
 let pressed = null;
 
-document.addEventListener("pointerdown", (event) => (pressed = event.target.closest?.("button, a[href], [tabindex]") || null), {capture: true, passive: true});
+document.addEventListener("pointerdown", (event) => (pressed = event.target.closest?.("button, a[href], [tabindex]") || null), {
+    capture: true,
+    passive: true,
+});
 
-const FOCUSABLE = "button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])";
+const FOCUSABLE =
+    "button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])";
 
-export function useTrap(box, close) {
+export function useTrap(box, close, start = box) {
     let opener = null;
 
     function kept(event) {
@@ -27,7 +31,7 @@ export function useTrap(box, close) {
     onMounted(() => {
         opener = document.activeElement && document.activeElement !== document.body ? document.activeElement : pressed;
         document.addEventListener("keydown", kept);
-        nextTick(() => box.value?.focus({preventScroll: true}));
+        nextTick(() => start.value?.focus({preventScroll: true}));
     });
 
     onUnmounted(() => {

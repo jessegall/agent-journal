@@ -1,14 +1,20 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {CONTROLS, useDrag} from "./drag.js";
-import {useTrap} from "./trap.js";
+import {useTrap} from "../composables/trap.js";
 
 const CLOSE_AT = 0.33;
 const FLICK = 0.5;
 const GROW_AT = 60;
 const DAMPED = 0.2;
 const OUT = 250;
-const props = defineProps({label: {type: String, required: true}, bodyDrag: {type: Boolean, default: true}, tall: {type: Boolean, default: false}});
+const NUDGE_MS = 400;
+const props = defineProps({
+    label: {type: String, required: true},
+    bodyDrag: {type: Boolean, default: true},
+    tall: {type: Boolean, default: false},
+    held: Boolean,
+});
 const emit = defineEmits(["close"]);
 const sheet = ref(null);
 const body = ref(null);
@@ -17,6 +23,7 @@ const dragging = ref(false);
 const leaving = ref(false);
 const large = ref(false);
 const room = ref(null);
+const nudged = ref(false);
 
 function fitted() {
     const view = window.visualViewport;
@@ -46,6 +53,12 @@ function close() {
 }
 
 useTrap(sheet, close);
+
+function tapped() {
+    if (!props.held) return close();
+    nudged.value = true;
+    setTimeout(() => (nudged.value = false), NUDGE_MS);
+}
 
 useDrag(sheet, {
     axis: "y",
@@ -79,10 +92,10 @@ defineExpose({close});
 
 <template>
     <div :class="['sheet-root', {lifted: room}]" :style="room || undefined">
-        <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="close" />
+        <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="tapped" />
         <div
             ref="sheet"
-            :class="['sheet', {large: large || tall, dragging, leaving}]"
+            :class="['sheet', {large: large || tall, dragging, leaving, nudged}]"
             role="dialog"
             aria-modal="true"
             :aria-label="label"
@@ -132,6 +145,23 @@ defineExpose({close});
     transform: translateY(var(--pulled));
     transition: transform 300ms var(--push);
     animation: sheet-in var(--sheet-in) var(--push);
+}
+
+.sheet.nudged {
+    animation: sheet-nudge 0.28s ease;
+}
+
+@keyframes sheet-nudge {
+    40% {
+        transform: translateY(-8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sheet.nudged {
+        animation: none;
+        outline: 2px solid var(--accent);
+    }
 }
 
 .sheet-root.lifted .sheet {

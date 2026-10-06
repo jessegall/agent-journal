@@ -35,6 +35,17 @@ async function answered(page, n, outcome, within = 10000) {
     }
 }
 
+async function decided(page, n, decision, within = 10000) {
+    const began = Date.now();
+    for (;;) {
+        const row = (await answeredRows(page, "suggestion")).find((found) => found.n === n);
+        if (row && Boolean(row.completed) === Boolean(decision) && (row.data.decision || "") === decision) return;
+        if (Date.now() - began > within)
+            throw new Error(`suggestion ${n} was not saved as ${JSON.stringify(decision)}: ${JSON.stringify(row)}`);
+        await page.waitForTimeout(300);
+    }
+}
+
 async function type(page, words) {
     await compose(page).fill(words);
     await sendButton(page).click();
@@ -45,6 +56,7 @@ async function home(page, url) {
     await compose(page).waitFor();
 }
 
+const suggest = (title) => numberOf(journal("suggestion", "suggest", title, "--brief", "Every search reads the whole tree again."));
 const ask = (title) => numberOf(journal("question", "ask", title, "--abstract", "pick one", "--set", OPTIONS, "--set", "pick=1"));
 
 await runScenarios(process.argv[2], {
@@ -57,7 +69,8 @@ await runScenarios(process.argv[2], {
         if ((await page.getByText(marker).count()) !== 1) throw new Error("the sent message shows more than once");
         await page.reload();
         await page.getByText(marker).first().waitFor();
-        if ((await page.getByText(marker).count()) !== 1 || (await stored(page, marker)) !== 1) throw new Error("the message was doubled by a reload");
+        if ((await page.getByText(marker).count()) !== 1 || (await stored(page, marker)) !== 1)
+            throw new Error("the message was doubled by a reload");
     },
     async "typing the first words brings the chat to the newest message"(page, url) {
         await home(page, url);
@@ -120,11 +133,31 @@ await runScenarios(process.argv[2], {
         ask(title);
         await home(page, url);
         await page.getByText(title).first().waitFor();
-        await page.route(QUESTION_WRITES, (route) => (route.request().method() === "POST" ? route.fulfill({status: 500, contentType: "application/json", body: JSON.stringify({error: "down"})}) : route.fallback()));
+        await page.route(QUESTION_WRITES, (route) =>
+            route.request().method() === "POST"
+                ? route.fulfill({status: 500, contentType: "application/json", body: JSON.stringify({error: "down"})})
+                : route.fallback()
+        );
         await page.getByText("Blue", {exact: true}).last().click();
         await page.getByText(/Couldn't save “Blue”/).waitFor();
         await page.unroute(QUESTION_WRITES);
         await page.getByRole("button", {name: "Try again"}).click();
         await page.getByText(/Couldn't save/).waitFor({state: "detached"});
+    },
+    async "a suggestion shows in the chat as a card, its no can be undone, and its yes adds a to-do"(page, url) {
+        const title = `Keep the list ${Date.now()}`;
+        const n = suggest(title);
+        await home(page, url);
+        const card = page.locator(`.thread-turn [data-card="${n}"]`).first();
+        await card.getByText(title).waitFor();
+        await card.getByRole("button", {name: "No, don't do this"}).click();
+        await decided(page, n, "decline");
+        await card.getByText("You said no.").waitFor();
+        await page.getByText(`You said no to suggestion ${n}`).first().waitFor();
+        await page.getByRole("button", {name: "Undo"}).click();
+        await decided(page, n, "");
+        await card.getByRole("button", {name: "Yes, I want this"}).click();
+        await decided(page, n, "accept");
+        await card.getByText(/You said yes\.\s+Added to-do/).waitFor();
     },
 });

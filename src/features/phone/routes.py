@@ -52,6 +52,13 @@ class Chosen(Loaded):
 
 
 @dataclass(frozen=True)
+class Deciding(Loaded):
+    n: int = 0
+    act: str = ""
+    how: str = ""
+
+
+@dataclass(frozen=True)
 class Reacting(Loaded):
     n: int = 0
     face: str = ""
@@ -301,6 +308,7 @@ class PhoneRoutes:
                 "message": lambda: made(surface.say(MessageBody.from_json(body))),
                 "answer": lambda: made(surface.answer(Chosen.from_json(body))),
                 "dismiss": lambda: made(surface.dismiss(Chosen.from_json(body).n)),
+                "suggestion": lambda: made(surface.suggestion(Deciding.from_json(body))),
                 "react": lambda: made(surface.react(Reacting.from_json(body))),
                 "approve": lambda: made(surface.approve(Approval.from_json(body))),
                 "continue": lambda: made(surface.continue_plan(Approval.from_json(body))),

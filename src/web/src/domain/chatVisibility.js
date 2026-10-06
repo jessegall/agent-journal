@@ -46,7 +46,7 @@ const KINDS = {
     made: () => "made",
     receipt: () => "filed",
     whisper: (t) => RECALLED[(t.data.row || "").split(":")[0]] || "rules",
-    card: (t) => (t.data.visitor ? "visitors" : t.data.name ? "plugins" : MARKED[t.data.icon] || "notes"),
+    card: (t) => (t.data.visitor ? "visitors" : t.data.name && t.data.side !== "user" ? "plugins" : MARKED[t.data.icon] || "notes"),
 };
 
 export const kindOf = (turn) => (KINDS[turn.type] ? KINDS[turn.type](turn) : "");

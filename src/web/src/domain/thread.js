@@ -145,6 +145,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...rows.comment.filter((c) => !c.deleted && hasParent(c) && !c.data.visitor).map((c) => ({...c, who: c.seen[0]})),
         ...visitorComments(rows.comment),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
+        ...(rows.suggestion || []).filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
