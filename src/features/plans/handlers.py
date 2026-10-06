@@ -106,7 +106,9 @@ class ReopenPlansWithTheirRows(Handler):
         plans = Plans(context.record, actor=SYSTEM)
         for plan in plans.rows.every():
             found = plan.phase_of(event.type, event.n)
-            if not found or plan.status == ABANDONED or (plan.status in RUNNING and plan.current <= found):
+            if not found or plan.status == ABANDONED:
+                continue
+            if not (plan.completed or (plan.status in RUNNING and plan.current > found)):
                 continue
             plan = plans.reopen(plan.n, why=f"{event.type} {event.n} of phase {found} was reopened") if plan.completed else plans.load(plan.n)
             plan.status, plan.current = ACTIVE, found
