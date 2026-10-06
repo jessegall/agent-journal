@@ -402,8 +402,8 @@ def fetch(into: Path, repository: str | None = None, ref: str = "") -> tuple[str
     wanted = repository_of(repository)
     secret = token() if wanted.startswith("https://github.com/") else ""
     source = with_token(wanted, secret)
-    into.mkdir(parents=True, exist_ok=True)
     try:
+        into.mkdir(parents=True, exist_ok=True)
         for step in (["init", "-q"], ["fetch", "-q", "--depth", "1", source, ref or "HEAD"], ["checkout", "-q", "FETCH_HEAD"]):
             done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120, env=without_prompt())
             if done.returncode:

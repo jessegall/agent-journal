@@ -3,12 +3,17 @@ from typing import TypedDict
 
 from features.plugins.declared import Manifest, command_text
 
+RUNS_AS = "It runs as you, with your files and your network. These are its commands:"
+
 
 @dataclass(frozen=True)
 class PreviewRow:
     kind: str
     label: str
     command: str
+
+    def line(self) -> str:
+        return f"{self.kind} {self.label}: {self.command}"
 
 
 def preview_rows(manifest: Manifest) -> list[PreviewRow]:
@@ -38,6 +43,6 @@ def previewed(manifest: Manifest, source: str, commit: str) -> Previewed:
 
 def preview(manifest: Manifest, source: str, commit: str) -> str:
     lines = [f"{manifest.heading} {manifest.version}".strip(), f"from {source}" + (f" at {commit[:12]}" if commit else ""), manifest.description, "",
-             "It runs as you, with your files and your network. These are its commands:"]
-    lines += [f"  {row.kind} {row.label}: {row.command}" for row in preview_rows(manifest)]
+             RUNS_AS]
+    lines += [f"  {row.line()}" for row in preview_rows(manifest)]
     return "\n".join(lines)
