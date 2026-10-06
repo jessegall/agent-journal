@@ -61,6 +61,16 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     del driver.last_report
     driver.printed.write_bytes(f"{screen}\r\n\x1b[2m> Ask Codex to do anything\x1b[0m".encode())
     assert driver.asked() is None, "once the prompt is gone, nothing is asked"
+    driver.QUIET = 0.0
+    assert driver.at_prompt() is True, "an agent whose screen ends at its empty prompt is at the prompt"
+    driver.printed.write_bytes(b"esc to interrupt\r\n\x1b[2m> Ask Codex to do anything\x1b[0m\r\nesc to interrupt")
+    assert driver.at_prompt() is False, "and one still busy under it is not"
+    assert launch_args(fresh(), "nobody-we-know", ["--x"]) == ["--x"], "arguments for an agent the journal does not know are left as they are"
+    from pathlib import Path
+    assert (codex.command([], Path.cwd())[:2], codex.command([codex.TRUSTS_HOOKS])[0:2]) == (["codex", codex.TRUSTS_HOOKS], ["codex", codex.TRUSTS_HOOKS]), \
+        "Codex is started trusting the journal's hooks, once, and the folder it is started in"
+    assert any("trust_level" in word for word in codex.command([], Path.cwd())), "and trusting the folder it starts in"
+    assert codex.resumed(["--model", "x"], "") == ["--model", "x"], "with no conversation to carry on, the arguments are as they were"
     from runner.engine import Engine
     from tests.kit import report
     record = driver.record
@@ -138,3 +148,33 @@ def test_auto_mode_launches_each_agent_in_its_own_approval_mode():
     assert launch_args(record, "codex", ["--ask-for-approval", "never"]) == ["--ask-for-approval", "never"], \
         "an explicit Codex approval choice wins"
 
+
+def test_an_agents_controls_are_pressed_from_the_viewer_only_for_a_session_that_is_online(monkeypatch):
+    import time
+    import features
+    from commands.http import dispatch
+    from controllers.types import Agents, Notices
+    from engine import runtime
+    from engine.stored import write_json
+    from resources.base import SYSTEM
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    seat = runtime.session_file(record.root, "claude-7", "seat.json")
+    write_json(seat, {"at": time.time(), "agent": "claude", "env": record.env, "report": {"title": "claude-7", "provider": "claude", "model": "opus"}, "reported": {"title": "claude-7", "provider": "claude", "model": "opus"}})
+    from engine.sessions import Sessions
+    Sessions(record.root).bind("claude-7", record.env, provider="claude")
+    Agents(record, actor=SYSTEM).create("claude-7", provider="claude", status="idle")
+    post = lambda action, body=None, session="claude-7", env=None: dispatch("POST", f"/api/{env or record.env}/agent/{session}/{action}", record.root, {}, body or {})
+    for action in ("force", "pause", "resume"):
+        assert post(action).code == 200, f"{action} queues for a live session"
+    assert post("permit", {"allow": True}).code == 200 and post("permit", {"allow": False}).code == 200, "a permission is allowed or denied from the viewer"
+    assert post("shell", {"command": "  "}).code == 400, "an empty shell line is refused"
+    assert post("shell", {"command": "ls", "now": True}).code == 200, "a shell line can be run at once"
+    assert post("pause", session="claude-404").code == 400, "a session that is not online is refused"
+    assert post("pause", env="elsewhere").code == 400, "a session of another environment is refused"
+    assert (post("control", {"action": "model", "value": "opus"}).body["label"], post("control", {"action": "effort", "value": "high"}).body["label"]) == ("Opus", "High"), "a model or an effort chosen in the viewer is queued for the agent"
+    assert "does not support" in post("control", {"action": "effort", "value": "bogus"}).body["error"], "a choice the agent does not offer is refused"
+    controls = dispatch("GET", "/api/agent-controls/claude", record.root, {"model": "opus", "effort": "high"}, {})
+    assert controls.code == 200 and controls.body["provider"] == "claude", "the controls offered are the provider's"
+    assert dispatch("GET", "/api/agent-controls/nobody", record.root, {}, {}).body["groups"] == [], "an agent with no controls offers none"

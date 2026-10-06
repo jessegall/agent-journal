@@ -68,3 +68,33 @@ def test_dismissing_a_fact_from_the_rail_is_not_told_to_the_agent_but_editing_it
     user.update(n, brief="it re-execs on a .py change")
     engine.deliver()
     assert told == [["brief"]], f"a real edit by the user still reaches the agent: {told}"
+
+
+def test_upgrades_turn_old_pin_folders_into_facts_and_repoint_what_named_them(tmp_path):
+    from migrations.m0007_pins_become_facts import run
+
+    home = tmp_path / "environments" / "main"
+    (home / "pin" / "sub").mkdir(parents=True)
+    (home / "pin" / "001.md").write_text('{"type": "pin", "refs": ["pin:2"]}')
+    (home / "fact").mkdir()
+    (home / "fact" / "001.md").write_text("already a fact")
+    (home / "pin" / "002.md").write_text("second")
+    (home / "pin" / "001b.md").write_text("only in the old folder")
+    (home / "events.jsonl").write_text('{"type": "pin"}\n')
+    (home / "runtime").mkdir()
+    (home / "runtime" / "seen.json").write_text('"pin:1"')
+    (home / "other").mkdir()
+    (home / "other" / "image.png").write_bytes(b"\x89PNG")
+    (tmp_path / "environments" / "empty").mkdir()
+    (tmp_path / "runtime").mkdir()
+    (tmp_path / "runtime" / "gate-main-claude-1.json").write_text('{"pin": 1, "other": 2}')
+    (tmp_path / "runtime" / "gate-broken.json").write_text("{")
+    assert run(tmp_path) == "2 pins became facts in 0 environments, 2 files repointed", "every old row moves and every file naming a pin is repointed"
+    assert (home / "fact" / "001.md").read_text() == "already a fact", "a fact that already exists is never overwritten by an old pin"
+    assert (home / "pin" / "001.md").exists() and not (home / "pin" / "002.md").exists(), "a pin that clashes stays behind, the others move"
+    assert '"type": "fact"' in (home / "events.jsonl").read_text() and (home / "runtime" / "seen.json").read_text() == '"pin:1"', \
+        "the event log is repointed and the runtime folder is left alone"
+    assert __import__("json").loads((tmp_path / "runtime" / "gate-main-claude-1.json").read_text()) == {"fact": 1, "other": 2}, "a hold on a pin becomes a hold on a fact"
+    (home / "pin" / "001.md").unlink()
+    assert run(tmp_path).startswith("0 pins became facts in 1 environments"), "an old folder that is empty at last is removed"
+    assert not (home / "pin").exists(), "the old folder is gone"

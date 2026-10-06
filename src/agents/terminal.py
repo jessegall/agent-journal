@@ -135,8 +135,6 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
         top = checkout(cwd, workspace_folders())
         if top:
             share_journal(top, root, workspace_folders())
-        worked = environment(top)
-        env = Sessions(root).free(worked) if worked else env
     journal = [*entry_in(root, "journal"), "--root", str(root)]
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
             "worker": entry_in(root, "worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
@@ -144,8 +142,15 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
                if taken else launching(root, cwd, env, agent, args, conversation))}
 
 
+def worked_environment(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> str:
+    from providers import DRIVERS, workspace_folders
+    worked = environment(checkout(DRIVERS[agent].placed(cwd, args)[0], workspace_folders()))
+    return Sessions(root).free(worked) if worked else env
+
+
 def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
     hold_build(root, CODE)
+    env = env if taken else worked_environment(root, cwd, env, agent, args)
     spec = launch_spec(root, cwd, env, agent, args, taken)
     if taken:
         os.set_inheritable(taken["fd"], True)

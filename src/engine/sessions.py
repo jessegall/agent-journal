@@ -62,9 +62,9 @@ class SessionRecord(Loaded):
     seen: float = 0.0
     args: tuple = ()
     launch: int = 0
+    before: str = ""
     evicted: dict = field(default_factory=dict)
     grants: tuple = ()
-    before: str = ""
 
     @property
     def evicted_since_start(self) -> bool:

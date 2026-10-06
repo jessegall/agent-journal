@@ -2,6 +2,7 @@ import fcntl
 import re
 import secrets
 import shutil
+from contextlib import contextmanager
 from pathlib import Path
 from typing import NamedTuple
 
@@ -13,6 +14,12 @@ from resources.base import Refused
 
 REPOSITORY = re.compile(r"[\w.-]+/[\w.-]+$")
 REMOTE = ("http://", "https://", "git@", "file://", "ssh://")
+
+
+class Unreached(Refused):
+    @classmethod
+    def fetching(cls, where: str, failed: str) -> "Unreached":
+        return cls(f"Could not reach {where}: {failed}")
 
 
 def remote(address: str) -> bool:
@@ -57,7 +64,7 @@ def staged(root: Path, source: str, revision: str, version: str) -> Staged:
     commit, failed = fetch(staging, where, revision)
     if failed:
         shutil.rmtree(staging, ignore_errors=True)
-        raise Refused(f"{where} could not be fetched: {failed}")
+        raise Unreached.fetching(where, failed)
     try:
         return Staged(staging, read(staging, version), commit, False)
     except Refused:
@@ -67,14 +74,23 @@ def staged(root: Path, source: str, revision: str, version: str) -> Staged:
 
 def alone(root: Path, name: str):
     lock = busy_file(root, name)
-    lock.parent.mkdir(parents=True, exist_ok=True)
-    held = lock.open("w")
+    with on_disk(name):
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        held = lock.open("w")
     try:
         fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError as error:
         held.close()
         raise Refused(f"{name} is being installed already; wait for that to finish") from error
     return held
+
+
+@contextmanager
+def on_disk(name: str):
+    try:
+        yield
+    except OSError as error:
+        raise Refused(f"{name} could not be written to disk: {error}") from error
 
 
 def token() -> str:

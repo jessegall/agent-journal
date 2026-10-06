@@ -90,13 +90,18 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     (repo.project / "hooks").mkdir()
     commit(repo.project, "hooks/test.py", "def test(): pass\n")
     commit(repo.project, "hooks/code.py", "one\n")
+    (repo.project / "hooks" / "deep").mkdir()
+    commit(repo.project, "hooks/deep/inner.py", "inner\n")
     commit(repo.project, "old.txt", "gone soon\n")
     Agents(repo.record, actor=SYSTEM).create("claude-1")
     checks = Checks(repo.record, actor=USER)
     suite = checks.create("the suites pass", command="true", touched="echo ran {tests}")
     (repo.project / "hooks" / "code.py").write_text("two\n")
     (repo.project / "notes.txt").write_text("a note\n")
+    (repo.project / "hooks" / "deep" / "inner.py").write_text("changed inner\n")
     said = checks.touched(suite.n)
+    assert "no test covers hooks/deep/inner.py" not in said, "a changed file in a folder with no test is covered by the test of the folder above"
+    (repo.project / "hooks" / "deep" / "inner.py").write_text("inner\n")
     assert "ran hooks/test.py" in said and "no test covers notes.txt" in said, "the test beside a changed file runs, and what no test covers is named"
     spawned = []
     monkeypatch.setattr("features.checks.controller.subprocess.Popen", lambda args, **how: spawned.append((args, how)))
@@ -117,6 +122,41 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     checks.gate(suite.n, "break the hook", paths="hooks/code.py", wait=True)
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook", "a failure commits nothing"
     assert any("failed, nothing was committed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "and the agent is nudged why"
+    assert "name the paths" in refused(lambda: checks.gate(suite.n, "nothing named", paths=" ")), "a gate names the paths it commits"
+    checks.update(suite.n, command="true", then="echo after")
+    (repo.project / "hooks" / "code.py").write_text("four\n")
+    checks.gate(suite.n, "then runs", paths="hooks/code.py", wait=True)
+    assert any("then ran" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "what a check runs after its commit is run and told"
+    checks.gate(suite.n, "missing path", paths="nowhere.txt", wait=True)
+    assert any("the commit failed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "a commit that git refuses is told, not hidden"
+    bare = checks.create("no touched command", command="true")
+    assert "names no command for touched tests" in refused(lambda: checks.touched(bare.n)), "touched needs the command that runs the tests beside what changed"
+    assert "no test covers what changed" in checks.touched(suite.n), "with nothing changed no test is run and the full check stays the gate"
+    monkeypatch.setattr(Checks, "in_background", lambda self, n: False)
+    assert "is already running" in checks.run(suite.n), "a check that is running is not started again"
+    monkeypatch.setattr(Checks, "in_background", lambda self, n: True)
+    assert "is running; its result lands on the row" in checks.run(suite.n), "a check started on its own tells where its result lands"
+    monkeypatch.undo()
+    from types import SimpleNamespace
+    from engine import runtime
+    from features.checks import controller as running_checks
+    seen = []
+    with monkeypatch.context() as scoped:
+        scoped.setattr(running_checks.threading, "Thread", lambda target, args, daemon: SimpleNamespace(start=lambda: target(*args)))
+        scoped.setattr(Checks, "_ran", lambda self, n: seen.append(n))
+        assert (checks.in_background(suite.n), seen) == (True, [suite.n]), "a check started on its own runs in a thread and lets go of its lock when it ends"
+        lock = running_checks.claim(runtime.folder(repo.record.root) / running_checks.REPORTS / f"{suite.n}.lock")
+        assert checks.in_background(suite.n) is False, "a check already running in another process is not started twice"
+        lock.close()
+        scoped.setattr(Checks, "_ran", lambda self, n: (_ for _ in ()).throw(RuntimeError("the shell is gone")))
+        assert checks.in_background(suite.n) is True, "a check that crashes is filed as a fault and never takes the engine down"
+        checks.gate(suite.n, "crashes", paths="hooks/code.py", wait=True)
+    assert git(repo.project, "log", "-1", "--format=%s") != "crashes", "a gate whose check crashes commits nothing"
+    chatty = checks.create("prints a lot", command="echo one; sleep 0.2; echo two")
+    with monkeypatch.context() as scoped:
+        scoped.setattr(running_checks, "STAMP_EVERY", 0.0)
+        checks.run(chatty.n, wait=True)
+    assert checks.load(chatty.n).last_run.ok, "a check that prints while it runs shows its progress and still ends on its result"
 
 
 def test_a_check_that_runs_out_of_time_says_so():
@@ -147,3 +187,28 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
     checks.run(check.n, wait=True)
     assert nudged()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
         "a failure that reports something else is nudged again and replaces the one before"
+
+
+def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tmp_path):
+    import json
+    from migrations.m0008_plain_stored_keys import run
+
+    home = tmp_path / "environments" / "main"
+    (home / "agent").mkdir(parents=True)
+    (tmp_path / "project" / "check").mkdir(parents=True)
+    (tmp_path / "check").mkdir()
+    (home / "events.jsonl").write_text('{"heard": 1}\n')
+    (home / "agent" / "001.md").write_text('{"said": "hello"}')
+    (home / "agent" / "002.md").write_text('{"nothing": "to rename"}')
+    (tmp_path / "project" / "check" / "001.md").write_text('{"said": "ok"}')
+    (tmp_path / "check" / "001.md").write_text('{"said": "old"}')
+    (home / "settings.json").write_text(json.dumps({"work_tracking": {"said_after": 5}}))
+    other = tmp_path / "environments" / "other"
+    other.mkdir()
+    (other / "settings.json").write_text(json.dumps({"work_tracking": {"name_work_every": 5}, "x": 1}))
+    assert run(tmp_path) == "1 event logs, 3 rows and 1 settings files use the plain key names", "every old key is renamed where it is stored"
+    assert '"handled"' in (home / "events.jsonl").read_text() and '"last_message"' in (home / "agent" / "001.md").read_text(), "events and agents use the plain keys"
+    assert '"output"' in (tmp_path / "project" / "check" / "001.md").read_text(), "a check row uses the plain key"
+    assert json.loads((home / "settings.json").read_text()) == {"work_tracking": {"name_work_every": 5}}, "the setting is renamed"
+    (other / "settings.json").write_text("{")
+    assert run(tmp_path) == "0 event logs, 0 rows and 0 settings files use the plain key names", "a second run finds nothing, and an unreadable settings file is skipped"

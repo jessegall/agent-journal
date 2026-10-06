@@ -25,7 +25,7 @@ from engine.record import Record
 from engine.sessions import Sessions, alive, hold_build
 from engine.stop import ask
 from engine.stored import append_text, write_text
-from install import STUBS
+from install import STUBS, fetch
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, launches
@@ -155,6 +155,24 @@ def test_an_upgrade_copies_a_changed_file_into_the_attic_before_replacing_it(tmp
     assert len(copies) == 1
     with tarfile.open(copies[0]) as archive:
         assert archive.extractfile(".journal/src/journal.py").read().endswith(b"# changed by hand\n")
+
+
+def test_a_fetch_from_inside_a_git_hook_leaves_the_pushing_repository_alone(tmp_path, monkeypatch):
+    def git(where: Path, *args: str) -> str:
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=where, capture_output=True, text=True, timeout=30, check=True).stdout.strip()
+    for repository in ("pushing", "release"):
+        (tmp_path / repository).mkdir()
+        git(tmp_path / repository, "init", "-q")
+        git(tmp_path / repository, "commit", "-q", "--allow-empty", "-m", repository)
+    pushing = tmp_path / "pushing"
+    head = git(pushing, "rev-parse", "HEAD")
+    monkeypatch.setenv("GIT_DIR", str(pushing / ".git"))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(pushing / ".git" / "index"))
+    fetched = fetch(tmp_path / "into", str(tmp_path / "release"))
+    monkeypatch.delenv("GIT_DIR")
+    monkeypatch.delenv("GIT_INDEX_FILE")
+    assert (fetched, git(pushing, "config", "core.bare"), (pushing / ".git" / "shallow").exists(), git(pushing, "rev-parse", "HEAD")) == \
+        ((git(tmp_path / "release", "rev-parse", "HEAD"), ""), "false", False, head), "a fetch run from a hook lands in its own folder and never touches the repository the hook runs in"
 
 
 def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_path):
@@ -1083,3 +1101,490 @@ def test_a_record_made_by_version_2_60_0_upgrades_through_every_migration_and_th
         ran = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), *words], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=120)
         assert (ran.returncode, "Traceback" in ran.stderr, expected in ran.stdout) == (0, False, True), f"{words}: {ran.stdout[-400:]}{ran.stderr[-400:]}"
     launches(place, root / "journal.py", "claude")
+
+
+def test_the_engines_keep_ticking_through_a_fault_and_a_child_that_will_not_stop_is_killed(tmp_path, monkeypatch):
+    from runner import engines
+    root = tmp_path / ".journal"
+    runtime.folder(root).mkdir(parents=True)
+    stopping, faults, ticks = threading.Event(), [], []
+
+    def tick():
+        ticks.append(1)
+        if len(ticks) == 1:
+            raise RuntimeError("one bad tick")
+        stopping.set()
+    monkeypatch.setattr(engines, "TICK", 0)
+    engines.keep_ticking(stopping, tick, lambda: faults.append(1))
+    assert (len(ticks), faults) == (2, [1]), "a tick that throws is reported and the next tick still runs"
+
+    seated = engines.Engines(root, "e")
+    assert seated.seated("claude-9") is None, "a session whose provider has no driver gets no engine"
+    started = []
+
+    class Fake:
+        def __init__(self, record, driver):
+            self.driver = driver
+
+        def start(self):
+            started.append(self)
+
+        def step(self):
+            started.append("step")
+    from engine.sessions import Sessions
+    Sessions(root).bind("claude-9", "e", provider="claude")
+    monkeypatch.setattr(engines, "Engine", Fake)
+    monkeypatch.setattr(seated, "mine", lambda: ["claude-9", "claude-8"])
+    monkeypatch.setitem(DRIVERS, "claude", lambda record, session: session)
+    seated.tick()
+    seated.tick()
+    assert list(seated.held) == ["claude-9"] and started.count("step") == 2 and len([s for s in started if s != "step"]) == 1, \
+        "a live session gets one engine, seated once and stepped on every tick, and one with no driver is left alone"
+    ran = []
+    monkeypatch.setattr(engines.Engines, "run", lambda self, event: ran.append((self.root, self.env)))
+    engines.child(str(root), "e")
+    assert ran == [(root, "e")], "the engine child runs the environment it was started for"
+
+    monkeypatch.setattr(engines, "leftovers", lambda folder: [2 ** 22 + 12345])
+    gone = engines.Children(root)
+    assert gone.running == {}, "a leftover engine that is already gone is not an error"
+    stubborn = subprocess.Popen([sys.executable, "-c", "import signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print('ready', flush=True); time.sleep(60)"], stdout=subprocess.PIPE, text=True)
+    stubborn.stdout.readline()
+    monkeypatch.setattr(engines, "ENDING", 0.2)
+    gone.running["e"] = stubborn
+    gone.end("e")
+    assert stubborn.wait(10) == -9, "an engine that ignores the request to stop is killed"
+    stubborn.stdout.close()
+    Sessions(root).bind("claude-7", "", provider="claude")
+    assert gone.healed(Sessions(root), "claude-7") is None, "a session with no seat on record gets no environment back"
+    monkeypatch.setattr(engines, "claim", lambda path: None)
+    stopping = threading.Event()
+    monkeypatch.setattr(stopping, "wait", lambda seconds: stopping.set())
+    engines.supervise(root, stopping)
+    assert stopping.is_set(), "a supervisor that cannot hold the lock waits and tries again until it is told to stop"
+
+
+def test_a_supervisor_in_a_real_terminal_relays_what_is_typed_and_gives_the_terminal_back_when_it_is_stopped(tmp_path):
+    import pty
+    import select
+    import socket
+    import termios
+    from supervisor import Supervisor
+    root = tmp_path / ".journal"
+    agent = "import sys\nfor line in sys.stdin:\n    print('got', line.strip(), flush=True)"
+    spec = {"root": str(root), "cwd": str(tmp_path), "env": "main", "agent": "claude", "worker": [sys.executable, "-c", "import time; time.sleep(60)"], "args": [],
+            "heal": [sys.executable, "-c", "print('healed')"], "ended": [sys.executable, "-c", "pass"],
+            "command": [sys.executable, "-c", agent], "environ": dict(os.environ), "launch": 0, "headless": False}
+    master, slave = pty.openpty()
+    before = termios.tcgetattr(slave)
+    supervisor = subprocess.Popen([sys.executable, str(CODE / "supervisor.py"), json.dumps(spec)], cwd=tmp_path, stdin=slave, stdout=slave, stderr=slave, start_new_session=True)
+    seen = b""
+
+    def read_until(word: bytes) -> bool:
+        nonlocal seen
+        deadline = time.time() + WAIT
+        while word not in seen and time.time() < deadline:
+            if select.select([master], [], [], 0.2)[0]:
+                seen += os.read(master, 4096)
+        return word in seen
+    try:
+        session = None
+        deadline = time.time() + WAIT
+        while session is None and time.time() < deadline:
+            session = next((root / "runtime" / "sessions").glob("claude-*"), None) if (root / "runtime" / "sessions").is_dir() else None
+            time.sleep(0.05)
+        os.write(master, b"typed at the keyboard\r")
+        assert read_until(b"got typed at the keyboard"), "what the user types in the terminal reaches the agent and its answer comes back"
+        seat = object.__new__(Supervisor)
+        seat.root, seat.session = root, session.name
+        inbox = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        deadline = time.time() + WAIT
+        while not seat.socket_path().exists() and time.time() < deadline:
+            time.sleep(0.05)
+        inbox.sendto(b"typed by the journal\r", str(seat.socket_path()))
+        assert read_until(b"got typed by the journal"), "what the journal types into the inbox reaches the agent too"
+        inbox.close()
+        supervisor.send_signal(signal.SIGTERM)
+        assert supervisor.wait(WAIT) == 143, "a terminated supervisor ends with the terminated status"
+        after = termios.tcgetattr(slave)
+        assert (after[3] & (termios.ECHO | termios.ICANON), after[:3]) == (before[3] & (termios.ECHO | termios.ICANON), before[:3]), "the terminal's own settings are given back when the supervisor ends"
+        assert not seat.socket_path().exists(), "the inbox is removed when the supervisor ends"
+    finally:
+        supervisor.kill()
+        os.close(master)
+        os.close(slave)
+    pid = json.loads((session / "launched.json").read_text())["pid"]
+    assert subprocess.run(["kill", "-0", str(pid)], capture_output=True).returncode != 0, "no agent is left running"
+
+
+def test_the_engine_starts_from_a_paused_agent_survives_a_failed_tick_and_relays_what_peers_and_typed_commands_leave(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from controllers.types import Messages
+    from engine import stored
+    from runner import engine as engine_module
+    from runner.engine import Engine, PEER
+    from tests.kit import report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    driver = engine.agent.driver
+    monkeypatch.setattr(engine_module.features, "load", lambda root: None)
+    monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(paused=5.0))
+    engine.start()
+    assert (engine.running, engine.paused) == (True, True), "an engine started for an agent that was paused keeps it paused"
+
+    steps = []
+    monkeypatch.setattr(engine_module, "TICK", 0)
+    monkeypatch.setattr(Engine, "step", lambda self: (steps.append(1), setattr(self, "running", len(steps) < 3)))
+    engine.run()
+    assert len(steps) == 3, "a running engine steps until it is stopped"
+    monkeypatch.undo()
+
+    faults, steady = [], []
+    monkeypatch.setattr(engine_module, "threw", lambda *args: faults.append(args[2]))
+    monkeypatch.setattr(engine_module, "steady", lambda record: steady.append(1))
+    monkeypatch.setattr(Engine, "tick", lambda self: (_ for _ in ()).throw(RuntimeError("a bad tick")))
+    engine.clean = 3
+    engine.step()
+    assert (faults, engine.clean) == (["the engine"], 0), "a tick that throws is reported and the run of clean ticks starts over"
+    monkeypatch.setattr(Engine, "tick", lambda self: "")
+    engine.clean = engine_module.STEADY_AFTER - 1
+    engine.step()
+    assert steady == [1], "an engine that ticks cleanly for long enough tells the faults it is steady"
+    monkeypatch.undo()
+
+    monkeypatch.setattr(engine_module.features, "passed", lambda e, record: None)
+    emitted = []
+    monkeypatch.setattr(engine_module.bus, "emit", lambda e, record: emitted.append(e.id))
+    engine.relayed = record.event_log.last_id()
+    Todos(record, actor=SYSTEM).create("something for the bus")
+    engine.relay()
+    assert emitted and engine.relayed == record.event_log.last_id(), "an event no one handled is put on the bus once"
+    monkeypatch.undo()
+
+    transcript = tmp_path / "peers.jsonl"
+    transcript.write_text("{}\n")
+    row = SimpleNamespace(title="claude-1", provider="claude", transcript=str(transcript), n=1)
+    turn = lambda at, direction, text: SimpleNamespace(at=at, text=text, peer=SimpleNamespace(direction=direction, address=f"address-{text}", name=f"peer-{text}"))
+    turns = [turn(1.0, PEER, "hello")]
+    provider = SimpleNamespace(last_turns=lambda path: turns, echoes_typed=False)
+    monkeypatch.setattr(engine, "reading", lambda: engine_module.Reading(row, provider, transcript))
+    engine.relay_peers()
+    assert Messages(record, actor=SYSTEM).all() == [], "the first look at a transcript only marks where it stands"
+    transcript.write_text("{}\n{}\n")
+    engine.relay_peers()
+    assert [m.n for m in Messages(record, actor=SYSTEM).all()] == [], "a turn from before the mark is not relayed again"
+    turns += [turn(2.0, PEER, "from"), turn(3.0, "to", "back")]
+    transcript.write_text("{}\n{}\n{}\n")
+    engine.relay_peers()
+    assert sorted(m.data.get("peer") or m.data.get("sent_to") for m in Messages(record, actor=SYSTEM).all()) == ["address-back", "peer-from"], \
+        "what a peer sent arrives under its name and what the agent sent it leaves under its address"
+    monkeypatch.undo()
+
+
+def test_the_engine_reads_what_it_should_hold_back_what_it_cannot_decide_and_says_what_is_owed(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from controllers.types import Agents, Nudges
+    from engine.inputs import FORCE, queue
+    from providers.base import TypedRun
+    from resources.base import AGENT, USER, Event
+    from runner import engine as engine_module
+    from runner.engine import Engine
+    from tests.kit import report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    driver = engine.agent.driver
+    row = Agents(record, actor=SYSTEM).by_session("claude-1")
+
+    note = Nudges(record).create("a nudge before the engine ran")
+    event = next(e for e in record.event_log.events() if e.type == "nudge" and e.n == note.n)
+    engine.passed_over(engine.agent, event)
+    assert engine.agent.delivered_until() >= event.id and AGENT in Nudges(record).load(note.n).seen, "a nudge from before the engine started is read for the agent, not typed to it"
+
+    monkeypatch.setattr(driver, "ASKS_ON_SCREEN", True, raising=False)
+    monkeypatch.setattr(driver, "asked", lambda: None)
+    before = Agents(record, actor=SYSTEM).load(row.n).data.get("asking")
+    engine.screen_asks()
+    assert Agents(record, actor=SYSTEM).load(row.n).data.get("asking") == before, "a screen that asks what the row already says changes nothing"
+    monkeypatch.undo()
+
+    echoed = []
+    runs = [TypedRun(at=0.5, command="old"), TypedRun(at=1.0, command="ls"), TypedRun(at=2.0, command="pwd", output="/here"), TypedRun(at=time.time(), command="still running")]
+    provider = SimpleNamespace(typed_runs=lambda path: runs, echoes_typed=True)
+    engine.echoed_at = 0.75
+    monkeypatch.setattr(engine, "reading", lambda: engine_module.Reading(row, provider, tmp_path))
+    monkeypatch.setattr(engine_module.ran, "announce", lambda record, n, tool, command, *output, at=0.0: echoed.append((command, output)))
+    engine.echoed()
+    assert echoed == [("ls", ()), ("pwd", ("/here",))] and engine.echoed_at == 2.0, \
+        "the commands typed in the terminal are shown once with their output, and one still running waits for it"
+    monkeypatch.undo()
+
+    monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(paused=0, asking={"call": "x"}, title="claude-1", n=row.n, queued_commands=[], at=time.time()))
+    monkeypatch.setattr(engine.agent, "state", lambda: "working")
+    engine.paused, engine.held_at = True, time.time()
+    assert engine.pausing() == "paused", "a paused agent that only just stopped is left to settle"
+    engine.controlled_at = 0.0
+    assert engine.control() == "", "a working agent that is asking the user is not given keys"
+
+    queue(record.root, "claude-1", (), "stop", action=FORCE)
+    stopped, napped = [], []
+    monkeypatch.setattr(driver, "stop_turn", lambda: stopped.append(1))
+    monkeypatch.setattr(driver, "at_prompt", lambda: False)
+    monkeypatch.setattr(engine_module.time, "sleep", lambda seconds: napped.append(seconds))
+    monkeypatch.setattr(engine_module, "SETTLE", 0.3)
+    assert engine.forced().startswith("forced") and stopped and len(napped) == 2, "a stopped turn is waited on for a moment before the agent is told to carry on"
+    monkeypatch.undo()
+
+    ghost = Event(id=record.event_log.last_id() + 1, at=time.time(), type="ghost", n=1, action="created", actor=USER)
+    record.event_log.append(ghost)
+    monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(title="claude-1", n=row.n, at=time.time(), asking={}))
+    engine.deliver()
+    assert engine.agent.delivered_until() >= record.event_log.last_id(), "an event of a type this build does not know is passed over, never typed"
+
+    monkeypatch.setattr(engine.agent, "flush", lambda: "typed line")
+    monkeypatch.setattr(driver, "sent_now", time.time() + 100, raising=False)
+    cards = []
+    monkeypatch.setattr(engine, "moved_on", lambda: cards.append(1))
+    monkeypatch.setattr(engine, "noted", lambda line, tool="": None)
+    assert engine.deliver().startswith("typed") and cards == [1], "a message that went in while a command runs is marked as having moved on"
+    monkeypatch.undo()
+
+    monkeypatch.setattr(engine.agent, "state", lambda: "idle")
+    monkeypatch.setattr(engine, "owed", lambda: "")
+    monkeypatch.setattr(driver, "last_report", lambda: None)
+    engine.typed_at = 0.0
+    assert engine.nudge() == "nothing owed", "an idle agent with nothing owed is left alone"
+
+
+def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_turn_once(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from engine.stored import write_json
+    from engine.sessions import Sessions
+    from runner import chat_mirror
+    from tests.kit import report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    root = record.root
+    folder = chat_mirror.unsent(root)
+    folder.mkdir(parents=True)
+    (folder / "1.json").write_text(json.dumps({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "replayed words"}))
+    (folder / "2.json").write_text("not json")
+    seen = []
+    monkeypatch.setattr(chat_mirror, "shown", lambda root, chunk: seen.append(chunk.delta))
+    chat_mirror.replay(root)
+    assert seen == ["replayed words"] and not list(folder.glob("*.json")), "what was displayed while the journal was down is shown once it is up, and a file that is not readable is dropped"
+    monkeypatch.undo()
+
+    now = time.time()
+    turn = lambda key, text, at: SimpleNamespace(key=key, text=text, at=at, has_agent_text=True)
+    turns = []
+
+    class Provider:
+        def turns(self, path):
+            return turns
+    monkeypatch.setattr(chat_mirror, "PROVIDERS", {"fake": Provider})
+    row = SimpleNamespace(provider="fake", transcript=str(tmp_path / "transcript.jsonl"))
+    sent = []
+    monkeypatch.setattr(chat_mirror, "send_to_chat", lambda root, session, text, key: sent.append(text))
+    ledger = chat_mirror.DisplayedLedger(root, "claude-1")
+    write_json(ledger.file, {chat_mirror.SENT: [chat_mirror.fingerprint("shown in pieces"), "transcript-key"], chat_mirror.MATCHED: [chat_mirror.fingerprint("streamed")]})
+    turns += [turn("transcript-key", "kept", now), turn("k1", "shown in pieces", now), turn("k2", "streamed", now), turn("k3", "never shown", now)]
+    chat_mirror.unfinished(root, "claude-1", row)
+    held = json.loads(ledger.file.read_text())
+    assert (sent, "k1" in held[chat_mirror.SENT], "k2" in held[chat_mirror.SENT]) == (["never shown"], True, True), \
+        "a turn that was shown in pieces or streamed is not sent again, and one that never was is sent"
+
+    sent.clear()
+    write_json(ledger.file, {chat_mirror.SENT: ["transcript:5"]})
+    written = ledger.file.stat().st_mtime
+    turns[:] = [turn("transcript:1", "before the ledger", written - 10), turn("transcript:7", "after the ledger", written + 10)]
+    chat_mirror.unfinished(root, "claude-1", row)
+    assert sent == ["after the ledger"], "a ledger of transcript lines sends only the turns written after it"
+    monkeypatch.undo()
+
+    Sessions(root).bind("claude-1", record.env, provider="claude")
+    assert chat_mirror.send_to_chat(root, "claude-1", "   ") is False, "a blank message is not sent"
+    assert chat_mirror.send_to_chat(root, "nobody-1", "who is this") is False, "a message for a session with no agent row is not sent"
+    assert chat_mirror.send_to_chat(root, "claude-1", "once only") and chat_mirror.send_to_chat(root, "claude-1", "once only"), "a message already sent counts as sent and is not sent twice"
+
+
+def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):
+    import serve
+    root = fresh().root
+    printed, stopped, changed, executed = [], [], [], []
+
+    def waited(found: list) -> None:
+        deadline = time.time() + WAIT
+        while not found and time.time() < deadline:
+            time.sleep(0.01)
+
+    class Quiet:
+        server_address = ("127.0.0.1", 4242)
+        server_port = 4242
+
+        def __init__(self, forever):
+            self.forever = forever
+
+        def serve_forever(self):
+            self.forever()
+
+        def server_close(self):
+            printed.append("closed")
+
+    def finish_with(found: list, after):
+        def forever():
+            waited(found)
+            after(found[0])
+        return Quiet(forever)
+    for name in ("warmed", "replay", "warm", "warm_commands", "freeze_caches", "watch_runtime"):
+        monkeypatch.setattr(serve, name, lambda *args: None)
+    monkeypatch.setattr(serve, "watch_code", lambda root, package, server, event: changed.append(event))
+    monkeypatch.setattr(serve, "watch_stop", lambda root, server, halting, began: stopped.append(halting))
+    monkeypatch.setattr(serve.os, "execv", lambda program, command: executed.append(command))
+
+    monkeypatch.setattr(serve, "serve", lambda root, port: Quiet(lambda: (_ for _ in ()).throw(KeyboardInterrupt())))
+    serve.run(root, 0)
+    assert printed == ["closed"] and not executed, "an interrupted server closes its socket and ends without restarting"
+
+    stopped.clear()
+    monkeypatch.setattr(serve, "serve", lambda root, port: finish_with(stopped, lambda halting: halting.set()))
+    serve.run(root, 0)
+    assert printed == ["closed", "closed"] and not executed, "a server that was asked to stop ends without restarting"
+
+    changed.clear()
+    monkeypatch.setattr(serve, "serve", lambda root, port: finish_with(changed, lambda event: event.set()))
+    serve.run(root, 0)
+    assert executed and executed[0][-2:] == ["--port", "4242"], "a server whose code changed starts again on the same port"
+    monkeypatch.undo()
+
+    answered, halting = [], threading.Event()
+    monkeypatch.setattr(serve, "WATCH_SECONDS", 0.01)
+    monkeypatch.setattr(serve.runtime, "refresh_flags", lambda root: None)
+    monkeypatch.setattr(serve, "unanswered", lambda root: (answered.append(1), halting.set()))
+    serve.runtime.hook_failures(root).parent.mkdir(parents=True, exist_ok=True)
+    serve.runtime.hook_failures(root).write_text("1")
+    serve.watch_runtime(root, halting)
+    assert answered == [1], "hooks that failed while the server was down are answered once it watches again"
+    program = subprocess.Popen([sys.executable, str(CODE / "serve.py"), str(tmp_path / ".journal"), "0"], stdout=subprocess.PIPE, text=True, cwd=tmp_path, stdin=subprocess.DEVNULL)
+    try:
+        address = program.stdout.readline()
+        assert address.startswith("http://127.0.0.1:"), "the server run as a program names the address it serves"
+        deadline = time.time() + WAIT
+        while time.time() < deadline:
+            try:
+                connection = http.client.HTTPConnection("127.0.0.1", int(address.strip().rsplit(":", 1)[1].strip("/")), timeout=5)
+                connection.request("GET", "/api/manifest")
+                if connection.getresponse().status == 200:
+                    break
+            except OSError:
+                time.sleep(0.1)
+        program.send_signal(signal.SIGINT)
+        assert program.wait(WAIT) == 0, "and ends cleanly when interrupted"
+    finally:
+        program.kill()
+        program.stdout.close()
+
+
+def test_a_damaged_ledger_is_refused_a_rolled_back_record_gets_its_files_back_and_a_subagent_that_asks_is_recorded(tmp_path, monkeypatch):
+    from controllers.types import Agents
+    from resources.base import Refused
+    from runner.gate import ShellLine
+    from runner.hooks import handle
+    from tests.kit import report
+    root = tmp_path / ".journal"
+    root.mkdir()
+    migrations.ledger(root).write_text("[1, 2]")
+    with pytest.raises(Refused, match="damaged migrations ledger"):
+        migrations.applied(root)
+    migrations.ledger(root).write_text(json.dumps({name: {"result": ""} for name in migrations.names()}))
+    assert migrations.run_locked(root) == [], "a record that another process finished migrating while this one waited has nothing left to run"
+    backup = tmp_path / "backup"
+    backup.mkdir()
+    (backup / "record.json").write_text('{"kept": true}')
+    (root / "record.json").write_text('{"kept": false}')
+    migrations.restored(root, backup)
+    assert json.loads((root / "record.json").read_text()) == {"kept": True}, "a rolled back record gets its single files back as they were"
+
+    assert ShellLine.of(("echo 'never closed",)).others == 1, "a shell line with a quote that never closes is still read as one command"
+
+    record = fresh()
+    report(record, "working", "PreToolUse", session="claude-1")
+    row = Agents(record, actor=SYSTEM).by_session("claude-1")
+    Agents(record, actor=SYSTEM).update(row.n, asking={"call": "earlier"})
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "agent_id": "sub-1", "tool_name": "Read", "tool_input": {}})
+    assert not Agents(record, actor=SYSTEM).by_session("claude-1").asking, "a subagent that reports while the row says it is asking clears what it was asking"
+
+    from engine import stop
+    sleeper = subprocess.Popen(["sleep", "30"])
+    try:
+        monkeypatch.setattr(stop, "serving", lambda folder: sleeper.pid)
+        monkeypatch.setattr(stop, "EVERY", 0.01)
+        assert stop.gone(root, 0.1) is False, "a server that is still alive after the wait is not gone"
+    finally:
+        sleeper.kill()
+        sleeper.wait(10)
+
+
+def test_the_engines_small_helpers_give_an_empty_answer_when_a_program_a_folder_or_a_file_is_missing(tmp_path, monkeypatch):
+    import fcntl
+    from dataclasses import asdict
+    from types import SimpleNamespace
+    from engine import bus, keeper, package
+    from engine.disk import Growth, last_lines
+    from engine.inputs import take
+    from engine.proc import git_objects, streamed
+    from engine.reach import Guard, Reach, Unreached
+    assert streamed(["no-such-program-anywhere"], tmp_path, 5, lambda text: None)[0] is None, "a program that cannot start has no exit status"
+    assert (git_objects(tmp_path, []), git_objects(tmp_path / "missing", ["a" * 40]), git_objects(tmp_path, ["a" * 40])) == ({}, {}, {}), \
+        "objects asked of nothing, of a folder that is not there or of a folder that is no repository are none"
+
+    assert Guard.of(SimpleNamespace(reach=Reach.MAIN)).reach is Reach.MAIN
+    for given in (object(), SimpleNamespace(reach="main")):
+        with pytest.raises(Unreached, match="states no reach"):
+            Guard.of(given)
+
+    place = tmp_path / "code"
+    (place / ".hidden").mkdir(parents=True)
+    (place / ".hidden" / "skipped.py").write_text("")
+    (place / "kept.py").write_text("")
+    (place / "broken.py").symlink_to(place / "nothing.py")
+    assert [Path(name).name for name, _ in package.code_stamp(place)] == ["kept.py"], "a hidden folder and a file that cannot be read are not part of the code's stamp"
+    monkeypatch.setattr(package, "ZIPPED", True)
+    assert package.entry("engine.keeper")[-2:] == ["-m", "engine.keeper"], "a packed journal starts a module through its archive"
+    monkeypatch.undo()
+
+    assert Growth().grew(tmp_path / "missing") is False, "a file that is not there has not grown"
+    long = tmp_path / "long.log"
+    long.write_bytes(b"".join(f"line {n}\n".encode() for n in range(60000)))
+    tail = last_lines(long, 3)
+    assert tail.splitlines() == ["line 59997", "line 59998", "line 59999"], "the end of a long log starts on a whole line"
+
+    from engine import runtime
+    runtime.inputs(tmp_path).mkdir(parents=True)
+    (runtime.inputs(tmp_path) / "1.json").write_text("{not json")
+    assert take(tmp_path, {"claude-1"}) is None and not list(runtime.inputs(tmp_path).glob("*.json")), "an input that cannot be read is dropped"
+
+    lock = tmp_path / "service.lock"
+    spec = keeper.ServiceSpec(id="a.web", plugin="a", service="web", run=["true"], lock=str(lock), log=str(tmp_path / "log"), status=str(tmp_path / "status"), spec=str(tmp_path / "spec"))
+    with lock.open("a") as holding:
+        fcntl.flock(holding, fcntl.LOCK_EX)
+        monkeypatch.setattr(keeper, "LEASE_WAIT", 0.2)
+        assert keeper.lease(spec) is None, "a service whose lock another keeper holds is not leased"
+        (tmp_path / "spec").write_text(json.dumps(asdict(spec)))
+        assert keeper.main(["-1", str(tmp_path / "spec")]) == keeper.TAKEN, "a second keeper for the same service steps aside"
+    with pytest.raises(SystemExit, match="no service spec"):
+        keeper.main(["-1", str(tmp_path / "nothing")])
+    monkeypatch.undo()
+
+    seen = []
+    inner = bus.commanded("todo", "inner", lambda: seen.append(bus.command("todo")))
+    bus.commanded("todo", "outer", lambda: inner())()
+    assert seen == ["outer"], "a command run inside another is still the outer command"
+    ran = []
+    with bus.settled():
+        bus.defer_once("same", lambda: ran.append("first"))
+        bus.defer_once("same", lambda: ran.append("second"))
+        assert ran == [], "work deferred while events are held waits"
+    assert ran == ["first"], "work deferred twice under one key runs once"
+

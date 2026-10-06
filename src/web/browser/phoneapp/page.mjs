@@ -29,12 +29,32 @@ await runScenarios(
         },
         async "own words answer the other question"(page) {
             await home(page);
-            await card(page, "Which hat?").getByPlaceholder("Or answer in your own words").fill("A green hat");
+            await card(page, "Which hat?").getByPlaceholder("Or answer in your own words").fill("A green hat, see [[chip question:1|Question 1]]");
             await card(page, "Which hat?").getByRole("button", {name: "Answer"}).click();
             await page.getByText("Answered: A green hat").waitFor({timeout: SHOWN});
+            await page.locator(".question-answer .row-pill", {hasText: "Question 1"}).waitFor({timeout: SHOWN});
+            if (await page.getByText("[[chip").count()) throw new Error("the answer showed its chip as raw text");
             await page.waitForTimeout(1500);
             await page.reload();
             await page.getByText("Answered: A green hat").waitFor({timeout: SHOWN});
+        },
+        async "typing the first words brings the chat to the newest message"(page) {
+            await home(page);
+            const gap = () =>
+                page.evaluate(() => {
+                    const s = document.querySelector(".home-feed");
+                    return s.scrollHeight - s.clientHeight - s.scrollTop;
+                });
+            await page.evaluate(() => {
+                const s = document.querySelector(".home-feed");
+                const filler = document.createElement("div");
+                filler.style.height = "3000px";
+                s.prepend(filler);
+                s.scrollTop = 0;
+            });
+            await page.getByPlaceholder("Message the agent").pressSequentially("hello");
+            await page.waitForTimeout(500);
+            if ((await gap()) > 40) throw new Error("typing did not bring the chat to the bottom");
         },
         async "a message sent while the computer cannot be reached waits, and arrives once when it can"(page) {
             const words = `from the train ${Date.now()}`;

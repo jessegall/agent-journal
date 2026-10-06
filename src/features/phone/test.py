@@ -20,6 +20,7 @@ from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
+from features.suggestions.controller import Suggestions
 from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from engine.viewer import SERVING
@@ -81,7 +82,9 @@ def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
         call(base, "/p/pair", {"code": "wrong-guess", "device": "Pixel"})
     assert call(base, "/p/pair", {"code": guessed["link"].split("#", 1)[1], "device": "Pixel"})[0] == 410, \
         "ten wrong codes cancel the code that was waiting"
+    earlier = Phones(record, actor=USER).connect(7)
     made = Phones(record, actor=USER).connect(7)
+    assert Phones(record, actor=SYSTEM).load(earlier["n"]).completed, "a new code replaces the one that was never used"
     code = made["link"].split("#", 1)[1]
     assert made["link"].startswith("https://") and "/p/#" in made["link"], "the code rides in the fragment, which never reaches a server"
     call(base, "/p/", method="HEAD")
@@ -115,6 +118,12 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         f"{base}/p/attach/{n}/photo.jpg", b"\xff\xd8picture", {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"},
         method="POST"), timeout=5).status
     assert upload(made["n"]) == 201 and "photo.jpg" in Messages(record, actor=SYSTEM).load(made["n"]).files, "a photo goes onto the phone's message"
+    sent = lambda path, data, kind="application/json": urllib.request.Request(
+        f"{base}{path}", data, {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"}, method="POST")
+    for request, status in ((sent("/p/message", b"not json"), 422), (sent("/p/attach/x/photo.jpg", b"bytes", "application/octet-stream"), 413), (sent(f"/p/attach/{made['n']}/photo.jpg", b"", "application/octet-stream"), 413)):
+        with pytest.raises(urllib.error.HTTPError) as refusal:
+            urllib.request.urlopen(request, timeout=5)
+        assert refusal.value.code == status, f"{request.full_url} is answered with {status}, because a body that is not JSON says nothing and a file needs a message and some bytes"
     fetched = urllib.request.urlopen(urllib.request.Request(f"{base}/p/file/message/{made['n']}/photo.jpg", headers={"Cookie": f"__Host-phone={key}"}), timeout=5)
     assert fetched.read() == b"\xff\xd8picture", "and opens again from the phone"
     assert call(base, f"/p/file/message/{made['n']}/..%2F..%2Fsecret", key=key).status == 404, "and nothing outside the message's own files"
@@ -141,7 +150,8 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
     spoken = {"message": lambda: Messages(record, actor=AGENT).create("the build is green"),
               "question": lambda: Questions(record, actor=AGENT).create("Which port should it use"),
-              "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"])}
+              "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"]),
+              "suggestion": lambda: Suggestions(record, actor=AGENT).create("Keep the file list between searches")}
     assert set(spoken) == set(POSTED), "every kind the phone's chat speaks is checked below"
     for kind, make in spoken.items():
         row = make()
@@ -255,6 +265,17 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     monkeypatch.setattr(launch, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
     assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
     assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
+    from engine.sessions import Sessions
+    outside = subprocess.Popen(["sleep", "30"])
+    try:
+        Sessions(record.root).bind("busy", "elsewhere", pid=outside.pid, provider="claude")
+        assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 409, "an environment whose agent is at work is not started again"
+        assert call(base, "/p/stop", {}, key).status == 201, "the phone ends the agent working in its environment"
+        assert outside.wait(timeout=5) != 0, "and that agent is ended"
+    finally:
+        outside.kill()
+        outside.wait(timeout=5)
+        Sessions(record.root).unbind("busy")
     Todos(Record(record.root, "elsewhere"), actor=AGENT).create("Tidy the attic")
     listed = call(base, "/p/list?type=todo", key=key).body
     assert ([row["title"] for row in listed["rows"]], listed["total"]) == (["Tidy the attic"], 1), "a card knows how many rows there are in all"
@@ -281,6 +302,30 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     public = push.Keys.kept(record.root).public
     assert len(pushed) == 1 and push.verified(public, f"{head}.{claims}".encode(), push.base64.urlsafe_b64decode(signature + "==")), \
         "a new question sends one signed push, and not again while it waits"
+    import io
+    keys, apple = push.Keys.kept(record.root), "https://web.push.apple.com/abc"
+    sent = []
+    class Pushed(io.BytesIO):
+        status = 201
+    monkeypatch.setattr(push.urllib.request, "urlopen", lambda request, timeout: sent.append(request) or Pushed())
+    assert (push.send(keys, apple, "mailto:me@example.com"), push.send(keys, "https://example.com/steal", "mailto:me@example.com")) == (True, False), \
+        "a push goes only to a real push service"
+    assert len(sent) == 1 and sent[0].headers["Urgency"] == "high" and sent[0].headers["Authorization"].startswith("vapid t="), "and carries its signed token"
+    monkeypatch.setattr(push.urllib.request, "urlopen", lambda request, timeout: (_ for _ in ()).throw(OSError("offline")))
+    assert push.send(keys, apple, "mailto:me@example.com") is False, "a push service that cannot be reached is a push not sent, never an error"
+    assert [push.allowed(url) for url in ("http://web.push.apple.com/x", "https://x.notify.windows.com/y", "https://evil.example/")] == [False, True, False], \
+        "only https endpoints of the known push services are called"
+    from types import SimpleNamespace
+    from features.phone import places as phone_places
+    other = record.root.parent / "elsewhere" / ".journal"
+    (other / "environments").mkdir(parents=True)
+    monkeypatch.setattr(phone_places, "known", lambda: [SimpleNamespace(root=str(other))])
+    assert [place.root for place in phone_places.places(record.root)] == [str(record.root.resolve())], "a journal kept in a temporary folder is not offered to the phone"
+    monkeypatch.setattr(phone_places, "TEMPORARY", ())
+    assert [place.root for place in phone_places.places(record.root)] == [str(record.root.resolve()), str(other.resolve())], "any other journal on the machine is"
+    assert phone_places.running(other) is False, "one with no running server says so"
+    assert [row["state"] for row in feed.subagents_of(record, [{"running": True}, {"refusal": "not allowed"}, {"status": "stopped"}, {}])] == \
+        ["working", "refused", "stopped", "finished"], "a subagent is working while it runs and otherwise refused, stopped or finished"
     monkeypatch.setattr(Shares, "_address", lambda self: "")
     Questions(record, actor=AGENT).create("Another one?")
     Phones(record, actor=SYSTEM)._notify()
@@ -297,6 +342,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     unwanted = Questions(record, actor=AGENT).create("Rename the repo?")
     assert call(base, "/p/dismiss", {"n": unwanted.n}, key).status == 201 and Questions(record, actor=SYSTEM).load(unwanted.n).data["dismissed"], \
         "a question can be dismissed from the phone"
+    assert call(base, "/p/dismiss", {"n": unwanted.n}, key).status == 409, "a question already dismissed is not dismissed again"
+    assert call(base, "/p/answer", {"n": Questions(record, actor=AGENT).create("Which one?").n, "answer": " "}, key).status == 422, "an answer needs words"
+    assert [call(base, f"/p/{name}", body, key).status for name, body in (("message", {"brief": " "}), ("react", {"n": 1, "face": "👍", "type": "doc"}),
+                                                                     ("comment", {"ref": "doc:9999", "text": "hm"}))] == [422, 422, 422], \
+        "a message without words, a reaction to what the phone cannot react to and a comment on a row it cannot read are all refused"
     plans = CONTROLLERS["plan"]
     plan = Controller.update(plans(record, actor=SYSTEM), plans(record, actor=AGENT).create("Ship it").n, status="ready")
     assert call(base, "/p/approve", {"n": plan.n, "updated": plan.updated - 5}, key).status == 409, "a plan that changed is not approved"
@@ -330,9 +380,19 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     pins = lambda: [notice["n"] for notice in call(base, "/p/feed", key=key).body["notices"]]
     assert pinned.n in pins(), "the chat's pinned notices reach the phone"
     assert call(base, "/p/close", {"n": pinned.n}, key).status == 201 and pinned.n not in pins(), "and closing one there closes it everywhere"
+    subagents = Notices(record, actor=AGENT).create("A subagent's own notice", agent="sub-1")
+    assert call(base, "/p/close", {"n": subagents.n}, key).status == 422, "a notice that belongs to a subagent's chat is not the phone's to close"
     assert any(item["type"] == "comment" and item["brief"] == "Looks right to me" for item in call(base, "/p/feed", key=key).body["items"]), "a comment on a row shows in the phone's chat, as on the desktop"
     with urllib.request.urlopen(urllib.request.Request(f"{base}/p/export/doc/{proposal.n}", headers={"Cookie": f"__Host-phone={key}"}), timeout=30) as sent:
         assert "Proposal" in sent.headers["Content-Disposition"] and sent.read(), "a document leaves the phone as a file named for it"
+    import shutil
+    which = shutil.which
+    shutil.which = lambda name, *more, **options: None if name == "textutil" else which(name, *more, **options)
+    try:
+        with urllib.request.urlopen(urllib.request.Request(f"{base}/p/export/doc/{proposal.n}", headers={"Cookie": f"__Host-phone={key}"}), timeout=30) as sent:
+            assert (".html" in sent.headers["Content-Disposition"], sent.read().startswith(b"<")) == (True, True), "on a machine with no converter a document leaves the phone as a web page"
+    finally:
+        shutil.which = which
     shared = call(base, "/p/share", {"ref": f"doc:{proposal.n}"}, key)
     assert shared.status == 201 and "/s/" in shared.body["link"], "and as a share link the user made, open at once"
     said = [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m["title"] == "I accept this proposal"]
@@ -411,11 +471,13 @@ def test_a_connected_phone_keeps_the_tunnel_wanted(served):
     assert wanted(record.root), "the share server and tunnel stay up while a phone is connected"
 
 
-def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
+def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served, monkeypatch):
     record, base = served
+    assert Phones(record, actor=SYSTEM)._notify() is None, "with no phone connected there is nobody to push to"
     made = Phones(record, actor=USER).connect(7)
     assert len(made["short"]) == 9 and made["short"][4] == "-", "a short code reads as two groups of four"
-    assert call(base, "/p/pair", {"code": made["short"].lower().replace("-", " "), "device": "iPhone"}).status == 200, "typed loosely, it still pairs"
+    pairing = call(base, "/p/pair", {"code": made["short"].lower().replace("-", " "), "device": "iPhone"})
+    assert pairing.status == 200, "typed loosely, it still pairs"
     manifest = urllib.request.urlopen(f"{base}/p/manifest.webmanifest", timeout=5)
     body = json.loads(manifest.read())
     assert (body["display"], body["start_url"]) == ("standalone", "/p/") and body["icons"], "it opens full screen from the home screen"
@@ -423,3 +485,23 @@ def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
         assert got.read(8) == b"\x89PNG\r\n\x1a\n", "with an icon of its own"
     with urllib.request.urlopen(f"{base}/p/sw.js", timeout=5) as got:
         assert "connect-src 'self'" in got.headers["Content-Security-Policy"], "its worker may fetch the page, so a reload works offline and online"
+    key = pairing.cookie.split(";", 1)[0].split("=", 1)[1]
+    read = lambda path: call(base, path, key=key).status
+    assert [read("/p/push-key"), read("/p/places"), read("/p/state"), read("/p/bar"), read("/p/feed")] == [200] * 5, "a connected phone reads its key, places, state, bar and feed"
+    assert [read("/p/feed?before=soon"), read("/p/helper"), read("/p/helper?n=x"), read("/p/nothing"), read("/p/export/doc/9999"), read("/p/file/doc/9999/a.txt")] == \
+        [400, 400, 400, 404, 404, 404], "a read that asks wrongly is told so, and one for a row or file the phone cannot reach finds nothing"
+    assert [call(base, "/p/", key=key).status, call(base, "/p/nowhere/page", key=key).status] == [200, 404], "the page opens at its own address and nowhere else"
+    assert (call(base, "/p", key=key).status, read("/p/a/b/c/d")) == (200, 404), "the page is also found without its closing slash, and a read that names too much finds nothing"
+    from features.phone import routes as phone_routes
+    monkeypatch.setattr(phone_routes, "APP_DIR", Path("/nonexistent/app"))
+    assert (read("/p/feed"), call(base, "/p/", key=key).status, phone_routes.built()) == (200, 404, ""), "without the built page the phone still reads its feed and the page is not found"
+    assert [call(base, path, {}, key=key).status for path in ("/p/", "/p/nothing/here")] == [404, 404], "a write to no action finds none"
+    assert call(base, "/p/message", {"text": "x" * 20000}, key=key).status == 413, "a write too large to be a note is refused"
+    from controllers.types import Docs, Notices
+    note, task = Docs(record, actor=USER).create("A note", brief="words"), Notices(record, actor=SYSTEM).create("A notice")
+    assert [call(base, "/p/comment", {"ref": note.ref, "text": " "}, key).status, call(base, "/p/comment", {"ref": task.ref, "text": "hm"}, key).status] == [422, 422], \
+        "a comment on a row needs words, and a row that takes no comments takes none from the phone"
+    assert [call(base, "/p/auto", {"on": flag}, key).status for flag in (False, True)] == [201, 201], "the phone switches auto mode on and off"
+    assert [call(base, "/p/arrange", {"cards": ["nothing"]}, key).status, call(base, "/p/switch", {"journal": "/nowhere", "environment": "x"}, key).status,
+            call(base, "/p/start", {"journal": "/nowhere", "environment": "x"}, key).status, call(base, "/p/push", {"endpoint": "http://example.com"}, key).status] == [422] * 4, \
+        "a phone cannot arrange cards that do not exist, switch to or start an environment it cannot find, or subscribe to a push service it does not trust"

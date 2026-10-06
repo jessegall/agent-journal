@@ -90,3 +90,22 @@ def test_a_reminder_aimed_at_one_agent_is_said_only_to_that_session_and_stays_ou
         "the session it names hears both"
     assert ("only claude-2" in start_block(record)) is False, "what is aimed at one session is not in the start block"
     assert bool(Reminders(record).load(2).data.get("whom")) is True, "and an agent may write one, where it may not write a pin"
+
+
+def test_a_cadence_is_due_by_percent_uses_minutes_idle_worked_start_or_notices_and_never_without_one():
+    from types import SimpleNamespace
+    from features import trigger
+    from features.trigger import MINUTES, NOTICES, PERCENT, START, USES, WORKED, Trigger, due, fired
+    record = fresh()
+    agent = SimpleNamespace(title="claude-1", context=30.0, uses=5, status="idle", event="Stop")
+    named = lambda unit, **given: due(record, agent, f"cadence-{unit}", Trigger(unit=unit, **given))
+    assert (due(record, agent, "none", Trigger()), named("nothing", every=1)) == (False, False), "a cadence with no unit, or one nobody knows, is never due"
+    assert (named(PERCENT, every=25), named(PERCENT, at=(10.0, 50.0)), named(PERCENT, at=(50.0,))) == (True, True, False), "context is due when it crosses a step or a mark"
+    assert (named(USES, every=5), named(USES, every=6)) == (True, False), "tool uses are due once enough have passed"
+    assert (named(WORKED, every=1), named(START, every=1)) == (True, False), "an idle stretch after work is due, and a start only on a session start"
+    agent.event = "SessionStart"
+    assert named(START, every=1), "a session start makes the start cadence due"
+    fired(record, agent, "cadence-minutes")
+    assert (named(MINUTES, every=1), named(NOTICES, every=1)) == (False, False), "a cadence that just fired waits its minutes, and notices wait for something noticed"
+    trigger.noticed(record, agent, "cadence-notices")
+    assert named(NOTICES, every=1), "a noticed event makes the notices cadence due"

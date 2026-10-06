@@ -17,6 +17,12 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     assert (moved, [n for n in nudges(record) if "moved to the background" in n]) == \
         (["claude-1"], ["your command ran 45s in the foreground and was moved to the background"]), \
         "moved once, and the agent is told"
+    from features.long_commands import move
+    from providers.base import BackgroundTasks
+    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}, ended={"b1": time.time()}, failed={"b1"}))
+    tick(record)
+    mark = Agents(record, actor="system").load(Agents(record, actor="system").by_session("claude-1").n).data["cards"][-1]
+    assert (mark["label"], mark["state"]) == ("Moved a long command to the background", "failed"), "the mark of a moved command turns to failed when its task ends that way"
 
 
 def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
@@ -52,6 +58,21 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     shells = {row["command"]: row["running"] for row in Claude().crew(transcript)["shell_rows"]}
     assert shells == {"sleep 1": False, "sleep 2": True, "sleep 3": True}, \
         "a refused call never started; one that started, or was moved to the background, runs until it ends"
+    user_row = lambda text: {"type": "user", "timestamp": "2026-09-23T00:00:02Z", "message": {"content": text}}
+    assistant_row = lambda text: {"type": "assistant", "timestamp": "2026-09-23T00:00:03Z", "message": {"content": [{"type": "text", "text": text}]}}
+    with transcript.open("a") as more:
+        for row in (user_row("<task-notification><task-id>b3x</task-id><status>failed</status></task-notification>"),
+                    user_row("<bash-input>ls</bash-input>"), user_row("<bash-stdout>a.py</bash-stdout><bash-stderr></bash-stderr>"),
+                    user_row("<command-name>/model</command-name><command-args>opus</command-args>"),
+                    assistant_row("Pull request 8: https://github.com/jessegall/agent-journal/pull/8. Earlier draft https://github.com/jessegall/agent-journal/pull/8"),
+                    assistant_row("The design: https://claude.ai/design/abc?file=x.png and https://claude.ai/design/def?file=page.html")):
+            more.write(json.dumps(row) + "\n")
+    tasks = Claude().background_tasks(transcript)
+    assert ("b3x" in tasks.started, "b3x" in tasks.ended, tasks.failed) == (True, True, {"b3x"}), "a task moved to the background is started, and its notice ends it, failed"
+    assert [(run.command, run.output) for run in Claude().typed_runs(transcript)] == [("!ls", "a.py"), ("/model opus", None)], \
+        "a shell line and a slash command you typed are read with what they printed"
+    assert Claude().work_links(transcript) == ["https://claude.ai/design/def?file=page.html", "https://github.com/jessegall/agent-journal/pull/8"], \
+        "the links worth opening are kept once each, newest first, and an image inside a design is not one"
 
 
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
@@ -158,3 +179,75 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
     assert lines()[3:] == ["the command you left running finished - make test"], "a command it detached is followed by its pid, and told once it is gone"
     report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
     assert len(lines()) == 4, "a provider that wakes its agent itself is left to do so"
+
+
+def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_are_read_from_where_they_stopped(tmp_path):
+    import json
+    from datetime import datetime, timezone
+    from providers.claude import Claude
+
+    now = datetime.now(timezone.utc).isoformat()
+    monitor = lambda n, stamp, **given: {"type": "assistant", "timestamp": stamp,
+                                         "message": {"content": [{"type": "tool_use", "id": f"m{n}", "name": "Monitor", "input": {"description": f"watch {n}", **given}}]}}
+    rows = [monitor(1, "2026-09-23T00:00:00Z", command="tail -f a.log", timeout_ms=1000),
+            monitor(2, "2026-09-23T00:00:00Z", command="tail -f b.log"),
+            monitor(3, now, command="tail -f c.log", timeout_ms=600000),
+            monitor(4, now, ws={"url": "wss://feed.example/stream"}, timeout_ms=600000),
+            {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-09-23T00:00:30Z",
+             "content": "<tool-use-id>m2</tool-use-id><status>completed</status>"}]
+    transcript = tmp_path / "s.jsonl"
+    transcript.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    watched = {row["task"]: (row["running"], row["status"]) for row in Claude().crew(transcript)["monitor_rows"]}
+    assert watched == {"watch 1": (False, "expired"), "watch 2": (False, "completed"), "watch 3": (True, ""), "watch 4": (True, "")}, \
+        "a monitor whose time ran out has expired, one the agent was told about has ended, and one inside its time still runs, watching a command or an address"
+    assert [row["command"] for row in Claude().crew(transcript)["monitor_rows"] if row["task"] == "watch 4"] == ["wss://feed.example/stream"], "a monitor of an address is shown by that address"
+
+    thought = lambda text: {"type": "assistant", "timestamp": now, "message": {"id": "a1", "content": [{"type": "thinking", "thinking": text}]}}
+    said = {"type": "assistant", "timestamp": now, "message": {"id": "a2", "content": [{"type": "text", "text": "Done."},
+                                                                                             {"type": "tool_use", "id": "t9", "name": "Read", "input": {}}]}}
+    asked = {"type": "user", "timestamp": now, "message": {"content": "go on"}}
+    own = tmp_path / "thinking.jsonl"
+    own.write_text("\n".join(json.dumps(row) for row in (thought("  Weighing the two options  "), {**thought("then the second"), "message": {"id": "a1", "content": [
+        {"type": "thinking", "thinking": "then the second"}, {"type": "tool_use", "id": "t8", "name": "Read", "input": {}}]}}, said, asked)) + "\n")
+    found, offset = Claude().thoughts(own, 0)
+    assert found == [("thinking", "Weighing the two options\n\nthen the second"), ("text", "")], \
+        "what an agent weighed in one turn is kept together, and an answer in words is only marked as spoken"
+    assert Claude().thoughts(own, offset) == ([], offset), "reading on from where it stopped finds nothing twice"
+
+
+def test_a_codex_script_cell_the_agent_waits_on_is_followed_to_its_end(tmp_path):
+    import json
+    from providers import PROVIDERS
+    text = lambda body: [{"type": "input_text", "text": body}]
+    rows = [
+        ("custom_tool_call", {"call_id": "c1", "name": "exec", "input": 'const r=await tools.exec_command({cmd:"sleep 9"});text(r);'}),
+        ("custom_tool_call_output", {"call_id": "c1", "output": text("Script running with cell ID 7")}),
+        ("custom_tool_call", {"call_id": "c2", "name": "exec", "input": "await tools.other();"}),
+        ("custom_tool_call_output", {"call_id": "c2", "output": text("Script running with cell ID 8")}),
+        ("function_call", {"call_id": "w1", "name": "wait", "arguments": '{"cell_id":"7"}'}),
+        ("function_call_output", {"call_id": "w1", "output": text("Script running")}),
+        ("function_call", {"call_id": "w2", "name": "wait", "arguments": '{"cell_id":"8"}'}),
+        ("function_call_output", {"call_id": "w2", "output": text("Script completed")}),
+        ("function_call", {"call_id": "w3", "name": "wait", "arguments": '{"cell_id":"7"}'}),
+        ("function_call_output", {"call_id": "w3", "output": text("Script failed: boom")}),
+        ("function_call", {"call_id": "w4", "name": "wait", "arguments": '{"cell_id":"99"}'}),
+        ("function_call_output", {"call_id": "w4", "output": text("Script completed")}),
+        ("function_call", {"call_id": "w5", "name": "wait", "arguments": "{}"}),
+    ]
+    lines = [{"timestamp": "2026-10-01T10:00:00Z", "type": "response_item", "payload": {"type": kind, **body}} for kind, body in rows]
+    lines.insert(0, {"timestamp": "2026-10-01T09:59:00Z", "type": "event_msg", "payload": {
+        "type": "item_completed", "item": {"type": "CommandExecution", "process_id": "5", "status": "failed"}}})
+    lines += [{"timestamp": "2026-10-01T10:01:00Z", "type": "response_item", "payload": {"type": kind, **body}} for kind, body in (
+        ("custom_tool_call", {"call_id": "c9", "name": "exec", "input": 'tools.exec_command({cmd:"echo hi"})'}),
+        ("custom_tool_call_output", {"call_id": "c9", "output": text('{"chunk_id":"z","session_id":5,"output":"hi"}')}))]
+    lines += [{"timestamp": "2026-10-01T10:02:00Z", "type": "event_msg", "payload": {"type": "item_completed", "item": {"type": "CommandExecution", "process_id": str(1000 + i), "status": "completed"}}}
+              for i in range(205)]
+    transcript = tmp_path / "rollout.jsonl"
+    transcript.write_text("".join(json.dumps(line) + "\n" for line in lines))
+    tasks = PROVIDERS["codex"]().background_tasks(transcript)
+    assert (len(tasks.exits), "1000" in tasks.exits, "1204" in tasks.exits) == (200, False, True), "the ends of commands never seen start are kept for a while, the oldest forgotten first"
+    assert (tasks.commands["cell:7"], tasks.commands["cell:8"]) == ("sleep 9", "a script"), "a script cell is named by the command it ran, or as a script when it cannot be read"
+    assert ("cell:7" in tasks.printed, "cell:7" in tasks.failed, "cell:8" in tasks.ended, "cell:8" in tasks.failed) == (True, True, True, False), \
+        "waiting on a cell shows it printing, a failed answer ends it failed, a completed one ends it clean"
+    assert "cell:99" not in tasks.ended, "a wait on a cell nobody started ends nothing"
+    assert ("5" in tasks.ended and "5" in tasks.failed), "an end the transcript showed before the command's start still ends it, failed"

@@ -46,6 +46,9 @@ def test_putting_back_restores_only_the_hooks_and_keeps_what_changed_meanwhile(t
     settings.unlink()
     put_back(record)
     assert json.loads(settings.read_text())["hooks"] == hooks, "a file deleted meanwhile comes back with its hooks"
+    from features.clean_slate.slate import restore, slate_of
+    restore([{"to": str(tmp_path / "never-kept"), "from": str(tmp_path / "never-restored")}])
+    assert (not (tmp_path / "never-restored").exists(), slate_of(record)) == (True, True), "something that was set aside and is gone is not put back, and setting hooks aside is on until it is switched off"
 
 
 def test_a_second_set_aside_keeps_the_original_hooks_until_the_last_session_ends(tmp_path, monkeypatch):

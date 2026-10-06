@@ -52,6 +52,22 @@ def test_an_attached_video_is_sampled_into_frames_the_agent_can_inspect(tmp_path
         }, "the video points the agent at its sampled frames"
         assert [command[0] for command in called] == ["ffprobe", "ffmpeg"], "ffprobe and ffmpeg each run once"
         assert called[1][called[1].index("-frames:v") + 1] == str(video.MAX_FRAMES), "ffmpeg caps the number of frames"
+        messages.attach(message.n, str(source))
+        assert sorted(name for name in messages.load(message.n).files if "frame" in name) == ["walkthrough-mp4-frame-0001.jpg", "walkthrough-mp4-frame-0002.jpg"], \
+            "a video attached again replaces its frames instead of adding to them"
+        count = 0
+        for broken, failure in ((lambda command, **kwargs: SimpleNamespace(returncode=1, stdout="x", stderr="Invalid data\n"), "Invalid data"),
+                                (lambda command, **kwargs: SimpleNamespace(returncode=1, stdout="", stderr=""), "ffmpeg failed"),
+                                (lambda command, **kwargs: (_ for _ in ()).throw(OSError("no ffmpeg here")), "no ffmpeg here")):
+            video.subprocess.run = broken
+            clip = tmp_path / f"broken{count}.mp4"
+            clip.write_bytes(b"video")
+            messages.attach(message.n, str(clip))
+            count += 1
+            assert messages.load(message.n).files[clip.name].endswith(f"; no frames: {failure}"), "a clip that cannot be sampled says why"
+        feature.shutil.which = lambda name: None
+        messages.attach(message.n, str(tmp_path / "walkthrough.mp4"))
+        assert "ffmpeg and ffprobe are required" in messages.load(message.n).files["walkthrough.mp4"], "without ffmpeg the video says what is missing"
     finally:
         video.subprocess.run = run
         feature.shutil.which = which
@@ -60,7 +76,7 @@ def test_an_attached_video_is_sampled_into_frames_the_agent_can_inspect(tmp_path
 HERE = Path(__file__).resolve().parents[2]
 
 
-def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_finds_them(tmp_path):
+def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_finds_them(tmp_path, monkeypatch):
     record = fresh()
     Agents(record, actor=SYSTEM).create("session", status="working")
     messages = Messages(record, actor=USER)
@@ -117,3 +133,18 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     assert ("dashboard.png" in messages.load(message.n).pictures) is False, "a file with no readable size has no entry"
     messages.detach(message.n, "shot.png")
     assert ("shot.png" in messages.load(message.n).pictures) is False, "detach drops the size with the file"
+    odd = folder / "odd.jpg"
+    odd.write_bytes(b"\xff\xd8\x00\xff\xd0\xff\xc0" + struct.pack(">H", 17) + b"\x08" + struct.pack(">HH", 300, 400) + b"\x03" + b"\0" * 9)
+    messages.attach(message.n, str(odd))
+    assert messages.load(message.n).pictures["odd.jpg"] == [400, 300], "a picture's size is found past stray bytes and restart markers"
+    album = folder / "album"
+    album.mkdir()
+    (album / "one.txt").write_text("one")
+    messages.attach(message.n, str(album))
+    assert (messages.folder(message.n) / "album" / "one.txt").read_text() == "one", "a folder is attached whole"
+    import os
+    real_replace = os.replace
+    monkeypatch.setattr("controllers.files.os.replace", lambda source, target: (_ for _ in ()).throw(OSError("disk full")) if "staging" in str(source) else real_replace(source, target))
+    text.write_text("newer notes")
+    assert refused(lambda: messages.attach(message.n, str(text))) == "disk full", "a file that cannot be put in place is refused with the reason"
+    assert (messages.folder(message.n) / "notes.txt").read_text() == "notes", "and the file that was there is put back as it was"

@@ -7,7 +7,7 @@ from features.plugins import services
 from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Upgrade
 from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
-from features.plugins.recommended import SuggestFittingPlugins
+from features.plugins.fitting import SuggestFittingPlugins
 from engine.gates import CANCELABLE
 from features.plugins.parts import AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, ReadLinkedManifests, OneRowPerTitle, PluginChatRules
 from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_log, get_services, post_plugin_upgrade_preview, post_plugins_preview

@@ -1,4 +1,6 @@
+import json
 import time
+from pathlib import Path
 
 import features
 from controllers.types import Features, Notifications
@@ -8,6 +10,7 @@ from features import FEATURES
 from features.dev_faults.feature import DevFaults
 from resources.base import SYSTEM
 from tests.conftest import fresh
+from tests.kit import report
 
 
 def turned(record, on: bool):
@@ -71,6 +74,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     features.load()
     record = fresh()
     turned(record, True)
+    report(record, "working", "PreToolUse")
     for _ in range(2):
         with measured(record, "command", "message all"):
             busy(0.08)
@@ -78,6 +82,22 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
     events = [e for e in record.event_log.events() if e.type == "notification" and e.action == "updated" and e.data.get("fields")]
     assert events == [], "a repeat inside the window is stamped quietly, with no update line in the chat"
+    from controllers.types import Agents
+    main = Agents(record, actor=SYSTEM).primary()
+    Agents(record, actor=SYSTEM).update(main.n, uses=main.uses + 30)
+    with measured(record, "command", "message all"):
+        busy(0.08)
+    assert "Seen 3 times" in Notifications(record, actor=SYSTEM).rows.every()[0].brief, "once the agent has worked on, a fault that comes again is reported afresh with its count"
+    import cProfile
+    profile = cProfile.Profile()
+    profile.runcall(busy, 0.01)
+    reports = FEATURES["dev_faults"].reports
+    reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    kept = list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))
+    assert len(kept) == 1 and "function calls" in kept[0].read_text(), "a slow call over the budget keeps its profile in a file named for what was slow"
+    reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    reports.spent(Path("/nonexistent/journal"), "main", "command", "message all", 500.0, profile=profile)
+    assert len(list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))) == 1, "a slow call that cannot be filed because its journal is gone is dropped, not raised"
 
 
 def test_the_budget_is_tunable_per_environment():
@@ -91,7 +111,7 @@ def test_the_budget_is_tunable_per_environment():
     assert DevFaults().reports.milliseconds(record, "command") == 50
 
 
-def test_what_the_viewer_throws_is_filed_under_the_same_switch():
+def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     features.load()
     record = fresh()
     turned(record, False)
@@ -100,6 +120,46 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch():
     turned(record, True)
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
+    assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "took long", "request", "", "slow") is True, "a report of a slow request that was already filed is taken as filed"
+    from features.dev_faults.developing import developing
+    from features.dev_faults.diagnostics import logged
+    project = record.root.parent / "dev-project"
+    project.mkdir()
+    (project / ".env").write_text("OTHER=1\nDEVELOPMENT_MODE=true\n")
+    monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
+    assert developing(project) is True, "development mode is read from the project's own .env"
+    blocked = record.root.parent / "not-a-folder"
+    blocked.write_text("")
+    assert logged(blocked, "no place to write") is None, "a log that cannot be written is left unwritten, not crashed on"
+    from controllers import faults
+    from controllers.types import Notices
+    record = fresh()
+    assert faults.why(record.root) == "", "an engine that logged nothing has no last words"
+    faults.log_file(record.root).parent.mkdir(parents=True, exist_ok=True)
+    faults.log_file(record.root).write_text("\n".join(f"line {i}" for i in range(30)))
+    assert faults.why(record.root).splitlines() == [f"line {i}" for i in range(16, 30)], "the last words are the last lines of its log"
+    assert (faults.crashed(1, __import__("time").time()), faults.crashed(0, 0.0), faults.crashed(None, 0.0)) == (True, False, False), "only a quick non-zero exit is a crash"
+    assert faults.notice_stopped(record.root, record.env, "") is True and faults.notice_stopped(record.root, record.env, "") is False, "a stopped engine is noticed once"
+    faults.cleared(record.root, record.env)
+    assert [n.title for n in Notices(record, actor=SYSTEM).rows.standing()] == [], "the notice closes when the engine runs again"
+    try:
+        raise ValueError("bad row")
+    except ValueError:
+        sent_lines = []
+        voice = type("Voice", (), {"alive": lambda self: True, "send": lambda self, line: sent_lines.append(line)})()
+        faults.threw(record.root, record.env, "the engine", voice)
+        faults.threw(record.root, record.env, "the engine", voice)
+    assert [n.title for n in Notices(record, actor=SYSTEM).rows.standing()] == [faults.FAULT], "the same fault is filed once"
+    assert len(sent_lines) == 1 and "ValueError: bad row" in sent_lines[0], "and the agent is told once, with the fault"
+    faults.steady(record)
+    assert Notices(record, actor=SYSTEM).rows.standing() == [], "a steady engine closes the fault"
+    faults.damaged(record, "todo/3.md", "bad yaml")
+    assert any(faults.DAMAGED == n.title for n in Notices(record, actor=SYSTEM).rows.standing()), "a row that cannot be read is filed"
+    assert faults.place_of("no frames here\nValueError: x") == "ValueError: x", "a fault with no frame is placed by its last line"
+    assert faults.fault_of("") == "", "no trouble has no fault"
+    notices = Notices(record, actor=SYSTEM)
+    done = notices.create("a notice", brief="x")
+    assert notices.complete(done.n, "ok").completed and notices.complete(done.n, "again").completed, "completing a closed notice leaves it closed"
 
 
 def test_a_switch_sent_under_its_old_name_too_keeps_the_new_names_value():
@@ -148,7 +208,7 @@ def test_a_slow_request_waits_while_the_agent_waits():
     assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
 
 
-def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
+def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(capsys):
     import os
     from commands.http import dispatch
     from controllers.types import Messages
@@ -174,6 +234,16 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
             call()
         assert (len(work.opened) <= opened, len(work.scanned) <= scanned) == (True, True), \
             f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"
+    from commands.cli import run
+    out = record.root.parent / "speed.json"
+    capsys.readouterr()
+    run(["--root", str(record.root), "--env", record.env, "speed", "--runs", "1", "--out", str(out)])
+    table = capsys.readouterr().out
+    rows = {line.rsplit(None, 1)[0].strip() for line in table.splitlines()}
+    assert {"engine tick", "journal status", "server start to its first answer", "runtime/ MB"} <= rows, "the speed table times the engine, a command, the server and the runtime folder"
+    assert any(row.startswith("list message (40)") for row in rows) and any(row.endswith("through the server") for row in rows), \
+        "it counts the rows it lists and times commands through the server as well"
+    assert json.loads(out.read_text())["runs"] == 1, "the numbers are also saved to the file asked for"
 
 
 def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_its_event(monkeypatch):
@@ -202,3 +272,11 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     assert seen.setting("delivery") == {"mode": "two"}, "the view of another process holds until the event reaches it"
     features.passed(event, seen)
     assert seen.setting("delivery") == {"mode": "three"}, "the event makes it read the file again"
+    from features import switches
+    monkeypatch.setattr(switches, "UNEVENTED", [False])
+    switches.watch_change_log()
+    held = switches.switches(record).get("dev_faults", False)
+    turned(record, not held)
+    assert (switches.UNEVENTED, switches.switches(record).get("dev_faults", False)) == ([True], not held), \
+        "a process that watches the change log sees a switch another process turned, without waiting for an event"
+    assert switches.written(Record(record.root, "never-written")) == 0, "an environment with no change log has written nothing"

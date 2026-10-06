@@ -4,6 +4,7 @@ import {api} from "../../api/client.js";
 import {answer} from "../../chat/answers.js";
 import {markSeen} from "../../sync/seen.js";
 import {DELETE_NOTE, closeNote, closeWord, word} from "../../domain/spec.js";
+import {CHANGE} from "../../domain/suggestions.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
@@ -11,8 +12,6 @@ import {toast} from "../kit/toast.js";
 const MOVABLE = ["todo", "plan", "suggestion", "collection", "report", "fact", "reminder"];
 const COLLECTABLE = ["todo", "plan", "suggestion", "doc", "report", "message", "fact", "rule", "ticket"];
 const ANSWERED = ["question", "suggestion"];
-const ADJUST = "Adjust";
-const ADJUST_SUB = "Say what to do differently. A to-do is filed from your words.";
 
 const props = defineProps({
     row: {type: Object, required: true},
@@ -28,7 +27,7 @@ const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const options = computed(() =>
     (props.row.data.options || []).map((option) => {
         const title = option.title || option.label || "";
-        return {title, sub: title === ADJUST ? ADJUST_SUB : capital(option.description || "")};
+        return {title, sub: capital(option.description || "")};
     })
 );
 
@@ -132,8 +131,8 @@ const own = (title, label, sub = "") => ({
 });
 
 const pick = (option) =>
-    option.title === ADJUST
-        ? () => (form.value = own("Adjust the suggestion", "What to do differently", "A to-do is filed from your words."))
+    option.title === CHANGE
+        ? () => (form.value = own(CHANGE, "What to do differently", "A to-do is filed from your words."))
         : () => answerWith(option.title);
 
 const sure = () =>

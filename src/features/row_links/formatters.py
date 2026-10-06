@@ -55,6 +55,8 @@ def exists(record, env: str | None, name: str, n: int) -> bool:
 
 
 def chipped(text: str, record=None) -> str:
+    if not named()[1].search(text):
+        return text
     places = environments(record) if record is not None else ()
     names, found = named(places)
 

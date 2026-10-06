@@ -30,6 +30,8 @@ def test_a_dump_is_read_and_filed_item_by_item_and_closes_when_every_item_is_set
     agent.failed(dump.n, "notes.md", "the file is empty")
     closed = agent.load(dump.n)
     assert (bool(closed.completed), closed.outcome) == (True, "1 filed, 1 failed"), "the last settled item closes the dump"
+    assert agent.items(dump.n)[1] == "notes.md: failed - the file is empty", "an item that failed says why in the list"
+    assert refused(lambda: agent.log(dump.n, "Adding files")) == f"dump {dump.n} is closed", "a closed dump takes no more of the agent's progress lines"
     assert refused(lambda: dumps.attach(dump.n, str(dropped))) == f"dump {dump.n} is already filed: start a new dump for more", \
         "more can be dropped only while a dump is still filing"
 
@@ -154,6 +156,14 @@ def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     assert not [c for c in CONTROLLERS["agent"](record).primary().data.get("cards") or [] if "dump" in c["label"]], "and nothing about it reaches the main chat"
     agent.log(dump.n, "Booked the room", detail="Room 4, Thursday")
     assert agent.load(dump.n).data["log"][-1]["text"] == "Booked the room", "the agent logs what it does after the summary"
+    agent.offer(dump.n, '[{"label": "Add a to-do", "type": "todo", "action": "create", "body": {"title": "Confirm the room"}}]')
+    user.choose(dump.n, 0)
+    assert [row.title for row in Todos(record, actor=AGENT).rows.standing()].count("Confirm the room") == 1, "a suggestion that names a command runs it when the user takes it"
+    assert "has no option 7" in refused(lambda: user.choose(dump.n, 7)) and "has no option 7" in refused(lambda: user.decline(dump.n, 7)), \
+        "only an offered step is taken or declined"
+    assert user.dismiss(dump.n).data["dismissed"], "a filed dump can be dismissed from the list"
+    user.remove(user.create("Not yet closed").n)
+    assert any(row.data.get("removed") for row in user.rows.every()), "removing a dump that is still open stops it first"
 
 
 def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():
@@ -169,3 +179,51 @@ def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():
     written = agent.load(dump.n)
     assert (written.data["question"]["guesses"], written.data["log"][-1]["making"]) == (["The standup", "Neither"], "plan, Autoscaler rollout"), \
         "a question carries the agent's guesses and a log line names what it is about to make"
+    a_dump_refuses_what_it_cannot_do(record, dump)
+
+
+def a_dump_refuses_what_it_cannot_do(record, dump):
+    user = CONTROLLERS["dump"](record, actor=USER)
+    agent = CONTROLLERS["dump"](record, actor=AGENT)
+    assert "not valid" in refused(lambda: user.offer(dump.n, "{broken")) or "JSON list" in refused(lambda: user.offer(dump.n, "{broken")), "an offer that is not JSON is refused with its shape"
+    assert "no pasted text" in refused(lambda: user.split(user.create("Empty").n, "A, B")), "a dump with no pasted text has nothing to split"
+    assert "name the parts" in refused(lambda: user.split(dump.n, " , ")), "a split names at least one part"
+    assert [bool(refused(lambda: user.say(dump.n, text))) for text in ("", "x" * 2000)] == [True, True], "an answer in the dump is neither empty nor long"
+    assert "say what you need to know" in refused(lambda: agent.ask(dump.n, " ")), "a question asks something"
+    assert "say the answer" in refused(lambda: user.answer(dump.n, " ")), "an answer says something"
+    assert "no question waiting" in refused(lambda: user.answer(user.create("Quiet").n, "yes")), "an answer needs a question to answer"
+    assert "say what was done" in refused(lambda: agent.filed(dump.n, "Summary", " ")), "a filed item says what was done with it"
+    assert "also list in refs" in refused(lambda: agent.filed(dump.n, "Summary", "Filed", refs="doc:1", added="doc:2")), "an item names as added only rows it also lists"
+    assert "say why" in refused(lambda: agent.failed(dump.n, "Summary", " ")), "a failed item says why"
+    assert "only the user stops" in refused(lambda: agent.stop(dump.n)), "the agent never stops a dump"
+    loose = user.create("Loose")
+    user.unlink(loose.n, loose.refs[0])
+    assert "no collection" in refused(lambda: user.name(loose.n, "Named")) and "say the name" in refused(lambda: user.name(dump.n, " ")), \
+        "a dump is named only once it has a collection, and with a name"
+    assert "say what should happen" in refused(lambda: user.direct(dump.n, " ")), "directing a dump says what should happen next"
+    finished = user.create("Done")
+    user.stop(finished.n)
+    assert "already closed" in refused(lambda: user.stop(finished.n)), "a closed dump is not stopped again"
+    assert "is closed" in refused(lambda: agent.ask(finished.n, "Why?")), "a closed dump asks nothing"
+    user.remove(finished.n)
+    assert "already removed" in refused(lambda: user.remove(finished.n)) and "only the user removes" in refused(lambda: agent.remove(finished.n)), \
+        "a dump is removed once, and only by the user"
+
+
+def test_a_closed_dump_lets_go_of_the_drafts_it_still_held():
+    from controllers.stored import DRAFT_OF
+    from migrations.m0050_dump_drafts_released import run
+
+    record = fresh()
+    dumps = CONTROLLERS["dump"](record, actor=AGENT)
+    dump = dumps.create("Old dump")
+    held = Todos(record, actor=AGENT).create("held draft", **{DRAFT_OF: dump.ref})
+    other = Todos(record, actor=AGENT).create("someone else's", **{DRAFT_OF: "dump:99"})
+    dumps.link(dump.n, held.ref)
+    dumps.link(dump.n, other.ref)
+    dumps.link(dump.n, "todo:77")
+    dumps.link(dump.n, "mystery:1")
+    dumps.complete(dump.n, how="filed")
+    assert run(record.root) == [held.ref], "only a row still held by this dump is released"
+    assert not Todos(record, actor=AGENT).load(held.n).data.get(DRAFT_OF), "the released row no longer names the dump"
+    assert Todos(record, actor=AGENT).load(other.n).data[DRAFT_OF] == "dump:99", "a row held by another dump stays held"

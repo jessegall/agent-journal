@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parents[1] / "src"
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from install import git_env
 from providers import DRIVERS
 
 STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
@@ -28,7 +29,8 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
     standin = place / "bin" / name
     standin.write_text(STANDIN)
     standin.chmod(0o755)
-    env = {**os.environ, "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home")}
+    env = {**git_env(), "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home"),
+           "AGENT_JOURNAL_REPO": str(place / "no-journal-releases")}
     env.pop("JOURNAL_ENV", None)
     journal = [sys.executable, str(entry), "--root", str(place / PROJECT / ".journal")]
     launched = subprocess.Popen([*journal, name], cwd=place / PROJECT, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -97,7 +99,8 @@ def guard() -> float:
     place = Path(tempfile.mkdtemp(prefix="guard-"))
     try:
         (place / PROJECT).mkdir()
-        env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+        env = {**git_env(), "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1",
+               "AGENT_JOURNAL_REPO": str(place / "no-journal-releases")}
         env.pop("JOURNAL_ENV", None)
         installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=WAIT)
         root = place / PROJECT / ".journal"

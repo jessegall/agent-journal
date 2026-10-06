@@ -61,6 +61,40 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
         "a model the provider does not offer is refused up front, naming the ones it does"
     helpers.dispatch("Rhea", "a job", "claude", "sonnet")
     assert "exists" in refused(lambda: helpers.dispatch("Rhea", "another job", "claude", "sonnet")), "one helper per name at a time"
+    assert "no letters" in refused(lambda: helpers.dispatch("!!!", "a job", "claude", "sonnet")), "a name made of no letters cannot name an environment"
+    assert "not both" in refused(lambda: helpers.dispatch("Zed", "a job", "claude", "sonnet", worktree=True, checkout="platform")), "a helper works in a worktree or a checkout, never both"
+    todos = Todos(record, actor=AGENT)
+    finished, taken = todos.create("finished already").n, todos.create("taken already").n
+    todos.complete(finished, "done")
+    Todos(record, actor=SYSTEM).assign(taken, to="helper:7")
+    assert "already done" in refused(lambda: helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(finished))), "a finished to-do is not handed on"
+    assert f"todo {taken} is already assigned to helper:7" in refused(lambda: helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(taken))), \
+        "a to-do one helper holds is not handed to another"
+    assert "only a helper marks" in refused(lambda: helpers.done(finished, "x")), "the agent that dispatched a helper closes its own to-dos itself"
+    assert "is not running" in refused(lambda: helpers.say(1, "hello")), "a helper that is not running cannot be told anything"
+    from engine.sessions import Sessions
+    from features.agent_sessions.launch import running_in, stop_in, tell_in
+    Sessions(record.root).bind("claude-8", "helper-env", provider="claude")
+    assert (running_in(record, "helper-env"), running_in(record, "elsewhere"), tell_in(record, "elsewhere", "claude", "hi")) == ("claude-8", "", False), \
+        "an environment with an agent seated in it is running, and nothing can be typed into one without"
+    stop_in(record, "helper-env")
+    stop_in(record, "elsewhere")
+    mine = todos.create("hand this on").n
+    helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(mine))
+    zed = Helpers(Record(record.root, helpers.load(2).environment), actor=AGENT)
+    assert zed.done(mine, "handled") == f"todo {mine} is done" and todos.load(mine).completed, "a helper without a worktree closes its to-do at once"
+    monkeypatch.setattr(Environments, "stop", lambda self, n: "stopped")
+    assert Helpers(record, actor=USER).stop(2).startswith("stopped") and helpers.load(2).stopped_by_user, "when you stop a helper it is remembered as stopped by you"
+    later = todos.create("handed but never launched").n
+    monkeypatch.setattr("features.helpers.controller.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
+    assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
+        "a helper that cannot be launched gives back the to-dos it was handed"
+    ghost = Helpers(record, actor=SYSTEM).create("Ghost job", name="Ghost", provider="claude", model="sonnet", environment="helper-env")
+    assert "is still running" in refused(lambda: helpers.complete(ghost.n)), "a helper whose agent still runs is stopped before it is finished"
+    lost = Helpers(record, actor=SYSTEM).create("Lost job", name="Lost", provider="claude", model="sonnet", environment="no-such-env")
+    assert "has no environment left to stop" in refused(lambda: helpers.stop(lost.n)), "a helper whose environment is gone has nothing to stop"
+    monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
+    assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
 
 
 def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_a_nudge(monkeypatch):
@@ -181,3 +215,39 @@ def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, t
     helpers.dispatch("Ada", "carry on with the queue", "claude", "sonnet", checkout="platform")
     assert [h.title for h in helpers.all()] == ["carry on with the queue"] and helpers.load(first.n).completed, \
         "a helper started again in a stopped helper's environment takes its place: the stopped row is closed, never listed twice"
+
+
+def test_a_helper_is_working_idle_needing_you_reported_stopped_or_finished_by_what_its_agent_last_did():
+    from types import SimpleNamespace
+    from features.helpers.state import HelperSnapshot, WorkState, helper_reason, helper_state
+    row = lambda **given: SimpleNamespace(**{"completed": False, "report": "", "stopped_by_user": False, **given})
+    snapshot = lambda **given: HelperSnapshot.from_payload(given)
+    running = {"status": "working", "at": 1000.0}
+    states = [helper_state(row(), snapshot(agent=running), 1100.0), helper_state(row(), snapshot(agent=running), 2000.0),
+              helper_state(row(), snapshot(agent=running, attention={"kind": "question", "text": "which?"}), 1100.0),
+              helper_state(row(report="done"), snapshot(agent=running), 1100.0), helper_state(row(completed=True, report="done"), snapshot(), 1100.0),
+              helper_state(row(), snapshot(), 1100.0), helper_state(row(stopped_by_user=True), snapshot(agent={"status": "stopped"}), 1100.0)]
+    assert states == [WorkState.WORKING, WorkState.IDLE, WorkState.NEEDS, WorkState.REPORTED, WorkState.FINISHED, WorkState.ENDED, WorkState.STOPPED], \
+        "a helper is working while its agent was active in the last five minutes, idle after, and needs you when it asks"
+    reasons = [helper_reason(snapshot(attention={"kind": kind, "text": "which?"}), 0.0) for kind in ("question", "permission")]
+    assert reasons == ["Asks a question: which?", "Wants a permission: which?"], "what a helper needs is said in its own words"
+    assert (helper_reason(snapshot(silent=True, agent=running), 1000.0 + 20 * 60), helper_reason(snapshot(), 0.0)) == ("Silent for 20 min", ""), \
+        "a silent helper says for how long, and one that needs nothing says nothing"
+
+
+def test_a_helper_in_a_checkout_named_unlike_its_environment_can_be_told_something(monkeypatch):
+    import os
+    from engine.sessions import Sessions
+    from providers import PROVIDERS
+    from runner.hooks import answer
+    features.load()
+    started(monkeypatch)
+    record = fresh()
+    project = record.root.resolve().parent
+    (project / "platform").mkdir()
+    (project / "platform" / ".git").write_text("gitdir: /elsewhere/.git/worktrees/platform")
+    Helpers(record, actor=AGENT).dispatch("Ada", "review the queue", "claude", "sonnet", checkout="platform")
+    place = Helpers(record, actor=AGENT).all()[0].environment
+    assert place != "platform"
+    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "SessionStart", "session_id": "ada-session", "cwd": str(project / "platform")}, os.getpid(), place)
+    assert Sessions(record.root).holder(place) == "ada-session", "its session binds to the environment it was launched for, so it is found and can be told"

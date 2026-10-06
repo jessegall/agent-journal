@@ -114,7 +114,7 @@ def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
     assert DRIVERS["claude"](record, "claude-777")._report().title == "claude-1", "found by its process, not by a hook after the restart"
 
 
-def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path):
+def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path, monkeypatch, capsys):
     import json
     from providers.claude_channel import contents, fresh_lines, start
     f = tmp_path / "channel.jsonl"
@@ -135,9 +135,68 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     from providers.claude_channel import READ_AT
     os.environ[READ_AT] = str(at)
     assert (start(f), READ_AT in os.environ) == (at, False), "the restarted channel reads on from where it stopped, so nothing queued meanwhile is skipped"
+    import io, json, os
+    from providers import claude_channel as channel
+    from engine.sessions import ACTIVE_ENV
+    monkeypatch.delenv(ACTIVE_ENV, raising=False)
+    monkeypatch.delenv(channel.CHECKING, raising=False)
+    root = tmp_path / ".journal"
+    requests = ["not json\n", json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize"}) + "\n",
+                json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n",
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "ping"}) + "\n"]
+    monkeypatch.setattr(channel.sys, "stdin", io.StringIO("".join(requests)))
+    assert channel.main([str(root)]) == 0, "the channel answers its requests until its input ends"
+    out = [json.loads(l) for l in capsys.readouterr().out.splitlines()]
+    assert [o["id"] for o in out] == [1, 2], "a line that is no request and a notification get no answer"
+    assert out[0]["result"]["capabilities"] == {} and out[1]["result"] == {}, "a channel the journal did not launch offers no capability, and any call gets an empty result"
+    monkeypatch.setenv(channel.CHECKING, "1")
+    assert channel.main([]) == 0, "a channel started only to check it starts ends at once"
+    assert channel.start(tmp_path / "nothing") == 0, "a queue that does not exist yet is read from its start"
+    assert channel.fresh_lines(tmp_path / "nothing", 5) == ([], 5), "a queue that is gone has nothing new and keeps its place"
+    import os, pytest
+    from types import SimpleNamespace
+    from providers import claude_channel as channel
+    class Stop(Exception):
+        pass
+    sleeps = []
+    def sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) > 2:
+            raise Stop
+    monkeypatch.setattr(channel.time, "sleep", sleep)
+    monkeypatch.setattr(channel.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0))
+    assert channel.starts() is True, "a new build that starts is taken over to"
+    monkeypatch.setattr(channel.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=1))
+    assert channel.starts() is False, "a new build that exits with an error is not taken over to"
+    def broken(*a, **k):
+        raise OSError("no")
+    monkeypatch.setattr(channel.subprocess, "run", broken)
+    assert channel.starts() is False, "a new build that cannot be run at all is not taken over to"
+    root = tmp_path / ".journal"
+    queue = channel.queue(root, 77)
+    queue.parent.mkdir(parents=True, exist_ok=True)
+    queue.write_text("")
+    executed = []
+    monkeypatch.setattr(channel, "renewed", lambda root, began: True)
+    answers = iter([False, True])
+    monkeypatch.setattr(channel, "starts", lambda: next(answers))
+    monkeypatch.setattr(channel.os, "execv", lambda program, argv: executed.append(argv) or (_ for _ in ()).throw(Stop()))
+    with pytest.raises(Stop):
+        channel.push(root, 77)
+    assert executed and channel.READ_AT in os.environ, "a channel that finds a new build that starts restarts itself and carries its place over"
+    os.environ.pop(channel.READ_AT)
+    # exception branch
+    sleeps.clear()
+    monkeypatch.setattr(channel, "renewed", lambda root, began: False)
+    seen = []
+    monkeypatch.setattr("controllers.faults.threw", lambda root, env, what: seen.append(what))
+    monkeypatch.setattr(channel, "fresh_lines", lambda f, at: (_ for _ in ()).throw(RuntimeError("boom")))
+    with pytest.raises(Stop):
+        channel.push(root, 77)
+    assert set(seen) == {"the channel that carries lines to the agent"}, "a failure in the channel is filed under its own name"
 
 
-def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
+def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_follow_up_is_typed_as_an_instruction(monkeypatch):
     from providers import DRIVERS
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-99")
@@ -149,6 +208,15 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
     driver.sent_at -= 5
     driver.pump()
     assert sent == ["first", "second"], "the queue goes out when the window ends"
+    follow = DRIVERS["claude"](fresh(), "claude-9")
+    posted, typed = [], []
+    monkeypatch.setattr(follow, "_post", lambda line, by: posted.append((line, by)) or True)
+    monkeypatch.setattr(follow, "_typed", lambda line, confirmed: typed.append(line) or True)
+    monkeypatch.setattr(follow, "awaits_answer", lambda: False)
+    assert follow.TAKES_CHANNEL and follow.send("do the next step", now=True, by="claude-1")
+    assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
+    assert follow.send("todo 5 next", now=True)
+    assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
 
 
 def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
@@ -164,19 +232,6 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     driver._report = lambda: SimpleNamespace(at=time.time(), asking={}) if written.count(b"\r") >= 2 else None
     assert (driver.send("hello", now=True), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
-
-
-def test_a_follow_up_is_typed_as_an_instruction_and_only_the_journal_uses_the_channel(monkeypatch):
-    from providers import DRIVERS
-    driver = DRIVERS["claude"](fresh(), "claude-9")
-    posted, typed = [], []
-    monkeypatch.setattr(driver, "_post", lambda line, by: posted.append((line, by)) or True)
-    monkeypatch.setattr(driver, "_typed", lambda line, confirmed: typed.append(line) or True)
-    monkeypatch.setattr(driver, "awaits_answer", lambda: False)
-    assert driver.TAKES_CHANNEL and driver.send("do the next step", now=True, by="claude-1")
-    assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
-    assert driver.send("todo 5 next", now=True)
-    assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
 
 
 def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
@@ -216,6 +271,8 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._post("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
     assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
+    alive.unlink()
+    assert driver._post("todo 8 next", "journal") is False, "a channel whose file is gone takes nothing, and the line is typed instead"
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):

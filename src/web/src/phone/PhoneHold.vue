@@ -3,7 +3,7 @@ import {plainText} from "../text/words.js";
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import {firstTime} from "./once.js";
-import {useTrap} from "./trap.js";
+import {useTrap} from "../composables/trap.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const MARGIN = 12;

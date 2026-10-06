@@ -96,9 +96,11 @@ def test_the_board_counts_each_role_by_the_tickets_where_its_work_is_in_hand():
     assert roles == {"engineering/developer": working, "engineering/lead": []}, roles
     domain = COMMANDS["ticket"]["organization"](tickets)["domains"][0]
     assert domain["working"] == [{"role": "developer", "role_title": "Developer", **working[0]}], "a domain lists the agents working in it"
+    write(home / "roles" / "developer" / "role.toml", 'cardinality = "everywhere"\n')
+    assert tickets._roles() == [], "a board whose organization files cannot be read shows no roles rather than failing"
 
 
-def test_a_global_role_takes_one_task_at_a_time_across_every_environment():
+def test_a_global_role_takes_one_task_at_a_time_across_every_environment(monkeypatch):
     import features
     from controllers.types import Todos
     from engine.record import Record
@@ -116,8 +118,13 @@ def test_a_global_role_takes_one_task_at_a_time_across_every_environment():
     waiting = Todos(second_env, actor=AGENT).load(second["todo"])
     assert (bool(Todos(first_env, actor=AGENT).load(first["todo"]).blocked), bool(waiting.blocked), waiting.data["waits_for"]) == (False, True, f"ticket-1:{first['todo']}"), \
         "the deployer runs once per journal: a second ticket's task waits for the first, wherever it is"
+    write(home / "roles" / "deployer" / "role.toml", 'title = "Deployer"\ncardinality = "global"\nruns = "agent"\n')
+    launched = []
+    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, place, agent, args: launched.append(place))
     Todos(first_env, actor=AGENT).complete(first["todo"], "deployed")
     assert not Todos(second_env, actor=AGENT).load(second["todo"]).blocked, "and starts once the first is done"
+    assert (len(launched), bool(Todos(second_env, actor=AGENT).load(second["todo"]).data.get("role_environment"))) == (1, True), \
+        "a role that runs as an agent has one started for the task that was waiting, and the task remembers where it works"
 
 
 def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeypatch):
@@ -146,3 +153,56 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
     assert (agents, len(launched)) == (["plan-3-developer", "plan-3-developer"], 2), \
         "a plan role keeps one agent for the whole plan and hands it each next task"
     assert Todos(ticket, actor=AGENT).load(given["todo"]).data["role_environment"] == "ticket-5-developer-1" and "Nothing to dispatch" in given["brief"]
+    write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plural"\nruns = "agent"\n')
+    stopped = []
+    monkeypatch.setattr("features.organization.handlers.stop_in", lambda record, name: stopped.append(name))
+    Todos(ticket, actor=AGENT).complete(given["todo"], "built")
+    assert stopped == ["ticket-5-developer-1"], "the agent a finished task had of its own is stopped"
+
+
+def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_the_one_session_that_holds_it():
+    import features
+    from controllers.types import Environments, Todos
+    from engine.record import Record
+    from engine.sessions import Sessions
+    from resources.base import AGENT, SYSTEM
+    from tests.conftest import fresh, refused
+    features.load()
+    record = fresh()
+    envs = lambda session="claude-1": Environments(record, actor=SYSTEM, session=session)
+    first = envs().create("alpha")
+    assert "needs a name" in refused(lambda: envs().create("  ")), "an environment is never nameless"
+    assert "exists" in refused(lambda: envs().create("alpha")), "a name already taken is refused"
+    assert "viewer's own addresses" in refused(lambda: envs().create("plugins")), "a word the viewer's own addresses use is not a name"
+    assert "no session to bind" in refused(lambda: Environments(record, actor=SYSTEM).switch(first.n)), "taking an environment needs a session to take it"
+    second = envs().create("beta")
+    envs().switch(first.n)
+    assert Sessions(record.root).holder("alpha") == "claude-1", "the session that took an environment holds it"
+    assert "is taken by session claude-1" in refused(lambda: envs("claude-2").switch(first.n)), "another session cannot take a held environment without a reason"
+    envs().switch(second.n)
+    assert Sessions(record.root).read("claude-1").before == "alpha", "a session remembers where it came from"
+    envs().switch(0, back=True)
+    assert Sessions(record.root).environment("claude-1") == "alpha", "going back returns to the environment it came from"
+    assert "came from nowhere" in refused(lambda: envs("claude-9").switch(0, back=True)), "a session that came from nowhere has nowhere to go back to"
+    picked = envs().pickup(first.n)
+    assert picked["environment"] == "alpha" and picked["holder"] == "claude-1", "picking up an environment says who holds it"
+    assert "does not hold" in refused(lambda: envs().leave(second.n)), "a session cannot leave an environment it does not hold"
+    envs().leave(first.n)
+    assert Sessions(record.root).holder("alpha") == "", "leaving frees the environment"
+    Todos(Record(record.root, "alpha"), actor=AGENT).create("an open job")
+    swept = envs().sweep(first.n)
+    assert "a sweep of 'alpha'" in swept and "--yes sweeps" in swept, "a sweep says what it would pack before it does"
+    assert "has nothing to sweep" in envs().sweep(second.n, yes=True), "an environment with nothing finished has nothing to sweep"
+    assert "--yes removes it anyway" in refused(lambda: envs().complete(first.n)), "an environment that still holds open rows is not removed unless that is said"
+    alpha = Record(record.root, "alpha")
+    finished = Todos(alpha, actor=AGENT).create("a finished job")
+    Todos(alpha, actor=AGENT).complete(finished.n, "done")
+    note = record.root.parent / "note.txt"
+    note.write_text("kept beside the row")
+    Todos(alpha, actor=AGENT).attach(finished.n, str(note))
+    assert envs().sweep(first.n, yes=True).startswith("swept"), "what is finished is packed into the attic together with the files beside it"
+    assert "no archived environment 'gone'" in refused(lambda: envs().unarchive("gone")), "bringing back an environment that was never archived is refused"
+    envs().complete(second.n, yes=True)
+    assert [r["title"] for r in envs().rows.summaries() if not r["deleted"]].count("beta") == 0, "a removed environment is gone from the list"
+    again = envs().unarchive("beta")
+    assert again.title == "beta", "an archived environment comes back under its own name"

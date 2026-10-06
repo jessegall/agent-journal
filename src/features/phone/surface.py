@@ -20,12 +20,14 @@ from features.plans.controller import Plans
 from features.plans.resource import READY, WAITING
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
+from features.suggestions.controller import Suggestions
 from features.work_modes.modes import pick
 from features.work_tracking.auto import automatic
 from resources.base import AGENT, SYSTEM, USER, Refused, Stale, titled
 from resources.shapes import level_named
 
 CARDS = ("todo", "question", "suggestion", "plan", "report", "doc", "work", "agent")
+SUGGESTION_ACTS = ("complete", "install", "reopen", "note_window")
 LISTED = 20
 REACTED = ("message", "comment")
 HIDDEN = ("phone", "share", "plugin")
@@ -154,6 +156,12 @@ class PhoneSurface:
         if not chosen.answer.strip():
             raise Refused("an answer needs words")
         return questions.complete(chosen.n, how=chosen.answer.strip(), via=self.via)
+
+    def suggestion(self, deciding):
+        if deciding.act not in SUGGESTION_ACTS:
+            raise Refused(f"a phone answers a suggestion with {', '.join(SUGGESTION_ACTS)}")
+        given = {"how": deciding.how.strip(), "via": self.via} if deciding.act == "complete" else {}
+        return Suggestions(self.home, actor=USER).action(deciding.act)(deciding.n, **given)
 
     def dismiss(self, n: int):
         questions = Questions(self.home, actor=USER)

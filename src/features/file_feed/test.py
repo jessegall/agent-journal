@@ -76,6 +76,19 @@ def test_a_deleted_file_is_one_line_with_its_removed_count():
     project.changed()
     card = edits_since(project.record, project.agent, 0, PAGE).edits[0]
     assert (card.kind, card.removed, card.rows) == ("deleted", 3, ()), "a deleted file carries no diff rows"
+    from features.file_feed import diff as diffing
+    long = diffing.Diff.between([], [f"line {i}" for i in range(diffing.MOST_ROWS + 25)])
+    assert (len(long.rows), long.rows[-1].kind, long.added) == (diffing.MOST_ROWS + 1, "fold", diffing.MOST_ROWS + 25), "a very long change shows its first rows and says how many more there are"
+    diffing.DIFFS.clear()
+    diffing.DIFFS.update({("a", "b"): long, ("c", "d"): long})
+    real = diffing.MOST_DIFFS
+    diffing.MOST_DIFFS = 1
+    try:
+        diffing.diffed(project.root, [])
+        assert list(diffing.DIFFS) == [("c", "d")], "the oldest diffs are dropped once too many are kept"
+    finally:
+        diffing.MOST_DIFFS = real
+        diffing.DIFFS.clear()
 
 
 def test_a_change_made_while_work_is_open_is_counted_on_that_work():
@@ -87,6 +100,13 @@ def test_a_change_made_while_work_is_open_is_counted_on_that_work():
     project.changed()
     changed = Works(project.record).load(work.n).changed
     assert [(c["path"], c["added"], c["removed"]) for c in changed] == [("a.py", 3, 1)], "the work counts the file against how it stood when the work began"
+    (project.root / "b.py").write_text("brand new\n")
+    project.changed()
+    made = {c["path"]: c["created"] for c in Works(project.record).load(work.n).changed}
+    assert made == {"a.py": False, "b.py": True}, "a file the work made is counted as created"
+    (project.root / "a.py").write_text("one\ntwo\n")
+    project.changed()
+    assert [c["path"] for c in Works(project.record).load(work.n).changed] == ["b.py"], "a file put back as it was is no longer a change of the work"
 
 
 def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
@@ -106,6 +126,13 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (served.code, served.body["text"]) == (200, "1\n"), "the viewer's request for an edited file is served whole"
     assert asked({"id": older.edits[0].id, "side": "sideways"}).code == 400, "a side that is neither before nor after is refused"
     assert asked({"id": "no-such-edit", "side": Side.AFTER}).code == 404, "an edit nobody made is not found"
+    import features.file_feed.feed as feeding
+    kept = feeding.blob_texts
+    feeding.blob_texts = lambda project, shas: {}
+    try:
+        assert asked({"id": older.edits[0].id, "side": Side.AFTER}).code == 404, "an edit whose file is no longer kept in git is not found either"
+    finally:
+        feeding.blob_texts = kept
     listed = dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/older", project.record.root, {"before": str(newest.edits[0].at), "last": "2"}, {})
     assert (listed.code, len(listed.body["edits"])) == (200, 1), "the older page is served as the viewer asks for it"
 
@@ -125,3 +152,43 @@ def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
     announce(record, agent, skill_folders())
     cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(record, agent, 0, PAGE).edits}
     assert cards == {"site/main.py": ("edit", 2, 1), "api/new.py": ("new", 1, 0)}, cards
+
+
+def test_a_repository_with_nothing_in_it_a_missing_folder_and_a_job_that_fails_are_all_handled_quietly(tmp_path):
+    import threading
+    import pytest
+    from engine import files
+    record = fresh()
+    project = tmp_path / "project"
+    project.mkdir()
+    assert files.internal(record, project, ("home",)) == ("home/journal",), "a journal folder outside the project marks nothing of the project as the journal's own"
+    assert (files.nested_repositories(project, 0), files.nested_repositories(project / "missing", 2)) == ([], []), "no depth left or a folder that cannot be read has no repositories"
+    subprocess.run(["git", "init", "-q", str(project)], check=True, timeout=30)
+    assert files.tracked_in(project) == {}, "a repository that has no index yet tracks nothing"
+    assert [files.match_rank(path, "note") for path in ("docs/notes.md", "docs/my-notes.md", "docs/x.md")] == [0, 1, 2], \
+        "a file that starts with the search ranks before one that only contains it"
+
+    coalesced, ran, release, begun = files.Coalesced(), [], threading.Event(), threading.Event()
+
+    def slow():
+        ran.append("first")
+        begun.set()
+        release.wait(10)
+    first = threading.Thread(target=coalesced.run, args=("key", slow))
+    first.start()
+    assert begun.wait(10)
+    coalesced.run("key", lambda: ran.append("second"))
+    coalesced.run("key", lambda: ran.append("third"))
+    release.set()
+    first.join(10)
+    assert ran == ["first", "third"], "a job asked for while it runs is run once more afterwards, with only the newest request kept"
+
+    class JobFailed(Exception):
+        pass
+
+    def failing():
+        raise JobFailed()
+    with pytest.raises(JobFailed):
+        coalesced.run("key", failing)
+    coalesced.run("key", lambda: ran.append("after the failure"))
+    assert ran[-1] == "after the failure", "a job that fails does not leave its key blocked"
