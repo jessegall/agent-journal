@@ -92,6 +92,7 @@ const cards = (agents) =>
                 started: c.started,
                 depth: c.depth || 0,
                 ended: c.ended,
+                search: c.found === undefined ? null : {label: c.label, found: c.found, reads: c.reads || []},
             })
         )
     );

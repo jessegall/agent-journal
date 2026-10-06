@@ -21,6 +21,32 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     assert marks == ["Searched the history for 'phone link'", "Read back the conversation the last summary replaced", "Read back your own words"], marks
 
 
+def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():
+    from engine import bus, ran
+    from engine.chat import SENT
+    from features import FEATURES
+    from features.history_searches.handlers import MarkHistorySearches
+    from resources.base import AGENT
+    features.load()
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    agent = agents.by_session("claude-1")
+    search = lambda command, output: (
+        MarkHistorySearches().intercept(AgentContext.of(FEATURES["history_searches"], record, agent), BashCall("Bash", {"command": command}, {}, command=command)),
+        ran.announce(record, agent.n, "Bash", command, output))
+    search('journal search "phone link"', "todo 12 phone link\nfact 3 tunnel")
+    ran.announce(record, agent.n, "Bash", "journal todo show 12", "Title: phone link")
+    ran.announce(record, agent.n, "Read", "reading a.py /x/a.py", "print(1)")
+    ran.announce(record, agent.n, "Bash", "ls", "a.py")
+    search('journal search "tunnel"', "fact 3 tunnel")
+    ran.announce(record, agent.n, "Bash", "journal fact show 3", "The tunnel needs TLS")
+    bus.announce(record, "agent", agent.n, SENT, AGENT, {"text": "done", "turn": "1"})
+    ran.announce(record, agent.n, "Bash", "journal todo show 13", "after the answer")
+    first, second = agents.load(agent.n).data["cards"]
+    assert (first["found"], first["reads"]) == ("todo 12 phone link\nfact 3 tunnel", [{"label": "Opened todo 12", "text": "Title: phone link"}, {"label": "Read /x/a.py", "text": "print(1)"}])
+    assert (second["found"], second["reads"]) == ("fact 3 tunnel", [{"label": "Opened fact 3", "text": "The tunnel needs TLS"}]), "a read after the answer belongs to no search"
+
+
 def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache(tmp_path):
     import json
     from providers import PROVIDERS
