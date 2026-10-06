@@ -1,10 +1,13 @@
+import io
+import re
+import shlex
 from pathlib import Path
 
 import features
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine.record import Record
 from features.helper_worktrees.controller import Worktrees
-from tests.kit import project_on
+from tests.kit import project_on, run
 from features.helpers.controller import Helpers
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
@@ -146,7 +149,8 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     assert not marked.completed and lane_of(Sources(todos), marked) == DONE, "a row the helper marks shows as done, waiting for its merge"
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
     assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
-    helper.done(dropped, "names the cause")
+    named = re.search(r"journal (helper done <n> .*?<what landed>.)", calls[0][3][-1]).group(1).replace("<n>", str(dropped)).replace("<what landed>", "names the cause")
+    assert run(["--root", str(repo.record.root), "--env", row.environment, *shlex.split(named)], out=io.StringIO(), err=io.StringIO()) == 0 and todos.load(dropped).pending, "the command the kickoff names marks the row"
     assert "gives it back first" in refused(lambda: todos.reopen(dropped, "not yet")), "the agent cannot unmark a row the helper marked"
     Todos(repo.record, actor=USER).reopen(dropped, "not yet")
     assert not todos.load(dropped).pending and todos.load(dropped).assigned == row.ref, "you can pull a row waiting for its merge back, and it stays the helper's"

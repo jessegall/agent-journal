@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.10 — a helper marks a handed to-do with the command its kickoff names
+The kickoff and the helpers help text told a helper to run `journal helper done <n> --how "<what landed>"`, which the command refuses. They now name `journal helper done <n> "<what landed>"`, and a test runs the command the kickoff names. Nothing to do.
+
 ## 2.253.9 — a follow-up to a helper arrives as its dispatcher's instruction, not as a journal line
 A line someone says to an agent, such as `journal helper say` or a plan agent's task, is now typed into its input as its own instruction. Only the journal's own lines go over the channel, which Claude Code marks as untrusted, so a helper no longer ignores its dispatcher. Nothing to do.
 
