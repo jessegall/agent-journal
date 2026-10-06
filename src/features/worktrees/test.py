@@ -223,6 +223,28 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
     text, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
     assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), text
 
+    from commands.queries import kept_work
+    from engine.worktree import KEPT
+    from tests.kit import commit, git
+    project = tmp_path / "project"
+    project.mkdir()
+    git(project, "init", "-q", "-b", "main")
+    git(project, "config", "user.email", "a@b.c")
+    git(project, "config", "user.name", "a")
+    commit(project, "base.txt", "base")
+    inside = project / ".claude" / "worktrees" / "cedar"
+    git(project, "worktree", "add", "-q", "-b", "helper-cedar", str(inside))
+    git(inside, "config", "user.email", "a@b.c")
+    git(inside, "config", "user.name", "a")
+    made = commit(inside, "work.txt", "work")
+    kept_work(inside)
+    assert git(project, "rev-parse", f"{KEPT}/cedar") == made, "a session ended in its worktree saves the branch's commits under a ref of the project"
+    git(project, "worktree", "remove", "--force", str(inside))
+    git(project, "branch", "-D", "helper-cedar")
+    assert git(project, "rev-parse", f"{KEPT}/cedar") == made, "the commits outlive the worktree and its branch"
+    kept_work(project)
+    assert git(project, "for-each-ref", KEPT).count("\n") == 0, "ending in the project itself keeps nothing more"
+
 
 def test_continuing_names_the_folders_latest_conversation(tmp_path, monkeypatch):
     import os
