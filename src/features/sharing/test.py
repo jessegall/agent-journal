@@ -48,6 +48,12 @@ def test_a_visitor_comment_is_named_never_quoted_and_only_lands_where_the_link_a
     shares = Shares(record, actor=USER)
     made = shares._visitor_comment(share, f"doc:{doc.n}", "Robin", WORDS)
     assert made.title == "Comment from Robin" and made.data["visitor"] == "Robin", made.title
+    from features.sharing import visitors
+    visitors.SENT.clear()
+    for _ in range(visitors.SENT_LIMIT):
+        visitors.count_sent("one-link")
+    assert "too many comments" in refused_with(lambda: visitors.count_sent("one-link")), "one link takes only so many comments in a short while"
+    visitors.SENT.clear()
     assert all(WORDS not in line for line in nudges(record)), "the notice never carries the comment's words"
     assert any("Robin commented on doc 1" in line for line in nudges(record)), nudges(record)
     for ref, name, text, why in [("doc:99", "Robin", "hi there", "outside the link"), (f"doc:{doc.n}", "", "hi", "no name"),
@@ -683,6 +689,13 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     assert '<a href="/s/key/doc/1">docs 1</a>' in linked and '<a href="/s/key/todo/12">to-do 12, 13</a>' in linked, \
         "a row the page holds is linked, however its mention is spelled"
     assert "doc 16" in linked and "/doc/16" not in linked, "a row outside the page stays text"
+    illustrated = Docs(record := fresh(), actor=USER).create("Pictured", abstract="A short line", brief="Words")
+    picture = record.root / "chart.png"
+    picture.write_bytes(b"\x89PNG")
+    Docs(record, actor=USER).attach(illustrated.n, str(picture))
+    drawn_row = Page("/s/key", {illustrated.ref}, record).row(Docs(record, actor=USER).load(illustrated.n))
+    assert ('<p class="abstract">A short line</p>' in drawn_row, '<img src="/s/key/files/doc/' in drawn_row and 'chart.png"' in drawn_row) == (True, True), \
+        "a shared row shows its one line under its title and its pictures in the page"
     from controllers.types import Todos
     from features.plans.controller import Plans
     here = fresh()
@@ -898,6 +911,16 @@ def restarts_at_once_after_a_network_change(monkeypatch):
     machine.tick(60)
     assert machine.asked == [watchdog.TUNNEL] * 2, "with no network change and the host down, nothing is restarted"
     assert len([n for n in Nudges(record, actor=USER).all() if "answers for no address" in n.title]) == 1, "and the agent is told once"
+    watchdog.alerts(record.root).set(watchdog.SIGNED_OUT, machine.now)
+    machine.asked.clear()
+    machine.answers = True
+    machine.tick()
+    assert machine.asked == [watchdog.TUNNEL], "a tunnel that was signed out is started again once the account is back"
+    machine.answers = False
+    monkeypatch.setattr(watchdog, "wanted", lambda root: False)
+    machine.asked.clear()
+    machine.tick(600)
+    assert machine.asked == [], "when no share needs the tunnel the watch leaves it alone"
 
 
 def test_the_tunnel_is_watched_by_the_share_server_and_repaired_within_seconds(monkeypatch, tmp_path):

@@ -96,6 +96,11 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
     triggers.fired(row.n)
     triggers.fired(row.n)
     assert (triggers.load(row.n).matched, bool(triggers.load(row.n).matched_at)) == (2, True), "each match is counted and dated"
+    from features.triggers.summary import EMPTY, summary, words_text
+    assert [words_text(words) for words in (["a"], ["a", "b"], ["a", "b", "c", "d"], list("abcde"))] == \
+        ["“a”", "“a” or “b”", "“a”, “b”, “c” or 1 other phrase", "“a”, “b”, “c” or 2 other phrases"], "a sentence names the first three phrases and counts the rest"
+    from types import SimpleNamespace
+    assert summary(SimpleNamespace(words=[]), []) == EMPTY, "a trigger with no words says what it still needs"
     from tests.conftest import refused
     assert "a trigger does one of" in refused(lambda: triggers.create("odd", **{"words": ["x"], "does": "dance"})), "a trigger does one of the things a trigger can do"
     assert "needs words to watch for" in refused(lambda: triggers.update(row.n, words=[])), "a trigger emptied of its words would watch for nothing and is refused"

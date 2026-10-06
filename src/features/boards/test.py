@@ -173,7 +173,11 @@ def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
     assert "is marked" in refused(lambda: agent.progress(board.n, "Background", "skimmed")), "a section is marked with one of the known states"
     assert "name drafts on board" in refused(lambda: agent.pick(board.n, "")) and "name drafts on board" in refused(lambda: agent.group(board.n, "Invites", "999")), \
         "only drafts of this board are picked or grouped"
-    assert "nothing is being drafted" in refused(lambda: agent.outline(boards.create("Quiet").n, "Background")), "a board nobody is drafting takes no outline"
+    quiet = boards.create("Quiet")
+    assert "nothing is being drafted" in refused(lambda: agent.outline(quiet.n, "Background")), "a board nobody is drafting takes no outline"
+    assert agent.group(quiet.n, "Invites", "1").n == quiet.n, "grouping drafts on a board nobody is drafting changes nothing"
+    agent.log(board.n, " Reading the document ")
+    assert [entry["text"] for entry in boards.load(board.n).drafting["log"]] == ["Reading the document"], "what the filler logs while it drafts is kept on the board"
 
 
 def test_a_board_request_names_its_board_and_keeps_the_work_on_it():

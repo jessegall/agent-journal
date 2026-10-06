@@ -253,3 +253,11 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     assert seen.setting("delivery") == {"mode": "two"}, "the view of another process holds until the event reaches it"
     features.passed(event, seen)
     assert seen.setting("delivery") == {"mode": "three"}, "the event makes it read the file again"
+    from features import switches
+    monkeypatch.setattr(switches, "UNEVENTED", [False])
+    switches.watch_change_log()
+    held = switches.switches(record).get("dev_faults", False)
+    turned(record, not held)
+    assert (switches.UNEVENTED, switches.switches(record).get("dev_faults", False)) == ([True], not held), \
+        "a process that watches the change log sees a switch another process turned, without waiting for an event"
+    assert switches.written(Record(record.root, "never-written")) == 0, "an environment with no change log has written nothing"

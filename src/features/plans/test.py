@@ -71,6 +71,8 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert refused(lambda: by_agent.approve(plan.n)) == "only the user can approve a plan: they do it in the viewer", "not the agent"
     assert refused(lambda: by_agent.start(plan.n)) == f"plan {plan.n} waits for the user to approve it", "nor start one not approved"
     assert ready(record) == [], "a plan not yet started holds its rows: next skips them"
+    from tests.kit import nudges, report
+    report(record, "working", "PreToolUse")
     by_agent.review(plan.n)
     assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is under review: its reviewers' report comes first", \
         "a plan under review cannot be approved"
@@ -78,6 +80,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     review = Reports(record, actor=AGENT).create("what the reviewers found")
     Reports(record, actor=AGENT).link(review.n, plan.ref)
     assert by_agent.load(plan.n).data["status"] == "building", "linking the reviewers' report hands it back for revising"
+    assert any(f"the review of plan {plan.n}, Port everything, is in - report {review.n}" in line for line in nudges(record)), "the agent is told when the reviewers' report is in"
     by_agent.ready(plan.n)
     by_user.approve(plan.n)
     by_agent.start(plan.n)
@@ -387,6 +390,14 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"
+    from types import SimpleNamespace
+    from features.tickets.phases import start_tickets_of_phase
+    from resources.base import Refused
+    assert start_tickets_of_phase(record, SimpleNamespace(current=9, phases=[])) == [], "a plan past its last phase starts no tickets"
+    monkeypatch.setattr(Tickets, "start", lambda self, n: (_ for _ in ()).throw(Refused("no room")))
+    third = tickets.create("Print", board=board.n)
+    assert start_tickets_of_phase(record, SimpleNamespace(current=1, phases=[{"tickets": [third.n]}], worktree="")) == [], \
+        "a ticket that cannot start yet is not counted as started"
 
 
 def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkeypatch):
