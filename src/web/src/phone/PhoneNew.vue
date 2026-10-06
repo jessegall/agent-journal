@@ -1,8 +1,8 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import Icon from "../kit/Icon.vue";
 import FormSheet from "./kit/FormSheet.vue";
+import NewButton from "./kit/NewButton.vue";
 import {toast} from "./kit/toast.js";
 import {kindOf} from "./kinds.js";
 
@@ -16,8 +16,12 @@ const writing = ref(false);
 const kind = computed(() => kindOf(props.type));
 const fields = computed(() => [
     {key: "title", label: "Title", placeholder: `${kind.value.one} title, at most 80 characters`, required: true},
-    {key: "abstract", label: "One short line about it", placeholder: "You can leave this empty"},
-    {key: "brief", label: "Details", placeholder: "As long as they need to be", area: true},
+    ...(props.type === "collection"
+        ? []
+        : [
+              {key: "abstract", label: "One short line about it", placeholder: "You can leave this empty"},
+              {key: "brief", label: "Details", placeholder: "As long as they need to be", area: true},
+          ]),
     ...(props.type === "plan" ? [{key: "depth", label: "How thorough", options: DEPTHS, value: "normal"}] : []),
 ]);
 
@@ -30,50 +34,13 @@ async function make(values) {
         toast(error.message);
     }
 }
+
+defineExpose({open: () => (writing.value = true)});
 </script>
 
 <template>
-    <button type="button" class="new-button" @click="writing = true">
-        <span class="new-plus" aria-hidden="true"><Icon name="plus" :size="14" /></span>
-        {{ kind.make || `New ${kind.word}` }}
-    </button>
+    <NewButton :label="kind.make || `New ${kind.word}`" @press="writing = true" />
     <template v-if="writing">
-        <FormSheet
-            :title="kind.make || `New ${kind.word}`"
-            :fields="fields"
-            button="Add"
-            @submit="make"
-            @close="writing = false"
-        />
+        <FormSheet :title="kind.make || `New ${kind.word}`" :fields="fields" button="Add" @submit="make" @close="writing = false" />
     </template>
 </template>
-
-<style scoped>
-.new-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 44px;
-    padding: 0 4px;
-    border: 0;
-    background: none;
-    color: var(--accent);
-    font: inherit;
-    font-weight: 600;
-}
-
-.new-plus {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-}
-
-.new-plus .ico {
-    color: inherit;
-}
-</style>

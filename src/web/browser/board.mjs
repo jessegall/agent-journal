@@ -7,7 +7,7 @@ async function why(page, question, words, asked = true) {
     const dialog = page.getByRole("dialog", {name: question});
     if (!asked && !(await dialog.waitFor({timeout: 2000}).then(() => true, () => false))) return;
     if (words) await dialog.getByRole("textbox").fill(words);
-    await dialog.getByRole("button", {name: "Move it"}).click();
+    await dialog.getByRole("button", {name: "Move"}).click();
 }
 
 async function openBoard(page, url) {
