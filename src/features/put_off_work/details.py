@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class PutOffWorkDetails(FeatureDetails):
+    explains = 'The journal reminds the agent to record work it promises to do later. You can find that work in the to-do list.'
     name = "put_off_work"
     group = Group.WORK_TRACKING
     label = "Remind the agent to file work it puts off"

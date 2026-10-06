@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class DevFaultsDetails(FeatureDetails):
+    explains = 'The journal records developer errors and tells the agent what failed. You can inspect the error report.'
     name = "dev_faults"
     group = Group.DEVELOPER
     label = "Report developer errors"

@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class TemplatesDetails(FeatureDetails):
+    explains = 'The agent can start an item from a saved template. You can choose the template and edit the result.'
     name = "templates"
     group = Group.RECORDS
     label = "Templates"

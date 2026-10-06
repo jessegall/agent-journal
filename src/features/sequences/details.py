@@ -10,6 +10,7 @@ UNFINISHED = "unfinished"
 
 
 class SequencesDetails(FeatureDetails):
+    explains = 'The agent follows a sequence one step at a time. You can start one and inspect its progress.'
     name = "sequences"
     group = Group.SEQUENCES
     when = "a sequence is run, stepped or written"

@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class PermissionsDetails(FeatureDetails):
+    explains = "The journal brings the agent's permission requests into the chat. You can allow or deny each request there."
     name = "permission_prompts"
     group = Group.CHAT
     label = "Show permission prompts in the chat"

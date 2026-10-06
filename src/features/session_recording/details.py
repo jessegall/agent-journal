@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class SessionRecordingDetails(FeatureDetails):
+    explains = 'The journal can save a session as it happens for a demo. You can use the recording to replay the session.'
     name = "session_recording"
     group = Group.DEVELOPER
     label = "Save a recording of each session to a folder, for demos"

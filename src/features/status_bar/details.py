@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class StatusLineDetails(FeatureDetails):
+    explains = 'The bar shows what the agent is doing and how much of its plan remains. You can pause or resume its work there.'
     name = "status_bar"
     group = Group.VIEWER
     label = "Show the status bar"

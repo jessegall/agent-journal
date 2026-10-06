@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class UpdateReportsDetails(FeatureDetails):
+    explains = 'The agent can write a report of what changed while you were away. You can open the card in the chat.'
     name = "update_reports"
     group = Group.CHAT
     label = "Show update reports as cards"

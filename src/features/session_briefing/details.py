@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class SessionBriefingDetails(FeatureDetails):
+    explains = 'The journal gives each new agent session a current summary. You can inspect the work the session starts with.'
     name = "session_briefing"
     group = Group.AGENT
     label = "Brief each new session"

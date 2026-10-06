@@ -5,6 +5,7 @@ UNPINNED = "unpinned"
 
 
 class PinnedLinksDetails(FeatureDetails):
+    explains = 'The journal pins links the agent gives you above the chat. You can shrink or open them later.'
     name = "pinned_links"
     group = Group.CHAT
     label = "Pin links the agent gives you"

@@ -8,6 +8,7 @@ MODELS = ("haiku", "sonnet", "opus")
 
 
 class BoardsDetails(FeatureDetails):
+    explains = 'The agent turns a request into tickets on a board and moves them through its stages. You can review the tickets and run the board.'
     name = "boards"
     group = Group.BOARDS
     skill_of = "tickets"

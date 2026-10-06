@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class MemoryCheckpointsDetails(FeatureDetails):
+    explains = 'As the conversation fills, the journal asks the agent what should be remembered. You can review the facts and rules it saves.'
     name = "memory_checkpoints"
     group = Group.MEMORY
     label = "Ask the agent to save facts and rules as its context fills"

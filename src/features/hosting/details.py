@@ -6,6 +6,7 @@ from features.groups import Group
 
 
 class HostingDetails(FeatureDetails):
+    explains = 'The journal can run a copy of the app for each ticket while it is worked on. You can open that copy to check the result.'
     name = "hosting"
     group = Group.TICKETS
     label = "Run a copy of the app for each ticket"

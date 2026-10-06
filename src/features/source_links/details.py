@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class SourceLinksDetails(FeatureDetails):
+    explains = 'The journal asks the agent to link new plans, documents, and reports to material it read. You can follow those links from the item.'
     name = "source_links"
     group = Group.RECORDS
     label = "Ask for source links"

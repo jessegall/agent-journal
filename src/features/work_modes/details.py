@@ -14,6 +14,7 @@ MODE_SET = "mode set"
 
 
 class WorkModesDetails(FeatureDetails):
+    explains = 'You choose whether the agent builds the work, coordinates helpers, or works alone. The journal tells it when that choice changes.'
     name = NAME
     group = Group.AGENT
     label = "Work modes"

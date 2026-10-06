@@ -7,6 +7,7 @@ RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED = "run ended", "run open", "run stalle
 
 
 class LongCommandsDetails(FeatureDetails):
+    explains = 'The journal moves long terminal commands into the background so the agent can carry on. You can see their progress and results.'
     name = "long_commands"
     group = Group.LONG_COMMANDS
     has_skill = False

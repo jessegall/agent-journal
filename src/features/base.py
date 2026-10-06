@@ -60,6 +60,7 @@ class FeatureDetails:
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    explains: ClassVar[str] = ""
     label: ClassVar[str] = ""
     hint: ClassVar[str] = ""
     position: ClassVar[int] = 100
@@ -90,6 +91,7 @@ class Feature(ABC):
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    explains: ClassVar[str] = ""
     label: ClassVar[str] = ""
     hint: ClassVar[str] = ""
     position: ClassVar[int] = 100
@@ -113,7 +115,7 @@ class Feature(ABC):
         if cls.details:
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
-            cls.title, cls.abstract, cls.help, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), d.when
+            cls.title, cls.abstract, cls.help, cls.explains, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), paragraphs(d.explains), d.when
             cls.label, cls.hint, cls.group, cls.trigger_label = paragraphs(d.label), paragraphs(d.hint), d.group, paragraphs(d.trigger_label)
             cls.position = d.position
             cls.aliases, cls.fixed, cls.default = d.aliases, d.fixed, d.default
@@ -235,7 +237,7 @@ class Feature(ABC):
         return {old: f"{cls.name}.{key}" if key else cls.name for old, key in pairs}
 
     def describe(self) -> dict:
-        return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
+        return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "explains": self.explains, "default": self.default, "fixed": self.fixed,
                 "label": self.label, "hint": self.hint, "position": self.position, "group": self.group.key, "trigger_label": self.trigger_label,
                 "keywords": list(self.keywords), "when": self.when,
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.described(),

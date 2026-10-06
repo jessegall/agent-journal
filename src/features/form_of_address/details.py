@@ -6,6 +6,7 @@ VOICE_SET = "voice set"
 
 
 class FormOfAddressDetails(FeatureDetails):
+    explains = 'The agent uses the title, name, and voice you choose. You can change them in your profile.'
     name = "form_of_address"
     group = Group.AGENT
     label = "Tell the agent how to talk to you"

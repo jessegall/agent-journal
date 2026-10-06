@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class DumpsDetails(FeatureDetails):
+    explains = 'The agent sorts files you send together by subject and files them in a collection. You can rename or remove what it made.'
     name = "dumps"
     group = Group.RECORDS
     label = "Sort dumped files into a collection"

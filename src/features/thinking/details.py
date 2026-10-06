@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class ThinkingDetails(FeatureDetails):
+    explains = "The chat can show the agent's working thoughts while it is busy. You can hide them from the chat."
     name = "thinking"
     group = Group.CHAT
     label = "Show what the agent is thinking"

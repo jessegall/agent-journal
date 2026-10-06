@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class CloseFromCommitsDetails(FeatureDetails):
+    explains = 'The journal closes a to-do when a matching commit says it is done. You can inspect the to-do and its closing commit.'
     name = "close_from_commits"
     group = Group.WORK_TRACKING
     label = "Close to-dos from commit messages"

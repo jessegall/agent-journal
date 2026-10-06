@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class MessageButtonsDetails(FeatureDetails):
+    explains = 'The agent can attach action buttons to its messages. You can press one to send the stated choice.'
     name = "message_buttons"
     group = Group.CHAT
     label = "Show buttons on the agent's messages"

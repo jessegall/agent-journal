@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class PluginsDetails(FeatureDetails):
+    explains = 'Plugins can add actions and pages to the journal. You can see and manage the plugins installed for this project.'
     name = "plugins"
     group = Group.ALWAYS
     label = "Plugins"

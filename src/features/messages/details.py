@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class MessagesDetails(FeatureDetails):
+    explains = 'You can leave the agent a message in the viewer. The agent reads and answers it in the chat.'
     name = "messages"
     group = Group.MESSAGES
     when = "the user has left a message, or before replying, reacting or filing what a message asks for"
