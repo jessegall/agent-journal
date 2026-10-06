@@ -1,5 +1,7 @@
 import fcntl
 import json
+import os
+from pathlib import Path
 import tarfile
 import time
 
@@ -274,6 +276,45 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     refused = install.upgrade(journal.parent, journal)
     assert refused[-1].startswith("package not refreshed:"), f"a repository that cannot be fetched is named, not installed: {refused}"
 
+    assert install.refresh(target, target) == (set(), set()), "a package refreshed from itself changes nothing"
+    (moved / "src" / "web").mkdir()
+    with pytest.raises(OSError, match="no finished viewer build"):
+        install.refresh(moved, target)
+    (moved / "src" / "web" / "dist").mkdir()
+    (moved / "src" / "web" / "dist" / "index.html").write_text("<html>")
+    (target / "engine" / "old.py").write_text("GONE = 1\n")
+    (target / "hook.py").write_text("retired")
+    (target / "support").mkdir()
+    (target / "support" / "tool.py").write_text("retired")
+    changed, gone = install.refresh(moved, target)
+    assert (Path("engine/old.py") in gone, Path("web/dist/index.html") in changed, (target / "hook.py").exists(), (target / "support").exists()) == (True, True, False, False), \
+        "a refresh retires files the release dropped and the old entry points, and brings the viewer build"
+    assert install.retire(target) >= 2 and (target / "journal.py").read_text() == install.ENTRYPOINTS["journal.py"], "retiring leaves only the entry points of a journal"
+
+    assert (install.with_token("https://github.com/a/b.git", "s3"), install.with_token("https://elsewhere.org/a", "s3"), install.with_token("https://github.com/a", "")) == \
+        ("https://x-access-token:s3@github.com/a/b.git", "https://elsewhere.org/a", "https://github.com/a"), "a token goes into a github address only"
+    assert (install.redacted("fatal: s3 was refused", "s3"), install.redacted("unchanged", "")) == ("fatal: the token was refused", "unchanged"), "a token never reaches a message"
+    monkeypatch.setattr(install.shutil, "which", lambda name: None)
+    assert install.token() == "", "without the github tool there is no token"
+    monkeypatch.setattr(install.shutil, "which", lambda name: "/usr/bin/gh")
+    results = iter([OSError("no gh"), SimpleNamespace(returncode=1, stdout="nope"), SimpleNamespace(returncode=0, stdout="abc\n")])
+
+    def ran(*args, **kwargs):
+        result = next(results)
+        if isinstance(result, Exception):
+            raise result
+        return result
+    monkeypatch.setattr(install.subprocess, "run", ran)
+    assert [install.token(), install.token(), install.token()] == ["", "", "abc"], "a token comes only from a gh that answers well"
+    monkeypatch.undo()
+    assert install.fetch(tmp_path / "nowhere", str(tmp_path / "no-such-source"))[1], "a fetch that git refuses reports why and installs nothing"
+    for k in range(3):
+        (journal / "attic" / f"before-1.0.{k}-{k}.tar.gz").write_text("old")
+        os.utime(journal / "attic" / f"before-1.0.{k}-{k}.tar.gz", (k + 1, k + 1))
+    install.keep_copy(journal)
+    assert len(list((journal / "attic").glob("before-*.tar.gz"))) == install.KEPT_COPIES, "only the newest copy of the record is kept"
+    assert install.keep_copy(tmp_path / "no-record") == "", "a project with no record keeps no copy"
+
 
 def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):
     import http.server
@@ -362,3 +403,53 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
         waited = install.released(f"http://127.0.0.1:{hanging.getsockname()[1]}/x.git")
     hanging.close()
     assert (waited, time.time() - began < 5) == ("", True), "an unanswering remote costs a bounded wait and no release"
+
+    from engine.record import Record
+    from controllers.types import Docs, Facts, Messages, Notifications, Questions, Rules, Todos
+    from features.plans.controller import Plans
+    from migrations.m0001_the_old_record import run as read_old_record
+    old = tmp_path / "old"
+    home = old / "environments" / "main"
+    (home / "todo").mkdir(parents=True)
+    (home / "todo" / "001-first.md").write_text("---\ntitle: First task\nat: 2026-01-01T10:00:00Z\ndone: 2026-01-02T10:00:00Z\nhow: shipped\npriority: 150\nafter: todo 2\n---\nthe body")
+    (home / "todo" / "002-second.md").write_text("no front matter at all")
+    (home / "pins").mkdir()
+    (home / "pins" / "one.md").write_text("pin body")
+    write_json(home / "pins.json", {"pins": [{"fact": "A struck claim", "body": "one.md", "struck": "was wrong", "at": "2026-01-01T00:00:00Z"}, {"fact": "A standing claim"}]})
+    write_json(home / "reminders.json", {"reminders": [{"text": "Check the logs", "until": "tomorrow", "done": "2026-01-03T00:00:00Z"}]})
+    write_json(home / "inbox.json", {"inbox": [{"text": "Please look at this", "kind": "ask", "replies": [{"text": "Looking"}],
+                                               "parts": [{"excerpt": "look", "became": ["todo:1", "todo:2"]}, {"excerpt": "also", "became": "doc:1"}]}]})
+    write_json(home / "questions.json", {"questions": [{"text": "Which one?", "description": "context", "pick": 1, "answer": "the first",
+                                                      "options": [{"label": "A", "description": "a"}, {"label": "B"}], "links": ["inbox:1", "todos:2"]}]})
+    write_json(home / "work.json", {"work": [{"subject": "Old work", "ended": "2026-01-04T00:00:00Z", "notes": [{"at": "2026-01-03T09:00:00Z", "text": "began"}]}]})
+    write_json(home / "plans.json", {"plans": [{"title": "Old plan", "goal": "done", "status": "active", "body": "why",
+                                              "phases": [{"title": "One", "todos": [1]}, {"title": "Two", "todos": [], "checkpoint": True}, {"title": "Three", "todos": [9]}]},
+                                             {"title": "Odd plan", "status": "mystery"}]})
+    write_json(home / "reports.json", {"reports": [{"title": "A report", "body": "found", "about": "todos:1", "archived": "kept"}, {"title": "Loose report"}]})
+    write_json(home / "notifications.json", {"notifications": [{"text": "Read already", "read_at": "2026-01-05T00:00:00Z"}, {"text": "Unread"}]})
+    (old / "environments" / "second").mkdir()
+    (old / "rules").mkdir()
+    (old / "rules" / "001-first.md").write_text("---\ntitle: Never push\n---\nrule body")
+    (old / "rules" / "002-second.md").write_text("only a body")
+    write_json(old / "record.json", {"rules": [{"fact": "Never push", "struck": "dropped"}, {"fact": "Struck rule", "struck": "dropped"}, {"fact": "Added later"}]})
+    doc = old / "docs" / "first"
+    (doc / "files").mkdir(parents=True)
+    (doc / "files" / "note.txt").write_text("attached")
+    (doc / "index.md").write_text("---\nn: 4\ntitle: Old doc\nabstract: about it\nstatus: final\n---\nthe intro")
+    (doc / "01-part.md").write_text("---\ntitle: Part one\n---\npart body")
+    (old / "docs" / "empty").mkdir()
+    (old / "docs" / "numberless").mkdir()
+    (old / "docs" / "numberless" / "index.md").write_text("---\ntitle: No number\n---\nbody")
+    (old / "docs" / "stray.txt").write_text("not a folder")
+    assert read_old_record(old) == 20, "the old record is read into the rows of today"
+    record = Record(old, "main")
+    assert (Todos(record, actor=SYSTEM).load(1).title, Todos(record, actor=SYSTEM).load(1).outcome, Todos(record, actor=SYSTEM).load(2).after) == ("First task", "shipped", []), \
+        "an old to-do keeps its title and how it closed"
+    assert [Facts(record, actor=SYSTEM).load(n).title for n in (1, 2)] == ["A struck claim", "A standing claim"] and Facts(record, actor=SYSTEM).load(1).brief == "pin body", "pins become facts with their body"
+    assert Messages(record, actor=SYSTEM).load(1).sections[0]["body"] == "todo:1, todo:2" and Questions(record, actor=SYSTEM).load(1).refs == ["message:1", "todo:2"], \
+        "messages keep what their parts became and questions link to today's names"
+    assert Plans(record, actor=SYSTEM).load(1).data["current"] == 2 and Plans(record, actor=SYSTEM).load(2).data["status"] == "draft", "a plan resumes at its first open phase and an unknown status is a draft"
+    assert Docs(record, actor=SYSTEM).load(4).title == "Old doc" and (Docs(record, actor=SYSTEM).folder(4) / "note.txt").read_text() == "attached", "an old doc keeps its parts and its files"
+    assert [Rules(record, actor=SYSTEM).load(n).title for n in (1, 2, 3)] == ["Never push", "Struck rule", "Added later"], "rules come from their files named by the old record, then from the rest of the record"
+    assert ("user" in Notifications(record, actor=SYSTEM).load(1).seen, "user" in Notifications(record, actor=SYSTEM).load(2).seen) == (True, False), "a notification read in the old record stays read and an unread one stays unread"
+    assert read_old_record(old) == 0, "a record that has rows of every type is not read again"

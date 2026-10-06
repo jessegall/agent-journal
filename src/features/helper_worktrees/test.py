@@ -184,3 +184,48 @@ def test_a_new_repository_a_detached_head_and_a_missing_git_identity_are_refused
     monkeypatch.setenv("EMAIL", "")
     said = refused(lambda: worktrees.take(row.n))
     assert "was undone" in said and "Traceback" not in said and git(repo.project, "status", "--porcelain") == "", said
+
+
+def test_a_branch_is_merged_where_it_is_checked_out_or_without_a_checkout_and_conflicts_are_named(tmp_path):
+    from engine.worktree import branched, checked_out, contains, merged_into
+
+    repo = project_on("work")
+    project = repo.project
+    base = commit(project, "shared.txt", "base\n")
+    git(project, "checkout", "-q", "-b", "side")
+    commit(project, "side.txt", "side\n")
+    git(project, "checkout", "-q", "work")
+    assert (merged_into(project, "side", "work"), (project / "side.txt").exists()) == ("", True), "a branch is merged into the one checked out here"
+    assert checked_out(project, "work") == project.resolve() and checked_out(project, "nowhere") is None, "the checkout of a branch is found, or there is none"
+
+    git(project, "checkout", "-q", "-b", "clash", base)
+    commit(project, "shared.txt", "clash\n")
+    git(project, "checkout", "-q", "work")
+    commit(project, "shared.txt", "work\n")
+    outcome = merged_into(project, "clash", "work")
+    assert outcome and git(project, "status", "--porcelain") == "", "a merge that conflicts here is named and undone"
+
+    git(project, "checkout", "-q", "main")
+    assert merged_into(project, "clash", "work").startswith("it conflicts with work"), "a conflict without any checkout is named too"
+    git(project, "checkout", "-q", "-b", "clean", "work")
+    commit(project, "clean.txt", "clean\n")
+    git(project, "checkout", "-q", "main")
+    commit_on_work = git(project, "rev-parse", "work")
+    assert (merged_into(project, "clean", "work"), contains(project, "clean", "work"), git(project, "rev-parse", "work") != commit_on_work) == ("", True, True), \
+        "without a checkout the merge is written straight into the branch"
+
+    assert branched(project, "fresh-one", "work") == "" and git(project, "rev-parse", "fresh-one") == git(project, "rev-parse", "work"), "a missing branch is made at the start"
+    assert "could not be made" in branched(project, "other", "no-such-start"), "a start that does not exist is named"
+    git(project, "branch", "behind", base)
+    assert branched(project, "behind", "work", fresh=True) == "" and git(project, "rev-parse", "behind") == git(project, "rev-parse", "work"), "a branch that only fell behind is moved up"
+    assert branched(project, "behind", "work", fresh=True) == "", "a branch already at the start is left alone"
+    held = tmp_path / "held"
+    git(project, "worktree", "add", "-q", "-b", "held-branch", str(held), base)
+    assert branched(project, "held-branch", "work", fresh=True) == "" and git(held, "rev-parse", "HEAD") == git(project, "rev-parse", "work"), \
+        "a checked out branch that fell behind is brought up where it is checked out"
+    git(held, "checkout", "-q", "-b", "diverged")
+    commit(held, "own.txt", "own work\n")
+    assert "holds work from before and is checked out" in branched(project, "diverged", "work", fresh=True), "a checked out branch with work of its own is not touched"
+    git(project, "worktree", "remove", "--force", str(held))
+    assert branched(project, "diverged", "work", fresh=True) == "" and git(project, "branch", "--list", "diverged-set-aside-*"), \
+        "a branch with work of its own that nobody holds is set aside and made again"

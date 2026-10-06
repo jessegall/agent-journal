@@ -35,3 +35,20 @@ def test_old_collections_filed_from_a_dump_name_their_dump():
     assert run(record.root) == [f"t {filed.ref} came from dump:3"], "only a collection whose abstract says a dump filled it is named for that dump"
     assert collections.load(filed.n).source == "dump:3" and not collections.load(plain.n).source, "the other collection is left alone"
     assert run(record.root) == [], "a collection that already names its dump is not touched again"
+
+
+def test_old_group_folders_become_collections_and_what_pointed_at_them_follows(tmp_path):
+    from migrations.m0018_groups_become_collections import run
+
+    home = tmp_path / "environments" / "main"
+    (home / "group").mkdir(parents=True)
+    (home / "group" / "001.md").write_text("a group")
+    (home / "group" / "index.json").write_text("{}")
+    (home / "todo").mkdir()
+    (home / "todo" / "001.md").write_text("belongs to group:1")
+    (tmp_path / "environments" / "second" / "group").mkdir(parents=True)
+    (tmp_path / "environments" / "second" / "collection").mkdir()
+    assert run(tmp_path) == "groups are collections: 1 rows moved, 1 files point at them now", "a group folder is renamed and what named its rows is repointed"
+    assert (home / "collection" / "001.md").read_text() == "a group" and not (home / "group").exists(), "the rows moved with their folder"
+    assert (home / "todo" / "001.md").read_text() == "belongs to collection:1", "a row that named the group names the collection"
+    assert (tmp_path / "environments" / "second" / "group").exists(), "an environment that already has collections keeps its old folder untouched"

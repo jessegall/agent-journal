@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from types import SimpleNamespace
@@ -77,8 +79,9 @@ def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, mo
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is True
 
 
-def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path):
+def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path, monkeypatch):
     import threading
+    from types import SimpleNamespace
     import urllib.error
     import urllib.request
     from http.server import ThreadingHTTPServer
@@ -123,9 +126,51 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     try:
         assert [status({}), status({"Origin": f"http://localhost:{server.server_port}"}), status({"Host": f"evil.example:{server.server_port}"}),
                 status({"Origin": "http://localhost:9999"})] == [404, 404, 403, 403], "its own host and a journal's origin by either loopback name are answered; another host or an unknown origin is refused"
+        asked = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/api/no-such-route", method="OPTIONS")
+        assert urllib.request.urlopen(asked, timeout=5).status == 204, "a browser's preflight question from its own address is answered without a body"
+        foreign = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/api/x", method="OPTIONS", headers={"Host": f"evil.example:{server.server_port}"})
+        with pytest.raises(urllib.error.HTTPError) as refused:
+            urllib.request.urlopen(foreign, timeout=5)
+        assert refused.value.code == 403, "a preflight from another host is refused"
     finally:
         server.shutdown()
         server.server_close()
+
+    from engine import project_files
+    from resources.base import Missing
+    (project / "docs").mkdir()
+    (project / "docs" / "guide.txt").write_text("one")
+    (project / "docs" / "twin.txt").write_text("a")
+    (project / "docs" / "sub").mkdir()
+    (project / "docs" / "sub" / "twin.txt").write_text("b")
+    (project / "node_modules").mkdir()
+    (project / "docs" / ".hidden").write_text("x")
+    walked, names = project_files.walk(project)
+    assert [p.name for p in project_files.project_paths(project)] == [p.name for p in walked] and "guide.txt" in names, "the project is walked once and its files are listed by name"
+    assert project_files.walked(project) == (walked, names), "a recent walk is reused"
+    project_files.WALKED[str(project)] = (time.time() - project_files.WALK_FOR - 1, walked, names)
+    project_files.walked(project)
+    assert str(project) in project_files.WALKING, "an old walk is refreshed in the background"
+    assert project_files.matching(project, "guide.txt") == ["docs/guide.txt"] and project_files.matching(project, "./sub/twin.txt") == ["docs/sub/twin.txt"], \
+        "a file is found by its name or by the end of its path"
+    assert project_files.read_source(project, "guide.txt").text == "one", "a bare file name is found anywhere in the project"
+    for asked, why in (("twin.txt", "2 files in the project are called"), ("nothing-here.txt", "no file"), ("docs", "no file")):
+        with pytest.raises(Refused, match=why):
+            project_files.read_source(project, asked)
+    assert sorted(entry["name"] for entry in project_files.list_folder(project, "docs")) == ["guide.txt", "sub", "twin.txt"], "a folder lists what may be read and no hidden file"
+    with pytest.raises(Missing):
+        project_files.list_folder(project, "nowhere")
+
+    import serve
+    stamps, clock, ended = iter(["same", "same", "edited", "edited", "edited", "edited"]), iter(range(1, 100)), []
+    serving = SimpleNamespace(shutdown=lambda: ended.append("stopped"))
+    changed = threading.Event()
+    serve.runtime.restarting(project / ".journal").parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(serve, "code_stamp", lambda package: next(stamps))
+    monkeypatch.setattr(serve, "time", SimpleNamespace(sleep=lambda seconds: None, monotonic=lambda: float(next(clock)), time=lambda: 0.0))
+    serve.watch_code(project / ".journal", project, serving, changed)
+    assert (changed.is_set(), ended, serve.runtime.restarting(project / ".journal").exists()) == (True, ["stopped"], True), \
+        "once the code has stopped changing for a moment the server notes a restart and stops"
 
 
 def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
@@ -219,3 +264,31 @@ def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back
     monkeypatch.setattr(DRIVERS["claude"], "binary", classmethod(lambda cls, path: "claude"))
     assert "no viewer port is free" in refused(lambda: launch(record, "claude", ["--no-interaction"]))
     assert moved(record) == [] and hooks.read_text() == before, "nothing stays set aside"
+
+
+def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_and_lists_the_journals_running(monkeypatch):
+    import socket
+    held = socket.socket()
+    held.bind(("127.0.0.1", 0))
+    held.listen()
+    assert viewer.waited(held.getsockname()[1], 0.3) is False, "a port that stays busy is given up on after the wait"
+    held.close()
+    free_port = socket.socket()
+    free_port.bind(("127.0.0.1", 0))
+    unused = free_port.getsockname()[1]
+    free_port.close()
+    assert viewer.waited(unused, 0.3) is True, "a free port is answered at once"
+
+    opened, focused = [], []
+    assert viewer.show("http://x/", "dev", opener=opened.append, focuser=lambda url: focused.append(url) or False) == "http://x/#/dev" and opened == ["http://x/#/dev"], \
+        "a page is opened when no tab has it"
+    assert viewer.show("http://x/", opener=opened.append, focuser=lambda url: True) == "http://x/" and opened == ["http://x/#/dev"], "a tab that already has it is brought forward instead"
+    assert viewer.show("", "dev", opener=opened.append, focuser=lambda url: True) == "" and opened == ["http://x/#/dev"], "nothing is opened with no address"
+
+    probed = []
+    monkeypatch.setattr(viewer, "probe", lambda: probed.append("probe"))
+    monkeypatch.setattr(viewer, "PROBED", [0.0, ["first"]])
+    assert viewer.running_journals() == ["first"] and probed == ["probe"], "the first look probes the ports"
+    viewer.PROBED[0] = time.time() - viewer.PROBE_FOR - 1
+    viewer.running_journals()
+    assert viewer.PROBED[0] > time.time() - 5, "an old list is refreshed in the background"

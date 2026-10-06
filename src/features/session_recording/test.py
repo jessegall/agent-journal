@@ -199,3 +199,29 @@ def test_a_visitor_plays_every_shipped_lesson_to_the_end_pressing_only_what_is_o
     assert got[("bakery", "")]["moves"][:3] == ["send", "answer", "approve"], "the visitor asks for a plan, says how thorough, and approves it"
     assert got[("bakery", "")]["cards"] > 0, "the file feed shows the agent's recorded edits"
     assert "Agents" in got[("helpers", "")]["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"
+
+
+def test_upgrades_file_old_runtime_files_under_their_session_and_remove_the_loose_ones(tmp_path):
+    from migrations.m0011_feature_state import run as remove_loose
+    from migrations.m0017_sessions_in_folders import run as into_folders
+
+    runtime = tmp_path / "runtime"
+    (tmp_path / "environments" / "main").mkdir(parents=True)
+    runtime.mkdir()
+    for name in ("seat-claude-1.json", "gate-main-claude-1.json", "screen-claude-1", "printed-claude-1", "trigger-claude-1-facts.json",
+                 "bar-old.json", "engines.lock", "kept.txt", "gate-other-claude-9.json"):
+        (runtime / name).write_text("{}")
+    (runtime / "subfolder").mkdir()
+    assert into_folders(tmp_path / "nowhere") == "no runtime folder", "a project without a runtime folder has nothing to file"
+    assert into_folders(tmp_path) == "runtime: 5 per-session files moved into sessions/<session>/, 2 left-over files removed", "per-session files move and left-overs go"
+    session = runtime / "sessions" / "claude-1"
+    assert sorted(p.name for p in session.iterdir()) == ["gate-main.json", "printed", "screen", "seat.json", "trigger-facts.json"], "each file is filed under its session with its plain name"
+    assert (runtime / "kept.txt").exists() and (runtime / "gate-other-claude-9.json").exists(), "a file that belongs to no known pattern stays"
+
+    (runtime / "touched-1.json").write_text("{}")
+    (runtime / "updates.json").write_text("{}")
+    (tmp_path / "environments" / "main" / "runtime").mkdir()
+    for name in ("files-1.json", "changes.json", "keep.json"):
+        (tmp_path / "environments" / "main" / "runtime" / name).write_text("{}")
+    assert remove_loose(tmp_path) == "feature state moved into the record: 4 old runtime files removed", "the loose feature state files are removed"
+    assert (tmp_path / "environments" / "main" / "runtime" / "keep.json").exists(), "an unrelated runtime file stays"
