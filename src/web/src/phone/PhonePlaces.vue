@@ -11,7 +11,7 @@ import {CONTROLS, useDrag} from "./drag.js";
 const EDGE = 24;
 const COMMIT = 0.35;
 const FLICK = 0.5;
-const props = defineProps({environment: {type: String, required: true}});
+const props = defineProps({environment: {type: String, required: true}, opening: {type: Object, default: null}});
 const emit = defineEmits(["close", "moved", "switching", "stayed"]);
 const places = ref(null);
 const at = ref("");
@@ -27,6 +27,8 @@ onMounted(async () => {
         const got = await phone.places();
         places.value = got.places;
         at.value = got.at;
+        const opened = props.opening && got.places.find((place) => place.root === props.opening.root);
+        if (opened) chosen.value = {place: opened, name: props.opening.name};
     } catch (error) {
         told.value = error.message;
     }

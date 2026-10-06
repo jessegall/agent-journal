@@ -11,6 +11,7 @@ const props = defineProps({
     tone: {type: String, default: ""},
     chevron: {type: Boolean, default: true},
     still: {type: Boolean, default: false},
+    indent: {type: Number, default: 0},
 });
 const emit = defineEmits(["pick"]);
 const tag = computed(() => (props.still ? "div" : "button"));
@@ -18,6 +19,9 @@ const tag = computed(() => (props.still ? "div" : "button"));
 
 <template>
     <component :is="tag" :type="still ? undefined : 'button'" :class="['cell', tone]" @click="still || emit('pick')">
+        <template v-if="indent">
+            <span class="cell-indent" :style="{width: `${indent * 18}px`}" aria-hidden="true" />
+        </template>
         <template v-if="icon">
             <span class="cell-ic" aria-hidden="true"><Icon :name="icon" :size="18" /></span>
         </template>
@@ -71,6 +75,11 @@ const tag = computed(() => (props.still ? "div" : "button"));
 
 button.cell:active {
     background: var(--hover);
+}
+
+.cell-indent {
+    flex: none;
+    margin-right: -12px;
 }
 
 .cell-ic {
