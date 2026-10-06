@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.14 — a plugin that fits the project is suggested, and one press installs it
+A plugin can now say in its plugin.json which projects it fits, by language and by file. Once a day the journal reads an official list of plugins and suggests the ones that fit the project. The suggestion quotes the plugin's own description and lists every command the plugin runs. Pressing Yes, I want this installs exactly the version the suggestion showed. The chat then marks that it was installed, or why the install failed. Nothing to do.
+
 ## 2.253.13 — test coverage rises from 91% to about 97%, and the bugs it found are fixed
 Tests now cover the command line, the viewer's routes, an agent's screen and appointment, the start question, settings, services and to-do marks. They found two bugs, both fixed: switching back to an earlier environment crashed, and declining a takeover at start asked for a name. A session record no longer declares its earlier environment twice, the action list is cached once, and the feature-switch upgrade test no longer depends on the clock. Nothing to do.
 
