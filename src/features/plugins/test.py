@@ -261,6 +261,26 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     Manager(record.root, start=lambda spec, lifeline: started.append(spec.id) or 0, sources=(broken, fine)).tick()
     assert started == ["fine.web"] and status_file(record.root, "lost.web").exists(), \
         "a source that throws starts nothing of its own, stops nothing and never keeps the other sources' services from running"
+    from engine.services import Beat, beat_file
+    clock, asked = [5000.0], []
+
+    def counting(root, taken):
+        asked.append(clock[0])
+        return []
+    first = Manager(record.root, clock=lambda: clock[0], sources=(counting,))
+    second = Manager(record.root, clock=lambda: clock[0], sources=(counting,))
+    first.tick()
+    second.tick()
+    assert len(asked) == 1 and Beat.read(record.root).token == first.token, "the manager that holds the lock writes a heartbeat, and a second one leaves the services to it"
+    clock[0] += 31.0
+    second.tick()
+    assert len(asked) == 2 and Beat.read(record.root).token == second.token, "a manager that finds the lock held by a heartbeat older than 30 seconds takes over"
+    first.tick()
+    first.tick()
+    assert len(asked) == 2, "the old holder, once it wakes and sees another's newer heartbeat, stops managing"
+    clock[0] += 31.0
+    first.tick()
+    assert len(asked) == 3 and Beat.read(record.root).token == first.token, "and manages again when the one that took over has gone quiet in its turn"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():

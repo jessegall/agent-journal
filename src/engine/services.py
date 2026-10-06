@@ -2,6 +2,7 @@ import os
 import signal
 import subprocess
 import time
+import uuid
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
@@ -26,6 +27,8 @@ ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 KEEPER_EXIT = 3.0
 KEEPING = "services-keeper.lock"
+BEATING = "services-keeper.beat"
+STALE_AFTER = 30.0
 CRASHES, WITHIN = 5, 300.0
 BOOTING = 10.0
 
@@ -70,6 +73,23 @@ class Wanted(Loaded):
     @classmethod
     def read(cls, root: Path, sid: str) -> "Wanted":
         return read_json(want_file(root, sid), cls.from_json, cls.from_json({}))
+
+
+def beat_file(root: Path) -> Path:
+    return folder(root) / BEATING
+
+
+@dataclass(frozen=True)
+class Beat(Loaded):
+    token: str = ""
+    at: float = 0.0
+
+    @classmethod
+    def read(cls, root: Path) -> "Beat":
+        return read_json(beat_file(root), cls.from_json, cls.from_json({}))
+
+    def write(self, root: Path) -> None:
+        write_json(beat_file(root), asdict(self))
 
 
 def status(root: Path, sid: str) -> ServiceState:
@@ -183,10 +203,26 @@ class Manager:
         self.waiting: dict = {}
         self.needed: dict = {}
         self.owned = None
+        self.token = uuid.uuid4().hex
+        self.leading = False
+
+    def leads(self) -> bool:
+        now = self.clock()
+        beat = Beat.read(self.root)
+        fresh = now - beat.at < STALE_AFTER
+        if self.leading and beat.token != self.token and fresh:
+            self.leading = False
+            return False
+        newly = self.owned is None
+        self.owned = self.owned or claim(folder(self.root) / KEEPING)
+        mine, lapsed = beat.token == self.token, beat.token != self.token and not fresh
+        if mine or lapsed or (newly and self.owned is not None):
+            Beat(self.token, now).write(self.root)
+            self.leading = True
+        return self.leading
 
     def tick(self) -> list[str]:
-        self.owned = self.owned or claim(folder(self.root) / KEEPING)
-        if self.owned is None:
+        if not self.leads():
             return []
         started = []
         declared, complete = gather(self.root, self.sources, self.faulted)
