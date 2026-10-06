@@ -74,7 +74,7 @@ function pick(key) {
 }
 
 watch(active, () => (made.value = null));
-watch([ready, active, made], () => ready.value && !active.value && !made.value && !busy.value && fresh());
+watch([ready, active, made], () => ready.value && !active.value && !made.value && !busy.value && fresh(), {immediate: true});
 onMounted(checkTunnel);
 </script>
 
@@ -98,9 +98,9 @@ onMounted(checkTunnel);
                     </template>
                     <template v-else>
                         <div class="phone-code-empty">
-                            <template v-if="made">
+                            <template v-if="made || busy">
                                 <Spinner />
-                                Opening the tunnel
+                                {{ made ? "Opening the tunnel" : "Making a code" }}
                             </template>
                         </div>
                     </template>
