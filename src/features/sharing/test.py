@@ -281,16 +281,37 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
                     'if [ "$1" = login ] && [ "$TUNLER_PASSWORD" != right-pass ]; then echo "login failed: wrong username or password" >&2; exit 1; fi\n'
                     'if [ "$1" = status ]; then echo \'{"host":"t.example","user":"newbie","logged_in":true,"auth_ok":true}\'; fi\n'
                     'if [ "$1" = version ]; then echo "tunler v9.9.9"; fi\n'
+                    'if [ "$1" = domains ]; then echo "kept-name.t.example"; fi\n'
                     'if [ "$1" = update ] && [ "$2" = --check ]; then echo \'{"current":"v9.9.9","latest":"v9.9.10","update_available":true}\'; exit 0; fi\n'
                     'if [ "$1" = update ]; then echo "updated: tunler v9.9.8 -> tunler v9.9.9"; fi\n')
     tool.chmod(0o755)
     monkeypatch.setattr(tunnel, "tunler", lambda: str(tool))
     record = fresh()
     shares = Shares(record, actor=USER)
+    wanted = []
+    monkeypatch.setattr(controller, "want", lambda root, sid, state, nonce=0.0: wanted.append(state))
     asked = shares.login("newbie", "right-pass", endpoint="t.example")
     assert (asked["connected"], asked["needs_master"]) == (False, True), "an unknown account asks for the master password"
     made = shares.login("newbie", "right-pass", endpoint="t.example", master_password="master")
     assert made["connected"] and made["account"] == "newbie", "with it, the account is made and the login kept"
+    import features
+    from engine import runtime
+    from features.sharing.address import this_machine
+    features.load()
+    monkeypatch.setattr(runtime, "env", lambda root: record.env)
+    from features.sharing.tunnel import kept_address
+    settings = record.root / "sharing.json"
+    claim = {"machine": this_machine(), "account": "newbie", "host": "t.example"}
+    assert {key: kept_address(record.root)[key] for key in claim} == claim and wanted == ["up"], "a login settles the address for this account and starts the tunnel"
+    settings.write_text(json.dumps({"subdomain": "copied-name"}))
+    assert shares._subdomain() not in ("copied-name", ""), "an address from elsewhere that nothing uses is replaced, silently, before the first start"
+    settings.write_text(json.dumps({"subdomain": "kept-name"}))
+    assert shares._subdomain() == "kept-name", "an address this account owns is kept"
+    share, _ = shared_with_comments(record)
+    shares.update(share.n, approved=True)
+    settings.write_text(json.dumps({"subdomain": "kept-name", **claim, "machine": "another-machine"}))
+    assert shares._subdomain() != "kept-name" and any(m.title == "This machine has a tunnel address of its own" for m in Messages(record).all()), \
+        "the same project on another machine gets its own address, and the user is told when a link relied on the old one"
     wrong = shares.login("someone", "wrong-pass", endpoint="t.example")
     assert (wrong["connected"], wrong["needs_master"], wrong["error"]) == (False, False, "login failed: wrong username or password")
     assert shares.version() == {"current": "v9.9.9", "latest": "v9.9.10", "update_available": True}, "whether a newer tunler is out"
@@ -316,6 +337,7 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
     assert shares.tunnel()["problems"] == [], "a tunler that is installed and logged in has no problem"
     shares.logout()
     assert shares.tunnel()["problems"] == [LOGGED_OUT], "logging out shows at once, not when the minute's remembered answer runs out"
+    assert wanted[-1] == "down", "and stops the tunnel"
     assert shares.domains() == ["a.t.example", "b.t.example"], "the domains tunler lists, blank lines dropped"
     shares.release("mine.t.example")
     assert "not yours" in refused_with(lambda: shares.release("theirs.t.example")), "a domain tunler refuses to release says why"
@@ -327,6 +349,9 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
     monkeypatch.setattr(tunnel, "tunler", lambda: str(garbled))
     tunnel.KEPT_STATUS.clear()
     assert shares.tunnel()["problems"] == [], "a status tunler cannot be read is unknown, not logged out"
+    garbled.write_text("#!/bin/sh\necho '{\"host\":\"t.example\",\"user\":\"newbie\",\"logged_in\":true,\"auth_ok\":false}'\n")
+    tunnel.KEPT_STATUS.clear()
+    assert shares.tunnel()["problems"] == [controller.REJECTED.format(account="newbie", host="t.example")], "a login the server no longer accepts says so"
     monkeypatch.setattr(tunnel, "tunler", lambda: "")
     tunnel.KEPT_STATUS.clear()
     assert shares.tunnel()["problems"] == [NOT_INSTALLED], "a missing tunler is the problem named first"
@@ -351,26 +376,27 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     from engine import runtime
     from engine.services import log_file
     from features.sharing import watchdog
-    from features.sharing.tunnel import OWNED, subdomain
+    from features.sharing.tunnel import OWNED, kept_address
     features.load()
     record = fresh()
     monkeypatch.setattr(runtime, "env", lambda root: record.env)
     report(record, "working", "PreToolUse")
+    subdomain = lambda root: kept_address(root)["subdomain"]
     watching = watchdog.TunnelWatch(running(SharingFeature))
     monkeypatch.setattr(watchdog, "default_route", lambda: "")
     tick = lambda record: watching(Shares(record, actor=SYSTEM))
     share, _ = shared_with_comments(record)
     Shares(record, actor=USER).update(share.n, approved=True)
-    before = subdomain(record.root)
     asked, released, ours = [], [], []
     from features.sharing import controller as controller_words
-    standing = {"installed": True, "logged_in": True, "account": "me", "host": "t.example", "unreadable": False}
+    standing = {"installed": True, "logged_in": True, "rejected": False, "account": "me", "host": "t.example", "unreadable": False}
     monkeypatch.setattr(watchdog, "tunler_status", lambda: standing)
     monkeypatch.setattr(controller_words, "tunler_status", lambda: standing)
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     monkeypatch.setattr(controller_words, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     monkeypatch.setattr(controller_words, "owned", lambda: [f"{name}.t.example" for name in ours])
     monkeypatch.setattr(controller_words, "unclaim", lambda domain, host: released.append(domain) or "")
+    before = Shares(record, actor=SYSTEM)._subdomain()
     moves = lambda: [m for m in Messages(record).all() if m.title == "The tunnel moved to a new address"]
     log = log_file(record.root, watchdog.TUNNEL)
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -404,10 +430,16 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     assert Shares(record, actor=USER).tunnel()["problems"] == [controller_words.HOST_MISMATCH.format(saved="saved.example", host="t.example")], \
         "a saved server other than tunler's own login is named"
     Features(record, actor=USER).configure("sharing", "host", "")
-    settings = record.root / "sharing.json"
+    settings, backup = record.root / "sharing.json", record.root / "sharing.backup.json"
+    standing_name = Shares(record, actor=SYSTEM)._subdomain()
     settings.write_text("{broken")
-    assert "cannot read the tunnel address" in refused_with(lambda: subdomain(record.root))
-    assert settings.read_text() == "{broken", "unreadable sharing settings do not get a new address"
+    assert Shares(record, actor=SYSTEM)._subdomain() == standing_name and json.loads(settings.read_text())["subdomain"] == standing_name, \
+        "unreadable sharing settings are repaired from their backup, address and all"
+    settings.write_text("{broken")
+    backup.write_text("{broken")
+    assert "cannot read the tunnel address" in refused_with(lambda: Shares(record, actor=SYSTEM)._subdomain())
+    assert settings.read_text() == "{broken", "with the backup unreadable too, nothing gets a new address"
+    assert "cannot read the tunnel address" in Shares(record, actor=USER).tunnel()["problems"][0], "and the reason is the problem shown"
     log.write_text("")
     tick(record)
     assert any(message.title == "The tunnel address cannot be read" for message in Messages(record).all())
@@ -486,7 +518,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
         FORMATTERS.remove(marker)
 
 
-STANDING = {"installed": True, "logged_in": True, "account": "me", "host": "t.example", "unreadable": False}
+STANDING = {"installed": True, "logged_in": True, "rejected": False, "account": "me", "host": "t.example", "unreadable": False}
 
 
 def answering_with(status: int, body: bytes):

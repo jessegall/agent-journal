@@ -7,7 +7,7 @@ from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
 from features.sharing.controller import ADDRESS_TAKEN, Shares
 from features.sharing.resource import ended
-from features.sharing.tunnel import SERVER, TUNNEL, refused_address, subdomain, tunler, tunler_build
+from features.sharing.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
 from engine.extension import Extension
 
@@ -54,7 +54,7 @@ def share_services(root: Path, taken: set) -> list:
     if not command:
         return specs
     try:
-        domain = subdomain(root)
+        domain = Shares(Record(root, runtime.env(root)), actor=SYSTEM)._subdomain()
     except Refused:
         return specs
     inspector, _ = allocate(root, TUNNEL, None, taken)
