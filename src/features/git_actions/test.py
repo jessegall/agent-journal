@@ -82,3 +82,13 @@ def test_each_git_command_the_agent_runs_is_marked_in_the_chat(tmp_path):
         "Deleted branch `quote-hotfix`", "Removed worktree `quote-hotfix`",
         "Added worktree `x-hotfix` on branch `origin/main`",
     ], "every other git action reads in plain words, a failed one and a plain read leave no mark, and a command shlex cannot split is still read"
+    earlier = len(marks())
+    for command, output in (("git -c core.pager=cat tag -d v1.2", ""), ("git push --tags", ""), ("git push origin --delete old", ""), ("git push --dry-run", ""),
+                            ("git branch -m helper-z helper-w", ""), ("git fetch --all", ""), ("git reset nonexistent", ""), ("git reset --soft", ""),
+                            ("git tag -l", ""), ("git tag", ""), ("git pull", "Already up to date."), ("git worktree list", ""), ("git worktree add ../w2", ""),
+                            ("git cherry-pick", ""), ("git revert", ""), ("git branch", ""), ("git branch --list", "")):
+        ran_git(command, output)
+    assert marks()[earlier:] == [
+        "Deleted tag `v1.2`", "Pushed tags to `origin`", "Deleted `old` on `origin`", "Renamed branch `helper-z` to `helper-w`",
+        "Fetched from every remote", "Reset `main` soft to `HEAD`", "Added worktree `../w2`",
+    ], "a deleted tag, pushed tags, a deleted remote branch, a rename, a fetch of every remote, a soft reset and a worktree read in plain words; a dry run, a listing and an up to date pull leave no mark"
