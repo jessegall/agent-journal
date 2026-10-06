@@ -34,7 +34,7 @@ class RuntimeCleanupDetails(FeatureDetails):
         Setting(
             name="days",
             default=2,
-            title="Delete a quiet session's files after",
+            title="Delete the files of inactive sessions after",
             unit="days",
         ),
     ]

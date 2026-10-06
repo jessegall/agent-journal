@@ -12,7 +12,7 @@ const props = defineProps({
     scopes: {type: Array, required: true},
     unavailable: {type: Object, default: () => ({})},
     readonly: Boolean,
-    label: {type: String, default: "Words to watch for"},
+    label: {type: String, default: "Words"},
     scopeLabel: {type: String, default: "Trigger when"},
     help: {type: String, default: "Whole words or phrases. Upper or lower case doesn't matter. Press Enter after each one."},
     yes: {type: String, default: "The trigger would act."},

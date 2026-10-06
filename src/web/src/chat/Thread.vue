@@ -81,7 +81,7 @@ const composeTools = pageTools;
 const dumpIdle = computed(() => ({
     icon: "inbox",
     label: dumpFiling.value ? `Dump ${dumpFiling.value.n} · filing` : "Dump files",
-    title: "Throw in a pile of files and notes: the agent sorts them by subject and files them into a collection",
+    title: "Add many files and notes at once. The agent sorts them by subject and files them into a collection",
     go: () => openDump(dumpFiling.value?.n || 0),
 }));
 const dumpOffer = {

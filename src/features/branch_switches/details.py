@@ -11,7 +11,7 @@ class BranchSwitchesDetails(FeatureDetails):
 
     title = "Branch switches in the chat"
 
-    abstract = "Whenever the agent's checkout changes branch, the chat shows a mark naming the checkout and the branches"
+    abstract = "Whenever the agent switches branches, the chat shows a mark naming the branch"
 
     help = """
         After every tool call the journal reads which branch the agent's own checkout is on, the main checkout

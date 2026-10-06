@@ -1,12 +1,12 @@
 export const COUNTED = ["percent", "uses", "minutes"];
 export const EVENTS = ["idle", "worked", "start"];
 
-const UNIT_WORDS = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "journal reminders"};
+const UNIT_WORDS = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "reminders"};
 const EVENT_WORDS = {idle: "when the agent stops", worked: "when the agent stops after using tools", start: "when a session starts"};
 const HOURS = {60: "every hour", 1440: "every day"};
 const OFF_LINE = "Off. Turn it on to change these.";
 
-export const UNIT_CHOICES = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "journal reminders"};
+export const UNIT_CHOICES = {percent: "% of context", uses: "tool calls", minutes: "minutes", notices: "reminders"};
 export const EVENT_CHOICES = {idle: "the agent stops", worked: "it stops after using tools", start: "a session starts"};
 
 const sorted = (value) =>
@@ -406,7 +406,7 @@ export function narrowed(sections, query, filter) {
 
 export const TABS = [
     {key: "features", title: "Features", line: "What the agent and the journal do. Each feature can be switched off on its own."},
-    {key: "system", title: "System", line: "This project, updates, this browser, and the parts that are always on."},
+    {key: "system", title: "System", line: "This project, updates, this browser, and what always runs."},
     {key: "sharing", title: "Phone and share links", line: "Your phone and share links reach this journal through the tunler account below."},
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},

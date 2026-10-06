@@ -89,7 +89,7 @@ async function upgrade(always = false, yes = false) {
                 <span>{{ lines.join(" · ") }}</span>
             </template>
             <template #actions>
-                <Btn small @click="dismiss">Keep my changes</Btn>
+                <Btn small @click="dismiss">Keep your changes</Btn>
                 <Btn kind="primary" small :disabled="running" @click="upgrade(false, true)">Update anyway</Btn>
             </template>
         </Notice>

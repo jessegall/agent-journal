@@ -21,7 +21,7 @@
                 ]
             },
             {
-                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed)|rows?|inject(ed|s)?|dispatch(ed|es)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b)"
+                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed|ing)?|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b|\\b(in|on|for|with|to|of|by)\\s*[:.]*$)"
             }
         ],
         "reject": [
@@ -32,8 +32,8 @@
     },
     "sin": {
         "name": "plain-viewer-text",
-        "description": "A label, title, placeholder or help text in the viewer speaks as the app ('I', 'we') or uses an internal word (row, hook, nudge, engine, compaction, inject, dispatched, ships with, park, dismiss, handled, abandon).",
-        "rule": "Write every text a person reads in plain, ordinary words: name who acts ('the agent', 'the journal'), say what a control does, and use the house words (Close, Pause, item, to-do).",
+        "description": "A label, title, placeholder or help text in a viewer template speaks as the app, uses an internal word (row, hook, nudge, engine, compaction, summarised, comes up, pile, hub, steered, dispatched, moment, resource, orchestrator), or ends in a preposition.",
+        "rule": "Write every text a person reads in plain, ordinary words: name who acts ('the agent', 'the journal'), say what a control does, and use the house words (Close, Pause, item, to-do). A heading names what is chosen and never ends in a preposition; an option finishes its heading's sentence.",
         "skill": "plain-viewer-text"
     }
 }

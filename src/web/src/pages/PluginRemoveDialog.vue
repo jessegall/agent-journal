@@ -9,7 +9,7 @@ const emit = defineEmits(["close", "remove"]);
 <template>
     <Dialog :title="`Remove ${title}`" fits @close="emit('close')">
         <p class="remove-lead">
-            Its services stop, its hooks and refusals no longer run, and its folder is taken away. What it kept of its own — settings,
+            Its services stop, its hooks and blocks no longer run, and its folder is taken away. What it kept of its own — settings,
             caches, anything it wrote in its data folder — can stay, in case you install it again, or go with it.
         </p>
         <template #foot>

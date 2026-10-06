@@ -6,12 +6,12 @@ class SessionRecordingDetails(FeatureDetails):
     explains = 'The journal can save a session as it happens for a demo. You can use the recording to replay the session.'
     name = "session_recording"
     group = Group.DEVELOPER
-    label = "Save a recording of each session to a folder, for demos"
+    label = "Record each session to a folder, for demos"
     has_skill = False
 
     title = "Session recording"
 
-    abstract = "A session can be recorded into a folder, moment by moment, for the demo"
+    abstract = "A session can be recorded into a folder, step by step, for the demo"
 
     help = """
         journal record start <folder> runs alongside the session. On every new event in any

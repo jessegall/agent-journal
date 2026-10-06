@@ -73,7 +73,7 @@ class WorkDetails(FeatureDetails):
         Setting(
             name="log_after",
             default=20,
-            title="Block file changes after this many edits without a log entry",
+            title="Block edits after this many with nothing logged",
             unit="edits",
         ),
         Setting(

@@ -18,7 +18,7 @@ class SequencesDetails(FeatureDetails):
     title = "Sequences"
 
 
-    abstract = "Steps the agent follows in order, one at a time, started by hand or by a moment"
+    abstract = "Steps the agent follows in order, one at a time, started by hand or when something happens"
 
     help = """
         A template says how to do something or where to start; a sequence is a way of

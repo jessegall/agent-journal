@@ -95,7 +95,7 @@ defineExpose({undo});
                         <span class="tick">✓</span>
                     </template>
                     <template v-if="i === suggested && !disabled">
-                        <PickTag class="pick">The agent's pick</PickTag>
+                        <PickTag class="pick">Recommended</PickTag>
                     </template>
                     <template v-if="chosen && chosen === o.title">
                         <PickTag class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</PickTag>

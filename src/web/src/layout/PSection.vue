@@ -94,7 +94,7 @@ async function park() {
                 <template v-if="PARKABLE.includes(data.status)">
                     <MenuItem class="planbar-park" @click="park">
                         <span>Pause</span>
-                        <small>Stop it and set its open to-dos aside</small>
+                        <small>Pause the plan and its open to-dos</small>
                     </MenuItem>
                 </template>
             </MenuPanel>

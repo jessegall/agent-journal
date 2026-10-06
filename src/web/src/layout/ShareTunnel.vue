@@ -151,7 +151,7 @@ async function stop(shares) {
                                 <CopyButton
                                     :text="`Here's the link to ${itemOf(share).title}: ${share.abstract}`"
                                     icon="chat"
-                                    hint="Copy it with a line saying what it is"
+                                    hint="Copy the link with a short description"
                                 />
                                 <Btn small kind="danger" :busy="stopping === share.n" @click="stop([share])">Stop sharing</Btn>
                             </div>
@@ -174,7 +174,7 @@ async function stop(shares) {
                     <p class="tunnel-empty">Nothing is shared right now. Share a document, report, collection or plan from its page.</p>
                 </template>
                 <div class="tunnel-foot">
-                    <span class="meta">The tunnel closes by itself when the last link ends.</span>
+                    <span class="meta">The connection closes by itself when the last link ends.</span>
                     <template v-if="tunnel && tunnel.url">
                         <Btn small title="See every request that came through the tunnel" @click="inspect">Request inspector</Btn>
                     </template>

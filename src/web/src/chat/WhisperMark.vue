@@ -15,7 +15,7 @@ const n = computed(() => Number(props.row.split(":")[1]));
 const named = computed(() => `${(meta(type.value) || {title: type.value}).title.toLowerCase()} ${n.value}`);
 const mark = computed(() => ({
     icon: "reminders",
-    label: "Reminded the agent of",
+    label: "Reminder sent to the agent",
     name: named.value,
     at: props.at,
     title: `Open ${named.value}: ${props.title}`,

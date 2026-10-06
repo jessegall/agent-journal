@@ -13,7 +13,7 @@ class CollectionsDetails(FeatureDetails):
 
     aliases = ("groups",)
 
-    abstract = "Any resources that belong together are kept in a named collection, shown as cards"
+    abstract = "Items that belong together are kept in a named collection, shown as cards"
 
     help = """
         A collection is a row of its own whose links are its members. journal collection create "<name>"

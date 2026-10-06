@@ -1,0 +1,46 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "of": "parent",
+                "nameIn": [
+                    "label",
+                    "title",
+                    "hint",
+                    "heading",
+                    "placeholder",
+                    "help",
+                    "line",
+                    "note",
+                    "empty"
+                ]
+            },
+            {
+                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed|ing)?|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b|\\b(in|on|for|with|to|of|by)\\s*[:.]*$)"
+            }
+        ],
+        "reject": [
+            {
+                "textLike": "For example*"
+            },
+            {
+                "textLike": "Hooks"
+            },
+            {
+                "textLike": "Orchestrator"
+            },
+            {
+                "textLike": "Resources"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plain-viewer-text",
+        "description": "A label, title, hint, heading, placeholder, help, line, note or empty text in a viewer script speaks as the app, uses an internal word, or ends in a preposition.",
+        "rule": "Write every text a person reads in plain, ordinary words: name who acts ('the agent', 'the journal'), say what a control does, and use the house words (Close, Pause, item, to-do). A heading names what is chosen and never ends in a preposition; an option finishes its heading's sentence.",
+        "skill": "plain-viewer-text"
+    }
+}

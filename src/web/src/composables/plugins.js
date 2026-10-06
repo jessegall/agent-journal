@@ -9,7 +9,7 @@ export const installedPlugins = () =>
                 n: p.n,
                 name: (p.data.manifest || {}).name || "",
                 title: p.title,
-                description: p.abstract || "It says nothing about itself.",
+                description: p.abstract || "No description.",
                 version: p.data.version || "no version",
                 source: p.data.source,
                 commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",

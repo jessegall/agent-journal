@@ -98,7 +98,7 @@ const pickKind = (key) => {
             </EmptyState>
         </template>
         <template v-else-if="loaded">
-            <nav class="shelves" aria-label="Attached to">
+            <nav class="shelves" aria-label="Attachments">
                 <span class="shelves-label">Attached to</span>
                 <Segmented :options="shelves" :value="shelf" @pick="shelf = $event" />
             </nav>

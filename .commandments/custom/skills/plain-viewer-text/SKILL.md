@@ -13,10 +13,10 @@ says what it is about, or what happens when they press it, in the words a newcom
 
 ## When it fires
 
-- **`plain-viewer-text`** - a label, title, placeholder, tooltip or help attribute that:
+- **`plain-viewer-text`** - a label, title, placeholder, tooltip or help attribute, a label, title, hint, heading, placeholder, help, line, note or empty value in a script, or text on a page, that:
   - speaks as the app: "I sort it by subject", "What I'm doing", "my", "we";
-  - uses a word from inside the journal: row, hook, nudge, engine, compaction, inject, dispatched,
-    "ships with";
+  - uses a word from inside the journal: row, hook, nudge, engine, compact, summarised, "comes up", pile,
+    hub, steered, inject, dispatched, moment, resource, orchestrator, "ships with";
   - uses one of the words the house has replaced: park (Pause), dismiss or abandon (Close).
 
 ## How to fix it
@@ -25,8 +25,9 @@ says what it is about, or what happens when they press it, in the words a newcom
 - Say the thing the user sees: "item", "to-do", "message", "entry", not "row"; "comes with the journal",
   not "ships with".
 - A button says what happens when it is pressed: "Close the document", "Pause the plan".
-- A heading names what the user is choosing or reading, in a newcomer's words: "Watch for the words in",
-  never "Where the words count" (rule 59).
+- A heading names what the user is choosing or reading, in a newcomer's words: "Trigger when",
+  never "Where the words count" (rule 59). A heading never ends in a preposition, and an option finishes
+  its heading's sentence: "Trigger when" -> "A word appears anywhere".
 - An example of what the user would write about themselves stays in their voice: start it "For example".
 
 ## Not this sin

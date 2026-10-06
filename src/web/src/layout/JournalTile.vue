@@ -93,7 +93,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 </template>
             </template>
             <template #unreadable>
-                <p class="jt-focus past">The hub can only show journals on version 2.3.0 or later. This one runs {{ journal.version || "an older version" }}.</p>
+                <p class="jt-focus past">This page can only show journals on version 2.3.0 or later. This one runs {{ journal.version || "an older version" }}.</p>
             </template>
         </SwitchCase>
         <template v-if="lead" #foot>
@@ -101,7 +101,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 <IconCount :icon="c.icon" :count="c.n" :title="c.text" :hot="c.hot" />
             </template>
             <template v-if="lead.auto">
-                <Chip>auto</Chip>
+                <Chip>Auto mode</Chip>
             </template>
             <template v-if="soleRunning">
                 <AgentStopButton

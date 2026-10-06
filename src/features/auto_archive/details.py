@@ -10,7 +10,7 @@ class AutoArchiveDetails(FeatureDetails):
     label = "Archive closed items"
     has_skill = False
 
-    title = "Auto-archive"
+    title = "Archive automatically"
 
     aliases = ("retention",)
 

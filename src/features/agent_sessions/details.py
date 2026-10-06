@@ -34,7 +34,7 @@ class AgentSessionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="eviction",
-            title="Pause a session when another takes its environment",
+            title="Pause a session when another session takes over its environment",
             abstract="Its file changes wait until it takes the environment back",
         ),
         Behaviour(
@@ -44,7 +44,7 @@ class AgentSessionsDetails(FeatureDetails):
         ),
         Behaviour(
             name="subagents",
-            title="Give a silent subagent's to-dos back",
+            title="Return a silent subagent's to-dos to the list",
         ),
     ]
 

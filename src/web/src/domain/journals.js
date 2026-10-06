@@ -11,7 +11,7 @@ export const STATE_WORDS = {
     working: "Working",
     busy: "Busy",
     waiting: "Waiting",
-    compacting: "Compacting",
+    compacting: "Summarizing",
     paused: "Paused",
     idle: "Idle",
     [SILENT]: SILENT_WORD,

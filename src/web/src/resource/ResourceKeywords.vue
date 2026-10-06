@@ -17,7 +17,7 @@ const closed = computed(() => Boolean(props.resource.completed));
 const help = computed(() =>
     words.value.length
         ? "Whole words or phrases. Upper or lower case doesn't matter. Press Enter after each one."
-        : `With no words, this ${noun.value} is only repeated as the agent's memory fills.`
+        : `With no words, this ${noun.value} is only repeated as the conversation fills up.`
 );
 
 const save = (words) => api.act(noun.value, props.resource.n, "update", {keywords: words});
@@ -39,7 +39,7 @@ const matchIn = (value) => api.act(noun.value, props.resource.n, "set", {key: "k
             @words="save"
             @where="matchIn"
         >
-            <p class="note">Your own messages never count here: a {{ noun }} is repeated to the agent while it works.</p>
+            <p class="note">Your own messages don't count here.</p>
             <p class="note">
                 It is repeated at most once {{ cadence }}.
                 <a :href="href.page(route.env, 'settings')">Change that in Settings</a>

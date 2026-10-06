@@ -16,7 +16,7 @@ export const WHERE = [
     },
     {
         value: "everything",
-        label: "A word comes up anywhere",
+        label: "A word appears anywhere",
         hint: "All of that, plus files the agent opens, what it searches for and web addresses it visits.",
     },
 ];
@@ -27,7 +27,7 @@ export const KEYWORD_WHERE = [
     {value: "both", label: "The agent writes or runs one of the words", hint: "In a chat message, a file or a command."},
     {
         value: "everything",
-        label: "One of the words comes up anywhere",
+        label: "One of the words appears anywhere",
         hint: "All of that, plus files the agent opens, what it searches for and web addresses it visits.",
     },
 ];
@@ -61,7 +61,7 @@ export const DOES = [
         value: "deny",
         label: "Block a command or file change",
         short: "It blocks the command.",
-        hint: "The command or file change is refused, and the agent is given your reason. If the words are in the agent's chat message, it can't be unsaid, so the agent is told instead.",
+        hint: "The command or file change is refused, and the agent is given your reason. A chat message can't be taken back, so the agent is only warned.",
         ask: "Reason the agent is given",
         example: "Never force-push. Ask me first.",
     },
@@ -85,7 +85,7 @@ export const EXAMPLES = [
         text: "Never force-push. Ask me first.",
     },
     {
-        name: "Remind the agent when a word comes up",
+        name: "Remind the agent when a word appears",
         title: "Mention the changelog",
         words: ["CHANGELOG"],
         words_in: "both",
@@ -115,10 +115,10 @@ export const doesOf = (value) => DOES.find((option) => option.value === value) |
 export const startedBy = (n) => rows("sequence").filter((s) => !s.deleted && s.data.starts_on === `trigger:${n}`);
 
 export const whereReason = (trigger) =>
-    trigger.does === "deny" ? {[USER]: "A trigger that blocks can't watch your messages: they are never blocked."} : {};
+    trigger.does === "deny" ? {[USER]: "Your messages are never blocked, so a blocking trigger can't watch them."} : {};
 
 export const doesReason = (trigger) =>
-    trigger.words_in === USER ? {deny: "Your messages are never blocked, so this can't be picked while the words count only there."} : {};
+    trigger.words_in === USER ? {deny: "Your messages are never blocked, so this isn't available while the trigger only watches them."} : {};
 
 const quoted = (word) => `“${word}”`;
 
@@ -133,11 +133,11 @@ export function wordsText(words) {
 const watching = (words, where) =>
     ({
         [USER]: `When you write ${words}`,
-        text: `When ${words} comes up in what you or the agent write`,
+        text: `When ${words} appears in what you or the agent write`,
         commands: `When the agent runs a command with ${words}`,
-        both: `When ${words} comes up in what is written or run`,
-        everything: `When ${words} comes up anywhere in the agent's work or your messages`,
-    })[where] || `When ${words} comes up`;
+        both: `When ${words} appears in what is written or run`,
+        everything: `When ${words} appears anywhere in the agent's work or your messages`,
+    })[where] || `When ${words} appears`;
 
 function doing(trigger, sequences) {
     const text = trigger.text ? [{text: quoted(trigger.text)}] : [{text: "no text yet", muted: true}];

@@ -45,7 +45,7 @@ class MessagesDetails(FeatureDetails):
         ),
         Behaviour(
             name="closing",
-            title="Close a message once it is handled",
+            title="Close a message once it is answered",
         ),
         Behaviour(
             name="paragraphs",

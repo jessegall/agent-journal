@@ -42,7 +42,7 @@ const emit = defineEmits(["check-again"]);
                         :text="linkMessage(title, made.abstract)"
                         icon="chat"
                         label="Copy with message"
-                        hint="Copy it with a line saying what it is"
+                        hint="Copy the link with a short description"
                     />
                 </div>
                 <template v-if="tunnel === 'late'">

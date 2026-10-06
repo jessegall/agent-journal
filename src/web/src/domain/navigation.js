@@ -3,10 +3,10 @@ export const SIDEBAR = "sidebar";
 export const PAGES = {
     "": {title: "Home", icon: "home", text: ""},
     kanban: {title: "Board", icon: "board", text: ""},
-    resources: {title: "Resources", icon: "tiles", text: "Every kind of record the journal keeps, and its setup"},
+    resources: {title: "Resources", icon: "tiles", text: "Every type of item the journal keeps"},
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
-    plugins: {title: "Plugins", icon: "plug", text: "Repositories installed into the journal, with their pages and settings"},
+    plugins: {title: "Plugins", icon: "plug", text: "Installed plugins, with their pages and settings"},
     settings: {title: "Settings", icon: "settings", text: "Features, notifications and how the viewer behaves"},
 };
 

@@ -97,17 +97,17 @@ class TicketsDetails(FeatureDetails):
     ]
 
     behaviours = [
-        Behaviour(name="asks", title="Remind the orchestrator of a ticket's open question", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="awaits", title="Remind the orchestrator of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="decisions", title="Remind the orchestrator of decisions it can make itself", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="board check", title="Ask an idle orchestrator to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="asks", title="Remind the board's agent of a ticket's open question", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="awaits", title="Remind the board's agent of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="decisions", title="Remind the board's agent of decisions it can make itself", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="board check", title="Ask an idle board agent to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
     ]
 
     settings = [
         Setting(
             name="remind_every",
             default=5,
-            title="Remind the orchestrator that a ticket's plan is done, every",
+            title="Remind the board's agent that a ticket's plan is done, every",
             unit="minutes",
         ),
         Setting(

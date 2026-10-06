@@ -56,7 +56,7 @@ watch(
                 <Switch :on="skill.always" title="Load at session start" @change="$emit('always', skill, $event)" />
             </div>
             <FormField
-                label="Load it when these words come up"
+                label="Load it when these words appear"
                 :for="`skill-words-${skill.name}`"
                 help="Separate words with commas. Saved when you leave the field."
             >

@@ -140,7 +140,7 @@ function press(button) {
                                 <template v-for="button in group.buttons" :key="button.label">
                                     <button type="button" class="answer" :disabled="Boolean(running)" @click="press(button)">
                                         <template v-if="button === group.pick">
-                                            <PickTag class="answer-pick">The agent's pick</PickTag>
+                                            <PickTag class="answer-pick">Recommended</PickTag>
                                         </template>
                                         <span class="answer-label">
                                             <template v-if="running === button.label">

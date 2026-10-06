@@ -30,7 +30,7 @@ const emit = defineEmits(["take", "leave"]);
             <p class="dump-report-note">Writing a summary of what was filed…</p>
         </template>
         <template v-else>
-            <p class="dump-report-note">Nothing was planned or started. Ask about any of it in the pile on the left.</p>
+            <p class="dump-report-note">Nothing was planned or started. Ask about any of it in the files on the left.</p>
         </template>
         <template v-for="s in suggestions" :key="s.pick">
             <div :class="['dump-report-sugg', s.state]">

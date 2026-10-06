@@ -124,8 +124,8 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                     <ChoiceList stacked :choices="choices(DOES, values.does, doesReason(values))" :disabled="readonly" @pick="pickDoes" />
                     <template v-if="!readonly && values.words_in === 'user'">
                         <p class="help">
-                            To block something, the words must count somewhere other than your messages.
-                            <Btn small @click="towhere">Change where the words are watched</Btn>
+                            Blocking works on the agent's actions, not on your messages.
+                            <Btn small @click="towhere">Change what triggers it</Btn>
                         </p>
                     </template>
                 </FormField>

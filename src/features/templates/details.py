@@ -12,7 +12,7 @@ class TemplatesDetails(FeatureDetails):
 
     title = "Templates"
 
-    abstract = "Instructions and a starting skeleton that any resource can be made from"
+    abstract = "Saved instructions and a starting outline for new items"
 
     help = """
         A template is written once and used for many resources. Its brief holds the
