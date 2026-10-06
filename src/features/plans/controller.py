@@ -204,7 +204,8 @@ class Plans(Controller):
 
     @action
     def abandon(self, n: int, why: str = ""):
-        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, REVIEWING, APPROVED, ACTIVE, WAITING, PARKED, why=why)
+        plan = self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, REVIEWING, APPROVED, ACTIVE, WAITING, PARKED, why=why)
+        return self.complete(plan.n, how=why if why else "abandoned")
 
     @action
     def progress(self, n: int) -> str:
