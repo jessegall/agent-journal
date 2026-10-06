@@ -178,13 +178,14 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     assert "never end" in refused(lambda: sequences.include(base.n, outer.n)), "including back would loop"
     sequences.run(outer.n)
     sequences.follow(outer.n)
-    sequences.next(outer.n)
+    moved = sequences.next(outer.n)
+    assert moved == f"Step 2 of 3 of sequence {outer.n} is next, two: take it up with journal sequence follow {outer.n}." and f"sequence:{base.n}" not in moved, \
+        "next names the step that follows in the sequence being run, never the included sequence's marker an agent would mistake for another sequence to run"
     sequences.follow(outer.n)
     sequences.next(outer.n)
     assert sequences.load(outer.n).runs, "the run counts the included steps"
     sequences.follow(outer.n)
-    sequences.next(outer.n)
-    assert not sequences.load(outer.n).runs, "and ends after the last of them"
+    assert sequences.next(outer.n) == f"Sequence {outer.n} is finished." and not sequences.load(outer.n).runs, "and ends after the last of them"
 
 
 def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
