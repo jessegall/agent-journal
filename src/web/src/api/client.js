@@ -134,6 +134,10 @@ export class ApiClient {
         return this.command("share", "release", {domain});
     }
 
+    tunnelReaddress() {
+        return this.command("share", "readdress");
+    }
+
     connectPhone(days) {
         return this.command("phone", "connect", {days});
     }

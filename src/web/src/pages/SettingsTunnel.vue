@@ -85,7 +85,7 @@ onMounted(load);
         <template v-if="domains.length">
             <ListBox title="Domains" :count="domains.length">
                 <template v-for="domain in domains" :key="domain">
-                    <TunnelDomain :domain="domain" @released="(left) => (domains = left)" />
+                    <TunnelDomain :domain="domain" :own="domain === tunnelStatus?.address" @released="(left) => (domains = left)" />
                 </template>
             </ListBox>
         </template>
