@@ -19,10 +19,10 @@ import {
     viewsOf,
     waitingShares,
 } from "../composables/shares.js";
+import {TUNNEL_SERVICE, tunnelState} from "../domain/tunnelState.js";
 import TunnelProblem from "../pages/TunnelProblem.vue";
 
 const SERVICES_EVERY = 5000;
-const TUNNEL = "sharing.tunnel";
 const drop = ref(false);
 const wrap = ref(null);
 const services = ref([]);
@@ -37,16 +37,8 @@ usePoll(
 );
 watch(drop, (open) => open && checkTunnel());
 
-const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL));
-const state = computed(() => {
-    if (tunnelStatus.value && tunnelStatus.value.problems.length) return {key: "down", word: "Not connected"};
-    if (!openShares.value.length && !waitingShares.value.length) return {key: "idle", word: "Nothing shared"};
-    if (!openShares.value.length) return {key: "waiting", word: "Waiting for you"};
-    if (!tunnel.value) return {key: "starting", word: "Starting"};
-    if (tunnel.value.state === "ready") return {key: "up", word: "Open"};
-    if (tunnel.value.state === "starting") return {key: "starting", word: "Starting"};
-    return {key: "down", word: tunnel.value.why || "Not running"};
-});
+const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL_SERVICE));
+const state = computed(() => tunnelState(tunnelStatus.value, openShares.value, waitingShares.value, tunnel.value));
 const address = computed(() => tunnelStatus.value?.address || openShares.value[0]?.abstract.replace(/^https:\/\/([^/]+).*$/, "$1") || "");
 
 const inspect = () => window.open(tunnel.value.url, "_blank", "noopener");
@@ -112,7 +104,7 @@ async function stop(shares) {
                 </template>
                 <template v-if="tunnelStatus && tunnelStatus.problems.length">
                     <div class="tunnel-problem-wrap">
-                        <TunnelProblem :status="tunnelStatus" />
+                        <TunnelProblem :status="tunnelStatus" @ready="checkTunnel" />
                     </div>
                 </template>
                 <template v-if="waitingShares.length">
