@@ -294,6 +294,14 @@ class Supervisor:
             os.write(self.stdout, f"\r\njournal: {' '.join(command[-2:])} failed: {done.stderr.strip()[-400:]}\r\n".encode())
         return done.stdout.strip()
 
+    def start_ended(self) -> None:
+        self.folder.mkdir(parents=True, exist_ok=True)
+        try:
+            with open(self.folder / "ended.log", "ab") as log:
+                subprocess.Popen(self.ended_command, cwd=self.cwd, stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
+        except OSError as failure:
+            os.write(self.stdout, f"\r\njournal: {' '.join(self.ended_command[-2:])} did not start: {failure}\r\n".encode())
+
     def after_worker(self, code: int) -> int | None:
         if code == STOP:
             return self.stop_agent()
@@ -343,7 +351,7 @@ class Supervisor:
                 termios.tcsetattr(self.stdin, termios.TCSADRAIN, saved)
             self.inbox.close()
             self.socket_path().unlink(missing_ok=True)
-            self.delegate(self.ended_command)
+            self.start_ended()
         return os.waitstatus_to_exitcode(status)
 
 
