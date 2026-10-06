@@ -42,6 +42,7 @@ class Cause(StrEnum):
     STOPPED = "stopped"
     OLD = "old"
     WAITING = "waiting"
+    OPEN = "open"
 
 
 class TunnelCause(TypedDict):
@@ -191,6 +192,8 @@ class Shares(ShareVisits, SharePages, Controller):
         version = versions(host)
         if version["update_available"]:
             return TunnelCause(cause=Cause.OLD, text=f"tunler {version['current']} is older than {version['latest']} on the server. Updating it may fix the connection.", lines=[])
+        if self._answering():
+            return TunnelCause(cause=Cause.OPEN, text=f"The tunnel is open: {self._address()} answers.", lines=[])
         return TunnelCause(cause=Cause.WAITING, text=f"The tunnel is running, but {self._address()} does not answer yet.", lines=[])
 
     @action
