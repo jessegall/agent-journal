@@ -4,6 +4,32 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.8 — Codex asks about the other hooks, dispatches its own subagents, and they show in the agent list
+
+**`journal codex` always asks about the other hooks.** The start menu asked only when it found hooks that are not the
+journal's in a hook file, so when another running session had already set them aside, the file held only the
+journal's hooks, nothing was asked, and the hooks stayed aside without a word. The menu now asks whenever there are
+other hooks, in the files or already set aside, says which are set aside, and No puts them back. A Codex launch also
+sets aside its own hook files while a Claude session holds its own aside. Codex's hooks live in `~/.codex/hooks.json`
+and the project's `.codex/hooks.json`; `~/.codex/config.toml` holds only which hooks are trusted, so there is nothing
+more to set aside there.
+**A Codex agent sends read-only work to its own subagents.** The helpers skill now says that a helper is for work
+that writes, and that a review, research or a design goes to the agent's own subagent: Claude's Agent tool, Codex's
+`spawn_agent` with an agent type from `.codex/agents`. A helper or a subagent on a model the provider does not offer
+is refused at once, with the list of models it does offer, instead of failing after it started; for Codex that list
+is the one in `~/.codex/models_cache.json`. A `spawn_agent` call made from a Codex script is now checked by the
+journal's laws too.
+**Subagents Codex spawns show in the viewer's agent list.** A subagent Codex spawned directly carried no session, so
+the list left it out; the journal now finds its conversation from the spawn and shows it as it shows Claude's.
+**An agent keeps its own environment.** Claiming an environment back evicted the agent's own terminal session, so
+its worker dropped it and no messages reached it; a claim or a switch now carries every session of the agent's
+process. A tool call run from inside another worktree no longer moves a running conversation there: only a
+conversation that starts in a worktree moves to its environment.
+**`journal sequence next` names the step that follows.** It printed the raw sequence, whose marker for an included
+sequence a Codex agent took for another sequence to follow; it now says which step is next and how to take it up,
+or that the sequence is finished.
+Nothing to do: it applies once the journal is upgraded.
+
 ## 2.249.7 — Enter always sends a message typed into Codex
 
 **A message typed into Codex is sent, not left in its input box.** While Codex was busy it could read the typed text
