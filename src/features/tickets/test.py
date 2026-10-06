@@ -1,5 +1,5 @@
 import time
-from controllers.types import Comments
+from controllers.types import Comments, Todos
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
@@ -214,6 +214,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
     Comments(Record(record.root, f"ticket-{ticket.n}"), actor=AGENT).create("Measured", brief="parity holds", about=ticket.ref)
     assert "Measured" in [c.title for c in tickets.comments(ticket.n)], "a ticket agent's comment shows on its ticket from the main environment"
+    queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch)
     calls_fire_once_and_repeat_on_time(monkeypatch)
 
 
@@ -549,3 +550,68 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
     monkeypatch.setattr(Tickets, "_clean", lambda self, found: False)
     assert not ticket_calls.handed_in(tickets, ticket), "a dirty branch is not handed in"
+    from types import SimpleNamespace
+    from controllers.types import Questions
+    whispered = []
+    context = SimpleNamespace(record=record, agent=SimpleNamespace(whisper=lambda line, **values: whispered.append(line)), every=lambda *args: True)
+    monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [])
+    monkeypatch.setattr(Tickets, "_needing_a_look", lambda self, boards: [(ticket, SimpleNamespace(kind="stopped", text="its agent is gone"))])
+    monkeypatch.setattr(Tickets, "_revive", lambda self, found: True)
+    handlers.look_at_stuck(context, tickets)
+    assert whispered == ["ticket_restarted"] and handlers.STUCK not in moments, "a ticket whose agent died is restarted and the orchestrator hears of it"
+    monkeypatch.setattr(Tickets, "_revive", lambda self, found: False)
+    handlers.look_at_stuck(context, tickets)
+    assert moments[-1] == handlers.STUCK, "one that cannot be restarted is raised to the orchestrator"
+    delivered = []
+    monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: ticket.n)
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: delivered.append(note))
+    question = Questions(record, actor=AGENT).create("Which one?")
+    Questions(record, actor=USER).complete(question.n, how="Both")
+    assert delivered == [f"Your question {question.n}, Which one?, is answered: Both"], "a ticket's agent is told when the user answers its question"
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
+    handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
+    monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: 0)
+    handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
+
+
+def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
+    import agents.terminal
+    from tests.conftest import refused
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args: 1)
+    record = fresh()
+    board = Boards(record, actor=USER).create("Queue", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    record.set_setting("tickets", {"running": 1})
+    tickets = Tickets(record, actor=USER)
+    first, second, third, fourth, fifth = (tickets.create(title, board=board.n) for title in ("One", "Two", "Three", "Four", "Five"))
+    for ticket in (first, second, third):
+        tickets.move(ticket.n, "Building")
+    assert [tickets.load(t.n).queued for t in (first, second, third)] == [False, True, True], "past the limit the later tickets wait in the order they were moved"
+    tickets.queue_before(third.n, second.n)
+    assert tickets._queue() == [third.n, second.n], "a queued ticket moves before another queued one"
+    assert "only a queued" in refused(lambda: tickets.queue_before(first.n, second.n)), "a ticket that is not waiting has no place in the queue"
+    tickets.start_next(second.n)
+    assert tickets._queue() == [second.n, third.n], "a ticket told to start next goes to the front of the queue"
+    assert "is not queued" in refused(lambda: tickets.start_next(first.n)), "only a queued ticket starts next"
+    tickets.place(third.n, second.n)
+    assert tickets._queue() == [third.n, second.n], "dropping one queued ticket on another reorders the queue"
+    tickets.place(first.n, third.n)
+    assert tickets.load(first.n).queued is False, "dropping a ticket that is not queued only moves it within its column"
+    from features.tickets.cards import ago, ordinal
+    assert [ordinal(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22, 103)] == ["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "103rd"], \
+        "a place in the queue is written as an ordinal"
+    assert [ago(seconds) for seconds in (30, 120, 7200)] == ["30s", "2m", "2h"], "a quiet time is written in its largest whole unit"
+    reasons = lambda: {card["n"]: card["reason"] for lane in tickets.board(board.n)["lanes"] for card in lane["cards"]}
+    assert (reasons()[third.n].startswith("1st in the queue, starts when one of 1 agents finishes"), reasons()[second.n].startswith("2nd in the queue, starts when")) == (True, True), \
+        "a queued card says its place and what it waits for"
+    record.set_setting("tickets", {"running": 0})
+    assert reasons()[third.n].startswith("1st in the queue, starts with the next minute's check"), "with no limit a queued card waits only for the next check"
+    record.set_setting("tickets", {"running": 1})
+    assert "no agent running to look at" in refused(lambda: tickets.screen(second.n)), "a queued ticket has no screen to show"
+    assert "no agent running to tell" in refused(lambda: tickets.tell(second.n, "hello")), "a queued ticket has no agent to tell"
+    assert "no provider 'nowhere'" in refused(lambda: tickets.start(fourth.n, provider="nowhere")), "a provider the journal does not know is refused before anything starts"
+    assert "never started" in refused(lambda: tickets.merge(fifth.n)), "a ticket that never started has no branch to merge"
+    from controllers.base import COMMANDS
+    Todos(Record(record.root, tickets.load(fourth.n).work_environment), actor=AGENT).create("Draw the dark theme")
+    held = COMMANDS["ticket"]["todos"](tickets)
+    assert [(found["ticket"], [row["title"] for row in found["todos"]]) for found in held] == [(fourth.n, ["Draw the dark theme"])], \
+        "the to-dos a ticket's own agent keeps are listed under their ticket"
