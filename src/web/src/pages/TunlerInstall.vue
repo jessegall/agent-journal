@@ -4,11 +4,12 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import FormField from "../kit/FormField.vue";
 import TextInput from "../kit/TextInput.vue";
+import {tunnelStatus} from "../composables/shares.js";
 
 const REPOSITORY = "https://github.com/jessegall/tunler";
 
 const emit = defineEmits(["installed"]);
-const server = ref("");
+const server = ref(tunnelStatus.value?.server || "");
 const busy = ref(false);
 const failure = ref("");
 

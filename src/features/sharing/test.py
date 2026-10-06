@@ -389,7 +389,7 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     Shares(record, actor=USER).update(share.n, approved=True)
     asked, released, ours = [], [], []
     from features.sharing import controller as controller_words
-    standing = {"installed": True, "logged_in": True, "rejected": False, "account": "me", "host": "t.example", "unreadable": False}
+    standing = {"installed": True, "command": "tunler", "logged_in": True, "rejected": False, "outdated": False, "account": "me", "host": "t.example", "unreadable": False}
     monkeypatch.setattr(watchdog, "tunler_status", lambda: standing)
     monkeypatch.setattr(controller_words, "tunler_status", lambda: standing)
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
@@ -473,15 +473,38 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
     monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "bin" / "tunler")
     monkeypatch.setattr(tunnel.platform, "system", lambda: "Darwin")
     monkeypatch.setattr(tunnel.platform, "machine", lambda: "x86_64")
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: asked.append(url) or io.BytesIO(b"binary"))
-    monkeypatch.setattr(tunnel, "installed", lambda: "v0.2.2")
+    working = b"#!/bin/sh\necho 'tunler v0.2.2'\n"
+    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: asked.append(url) or io.BytesIO(working))
     assert SharingDetails.values(record).host == "", "no tunler server is assumed"
     assert "address of the tunler server" in refused_with(lambda: shares.install_tunler("  "))
     assert shares.install_tunler("https://tunler.example/") == "tunler v0.2.2 is installed"
     assert asked == ["https://tunler.example/dl/tunler-darwin-amd64"], "the build for this system and processor, from the server given"
     assert SharingDetails.values(record).host == "tunler.example", "the server it came from is the one the journal connects to"
     assert (tunnel.LOCAL_BIN.read_bytes(), stat.S_IMODE(tunnel.LOCAL_BIN.stat().st_mode), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == \
-        (b"binary", 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"
+        (working, 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"
+    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: io.BytesIO(b"<html>404 Not Found</html>"))
+    assert "not a working tunler" in refused_with(lambda: shares.install_tunler("tunler.example"))
+    assert (tunnel.LOCAL_BIN.read_bytes(), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == (working, ["tunler"]), "a download that does not run never replaces the tunler that does"
+    untrusted = urllib.error.URLError(tunnel.ssl.SSLCertVerificationError("unable to get local issuer certificate"))
+    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(untrusted))
+    monkeypatch.setattr(tunnel.shutil, "which", lambda name: None)
+    assert "Install Certificates" in refused_with(lambda: shares.install_tunler("tunler.example")), "a Python without root certificates is named, with its fix"
+    monkeypatch.undo()
+    elsewhere = tmp_path / "go" / "bin" / "tunler"
+    elsewhere.parent.mkdir(parents=True)
+    elsewhere.write_bytes(working)
+    monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "missing" / "tunler")
+    monkeypatch.setattr(tunnel, "ELSEWHERE_BINS", (tmp_path / "opt" / "tunler", elsewhere))
+    monkeypatch.setattr(tunnel.shutil, "which", lambda name: None)
+    assert tunnel.tunler() == str(elsewhere), "tunler is found outside the PATH too, and the path is the one shown"
+    elsewhere.write_text("#!/bin/sh\necho '{\"host\":\"t.example\",\"user\":\"me\",\"logged_in\":true}'\n")
+    elsewhere.chmod(0o755)
+    tunnel.KEPT_STATUS.clear()
+    from features.sharing.controller import OUTDATED
+    assert Shares(record, actor=USER).tunnel()["problems"] == [OUTDATED], "a tunler too old to report its login is named, with the update as the fix"
+    tunnel.KEPT_STATUS.clear()
+    monkeypatch.undo()
+    monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "bin" / "tunler")
     monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(urllib.error.URLError("no such host")))
     assert "could not be downloaded from tunler.typo" in refused_with(lambda: shares.install_tunler("tunler.typo"))
     assert SharingDetails.values(record).host == "tunler.example", "a server that sent nothing is not kept"
@@ -518,7 +541,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
         FORMATTERS.remove(marker)
 
 
-STANDING = {"installed": True, "logged_in": True, "rejected": False, "account": "me", "host": "t.example", "unreadable": False}
+STANDING = {"installed": True, "command": "tunler", "logged_in": True, "rejected": False, "outdated": False, "account": "me", "host": "t.example", "unreadable": False}
 
 
 def answering_with(status: int, body: bytes):

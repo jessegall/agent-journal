@@ -41,7 +41,9 @@ export const tunnelStatus = computed(() => store.tunnel);
 const UNKNOWN_TUNNEL = {
     installed: true,
     logged_in: true,
+    command: "",
     host: "",
+    server: "",
     address: "",
     problems: ["The journal could not find out whether sharing works. Check that it is running, then check again."],
 };

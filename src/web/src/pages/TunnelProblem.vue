@@ -31,7 +31,7 @@ const emit = defineEmits(["ready"]);
                     <b>tunler</b>
                     isn't connected on this machine. Connect once, and every journal here uses it:
                 </p>
-                <TunnelLogin :host="status.host" @ready="(got) => emit('ready', got)" />
+                <TunnelLogin :host="status.host || status.server" @ready="(got) => emit('ready', got)" />
             </div>
         </template>
         <template v-else>
