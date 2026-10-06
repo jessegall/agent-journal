@@ -114,6 +114,23 @@ def test_an_agent_ending_stops_the_journal_only_when_no_other_agent_still_runs()
     assert (stop.at(record.root) > 0.0, home.exists()) == (True, True), "the last agent ending stops the journal and puts the hooks back"
 
 
+def test_an_agent_ending_waits_for_nothing_slow_and_a_slow_end_leaves_its_stack(monkeypatch):
+    import time
+    import commands.queries as queries
+    from tests.kit import ended
+    from features.clean_slate import slate
+    record = fresh()
+    monkeypatch.setattr(queries, "SLOW_AFTER", 0.3)
+    monkeypatch.setattr(slate, "put_back", lambda record: time.sleep(1))
+    ended({"record": record})
+    assert "most recent call first" in (record.root / "runtime" / queries.SLOW_LOG).read_text(), \
+        "an ended command held past its deadline writes the stack of every thread"
+    monkeypatch.setattr(slate, "put_back", lambda record: None)
+    (record.root / "runtime" / queries.SLOW_LOG).unlink()
+    ended({"record": record})
+    assert not (record.root / "runtime" / queries.SLOW_LOG).exists(), "a quick end leaves no trace"
+
+
 def test_codex_is_asked_about_hooks_another_session_already_set_aside_and_no_puts_them_back(tmp_path, monkeypatch):
     import os
     from engine.sessions import Sessions

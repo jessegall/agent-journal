@@ -96,3 +96,17 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
     Sessions(record.root).bind("7a1d-in-the-worktree", "0922-disposal-date", pid=999999, provider="claude")
     assert asked_resume(record, "claude", ["--worktree", "0922-disposal-date"], ask=lambda _: "1", answering=True) == [
         "--worktree", "0922-disposal-date", "--resume", "7a1d-in-the-worktree"], "a named worktree carries on its own last conversation"
+
+
+def test_declining_a_takeover_asks_which_environment_again_and_never_makes_a_new_one():
+    from commands.launch import asked_for
+    from engine.sessions import Sessions
+    record = fresh()
+    Environments(record, actor=SYSTEM).create(record.env)
+    Environments(record, actor=SYSTEM).create("second")
+    Sessions(record.root).bind("claude-1", record.env, pid=os.getpid(), provider="claude")
+    answers = iter(["1", "2", "2"])
+    ask = lambda _="": next(answers)
+    assert asked_for(record, ask=ask, answering=True) == "second", "no to a takeover asks the choice again"
+    assert list(answers) == [], "no name was asked for and no environment was made"
+    assert Sessions(record.root).holder(record.env) == "claude-1", "the agent was not moved off"

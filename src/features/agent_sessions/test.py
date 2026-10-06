@@ -86,6 +86,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     moved.switch(moved.create("u").n)
     assert (sessions.environment("conversation-9"), sessions.environment("claude-7272")) == ("u", "u"), \
         "a switch moves the agent's terminal session with it, so the new environment's engine drives it"
+    moved.switch(moved.by_title("u").n) if False else None
     import os
     from tests.kit import asked_for
     from engine.record import Record
@@ -93,6 +94,12 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     for moved_away in ("conversation-9", "claude-7272"):
         sessions.unbind(moved_away)
     assert asked_for(Record(record.root, "t"), answering=False) == "u", "a quiet start never lands in an environment another live agent holds"
+    sessions.bind("claude-8", "u", pid=os.getpid(), provider="claude")
+    visitor = Environments(record, actor=AGENT, session="claude-8")
+    visitor.switch(visitor.create("v").n)
+    visitor.switch(0, back=True)
+    assert sessions.environment("claude-8") == "u", "switching back returns a session to the environment it came from"
+    sessions.unbind("claude-8")
     users = Environments(record, actor=USER)
     held_env = users.rows.by_title("t")
     assert "journal environment stop" in refused(lambda: users.vacant("t")), "a held environment says how to end its agent"

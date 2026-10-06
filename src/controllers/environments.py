@@ -116,7 +116,7 @@ class Environments(Controller):
         bound = self._bound_session()
         who = move or bound
         if back:
-            was = self._sessions.read(who).get("before", "")
+            was = self._sessions.read(who).before
             if not was:
                 raise Refused("this session came from nowhere: no environment to go back to")
             return self.switch(self.find(was).n, move=who)

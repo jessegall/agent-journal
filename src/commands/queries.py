@@ -1,4 +1,5 @@
 import argparse
+import faulthandler
 import os
 import time
 from dataclasses import dataclass
@@ -15,6 +16,9 @@ from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine import runtime
 from engine.stored import last_lines
+
+SLOW_LOG = "ended-slow.log"
+SLOW_AFTER = 10
 
 
 def transcript(record, session: str):
@@ -159,11 +163,20 @@ def ended(ctx) -> str:
     from features.clean_slate.slate import put_back
     from engine.stop import ask
     from engine.typist import live
-    put_back(ctx["record"])
-    kept_work(Path.cwd())
     root = ctx["record"].root
-    if not live(root) and not Sessions(root).running():
-        ask(root)
+    folder = runtime.folder(root)
+    folder.mkdir(parents=True, exist_ok=True)
+    with open(folder / SLOW_LOG, "a") as trace:
+        faulthandler.dump_traceback_later(SLOW_AFTER, exit=False, file=trace)
+        try:
+            put_back(ctx["record"])
+            kept_work(Path.cwd())
+            if not live(root) and not Sessions(root).running():
+                ask(root)
+        finally:
+            faulthandler.cancel_dump_traceback_later()
+    if (folder / SLOW_LOG).stat().st_size == 0:
+        (folder / SLOW_LOG).unlink()
     return ""
 
 

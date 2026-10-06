@@ -534,12 +534,12 @@ def test_healing_twice_goes_back_once_and_refuses_the_broken_build_for_a_while(t
     assert heal.refused(root, "2") is False, "a version is matched whole, never by its first digits"
 
 
-def supervised(place: Path, agent: str, worker: str, headless: bool = True) -> tuple[subprocess.CompletedProcess, Path]:
+def supervised(place: Path, agent: str, worker: str, headless: bool = True, ended: str = "") -> tuple[subprocess.CompletedProcess, Path]:
     root = place / ".journal"
     (place / "heals").write_text("")
     spec = {"root": str(root), "cwd": str(place), "env": "main", "agent": "claude", "worker": [sys.executable, "-c", worker], "args": [],
             "heal": [sys.executable, "-c", f"open({str(place / 'heals')!r}, 'a').write('x'); print('healed')"],
-            "ended": [sys.executable, "-c", f"open({str(place / 'ended')!r}, 'w').write('x')"],
+            "ended": [sys.executable, "-c", f"{ended}open({str(place / 'ended')!r}, 'w').write('x')"],
             "command": [sys.executable, "-c", agent], "environ": dict(os.environ), "launch": 0, "headless": headless}
     done = subprocess.run([sys.executable, str(CODE / "supervisor.py"), json.dumps(spec)], cwd=place, capture_output=True, text=True, timeout=WAIT, stdin=subprocess.DEVNULL)
     return done, next((root / "runtime" / "sessions").glob("claude-*"))
@@ -555,7 +555,17 @@ def test_a_supervisor_relays_the_agent_resizes_it_heals_a_crashing_worker_and_le
     assert (done.returncode, len(runs.read_text()), (tmp_path / "heals").read_text(), "healed" in done.stdout) == (255, 2, "x", True), \
         f"a worker that crashes at once is healed and started again, and one that exits to stop ends the agent: {done.stdout}{done.stderr}"
     assert (b"hello from the agent" in (session / "printed").read_bytes(), (shape["rows"], shape["cols"])) == (True, (40, 120)), "what the agent prints is relayed and a headless agent has a fixed size"
+    deadline = time.time() + WAIT
+    while not (tmp_path / "ended").is_file() and time.time() < deadline:
+        time.sleep(0.05)
     assert ((tmp_path / "ended").is_file(), subprocess.run(["kill", "-0", str(pid)], capture_output=True).returncode != 0) == (True, True), "the journal is told the agent ended and no agent process is left"
+
+
+def test_a_supervisor_does_not_wait_for_the_journal_to_clean_up_after_the_agent(tmp_path):
+    began = time.time()
+    done, session = supervised(tmp_path, "print('bye', flush=True)", "import sys; sys.exit(76)", ended="import time; time.sleep(30); ")
+    assert time.time() - began < 20, f"quitting returns at once while the cleanup runs on by itself: {done.stdout}{done.stderr}"
+    assert (session / "ended.log").is_file() and not (tmp_path / "ended").exists(), "the cleanup runs on its own and writes its log in the session's runtime folder"
 
 
 def test_feature_rows_are_seated_again_only_when_the_features_or_environments_change(monkeypatch):

@@ -48,14 +48,13 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
             if choose(f"Take over {names[picked]}", notes, ["Yes, take it over", "No, pick another"], 1, ask) == 0:
                 sessions.evict(holder, "a new session", names[picked], "taken over at start")
                 return names[picked]
+            continue
         try:
             return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip()).title
         except EOFError:
             return record.env
         except Refused as e:
             print(f"    {e}")
-        else:
-            print(f"a number from 1 to {len(names) + 1}")
 
 
 def defaults(_: str) -> str:

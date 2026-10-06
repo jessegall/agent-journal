@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.3 — quitting never waits on the journal's cleanup
+
+**Quitting the agent returns at once.** The cleanup after it ends now runs on its own, with its output in the
+session's runtime folder, so a slow one no longer holds your terminal. If it ever takes more than 10 seconds, the
+stack of every thread is written to `.journal/runtime/ended-slow.log`; send that file if quitting still feels slow.
+
+**Declining to take over a busy environment asks again.** Choosing "No, pick another" used to fall through to the
+name prompt and make a new environment. `journal environment switch --back` works again; it crashed.
+Nothing to do.
+
 ## 2.253.2 — a reply on the phone quotes the answer you reply to
 
 **Replying on the phone to an answer that begins with a quote of your own message quotes only the answer.** The
