@@ -15,10 +15,10 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     run = lambda command: MarkHistorySearches().intercept(AgentContext.of(FEATURES["history_searches"], record, agent),
                                                           BashCall("Bash", {"command": command}, {}, command=command))
     for command in ('cd x && journal search "phone link" 2>&1 | head -5', "journal --env main conversation --back=1", "journal user | tail",
-                    "journal todo all", "grep journal search.py"):
+                    "journal todo all", "grep journal search.py", 'journal search --page 2 "second page"'):
         assert run(command) == "", "a mark never holds the call"
     marks = [card["label"] for card in Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or []]
-    assert marks == ["Searched the history for 'phone link'", "Read back the conversation the last summary replaced", "Read back your own words"], marks
+    assert marks == ["Searched the history for 'phone link'", "Read back the conversation the last summary replaced", "Read back your own words", "Searched the history for 'second page'"], marks
 
 
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():
