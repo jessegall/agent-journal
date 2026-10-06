@@ -7,6 +7,8 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import pytest
+
 from controllers.types import Agents, Comments, Docs, Messages, Nudges
 from engine.markers import marked
 from features import running
@@ -247,6 +249,16 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
         assert fetch(key) == fetch(f"{key}/"), "a link without its closing slash lands on the same page"
         monkeypatch.setattr(server_module, "APP_DIR", tmp_path / "no-app")
         assert b"Inside" in fetch(f"{key}/doc/{inside.n}")[1] and fetch(f"{key}/")[0] == 200, "without the built page the link still shows its rows as plain pages"
+        built = tmp_path / "built-app"
+        (built / "assets").mkdir(parents=True)
+        (built / "assets" / "app.js").write_text("console.log('shared')")
+        monkeypatch.setattr(server_module, "APP_DIR", built)
+        assert (fetch(f"{key}/assets/app.js"), fetch(f"{key}/assets/missing.js")[0]) == ((200, b"console.log('shared')"), 404), \
+            "the shared page's own script is served, and nothing else is looked for in its folder"
+        garbled = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/s/{locked.token}/", headers={"Authorization": "Basic %%%"})
+        with pytest.raises(urllib.error.HTTPError) as refusal:
+            urllib.request.urlopen(garbled, timeout=5)
+        assert refusal.value.code == 401, "a password sent in a form that cannot be read is simply wrong"
     finally:
         server.shutdown()
 

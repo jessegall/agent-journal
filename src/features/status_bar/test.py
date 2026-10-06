@@ -78,6 +78,9 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
         "a run of journal commands is one message whose every column rolls on its own"
     assert coloured([shell("journal message read 601")])[0][:2] == [("journalling", "gray"), ("reading", "muted")], \
         "a journal command is rooted under journalling and what it did there is muted"
+    assert [text([shell(command)]) for command in ("python3 tools/build.py", "node", "bash <<EOF\necho\nEOF")] == \
+        [[["running", "python3", "build.py"]], [["running", "node"]], [["running", "bash", "script"]]], \
+        "a program that runs a script is named with the script, and a typed-in script is only called one"
     assert coloured([edit("a.py", changed={"added": 3, "removed": 1}), edit("a.py", NOW + 1, changed={"added": 2})]) == \
         [[("editing", "gray"), ("a.py", "muted"), (5, "green"), (1, "red")]], "edits of one file add up what was added and removed in green and red"
     assert coloured([edit("a.py", changed={"added": 3}), edit("b.py", NOW + 1, changed={"removed": 2})])[0][2:] == [([3, 6], "green"), ([0, 2], "red")], \

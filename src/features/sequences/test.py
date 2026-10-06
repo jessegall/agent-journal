@@ -199,6 +199,8 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     sequences.follow(outer.n)
     assert "names a step from" in refused(lambda: sequences.next(outer.n, through=9)), "the steps to skip over are steps still ahead"
     assert "say why" in refused(lambda: sequences.abandon(outer.n, why=" ")), "abandoning a run says why"
+    assert "is not running about doc:3" in refused(lambda: sequences.next(outer.n, about="doc:3")), "a sequence that is not running about a row says which row"
+    assert sequences.finish(outer.n, "doc:3").n == outer.n, "finishing a run that is not there changes nothing"
 
 
 def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
