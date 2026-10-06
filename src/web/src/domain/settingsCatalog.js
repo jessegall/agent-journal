@@ -407,7 +407,7 @@ export function narrowed(sections, query, filter) {
 export const TABS = [
     {key: "features", title: "Features", line: "What the agent and the journal do. Each feature can be switched off on its own."},
     {key: "system", title: "System", line: "This project, updates, this browser, and the parts that are always on."},
-    {key: "sharing", title: "Sharing", line: "Share links, and the tunler account they go through."},
+    {key: "sharing", title: "Phone and share links", line: "Your phone and share links reach this journal through the tunler account below."},
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
     {key: "developer", title: "Developer", line: "Only needed when you work on the journal itself."},

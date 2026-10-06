@@ -174,7 +174,10 @@ class Shares(ShareVisits, SharePages, Controller):
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
         host = endpoint.strip() if endpoint else self._host()
-        return {**log_in(host, username.strip(), password, master_password or None), **self.tunnel()}
+        made = log_in(host, username.strip(), password, master_password or None)
+        if made["connected"]:
+            Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", host)
+        return {**made, **self.tunnel()}
 
     @action
     def logout(self) -> dict:
