@@ -1,10 +1,17 @@
-from providers.claude import Claude, ClaudeDriver
-from providers.codex import Codex, CodexDriver
+from providers.claude_driver import ClaudeDriver
+from providers.codex_driver import CodexDriver
 from providers.base import LIBRARY
+from providers.catalogue import PROVIDER_TYPES, workspace_folders  # noqa: F401
 
-PROVIDERS = {p.name: p for p in (Claude, Codex)}
+PROVIDERS = {p.name: p for p in PROVIDER_TYPES}
 
 DRIVERS = {d.name: d for d in (ClaudeDriver, CodexDriver)}
+
+
+
+def transcript_reader(agent):
+    provider = PROVIDERS.get(agent.provider)
+    return provider() if provider and agent.transcript else None
 
 
 def skill_folders() -> tuple[str, ...]:

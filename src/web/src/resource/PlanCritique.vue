@@ -52,7 +52,7 @@ async function send() {
         <p class="plan">plan {{ plan.n }} · {{ plan.title }}</p>
         <p class="label">How many agents</p>
         <ChoiceList :choices="choices(AGENTS, agents)" @pick="(v) => (agents = v)" />
-        <p class="label">How big</p>
+        <p class="label">How thorough</p>
         <ChoiceList :choices="choices(SIZES, size)" @pick="(v) => (size = v)" />
         <p class="label">Template</p>
         <ChoiceList :choices="templateChoices" @pick="(v) => (template = v)" />

@@ -1,10 +1,10 @@
 import time
 
-from agents.terminal import detached
 from controllers.types import Agents, Environments, Messages
 from engine.events.resources import MessageCreated
 from engine.sessions import Sessions
 from features.parts import Context, Handler
+from features.starting_agents.launch import launch
 from providers import DRIVERS
 from resources.base import SYSTEM, USER
 
@@ -12,7 +12,7 @@ LAUNCHING_FOR = 60.0
 
 
 def last_conversation(record):
-    rows = [row for row in Agents(record, actor=SYSTEM)._every()
+    rows = [row for row in Agents(record, actor=SYSTEM).rows.every()
             if row.data.get("event") and row.provider in DRIVERS and not row.subagent and not row.title.startswith(f"{row.provider}-")]
     return max(rows, key=lambda row: float(row.at), default=None)
 
@@ -25,11 +25,10 @@ class WakeOnMessage(Handler):
         if Sessions(record.root).holder(record.env):
             return
         environments = Environments(record, actor=SYSTEM)
-        place = environments._titled(record.env)
+        place = environments.rows.by_title(record.env)
         if place is None or time.time() - float(place.launched) < LAUNCHING_FOR:
             return
         last = last_conversation(record)
         if last is None:
             return
-        detached(record.root, record.root.parent, record.env, last.provider, [*DRIVERS[last.provider].AUTO_ARGS], conversation=last.title)
-        environments.update(place.n, launched=time.time(), launched_agent=last.provider)
+        launch(environments, place, last.provider, last.title)

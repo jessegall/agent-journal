@@ -1,6 +1,7 @@
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
-from features.boards.controller import START_OVER, Boards
+from features.boards.controller import Boards
+from features.boards.requests import START_OVER
 from features.work_modes.modes import mode_of
 from engine.wording import counted
 from tests.kit import Plans
@@ -19,7 +20,7 @@ def test_a_board_question_is_seen_only_on_its_board():
     asked = Boards(record, actor=AGENT).ask(board.n, "You want to build a shareable journal?", options=[{"title": "Others work in it"}])
     questions = Questions(record, actor=USER)
     assert (asked.hidden, asked.refs) == (True, [board.ref]), "a board question is about its board and hidden"
-    assert asked.n not in [r.n for r in questions._standing()], "the Questions list and the waiting count leave it out"
+    assert asked.n not in [r.n for r in questions.rows.standing()], "the Questions list and the waiting count leave it out"
     assert [q.n for q in Tickets(record, actor=USER).board(board.n)["questions"]] == [asked.n], "the board's own data carries it for New work"
 
 
@@ -41,9 +42,9 @@ def test_a_request_opens_a_session_that_cancel_closes():
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
     filler = Sequences(record, actor=AGENT, agent="board-filler")
     filler.follow(exploring.n, about=made.ref)
-    assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT)._in_hand() is None, \
+    assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT).in_hand() is None, \
         "the filler's run is its own: the main agent never has it in hand"
-    asked = Boards(record, actor=AGENT, agent="board-filler").ask(board.n, "Which goal?", options=[{"title": "A"}, {"title": "B"}])
+    asked = Boards(record, actor=AGENT, agent="board-filler").ask(board.n, "Which goal?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     before = sum("board-filler" in n for n in nudges(record))
     Questions(record, actor=USER).complete(asked.n, how="A")
     assert sum("board-filler" in n for n in nudges(record)) == before + 1, "the user's answer asks the main agent to dispatch the filler again"
@@ -67,7 +68,17 @@ def test_a_request_opens_a_session_that_cancel_closes():
     tick(record)
     tick(record)
     assert sum(f"on board {board.n}" in line and "think up" in line for line in said(record)) == 1, "stale ideas ask for new ones once"
-    filler_board._update_drafting(boards.load(board.n), phase="drafting")
+    filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
+    import features.boards.handlers as board_handlers
+    quiet, board_handlers.QUIET_FILL = board_handlers.QUIET_FILL, -1
+    try:
+        tick(record)
+    finally:
+        board_handlers.QUIET_FILL = quiet
+    assert boards.load(board.n).drafting["phase"] == "stalled", "a board whose drafting went quiet is stalled, so it never sits filling forever"
+    filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
+    tick(record)
+    assert boards.load(board.n).drafting["phase"] == "drafting", "a board written to just now keeps drafting"
     filler_board.wait(board.n)
     assert boards.load(board.n).drafting["phase"] == "waiting", "the filler says it waits for the user's picks, and no stall is called"
     more = boards.follow_up(board.n, "Also by mail")
@@ -85,7 +96,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
     Tickets(record, actor=USER).confirm(kept.n)
     boards.cancel(board.n)
     assert "since" not in boards.load(board.n).drafting, "cancel ends the session"
-    assert [t.n for t in drafter._standing() if t.board == board.n] == [kept.n], "cancel deletes the drafts nobody added"
+    assert [t.n for t in drafter.rows.standing() if t.board == board.n] == [kept.n], "cancel deletes the drafts nobody added"
     assert not any(made.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "cancel gives up the running sequence"
     assert "stop drafting" in refused(lambda: drafter.create("Late", abstract="Late", board=board.n, draft=True)), "a draft after cancel is refused"
 
@@ -126,7 +137,7 @@ def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
     assert agent.built(board.n, "1 stage, 1 ticket").building["log"][0]["text"] == "Made the stages from section 1"
     assert "not being built" in refused(lambda: agent.log(board.n, "Late")), "a finished build takes no more lines"
     boards.discard(board.n)
-    assert not [t for t in Tickets(record, actor=USER)._standing() if t.board == board.n], "removing the board removes its tickets"
+    assert not [t for t in Tickets(record, actor=USER).rows.standing() if t.board == board.n], "removing the board removes its tickets"
     assert not any(board.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "and gives up the build"
 
 

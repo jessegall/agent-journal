@@ -2,9 +2,9 @@ import io
 
 from engine.events.engine import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
-from features.command_tags.reading import CARRIED, OPTIONS, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
+from features.command_tags.reading import CARRIED, OPTIONS, named, reader, removed, replies, runs, tag_spelling, tag_for, visible, waits
 from resources.base import AGENT
-from features.command_line import command_line
+from engine.command_line import command_line
 
 
 class RunTagCommands(Handler):
@@ -15,10 +15,10 @@ class RunTagCommands(Handler):
         if replies(message) or waits(message):
             event.stop()
         else:
-            event.change(stripped(message, context.settings).strip())
+            event.change(visible(message, reader(context.settings)).strip())
 
     def run(self, context: Context, message: str) -> None:
-        commands, text = runs(context.settings), CARRIED.sub("", reader(context.settings).sub("", message)).strip()
+        commands, text = runs(context.settings), removed(message, reader(context.settings)).strip()
         for name, n, argument, extras in CARRIED.findall(message):
             if name not in commands:
                 continue

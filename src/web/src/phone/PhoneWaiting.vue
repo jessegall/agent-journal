@@ -1,12 +1,12 @@
 <script setup>
+import {waitingInOrder} from "./waiting.js";
 import {computed} from "vue";
-import PhoneChevron from "./PhoneChevron.vue";
-import {ordered} from "./waiting.js";
+import Icon from "../kit/Icon.vue";
 
 const props = defineProps({waiting: {type: Array, required: true}});
 const emit = defineEmits(["open", "list"]);
 const review = () => (props.waiting.length > 1 ? emit("list") : emit("open", sorted.value[0].ref));
-const sorted = computed(() => ordered(props.waiting));
+const sorted = computed(() => waitingInOrder(props.waiting));
 const summary = computed(() => {
     const count = `${props.waiting.length} ${props.waiting.length === 1 ? "needs" : "need"} you`;
     return props.waiting.some((item) => item.type === "plan") ? `${count}, including a plan` : count;
@@ -19,7 +19,7 @@ const summary = computed(() => {
             <span class="waiting-dot" />
             <span class="waiting-summary">{{ summary }}</span>
             <span class="waiting-go">Review</span>
-            <PhoneChevron class="waiting-arrow" />
+            <Icon name="chevronRight" bold class="waiting-arrow" :size="14" />
         </button>
     </template>
 </template>

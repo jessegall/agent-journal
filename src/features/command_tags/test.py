@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Comments, Messages, Nudges
-from runner.hooks import displayed
+from providers.payload import Chunk
+from runner.chat_mirror import displayed
 from engine.sessions import Sessions
 from features.command_tags.reading import visible
 from tests.kit import nudges, report
@@ -86,12 +87,13 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     assert any(n.brief.startswith("answer by opening your turn with [!reply:1]") for n in Nudges(record).all() if "before you write" in n.title), \
         "the line naming a read message still to answer says how to answer it, in its brief"
     from engine.wording import APPENDS, appended
-    APPENDS.setdefault("work_tracking.open", []).append(lambda n, **_: f"work {n} can be ended from the board")
+    addition = lambda n, **_: f"work {n} can be ended from the board"
+    APPENDS.add(None, addition, key="work_tracking.open")
     try:
         assert appended("work_tracking.open", {"n": 7}, "work 7 is still open") == "work 7 is still open - work 7 can be ended from the board", \
             "any registered line takes an addition by its feature and name"
     finally:
-        APPENDS["work_tracking.open"].pop()
+        APPENDS.remove(addition)
 
 def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
     from providers import PROVIDERS
@@ -151,12 +153,12 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     message = Messages(record, actor="user").create("still there?")
     base = {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "m1"}
-    displayed(record.root, {**base, "index": 0, "final": False, "delta": f"[!reply:{message.n}] shown in two "})
-    displayed(record.root, {**base, "index": 1, "final": True, "delta": "pieces"})
-    displayed(record.root, {**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"})
+    displayed(record.root, Chunk.from_json({**base, "index": 0, "final": False, "delta": f"[!reply:{message.n}] shown in two "}))
+    displayed(record.root, Chunk.from_json({**base, "index": 1, "final": True, "delta": "pieces"}))
+    displayed(record.root, Chunk.from_json({**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"}))
     assert [c.title for c in Comments(record, actor="system").linked_to(message.ref)] == ["shown in two pieces"], "joined, posted once"
     orphaned = Messages(record, actor="user").create("what if the first piece is missing?")
-    displayed(record.root, {**base, "message_id": "m3", "index": 1, "final": True, "delta": "the body without its tag"})
+    displayed(record.root, Chunk.from_json({**base, "message_id": "m3", "index": 1, "final": True, "delta": "the body without its tag"}))
     assert not [m for m in Messages(record, actor="system").all() if m.title == "the body without its tag"], "a stream without its first piece is not posted"
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{orphaned.n}]\nthe body without its tag"})
     assert [c.title for c in Comments(record, actor="system").linked_to(orphaned.ref)] == ["the body without its tag"], "the complete Stop text posts the reply once"

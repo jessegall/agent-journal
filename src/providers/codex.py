@@ -2,28 +2,29 @@ import json
 from functools import cache
 from dataclasses import dataclass, field, replace
 import re
-import time
 import shutil
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
+from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
-from providers.base import Asking, BackgroundTasks, Provider, parsed, recent
+from providers.base import BackgroundTasks, Provider, SubagentRow, running_and_latest
+from providers.jsonl import last_lines, parsed, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Payload, Row
 from engine.fields import Loaded
 from resources.types import AgentRow
-from engine.stored import read_json, tail, write_text
-from providers.drivers import ANSI, Driver
+from engine.stored import read_json
 from typing import TypedDict
 
-TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
+SHELL_TOOLS = ("exec", "exec_command", "shell", "shell_command")
+TOOLS = {**dict.fromkeys(SHELL_TOOLS, "Bash"), "apply_patch": "Edit"}
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 TAIL_BYTES = 262144
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
 SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
-SPAWNED = re.compile(r'"agent_id":"([^"]+)"(?:,"nickname":"([^"]*)")?')
+PARENT_THREADS: dict[str, str] = {}
+SPAWNED = re.compile(r'"agent_id"\s*:\s*"([^"]+)"(?:\s*,\s*"nickname"\s*:\s*"([^"]*)")?')
 CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"},
                                                                              {"value": "clear", "label": "New conversation", "command": "/new"}]}
 FAST_CONTROLS = {"key": "fast", "label": "Fast mode", "choices": [{"value": "switch", "label": "Turn fast mode on or off", "command": "/fast"}]}
@@ -33,14 +34,20 @@ CELL_RUNNING = re.compile(r"^Script running with cell ID (\d+)")
 CELL_ID = re.compile(r'"cell_id"\s*:\s*"?(\d+)')
 DETACHED = re.compile(r"^(.*?)\s*(?:>\S*\s*(?:2>&1)?\s*)?&\s*(?:echo \$!)?\s*$", re.S)
 EXEC_COMMAND = re.compile(r'exec_command\(\{\s*["\']?cmd["\']?\s*:\s*(["\'`])((?:(?!\1)[^\\]|\\.)*)\1')
-TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
+TASK_EVENTS = re.compile(rb'"type":"(task_started|task_complete)"')
+
+
+class NoCommand(KeyError):
+    pass
 
 
 @dataclass(frozen=True)
 class CodexShell(BashCall):
     @classmethod
     def from_payload(cls, name: str, given: dict, response: dict) -> "CodexShell":
-        command = next(given[key] for key in ("cmd", "input", "command") if key in given)
+        command = next((given[key] for key in ("cmd", "input", "command") if key in given), None)
+        if command is None:
+            raise NoCommand("a shell call names no cmd, input or command")
         printed = "\n".join(str(response[key]) for key in ("stdout", "stderr") if response.get(key))
         return cls(name, given, response, command=" ".join(command) if isinstance(command, list) else str(command), printed=printed)
 
@@ -55,12 +62,10 @@ class Spawned(Loaded):
     task_name: str = "subagent"
     agent_type: str = ""
     model: str = ""
-    at: float = 0.0
 
 
 @dataclass(frozen=True)
 class SpawnAnswer(Loaded):
-    agent_id: str = ""
     task_name: str = ""
 
 
@@ -129,6 +134,40 @@ class CodexTasks(BackgroundTasks):
 
 
 @dataclass(frozen=True)
+class SpawnedAgent:
+    task: str
+    type: str
+    model: str
+    session: str
+    at: float
+    agent_path: str = ""
+
+
+@dataclass(frozen=True)
+class CellShellRow:
+    command: str
+    cell: str
+    running: bool = True
+    ended: float = 0.0
+    status: str = ""
+
+    def to_json(self) -> dict:
+        found = {"command": self.command, "cell": self.cell, "running": self.running}
+        return found if self.running else {**found, "ended": self.ended, "status": self.status}
+
+
+@dataclass
+class CodexCrew:
+    subagents: list[SpawnedAgent] = field(default_factory=list)
+    shells: list[CellShellRow] = field(default_factory=list)
+    compacting: bool = False
+    pending: dict[str, str] = field(default_factory=dict)
+    spawning: dict[str, str] = field(default_factory=dict)
+    direct: dict[str, Spawned] = field(default_factory=dict)
+    waits: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class CodexConfig:
     model: str = ""
     effort: str = ""
@@ -143,7 +182,7 @@ def initial_effort(action: str, current, standard: list, default):
     if action == "effort" and current in standard:
         return current
     if action == "effort" and current:
-        return 0
+        return ""
     if default:
         return default
     return standard[0] if standard else ""
@@ -163,11 +202,13 @@ class ModelControls(TypedDict):
 class Codex(Provider):
     name = "codex"
     question_tools = frozenset({"request_user_input", "request_user_input_async"})
-    tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "apply_patch": CodexShell, "spawn_agent": AgentCall,
+    tool_kinds = {**Provider.tool_kinds, **dict.fromkeys((*SHELL_TOOLS, "apply_patch"), CodexShell), "spawn_agent": AgentCall,
                   "request_user_input": AskCall, "request_user_input_async": AskCall}
+    home = ".codex"
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
-    retired_skill_homes = (".codex/skills",)
+    shared_if_ignored = (".codex/hooks.json",)
+    retired_skill_homes = (f"{home}/skills",)
 
     def skill_load(self, name: str) -> str:
         return f"read {self.skill_home}/{name}/SKILL.md"
@@ -177,18 +218,9 @@ class Codex(Provider):
         return cls.controls_for(cls.catalog(), current_model if current_model else cls.configuration().model)
 
     @classmethod
-    def control_choice(cls, action: str, value: str, current_model: str) -> dict:
+    def commands_for(cls, action: str, value: str, current_model: str) -> list[str]:
         config = cls.configuration()
-        model = current_model if current_model else config.model
-        controls = cls.controls_for(cls.catalog(), model)
-        group = next((group for group in controls["groups"] if group["key"] == action), None)
-        selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
-        if not selected:
-            from resources.base import Refused
-            raise Refused(f"{cls.name} does not support {action} {value!r}")
-        models = cls.catalog()
-        commands = cls.commands(models, action, value, model, config.effort)
-        return {"action": action, **selected, "commands": commands, "command": commands[0]}
+        return cls.commands(cls.catalog(), action, value, current_model if current_model else config.model, config.effort)
 
     @classmethod
     def matched(cls, models: list[CodexModel], current_model: str) -> CodexModel | None:
@@ -213,13 +245,13 @@ class Codex(Provider):
 
     @classmethod
     def catalog(cls, path: Path | None = None) -> list[CodexModel]:
-        path = path if path else Path.home() / ".codex" / "models_cache.json"
+        path = path if path else Path.home() / cls.home / "models_cache.json"
         listed = read_json(path, dict, {}).get("models")
         return [CodexModel.from_json(model) for model in listed if CodexModel.listed(model)] if isinstance(listed, list) else []
 
     @classmethod
     def configuration(cls, path: Path | None = None) -> CodexConfig:
-        path = path if path else Path.home() / ".codex" / "config.toml"
+        path = path if path else Path.home() / cls.home / "config.toml"
         try:
             lines = path.read_text().splitlines()
         except OSError:
@@ -253,6 +285,8 @@ class Codex(Provider):
         source_model = models.index(cls.matched(models, current_model))
         target_model = models.index(target)
         commands = ["/model", cls.move(source_model, target_model)]
+        if not target.efforts:
+            return commands
         supported = list(target.efforts)
         standard = [item for item in supported if item not in ("max", "ultra")]
         advanced = [item for item in supported if item in ("max", "ultra")]
@@ -272,28 +306,22 @@ class Codex(Provider):
         key = "\x1b[B" if target >= start else "\x1b[A"
         return key * abs(target - start)
 
-    def agent_types(self, project: Path, chosen: list) -> list[Path]:
-        folder = project / ".codex" / "agents"
-        written = []
-        for kind, _ in chosen:
-            sandbox = "workspace-write" if "Bash" in kind.tools and "Grep" not in kind.tools else "read-only"
-            text = (f"name = {json.dumps(kind.name)}\ndescription = {json.dumps(kind.description)}\nsandbox_mode = {json.dumps(sandbox)}\n"
-                    f"developer_instructions = {json.dumps(kind.instructions)}\n")
-            target = folder / f"{kind.name}.toml"
-            if not target.is_file() or target.read_text() != text:
-                folder.mkdir(parents=True, exist_ok=True)
-                write_text(target, text)
-                written.append(target)
-        return written
+    def agent_file(self, project: Path, name: str) -> Path:
+        return project / self.home / "agents" / f"{name}.toml"
+
+    def agent_text(self, kind, model: str) -> str:
+        sandbox = "workspace-write" if "Bash" in kind.tools and "Grep" not in kind.tools else "read-only"
+        return (f"name = {json.dumps(kind.name)}\ndescription = {json.dumps(kind.description)}\nsandbox_mode = {json.dumps(sandbox)}\n"
+                f"developer_instructions = {json.dumps(kind.instructions)}\n")
 
     def present(self, project: Path) -> bool:
-        return (project / ".codex").is_dir() or shutil.which("codex") is not None
+        return (project / self.home).is_dir() or shutil.which("codex") is not None
 
     def config(self, project: Path) -> Path:
-        return project / ".codex" / "hooks.json"
+        return project / self.home / "hooks.json"
 
     def hook_files(self, project: Path) -> list[Path]:
-        return [Path.home() / ".codex" / "hooks.json", self.config(project)]
+        return [Path.home() / self.home / "hooks.json", self.config(project)]
 
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
@@ -307,7 +335,7 @@ class Codex(Provider):
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
 
-    def turn(self, row: Row) -> tuple[str, str] | None:
+    def turn(self, row: Row, line: int) -> Turn | None:
         payload = row.payload
         if row.type != "response_item":
             return None
@@ -315,11 +343,11 @@ class Codex(Provider):
             if not payload.text.strip() or payload.role not in ("user", "assistant"):
                 return None
             turn_kind = message_kind(payload)
-            return "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at, []
+            return Turn(line, "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at)
         if payload.type in ("function_call", "custom_tool_call"):
-            return "agent", "", AGENT, row.at, [TOOLS.get(payload.name, payload.name if payload.name else "?")]
+            return Turn(line, "agent", kind=AGENT, at=row.at, tools=[TOOLS.get(payload.name, payload.name)] if payload.name else [])
         if payload.type in ("function_call_output", "custom_tool_call_output"):
-            return TOOL, payload.output_text, TOOL, row.at, []
+            return Turn(line, TOOL, payload.output_text, TOOL, row.at)
         return None
 
     def context(self, hook: Hook) -> float | None:
@@ -332,9 +360,9 @@ class Codex(Provider):
         return [UsageWindow(limit.key, self.window_label(limit.minutes), limit.used, limit.minutes, limit.resets) for limit in limits]
 
     def token_counts(self, path: Path | None):
-        for line in reversed(tail(path, TAIL_BYTES)):
-            row = parsed(line, Row.from_payload)
-            if row and row.type == "event_msg" and row.payload.type == "token_count":
+        lines, _ = last_lines(path, TAIL_BYTES)
+        for row in rows(reversed(lines), Row.from_payload):
+            if row.type == "event_msg" and row.payload.type == "token_count":
                 yield row.payload
 
     def window_label(self, minutes: int) -> str:
@@ -350,8 +378,9 @@ class Codex(Provider):
         return next(Path(path).parent.parent.glob(f"*/rollout-*-{session}.jsonl"), None)
 
     def failure(self, path: Path) -> Failure | None:
-        ends = [line for line in tail(path, TAIL_BYTES) if TASK_EVENTS.search(line)]
-        return parsed(ends[-1], Failure.from_turn_end) if ends else None
+        lines, _ = last_lines(path, TAIL_BYTES)
+        ends = [line for line in lines if TASK_EVENTS.search(line)]
+        return parsed(ends[-1].decode(errors="replace"), Failure.from_turn_end) if ends else None
 
     def background_tasks(self, path: Path) -> BackgroundTasks:
         return self.folded(path, self.task_rows, CodexTasks)
@@ -415,69 +444,91 @@ class Codex(Provider):
 
     def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
         found = self.subagent_transcript(path, session)
-        events = TASK_EVENTS.findall("".join(tail(found, TAIL_BYTES))) if found else []
-        running = not events or events[-1] == "task_started"
+        events = TASK_EVENTS.findall(b"".join(last_lines(found, TAIL_BYTES)[0])) if found else []
+        running = not events or events[-1] == b"task_started"
         return running, 0.0 if running or not found else found.stat().st_mtime
 
-    def spawned(self, path: Path, script: str, output: str, at: float) -> list[dict]:
-        return [self.subagent_row(path, Spawned(script_field(script, "task_name", index) or found[2] or "subagent", script_field(script, "agent_type", index),
-                                                script_field(script, "model", index), at), found[1])
-                for index, found in enumerate(SPAWNED.finditer(output))]
-
-    def subagent_row(self, path: Path, asked: Spawned, session: str) -> dict:
+    def subagent_row(self, path: Path, spawn: SpawnedAgent) -> dict:
+        session = spawn.session or self.spawned_session(path, spawn)
         running, ended = self.subagent_state(path, session) if session else (True, 0.0)
-        return {"task": asked.task_name, "type": asked.agent_type, "model": asked.model, "session": session, "running": running, "at": asked.at,
-                "ended": ended, "status": "" if running else "finished"}
+        return SubagentRow(session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", session).to_json()
 
-    def spawned_session(self, path: Path, answer: SpawnAnswer, since: float) -> str:
-        """The session of a subagent spawned directly: named in the answer, or found by its path among the rollouts written since."""
-        if answer.agent_id or not answer.task_name:
-            return answer.agent_id
-        parent = path.stem[-36:]
-        for found in path.parent.parent.glob("*/rollout-*.jsonl"):
-            spawn = self.meta(found).source.subagent.thread_spawn if found.stat().st_mtime >= since else None
-            if spawn and spawn.parent_thread_id == parent and spawn.agent_path == answer.task_name:
+    def spawned_session(self, path: Path, spawn: SpawnedAgent) -> str:
+        """The session of a subagent spawned directly whose answer named only its path, found among the rollouts written since."""
+        if not spawn.agent_path:
+            return ""
+        parent = Path(path).stem[-36:]
+        for found in Path(path).parent.parent.glob("*/rollout-*.jsonl"):
+            spawned = self.meta(found).source.subagent.thread_spawn if found.stat().st_mtime >= spawn.at else None
+            if spawned and spawned.parent_thread_id == parent and spawned.agent_path == spawn.agent_path:
                 return found.stem[-36:]
         return ""
 
+    def crew_rows(self, crew: CodexCrew, row: Row) -> CodexCrew:
+        if row.type == "compacted":
+            crew.compacting = True
+            return crew
+        if row.type != "response_item":
+            return crew
+        payload = row.payload
+        name, key, script = payload.name, payload.key, payload.argument_text
+        is_call = payload.type in ("function_call", "custom_tool_call")
+        if is_call and bare(name) in SHELL_TOOLS:
+            crew.pending[key] = script
+        if is_call and name == "exec" and SPAWN_IN_SCRIPT.search(script):
+            crew.spawning[key] = script
+        elif is_call and name.endswith("spawn_agent"):
+            crew.direct[key] = Spawned.from_json(arguments_of(payload.arguments))
+        elif payload.type == "function_call" and name.endswith("wait"):
+            cell = CELL_ID.search(script)
+            if cell:
+                crew.waits[key] = cell[1]
+        output = payload.output_text if payload.type in ("function_call_output", "custom_tool_call_output") else ""
+        if output:
+            self.answered(crew, key, output, row.at)
+        if payload.role == "assistant" or payload.type in ("reasoning", "function_call", "custom_tool_call"):
+            crew.compacting = False
+        return crew
+
+    @staticmethod
+    def answered(crew: CodexCrew, key: str, output: str, at: float) -> None:
+        script = crew.spawning.pop(key, None)
+        if script:
+            crew.subagents += [SpawnedAgent(script_field(script, "task_name", index) or found[2] or "subagent", script_field(script, "agent_type", index),
+                                            script_field(script, "model", index), found[1], at) for index, found in enumerate(SPAWNED.finditer(output))]
+        asked = crew.direct.pop(key, None)
+        if asked:
+            found = SPAWNED.search(output)
+            crew.subagents.append(SpawnedAgent(asked.task_name, asked.agent_type, asked.model, found[1] if found else "", at,
+                                               SpawnAnswer.from_json(arguments_of(output)).task_name))
+        command = crew.pending.pop(key, "")
+        cell = CELL_RUNNING.search(output)
+        if cell:
+            crew.shells.append(CellShellRow(command[:160] if command else "background shell", cell[1]))
+        finished = crew.waits.pop(key, "")
+        if finished and not output.startswith("Script running"):
+            at_cell = next((i for i, shell in enumerate(crew.shells) if shell.cell == finished), None)
+            if at_cell is not None:
+                crew.shells[at_cell] = replace(crew.shells[at_cell], running=False, ended=at, status="completed" if output.startswith("Script completed") else "failed")
+
     def crew(self, path: Path) -> dict:
-        rows = [row for _, row in self.entries(path)]
-        uses = [use for row in rows for use in self.tool_uses(row)]
-        skills = sorted({use.skill for use in uses if use.name == "Skill"} - {""})
-        subagent_rows = []
-        shell_rows = []
-        shells = 0
-        compacting = False
-        pending, spawning, asking = {}, {}, {}
-        for row in rows:
-            payload = row.payload
-            if row.type == "response_item":
-                name, key, text = payload.name, payload.key, payload.argument_text
-                if name == "exec" and SPAWN_IN_SCRIPT.search(text):
-                    spawning[key] = text
-                elif name.endswith("spawn_agent"):
-                    asking[key] = replace(Spawned.from_json(arguments_of(payload.arguments)), at=row.at)
-                elif bare(name) in ("exec", "exec_command", "shell", "shell_command"):
-                    pending[key] = text
-                asked = asking.pop(key, None) if payload.type == "function_call_output" else None
-                if asked:
-                    subagent_rows.append(self.subagent_row(path, asked, self.spawned_session(path, SpawnAnswer.from_json(arguments_of(payload.output)), asked.at)))
-                script = spawning.pop(key, None) if payload.type == "custom_tool_call_output" else None
-                if script:
-                    subagent_rows += self.spawned(path, script, payload.output, row.at)
-                if payload.type == "custom_tool_call_output" and payload.output.startswith("Script running with cell ID"):
-                    shells += 1
-                    command = pending.get(key, "")
-                    shell_rows.append({"command": command[:160] if command else "background shell", "cell": payload.output.split("ID", 1)[-1].strip()})
-            if row.type == "compacted":
-                compacting = True
-            elif row.type == "response_item" and (payload.role == "assistant" or payload.type in ("reasoning", "function_call", "custom_tool_call")):
-                compacting = False
-        return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: len(subagent_rows),
-                AgentRow.shell_rows: recent(shell_rows), AgentRow.subagent_rows: recent(subagent_rows), AgentRow.compacting: compacting}
+        held = self.folded(path, self.crew_rows, CodexCrew)
+        subagents = [self.subagent_row(path, spawn) for spawn in held.subagents]
+        return {AgentRow.skills: self.skills(Path(path)), AgentRow.shells: sum(shell.running for shell in held.shells), AgentRow.subagents: len(subagents),
+                AgentRow.shell_rows: running_and_latest([shell.to_json() for shell in held.shells]), AgentRow.subagent_rows: running_and_latest(subagents),
+                AgentRow.compacting: held.compacting}
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return self.configuration().effort
+
+    def is_subagent(self, hook) -> bool:
+        return bool(hook.transcript) and bool(self._parent_thread(hook.transcript))
+
+    def _parent_thread(self, path: Path) -> str:
+        key = str(path)
+        if key not in PARENT_THREADS and Path(path).is_file():
+            PARENT_THREADS[key] = self.session(path).get(AgentRow.parent, "")
+        return PARENT_THREADS.get(key, "")
 
     def session(self, path: Path | None) -> dict:
         if path is None or not Path(path).is_file():
@@ -485,12 +536,9 @@ class Codex(Provider):
         return {AgentRow.parent: self.meta(path).parent_thread}
 
     def meta(self, path: Path) -> Payload:
-        with Path(path).open() as source:
-            for line in source:
-                row = parsed(line, Row.from_payload)
-                if row and row.type == "session_meta":
-                    return row.payload
-        return Payload()
+        with Path(path).open("rb") as source:
+            found = next((row for row in rows(source, Row.from_payload) if row.type == "session_meta"), None)
+        return found.payload if found else Payload()
 
     def tool_uses(self, row: Row) -> list[ToolCall]:
         payload = row.payload
@@ -507,95 +555,3 @@ class Codex(Provider):
             if loop:
                 found.update(word for word in loop.group(1).split() if word == "journal" or word.startswith("journal-"))
         return uses + [ToolCall(id="", name="Skill", at=row.at, skill=skill) for skill in sorted(found)]
-
-
-class CodexDriver(Driver):
-    PRODUCT = "the Codex CLI"
-    AUTO_ARGS = ("--approve-for-me",)
-    SKIP_ARGS = ("--dangerously-bypass-approvals-and-sandbox",)
-    APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
-    TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
-    READY = b"AskCodextodoanything"
-    BUSY = b"esctointerrupt"
-    ENTER_CAN_MISS = True
-    ASKING = (b"Wouldyouliketorun", b"Yes,proceed", b"Allowcommand", b"Approve")
-    ASKED_COMMAND = re.compile(r"Would you like to run the following command\?.*\$ (.+?)\s*›\s*1\.\s*Yes, proceed", re.S)
-    ALLOW = b"y"
-    ASKS_ON_SCREEN = True
-    QUEUED = b"Messagestobesubmittedafternexttoolcall"
-    RUNNING = b"backgroundterminalrunning"
-    SEND_NOW = b"\x1b"
-    TRUSTING = re.compile(rb"(?:Doyoutrustthecontentsofthisdirectory|Trustthisfolder\?).*?(\d)\.(?:Yes,continue|Trustandcontinue)", re.S)
-    UPDATING = re.compile(rb"Updateavailable.*?(\d)\.Skip(?!until)", re.S)
-    SCREEN_TAIL = 8192
-    OPENING = "The journal started this session."
-    CONFIRM_AFTER = 3.0
-    RESUME = "resume"
-    CONTINUING = ("continue", "--continue")
-    name = "codex"
-
-    @classmethod
-    def opening(cls, printed: bytes) -> str:
-        plain = b"".join(ANSI.sub(b"", printed).split())
-        return cls.OPENING if cls.READY in plain and not cls.consent(printed) else ""
-
-    @classmethod
-    def consent(cls, printed: bytes) -> bytes:
-        plain = b"".join(ANSI.sub(b"", printed).split())
-        asked = max((*cls.TRUSTING.finditer(plain), *cls.UPDATING.finditer(plain)), key=lambda match: match.start(), default=None)
-        return asked.group(1) + b"\r" if asked and asked.start() > plain.rfind(cls.READY) else b""
-
-    def at_prompt(self) -> bool:
-        plain = self._screen()
-        return plain.rfind(self.READY) > plain.rfind(self.BUSY) and self.quiet_for() >= self.QUIET
-
-    def asking(self) -> bool:
-        plain = self._screen()
-        return max(plain.rfind(phrase) for phrase in self.ASKING) > max(plain.rfind(self.READY), plain.rfind(self.BUSY))
-
-    def asked(self) -> Asking | None:
-        if not self.asking():
-            return None
-        found = list(self.ASKED_COMMAND.finditer(self._screen_text()))
-        return Asking("exec_command", found[-1][1].strip()[:300] if found else "a command", time.time())
-
-    def _screen_text(self) -> str:
-        return self._printed_tail().decode(errors="replace")
-
-    def _screen(self) -> bytes:
-        return b"".join(self._printed_tail().split())
-
-    def _printed_tail(self) -> bytes:
-        try:
-            tail = self.printed.read_bytes()[-self.SCREEN_TAIL:]
-        except OSError:
-            return b""
-        return ANSI.sub(b"", tail)
-
-    def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
-        trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []
-        trust = [] if self.TRUSTS_HOOKS in args else [self.TRUSTS_HOOKS]
-        return ["codex", *trust, *trusted, *self.carried_on(args)]
-
-    @classmethod
-    def carried_on(cls, args: list[str]) -> list[str]:
-        rest = [arg for arg in args if arg not in cls.CONTINUING]
-        if len(rest) < len(args):
-            return [cls.RESUME, "--last", *rest]
-        if "--resume" in args[:-1]:
-            at = args.index("--resume")
-            return [cls.RESUME, args[at + 1], *args[:at], *args[at + 2:]]
-        return args
-
-    @classmethod
-    def resuming(cls, args: list[str]) -> bool:
-        return cls.carried_on(args)[:1] == [cls.RESUME]
-
-    @classmethod
-    def resumed(cls, args: list[str], conversation: str) -> list[str]:
-        if not conversation:
-            return args
-        rest = cls.carried_on(args)
-        if rest[:1] == [cls.RESUME]:
-            rest = rest[2:] if len(rest) > 1 and (rest[1] == "--last" or not rest[1].startswith("-")) else rest[1:]
-        return [cls.RESUME, conversation, *rest]

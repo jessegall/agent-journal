@@ -1,41 +1,147 @@
+import sys
+
+if sys.version_info < (3, 10):
+    sys.exit(f"Python 3.10 or newer is needed, and this is Python {sys.version.split()[0]}")
+
 import fcntl
 import os
 import shutil
 import stat
 import tarfile
 import subprocess
-import sys
 import hashlib
+import json
 import marshal
 import tempfile
 import time
 import zipfile
 from importlib.util import MAGIC_NUMBER
 from pathlib import Path
-from typing import Callable, TypedDict
+from dataclasses import dataclass
+from typing import Callable
 
 
 PACKAGE = Path(__file__).resolve().parent
-PACKAGE_DIRS = ("agents", "commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "runner", "skills", "surfaces")
+PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "overview", "providers", "resources", "runner", "surfaces")
+PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"
 PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py", "worker.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
+REPOSITORY_ENV = "AGENT_JOURNAL_REPO"
+LOOKUP_SECONDS = 10
+BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
+HEALED = "AGENT_JOURNAL_HEALED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
-KEPT_COPIES = 2
+KEPT_COPIES = 1
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
+MANAGED = "managed-files.json"
+LEGACY_COPY_MARKER = "managed-update-copy"
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
-PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "providers", "resources", "runner", "surfaces")
 
 
 def code(root: Path) -> Path:
     return root / SRC
+
+
+def managed_paths(project: Path, root: Path) -> set[Path]:
+    paths = {path for path in code(root).rglob("*") if path.is_file() and not path.is_symlink()}
+    for home in (".agents/skills", ".claude/skills"):
+        folder = project / home
+        paths.update(path for skill in folder.glob("journal*") if skill.is_dir() and not skill.is_symlink()
+                     for path in skill.rglob("*") if path.is_file() and not path.is_symlink())
+    for home, extension in ((".claude/agents", "md"), (".codex/agents", "toml")):
+        paths.update(path for path in (project / home).glob(f"*.{extension}") if path.is_file() and path.stem in
+                     {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"})
+    for home in (".claude/settings.local.json", ".codex/hooks.json"):
+        path = project / home
+        if path.is_file():
+            paths.add(path)
+    paths.update(project / name for name in ("CLAUDE.md", "AGENTS.md") if (project / name).is_file())
+    return paths
+
+
+def managed_bytes(path: Path) -> bytes:
+    if path.name in ("settings.local.json", "hooks.json"):
+        from providers.base import journal_hook
+        settings = json.loads(path.read_text())
+        hooks = {event: [block for block in blocks if journal_hook(json.dumps(block))]
+                 for event, blocks in (settings.get("hooks") or {}).items()}
+        status = settings.get("statusLine", {})
+        managed = {"hooks": {event: blocks for event, blocks in hooks.items() if blocks}}
+        if "claude-status.sh" in json.dumps(status):
+            managed["statusLine"] = status
+        return json.dumps(managed, sort_keys=True).encode()
+    if path.name not in ("CLAUDE.md", "AGENTS.md"):
+        return path.read_bytes()
+    from features.journal_laws.briefing import CURRENT
+    text = path.read_text(errors="replace")
+    return "\n".join(match.group() for match in CURRENT.finditer(text)).encode()
+
+
+def managed_hash(path: Path) -> str:
+    return hashlib.sha256(managed_bytes(path)).hexdigest()
+
+
+def remember_managed(project: Path, root: Path) -> None:
+    files = {path.relative_to(project).as_posix(): managed_hash(path) for path in managed_paths(project, root)}
+    target = root / MANAGED
+    target.write_text(json.dumps(files, indent=2, sort_keys=True) + "\n")
+
+
+def changed_managed(project: Path, root: Path) -> list[Path]:
+    target = root / MANAGED
+    if not target.is_file():
+        return []
+    remembered = json.loads(target.read_text())
+    changed = {project / name for name, digest in remembered.items()
+               if not (project / name).is_file() or managed_hash(project / name) != digest}
+    changed.update(path for path in managed_paths(project, root)
+                   if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
+    return sorted(changed)
+
+
+def copy_legacy_managed(project: Path, root: Path) -> list[str]:
+    if (root / MANAGED).is_file():
+        return []
+    existing = sorted(managed_paths(project, root))
+    if not existing or not code(root).is_dir():
+        return []
+    attic = root / "attic"
+    attic.mkdir(parents=True, exist_ok=True)
+    version = version_in(code(root), "unknown")
+    copy = attic / f"before-update-{version}-{int(time.time() * 1000)}"
+    for path in existing:
+        destination = copy / path.relative_to(project)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, destination)
+    location = copy.relative_to(project).as_posix()
+    marker = root / "runtime" / LEGACY_COPY_MARKER
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(location)
+    return [f"Managed files from before this update were copied to {location}"]
+
+
+def archive_changed(project: Path, root: Path, changed: list[Path]) -> Path:
+    attic = root / "attic"
+    attic.mkdir(parents=True, exist_ok=True)
+    copy = attic / f"changed-files-{int(time.time() * 1000)}.tar.gz"
+    with tarfile.open(copy, "w:gz") as archive:
+        for path in changed:
+            if path.is_file():
+                archive.add(path, arcname=path.relative_to(project).as_posix(), recursive=False)
+    return copy
+
+
+def changed_message(project: Path, changed: list[Path]) -> str:
+    names = ", ".join(path.relative_to(project).as_posix() for path in changed)
+    return f"Files changed since the journal wrote them: {names}. Run journal upgrade --yes to copy them into .journal/attic and update anyway."
 
 
 def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
@@ -49,6 +155,10 @@ def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
 
 def packaged(source: Path) -> Path:
     return source / SRC if (source / SRC / "install.py").is_file() else source
+
+
+def version_in(folder: Path, missing: str = "") -> str:
+    return (folder / VERSION).read_text().strip() if (folder / VERSION).is_file() else missing
 
 
 def version_file(package: Path) -> Path:
@@ -113,6 +223,7 @@ def retire(root: Path) -> int:
 ASKS = """case "$1" in __SERVED__) ;; *) false ;; esac && if { read -r at url < "$root/runtime/heartbeat"; } 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
 session="$JOURNAL_SESSION"; [ -z "$session" ] && [ -n "$JOURNAL_SESSION_VARIABLE" ] && eval "session=\\${$JOURNAL_SESSION_VARIABLE:-}"
 reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --url-query "cwd=$PWD" --url-query "plugin=$JOURNAL_PLUGIN" --url-query "session=$session" --data-binary @- "${url}api/run")
+[ $? -ne 2 ] || reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --data-binary @- "$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "actor=$JOURNAL_ACTOR" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "cwd=$PWD" --data-urlencode "plugin=$JOURNAL_PLUGIN" --data-urlencode "session=$session" "${url}api/run")")
 said=${reply##*
 }
 body=${reply%
@@ -127,7 +238,7 @@ fi
 
 
 def asks() -> str:
-    return ASKS.replace("__SERVED__", "|".join(sorted(served())))
+    return ASKS.replace("__SERVED__", "|".join(sorted(LOADED.served())))
 
 SHIM = """#!/bin/sh
 dir="$(pwd)"
@@ -135,7 +246,8 @@ while [ "$dir" != "/" ]; do
 for src in "$dir/.journal/src" "$dir/.journal"; do
 if [ -f "$src/journal.py" ]; then
 root="$dir/.journal"
-__ASKS__exec "__PYTHON__" "$src/journal.py" --root "$root" "$@"
+__ASKS__[ -x "__PYTHON__" ] || { echo "journal: Python at __PYTHON__ is gone (moved or upgraded), so reinstall: re-run install.sh" >&2; exit 1; }
+exec "__PYTHON__" "$src/journal.py" --root "$root" "$@"
 fi
 done
 dir="$(dirname "$dir")"
@@ -146,7 +258,8 @@ exit 1
 
 LAUNCHER = """#!/bin/sh
 root="__ROOT__"
-__ASKS__exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
+__ASKS__[ -x "__PYTHON__" ] || { echo "journal: Python at __PYTHON__ is gone (moved or upgraded), so reinstall: re-run install.sh" >&2; exit 1; }
+exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
 """
 
 
@@ -182,12 +295,19 @@ def put_on_path(bin_: Path) -> str:
     return f"{bin_} added to your PATH in {profile}: open a new terminal, then type journal"
 
 
-def install(project: Path, root: Path | None = None) -> list[str]:
+def install(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
+    copied = copy_legacy_managed(project, root)
+    changed = changed_managed(project, root)
+    if changed and not yes:
+        return [changed_message(project, changed)]
+    if changed:
+        archive_changed(project, root, changed)
     refresh(PACKAGE, code(root))
     done = configure(project, root)
     retire(root)
-    return done
+    remember_managed(project, root)
+    return copied + done
 
 
 def old_git_hook(project: Path) -> list[str]:
@@ -201,22 +321,25 @@ def old_git_hook(project: Path) -> list[str]:
 def configure(project: Path, root: Path) -> list[str]:
     done = old_git_hook(project)
     present = []
-    for name, cls in PROVIDERS.items():
+    for name, cls in LOADED.providers.items():
         provider = cls()
         if not provider.present(project):
             continue
-        f = provider.wire(project, HookCommand(code(root) / "hook.sh", name, root))
+        f = provider.wire(project, LOADED.hook_command(code(root) / "hook.sh", name, root))
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         present.append(name)
-    if not done:
-        return ["no agent found here: neither Claude nor Codex"]
-    written, linked = publish(project, tuple(present))
-    done.append(f"{len(written)} skills in {LIBRARY}" + (f", linked from {', '.join(LINKED[a] for a in present if a in LINKED)}" if linked else ""))
-    record = Record(root, default_env(root))
-    briefing = brief(project, record)
-    done.append(f"the journal's block in {', '.join(f.name for f in briefing.written) or 'AGENTS.md and CLAUDE.md'}")
+    if not present:
+        return [*done, f"no agent found here: neither {' nor '.join(name.capitalize() for name in LOADED.providers)}"]
+    troubles = [f"hook check failed for {name}: {trouble}" for name in present for trouble in [LOADED.providers[name]().wiring_trouble(project)] if trouble]
+    done += troubles or [f"hooks checked: {', '.join(present)}"]
+    written, linked = LOADED.publish(project, tuple(present))
+    done.append(f"{len(written)} skills in {LOADED.library}" + (f", linked from {', '.join(LOADED.linked[a] for a in present if a in LOADED.linked)}" if linked else ""))
+    record = LOADED.record(root, LOADED.default_env(root))
+    briefing = LOADED.brief(project, record)
+    named = ' and '.join(sorted(cls.briefing_file for cls in LOADED.providers.values() if cls.briefing_file))
+    done.append(f"the journal's block in {', '.join(f.name for f in briefing.written) or named}")
     done.extend(briefing.left)
-    written = agent_types(project, record)
+    written = LOADED.agent_types(project, record)
     if written:
         done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
@@ -236,37 +359,41 @@ def token() -> str:
     return got.stdout.strip() if got.returncode == 0 else ""
 
 
-def reachable(repository: str, secret: str) -> str:
+def with_token(repository: str, secret: str) -> str:
     return repository.replace("https://", f"https://x-access-token:{secret}@", 1) if secret and repository.startswith("https://github.com/") else repository
 
 
-def plain(text: str, secret: str) -> str:
+def redacted(text: str, secret: str) -> str:
     return text.replace(secret, "the token") if secret else text
 
 
-def counted(version: str) -> tuple:
+def without_prompt() -> dict:
+    return {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+
+
+def version_key(version: str) -> tuple:
     return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
 def released(repository: str = REPOSITORY) -> str:
     try:
-        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=10)
+        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=without_prompt())
     except (OSError, subprocess.TimeoutExpired):
         return ""
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
-    return max(versions, key=counted) if versions else ""
+    return max(versions, key=version_key) if versions else ""
 
 
 def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
-    wanted = repository or os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY)
+    wanted = repository or os.environ.get(REPOSITORY_ENV, REPOSITORY)
     secret = token() if wanted.startswith("https://github.com/") else ""
-    source = reachable(wanted, secret)
+    source = with_token(wanted, secret)
     into.mkdir(parents=True, exist_ok=True)
     try:
         for step in (["init", "-q"], ["fetch", "-q", "--depth", "1", source, ref or "HEAD"], ["checkout", "-q", "FETCH_HEAD"]):
-            done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120)
+            done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120, env=without_prompt())
             if done.returncode:
-                return "", plain(done.stderr.strip() or f"git {step[0]} failed", secret)
+                return "", redacted(done.stderr.strip() or f"git {step[0]} failed", secret)
         return subprocess.run(["git", "rev-parse", "HEAD"], cwd=into, capture_output=True, text=True, timeout=30).stdout.strip(), ""
     except (OSError, subprocess.TimeoutExpired) as error:
         return "", str(error)
@@ -275,7 +402,7 @@ def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
 def keep_copy(root: Path) -> str:
     if not (root / "environments").is_dir():
         return ""
-    version = (code(root) / VERSION).read_text().strip() if (code(root) / VERSION).is_file() else "unknown"
+    version = version_in(code(root), "unknown")
     attic = root / "attic"
     attic.mkdir(parents=True, exist_ok=True)
     copy = attic / f"before-{version}-{int(time.time())}.tar.gz"
@@ -292,18 +419,24 @@ def half_done(root: Path) -> bool:
     return (code(root) / "__main__.py").is_file() and (root / ARCHIVE).exists()
 
 
-def upgrade(project: Path, root: Path | None = None) -> list[str]:
+def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
-    mark = root / "runtime" / "upgrading"
+    mark = LOADED.upgrade_mark(root)
     mark.parent.mkdir(parents=True, exist_ok=True)
     with (root / "runtime" / "upgrade.lock").open("a") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             return ["another upgrade of this journal is running; this one stepped aside"]
+        copied = copy_legacy_managed(project, root)
+        changed = changed_managed(project, root)
+        if changed and not yes:
+            return [changed_message(project, changed)]
+        if changed:
+            archive_changed(project, root, changed)
         mark.touch()
         try:
-            return upgrading(project, root)
+            return copied + upgrading(project, root)
         finally:
             mark.unlink(missing_ok=True)
 
@@ -316,9 +449,9 @@ def installed_here(root: Path, package: Path = PACKAGE) -> bool:
 def upgrading(project: Path, root: Path) -> list[str]:
     done = [line for line in [keep_copy(root)] if line]
     source, temporary, newest = PACKAGE, None, ""
-    reloaded = installed_here(root) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
+    reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
-        newest = released(os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY))
+        newest = released(os.environ.get(REPOSITORY_ENV, REPOSITORY))
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
         _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
@@ -326,7 +459,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
             shutil.rmtree(temporary, ignore_errors=True)
             return [f"package not refreshed: {failed}"]
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
-        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
+        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=without_prompt())
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     try:
         changed, gone = refresh(source, code(root))
@@ -336,7 +469,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
         if temporary:
             shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
-    installed = (code(root) / VERSION).read_text().strip() if (code(root) / VERSION).is_file() else ""
+    installed = version_in(code(root))
     if newest and installed != newest:
         return done + [f"package refreshed but failed to reach the release: installed {installed or 'nothing'}, not {newest}"]
     if reloaded:
@@ -351,12 +484,12 @@ def complete(folder: Path) -> bool:
 
 def handed_over(project: Path, root: Path) -> list[str]:
     finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120,
-                              env={**os.environ, "AGENT_JOURNAL_BOOTSTRAPPED": "1"})
+                              env={**os.environ, BOOTSTRAPPED: "1"})
     return finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"]
 
 
 def release_of(folder: Path) -> str:
-    installed = (folder / VERSION).read_text().strip() if (folder / VERSION).is_file() else ""
+    installed = version_in(folder)
     return f"refs/tags/v{installed}" if installed and "unreleased" not in installed else ""
 
 
@@ -364,7 +497,7 @@ def finish(project: Path, root: Path) -> list[str]:
     if PACKAGE.resolve() == root.resolve():
         refresh(PACKAGE, code(root))
     done = []
-    if not complete(code(root)) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED"):
+    if not complete(code(root)) and not os.environ.get(BOOTSTRAPPED):
         temporary = Path(tempfile.mkdtemp())
         _, failed = fetch(temporary / "package", ref=release_of(code(root)))
         try:
@@ -377,13 +510,15 @@ def finish(project: Path, root: Path) -> list[str]:
         if not failed:
             return done + handed_over(project, root)
     done += configure(project, root)
-    ran = migrate(root)
+    ran = LOADED.migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
-    done.append(ship_sequences(root))
+    done.append(LOADED.ship_sequences(root))
+    done.append(LOADED.ship_profiles(root))
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
     done.append(pack(root))
+    remember_managed(project, root)
     return done
 
 
@@ -403,7 +538,7 @@ def pack(root: Path) -> str:
     if not (src / "__main__.py").is_file():
         return f"the Python is already in {ARCHIVE}"
     digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
-    version = (src / VERSION).read_text().strip() if (src / VERSION).is_file() else "0"
+    version = version_in(src, "0")
     target = root / f"journal-{version}-{digest}.pyz"
     if not target.is_file():
         built = target.with_suffix(".new")
@@ -420,8 +555,8 @@ def pack(root: Path) -> str:
             built.unlink(missing_ok=True)
             return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
         built.replace(target)
-    point(root, target)
-    held = held_builds(root)
+    LOADED.point(root, target)
+    held = LOADED.held_builds(root)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
         if old != target and old.name not in held:
             old.unlink(missing_ok=True)
@@ -445,7 +580,7 @@ def pack(root: Path) -> str:
 def main(argv: list[str]) -> list[str]:
     word = argv[0] if argv else "install"
     if word == "upgrade":
-        return upgrade(Path(argv[1] if len(argv) > 1 else ".").resolve())
+        return upgrade(Path(next((arg for arg in argv[1:] if arg != "--yes"), ".")).resolve(), yes="--yes" in argv)
     if word == "finish":
         project = Path(argv[1] if len(argv) > 1 else ".").resolve()
         return finish(project, project / ".journal")
@@ -464,16 +599,17 @@ def heal() -> None:
         refresh(temporary / "package", PACKAGE)
     finally:
         shutil.rmtree(temporary, ignore_errors=True)
-    os.execve(sys.executable, [sys.executable, str(PACKAGE / "install.py"), *sys.argv[1:]], {**os.environ, "AGENT_JOURNAL_HEALED": "1"})
+    os.execve(sys.executable, [sys.executable, str(PACKAGE / "install.py"), *sys.argv[1:]], {**os.environ, HEALED: "1"})
 
 
-class Package(TypedDict):
-    PROVIDERS: dict
-    HookCommand: type
-    LIBRARY: str
-    LINKED: dict
+@dataclass(frozen=True)
+class Package:
+    providers: dict
+    hook_command: type
+    library: str
+    linked: dict
     agent_types: Callable
-    Record: type
+    record: type
     default_env: Callable
     served: Callable
     point: Callable
@@ -481,7 +617,9 @@ class Package(TypedDict):
     brief: Callable
     migrate: Callable
     ship_sequences: Callable
+    ship_profiles: Callable
     publish: Callable
+    upgrade_mark: Callable
 
 
 def package() -> Package:
@@ -489,8 +627,9 @@ def package() -> Package:
     from commands.cli import served
     from engine.package import point
     from engine.sessions import held_builds
-    from features.journal_laws.policy import brief
+    from features.journal_laws.briefing import brief
     from features.sequences.shipped import ship
+    from features.form_of_address.controller import ship as ship_profiles
     from migrations import run as migrate
     from migrations import shipped
     from providers import PROVIDERS
@@ -498,15 +637,17 @@ def package() -> Package:
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
-    from engine.runtime import default_env
-    return {"agent_types": agent_types, "Record": Record, "default_env": default_env, "served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS, "HookCommand": HookCommand,
-            "LIBRARY": LIBRARY, "LINKED": LINKED, "publish": publish}
+    from engine.runtime import default_env, upgrade_mark
+    return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
+                   served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
+                   ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"),
+                   publish=publish, upgrade_mark=upgrade_mark)
 
 
 try:
-    globals().update(package())
+    LOADED = package()
 except ImportError:
-    if __name__ != "__main__" or os.environ.get("AGENT_JOURNAL_HEALED"):
+    if __name__ != "__main__" or os.environ.get(HEALED):
         raise
     heal()
 

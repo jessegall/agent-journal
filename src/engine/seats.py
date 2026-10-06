@@ -75,6 +75,17 @@ def live_session(root: Path, session: str, within: float = ONLINE_FOR) -> tuple[
     return next((pair for pair in live(root, within) if pair[1].session == session), None)
 
 
+def offline(root: Path, session: str, within: float = ONLINE_FOR) -> str:
+    held = Sessions(root).read(session)
+    if held.evicted_since_start:
+        return f"session {session!r} is not online: session {held.evicted['by']!r} took environment {held.evicted['environment']!r} from it ({held.evicted['why']})"
+    seated = [seat for seat in seats(root) if seat.session == session]
+    if not seated:
+        return f"session {session!r} is not online: no agent's terminal reports it as its session"
+    age = time.time() - max(seat.at for seat in seated)
+    return f"session {session!r} is not online: its terminal last checked in {age:.0f}s ago, and a session counts as online for {within:.0f}s"
+
+
 def live(root: Path, within: float = ONLINE_FOR) -> list[tuple[Seat, LiveAgent]]:
     now = time.time()
     sessions = Sessions(root)

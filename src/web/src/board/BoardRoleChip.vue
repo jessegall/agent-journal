@@ -1,9 +1,14 @@
 <script setup>
-import {litCard} from "../composables/litCard.js";
+import {ui} from "../state/ui.js";
 import {go} from "../route.js";
 
-defineProps({title: {type: String, required: true}, n: {type: Number, default: 0}, task: {type: String, default: ""}, env: {type: String, default: ""}});
-const light = (n) => (litCard.value = n);
+defineProps({
+    title: {type: String, required: true},
+    n: {type: Number, default: 0},
+    task: {type: String, default: ""},
+    env: {type: String, default: ""},
+});
+const light = (n) => (ui.litCard = n);
 </script>
 
 <template>

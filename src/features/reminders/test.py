@@ -1,13 +1,9 @@
 
-from controllers.types import Nudges, Reminders
+from controllers.types import Reminders
 from features.session_briefing.start import start_block
 from resources.base import AGENT, USER
-from tests.kit import report
+from tests.kit import nudges_with_briefs as nudges, report
 from tests.conftest import fresh
-
-
-def nudges(record):
-    return [(n.title, n.brief) for n in Nudges(record).all()]
 
 
 def test_by_default_standing_reminders_are_said_at_every_quarter_of_context_not_on_idle():

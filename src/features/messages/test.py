@@ -3,7 +3,9 @@ import time
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from runner.hooks import displayed, handle
+from providers.payload import Chunk
+from runner.chat_mirror import displayed
+from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
 from features.format import VIEWER, formatted
@@ -41,9 +43,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
     from controllers.types import Todos
-    record.set_setting("features", {"messages.linking": False})
     filed = Todos(record, actor=AGENT).create("wire the last route")
-    record.set_setting("features", {})
     Messages(record, actor=AGENT).process(m.n, "how is it going?", f"todo {filed.n}")
     report(record, "idle", "Stop")
     assert not Messages(record).load(m.n).completed, "a question filed as a to-do is not answered: it stays open until a written reply"
@@ -51,7 +51,13 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     report(record, "working", "PreToolUse")
     assert not holds(record).get("status"), "a reply settles it and lifts the hold"
     assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
-    assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "a to-do filed after reading the message and linked nowhere is linked to it when it is answered"
+    assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "the to-do the agent processed the message into is linked to it"
+    asked = Messages(record, actor=USER).create("one more ask")
+    Messages(record, actor=AGENT).read(asked.n)
+    unrelated = Todos(record, actor=AGENT).create("work for another message")
+    Messages(record, actor=AGENT).reply(asked.n, "done")
+    assert f"todo:{unrelated.n}" not in Messages(record).load(asked.n).refs, \
+        "a row filed while a message is in hand is not linked to it: only processing links, never a guess"
 
 
 def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read():
@@ -126,10 +132,10 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     record = fresh()
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", asking={})
-    since = record.last_event()
+    since = record.event_log.last_id()
     Nudges(record).create("for this session", session="claude-1", private=True)
     Nudges(record).create("for another", session="claude-2", private=True)
-    received = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.events(since)}
+    received = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.event_log.events(since)}
     assert list(received.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"
 
 
@@ -140,7 +146,7 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     for piece in ({"index": 0, "final": False, "delta": "first "}, {"message_id": "b", "index": 0, "final": True, "delta": "second"}, {"index": 1, "final": True, "delta": "whole"}):
-        displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", **piece})
+        displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", **piece}))
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
     assert chat() == ["second", "first whole"], "a message that finishes never drops the pieces of one still being shown"
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
@@ -148,16 +154,16 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
     engine.tick()
     assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 0, "final": False, "delta": "The summary "})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 0, "final": False, "delta": "The summary "}))
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "The summary of the turn"})
     assert chat().count("The summary of the turn") == 1, "a message whose last pieces never came is sent whole when the turn stops"
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 1, "final": True, "delta": "of the turn"})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 1, "final": True, "delta": "of the turn"}))
     assert chat().count("The summary of the turn") == 1 and "of the turn" not in chat(), "a piece arriving after that does not send it again"
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "d", "index": 0, "final": False, "delta": "Cut short "})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "d", "index": 0, "final": False, "delta": "Cut short "}))
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Cut short by the next prompt"}]}}) + "\n")
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "claude-1", "prompt": "next"})
     assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
-    displayed(record.root, {"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
     assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
 
 
@@ -172,17 +178,19 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"My reply to {asked.n} went through; parking {filed.n}, 2 revisions left, released 2.84.63")
     lines = [n for n in nudges(record) if "without saying what they are" in n]
     assert f"names {asked.n}, {filed.n} " in lines[-1], "any bare reference is named back, whatever word comes before it"
-    from features.messages.handlers import bare
+    from features.messages.prose import bare
     assert bare(f"Two steps:\n{asked.n}. first\n{filed.n}) second") == [], "the numbers of a numbered list are not row numbers"
+    assert bare("The suite took 109 s, then 194 s and 23.8 s; the push got HTTP 408, a load average of 123 and the copy is 118 MB of 2 GB") == [], \
+        "a measurement with its unit, an HTTP code and a load average are not row numbers"
     assert bare(f"down from 980 loose files to {asked.n}; it waited {filed.n} before") == [], "a small number with no handling verb before it is a count"
     assert bare("a number under 250 is a count, and so is more than 300") == [], "a quantity word before a number makes it a count"
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
     shown = formatted("run python3 journal.py --root .journal upgrade, or pass --why", record, VIEWER)
     assert shown.endswith(" --root .journal upgrade, or pass `--why`"), "a flag of another program and a .journal path stay plain text"
     long = "see src/a.py and docs/b.md --flag " * 4000
-    began = time.perf_counter()
+    began = time.thread_time()
     formatted(long, record, VIEWER)
-    assert time.perf_counter() - began < 1.0, "a long text with many paths and flags formats in linear time"
+    assert time.thread_time() - began < 1.0, "a long text with many paths and flags formats in linear time"
 
 
 def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
@@ -243,9 +251,9 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
                              for role, kind, text in (("user", "input_text", "go"), ("assistant", "output_text", "the response is complete"))))
     report(record, "working", "PreToolUse", session="codex-1", provider="codex", transcript=str(codex))
     Engine(record, DRIVERS["codex"](record, "codex-1")).relay_peers()
-    assert all(hasattr(turn, "kind") for turn in PROVIDERS["codex"]().tail(codex)), "Codex's recent turns are parsed turns, as every provider's are"
+    assert all(hasattr(turn, "kind") for turn in PROVIDERS["codex"]().last_turns(codex)), "Codex's recent turns are parsed turns, as every provider's are"
     from providers.turns import last_text
-    assert last_text(record, Agents(record).by_session("codex-1")) == "the response is complete", "and its last words are read from them"
+    assert last_text(Agents(record).by_session("codex-1")) == "the response is complete", "and its last words are read from them"
     from engine import chat
     for session in ("claude-1", "codex-1"):
         chat.send(record, Agents(record).by_session(session), f"answer from {session}", turn="transcript:1")
@@ -261,7 +269,7 @@ def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update(
     agent.read_all([n + 1])
     agent.action("read")(n)
     agent.action("react")(n, "👍")
-    heard = [(e.type, e.action, e.data.get("by")) for e in record.events() if e.n == n or e.type == "reaction"]
-    read = [e.data.get("by") for e in record.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
+    heard = [(e.type, e.action, e.data.get("by")) for e in record.event_log.events() if e.n == n or e.type == "reaction"]
+    read = [e.data.get("by") for e in record.event_log.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
     assert read == ["read", "read"], f"a read from the viewer's read-all and from the command both say read: {read}"
     assert [by for t, _, by in heard if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {heard}"

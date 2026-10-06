@@ -32,6 +32,10 @@ class Role(Loaded):
     guide: str = ""
     skill_files: tuple = ()
 
+    @property
+    def label(self) -> str:
+        return self.title or self.name
+
 
 @dataclass(frozen=True)
 class Domain(Loaded):
@@ -45,6 +49,10 @@ class Domain(Loaded):
     roles: tuple = ()
     guide: str = ""
     skill_files: tuple = ()
+
+    @property
+    def label(self) -> str:
+        return self.title or self.name
 
     def role(self, name: str) -> Role:
         found = next((role for role in self.roles if role.name == name), None)

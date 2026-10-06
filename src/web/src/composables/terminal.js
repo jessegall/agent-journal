@@ -1,17 +1,30 @@
+import {agent} from "./leadAgent.js";
 import {ref} from "vue";
 import {api} from "../api/client.js";
-import {pollKey, usePoll} from "../poll.js";
-import {agent} from "../state/store.js";
+import {pollKey, usePoll} from "./poll.js";
 
 const EVERY = 2000;
+const KEPT = 200;
 
-export function useTerminal(level, shown = () => agent.value, client = api) {
+export function useTerminal(level, agentOf = () => agent.value, client = api) {
     const lines = ref([]);
-    usePoll(
-        pollKey(),
-        () => (shown() ? client.terminal(shown().n, level) : Promise.resolve({lines: []})),
-        EVERY,
-        (got) => (lines.value = got.lines)
-    );
+    let showing = 0;
+
+    function ask() {
+        const n = agentOf() ? agentOf().n : 0;
+        if (n !== showing) {
+            showing = n;
+            lines.value = [];
+        }
+        const after = lines.value.length ? lines.value[lines.value.length - 1].at : 0;
+        return n ? client.terminal(n, level, after).then((got) => ({n, lines: got.lines})) : Promise.resolve({n, lines: []});
+    }
+
+    function take(got) {
+        if (got.n !== showing || !got.lines.length) return;
+        lines.value = [...lines.value, ...got.lines].slice(-KEPT);
+    }
+
+    usePoll(pollKey(), ask, EVERY, take);
     return lines;
 }

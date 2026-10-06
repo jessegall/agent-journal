@@ -1,12 +1,17 @@
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 
 class StartingAgentsDetails(FeatureDetails):
+    explains = 'You can start an agent in an environment from the viewer. The journal opens its session and tracks its work.'
     name = "starting_agents"
+    group = Group.SESSIONS
+    label = "Start agents from the viewer"
+    hint = "The Start button opens an agent in an environment's own terminal"
     has_skill = False
 
-    title = "Start an agent in an environment"
+    title = "Starting agents"
 
     abstract = "The viewer's Start button, and journal environment launch, open an agent in an environment's own terminal"
 
@@ -24,6 +29,7 @@ class StartingAgentsDetails(FeatureDetails):
         Setting(
             name="wake_on_message",
             default=False,
-            title="Start the environment's last agent when the user writes and none is running",
+            title="Start the agent again when you send a message",
+            abstract="Only when no agent is running",
         ),
     ]

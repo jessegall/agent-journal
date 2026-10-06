@@ -1,7 +1,7 @@
 <script setup>
 import {ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {PROVIDER_CHOICES} from "../agents.js";
+import {PROVIDER_CHOICES} from "../domain/agents.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Segmented from "../kit/Segmented.vue";
@@ -36,7 +36,7 @@ async function create() {
 </script>
 
 <template>
-    <Dialog title="New environment" fixed small @close="emit('close')">
+    <Dialog title="New environment" small @close="emit('close')">
         <div class="new-env">
             <label class="new-env-label" for="new-env-name">A short name</label>
             <TextInput

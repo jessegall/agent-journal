@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass, field, asdict, replace
+from enum import Enum
 from types import SimpleNamespace
 from typing import ClassVar
 
@@ -23,7 +24,6 @@ USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
 OPEN, CLOSED, EVERY = "open", "closed", "every"
 UPDATES = "updates"
 OPENED, COMPLETED, CLEARED = "opened", "completed", "cleared"
-CLEARINGS = (OPENED, COMPLETED, CLEARED)
 WHOM = "whom"
 KEYWORDS = "keywords"
 KEYWORDS_IN = "keywords_in"
@@ -32,7 +32,7 @@ OWNER = "plugin"
 ENVIRONMENT, PROJECT = "environment", "project"
 SIDEBAR, RESULTS, WORKINGS, UNLISTED = "sidebar", "results", "workings", ""
 SCOPES = (ENVIRONMENT, PROJECT)
-LAZY, EAGER, MEMORY = "lazy", "eager", "memory"
+LAZY, MEMORY = "lazy", "memory"
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
 
 
@@ -87,6 +87,36 @@ def copied(value):
     return value
 
 
+def reworded(value, words):
+    if isinstance(value, str):
+        return words(value)
+    if isinstance(value, dict):
+        return {k: reworded(v, words) for k, v in value.items()}
+    if isinstance(value, list):
+        return [reworded(v, words) for v in value]
+    return value
+
+
+@dataclass(frozen=True)
+class Ref:
+    type: str
+    n: int
+
+    @classmethod
+    def parse(cls, ref: "str | Ref") -> "Ref":
+        kind, _, n = str(ref).partition(":")
+        if not kind or not n.isdigit():
+            raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
+        return cls(kind, int(n))
+
+    @property
+    def spoken(self) -> str:
+        return f"{self.type} {self.n}"
+
+    def __str__(self) -> str:
+        return f"{self.type}:{self.n}"
+
+
 def as_dict(r) -> dict:
     return {**asdict(r), "type": r.type, "ref": r.ref}
 
@@ -113,6 +143,15 @@ class Event:
     @property
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
+
+
+class Pruned(Enum):
+    ANY = ""
+    SEEN = "seen"
+    CLOSED = "closed"
+
+    def admits(self, r: "Resource") -> bool:
+        return {Pruned.ANY: True, Pruned.SEEN: USER in r.seen, Pruned.CLOSED: bool(r.completed)}[self]
 
 
 @dataclass
@@ -151,7 +190,7 @@ class Resource:
     stamped_when_notified: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
     kept: ClassVar[int] = 0     # how many prunable rows are kept, newest first; older ones are pruned; 0 keeps every row
-    pruned_when: ClassVar[str] = ""   # which rows may be pruned: any (""), those the user has "seen", or those "closed"
+    pruned_when: ClassVar[Pruned] = Pruned.ANY
     indexed: ClassVar[tuple] = ()
     shown_fields: ClassVar[tuple] = ()   # data fields its panel shows and edits
     fixed_fields: ClassVar[tuple] = ()   # shown fields the journal sets, which the panel shows but never edits
@@ -187,12 +226,23 @@ class Resource:
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
 
+    @property
+    def author(self) -> str:
+        return self.seen[0] if self.seen else ""
+
     def agent_line(self) -> str:
         return f"{self.title} — {self.brief}" if self.brief else self.title
 
+    def start_line(self) -> str:
+        return f"{self.title}  ({self.abstract})" if self.abstract else self.title
+
+    def member_refs(self) -> list[str]:
+        return []
+
     def rewrite(self, words) -> None:
         self.title, self.abstract, self.brief, self.outcome = words(self.title), words(self.abstract), words(self.brief), words(self.outcome)
-        self.sections = [{**s, SECTION.body: words(s[SECTION.body])} for s in self.sections]
+        self.sections = [{**s, SECTION.title: words(s[SECTION.title]), SECTION.body: words(s[SECTION.body])} for s in self.sections]
+        self.data = reworded(self.data, words)
 
     def fork(self) -> "Resource":
         return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=copied(self.data))
@@ -220,6 +270,14 @@ declare(Resource)
 
 
 class Refused(Exception):
+    pass
+
+
+class Stale(Refused):
+    pass
+
+
+class Missing(Refused):
     pass
 
 

@@ -1,20 +1,17 @@
-import {reactive} from "vue";
 import {reload} from "../sync/rows.js";
 import {missed} from "../domain/records.js";
 import {store} from "../state/store.js";
+import {ui} from "../state/ui.js";
 
 const AWAY_AFTER = 60000;
 const PICKING_FOR = 20000;
 let picking = 0;
 
-export const away = reactive({open: false, since: 0, back: 0, left: 0, hidden: false});
-export const flash = reactive({at: Date.now()});
-
 function left() {
-    away.left = away.left || Date.now();
+    ui.away.left = ui.away.left || Date.now();
     if (Date.now() < picking) return;
-    away.hidden = true;
-    flash.at = Date.now();
+    ui.away.hidden = true;
+    ui.flash.at = Date.now();
 }
 
 export function pickingFiles() {
@@ -33,14 +30,14 @@ document.addEventListener(
 );
 
 async function back() {
-    if (document.visibilityState === "visible") away.hidden = false;
-    if (document.visibilityState !== "visible" || !away.left) return;
-    const since = away.left;
-    away.left = 0;
+    if (document.visibilityState === "visible") ui.away.hidden = false;
+    if (document.visibilityState !== "visible" || !ui.away.left) return;
+    const since = ui.away.left;
+    ui.away.left = 0;
     if (Date.now() - since < AWAY_AFTER || store.settings?.viewer?.away === false) return;
     await reload();
     if (!missed(since).length) return;
-    Object.assign(away, {open: true, since, back: Date.now()});
+    Object.assign(ui.away, {open: true, since, back: Date.now()});
 }
 
 document.addEventListener("visibilitychange", () => (document.hidden ? left() : back()));
@@ -49,5 +46,5 @@ window.addEventListener("focus", back);
 window.addEventListener("pageshow", back);
 
 export function showAway() {
-    Object.assign(away, {open: true, since: away.since || Date.now() - 86400000, back: Date.now()});
+    Object.assign(ui.away, {open: true, since: ui.away.since || Date.now() - 86400000, back: Date.now()});
 }

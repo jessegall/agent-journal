@@ -2,10 +2,15 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 from features.settings import Setting
 from features.boards.resource import MEANINGS
+from features.groups import Group
+
+MODELS = ("haiku", "sonnet", "opus")
 
 
 class BoardsDetails(FeatureDetails):
+    explains = 'The agent turns a request into tickets on a board and moves them through its stages. You can review the tickets and run the board.'
     name = "boards"
+    group = Group.BOARDS
     skill_of = "tickets"
     when = "a board is made, its stages change, or a ticket moves between them"
 
@@ -34,7 +39,7 @@ class BoardsDetails(FeatureDetails):
         journal board expect <n> <count> says how many tickets you are about to draft, so the New work panel shows that many
         placeholders; guess low, since more fade in and none is taken away.
 
-        journal board ask <n> "<question>" --set options='[...]' asks the user a question about the board: the New work
+        journal board ask <n> "<question>" --set options='[...]' --set pick=<n> asks the user a question about the board: the New work
         panel shows it, and it stays out of the board itself, the chat, the Questions page and your nudges. The answer comes back as an event.
 
         Everything you write goes to the chat; the New work panel gets words only through its command. journal board say <n>
@@ -47,8 +52,8 @@ class BoardsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="ideas",
-            title="Think up new ideas for New work",
-            abstract="How often the agent thinks up what you might ask for on each board, shown as chips under New work",
+            title="Suggest new work",
+            abstract="Ideas appear as buttons under New work",
             trigger=Trigger(every=720, unit=MINUTES),
         ),
     ]
@@ -57,19 +62,20 @@ class BoardsDetails(FeatureDetails):
         Setting(
             name="filler_model",
             default="sonnet",
-            title="Model of the agent that fills a board",
-            abstract="The board-filler asks, drafts and hands the cards over; it needs quick reasoning more than deep logic",
+            choices=MODELS,
+            title="Model for the agent that fills a board",
         ),
         Setting(
             name="reviewer_model",
             default="sonnet",
-            title="Model of the agents that review plans, tickets and the board's goal",
+            choices=MODELS,
+            title="Model for the agents that review plans and tickets",
         ),
         Setting(
             name="orchestrating",
             default=False,
-            title="This environment's agent orchestrates its boards",
-            abstract="On, it only delegates: board moments, ticket nudges and the orchestrating sequences reach it. Off, none do and it works as usual. Play turns it on",
+            title="This environment only coordinates board work",
+            abstract="The agent gives every ticket to a helper and writes no code itself",
         ),
     ]
 

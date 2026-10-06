@@ -1,34 +1,22 @@
 import fcntl
-import json
 import os
+import sys
 import threading
 import time
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass
+from functools import partial
 from pathlib import Path
+from typing import Callable
 
-from engine import bus
+from engine import bus, runtime, waits
+from engine.event_log import EventLog
+from engine.settings_file import SettingsFile
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
-from engine.stored import append_text, held_back, read_json, write_json, write_text
-from engine.paths import environment_path
+from engine.transaction import held_back
+from engine.paths import environment_home, environments
 
 RESOURCES = "project"
-KEPT_EVENTS = 2000
-
-
-@dataclass(frozen=True)
-class Recent:
-    file: int
-    read: int
-    events: list
-
-
-RECENT: dict[str, Recent] = {}
-
-
-SETTINGS: dict[str, tuple] = {}
-SETTINGS_VERSION = [0]
 
 
 class Setting:
@@ -62,17 +50,23 @@ class Record:
     questions = Setting(dict)
     delivery = Setting(dict)
     viewer = Setting(dict)
-    cleanup_read_at = Setting(0)
 
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
         self.env = env
-        self.home = environment_path(self.root / "environments", env)
-        self.home.mkdir(parents=True, exist_ok=True)
+        self.home = environment_home(self.root, env)
         self._held: dict[Path, int] = {}
-        self._threads = threading.RLock()
+        self._threads = waits.Lock("record", threading.RLock())
+        self._depth = 0
+        self._pending: list[Callable[[], None]] = []
         self.memo = {} if memo else None
         self._made: set[Path] = set()
+        self.event_log = EventLog(self.home, self.locked)
+        self.settings_file = SettingsFile(self.home)
+
+    @classmethod
+    def every(cls, root: Path) -> list["Record"]:
+        return [cls(Path(root), home.name) for home in sorted(environments(root).glob("*/"))]
 
     def folder(self, type: str, scope: str = "") -> Path:
         f = (self.root / RESOURCES if scope == PROJECT else self.home) / type
@@ -84,23 +78,46 @@ class Record:
     @contextmanager
     def locked(self, scope: str = ""):
         path = (self.root / RESOURCES if scope == PROJECT else self.home) / ".lock"
-        with self._threads:
-            if self._held.get(path):
-                self._held[path] += 1
+        pending: list[Callable[[], None]] = []
+        try:
+            with self._threads:
+                self._depth += 1
                 try:
-                    yield
+                    with self._flocked(path):
+                        yield
                 finally:
-                    self._held[path] -= 1
-                return
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open("a+") as fh:
+                    self._depth -= 1
+                    if not self._depth:
+                        pending, self._pending = self._pending, []
+        finally:
+            failure = None
+            for announce in pending:
+                try:
+                    announce()
+                except Exception as error:
+                    failure = failure or error
+            if failure and sys.exception() is None:
+                raise failure
+
+    @contextmanager
+    def _flocked(self, path: Path):
+        if self._held.get(path):
+            self._held[path] += 1
+            try:
+                yield
+            finally:
+                self._held[path] -= 1
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a+") as fh:
+            with waits.waited("record"):
                 fcntl.flock(fh, fcntl.LOCK_EX)
-                self._held[path] = 1
-                try:
-                    yield
-                finally:
-                    self._held[path] = 0
-                    fcntl.flock(fh, fcntl.LOCK_UN)
+            self._held[path] = 1
+            try:
+                yield
+            finally:
+                self._held[path] = 0
+                fcntl.flock(fh, fcntl.LOCK_UN)
 
     def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
@@ -109,126 +126,25 @@ class Record:
             data = {**data, "cause": bus.cause()}
         if bus.command(type) and "by" not in data:
             data = {**data, "by": bus.command(type)}
+        def stamped(id: int, handled: bool = False) -> Event:
+            return Event(id=id, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=handled)
+
         def release() -> Event:
             with self.locked():
-                e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=quiet or bus.listening())
-                append_text(self.home / "events.jsonl", json.dumps(asdict(e)) + "\n")
-            if self.memo is not None:
-                self.memo.clear()
-            if quiet:
-                bus.tell_watchers(e, self)
-            else:
-                bus.emit(e, self)
+                e = stamped(self.event_log.last_id() + 1, quiet or bus.listening())
+                self.event_log.append(e)
+                self._pending.append(partial(bus.tell_watchers if quiet else bus.emit, e, self))
+                if self.memo is not None:
+                    self.memo.clear()
             return e
         if held_back(release):
             if self.memo is not None:
                 self.memo.clear()
-            return Event(id=0, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid())
+            return stamped(0)
         return release()
 
-    def events(self, since: int = 0, last: int = 0) -> list[Event]:
-        recent = self.recent_events()
-        newer = [e for e in recent if e.id > since]
-        if len(recent) < KEPT_EVENTS or (recent and recent[0].id <= since) or (last and len(newer) >= last):
-            return newer[-last:] if last else newer
-        return self.events_back(since, last)
-
-    def recent_events(self) -> list[Event]:
-        log = self.home / "events.jsonl"
-        try:
-            stat = log.stat()
-        except OSError:
-            return []
-        size = stat.st_size
-        held = RECENT.get(str(log))
-        same = held is not None and held.file == stat.st_ino
-        if same and held.read == size:
-            return held.events
-        if same and held.read < size:
-            with log.open("rb") as fh:
-                fh.seek(held.read)
-                added = fh.read(size - held.read)
-            whole = added[:added.rfind(b"\n") + 1]
-            kept = (held.events + parsed(whole.split(b"\n")))[-KEPT_EVENTS:]
-            RECENT[str(log)] = Recent(stat.st_ino, held.read + len(whole), kept)
-            return kept
-        kept = self.events_back(0, KEPT_EVENTS)
-        RECENT[str(log)] = Recent(stat.st_ino, size, kept)
-        return kept
-
-    def events_back(self, since: int = 0, last: int = 0) -> list[Event]:
-        out = []
-        for raw in self.lines_back():
-            try:
-                e = Event(**json.loads(raw))
-            except (ValueError, TypeError):
-                continue
-            if e.id <= since or (last and len(out) == last):
-                break
-            out.append(e)
-        return out[::-1]
-
-    def lines_back(self, block: int = 65536):
-        log = self.home / "events.jsonl"
-        if not log.is_file():
-            return
-        with log.open("rb") as fh:
-            fh.seek(0, 2)
-            at, rest = fh.tell(), b""
-            while at > 0:
-                step = min(block, at)
-                at -= step
-                fh.seek(at)
-                lines = (fh.read(step) + rest).split(b"\n")
-                rest = lines.pop(0)
-                yield from (line for line in reversed(lines) if line.strip())
-            if rest.strip():
-                yield rest
-
-    def last_event(self) -> int:
-        got = self.events(last=1)
-        return got[-1].id if got else 0
-
-    def trim_events(self, keep: int, readers_since: float) -> int:
-        log = self.home / "events.jsonl"
-        if not log.is_file():
-            return 0
-        with self.locked():
-            lines = log.read_text().splitlines(keepends=True)
-            if len(lines) <= keep:
-                return 0
-            ids = [json.loads(line).get("id", 0) for line in lines]
-            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in (self.home / "runtime").glob("cursor-*")
-                          if f.stat().st_mtime >= readers_since and self.cursor_text(f.name.removeprefix("cursor-")).isdigit()), default=ids[-1])
-            floor = min(ids[-keep], unread + 1)
-            kept = [line for line, n in zip(lines, ids) if n >= floor]
-            write_text(log, "".join(kept))
-            return len(lines) - len(kept)
-
-    def cursor_text(self, name: str) -> str:
-        f = self.home / "runtime" / f"cursor-{name}"
-        try:
-            return f.read_text().strip()
-        except OSError:
-            return ""
-
-    def set_cursor_text(self, name: str, text: str) -> None:
-        f = self.home / "runtime" / f"cursor-{name}"
-        f.parent.mkdir(parents=True, exist_ok=True)
-        write_text(f, text)
-
-    def cursor(self, name: str) -> int:
-        try:
-            text = self.cursor_text(name)
-            return int(text) if text else 0
-        except ValueError:
-            return 0
-
-    def set_cursor(self, name: str, n: int) -> None:
-        self.set_cursor_text(name, str(n))
-
     def state(self, owner: str, session: str | None = None) -> State:
-        folder = self.home / "state" if session is None else self.root / "runtime" / "sessions" / session
+        folder = self.home / "state" if session is None else runtime.sessions(self.root) / session
         return State(folder / f"{owner}.json")
 
     def setting(self, key: str, default=None):
@@ -237,40 +153,18 @@ class Record:
     def settings(self) -> dict:
         if self.memo is not None and "settings" in self.memo:
             return self.memo["settings"]
-        found = self.settings_held()[1]
+        found = self.settings_file.held()[1]
         if self.memo is not None:
             self.memo["settings"] = found
         return found
 
-    def settings_held(self) -> tuple:
-        key = str(self.home / "settings.json")
-        if key not in SETTINGS:
-            self.reread_settings()
-        return SETTINGS[key]
-
-    def settings_version(self) -> int:
-        return self.settings_held()[0]
-
     def reread_settings(self) -> None:
-        f = self.home / "settings.json"
-        SETTINGS_VERSION[0] += 1
-        SETTINGS[str(f)] = (SETTINGS_VERSION[0], read_json(f, dict, {}))
+        self.settings_file.reread()
         if self.memo is not None:
             self.memo.pop("settings", None)
 
     def set_setting(self, key: str, value) -> None:
-        f = self.home / "settings.json"
         with self.locked():
-            write_json(f, {**read_json(f, dict, {}), key: value}, indent=2)
+            self.settings_file.write(key, value)
         self.reread_settings()
         self.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting=key)
-
-
-def parsed(lines: list[bytes]) -> list[Event]:
-    out = []
-    for raw in lines:
-        try:
-            out.append(Event(**json.loads(raw)))
-        except (ValueError, TypeError):
-            continue
-    return out

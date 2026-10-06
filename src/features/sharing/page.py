@@ -4,6 +4,7 @@ import time
 from itertools import takewhile
 from urllib.parse import quote
 
+from features.format import SHARED, formatted
 from features.row_links.formatters import Mention, named
 
 CODE_SPAN = re.compile(r"`([^`]+)`")
@@ -19,8 +20,11 @@ EXPORTED = "."
 
 
 class Page:
-    def __init__(self, root: str, scope: set[str]):
-        self.root, self.scope = root, scope
+    def __init__(self, root: str, scope: set[str], record=None):
+        self.root, self.scope, self.record = root, scope, record
+
+    def title(self, text: str) -> str:
+        return html.escape(formatted(text, self.record, SHARED))
 
     def href(self, ref: str) -> str:
         kind, _, n = ref.partition(":")
@@ -109,13 +113,13 @@ class Page:
 
     def row(self, r) -> str:
         ref = f"{r.type}:{r.n}"
-        parts = [f"<h1>{html.escape(r.title)}</h1>"]
+        parts = [f"<h1>{self.title(r.title)}</h1>"]
         if r.abstract:
             parts.append(f'<p class="abstract">{self.inline(r.abstract)}</p>')
         if r.brief:
             parts.append(self.markdown(r.brief))
         for section in r.sections:
-            parts.append(f"<h2>{html.escape(section.get('title', ''))}</h2>")
+            parts.append(f"<h2>{self.title(section.get('title', ''))}</h2>")
             parts.append(self.markdown(section.get("body", "")))
         pictures = [name for name in r.files if name.lower().endswith(PICTURES)]
         for name in pictures:
@@ -128,11 +132,11 @@ class Page:
 
     def collection(self, c, members: list) -> str:
         cards = "".join(
-            f'<li><a href="{self.href(f"{m.type}:{m.n}")}"><strong>{html.escape(m.title)}</strong>'
+            f'<li><a href="{self.href(f"{m.type}:{m.n}")}"><strong>{self.title(m.title)}</strong>'
             f'<span>{html.escape(m.abstract)}</span></a></li>' for m in members
         )
         about = f'<p class="abstract">{self.inline(c.abstract)}</p>' if c.abstract else ""
-        return f'<h1>{html.escape(c.title)}</h1>{about}<ul class="cards">{cards}</ul>'
+        return f'<h1>{self.title(c.title)}</h1>{about}<ul class="cards">{cards}</ul>'
 
 
 def ending(expires: float) -> str:
@@ -182,8 +186,8 @@ def document(title: str, body: str, expires: float, back: str | None = None) -> 
     return framed(title, f'<header class="bar">{home}<span>{html.escape(ending(expires))}</span></header>{body}')
 
 
-def exported(r) -> str:
-    return framed(r.title, Page(EXPORTED, {f"{r.type}:{r.n}"}).row(r))
+def exported(r, record) -> str:
+    return framed(formatted(r.title, record, SHARED), Page(EXPORTED, {f"{r.type}:{r.n}"}, record).row(r))
 
 
 def unshared() -> str:

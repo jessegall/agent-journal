@@ -5,7 +5,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {HELPER_WORDS, helperLine, stateAt} from "../domain/helpers.js";
 import {age, clock, span} from "../format/time.js";
 import {plainDoing} from "./doing.js";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 
 const props = defineProps({row: {type: Object, required: true}, kind: {type: String, required: true}});
 const emit = defineEmits(["open", "read"]);
@@ -22,7 +22,8 @@ const line = computed(() => {
     const row = props.row;
     if (row.state === "needs") return row.reason;
     if (row.state === "reported") return row.report ? `Reported: ${row.report}` : "Reported";
-    if (row.state === "working" || row.state === "running") return plainDoing([row.tool, row.file?.split("/").pop()].filter(Boolean).join(" ") || row.now) || "Working";
+    if (row.state === "working" || row.state === "running")
+        return plainDoing([row.tool, row.file?.split("/").pop()].filter(Boolean).join(" ") || row.now) || "Working";
     if (row.state === "idle") return "Idle";
     if (!helper.value && row.ended) return `Ran ${span(row.ended - row.at)}, ended ${clock(row.ended)}`;
     return HELPER_WORDS[row.state];
@@ -35,7 +36,10 @@ const toggle = () => (helper.value ? emit("open", props.row) : (unfolded.value =
         <button type="button" class="at-work-row-main" :aria-expanded="helper ? undefined : unfolded" @click="toggle">
             <span :class="['at-work-dot', row.state]" aria-hidden="true" />
             <span class="at-work-copy">
-                <span class="at-work-title"><strong>{{ name }}</strong> {{ row.title || row.task }}</span>
+                <span class="at-work-title">
+                    <strong>{{ name }}</strong>
+                    {{ row.title || row.task }}
+                </span>
                 <span class="at-work-now">{{ line }}</span>
                 <span class="at-work-model">{{ helper ? helperLine(row) : [row.type, row.model].filter(Boolean).join(" · ") }}</span>
             </span>
@@ -43,7 +47,7 @@ const toggle = () => (helper.value ? emit("open", props.row) : (unfolded.value =
                 <strong>{{ HELPER_WORDS[row.state] }}</strong>
                 <span>{{ row.state === "working" || row.state === "running" ? workingFor : timing }}</span>
             </span>
-            <PhoneChevron :facing="helper ? 'right' : unfolded ? 'up' : 'down'" :size="13" />
+            <Icon name="chevronRight" bold :facing="helper ? 'right' : unfolded ? 'up' : 'down'" :size="13" />
         </button>
         <template v-if="!helper && unfolded">
             <div class="at-work-unfolded">
@@ -69,7 +73,9 @@ const toggle = () => (helper.value ? emit("open", props.row) : (unfolded.value =
                         <span>Outcome, {{ clock(row.ended) }}</span>
                         <TextDisplay :text="row.outcome" />
                         <template v-if="row.report">
-                            <button type="button" class="at-work-report" @click="emit('read', `report:${row.report}`)">Read the report</button>
+                            <button type="button" class="at-work-report" @click="emit('read', `report:${row.report}`)">
+                                Read the report
+                            </button>
                         </template>
                     </template>
                 </SwitchCase>

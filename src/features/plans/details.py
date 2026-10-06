@@ -1,15 +1,18 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class PlansDetails(FeatureDetails):
+    explains = 'The agent can make a plan in phases and move it along as its to-dos close. You can review it and approve checkpoints.'
     name = "plans"
+    group = Group.PLANS
     when = "the user asks for a plan, phases or a roadmap, or a plan is started, advanced or finished"
 
-    title = "Planning"
+    title = "Plans"
 
 
-    abstract = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
+    abstract = "A plan moves on as its to-dos close: a phase completes, a checkpoint waits for you, and the last phase ends the plan."
 
     help = """
         A plan is built in order. journal plan create "<name>" --set goal="<what is true when
@@ -30,6 +33,11 @@ class PlansDetails(FeatureDetails):
         it answers from journal plan progress <n>, which gives the phase it is in, the state of that
         phase's rows and tickets, and what happened last.
 
+        When the user asks for a review of a plan, run journal plan review <n> before you dispatch
+        the reviewers: the plan is under review and cannot be approved until their report is
+        linked to it with journal report link <report n> plan:<n>, which returns it to building
+        for you to revise and mark ready again.
+
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
 
@@ -40,14 +48,12 @@ class PlansDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="still",
-            title="Tell an agent standing still to carry on with the running plan",
-            abstract="When a plan runs with rows the agent can do and it has done nothing this long, it is told to carry on",
+            title="Remind the agent to continue a running plan when it stops",
             trigger=Trigger(every=5, unit=MINUTES),
         ),
         Behaviour(
             name="blocked",
-            title="Ask whether a running plan's blocked to-dos still are",
-            abstract="While a plan runs with blocked to-dos, the agent is asked this often to check each, on the clock and on tool use",
+            title="Recheck a running plan's blocked to-dos",
             trigger=Trigger(every=30, unit=MINUTES),
         ),
     ]
@@ -69,8 +75,11 @@ class PlansDetails(FeatureDetails):
             title="plan {{n}}, {{title}}, has blocked to-dos: check whether each still is",
             brief="""
                 {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock
-                <n>) and work it; make one that waits on a person or a decision a question to them with
-                journal todo ask <n> "<who decides what>"; keep the reason of the rest up to date.
+                <n>) and work it; a choice the user delegated to you, or one an earlier answer already settles,
+                is yours to decide now: decide it, say so on its row, and go on; make only a choice nobody has
+                settled a question, with journal todo ask <n> "<who decides what>"; keep the reason of the rest up
+                to date. Then take the next ready row: a blocked row never ends the turn, and once only blocked
+                rows are left in a phase, every later phase's rows whose own waits are done are ready.
             """,
         ),
         Line(
@@ -101,6 +110,11 @@ class PlansDetails(FeatureDetails):
             name="ready",
             title="every phase of plan {{n}} has its to-dos",
             brief="journal plan ready {{n}} hands it to the user, who approves it",
+        ),
+        Line(
+            name="reviewed",
+            title="the review of plan {{n}}, {{title}}, is in: report {{report}}",
+            brief="revise the plan by the report, then journal plan ready {{n}} hands it back to the user",
         ),
         Line(
             name="approved",

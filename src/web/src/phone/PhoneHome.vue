@@ -1,12 +1,14 @@
 <script setup>
-import {copyText} from "../kit/copy.js";
+import {waitingInOrder} from "./waiting.js";
+import {scrollIntoRoom} from "./reveal.js";
+import {ui} from "../state/ui.js";
+import {plainText} from "../text/words.js";
+import {copyText} from "../platform/clipboard.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
-import {prefill} from "../state/prefill.js";
 import PhoneHold from "./PhoneHold.vue";
-import {plain} from "./plain.js";
 import PhoneReader from "./PhoneReader.vue";
 import PhonePlaces from "./PhonePlaces.vue";
 import PhoneViewer from "./PhoneViewer.vue";
@@ -16,14 +18,12 @@ import PhoneNeeds from "./PhoneNeeds.vue";
 import PhoneAgentSheet from "./PhoneAgentSheet.vue";
 import Icon from "../kit/Icon.vue";
 import {chipOpener} from "./peeked.js";
-import {ordered} from "./waiting.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
 import PhoneNotices from "./PhoneNotices.vue";
 import {useFades} from "./fades.js";
-import {reveal} from "./reveal.js";
 import {wanted} from "./wanted.js";
 import {lastLooked, looked} from "./looked.js";
 import {useBubbles} from "./bubbles.js";
@@ -85,7 +85,7 @@ const top = ref(null);
 const compose = ref(null);
 const draft = ref("");
 watch(
-    prefill,
+    () => ui.prefill,
     (text, was) => {
         if (text || was) draft.value = text;
     },
@@ -120,7 +120,9 @@ async function asked() {
     try {
         const got = await phone.feed();
         offline.value = false;
-        await flush();
+        flush().catch((error) => {
+            if (ended(error)) failed(error);
+        });
         return got;
     } catch (error) {
         if (ended(error)) failed(error);
@@ -157,7 +159,7 @@ const items = computed(() => {
     return [...earlier.value.filter((item) => !known.has(keyOf(item))), ...newest];
 });
 const briefs = computed(
-    () => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plain(item.brief || item.title)]))
+    () => new Map(items.value.filter((item) => IN_CHAT.test(item.ref || "")).map((item) => [item.ref, plainText(item.brief || item.title)]))
 );
 
 function measure() {
@@ -279,7 +281,7 @@ function announceArrivals(coming) {
     if (coming.length > 1) return announce(`${coming.length} new messages`);
     const item = coming[0];
     const who = item.type === "question" ? "Question" : "Agent";
-    announce(`${who}: ${plain(item.label || item.brief || item.title || "").slice(0, 80)}`);
+    announce(`${who}: ${plainText(item.label || item.brief || item.title || "").slice(0, 80)}`);
 }
 const BURST = 600;
 const STAGGER = 90;
@@ -388,7 +390,7 @@ let flashing = "";
 function flashTo(key) {
     const el = list.value?.querySelector(`[data-hold="${key}"]`);
     if (!el) return;
-    reveal(list.value, el, true);
+    scrollIntoRoom(list.value, el, true);
     el.dataset.flash = "";
     setTimeout(() => delete el.dataset.flash, FLASH);
 }
@@ -413,10 +415,10 @@ const edge = useEdgeBack(stack, {depth: () => pages.value.length, back});
 
 const SPOKEN_AFTER = 300;
 
-const nextAfter = (target) => ordered(feed.value.waiting).find((item) => item.ref !== target) || null;
+const nextAfter = (target) => waitingInOrder(feed.value.waiting).find((item) => item.ref !== target) || null;
 
 function next() {
-    const left = ordered(feed.value.waiting).filter((item) => item.ref !== reading.value);
+    const left = waitingInOrder(feed.value.waiting).filter((item) => item.ref !== reading.value);
     if (!left.length) return back();
     const stay = [...pages.value.slice(0, -1), entry(left[0].ref)];
     direction.value = "push";
@@ -530,7 +532,7 @@ watch(
 );
 
 function quoteIt(item) {
-    quote.value = plain(item.brief || item.title)
+    quote.value = plainText(item.brief || item.title)
         .split("\n")
         .filter((line) => !line.startsWith(">"))
         .join(" ")
@@ -543,7 +545,7 @@ function quoteIt(item) {
 }
 
 function copy() {
-    copyText(plain(held.value.item.brief || held.value.item.title));
+    copyText(plainText(held.value.item.brief || held.value.item.title));
     held.value = null;
     setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }

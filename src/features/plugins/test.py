@@ -7,17 +7,20 @@ import subprocess
 import sys
 import threading
 import time
+import pytest
 
 from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
-from engine.services import Manager, status_file
+from engine.keeper import ServiceState
+from engine.services import UP, Manager, allocate, status, status_file, want
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
 from features.plugins.manifest import MANIFEST
-from features.plugins.source import alone, folder, home, log, plugin_socket
+from features.plugins.paths import folder, home, log, plugin_socket
+from features.plugins.staging import alone
 from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
 
 
@@ -82,8 +85,12 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert writing(record) == CLAUDE.blocking("guardian: src/Generated is generated; edit the stub instead"), \
         "the plugin's reason is given to the agent, under its name"
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
-    guardian = Plugins(record, actor=SYSTEM)._titled("guardian")
+    guardian = Plugins(record, actor=SYSTEM).rows.by_title("guardian")
     assert "src/Generated is generated" in log(record.root, "guardian").read_text(), "every answer the plugin gives is written to its log"
+    with pytest.raises(Refused):
+        log(record.root, "..%2Foutside")
+    with pytest.raises(Refused):
+        log(record.root, "../outside")
     ClearLog().run(None, Plugins(record, actor=SYSTEM), guardian.n)
     assert not log(record.root, "guardian").exists(), "and the log can be emptied"
     served = alone("served")
@@ -110,6 +117,21 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
     started = time.monotonic()
     answered = writing(slow)
     assert (answered, time.monotonic() - started < 3) == ({}, True), "a guard that hangs is given up on, quickly, and the write goes through"
+    from engine import viewer
+    asked = []
+    real = viewer.identity
+    viewer.identity = lambda url, timeout=0.05: asked.append(url) or real(url, timeout)
+    try:
+        viewer.lately_running(broken.root)
+        probed = len(asked)
+        viewer.lately_running(broken.root)
+        assert len(asked) == probed, "a lookup that found no viewer is not repeated by every guard within its few seconds"
+        viewer.remember(broken.root, 8999)
+        assert (viewer.lately_running(broken.root), len(asked)) == ("http://127.0.0.1:8999/", probed), \
+            "the serving process knows its own address without asking itself over HTTP"
+    finally:
+        viewer.identity = real
+        viewer.SERVING.clear()
 
 
 def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_path):
@@ -121,6 +143,10 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     assert "$ echo building; exit 3\nbuilding\n" in log(broken.root, "broken").read_text(), "the log holds each command and the output it printed, as it came"
     assert (rows.all(), [p.name for p in home(broken.root).iterdir()] if home(broken.root).exists() else []) == ([], []), \
         "and nothing is left behind"
+    from tests.kit import dispatch
+    looked = dispatch("POST", f"/api/{broken.env}/plugins/preview", broken.root, {}, {"source": repository(tmp_path, WORKS, name="looked")})
+    assert (looked.code, looked.body["name"]) == (200, "works"), "the viewer previews a plugin before installing it"
+    assert [p.name for p in home(broken.root).glob(".staging-*")] == [], "and the preview takes away the copy it fetched"
 
 
 
@@ -135,7 +161,8 @@ def test_removing_a_plugin_stops_its_services_and_takes_its_folder():
 
 def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.commands import Configure
-    from features.plugins.source import CHOSEN, environment
+    from features.plugins.declared import settings_of
+    from features.plugins.environment import environment
     record = alone()
     row = installed(record, "linter", "exit 0", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
@@ -161,7 +188,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert (titles("other"), "Somewhere else" in titles(record.env)) == (["From the event"], False), \
         "what a plugin queues answering an event runs in that event's environment, and a queued --env is refused"
     Configure().run(None, plugins, row.n, "quiet", "SourceReminder")
-    chosen = (plugins.load(row.n).settings or {}).get(CHOSEN)
+    chosen = settings_of(plugins.load(row.n)).chosen
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
     assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
     from features.plugins.manifest import typed
@@ -173,21 +200,20 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
     from features.plugins.answer import apply
     apply(record, None, "typed", "", {"settings": {"level": "high", "made-up": "x"}})
-    assert (plugins.load(typed.n).settings or {}).get(CHOSEN) == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
+    assert settings_of(plugins.load(typed.n)).chosen == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
     from features import FEATURES
     from engine import bus
     heard = []
     Agents(record, actor=AGENT).create("s-1")
     off = bus.on("typed.sin-found", lambda event, record: heard.append(event.data["brief"]))
     apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "sin-found", "brief": "deep-nesting at src/A.php:12"}})
-    raised = [e for e in record.events() if e.action == "raised"][-1]
+    raised = [e for e in record.event_log.events() if e.action == "raised"][-1]
     assert (raised.data["title"], raised.data["tone"], raised.data["brief"], heard) == ("Sin found", "warn", "deep-nesting at src/A.php:12", ["deep-nesting at src/A.php:12"]), \
         "a plugin raises an event it declared, styled from its manifest, and anything listening by its name hears it"
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
     assert (card["label"], card["tone"], card["icon"], card["detail"]) == ("Sin found", "warn", "warn", "deep-nesting at src/A.php:12"), \
         f"an event whose declaration carries a card puts it in the chat, looking as the manifest says: {card}"
-    from features.shaping import shaped
-    from features.format import VIEWER
+    from features.format import VIEWER, shaped
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
     from features.plugins.commands import Raise
@@ -207,13 +233,54 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
 
 
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
+    from engine.services import files_for
     record = fresh()
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)
     status_file(record.root, "gone.web").parent.mkdir(parents=True, exist_ok=True)
     status_file(record.root, "gone.web").write_text(json.dumps({"state": "running", "keeper": left.pid, "pgid": left.pid}))
-    Manager(record.root, sources=(plugin_services,)).tick()
+    keeping = Manager(record.root, sources=(plugin_services,))
+    keeping.tick()
     assert left.wait(timeout=5) is not None, "its process is stopped"
     assert not status_file(record.root, "gone.web").exists(), "and it is no longer listed"
+    other = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    status_file(record.root, "gone.web").write_text(json.dumps({"state": "running", "keeper": other.pid, "pgid": other.pid}))
+    Manager(record.root, sources=(plugin_services,)).tick()
+    assert other.poll() is None, "a second keeper of the same project keeps nothing while the first holds the services"
+    keeping.tick()
+    assert other.wait(timeout=5) is not None, "the one that holds them does"
+    keeping.owned.close()
+    started = []
+
+    def broken(root, taken):
+        raise Refused("a bad manifest")
+
+    def fine(root, taken):
+        from engine.keeper import ServiceSpec
+        return [ServiceSpec(id="fine.web", plugin="fine", service="web", run=["true"], **files_for(record.root, "fine.web"))]
+    status_file(record.root, "lost.web").write_text(json.dumps({"state": "ready", "keeper": 0}))
+    Manager(record.root, start=lambda spec, lifeline: started.append(spec.id) or 0, sources=(broken, fine)).tick()
+    assert started == ["fine.web"] and status_file(record.root, "lost.web").exists(), \
+        "a source that throws starts nothing of its own, stops nothing and never keeps the other sources' services from running"
+    from engine.services import Beat, beat_file
+    clock, asked = [5000.0], []
+
+    def counting(root, taken):
+        asked.append(clock[0])
+        return []
+    first = Manager(record.root, clock=lambda: clock[0], sources=(counting,))
+    second = Manager(record.root, clock=lambda: clock[0], sources=(counting,))
+    first.tick()
+    second.tick()
+    assert len(asked) == 1 and Beat.read(record.root).token == first.token, "the manager that holds the lock writes a heartbeat, and a second one leaves the services to it"
+    clock[0] += 31.0
+    second.tick()
+    assert len(asked) == 2 and Beat.read(record.root).token == second.token, "a manager that finds the lock held by a heartbeat older than 30 seconds takes over"
+    first.tick()
+    first.tick()
+    assert len(asked) == 2, "the old holder, once it wakes and sees another's newer heartbeat, stops managing"
+    clock[0] += 31.0
+    first.tick()
+    assert len(asked) == 3 and Beat.read(record.root).token == first.token, "and manages again when the one that took over has gone quiet in its turn"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():
@@ -255,6 +322,15 @@ def test_stopping_a_service_stops_every_process_it_forked():
     idle = json.loads(status_file(record.root, "idle.web").read_text())
     assert (started, idle["state"], "no C# here" in idle["why"]) == (["busy.web"], "not needed", True), \
         "a service whose when-command fails is left unstarted as not needed, with the command's own words; one that answers 0 starts"
+    want(record.root, "busy.web", UP, nonce=time.time())
+    manager.one(ServiceSpec(id="busy.web", plugin="busy", service="web", run=["true"], when="echo none here; exit 1", **files_for(record.root, "busy.web")))
+    assert json.loads(status_file(record.root, "busy.web").read_text())["state"] == "not needed", \
+        "a restart, as after a plugin upgrade, asks the when-command again instead of keeping the old answer"
+    stuck = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
+    status_file(record.root, "stuck.web").write_text(json.dumps({"state": "starting", "keeper": stuck.pid, "pgid": stuck.pid}))
+    manager.one(ServiceSpec(id="stuck.web", plugin="stuck", service="web", run=["true"], when="exit 1", **files_for(record.root, "stuck.web")))
+    assert (stuck.wait(5) is not None, json.loads(status_file(record.root, "stuck.web").read_text())["state"]) == (True, "not needed"), \
+        "a service already running is stopped once its when-command says it is not needed"
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
@@ -266,14 +342,34 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert json.loads(status_file(record.root, "real.web").read_text()).get("state") == "ready", \
         "the keeper it ships reads its spec from disk and brings a real service up, as it does for the phone's server and tunnel"
     Manager(record.root).remove("real.web")
-    from engine.services import allocate
+    from engine.keeper import ServiceSpec as Spec
+    from engine.package import entry
+    from engine.services import lock_file, spec_file
+    quiet = Spec(id="held.web", plugin="held", service="web", run=["sleep", "30"], **files_for(record.root, "held.web"))
+    spec_file(record.root, "held.web").write_text(json.dumps(__import__("dataclasses").asdict(quiet)))
+    lifeline, writer = os.pipe()
+    holding = open(lock_file(record.root, "held.web"), "a")
+    import fcntl
+    fcntl.flock(holding, fcntl.LOCK_EX)
+    threading.Timer(1.0, holding.close).start()
+    kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), str(spec_file(record.root, "held.web"))], pass_fds=(lifeline,), stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    os.close(lifeline)
+    deadline = time.time() + 15
+    while time.time() < deadline and status(record.root, "held.web").state != "starting":
+        time.sleep(0.1)
+    assert (kept.poll(), status(record.root, "held.web").state) == (None, "starting"), "a keeper that finds the lock taken waits for the old holder to let go instead of giving up"
+    os.close(writer)
+    kept.wait(timeout=15)
+    assert "session" in status(record.root, "held.web").why, "a service that stops because the agent session ended says so"
+    Manager(record.root).remove("held.web")
     with socket.socket() as busy:
         busy.bind(("127.0.0.1", 0))
         busy.listen()
         port = busy.getsockname()[1]
         status_file(record.root, "own.web").write_text(json.dumps({"state": "stopped", "port": port}))
-        assert allocate(record.root, "own.web", None, set())[0] == port, \
-            "a service restarting keeps its port while its old run still holds it, so the tunnel and the server never part"
+        assert allocate(record.root, "own.web", None, set())[0] != port, \
+            "a held port cannot be assigned to a service without proving which process owns it"
         status_file(record.root, "own.web").write_text(json.dumps({"state": "exited", "port": port}))
         assert allocate(record.root, "own.web", None, set())[0] != port, "one whose run broke with its port taken gets another"
     holding = subprocess.Popen(["sleep", "30"], start_new_session=True)
@@ -297,6 +393,63 @@ def test_stopping_a_service_stops_every_process_it_forked():
     Manager(record.root, start=quick).one(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")))
     assert json.loads(status_file(record.root, "quick.web").read_text())["state"] == "ready", \
         "a keeper that is ready before its manager looks again keeps its ready, never overwritten with starting"
+    now = [1000.0]
+    began = []
+    flaky = Manager(record.root, start=lambda spec, lifeline: began.append(now[0]) or 0, clock=lambda: now[0], living=lambda pid: False)
+    crashing = ServiceSpec(id="crash.web", plugin="crash", service="web", run=["false"], **files_for(record.root, "crash.web"))
+
+    def crash_state():
+        return ServiceState.read(status_file(record.root, "crash.web"))
+
+    def stop_and_look(after):
+        status_file(record.root, "crash.web").write_text(json.dumps({"state": "exited", "at": now[0]}))
+        now[0] += after
+        return flaky.one(crashing)
+    flaky.one(crashing)
+    waited = []
+    for _ in range(4):
+        assert stop_and_look(0.5) is False, "a service that just stopped is not started again before its backoff is over"
+        seen_at = now[0]
+        now[0] += [1.0, 2.0, 4.0, 8.0][len(waited)] - 0.1
+        assert flaky.one(crashing) is False, "and not a moment before it is over"
+        now[0] += 0.1
+        assert flaky.one(crashing) is True
+        waited.append(began[-1] - seen_at)
+    assert waited == [1.0, 2.0, 4.0, 8.0], "each stop doubles the wait before the next start"
+    assert stop_and_look(0.5) is False and crash_state().state == "failed" and "stopped 5 times" in crash_state().why, \
+        "a fifth stop in a row marks the service failed and says why"
+    for _ in range(3):
+        before = len(began)
+        assert stop_and_look(0.5) is False and flaky.one(crashing) is False, "a failed service still waits out its backoff"
+        now[0] += 30.0
+        assert flaky.one(crashing) is True and len(began) == before + 1, "but it is tried again once the wait, never longer than 30 seconds, is over"
+    now[0] += 1000.0
+    flaky.one(crashing)
+    assert len(flaky.crashes["crash.web"]) == 1, "a service that stayed up for a long while forgets its old stops"
+    dead = []
+    mourned = Manager(record.root, start=lambda spec, lifeline: dead.append(now[0]) or 424242, clock=lambda: now[0], living=lambda pid: False)
+    dying = ServiceSpec(id="dies.web", plugin="dies", service="web", run=["true"], **files_for(record.root, "dies.web"))
+    mourned.one(dying)
+    now[0] += 0.1
+    assert mourned.one(dying) is False, "a keeper that died before it wrote any state is a crash and waits out a backoff"
+    now[0] += 1.2
+    assert mourned.one(dying) is True and len(dead) == 2, "and is started again once the wait is over"
+    now[0] += 0.1
+    assert mourned.one(dying) is False and mourned.waiting["dies.web"] - now[0] > 1.5, "the next stop waits longer"
+    never = ServiceSpec(id="once.web", plugin="once", service="web", run=["false"], restart="never", **files_for(record.root, "once.web"))
+    status_file(record.root, "once.web").write_text(json.dumps({"state": "exited", "at": now[0]}))
+    assert flaky.one(never) is False, "a service declared restart never stays stopped after it exits"
+    from engine import services as services_module
+    with socket.socket() as taken:
+        taken.bind(("127.0.0.1", 0))
+        taken.listen()
+        busy = taken.getsockname()[1]
+        assert allocate(record.root, "pinned.web", busy, set()) == (busy, f"port {busy} is in use"), "a port a service asks for that is in use blocks it, saying which"
+        services_module.PORTS = range(busy, busy + 1)
+        try:
+            assert allocate(record.root, "none.web", None, set()) == (0, f"no port free from {busy} through {busy}"), "an exhausted port range blocks the service with its range"
+        finally:
+            services_module.PORTS = range(8440, 8500)
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
@@ -319,7 +472,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
     from tests.kit import dispatch
-    from features.plugins.source import data
+    from features.plugins.paths import data
     from controllers.types import Plugins
     row = Plugins(record, actor=SYSTEM).create("teacher", enabled=True, token="t0ken", settings={},
                                                manifest={"name": "teacher", "dashboards": [{"name": "sins", "title": "Sins"}]})
@@ -370,3 +523,18 @@ def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_pa
                 "installed": "sh scan.sh"}
     made = rows.action("install")(repository(tmp_path, manifest, {"scan.sh": "echo '{\"settings\": {\"folders\": \"src\"}}'\n"}), yes=True)
     assert (rows.load(made.n).settings or {}).get("chosen") == {"folders": "src"}, "what the plugin found is chosen by the time the install is done"
+    from engine.events.agents import SessionStarted
+    from features.parts import AgentContext
+    from features.plugins.recommended import SuggestFittingPlugins
+    from features.suggestions.controller import Suggestions
+    from tests.kit import project_on
+    import features
+    repo = project_on("work")
+    (repo.project / "app.py").write_text("print('hi')\n")
+    subprocess.run(["git", "add", "app.py"], cwd=repo.project, capture_output=True, timeout=30)
+    row = Agents(repo.record, actor="system").by_session("claude-1")
+    for _ in range(2):
+        SuggestFittingPlugins().handle(AgentContext.of(features.FEATURES["plugins"], repo.record, row), SessionStarted())
+    suggested = [s for s in Suggestions(repo.record, actor="system").rows.every() if s.title == "Install the Code Commandments plugin"]
+    assert len(suggested) == 1 and "written in Python" in suggested[0].brief, \
+        "a project written in a language a known plugin judges is offered that plugin once, as a suggestion the user takes or leaves"

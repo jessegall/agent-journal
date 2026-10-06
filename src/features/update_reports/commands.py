@@ -15,8 +15,13 @@ def update_of(reports, n: int):
     return r
 
 
-def rows_of(r) -> list[dict]:
+def items_of(r) -> list[dict]:
     return [dict(i) for i in r.data.get("items") or []]
+
+
+def require_item(r, items: list[dict], ref: str) -> None:
+    if ref not in {i["ref"] for i in items}:
+        raise Refused(f"update report {r.n} has no row {ref}; its rows are {', '.join(i['ref'] for i in items) or 'none'}")
 
 
 def section_of(section: str) -> str:
@@ -49,19 +54,18 @@ class Note(Command):
 
     def run(self, context: Context, reports, n: int, ref: str, text: str):
         r = update_of(reports, n)
-        items = rows_of(r)
-        if ref not in {i["ref"] for i in items}:
-            raise Refused(f"update report {r.n} has no row {ref}; its rows are {', '.join(i['ref'] for i in items) or 'none'}")
+        items = items_of(r)
+        require_item(r, items, ref)
         return reports.stamp(r.n, items=[{**i, "note": text} if i["ref"] == ref else i for i in items])
 
 
-class Item(Command):
+class AddItem(Command):
     name = "item"
 
     def run(self, context: Context, reports, n: int, section: str, ref: str, title: str, note: str = ""):
         r = update_of(reports, n)
         added = item(section_of(section), ref, title, note)
-        items = rows_of(r)
+        items = items_of(r)
         at = max((k + 1 for k, i in enumerate(items) if SECTIONS.index(i["section"]) <= SECTIONS.index(section)), default=0)
         return reports.stamp(r.n, items=[*items[:at], added, *items[at:]])
 
@@ -71,9 +75,8 @@ class Drop(Command):
 
     def run(self, context: Context, reports, n: int, ref: str):
         r = update_of(reports, n)
-        items = rows_of(r)
-        if ref not in {i["ref"] for i in items}:
-            raise Refused(f"update report {r.n} has no row {ref}")
+        items = items_of(r)
+        require_item(r, items, ref)
         return reports.stamp(r.n, items=[i for i in items if i["ref"] != ref])
 
 

@@ -25,5 +25,3 @@ export function plainDoing(text) {
     if (verb) return verb;
     return "Working";
 }
-
-export const counted = (count, one, many) => `${count} ${count === 1 ? one : many}`;

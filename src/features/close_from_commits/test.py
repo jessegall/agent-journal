@@ -8,14 +8,15 @@ from tests.kit import nudges, report
 
 
 def test_a_checkout_change_is_seen_in_each_environment(tmp_path):
+    from engine.git import checkout_of
     from features.close_from_commits.handlers import CloseRowsFromCommits
 
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start"], cwd=tmp_path, check=True)
     handler = CloseRowsFromCommits()
-    assert handler.moved(tmp_path, "main")
-    assert handler.moved(tmp_path, "helper")
-    assert not handler.moved(tmp_path, "main")
+    assert handler.moved(checkout_of(tmp_path), "main")
+    assert handler.moved(checkout_of(tmp_path), "helper")
+    assert not handler.moved(checkout_of(tmp_path), "main")
 
 
 def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
@@ -39,7 +40,7 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     report(record, "idle", "SessionStart")
     assert [t.completed for t in todos.all()] == [0.0, 0.0, 0.0], "the first look closes nothing: it only marks where the log was"
     commit("a change\n\nJournal: todos done 1")
-    last = lambda: [e for e in record.events() if e.type == "todo"][-1]
+    last = lambda: [e for e in record.event_log.events() if e.type == "todo"][-1]
     assert (bool(todos.load(1).completed), last().actor, last().data["how"].startswith("a change ("), last().data["cause"]) == \
         (True, SYSTEM, True, AGENT), "a trailer at column 0 closes the row it names, as SYSTEM, citing the commit, caused by the agent's own commit"
     commit("only prose\n\nThis closes to-do 2, honestly.\n    Journal: todos done 2")
@@ -48,11 +49,11 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     assert (bool(todos.load(2).completed), last().data["how"]) == (True, "the placement vocabulary is settled"), \
         "the words after the number are the how"
     commit("again\n\nJournal: todos done 2")
-    assert [e.action for e in record.events() if e.type == "todo"].count("completed") == 2, "a row already closed is left alone"
+    assert [e.action for e in record.event_log.events() if e.type == "todo"].count("completed") == 2, "a row already closed is left alone"
     commit("no such row\n\nJournal: todos done 99")
     assert todos.load(3).completed == 0.0, "a number with no row is ignored"
     report(record, "idle", "Stop")
-    assert [e.action for e in record.events() if e.type == "todo"].count("completed") == 2, "nothing new: nothing happens"
+    assert [e.action for e in record.event_log.events() if e.type == "todo"].count("completed") == 2, "nothing new: nothing happens"
     Todos(record, actor=AGENT).start(3)
     commit("third\n\nJournal: todos done 3")
     assert [n for n in nudges(record) if n.startswith("commit ")][-1].endswith("closed to-do 3 and ended work 1"), \

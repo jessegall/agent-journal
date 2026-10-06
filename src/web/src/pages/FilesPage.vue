@@ -1,4 +1,6 @@
 <script setup>
+import {meta} from "../domain/spec.js";
+import {searchTerms} from "../domain/documents.js";
 import {computed, onMounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -8,11 +10,9 @@ import TextInput from "../kit/TextInput.vue";
 import FileTile from "../resource/FileTile.vue";
 import FileRow from "../resource/FileRow.vue";
 import {api} from "../api/client.js";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {ageGroups} from "../format/time.js";
 import {openPictures} from "../platform/view.js";
-import {meta} from "../state/store.js";
-import {words} from "../domain/documents.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 
 const files = ref([]);
@@ -47,18 +47,22 @@ const shelves = computed(() => {
             .map(([type, n]) => ({key: type, label: `${meta(type)?.title || type}s ${n}`})),
     ];
 });
-const searched = computed(() => words(query.value));
+const searched = computed(() => searchTerms(query.value));
 const text = (f) => `${f.name} ${f.description || ""} ${f.title || ""} ${meta(f.type).title} ${f.n}`.toLowerCase();
-const shown = computed(() =>
+const listedFiles = computed(() =>
     ofKind.value
         .filter((f) => !shelf.value || f.type === shelf.value)
         .filter((f) => searched.value.every((w) => text(f).includes(w)))
         .sort((a, b) => b.at - a.at)
 );
 const groups = computed(() =>
-    ageGroups(shown.value, (f) => f.at).map((g) => ({...g, images: g.list.filter((f) => f.image), others: g.list.filter((f) => !f.image)}))
+    ageGroups(listedFiles.value, (f) => f.at).map((g) => ({
+        ...g,
+        images: g.list.filter((f) => f.image),
+        others: g.list.filter((f) => !f.image),
+    }))
 );
-const pictures = computed(() => shown.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
+const pictures = computed(() => listedFiles.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
 const view = (f) =>
     openPictures(
         pictures.value,
@@ -79,14 +83,14 @@ const pickKind = (key) => {
                 icon="search"
                 type="search"
                 :value="query"
-                placeholder="Search names, descriptions and rows"
+                placeholder="Search file names, descriptions and attached items"
                 aria-label="Find a file"
                 @input="query = $event.target.value"
                 @keydown.esc="query = ''"
             />
             <Segmented class="kinds" :options="kinds" :value="kind" @pick="pickKind" />
             <span class="grow" />
-            <a class="flat" :href="`#/${route.env}/doc`">Documents</a>
+            <a class="flat" :href="href.page(route.env, 'doc')">Documents</a>
         </div>
         <template v-if="loaded && !files.length">
             <EmptyState class="none">
@@ -94,19 +98,19 @@ const pickKind = (key) => {
             </EmptyState>
         </template>
         <template v-else-if="loaded">
-            <nav class="shelves" aria-label="Attached to">
+            <nav class="shelves" aria-label="Attachments">
                 <span class="shelves-label">Attached to</span>
                 <Segmented :options="shelves" :value="shelf" @pick="shelf = $event" />
             </nav>
-            <template v-if="!shown.length">
+            <template v-if="!listedFiles.length">
                 <EmptyState class="none">
                     No file matches “{{ query.trim() }}”.
                     <Btn small @click="query = ''">Clear the search</Btn>
                 </EmptyState>
             </template>
-            <template v-if="searched.length && shown.length">
+            <template v-if="searched.length && listedFiles.length">
                 <SectionHeading class="group-head">
-                    {{ shown.length }} {{ shown.length === 1 ? "file matches" : "files match" }}
+                    {{ listedFiles.length }} {{ listedFiles.length === 1 ? "file matches" : "files match" }}
                 </SectionHeading>
             </template>
             <template v-for="g in groups" :key="g.title">

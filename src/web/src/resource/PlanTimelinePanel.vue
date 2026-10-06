@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {useScope} from "../composables/scope.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {peek} from "../route.js";
 import PlanTimeline from "./PlanTimeline.vue";
 

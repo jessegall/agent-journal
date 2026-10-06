@@ -1,6 +1,5 @@
 <script setup>
 import Icon from "../kit/Icon.vue";
-import PhoneChevron from "./PhoneChevron.vue";
 import {SIZE_NAMES, SIZES} from "./readerChoices.js";
 
 defineProps({
@@ -18,10 +17,10 @@ const emit = defineEmits(["close", "share"]);
 <template>
     <header :class="['reader-bar', {under}]">
         <button type="button" class="reader-back" :aria-label="`Back to ${back}`" @click="emit('close')">
-            <PhoneChevron facing="left" :size="18" />
+            <Icon name="chevronRight" bold facing="left" :size="18" />
             {{ back }}
         </button>
-        <span :class="['reader-name', {shown: titled}]" aria-hidden="true">{{ title }}</span>
+        <span :class="['reader-name', {visible: titled}]" aria-hidden="true">{{ title }}</span>
         <template v-if="shareable">
             <button type="button" class="reader-share" aria-label="Share" @click="emit('share')"><Icon name="share" :size="20" /></button>
         </template>
@@ -104,7 +103,7 @@ const emit = defineEmits(["close", "share"]);
     transition: opacity 200ms linear;
 }
 
-.reader-name.shown {
+.reader-name.visible {
     opacity: 1;
 }
 

@@ -1,8 +1,8 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({file: Object});
 const kind = computed(() => meta(props.file.type));

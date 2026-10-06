@@ -28,6 +28,26 @@ def test_the_other_hooks_are_set_aside_and_put_back_and_skills_stay(tmp_path, mo
     assert put_back(record) == 0, "a second put back has nothing to do"
 
 
+def test_putting_back_restores_only_the_hooks_and_keeps_what_changed_meanwhile(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    record = fresh()
+    project = record.root.parent
+    settings = project / ".claude" / "settings.local.json"
+    settings.parent.mkdir()
+    hooks = {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}, {"hooks": [{"type": "command", "command": JOURNAL}]}]}
+    settings.write_text(json.dumps({"model": "opus", "hooks": hooks}))
+    set_aside(record, project, "claude")
+    during = json.loads(settings.read_text())
+    settings.write_text(json.dumps({**during, "model": "sonnet", "permissions": {"allow": ["Bash(ls)"]}}))
+    put_back(record)
+    assert json.loads(settings.read_text()) == {"model": "sonnet", "hooks": hooks, "permissions": {"allow": ["Bash(ls)"]}}, \
+        "the hooks come back, a model and permissions chosen during the session stay"
+    set_aside(record, project, "claude")
+    settings.unlink()
+    put_back(record)
+    assert json.loads(settings.read_text())["hooks"] == hooks, "a file deleted meanwhile comes back with its hooks"
+
+
 def test_a_second_set_aside_keeps_the_original_hooks_until_the_last_session_ends(tmp_path, monkeypatch):
     import os
     from engine.sessions import Sessions
@@ -51,13 +71,15 @@ def test_a_second_set_aside_keeps_the_original_hooks_until_the_last_session_ends
 
 def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
     import features.clean_slate.slate as slate
+    from tests.kit import clean_slate_moved as run
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     record = fresh()
     project = record.root.parent
     kept_at = slate.place(record) / "skill-0-graphify"
     kept_at.mkdir(parents=True)
     home = project / ".claude" / "skills" / "graphify"
-    record.set_setting(KEY, {**state(record), "moved": [{"from": str(home), "to": str(kept_at), "tracked": []}]})
+    record.set_setting(KEY, {**state(record), "moved": [{"from": str(home), "to": str(kept_at)}]})
+    run(record.root)
     put_back(record)
     assert (home.is_dir(), kept_at.exists()) == (True, False), "a skill set aside before this version is put back"
 

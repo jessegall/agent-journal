@@ -5,9 +5,9 @@ from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 
-from features.plugins.source import log, queue_path
+from features.plugins.paths import logged, queue_path
 from resources.base import PLUGIN
-from features.command_line import command_line
+from engine.command_line import command_line
 
 EACH = 5
 LONGEST = 4000
@@ -66,9 +66,6 @@ def drain(root: Path, plugin: str, default: str, many: int = EACH) -> tuple[int,
         ok, why = ran(root, env, line)
         done += 1
         if not ok:
-            where = log(root, plugin)
-            where.parent.mkdir(parents=True, exist_ok=True)
-            with where.open("a") as f:
-                f.write(f"{line} was refused: {why}\n")
+            logged(root, plugin, f"{line} was refused: {why}")
             refused.append(Refusal(env, line, why))
     return done, refused

@@ -1,12 +1,17 @@
 from features.base import FeatureDetails
 from engine.organization import CARDINALITIES, FOLDER
+from features.groups import Group
 
 
 class OrganizationDetails(FeatureDetails):
+    explains = "The viewer reads the project's domains and roles from its files. You can open the organization to see who handles each area."
     name = "organization"
+    group = Group.VIEWER
+    label = "Show the agent organization"
+    hint = "Domains and roles read from the project"
     when = "a ticket's work is split over domains and roles, or the organization's files change"
 
-    title = "Agent organization"
+    title = "Organization"
 
     abstract = "The project's domains and the roles under them, read from files in the project"
 

@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from features.journal_laws.policy import cartoon_names, laws, refusal
+from features.journal_laws.laws import cartoon_names, laws, refusal
 from engine.events.engine import AgentMessageSent
 from engine.gates import DISPATCHING
 from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
@@ -9,6 +9,7 @@ from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 from providers.payload import ReadCall
 from resources.types import TYPES
 from engine.reach import Reach
+from controllers.types import Agents
 
 
 class EnforceDispatchLaw(Canceler):
@@ -59,7 +60,7 @@ def lines_in(path: Path) -> int:
 class RefuseWholeLongReads(ToolInterceptor):
     reach = Reach.MAIN
     def intercept(self, context: AgentContext, call) -> str:
-        shell = context.provider.shell_command(call)
+        shell = call.shell_command
         cat = CAT.search(shell) if shell else None
         whole = isinstance(call, ReadCall) and call.whole
         printed = cat.group(1) if cat else ""
@@ -74,7 +75,7 @@ class RefuseWholeLongReads(ToolInterceptor):
         if count <= limit:
             return ""
         instead = "read a range (offset 1, limit 120)" if whole else f"print a range: sed -n '1,120p' {named}"
-        context.journal.agents.card(context.agent.row.n, label=f"Refused reading a long file whole `{path}`", icon="terminal", tone="danger",
+        context.journal.get(Agents).card(context.agent.row.n, label=f"Refused reading a long file whole `{path}`", icon="terminal", tone="danger",
                                     title=f"{count:,} lines; told to {instead} or grep instead")
         return (f"{named} has {count:,} lines, too long to read whole (law L3, read narrowly). Instead: {instead}, then the next range; "
                 f"or list its headings first with grep -n '^#' {named} and read only the part you need; or grep -n for the line you want.")

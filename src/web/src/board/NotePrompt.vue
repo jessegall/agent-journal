@@ -11,7 +11,7 @@ const send = () => note.value.trim() && emit("send", note.value.trim());
 </script>
 
 <template>
-    <Dialog :title="`${ask.action.label} for #${ask.card.n}`" @close="emit('close')">
+    <Dialog :title="`${ask.action.label} for #${ask.card.n}`" fits @close="emit('close')">
         <p class="text">A note for its agent. It is typed into the agent's terminal as your next message.</p>
         <TextInput
             class="note"

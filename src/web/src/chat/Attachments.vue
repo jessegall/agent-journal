@@ -1,4 +1,5 @@
 <script setup>
+import {isPicture} from "../format/files.js";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
@@ -7,7 +8,6 @@ import {openPictures} from "../platform/view.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["grew"]);
-const picture = (name) => /\.(png|jpe?g|gif|webp)$/i.test(name);
 const video = (name) => /\.(mp4|m4v|mov|webm|ogv)$/i.test(name);
 const url = (name) => (props.resource.data.previews || {})[name] || api.fileUrl(props.resource.type, props.resource.n, name);
 const files = computed(() => props.resource.data.files || {});
@@ -17,9 +17,9 @@ const sized = (name) => {
 };
 const names = computed(() => Object.keys(files.value));
 const derived = (name) => String(files.value[name] || "").startsWith("video frame from ");
-const pictures = computed(() => names.value.filter((name) => picture(name) && !derived(name)).map((name) => ({name, url: url(name)})));
+const pictures = computed(() => names.value.filter((name) => isPicture(name) && !derived(name)).map((name) => ({name, url: url(name)})));
 const videos = computed(() => names.value.filter(video));
-const others = computed(() => names.value.filter((name) => !picture(name) && !video(name)));
+const others = computed(() => names.value.filter((name) => !isPicture(name) && !video(name)));
 const grid = computed(() => pictures.value.length > 1);
 </script>
 

@@ -1,10 +1,13 @@
+import fcntl
 import json
+import tarfile
 import time
 
 import pytest
 from types import SimpleNamespace
 
 import features.auto_update.check as updates
+import features.auto_update.relaunch as relaunching
 from engine.heal import ledger
 from engine.stored import write_json
 from controllers.types import Features
@@ -31,6 +34,52 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "upstream", lambda root: "98.0.0")
     check.tick()
     assert len(sent) == 1, "a version that would not start here is never offered again"
+    Features(record, actor=SYSTEM).switch("auto_update", True)
+    record.set_setting("auto_update", {"installs": "patches"})
+    installing = []
+    monkeypatch.setattr(updates, "version", lambda: "2.249.6")
+    monkeypatch.setattr(check, "install", lambda feature, latest: installing.append(latest))
+    monkeypatch.setattr(updates, "stale", lambda root: False)
+    monkeypatch.setattr(updates, "upstream", lambda root: "2.249.7")
+    check.checked_at = 0.0
+    assert check.tick() == "installing 2.249.7", "a patch installs by itself when patches are chosen"
+    monkeypatch.setattr(updates, "upstream", lambda root: "2.250.0")
+    check.checked_at = 0.0
+    assert check.tick() == "told of 2.250.0" and sent[-1].startswith("journal 2.250.0 is out"), "a minor version waits for the user"
+    record.set_setting("auto_update", {"installs": "sometimes"})
+    monkeypatch.setattr(updates, "upstream", lambda root: "3.0.0")
+    check.checked_at = 0.0
+    assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
+    from controllers.types import Notices
+    from features import FEATURES
+    monkeypatch.setattr(updates, "installed", lambda root, yes=False: "package not refreshed: the network was down")
+    updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
+    assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
+        "a failed install is told to the agent and filed as a notice"
+    assert updates.claimed(record.root, "3.0.1", "patches") and not updates.claimed(record.root, "3.0.1", "patches"), "a release just tried waits before it is tried again"
+    with updates.ledger(record.root).changing() as tried:
+        tried["3.0.2"] = {"at": __import__("time").time() - 3600, "tries": 2, "ok": False}
+    assert not updates.claimed(record.root, "3.0.2", "major versions") and updates.claimed(record.root, "3.0.2", "always"), \
+        "Always tries a failed install again after 30 minutes however often it failed, major versions wait longer each time"
+    from tests.kit import dispatch
+    monkeypatch.setattr(updates, "journal_repository", lambda project: True)
+    assert dispatch("POST", "/api/update", record.root, {}, {}).code == 400, "the journal's own repository is never updated from a release"
+    monkeypatch.setattr(updates, "journal_repository", lambda project: False)
+    assert dispatch("POST", "/api/update", record.root, {}, {}).body == {"updating": True}, "the viewer's Update button starts an install"
+    import install
+    managed = record.root / "src" / "install.py"
+    managed.parent.mkdir(parents=True, exist_ok=True)
+    managed.write_text("generated\n")
+    install.remember_managed(record.root.parent, record.root)
+    managed.write_text("changed by hand\n")
+    assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], \
+        "the Update button refuses files changed by hand"
+    assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and managed.read_text() == "changed by hand\n", \
+        "journal upgrade refuses the same changed file before touching it"
+    check.checked_at = 0.0
+    assert check.tick() == "update held for changed files", "automatic updates wait for a decision about changed files"
+    managed.write_text("generated\n")
+    Features(record, actor=SYSTEM).switch("auto_update", False)
     record.set_setting("triggers", {"auto_update": {"every": 5, "unit": "minutes"}})
     monkeypatch.setattr(updates, "stale", lambda root: True)
     check.checked_at = 0.0
@@ -44,7 +93,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     row = Agents(record).by_session("conversation-1")
     driver = SimpleNamespace(session="claude-1", last_report=lambda: Agents(record).load(row.n))
     state = {"now": "working"}
-    relaunch = updates.Relaunch(SimpleNamespace(record=record, driver=driver, state=lambda: state["now"]))
+    relaunch = relaunching.Relaunch(SimpleNamespace(record=record, driver=driver, state=lambda: state["now"]))
     Sessions(record.root).write("claude-1", launch=LAUNCH - 1)
     assert relaunch.tick() == "" and not runtime.relaunch_file(record.root, "claude-1").exists(), "a busy agent is never restarted"
     state["now"] = IDLE
@@ -120,19 +169,25 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
 
 def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from controllers.types import Notifications
-    from surfaces.updates import announce
+    from features.auto_update.announcing import announce
+    from install import LEGACY_COPY_MARKER
     record = fresh()
     announce(record.root, "1.0.0")
+    copy_note = record.root / "runtime" / LEGACY_COPY_MARKER
+    copy_note.parent.mkdir(parents=True, exist_ok=True)
+    copy_note.write_text(".journal/attic/before-update-1.0.0-123")
     assert announce(record.root, "1.0.1") == "1.0.1"
     from engine.runtime import default_env
     from engine.record import Record
-    notified = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
+    notified = [n for n in Notifications(Record(record.root, default_env(record.root))).rows.every() if n.title == "Journal updated to 1.0.1"]
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
+    assert ".journal/attic/before-update-1.0.0-123" in notified[0].brief and not copy_note.exists(), \
+        "the update notice names the copy of legacy managed files once"
 
 
 def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypatch):
     import features
-    import features.auto_update.launch as launch
+    from tests.kit import launch_update as launch
     features.load()
     record = fresh()
     ran = []
@@ -157,7 +212,7 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     import sys
     from pathlib import Path
     import features
-    import features.auto_update.launch as launch
+    from tests.kit import launch_update as launch
     from controllers.types import Notices
     from engine.record import Record
     here = Path(__file__).resolve().parents[2]
@@ -179,7 +234,7 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     assert [n.title for n in Notices(record, actor="system").all()].count(launch.LOST) == 1
 
 
-def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_path):
+def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_path, monkeypatch):
     import install
     moved, flat, empty, target = tmp_path / "moved", tmp_path / "flat", tmp_path / "empty", tmp_path / "target"
     for base in (moved / "src", flat):
@@ -199,6 +254,25 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     root = tmp_path.resolve()
     assert install.installed_here(root, root / "journal-2.1.0-abc.pyz"), "an older build beside the record fetches the release rather than reading itself"
     assert not install.installed_here(root, moved), "a checkout elsewhere is read as the package"
+    journal = tmp_path / "project" / ".journal"
+    (journal / "environments" / "main").mkdir(parents=True)
+    (journal / "environments" / "main" / "todo.json").write_text("{}")
+    (journal / "runtime").mkdir()
+    kept = install.keep_copy(journal)
+    saved = list((journal / "attic").glob("before-*.tar.gz"))
+    assert len(saved) == 1 and kept.startswith("a copy of the record is kept in"), "an upgrade starts by keeping a copy of the record in the attic"
+    with tarfile.open(saved[0]) as archive:
+        assert "environments/main/todo.json" in archive.getnames() and not any(name.startswith(("runtime", "attic")) for name in archive.getnames()), \
+            "the copy holds the record and nothing of the runtime or earlier copies"
+    with (journal / "runtime" / "upgrade.lock").open("a") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        assert install.upgrade(journal.parent, journal) == ["another upgrade of this journal is running; this one stepped aside"], \
+            "an upgrade started while another holds the lock steps aside and changes nothing"
+    monkeypatch.setattr(install, "PACKAGE", journal.resolve() / "journal.pyz")
+    monkeypatch.delenv(install.BOOTSTRAPPED, raising=False)
+    monkeypatch.setenv(install.REPOSITORY_ENV, str(tmp_path / "no-such-repository"))
+    refused = install.upgrade(journal.parent, journal)
+    assert refused[-1].startswith("package not refreshed:"), f"a repository that cannot be fetched is named, not installed: {refused}"
 
 
 def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):
@@ -236,6 +310,12 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
                          env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1"}, timeout=20)
     assert ran.stdout.strip() == '{"reason": "served"}', (ran.stdout, ran.stderr)
     assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
+    (tmp_path / "runtime" / "upgrading").unlink()
+    (tmp_path / "runtime" / "heartbeat").write_text(f"{int(time.time()) - 60} http://127.0.0.1:{port}/\n")
+    quiet = subprocess.run(["sh", str(hook), "claude", str(tmp_path)], input='{"hook_event_name": "PreToolUse"}', capture_output=True, text=True,
+                           env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main"}, timeout=20)
+    logged = (tmp_path / "runtime" / "hook-failures.log").read_text().split()
+    assert (quiet.stdout, logged[1:]) == ("", ["down", "claude", "main"]), "a hook that finds the server down lets the agent go on, and says so in the log"
 
 
 def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_tag(tmp_path):
@@ -261,3 +341,24 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
     assert released(source) == "2.10.0", "the newest release is chosen by version, not by name"
     _, failed = fetch(tmp_path / "copy", source, f"refs/tags/v{released(source)}")
     assert (failed, (tmp_path / "copy" / "VERSION").read_text()) == ("", "2.10.0"), "the release tag is installed, not the commits after it"
+    import socket
+    import time
+    import install
+    stub = tmp_path / "bin"
+    stub.mkdir()
+    seen = tmp_path / "prompt"
+    (stub / "git").write_text(f'#!/bin/sh\necho "$GIT_TERMINAL_PROMPT" > {seen}\nexit 1\n')
+    (stub / "git").chmod(0o755)
+    with pytest.MonkeyPatch.context() as patched:
+        patched.setenv("PATH", f"{stub}:{__import__('os').environ['PATH']}")
+        install.released(source)
+    assert seen.read_text().strip() == "0", "a credential prompt never opens over the launch menu"
+    hanging = socket.socket()
+    hanging.bind(("127.0.0.1", 0))
+    hanging.listen(5)
+    began = time.time()
+    with pytest.MonkeyPatch.context() as patched:
+        patched.setattr(install, "LOOKUP_SECONDS", 1)
+        waited = install.released(f"http://127.0.0.1:{hanging.getsockname()[1]}/x.git")
+    hanging.close()
+    assert (waited, time.time() - began < 5) == ("", True), "an unanswering remote costs a bounded wait and no release"

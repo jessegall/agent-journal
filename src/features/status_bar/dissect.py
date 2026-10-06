@@ -4,7 +4,7 @@ from features.status_bar.shell import RUNNERS, Piece, parsed
 from features.status_bar.spoken import spoken
 from dataclasses import dataclass
 
-from features.status_bar.runs import CommandRun, Delta, Outcome
+from engine.command_runs import CommandRun, Delta, Outcome
 
 JOURNAL = "journal"
 GIT = "git"

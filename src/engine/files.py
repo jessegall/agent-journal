@@ -1,13 +1,14 @@
 import difflib
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 
 from engine import bus
 from engine.proc import git, git_objects
-from resources.base import SYSTEM, Event, names
+from engine.project_files import readable_path
+from resources.base import SYSTEM, names
 
 KIND = names("edited", "created", "deleted")
 EDITED = "edited"
@@ -80,8 +81,7 @@ REPOSITORY_DEPTH = 2
 SKIPPED = {"node_modules", "vendor", "dist", "build"}
 
 
-@cache
-def repositories(project: Path) -> tuple[Path, ...]:
+def project_repositories(project: Path) -> tuple[Path, ...]:
     held = REPOSITORIES.get(project)
     if held and time.time() - held[0] < RESCAN_SECONDS:
         return held[1]
@@ -107,10 +107,6 @@ def prefixed(project: Path, repository: Path, paths: dict) -> dict:
 
 def index_file(project: Path) -> Path:
     return project / git(["rev-parse", "--git-path", "index"], project).strip()
-
-
-def tracked(project: Path) -> dict:
-    return {path: sha for repository in repositories(project) for path, sha in prefixed(project, repository, tracked_in(repository)).items()}
 
 
 def tracked_in(project: Path) -> dict:
@@ -145,17 +141,17 @@ def hashed(project: Path, paths: list[str]) -> dict:
 
 def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
     marks = internal(record, project, homes)
-    found = repositories(project)
+    found = project_repositories(project)
     with ThreadPoolExecutor(max_workers=len(found) or 1) as pool:
         trees = list(pool.map(blobs_in, found))
     tree = {path: sha for repository, held in zip(found, trees) for path, sha in prefixed(project, repository, held).items()}
-    return {path: sha for path, sha in tree.items() if not journals_own(path, marks)}
+    return {path: sha for path, sha in tree.items() if not journals_own(path, marks) and readable_path(project, project / path)}
 
 
 def blobs_in(project: Path) -> dict:
     tree = dict(tracked_in(project))
     dirty = list(dict.fromkeys(p for p in git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0") if p))
-    present = [p for p in dirty if (project / p).is_file()]
+    present = [p for p in dirty if readable_path(project, project / p) and (project / p).is_file()]
     UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
         tree.pop(path, None)
@@ -165,7 +161,7 @@ def blobs_in(project: Path) -> dict:
 
 def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
     texts = {EMPTY_BLOB: ""}
-    for repository in repositories(project):
+    for repository in project_repositories(project):
         wanted = [sha for sha in dict.fromkeys(shas) if sha not in texts]
         if not wanted:
             break
@@ -174,7 +170,7 @@ def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
 
 
 def project_paths(project: Path) -> set[str]:
-    return {path for repository in repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository)))}
+    return {path for repository in project_repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository))) if readable_path(project, project / path)}
 
 
 def paths_in(project: Path) -> set[str]:
@@ -202,6 +198,39 @@ def line_counts(project: Path, pairs: list[tuple[str, str]]) -> dict[tuple[str, 
     return {(before, after): LineCount.between(texts[before], texts[after]) for before, after in pairs}
 
 
+class Coalesced:
+    def __init__(self):
+        self.guard = threading.Lock()
+        self.running: set = set()
+        self.again: dict = {}
+
+    def run(self, key, job) -> None:
+        with self.guard:
+            if key in self.running:
+                self.again[key] = job
+                return
+            self.running.add(key)
+        try:
+            while job is not None:
+                job()
+                with self.guard:
+                    job = self.again.pop(key, None)
+                    if job is None:
+                        self.running.discard(key)
+        except Exception:
+            with self.guard:
+                self.again.pop(key, None)
+                self.running.discard(key)
+            raise
+
+
+ANNOUNCING = Coalesced()
+
+
+def announce_writes(record, agent: int, homes: tuple[str, ...]) -> None:
+    ANNOUNCING.run((str(record.root), record.env), lambda: announce(record, agent, homes))
+
+
 def announce(record, agent: int, homes: tuple[str, ...]) -> None:
     project = record.root.parent
     now = blobs(record, project, homes)
@@ -210,10 +239,11 @@ def announce(record, agent: int, homes: tuple[str, ...]) -> None:
         held["tree"] = now
     if last is None:
         return
+    last = {path: sha for path, sha in last.items() if readable_path(project, project / path)}
     at = time.time()
     changed = {path: (last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB)) for path in sorted(set(last) | set(now)) if last.get(path) != now.get(path)}
     counts = line_counts(project, list(changed.values()))
     for path, (before, after) in changed.items():
         count = counts[(before, after)]
-        bus.emit(Event(0, at, "file", agent, EDITED, SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
-                                                             "after": after, "added": count.added, "removed": count.removed}), record)
+        bus.announce(record, "file", agent, EDITED, SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
+                                                            "after": after, "added": count.added, "removed": count.removed}, at=at)

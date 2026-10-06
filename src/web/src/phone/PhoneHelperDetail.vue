@@ -112,7 +112,7 @@ watch(() => [props.row.at, props.row.state, props.row.report], load);
             </section>
         </template>
         <template v-if="current.state === 'reported'">
-            <p class="helper-finished">{{ current.name }} has finished its job. The agent in main reads this report next.</p>
+            <p class="helper-finished">{{ current.name }} has finished its job. The agent in the main environment reads this report next.</p>
         </template>
         <template v-if="error">
             <p class="helper-error" role="status">{{ error }}</p>

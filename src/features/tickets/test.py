@@ -50,20 +50,20 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     tickets = Tickets(record, actor=USER)
     ticket = tickets.create("Dark mode")
     bound = tickets.bind(ticket.n)
-    assert (bound.work_environment, Environments(record)._titled(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
+    assert (bound.work_environment, Environments(record).rows.by_title(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
         (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
-    from features.dev_faults.feature import Faults
-    assert Faults.on_for(Record(record.root, bound.work_environment)) is False, "a ticket's agent is not told the journal's own developer faults"
+    from features.dev_faults.feature import DevFaults
+    assert DevFaults.on_for(Record(record.root, bound.work_environment)) is False, "a ticket's agent is not told the journal's own developer faults"
     Sessions(record.root).write("claude-old", environment=bound.work_environment, provider="claude", pid=999999)
     assert Sessions(record.root).choose("claude-new", "claude", "main", {e.title for e in Environments(record, actor=SYSTEM).all() if e.owner}) == "main", "a plain session never lands in a ticket's environment"
     Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
     assert tickets.agent_session(ticket.n) == "claude-7", "the session is whichever one holds the ticket's environment"
     tickets.complete(ticket.n, how="still running", yes=True)
-    assert Environments(record)._titled(bound.work_environment) is not None, "an environment whose agent still runs is kept when its ticket closes"
+    assert Environments(record).rows.by_title(bound.work_environment) is not None, "an environment whose agent still runs is kept when its ticket closes"
     other = tickets.bind(tickets.create("Search").n)
     tickets.complete(other.n, how="shipped", yes=True)
-    assert Environments(record)._titled(other.work_environment) is None, "a closed ticket's idle environment goes to the attic"
+    assert Environments(record).rows.by_title(other.work_environment) is None, "a closed ticket's idle environment goes to the attic"
 
 
 def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
@@ -115,7 +115,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     ticket = tickets.create("Dark mode", board=board.n)
     tickets.move(ticket.n, "Building")
     from engine.record import Record
-    from features.permission_prompts.feature import skipped
+    from features.permission_prompts.skipping import skipped
     env, agent, args = launched[0]
     assert (env, agent, args[:2], skipped(Record(record.root, f"ticket-{ticket.n}"))) == \
         (f"ticket-{ticket.n}", "claude", ["--worktree", f"ticket-{ticket.n}"], True), \
@@ -161,7 +161,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert (card["state"], card["reason"].startswith(f"under review ({merging.title})")) == ("running", True), \
         "a ticket the orchestrator is reviewing waits on that review; it is never stuck"
-    from features.tickets.controller import WAITS_ON_PEOPLE
+    from features.tickets.calls import WAITS_ON_PEOPLE
     assert [bool(WAITS_ON_PEOPLE.search(text)) for text in ("waits for your approval", "wacht op goedkeuring", "de build draait")] == [True, True, False], \
         "a wait on a person is read in Dutch as well as English"
     Sequences(record, actor=SYSTEM).abandon(merging.n, about=ticket.ref, why="only a check", sure=True)
@@ -200,6 +200,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
     Comments(Record(record.root, f"ticket-{ticket.n}"), actor=AGENT).create("Measured", brief="parity holds", about=ticket.ref)
     assert "Measured" in [c.title for c in tickets.comments(ticket.n)], "a ticket agent's comment shows on its ticket from the main environment"
+    calls_fire_once_and_repeat_on_time(monkeypatch)
 
 
 def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkeypatch):
@@ -354,8 +355,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     user, agent = Tickets(record, actor=USER), Tickets(record, actor=AGENT)
     api, ui = user.create("An API", board=board.n), user.create("Its screen", board=board.n)
-    before = len(user.summaries())
-    assert "already made" in refused(lambda: agent.create("Its docs", board=board.n, after="999")) and len(user.summaries()) == before, \
+    before = len(user.rows.summaries())
+    assert "already made" in refused(lambda: agent.create("Its docs", board=board.n, after="999")) and len(user.rows.summaries()) == before, \
         "a card waiting on a card that does not exist is refused before anything is written"
     docs = agent.create("Its docs", board=board.n, after=str(api.n), covers=2)
     assert (docs.covers, list(docs.dependencies)) == (["2"], [api.ref]), "a card names its waits and one clause as it is made"
@@ -430,9 +431,6 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     tick(record)
     assert any("Reviewing a ticket's plan, step 1 of 3" in line for line in nudges(record)), \
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
-    assert "Review it yourself" in tickets._review(tickets.load(ticket.n)), "by default the orchestrator reviews the plan itself"
-    Boards(record, actor=USER).update(board.n, plan_reviewer="subagent")
-    assert "Dispatch a reviewer subagent" in tickets._review(tickets.load(ticket.n)), "a board can hand the review to a reviewer subagent"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
     from features.plans.controller import ACTIVE, WAITING
@@ -477,7 +475,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
-    from features.tickets.limits import CARD_LINE, CARD_TITLE, PANEL_REPLY
+    from features.boards.resource import PANEL_REPLY
+    from features.tickets.limits import CARD_LINE, CARD_TITLE
     from controllers.types import Messages
     from tests.conftest import refused
     record = fresh()
@@ -493,3 +492,46 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
     agent = Messages(record, actor=AGENT)
     assert "shorter" in refused(lambda: agent.reply(request.n, "y" * (PANEL_REPLY + 1))), "a reply the panel cannot show whole is refused"
     assert agent.reply(request.n, "Five tickets drafted, pick the ones to keep.").brief.endswith("pick the ones to keep."), "a short reply goes through"
+
+
+def calls_fire_once_and_repeat_on_time(monkeypatch):
+    import features
+    from features.tickets import calls as ticket_calls, handlers
+    from features.trigger import MINUTE
+    from features import trigger
+    from tests.kit import nudges, report, tick
+    features.load()
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    ticket = Tickets(record, actor=USER).create("Dark mode", board=board.n)
+    report(record, "working", "PreToolUse")
+    moments, held = [], [[("ticket_replied", "message:1", {"text": "done?"}, 0), (ticket_calls.PLAN_DONE_CALL, "plan:5", {}, 15), ("ticket_asks", "question:2", {"question": 2, "text": "which one", "env": "ticket-1"}, 15)]]
+    monkeypatch.setattr(handlers, "watched", lambda tickets: [ticket])
+    monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
+    monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
+    now = [time.time()]
+    monkeypatch.setattr(trigger.time, "time", lambda: now[0])
+    sent = lambda: [n for n in nudges(record) if "Dark mode, answered" in n]
+    tick(record)
+    assert [moment for moment in moments if moment == "finished"] == ["finished"] and len(sent()) == 1, \
+        "a reply is told once and a finished plan raises its moment, while a question is left to the nudge that repeats it"
+    tick(record)
+    assert moments.count("finished") == 1 and len(sent()) == 1, "nothing is said again at once"
+    now[0] += 16 * MINUTE
+    tick(record)
+    assert moments.count("finished") == 2 and len(sent()) == 1, "the plan that is still finished raises its moment again after its window, and the reply is not repeated"
+    held[0] = []
+    now[0] += 16 * MINUTE
+    tick(record)
+    assert moments.count("finished") == 2, "a ticket with nothing to call about raises nothing"
+
+    root = record.root
+    ticket_calls.PEOPLE[str(root)] = ["jesse"]
+    assert [ticket_calls.waits_on_people(root, text) for text in ("waits for jesse", "asks the user", "the build runs")] == [True, True, False], \
+        "a wait is on a person when it names the user, an approval or the one who owns the git config"
+    monkeypatch.setattr(Tickets, "_plan_status", lambda self, found: ticket_calls.PLAN_DONE)
+    monkeypatch.setattr(Tickets, "_clean", lambda self, found: True)
+    tickets = Tickets(record, actor=SYSTEM)
+    assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
+    monkeypatch.setattr(Tickets, "_clean", lambda self, found: False)
+    assert not ticket_calls.handed_in(tickets, ticket), "a dirty branch is not handed in"

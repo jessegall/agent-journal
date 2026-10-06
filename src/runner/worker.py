@@ -1,3 +1,4 @@
+import signal
 import sys
 import threading
 import time
@@ -7,18 +8,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from providers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
+from runner.engines import ENDING, supervise  # noqa: E402
 from features.plugins.services import plugin_services  # noqa: E402
-from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
 from controllers.faults import threw  # noqa: E402
 from engine.stop import asked, session_flag  # noqa: E402
-from agents.terminal import HEAL, RELAUNCH, RELOAD, STOP, Seat, seated, watched  # noqa: E402
-from agents.actors import Agent
+from supervisor import HEAL, RELAUNCH, RELOAD, STOP  # noqa: E402
+from agents.terminal import TerminalSession, seated  # noqa: E402
+from agents.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
-from engine.package import CODE  # noqa: E402
+from engine.package import CODE, installed_stamp, own_build  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
-from features.auto_update.check import Relaunch, UpdateCheck  # noqa: E402
+from features.switches import watch_change_log  # noqa: E402
+from features.auto_update.check import UpdateCheck  # noqa: E402
+from features.auto_update.relaunch import Relaunch  # noqa: E402
 from features.work_tracking.auto import CheckIn  # noqa: E402
 
 TICK = 0.25
@@ -30,7 +34,7 @@ SERVER_CRASHES = 3
 RETRY_AFTER = 1.0
 STARTUP, EARLY = 30.0, 16384
 CONSENT_EVERY = 3.0
-ENTER_AFTER = 0.3
+TERMINATED = threading.Event()
 
 
 def keep_viewer(root: Path, cwd: Path, watching, exits: list) -> object:
@@ -41,7 +45,7 @@ def keep_viewer(root: Path, cwd: Path, watching, exits: list) -> object:
     return thread
 
 
-def moved(seat: Seat) -> bool:
+def moved(seat: TerminalSession) -> bool:
     return Sessions(seat.root).environment(seat.session) not in ("", seat.env)
 
 
@@ -49,56 +53,50 @@ def crashing(exits: list) -> bool:
     return len(exits) >= SERVER_CRASHES and all(exits[-SERVER_CRASHES:])
 
 
-def checks(seat: Seat) -> tuple:
+def checks(seat: TerminalSession, driver) -> list:
     try:
         features.load()
-        record = Record(seat.root, seat.env)
-        watcher = Agent(record, DRIVERS[seat.agent](record, seat.session))
-        return watcher.driver, (CheckIn(watcher), UpdateCheck(watcher), Relaunch(watcher))
+        watcher = Agent(driver.record, driver)
+        return [CheckIn(watcher), UpdateCheck(watcher), Relaunch(watcher)]
     except Exception:
         threw(seat.root, seat.env, "starting the worker's checks")
-        return None, ()
+        return []
 
 
-def run_checks(seat: Seat, driver, kept: tuple) -> None:
-    for step in ([driver.pump] if driver else []) + [check.tick for check in kept]:
+def run_checks(seat: TerminalSession, driver, kept: list) -> None:
+    for step in [driver.pump, *(check.tick for check in kept)] if kept else []:
         try:
             step()
         except Exception:
             threw(seat.root, seat.env, f"a worker check: {type(getattr(step, '__self__', step)).__name__}")
 
 
-def press(root: Path, session: str, keys: bytes) -> None:
-    text = keys.rstrip(b"\r")
-    if text:
-        typist.send(root, session, text)
-        time.sleep(ENTER_AFTER)
-    if len(text) < len(keys):
-        typist.send(root, session, keys[len(text):])
+def run_services(seat: TerminalSession, services: Manager) -> None:
+    try:
+        services.tick()
+    except Exception:
+        threw(seat.root, seat.env, "the worker's services")
 
 
 class Confirm:
-    def __init__(self, root: Path, env: str, session: str, agent: str):
-        self.root, self.session, self.agent = root, session, agent
-        self.driver = DRIVERS[agent](Record(root, env), session)
-        self.printed = runtime.session_file(root, session, "printed")
-        self.at = self.printed.stat().st_size if self.printed.is_file() else 0
+    def __init__(self, driver):
+        self.driver = driver
+        self.at = self.driver.printed.stat().st_size if self.driver.printed.is_file() else 0
         self.started = self.consented = time.time()
         self.ready = 0.0
         self.answered = False
 
     def tick(self) -> None:
-        if self.answered or time.time() - self.started >= STARTUP or not self.printed.is_file():
+        if self.answered or time.time() - self.started >= STARTUP or not self.driver.printed.is_file():
             return
-        with self.printed.open("rb") as f:
-            f.seek(max(self.at, self.printed.stat().st_size - EARLY))
-            early = f.read()
-        if DRIVERS[self.agent].consent(early):
+        fresh = self.driver.printed.stat().st_size - self.at
+        early = self.driver.printed_tail(min(fresh, EARLY)) if fresh > 0 else b""
+        if self.driver.consent(early):
             self.consent(early)
             return
-        opening = DRIVERS[self.agent].opening(early)
+        opening = self.driver.opening(early)
         self.ready = (self.ready or time.time()) if opening else 0.0
-        if opening and time.time() - self.ready >= DRIVERS[self.agent].CONFIRM_AFTER:
+        if opening and time.time() - self.ready >= self.driver.CONFIRM_AFTER:
             self.answered = True
             self.driver.send(opening, now=True)
 
@@ -106,52 +104,69 @@ class Confirm:
         if time.time() - self.consented < CONSENT_EVERY:
             return
         self.consented = time.time()
-        press(self.root, self.session, DRIVERS[self.agent].consent(early))
+        self.driver.press_raw(self.driver.consent(early))
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:
     hold_build(root, CODE)
-    seat = seated(Seat(root, env, agent, session))
+    watch_change_log()
+    seat = seated(TerminalSession(root, env, agent, session))
     relaunching = runtime.relaunch_file(root, session)
     stopping = session_flag(root, session)
-    stamps = watched(root)
+    stamps = installed_stamp(root)
     began = time.time()
-    confirm = Confirm(root, env, session, agent)
+    driver = DRIVERS[agent](Record(root, env), session)
+    confirm = Confirm(driver)
+    kept = checks(seat, driver)
+    services = Manager(root, lifeline, sources=(plugin_services,), faulted=lambda where: threw(root, env, where))
     last_check = last_viewer = last_services = last_checks = 0.0
     watching = None
     exits: list = []
-    driver, kept = checks(seat)
-    services = Manager(root, lifeline, sources=(plugin_services,))
-    while True:
-        time.sleep(TICK)
-        confirm.tick()
-        if asked(root, began) or stopping.is_file():
-            stopping.unlink(missing_ok=True)
-            return STOP
-        if relaunching.is_file():
-            return RELAUNCH
-        now = time.time()
-        if now - last_services >= SERVICES_EVERY:
-            last_services = now
-            services.tick()
-        if now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
-            last_viewer = now
-            watching = keep_viewer(root, cwd, watching, exits)
-            if crashing(exits):
-                return HEAL
-        if now - last_checks >= CHECKS_EVERY:
-            last_checks = now
-            if moved(seat):
-                return RELOAD
-            if not kept:
-                driver, kept = checks(seat)
-            run_checks(seat, driver, kept)
-        if now - last_check >= RELOAD_EVERY:
-            last_check = now
-            if watched(root) != stamps and not runtime.upgrading(root):
-                return RELOAD
+    keeps = own_build(root)
+    engines = threading.Event()
+    supervising = threading.Thread(target=supervise, args=(root, engines), daemon=True)
+    if keeps:
+        supervising.start()
+    try:
+        while True:
+            time.sleep(TICK)
+            confirm.tick()
+            if asked(root, began) or stopping.is_file() or TERMINATED.is_set():
+                stopping.unlink(missing_ok=True)
+                return STOP
+            if relaunching.is_file():
+                return RELAUNCH
+            now = time.time()
+            if keeps and now - last_services >= SERVICES_EVERY:
+                last_services = now
+                run_services(seat, services)
+            if keeps and now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
+                last_viewer = now
+                watching = keep_viewer(root, cwd, watching, exits)
+                if crashing(exits):
+                    return HEAL
+            if now - last_checks >= CHECKS_EVERY:
+                last_checks = now
+                if moved(seat):
+                    return RELOAD
+                if not kept:
+                    kept = checks(seat, driver)
+                run_checks(seat, driver, kept)
+            if now - last_check >= RELOAD_EVERY:
+                last_check = now
+                if installed_stamp(root) != stamps and not runtime.upgrading(root):
+                    return RELOAD
+    finally:
+        engines.set()
+        if keeps:
+            supervising.join(timeout=ENDING)
+
+
+def ended(signum, frame) -> None:
+    TERMINATED.set()
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, ended)
     root, cwd, env, agent, session = sys.argv[1:6]
     raise SystemExit(run(Path(root), Path(cwd), env, agent, session, int(sys.argv[6]) if len(sys.argv) > 6 else -1))

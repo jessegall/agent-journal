@@ -1,6 +1,9 @@
 import subprocess
+import sys
+import threading
 import time
-from dataclasses import dataclass
+from contextlib import contextmanager
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from controllers.types import Agents, Nudges
@@ -10,13 +13,16 @@ from commands.cli import captured  # noqa: F401
 from commands.cli import run  # noqa: F401
 import commands.http  # noqa: F401
 from commands.dispatch import dispatch  # noqa: F401
-from commands.queries import asked_for  # noqa: F401
-from commands.queries import asked_history  # noqa: F401
-from commands.queries import asked_prompts  # noqa: F401
-from commands.queries import asked_resume  # noqa: F401
-from commands.queries import asked_slate  # noqa: F401
-from commands.queries import defaults  # noqa: F401
+from commands.demo import demo_built  # noqa: F401
+import commands.launch_update as launch_update  # noqa: F401
+from commands.launch import asked_for  # noqa: F401
+from commands.launch import asked_history  # noqa: F401
+from commands.launch import asked_prompts  # noqa: F401
+from commands.launch import asked_resume  # noqa: F401
+from commands.launch import asked_slate  # noqa: F401
+from commands.launch import defaults  # noqa: F401
 from commands.queries import ended  # noqa: F401
+from migrations.m0062_clean_slate_moved_into_its_file import run as clean_slate_moved  # noqa: F401
 from features.plans.controller import Plans  # noqa: F401
 from features.plugins.manifest import MANIFEST  # noqa: F401
 from features.plugins.manifest import read  # noqa: F401
@@ -24,7 +30,7 @@ from features.tickets.controller import Tickets  # noqa: F401
 from runner import engine as engine_module  # noqa: F401
 from runner import engines  # noqa: F401
 from runner.engine import Engine  # noqa: F401
-from runner.hooks import PAUSED  # noqa: F401
+from runner.gate import PAUSED  # noqa: F401
 from runner.hooks import answer  # noqa: F401
 from runner.hooks import handle  # noqa: F401
 
@@ -48,6 +54,10 @@ def idle(record, **more):
 
 def nudges(record):
     return [n.title for n in Nudges(record).all()]
+
+
+def nudges_with_briefs(record):
+    return [(n.title, n.brief) for n in Nudges(record).all()]
 
 
 def git(where: Path, *args: str) -> str:
@@ -81,3 +91,32 @@ def project_on(branch: str) -> Repo:
     git(project, "checkout", "-q", "-b", branch)
     commit(project, "shared.txt", "one\n")
     return Repo(record, project)
+
+
+AUDITED = {"open": "opened", "os.scandir": "scanned", "os.listdir": "scanned"}
+ACTIVE = threading.local()
+INSTALLED = []
+
+
+@dataclass
+class Work:
+    opened: list = field(default_factory=list)
+    scanned: list = field(default_factory=list)
+
+
+def recorded(event: str, args: tuple) -> None:
+    work = getattr(ACTIVE, "work", None)
+    if work is not None and event in AUDITED:
+        getattr(work, AUDITED[event]).append(str(args[0]))
+
+
+@contextmanager
+def counted():
+    if not INSTALLED:
+        sys.addaudithook(recorded)
+        INSTALLED.append(recorded)
+    ACTIVE.work = Work()
+    try:
+        yield ACTIVE.work
+    finally:
+        ACTIVE.work = None

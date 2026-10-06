@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.transcript import IDLE
 from controllers.types import Agents, environment_records
-from providers import PROVIDERS
+from providers import PROVIDERS, transcript_reader
 from resources.base import SYSTEM
 
 SETTLE, SETTLE_STEP = 1.5, 0.05
@@ -16,37 +16,43 @@ def settled(provider, path: Path, agent) -> None:
         time.sleep(SETTLE_STEP)
 
 
-def turns(record, agent) -> list:
-    provider = PROVIDERS.get(agent.provider)
-    if not provider or not agent.transcript:
-        return []
+def _settled_provider(agent):
+    provider = transcript_reader(agent)
+    if provider is None:
+        return None
+    settled(provider, Path(agent.transcript), agent)
+    return provider
+
+
+def turns(agent) -> list:
     try:
-        settled(provider(), Path(agent.transcript), agent)
+        provider = _settled_provider(agent)
+        if not provider:
+            return []
         size = Path(agent.transcript).stat().st_size
     except OSError:
         return []
     held = TURNS.get(agent.transcript)
     if not held or held[0] != size:
-        held = TURNS[agent.transcript] = (size, [t for t in provider().transcript(agent.transcript) if t.has_agent_text])
+        held = TURNS[agent.transcript] = (size, [t for t in provider.turns(agent.transcript) if t.has_agent_text])
     return held[1]
 
 
-def last_turn(record, agent):
-    provider = PROVIDERS.get(agent.provider)
-    if not provider or not agent.transcript:
+def last_turn(agent):
+    provider = _settled_provider(agent)
+    if not provider:
         return None
-    settled(provider(), Path(agent.transcript), agent)
-    recent = [t for t in provider().tail(agent.transcript) if t.has_agent_text] or turns(record, agent)
+    recent = [t for t in provider.last_turns(agent.transcript) if t.has_agent_text] or turns(agent)
     return recent[-1] if recent else None
 
 
-def last_text(record, agent) -> str:
-    written = last_turn(record, agent)
+def last_text(agent) -> str:
+    written = last_turn(agent)
     return written.text if written else ""
 
 
 def read_transcripts(root: Path) -> None:
     for record in environment_records(root):
-        for agent in Agents(record, actor=SYSTEM)._standing():
+        for agent in Agents(record, actor=SYSTEM).rows.standing():
             if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
                 PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))

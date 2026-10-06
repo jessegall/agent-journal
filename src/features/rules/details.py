@@ -1,18 +1,22 @@
 from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails, Line
-from features.recital import BEHAVIOURS, LINES, WHISPER
+from features.recital import LINES, WHISPER, whispering
+from features.groups import Group
 
 
 class RulesDetails(FeatureDetails):
+    explains = 'The journal repeats relevant rules to the agent. You can edit or close a rule when it changes.'
     name = "rules"
+    group = Group.MEMORY
+    label = "Remind the agent of rules"
     skill_of = "memory"
     when = "the user makes a ruling that binds every environment"
 
     title = "Rules"
 
     abstract = """
-        The rules said again at every quarter of the context, and the injected ones kept in
-        AGENTS.md and CLAUDE.md
+        Rules are repeated to the agent at every quarter of its context. Rules marked for it are
+        written into AGENTS.md and CLAUDE.md.
     """
 
     help = """
@@ -48,4 +52,4 @@ class RulesDetails(FeatureDetails):
         ),
     ]
 
-    behaviours = BEHAVIOURS
+    behaviours = whispering("rule")

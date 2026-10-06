@@ -10,7 +10,7 @@ from resources.base import SYSTEM
 def run(root: Path) -> str:
     record = Record(Path(root), runtime.env(Path(root)))
     templates = Templates(record, actor=SYSTEM)
-    retired = [row["n"] for row in templates.summaries() if row["title"] in RETIRED and not row["completed"]]
+    retired = [row["n"] for row in templates.rows.summaries() if row["title"] in RETIRED and not row["completed"]]
     for n in retired:
         templates.complete(n, how="replaced by the Functional design doc template")
     made = ship(record)

@@ -1,14 +1,18 @@
 from features.base import FeatureDetails, Line
 from features.templates.instructions import INSTRUCTIONS
+from features.groups import Group
 
 
 class TemplatesDetails(FeatureDetails):
+    explains = 'The agent can start an item from a saved template. You can choose the template and edit the result.'
     name = "templates"
+    group = Group.RECORDS
+    label = "Templates"
     when = "something is to be made from a template, or a template is written"
 
     title = "Templates"
 
-    abstract = "Instructions and a starting skeleton that any resource can be made from"
+    abstract = "Saved instructions and a starting outline for new items"
 
     help = """
         A template is written once and used for many resources. Its brief holds the

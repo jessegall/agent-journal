@@ -12,7 +12,7 @@ def run(root: Path) -> list[str]:
         return []
     tickets = Tickets(records[0], actor=SYSTEM)
     reshaped = []
-    for ticket in tickets._standing():
+    for ticket in tickets.rows.standing():
         shaped = card_back(ticket.brief)
         if shaped != ticket.brief:
             tickets.update(ticket.n, brief=shaped)

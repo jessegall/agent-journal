@@ -7,6 +7,10 @@ from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
 SHARED_TYPES = ("doc", "report", "collection", "plan")
 
 
+def ended(completed: float, expires: float) -> bool:
+    return bool(completed) or bool(expires and expires < time.time())
+
+
 class Share(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Share",
@@ -33,4 +37,4 @@ class Share(Shape, Resource):
 
     @property
     def ended(self) -> bool:
-        return bool(self.completed) or bool(self.expires and self.expires < time.time())
+        return ended(self.completed, self.expires)

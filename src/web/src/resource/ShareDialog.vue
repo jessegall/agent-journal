@@ -1,13 +1,14 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {store} from "../state/store.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
 import {KINDS, approveShare, checkTunnel, sharesOf, stopShare, tunnelStatus, waitingOf} from "../composables/shares.js";
-import TunnelProblem from "./TunnelProblem.vue";
+import TunnelProblem from "../pages/TunnelProblem.vue";
 import OpenShareList from "./OpenShareList.vue";
 import ShareMadeLink from "./ShareMadeLink.vue";
 import ShareOpens from "./ShareOpens.vue";
@@ -35,7 +36,7 @@ async function awaitLink(share) {
     const until = Date.now() + WAIT_FOR;
     tunnel.value = "starting";
     while (tunnel.value === "starting") {
-        const got = await api.command("share", "reachable", {n: share.n}).catch(() => ({}));
+        const got = await api.shareReachable(share.n).catch(() => ({}));
         if (tunnel.value !== "starting") return;
         if (got.reachable) tunnel.value = "ready";
         else if (Date.now() > until) tunnel.value = "late";
@@ -54,13 +55,13 @@ const tabs = computed(() => [
     {key: "new", title: "New link"},
     {key: "open", title: "Open links", count: open.value.length + waiting.value.length},
 ]);
-const loggedIn = (status) => (tunnelStatus.value = status);
+const loggedIn = (status) => (store.tunnel = status);
 const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.installed || !tunnelStatus.value.logged_in));
 
 onMounted(async () => {
     checkTunnel();
     try {
-        opens.value = await api.command("share", "opens", {ref: ref_.value});
+        opens.value = await api.shareOpens(ref_.value);
     } catch (e) {
         error.value = e.message;
         opens.value = [];
@@ -121,7 +122,7 @@ async function stop(share) {
 </script>
 
 <template>
-    <Dialog small fixed tall title="Share" @close="emit('close')">
+    <Dialog small tall title="Share" @close="emit('close')">
         <div class="share">
             <div class="tabs-row">
                 <TabBar v-model="tab" :tabs="tabs" />
@@ -138,7 +139,12 @@ async function stop(share) {
                             </template>
                             <template v-else>
                                 <ShareOpens :opens="opens" />
-                                <ShareSettings v-model:expires="expires" v-model:password="password" v-model:comments="comments" v-model:agent-replies="agentReplies" />
+                                <ShareSettings
+                                    v-model:expires="expires"
+                                    v-model:password="password"
+                                    v-model:comments="comments"
+                                    v-model:agent-replies="agentReplies"
+                                />
                             </template>
                         </template>
                         <template #open>

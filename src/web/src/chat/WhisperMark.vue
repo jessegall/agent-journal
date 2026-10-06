@@ -1,8 +1,8 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import {peekRef} from "../route.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({
     row: {type: String, required: true},
@@ -15,7 +15,7 @@ const n = computed(() => Number(props.row.split(":")[1]));
 const named = computed(() => `${(meta(type.value) || {title: type.value}).title.toLowerCase()} ${n.value}`);
 const mark = computed(() => ({
     icon: "reminders",
-    label: "Reminded the agent of",
+    label: "Reminder sent to the agent",
     name: named.value,
     at: props.at,
     title: `Open ${named.value}: ${props.title}`,

@@ -1,4 +1,5 @@
 import errno
+import os
 import socket
 import time
 from pathlib import Path
@@ -9,7 +10,8 @@ FULL_FOR = 2.0
 
 
 def folder(root: Path) -> Path:
-    return Path("/tmp") / f"journal-{digest(str(Path(root).resolve()), 16)}"
+    shared = Path("/tmp") / f"journal-{digest(str(Path(root).resolve()), 16)}"
+    return shared if not shared.exists() or shared.stat().st_uid == os.getuid() else shared.with_name(f"{shared.name}-{os.getuid()}")
 
 
 def path(root: Path, session: str) -> Path:
@@ -18,7 +20,7 @@ def path(root: Path, session: str) -> Path:
 
 def listen(root: Path, session: str) -> socket.socket:
     where = path(root, session)
-    where.parent.mkdir(parents=True, exist_ok=True)
+    where.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     where.unlink(missing_ok=True)
     inbox = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     inbox.bind(str(where))

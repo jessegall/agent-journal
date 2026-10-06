@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 
 const props = defineProps({report: Object});
 
@@ -14,7 +14,7 @@ const groups = computed(() => {
     return [...found].map(([name, findings]) => ({name, findings}));
 });
 
-const opens = (finding) => `#/${route.value.env}/file?q=${encodeURIComponent(finding.file)}${finding.line ? `&line=${finding.line}` : ""}`;
+const opens = (finding) => href.file(route.value.env, finding.file, finding.line);
 const place = (finding) => (finding.line ? `${finding.file}:${finding.line}` : finding.file);
 </script>
 

@@ -25,7 +25,7 @@ const accepting = ref(false);
 
 async function acceptAll() {
     accepting.value = true;
-    for (const card of proposing.value) await api.act("ticket", card.n, "accept_dependencies");
+    for (const card of proposing.value) await api.acceptDependencies(card.n);
     accepting.value = false;
     board.refresh();
 }
@@ -51,8 +51,8 @@ function drop() {
             <span class="title">{{ lane.title }}</span>
             <span class="meaning">{{ meaningLabel }}</span>
             <template v-if="proposing.length > 1">
-                <Btn small :busy="accepting" title="Take every wait the agent proposed in this column" @click="acceptAll">
-                    Accept all waits
+                <Btn small :busy="accepting" title="Accept every dependency the agent suggested in this column" @click="acceptAll">
+                    Accept all suggestions in this column
                 </Btn>
             </template>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>

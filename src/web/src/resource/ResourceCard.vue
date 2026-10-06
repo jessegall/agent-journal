@@ -1,19 +1,14 @@
 <script setup>
-import Chip from "../kit/Chip.vue";
+import {meta} from "../domain/spec.js";
+import {startWords} from "../domain/triggerWords.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
-import {meta} from "../state/store.js";
 import {computed} from "vue";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 
 const props = defineProps({resource: Object});
-const startsWhen = (start) => {
-    if (!start) return "run by hand";
-    if (start.startsWith("trigger:")) return `starts when trigger ${start.slice(8)} fires`;
-    return `starts when a ${start.replace(".completed", " is finished").replace(".created", " is created")}`;
-};
 const plan = computed(() => {
     if (props.resource.type !== "plan") return null;
     const {phases = [], status = "building", current = 1} = props.resource.data;
@@ -45,9 +40,6 @@ const holds = computed(() => {
         <span class="head">
             <Icon :name="meta(resource.type).icon" :size="14" />
             <span class="n">{{ update ? update.label : `${meta(resource.type).title} ${resource.n}` }}</span>
-            <template v-if="resource.data.system">
-                <Chip title="Ships with the journal; it cannot be removed">System</Chip>
-            </template>
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
         <span class="title">{{ resource.title }}</span>
@@ -77,7 +69,7 @@ const holds = computed(() => {
                 }}{{ resource.sections.length > 1 ? "s" : "" }}
                 <template v-if="resource.type === 'sequence'">
                     ·
-                    {{ startsWhen(resource.data.starts_on) }}
+                    {{ startWords(resource) }}
                 </template>
             </span>
         </template>

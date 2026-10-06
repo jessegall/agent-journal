@@ -6,3 +6,7 @@ def orchestration(record) -> str:
         return ""
     return ("ORCHESTRATING: this environment's agent runs its boards and only delegates; every ticket's work is done by that "
             "ticket's own agent. journal board orchestrate off returns you to your own work.")
+
+
+def filler_model(record) -> str:
+    return BoardsDetails.values(record).filler_model

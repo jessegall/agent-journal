@@ -1,10 +1,11 @@
 <script setup>
+import {meta} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, route, swap, unpeek} from "../route.js";
-import {meta} from "../state/store.js";
-import {damaged, holding, rows} from "../sync/rows.js";
+import {go, href, route, swap, unpeek} from "../route.js";
+import {PAGE, holding, rows} from "../sync/rows.js";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -13,12 +14,14 @@ import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 import Revisions from "./Revisions.vue";
 import CollectionPage from "./CollectionPage.vue";
+import Dialog from "../kit/Dialog.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 import UpdateReport from "./UpdateReport.vue";
 import {isUpdate} from "../domain/updates.js";
 import {scopeIn} from "../composables/scope.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
+import {useWindowEvent} from "../composables/windowEvent.js";
 
 const props = defineProps({
     type: String,
@@ -46,10 +49,10 @@ async function readElsewhere() {
         "ticket",
         phases.flatMap((p) => p.tickets || [])
     );
-    await scope.recent("comment", 100);
+    await scope.recent("comment", PAGE);
 }
 if (scope) usePoll(`elsewhere:${props.env}:${props.type}:${props.n}`, readElsewhere, ELSEWHERE_EVERY);
-const broken = computed(() => (!resource.value && props.type ? damaged[`${props.type}:${props.n}`] : "") || "");
+const broken = computed(() => (!resource.value && props.type ? store.damaged[`${props.type}:${props.n}`] : "") || "");
 const repairAsked = ref(false);
 
 async function askRepair() {
@@ -66,17 +69,25 @@ watchEffect(() => {
     if (route.value.open) swap(type, Number(n));
     else go(route.value.env, type, Number(n));
 });
-const takesComments = computed(() => !!meta(props.type)?.takes_comments);
+const kind = computed(() => (props.type ? meta(props.type) : null));
+const kindTitle = computed(() => (kind.value ? kind.value.title : "item"));
+const takesComments = computed(() => !!kind.value?.takes_comments);
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
 const shape = computed(() =>
-    !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : meta(props.type).view
+    !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : kind.value?.view
 );
 const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
+useWindowEvent("keydown", (event) => {
+    if (event.key !== "Escape" || !route.value.open || route.value.open.type !== props.type || route.value.open.n !== props.n) return;
+    if (event.target.matches("input, textarea") && event.target.value) return;
+    event.preventDefault();
+    unpeek();
+});
 const stepTo = (n) => (route.value.open ? swap("report", n) : go(route.value.env, "report", n));
-const allUpdates = () => (location.hash = `#/${route.value.env}/report?sub=updates`);
+const allUpdates = () => (location.hash = href.reportUpdates(route.value.env));
 const swapping = ref(false);
 let settle = 0;
 watch(
@@ -91,84 +102,91 @@ watch(
 </script>
 
 <template>
-    <SidePanel
-        :open="(!!resource || !!broken) && !leaving"
-        :width="panelWidth"
-        :depth="depth"
-        :over="over"
-        @dismiss="close"
-        @close="emit('gone')"
-    >
-        <template v-if="broken">
-            <div class="damaged">
-                <EmptyState>{{ meta(type).title }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
-                <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
-                    {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
-                </Btn>
-            </div>
-        </template>
-        <template v-else-if="panel === 'inspector'">
-            <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
-                <div class="inspector-pages">
-                    <Transition name="inspector-page">
-                        <div :key="resource.ref" :class="['inspector-page', shape]">
-                            <template v-if="swapping">
-                                <div class="skeleton">
-                                    <span class="blank short" />
-                                    <span class="blank wide" />
-                                    <span class="blank" />
-                                    <span class="blank" />
-                                    <span class="blank half" />
-                                </div>
-                            </template>
-                            <template v-else>
-                                <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
-                            </template>
-                        </div>
-                    </Transition>
+    <template v-if="shape === 'agent'">
+        <Dialog large bare :open="(!!resource || !!broken) && !leaving" @dismiss="close" @close="emit('gone')">
+            <template v-if="resource">
+                <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                    <AgentPage :resource="resource" @close="close" />
+                </DocumentPage>
+            </template>
+        </Dialog>
+    </template>
+    <template v-else>
+        <SidePanel
+            :open="(!!resource || !!broken) && !leaving"
+            :width="panelWidth"
+            :depth="depth"
+            :over="over"
+            :close-label="`Close the ${kindTitle.toLowerCase()}`"
+            @dismiss="close"
+            @close="emit('gone')"
+        >
+            <template v-if="broken">
+                <div class="damaged">
+                    <EmptyState>{{ kindTitle }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
+                    <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
+                        {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
+                    </Btn>
                 </div>
-                <template v-if="takesComments">
-                    <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
-                </template>
-            </div>
-        </template>
-        <template v-else>
-            <div class="page">
-                <SwitchCase :value="shape">
-                    <template #plan>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <PlanPage :resource="resource" @close="close" />
-                        </DocumentPage>
+            </template>
+            <template v-else-if="panel === 'inspector'">
+                <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
+                    <div class="inspector-pages">
+                        <Transition name="inspector-page">
+                            <div :key="resource.ref" :class="['inspector-page', shape]">
+                                <template v-if="swapping">
+                                    <div class="skeleton">
+                                        <span class="blank short" />
+                                        <span class="blank wide" />
+                                        <span class="blank" />
+                                        <span class="blank" />
+                                        <span class="blank half" />
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
+                                </template>
+                            </div>
+                        </Transition>
+                    </div>
+                    <template v-if="takesComments">
+                        <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
                     </template>
-                    <template #collection>
-                        <DocumentPage :resource="resource" :focus="focusComment" :shown="resource.refs" @close="close">
-                            <CollectionPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </template>
-                    <template #agent>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <AgentPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </template>
-                    <template #document>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <template v-if="resource.data.revisions">
-                                <Revisions :resource="resource" @close="close" />
-                            </template>
-                            <template v-else-if="isUpdate(resource)">
-                                <ResourceBody :resource="resource" :comments="false" :links="false" @close="close">
-                                    <UpdateReport :resource="resource" @step="stepTo" @all="allUpdates" />
-                                </ResourceBody>
-                            </template>
-                        </DocumentPage>
-                    </template>
-                    <template #default>
-                        <ResourceBody :resource="resource" @close="close" />
-                    </template>
-                </SwitchCase>
-            </div>
-        </template>
-    </SidePanel>
+                </div>
+            </template>
+            <template v-else>
+                <div class="page">
+                    <SwitchCase :value="shape">
+                        <template #plan>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <PlanPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #collection>
+                            <DocumentPage :resource="resource" :focus="focusComment" :linked="resource.refs" @close="close">
+                                <CollectionPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #document>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <template v-if="resource.data.revisions">
+                                    <Revisions :resource="resource" @close="close" />
+                                </template>
+                                <template v-else-if="isUpdate(resource)">
+                                    <ResourceBody :resource="resource" :comments="false" :links="false" @close="close">
+                                        <UpdateReport :resource="resource" @step="stepTo" @all="allUpdates" />
+                                    </ResourceBody>
+                                </template>
+                            </DocumentPage>
+                        </template>
+                        <template #default>
+                            <ResourceBody :resource="resource" @close="close" />
+                        </template>
+                    </SwitchCase>
+                </div>
+            </template>
+        </SidePanel>
+    </template>
 </template>
 
 <style scoped>

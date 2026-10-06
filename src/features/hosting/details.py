@@ -2,16 +2,21 @@ from features.base import FeatureDetails
 from features.hosting.files import HOSTING
 from engine.organization import FOLDER
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class HostingDetails(FeatureDetails):
+    explains = 'The journal can run a copy of the app for each ticket while it is worked on. You can open that copy to check the result.'
     name = "hosting"
+    group = Group.TICKETS
+    label = "Run a copy of the app for each ticket"
+    hint = "From its worktree, while it is worked on"
     skill_of = "organization"
     when = "a ticket's app is started, opened or stopped"
 
     title = "Ticket apps"
 
-    abstract = "A ticket runs its own copy of the project's app, from its worktree, while it is worked on"
+    abstract = "While a ticket is worked on, a copy of the project's app runs from the ticket's worktree."
 
     help = f"""
         {FOLDER}/{HOSTING} names the app: run is the command, with {{port}} and {{worktree}} filled in; ready is the path that

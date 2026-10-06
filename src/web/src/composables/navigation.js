@@ -1,14 +1,16 @@
+import {boardOn} from "./settings.js";
+import {recordCount} from "../domain/records.js";
+import {types} from "../domain/spec.js";
 import {computed} from "vue";
-import {PAGES, RESOURCE_GROUPS, SIDEBAR} from "../domain/navigation.js";
+import {PAGES, RESOURCE_GROUPS, SIDEBAR, pluralTitle} from "../domain/navigation.js";
 import {demo} from "../platform/demo.js";
-import {boardOn, counted, types} from "../state/store.js";
 
-const countOf = (t) => counted(t.name, t.needs_attention ? "unread" : "open");
+const countOf = (t) => recordCount(t.name, t.needs_attention ? "unread" : "open");
 
 const typeLink = (t) => ({
     key: t.name,
     page: t.name,
-    title: `${t.title}s`,
+    title: pluralTitle(t.title),
     icon: t.icon,
     text: t.abstract,
     count: countOf(t),
@@ -34,7 +36,7 @@ export function useNavigation() {
             key: "project",
             label: "Project",
             links: [
-                ...(boardOn.value ? [{...pageLink("kanban"), count: counted("todo")}] : []),
+                ...(boardOn.value ? [{...pageLink("kanban"), count: recordCount("todo")}] : []),
                 ...daily("project"),
                 ...(demo ? [] : [pageLink("plugins")]),
                 pageLink("resources"),

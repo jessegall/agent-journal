@@ -16,6 +16,6 @@ class GreetOnce(Handler):
 
 class RebuildStartBlock(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type in TYPES and (TYPES[event.type].start_heading or event.type in SHAPING):
+        if event.type in TYPES and (TYPES[event.type].start_heading or event.type in SHAPING) and not event.section:
             record = context.record
             bus.defer_once(f"start block {record.root} {record.env}", lambda: rebuild(record))

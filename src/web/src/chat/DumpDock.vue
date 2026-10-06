@@ -34,7 +34,7 @@ function open() {
             <span class="dump-dock-acts chat-dock-acts">
                 <Btn small @click="open">Open the collection</Btn>
             </span>
-            <CloseButton title="Take this dump out of the chat; its collection stays" @click="api.act('dump', dump.n, 'dismiss')" />
+            <CloseButton title="Hide from chat; its collection stays" @click="api.act('dump', dump.n, 'dismiss')" />
         </template>
     </ChatDock>
 </template>

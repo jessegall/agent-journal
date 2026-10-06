@@ -1,19 +1,24 @@
 from features.base import Behaviour, FeatureDetails, Line
-from features.journal_laws.handlers import LARGEST_RESULT, TOO_LONG
-from features.recital import BEHAVIOURS, LINES, WHISPER
+from features.recital import LINES, WHISPER, whispering
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
+
+LARGEST_RESULT = "largest result"
+TOO_LONG = "too long"
 
 
 class LawDetails(FeatureDetails):
+    explains = 'The journal gives every agent the same built-in rules for reading and delegating work. You can read their wording in the project’s instruction files.'
     name = "journal_laws"
+    group = Group.LAWS
     has_skill = False
 
-    title = "Journal laws"
+    title = "Laws"
 
     aliases = ("law",)
 
-    abstract = "The laws the journal ships to every agent and project: how to dispatch, and how to read"
+    abstract = "Rules every agent follows: how it starts subagents, and how much it reads at once."
 
     help = """
         Always on. The laws are handed to every session, kept in AGENTS.md and CLAUDE.md, and
@@ -55,16 +60,14 @@ class LawDetails(FeatureDetails):
     ]
 
     behaviours = [
-        *BEHAVIOURS,
+        *whispering("law"),
         Behaviour(
             name=LARGEST_RESULT,
-            title="Tell the agent when a tool result is the largest this session",
-            abstract="Only above the floor, and only when it is larger than every earlier result",
+            title="Tell the agent about the largest tool result so far",
         ),
         Behaviour(
             name=TOO_LONG,
-            title="Tell the agent when an instruction file is longer than its provider reads",
-            abstract="Once a day for each file, and again when it grows by another 4 KB",
+            title="Warn when CLAUDE.md or AGENTS.md is longer than the provider reads",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]
@@ -74,27 +77,25 @@ class LawDetails(FeatureDetails):
             name="cartoon_names",
             default=False,
             title="Name subagents after cartoon characters",
-            abstract="Dora the Explorer researches and Bob Ross designs, instead of famous people with a twist",
         ),
         Setting(
             name="whole_read_lines",
-            default=300,
-            title="Refuse reading a whole file longer than",
-            abstract="A file this long is read by range or searched, not read whole",
+            default=600,
+            title="Block reading a whole file longer than",
             unit="lines",
         ),
         Setting(
             name="output_lines",
             default=200,
-            title="Keep this many lines at each end of a long command's output",
-            abstract="The lines between are cut, with a note on how to see them; 0 keeps every line",
+            title="Lines kept from each end of long output",
+            abstract="0 keeps every line",
             unit="lines",
         ),
         Setting(
             name="result_floor",
             default=20_000,
-            title="Tell the agent about a tool result from",
-            abstract="A result smaller than this is never mentioned",
+            title="Ignore results smaller than",
+            under="largest result",
             unit="characters",
         ),
     ]

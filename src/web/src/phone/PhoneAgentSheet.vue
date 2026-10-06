@@ -1,7 +1,7 @@
 <script setup>
+import {line} from "../domain/statusQueue.js";
 import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
-import {line} from "../layout/bar.js";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
 import {plainDoing} from "./doing.js";
@@ -54,7 +54,7 @@ async function start(agent) {
 </script>
 
 <template>
-    <PhoneSheet v-slot="{close}" label="The agent" tall @close="emit('close')">
+    <PhoneSheet v-slot="{close}" label="Agent" tall @close="emit('close')">
         <h2 class="agent-title">The agent in {{ environment }}</h2>
         <dl class="agent-facts">
             <div class="agent-fact">

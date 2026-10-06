@@ -19,6 +19,8 @@ WATCH = 0.5
 GRACE = 5.0
 KILL_AFTER = 2.0
 PROBE = 1.0
+LEASE_WAIT = 5.0
+SESSION_ENDED = "the agent session that started it ended"
 STARTING, READY, STOPPED, EXITED = "starting", "ready", "stopped", "exited"
 
 
@@ -50,6 +52,7 @@ class ServiceSpec:
     url: str = ""
     owner: int = 0
     when: str = ""
+    idle: str = ""
 
     @classmethod
     def from_json(cls, raw: dict) -> "ServiceSpec":
@@ -133,11 +136,16 @@ def state(spec: ServiceSpec, name: str, child=None, **more) -> None:
 
 def lease(spec: ServiceSpec):
     held = open(spec.lock, "a")
-    try:
-        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        held.close()
-        return None
+    until = time.monotonic() + LEASE_WAIT
+    while True:
+        try:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except BlockingIOError:
+            if time.monotonic() >= until:
+                held.close()
+                return None
+            time.sleep(0.1)
     os.set_inheritable(held.fileno(), False)
     os.ftruncate(held.fileno(), 0)
     held.write(str(os.getpid()))
@@ -145,16 +153,16 @@ def lease(spec: ServiceSpec):
     return held
 
 
-def watch(spec: ServiceSpec, child, lifeline: int, stopping) -> str:
+def watch(spec: ServiceSpec, child, lifeline: int, stopping) -> tuple[str, str]:
     ready = False
     while child.poll() is None and not stopping[0]:
         seen, _, _ = select.select([lifeline], [], [], WATCH) if lifeline >= 0 else ([], [], [])
         if seen and not os.read(lifeline, 1):
-            return STOPPED
+            return STOPPED, SESSION_ENDED
         if not ready and answers(spec.port, spec.path):
             ready = True
             state(spec, READY, child, ready_at=time.time())
-    return STOPPED if stopping[0] else EXITED
+    return (STOPPED, "") if stopping[0] else (EXITED, "")
 
 
 def main(argv: list[str]) -> int:
@@ -175,9 +183,9 @@ def main(argv: list[str]) -> int:
                                  cwd=spec.cwd if spec.cwd else None, env={**os.environ, **spec.env},
                                  stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         state(spec, STARTING, child, started=time.time())
-        ended = watch(spec, child, lifeline, stopping)
+        ended, why = watch(spec, child, lifeline, stopping)
         teardown(child.pid, spec.grace)
-        state(spec, ended, child, last_exit=child.wait())
+        state(spec, ended, child, last_exit=child.wait(), why=why)
     held.close()
     return 0
 

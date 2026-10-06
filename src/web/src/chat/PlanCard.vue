@@ -1,4 +1,5 @@
 <script setup>
+import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -12,9 +13,8 @@ import {flyToBar} from "../composables/planFlight.js";
 import {usePlanRows} from "../composables/planRows.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
-import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../layout/statusline.js";
 
-const SHOWN_PHASES = 5;
+const PREVIEW_PHASES = 5;
 const props = defineProps({plan: Object, folded: Boolean});
 const dock = ref(null);
 const listing = ref(false);
@@ -25,7 +25,7 @@ const parked = computed(() => status.value === "parked");
 const building = computed(() => status.value === "building" || status.value === "draft");
 const others = computed(() => otherPlans(rows("plan")));
 const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
-const hidden = computed(() => Math.max(0, phases.value.length - SHOWN_PHASES));
+const hidden = computed(() => Math.max(0, phases.value.length - PREVIEW_PHASES));
 const adding = computed(() => (props.plan.data.stage === "todos" ? "Adding to-dos…" : "Adding phases…"));
 usePlanRows(() => [props.plan]);
 
@@ -69,18 +69,18 @@ async function start() {
                     small
                     class="plan-card-start"
                     :disabled="building"
-                    :title="building ? 'Start waits until the plan is ready' : 'Approve the plan and start it'"
+                    :title="building ? 'You can approve it once the plan is ready' : 'Approve the plan; the agent starts it'"
                     @click="start"
                 >
                     <Icon name="start" />
-                    {{ parked ? "Resume" : "Start" }}
+                    {{ parked ? "Resume" : "Approve" }}
                 </Btn>
             </span>
-            <CloseButton title="Take this plan out of the chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
+            <CloseButton title="Hide from chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
         </template>
         <template v-if="!parked && (phases.length || building)">
             <ol class="plan-card-phases" data-fades>
-                <template v-for="ph in phases.slice(0, SHOWN_PHASES)" :key="ph.n">
+                <template v-for="ph in phases.slice(0, PREVIEW_PHASES)" :key="ph.n">
                     <li class="plan-card-phase">
                         <span class="plan-card-n">{{ ph.n }}</span>
                         <span class="plan-card-name">{{ ph.title }}</span>

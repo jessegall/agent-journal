@@ -1,5 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
+import {useAnchoredAction} from "../composables/anchored.js";
+import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
@@ -8,13 +9,11 @@ import {useNavigation} from "../composables/navigation.js";
 import {go, route} from "../route.js";
 
 const {sections, groups} = useNavigation();
-const anchor = ref(null);
+const {anchor, toggle} = useAnchoredAction();
 const lists = computed(() => [
     ...sections.value.map((s) => ({key: s.key, title: s.label, links: s.links})),
     ...groups.value.map((g) => ({key: g.key, title: g.title, links: g.links})),
 ]);
-
-const toggle = (e) => (anchor.value = anchor.value ? null : e.currentTarget);
 
 function jump(page) {
     anchor.value = null;

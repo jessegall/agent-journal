@@ -1,9 +1,5 @@
-from engine.record import Record
-from engine.seats import terminal_of
-from engine.sessions import Sessions
-from engine.stop import ask_session
 from engine.organization import AGENT, PLAN, Role
-from features.agent_sessions.launch import PROVIDER, start_agent_in
+from features.agent_sessions.launch import PROVIDER, start_agent_in, tell_in
 
 
 def role_environment(env: str, role: Role, n: int) -> str:
@@ -21,19 +17,8 @@ def start_role_agent(record, role: Role, n: int, brief: str) -> str:
     if role.runs != AGENT:
         return ""
     name = role_environment(record.env, role, n)
-    if role.cardinality == PLAN and enter_into(record, name, kickoff(record.env, role, n, brief)):
+    if role.cardinality == PLAN and tell_in(record, name, PROVIDER, kickoff(record.env, role, n, brief)):
         return name
-    return start_agent_in(record, name, record.env, f"Where {role.title or role.name} works on to-do {n} of {record.env}",
+    return start_agent_in(record, name, record.env, f"Where {role.label} works on to-do {n} of {record.env}",
                           f"todo:{n}", kickoff(record.env, role, n, brief))
 
-
-def enter_into(record, name: str, text: str) -> bool:
-    from providers import DRIVERS
-    session = Sessions(record.root).holder(name)
-    return bool(session) and DRIVERS[PROVIDER](Record(record.root, name), terminal_of(record.root, session)).send(text, now=True, by=record.env)
-
-
-def stop_role_agent(record, name: str) -> None:
-    session = Sessions(record.root).holder(name)
-    if session:
-        ask_session(record.root, terminal_of(record.root, session))

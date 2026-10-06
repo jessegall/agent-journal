@@ -8,7 +8,7 @@ import Btn from "../kit/Btn.vue";
 import Highlight from "../resource/Highlight.vue";
 import Diff from "../kit/Diff.vue";
 import {sendMessage} from "../chat/outbox.js";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 
 const file = ref(null);
 const error = ref("");
@@ -17,7 +17,7 @@ const lines = computed(() => (file.value && !matches.value.length ? highlight(fi
 
 const diff = ref("");
 const changes = computed(() => route.value.sub === "diff");
-const shown = (sub) => `#/${route.value.env}/file?q=${encodeURIComponent(route.value.q)}${sub ? `&sub=${sub}` : ""}`;
+const modeHref = (sub) => href.file(route.value.env, route.value.q, 0, sub);
 
 async function load() {
     error.value = "";
@@ -74,7 +74,10 @@ async function reveal() {
 }
 
 onMounted(() => load().then(reveal));
-watch(() => [route.value.q, route.value.sub], () => load().then(reveal));
+watch(
+    () => [route.value.q, route.value.sub],
+    () => load().then(reveal)
+);
 watch(() => route.value.line, reveal);
 </script>
 
@@ -88,7 +91,7 @@ watch(() => route.value.line, reveal);
             <ul class="matches">
                 <template v-for="path in matches" :key="path">
                     <li>
-                        <a :href="`#/${route.env}/file?q=${encodeURIComponent(path)}`">
+                        <a :href="href.file(route.env, path)">
                             <Icon name="file" />
                             <code>{{ path }}</code>
                         </a>
@@ -102,17 +105,20 @@ watch(() => route.value.line, reveal);
                 <code class="path">{{ file.path }}</code>
                 <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${file.lines} lines · ` : ""}${file.size} bytes` }}</span>
                 <template v-if="!file.project">
-                    <a class="mode" :href="shown(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
+                    <a class="mode" :href="modeHref(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
                 </template>
             </header>
             <template v-if="file.project">
                 <p class="elsewhere">
-                    From another project, <strong>{{ file.project }}</strong>, at <code>{{ file.root }}</code>
+                    From another project,
+                    <strong>{{ file.project }}</strong>
+                    , at
+                    <code>{{ file.root }}</code>
                 </p>
             </template>
             <template v-if="changes">
                 <template v-if="diff">
-                    <Diff :text="diff" />
+                    <Diff :text="diff" :file-href="(path) => href.file(route.env, path)" />
                 </template>
                 <template v-else>
                     <EmptyState class="empty">No changes since the last commit.</EmptyState>
@@ -195,7 +201,6 @@ watch(() => route.value.line, reveal);
     justify-content: flex-end;
     gap: 8px;
 }
-
 
 .head {
     display: flex;

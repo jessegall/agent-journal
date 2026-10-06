@@ -1,16 +1,20 @@
 from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails
-from features.recital import BEHAVIOURS, LINES
+from features.recital import LINES, whispering
+from features.groups import Group
 
 
 class FactsDetails(FeatureDetails):
+    explains = 'The journal repeats relevant facts about this environment to the agent. You can edit or close a fact when it changes.'
     name = "facts"
+    group = Group.MEMORY
+    label = "Remind the agent of facts"
     skill_of = "memory"
     when = "you learn something a later session would get wrong without, or at a context mark"
 
     title = "Facts"
 
-    abstract = "What is true about the environment, said again to the agent as the window fills"
+    abstract = "Facts about this environment are repeated to the agent as its context fills."
 
     help = """
         A fact belongs to this environment. When you learn something about it that a later session would get wrong without,
@@ -30,4 +34,4 @@ class FactsDetails(FeatureDetails):
 
     lines = LINES
 
-    behaviours = BEHAVIOURS
+    behaviours = whispering("fact")

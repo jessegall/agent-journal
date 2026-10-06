@@ -1,8 +1,8 @@
 <script setup>
+import {types} from "../domain/spec.js";
 import {computed} from "vue";
 import {render} from "../text/index.js";
 import {peekChip, route} from "../route.js";
-import {types} from "../state/store.js";
 import "../text/all.js";
 
 const props = defineProps({text: {type: String, default: ""}, inline: {type: Boolean, default: false}});

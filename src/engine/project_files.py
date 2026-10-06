@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from resources.base import Refused
+from resources.base import Missing, Refused
 
 WALKED: dict[str, tuple] = {}
 WALKING: set[str] = set()
@@ -29,9 +29,17 @@ class ProjectSource:
 def project_path(project: Path, asked: str) -> Path:
     project = project.resolve()
     target = (project / asked).resolve()
-    if not asked or project not in target.parents or any(part.startswith(".") for part in target.relative_to(project).parts) or (SECRET.search(target.name) and not STYLE.search(target.name)):
+    if not asked or project not in target.parents or not readable_path(project, target):
         raise Refused(f"{asked!r} is not a file in the project that may be read")
     return target
+
+
+def readable_path(project: Path, target: Path) -> bool:
+    try:
+        parts = target.resolve().relative_to(project.resolve()).parts
+    except ValueError:
+        return False
+    return bool(parts) and all(not part.startswith(".") and (not SECRET.search(part) or index == len(parts) - 1 and STYLE.search(part)) for index, part in enumerate(parts))
 
 
 def read_source(project: Path, asked: str) -> ProjectSource:
@@ -88,3 +96,23 @@ def matching(project: Path, asked: str) -> list[str]:
         return sorted(by_name.get(asked, []))
     tail = f"/{asked.lstrip('./')}"
     return sorted(rel for rel in (str(path.relative_to(project)) for path in paths) if f"/{rel}".endswith(tail))
+
+
+def list_folder(project: Path, asked: str) -> list[dict]:
+    folder = project_path(project, asked) if asked else project
+    if not folder.is_dir():
+        raise Missing(f"no folder {asked} in the project")
+    out = []
+    for entry in os.scandir(folder):
+        if entry.name.startswith(".") or entry.name in UNLISTED:
+            continue
+        try:
+            project_path(project, str(Path(entry.path).relative_to(project)))
+        except Refused:
+            continue
+        inside = entry.is_dir()
+        listed = {"path": str(Path(entry.path).relative_to(project)), "name": entry.name, "folder": inside}
+        if not inside:
+            listed["size"] = entry.stat().st_size
+        out.append(listed)
+    return sorted(out, key=lambda x: (not x["folder"], x["name"].lower()))

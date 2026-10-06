@@ -1,4 +1,5 @@
 <script setup>
+import {ui} from "../state/ui.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, inject, ref} from "vue";
@@ -7,7 +8,6 @@ import PriorityIcon from "../kit/PriorityIcon.vue";
 import Spinner from "../kit/Spinner.vue";
 import StateDot from "../kit/StateDot.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
-import {litCard} from "../composables/litCard.js";
 import {api} from "../api/client.js";
 import {peek, peekThere} from "../route.js";
 import {ticketOf} from "../domain/ticketAgents.js";
@@ -73,9 +73,11 @@ const opener = ref(null);
 const titleOf = (name) => ([...store.board.agents, ...store.board.roles].find((who) => who.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
 const ticketed = computed(() => props.card.type === "ticket");
-const lit = computed(() => ticketed.value && litCard.value === props.card.n);
+const lit = computed(() => ticketed.value && ui.litCard === props.card.n);
 const working = computed(() =>
-    ticketed.value ? store.board.roles.filter((role) => !people().includes(role.name) && role.tickets.some((ticket) => ticket.n === props.card.n)) : [],
+    ticketed.value
+        ? store.board.roles.filter((role) => !people().includes(role.name) && role.tickets.some((ticket) => ticket.n === props.card.n))
+        : []
 );
 
 async function act(action) {
@@ -94,7 +96,13 @@ function begin(event) {
     <div
         :class="[
             'card',
-            {done, lit, moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n, before: over},
+            {
+                done,
+                lit,
+                moving: board.moving.value === card.n,
+                dragged: drag.dragged.value && drag.dragged.value.n === card.n,
+                before: over,
+            },
         ]"
         ref="self"
         role="button"
@@ -149,7 +157,7 @@ function begin(event) {
                 <Chip tone="accent">{{ titleOf(name) }}</Chip>
             </template>
             <template v-if="card.worker && card.worker.parked">
-                <Chip>parked</Chip>
+                <Chip>paused</Chip>
             </template>
             <template v-if="card.reported">
                 <Chip>Reported</Chip>
@@ -179,7 +187,10 @@ function begin(event) {
         <template v-if="card.repositories && card.repositories.length">
             <span class="repositories">
                 <template v-for="repo in card.repositories" :key="repo.name">
-                    <Chip :tone="repo.state === 'changed' ? 'accent' : ''" :title="`${repo.name} on ${repo.branch}: ${REPOSITORY_WORDS[repo.state]}`">
+                    <Chip
+                        :tone="repo.state === 'changed' ? 'accent' : ''"
+                        :title="`${repo.name} on ${repo.branch}: ${REPOSITORY_WORDS[repo.state]}`"
+                    >
                         {{ repo.name }} · {{ REPOSITORY_WORDS[repo.state] }}
                     </Chip>
                 </template>

@@ -12,7 +12,7 @@ def run(root: Path) -> list[str]:
         return []
     tickets = Tickets(records[0], actor=SYSTEM)
     moved = []
-    for ticket in [tickets.load(found["n"]) for found in tickets.summaries()]:
+    for ticket in [tickets.load(found["n"]) for found in tickets.rows.summaries()]:
         stamped = ticket.data.get("agent")
         if stamped in DRIVERS and stamped != ticket.provider:
             tickets.update(ticket.n, provider=stamped)

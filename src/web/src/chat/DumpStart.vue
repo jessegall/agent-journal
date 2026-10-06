@@ -21,16 +21,16 @@ const emit = defineEmits(["send", "files", "paste", "remove"]);
 <template>
     <div class="dump-start">
         <div class="dump-start-panel">
-            <p class="dump-prompt">Throw it all in.</p>
+            <p class="dump-prompt">Add your files.</p>
             <div :class="['dump-compose', {lit: files.length}]" @paste="emit('paste', $event)">
                 <template v-if="files.length">
-                    <DumpEyebrow>The pile · {{ counted(files.length, "file", "files") }}</DumpEyebrow>
+                    <DumpEyebrow>Files · {{ counted(files.length, "file", "files") }}</DumpEyebrow>
                     <DumpFiles :files="files" @remove="(i) => emit('remove', i)" />
                 </template>
                 <textarea
                     v-model="text"
                     rows="2"
-                    :placeholder="files.length ? 'Anything I should know before I sort it? Optional' : 'Type or paste anything'"
+                    :placeholder="files.length ? 'Anything the agent should know before sorting it? Optional' : 'Type or paste anything'"
                     @keydown.meta.enter.prevent="emit('send')"
                     @keydown.ctrl.enter.prevent="emit('send')"
                 />
@@ -53,14 +53,14 @@ const emit = defineEmits(["send", "files", "paste", "remove"]);
                 </DumpLane>
             </template>
             <p class="dump-context">
-                Mixed is fine. I sort it by subject, one document per subject with a proper name, and file each one straight into a new
-                collection. Rename or merge anything afterwards, or remove the whole collection.
+                Mixed is fine. The agent sorts it by subject, one document per subject with a proper name, and files each one straight into a new
+                collection. You can rename or merge anything afterwards, or remove the whole collection.
             </p>
             <template v-if="earlier.length">
                 <div class="dump-earlier">
                     <DumpEyebrow>Earlier dumps</DumpEyebrow>
                     <template v-for="d in earlier" :key="d.n">
-                        <button type="button" class="dump-earlier-row" @click="store.dumpShown = d.n">
+                        <button type="button" class="dump-earlier-row" @click="store.dumpSelected = d.n">
                             <span class="dump-earlier-title">
                                 Dump {{ d.n }}
                                 <template v-if="d.title !== `Dump ${d.n}`">· {{ d.title }}</template>

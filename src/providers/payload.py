@@ -2,23 +2,47 @@ import json
 import re
 from dataclasses import dataclass, field, replace
 from datetime import datetime
+from enum import StrEnum
 from typing import ClassVar
 from pathlib import Path
 
 from engine.fields import Loaded
 
-STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working", "PreToolUse": "working",
-          "PostToolUse": "working", "PreCompact": "compacting", "SubagentStart": "",
-          "SubagentStop": "", "SessionEnd": "stopped", "PermissionRequest": ""}
-PERMISSION = "PermissionRequest"
-DISPLAYED = "MessageDisplay"
+
+class HookEvent(StrEnum):
+    SESSION_START = "SessionStart"
+    STOP = "Stop"
+    USER_PROMPT_SUBMIT = "UserPromptSubmit"
+    PRE_TOOL_USE = "PreToolUse"
+    POST_TOOL_USE = "PostToolUse"
+    PRE_COMPACT = "PreCompact"
+    SUBAGENT_START = "SubagentStart"
+    SUBAGENT_STOP = "SubagentStop"
+    SESSION_END = "SessionEnd"
+    PERMISSION_REQUEST = "PermissionRequest"
+    MESSAGE_DISPLAY = "MessageDisplay"
+
+
+STATUS = {HookEvent.SESSION_START: "idle", HookEvent.STOP: "idle", HookEvent.USER_PROMPT_SUBMIT: "working", HookEvent.PRE_TOOL_USE: "working",
+          HookEvent.POST_TOOL_USE: "working", HookEvent.PRE_COMPACT: "compacting", HookEvent.SUBAGENT_START: "",
+          HookEvent.SUBAGENT_STOP: "", HookEvent.SESSION_END: "stopped", HookEvent.PERMISSION_REQUEST: ""}
+PERMISSION = HookEvent.PERMISSION_REQUEST
+DISPLAYED = HookEvent.MESSAGE_DISPLAY
 EVENTS = tuple(STATUS)
-
-
-
-
 OUTPUT_KEYS = ("stdout", "stderr", "content", "result", "text", "output")
+RECOMMENDED = "(Recommended)"
 SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/(journal(?:-[\w-]+)?)/SKILL\.md")
+
+
+@dataclass(frozen=True)
+class Chunk(Loaded):
+    aliases = {"event": ("hook_event_name",), "session": ("session_id",), "message": ("message_id",)}
+    event: str = ""
+    session: str = ""
+    message: str = ""
+    index: int = 0
+    delta: str = ""
+    final: bool = False
 
 
 @dataclass(frozen=True)
@@ -44,7 +68,11 @@ class AskedQuestion(Loaded):
 
     @property
     def options(self) -> list[dict]:
-        return [{"title": choice.label, "description": choice.description} for choice in self.choices if choice.label]
+        return [{"title": choice.label.removesuffix(RECOMMENDED).strip(), "description": choice.description} for choice in self.choices if choice.label]
+
+    @property
+    def pick(self) -> int | None:
+        return next((at for at, label in enumerate(self.labels, 1) if label.endswith(RECOMMENDED)), None)
 
 
 @dataclass(frozen=True)
@@ -56,6 +84,23 @@ class Asking(Loaded):
     @classmethod
     def of(cls, raw) -> "Asking | None":
         return cls.from_json(raw) if isinstance(raw, dict) and raw else None
+
+
+@dataclass(frozen=True)
+class HookFacts:
+    event: str
+    tool: str
+    file: str
+    cwd: str | None
+    transcript: str
+    inbox: str
+    model: str
+    effort: str
+    context: float | None
+    asking: dict
+    last_message: str
+    prompted: str | None
+    transcript_facts: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -127,7 +172,7 @@ class ToolCall(Loaded):
         return self.ws.url
 
     @property
-    def skill_loaded(self) -> str:
+    def loaded_skill(self) -> str:
         return self.skill if self.name == "Skill" else ""
 
 
@@ -166,6 +211,14 @@ class ToolUse(Loaded):
     @property
     def paths(self) -> tuple:
         return ()
+
+    @property
+    def path(self) -> str:
+        return self.paths[0] if self.paths else ""
+
+    @property
+    def shell_command(self) -> str | None:
+        return None
 
     @property
     def words(self) -> tuple:
@@ -235,6 +288,10 @@ class BashCall(ToolUse):
     @property
     def words(self) -> tuple:
         return (self.command,)
+
+    @property
+    def shell_command(self) -> str | None:
+        return self.command
 
     @property
     def commands(self) -> tuple:
@@ -459,8 +516,7 @@ def call_of(raw: dict, kinds: dict) -> ToolUse:
 @dataclass(frozen=True)
 class Hook(Loaded):
     aliases = {"event": ("hook_event_name",), "session": ("session_id",), "transcript": ("transcript_path",),
-               "last_message": ("last_assistant_message",), "agent": ("agent_id",)}
-    agent_type: str = ""
+               "last_message": ("last_assistant_message",), "agent": ("agent_id",), "tool_use": ("tool_use_id", "call_id")}
     event: str = ""
     session: str = ""
     transcript: Path | None = None
@@ -471,13 +527,10 @@ class Hook(Loaded):
     last_message: str = ""
     agent: str = ""
     prompt: str = ""
+    tool_use: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod
     def read(cls, raw: dict, kinds: dict) -> "Hook":
         hook = cls.from_json(raw)
         return replace(hook, session=hook.transcript.stem if hook.transcript else hook.session, tool=call_of(raw, kinds))
-
-    @property
-    def shell(self) -> str | None:
-        return self.tool.command if isinstance(self.tool, BashCall) else None

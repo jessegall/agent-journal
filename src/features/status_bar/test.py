@@ -4,7 +4,7 @@ from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
 from features.status_bar.bar import bar, current
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 
 NOW = 1_000_000.0
@@ -87,32 +87,10 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
     assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
 
 
-def test_the_band_tracks_the_cursor_through_keyboard_codes_and_scroll_regions():
-    from agents.band import ROWS, Cursor, Translator
-    cursor = Cursor(40, 120)
-    cursor.feed(Translator(40).feed(b"\x1b[5;3H\x1b[<u\x1b[>5u\x1b[>4;2m\x1b(B\x0f"))
-    assert (cursor.row, cursor.col) == (5 + ROWS, 3), "a private-parameter code prints nothing, so the column stays put"
-    cursor.feed(Translator(40).feed(b"\x1b[H\x1b[2;30r"))
-    assert (cursor.row, cursor.col) == (ROWS + 1, 1), "setting a region homes the cursor to the top of the agent's screen, below the band"
-
-
-def test_the_header_names_the_installed_version(tmp_path):
-    import re
-    from agents.band import Band
-    from engine.version import version
-    current = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", 0.0))
-    assert f"JOURNAL {version()}" in current, current
-
-
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
     from supervisor import typing
     assert (typing(b"\x1bP>|iTerm2 3.5\x1b\\"), typing(b"\x1b]11;rgb:1616/1818/1d1d\x07"), typing(b"a")) == (False, False, True), \
         "a version or colour reply comes in on the keyboard but holds nothing"
-
-
-def test_with_the_header_off_nothing_is_drawn_or_wiped():
-    from agents import band
-    assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
 
 
 def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
@@ -183,3 +161,106 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert marks() == [("Running tests", "running")], "a test run shows as a mark while it runs"
     handle(claude, record.root, record.env, {**tests, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "3 passed, 1 failed in 0.2s"}})
     assert marks() == [("Tests failed", "failed")], "and turns red in place when a test fails"
+
+
+def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(tmp_path, monkeypatch):
+    import json
+    import subprocess
+    from pathlib import Path
+    from providers import PROVIDERS
+    from providers.base import HookCommand
+    script = Path(__file__).resolve().parents[2] / "claude-status.sh"
+    payload = {"session_id": "s-9", "context_window": {"context_window_size": 1000000},
+               "rate_limits": {"five_hour": {"used_percentage": 42, "resets_at": 1791300000}}}
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "AGENT_JOURNAL_ACTIVE": "1"}
+    subprocess.run(["sh", str(script)], input=json.dumps(payload), env=env, capture_output=True, text=True, timeout=10, check=True)
+    monkeypatch.setenv("HOME", str(tmp_path))
+    claude = PROVIDERS["claude"]()
+    usage = claude.usage(tmp_path / "s-9.jsonl")
+    assert [(w.key, w.used, w.resets) for w in usage] == [("five_hour", 42.0, 1791300000)], "the status line's rate limits come back as usage windows"
+    assert claude.reported(tmp_path / "s-9.jsonl", "context_window") == {"context_window_size": 1000000}, "and its context window size"
+    from features.status_bar.usage import observe
+    kept = observe("claude", str(tmp_path / "s-9.jsonl"), {}, now=1791200000)
+    assert [w["key"] for w in kept["windows"]] == ["five_hour"], "a window that has not reset yet is kept on the agent"
+    assert observe("claude", str(tmp_path / "s-9.jsonl"), kept, now=1791400000) == {"windows": []}, "a window past its reset time is dropped"
+    assert (observe("claude", str(tmp_path / "none.jsonl"), kept), observe("claude", str(tmp_path / "none.jsonl"), {})) == ({}, None), \
+        "an agent whose usage can no longer be read has its old windows cleared, and one that never had any is left alone"
+    project = tmp_path / "project"
+    (project / ".claude").mkdir(parents=True)
+    claude.save(project, {"statusLine": {"type": "command", "command": "my-own-status"}})
+    claude.wire(project, HookCommand(tmp_path / "hook.sh", "claude", project / ".journal"))
+    assert claude.settings(project)["statusLine"]["command"] == "my-own-status", "a status line the user already has is kept"
+
+
+def codex_models(*models) -> list:
+    return [{"slug": slug, "display_name": slug.upper(), "visibility": "list", "supported_in_api": True, "default_reasoning_level": default,
+             "supported_reasoning_levels": [{"effort": effort} for effort in efforts]} for slug, default, efforts in models]
+
+
+def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_the_catalog_lacks(tmp_path, monkeypatch):
+    import json
+    from providers import PROVIDERS
+    from resources.base import Refused
+    codex = PROVIDERS["codex"]
+    monkeypatch.setenv("HOME", str(tmp_path))
+    (tmp_path / codex.home).mkdir()
+    down, up = "\x1b[B", "\x1b[A"
+    (tmp_path / codex.home / "config.toml").write_text('model = "beta"\nmodel_reasoning_effort = "high"\nproject_doc_max_bytes = 4096\n')
+    cache = tmp_path / codex.home / "models_cache.json"
+    cache.write_text(json.dumps({"models": codex_models(("alpha", "medium", ["low", "medium", "high", "max", "ultra"]), ("beta", "high", ["low", "high"]), ("bare", "", []))}))
+    options = codex.control_options("")
+    assert [choice["value"] for choice in options["groups"][1]["choices"]] == ["low", "high"], "with no model named, the configured model's efforts are offered"
+    assert [group["key"] for group in options["groups"][:1]] == ["model"]
+    assert codex.control_choice("effort", "low", "")["commands"] == ["/model", "", up], "an effort is one key press from the current one"
+    assert codex.commands_for("effort", "max", "alpha") == ["/model", "", down, ""], "max is the row after the standard ones, which the picker lists beside them"
+    assert codex.commands_for("effort", "ultra", "alpha") == ["/model", "", down, down], "ultra is the one after max"
+    assert codex.commands_for("model", "alpha", "beta") == ["/model", up, ""], "a model above the current one is one key up, and its own default effort needs no move"
+    assert codex.commands_for("model", "bare", "beta")[:2] == ["/model", down], "a model that lists no effort is chosen without an effort step"
+    assert codex.matched(codex.catalog(), "alpha-2026").slug == "alpha", "a dated name finds its model"
+    assert refused(lambda: codex.control_choice("model", "nowhere", "beta")), "a model the catalog lacks is refused"
+    cache.write_text("{}")
+    assert codex.control_options("beta")["groups"] == [] and refused(lambda: codex.control_choice("model", "beta", "beta")), "an empty catalog offers nothing, and its choice is refused"
+
+
+def test_codex_usage_comes_from_the_newest_token_count_and_its_crew_from_the_rollout(tmp_path):
+    import json
+    from providers.payload import Hook
+    from providers.codex import Codex
+    codex = Codex()
+    lines = lambda *rows: "".join(json.dumps({"timestamp": "2026-10-02T10:00:00Z", **row}, separators=(",", ":")) + "\n" for row in rows)
+    counted = lambda limits, used=0, window=0: {"type": "event_msg", "payload": {"type": "token_count", "rate_limits": limits, "info": {
+        "last_token_usage": {"total_tokens": used}, "model_context_window": window}}}
+    rollout = tmp_path / "rollout-2026-10-02T10-00-00-aaaaaaaa-0000-0000-0000-000000000001.jsonl"
+    rollout.write_text(lines(counted({"primary": {"used_percent": 10, "window_minutes": 300, "resets_at": 5}}),
+                             counted({"primary": {"used_percent": 20, "window_minutes": 300, "resets_at": 6},
+                                      "secondary": {"usedPercent": 30, "windowDurationMins": 10080, "resetsAt": 7}}, used=50000, window=200000),
+                             counted(None, used=100000, window=200000),
+                             counted({"primary": {"used_percent": None}, "secondary": {"used_percent": 1, "window_minutes": 2880, "resets_at": 9}})))
+    assert [(w.key, w.label, w.used, w.minutes, w.resets) for w in codex.usage(rollout)] == [("secondary", "2d", 1.0, 2880, 9)], \
+        "usage is the newest count that carries limits, and a window with no figures is left out"
+    rollout.write_text(lines(counted({"primary": {"used_percent": 20, "window_minutes": 300, "resets_at": 6},
+                                      "secondary": {"usedPercent": 30, "windowDurationMins": 10080, "resetsAt": 7}}, used=50000, window=200000),
+                             counted(None, used=100000, window=200000)))
+    assert [(w.key, w.label, w.used) for w in codex.usage(rollout)] == [("primary", "5h", 20.0), ("secondary", "7d", 30.0)], "both spellings of a window are read; a count without limits is passed over"
+    assert codex.context(Hook(transcript=rollout)) == 50.0 and (codex.usage(tmp_path / "none.jsonl"), codex.context(Hook(transcript=tmp_path / "none.jsonl"))) == (None, None), \
+        "context is the newest count's share of its window, and a missing rollout reports nothing"
+    assert [codex.window_label(m) for m in (300, 1440, 10080, 4320, 120, 45, 0)] == ["5h", "1d", "7d", "3d", "2h", "45m", "0m"]
+
+    child = "bbbbbbbb-0000-0000-0000-000000000002"
+    day = tmp_path / "2026" / "10" / "02"
+    day.mkdir(parents=True)
+    main = day / "rollout-2026-10-02T10-00-00-aaaaaaaa-0000-0000-0000-000000000001.jsonl"
+    call = lambda name, key, **more: {"type": "response_item", "payload": {"type": "function_call", "name": name, "call_id": key, **more}}
+    out = lambda key, text: {"type": "response_item", "payload": {"type": "function_call_output", "call_id": key, "output": text}}
+    script = 'const a = await tools.spawn_agent({task_name: "scan", agent_type: "explorer", model: "gpt-6-sol"});'
+    main.write_text(lines(call("exec", "s1", arguments=script), out("s1", json.dumps({"agent_id": child, "nickname": "Pip"})),
+                          call("exec_command", "b1", arguments=json.dumps({"cmd": "sleep 99 &"})), out("b1", "Script running with cell ID 7"),
+                          call("wait", "w1", arguments=json.dumps({"cell_id": "7"})), out("w1", "Script completed"),
+                          {"type": "compacted", "payload": {}}))
+    (day / f"rollout-2026-10-02T10-05-00-{child}.jsonl").write_text(lines({"type": "event_msg", "payload": {"type": "task_started"}}, {"type": "event_msg", "payload": {"type": "task_complete"}}))
+    crew = codex.crew(main)
+    subagent, = crew["subagent_rows"]
+    assert (subagent["task"], subagent["type"], subagent["model"], subagent["running"], subagent["session"]) == ("scan", "explorer", "gpt-6-sol", False, child), \
+        "a subagent spawned inside a script is found by its agent id, and its last task event says it finished"
+    assert (crew["subagents"], crew["compacting"]) == (1, True), "the rollout ending on a compaction says the agent is compacting"
+    assert codex.subagent_state(main, "cccccccc-0000-0000-0000-000000000003") == (True, 0.0), "a subagent whose rollout is not written yet is running"

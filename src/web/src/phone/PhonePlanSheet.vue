@@ -1,8 +1,8 @@
 <script setup>
 import {computed, ref} from "vue";
-import PhoneChevron from "./PhoneChevron.vue";
+import Icon from "../kit/Icon.vue";
 import PhoneSheet from "./PhoneSheet.vue";
-import {closed, counted, here, WAITS} from "./planGo.js";
+import {closed, here, phaseProgress, WAITS} from "./planGo.js";
 
 const props = defineProps({plan: {type: Object, required: true}, go: {type: Object, required: true}});
 const emit = defineEmits(["close", "read"]);
@@ -35,7 +35,7 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
                 <span class="plan-sheet-kind">Plan {{ plan.n }}</span>
                 <button type="button" class="plan-sheet-full" @click="emit('read', `plan:${plan.n}`)">
                     Full plan
-                    <PhoneChevron :size="12" />
+                    <Icon name="chevronRight" bold :size="12" />
                 </button>
             </header>
             <h2>{{ plan.title }}</h2>
@@ -44,7 +44,7 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
             </template>
             <template v-if="waits">
                 <section class="plan-sheet-wait">
-                    <h3>Waiting for you</h3>
+                    <h3>Needs you</h3>
                     <p>
                         Phase {{ at }} is done.
                         <template v-if="next">
@@ -92,10 +92,10 @@ const checkpointAfter = (i) => i === at.value && waits.value && next.value;
                             <span class="plan-sheet-phase-count">
                                 {{ phase.todos.length ? `${closed(phase)} of ${phase.todos.length}` : "No to-dos yet" }}
                             </span>
-                            <PhoneChevron :size="12" :facing="opened.has(index + 1) ? 'down' : 'right'" />
+                            <Icon name="chevronRight" bold :size="12" :facing="opened.has(index + 1) ? 'down' : 'right'" />
                         </button>
                         <template v-if="opened.has(index + 1)">
-                            <ul class="plan-sheet-todos" :aria-label="counted(phase)">
+                            <ul class="plan-sheet-todos" :aria-label="phaseProgress(phase)">
                                 <template v-for="todo in phase.todos" :key="todo.n">
                                     <li :class="{done: todo.done}">{{ todo.title }}</li>
                                 </template>

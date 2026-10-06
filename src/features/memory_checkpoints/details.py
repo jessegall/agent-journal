@@ -1,9 +1,13 @@
 from features.trigger import MINUTES, PERCENT, Trigger
 from features.base import Behaviour, FeatureDetails, Line
+from features.groups import Group
 
 
-class ContextDetails(FeatureDetails):
+class MemoryCheckpointsDetails(FeatureDetails):
+    explains = 'As the conversation fills, the journal asks the agent what should be remembered. You can review the facts and rules it saves.'
     name = "memory_checkpoints"
+    group = Group.MEMORY
+    label = "Ask the agent to save facts and rules as the conversation fills up"
     skill_of = "memory"
     when = "a context mark holds your writes until you record a fact, a rule or nothing"
 
@@ -13,8 +17,8 @@ class ContextDetails(FeatureDetails):
 
 
     abstract = """
-        At each mark of the context window the agent decides — fact, rule or nothing — before
-        any other write; and every week it reads every rule and fact again
+        Each time the agent's context reaches a mark, it decides whether to save a fact or a rule
+        before it changes files. Once a week it rereads every rule and fact.
     """
 
     help = """
@@ -32,8 +36,8 @@ class ContextDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="rereading",
-            title="Read every rule and fact again each week",
-            abstract="Named once a day while the reading is owed",
+            title="Reread every rule and fact once a week",
+            prefix="checks",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]

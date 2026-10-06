@@ -2,11 +2,13 @@ from controllers.base import Controller
 from resources import types
 from resources.base import Refused
 from engine.proc import ran
+from controllers.marks import action
 
 
 class Tools(Controller):
     resource = types.Tool
 
+    @action
     def run(self, n: int, *args: str):
         tool = self.load(n)
         project = self.record.root.parent

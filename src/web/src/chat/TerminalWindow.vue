@@ -1,7 +1,7 @@
 <script setup>
+import {agent as own} from "../composables/leadAgent.js";
 import {computed, ref, watch} from "vue";
 import TextInput from "../kit/TextInput.vue";
-import {agent as own} from "../state/store.js";
 import {useScope} from "../composables/scope.js";
 import {useTerminal} from "../composables/terminal.js";
 import {DEFAULT_LEVEL} from "../domain/verbosity.js";

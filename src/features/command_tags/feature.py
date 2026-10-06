@@ -1,13 +1,13 @@
 from features.base import Feature
 from features.journal import Journal
-from features.command_tags.details import TagsDetails
+from features.command_tags.details import CommandTagsDetails
 from features.command_tags.formatters import StripTags
 from features.command_tags.handlers import RunTagCommands, TeachTheTag
-from features.command_tags.reading import answered
+from features.command_tags.answering import answered
 
 
-class Tags(Feature):
-    details = TagsDetails
+class CommandTags(Feature):
+    details = CommandTagsDetails
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(RunTagCommands())

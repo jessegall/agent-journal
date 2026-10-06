@@ -1,10 +1,7 @@
-from concurrent.futures import ThreadPoolExecutor
 import json
 import mimetypes
 import os
-import re
 import tempfile
-import threading
 import time
 from email import policy
 from email.parser import BytesParser
@@ -13,77 +10,55 @@ from pathlib import Path
 
 from engine.fields import Loaded
 from queue import Empty, Queue
-from typing import Iterator, TypedDict
+from typing import Iterator
 from urllib.parse import quote
 
 import features
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
-from surfaces.summary import lately_summarized
+from overview.summary import lately_summarized
 from engine.color import identity, set_color
-from surfaces.updates import newer, upstream
+from engine.upgrades import check_now
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
-from features.family_tree.tree import family
-from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
-from features.skill_loading.required import load_now
+from features.permission_prompts.skipping import set_skipped
 from engine.files import found_files
-from features.file_feed.feed import PAGE, NoSuchEdit, Side, edited_file, edits_before, edits_since, notes
-from features.terminal.log import EVERYTHING, LEVELS as TERMINAL_LEVELS, lines as terminal_lines
 from controllers.base import LAST, networked
-from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
-from features.browser_control.controller import Asks
-from engine import bus, runtime, viewer
+from controllers.types import Agents, CONTROLLERS, Environments
+from engine import bus, runtime, typist, viewer
+from engine.package import CODE
 from surfaces.manifest import manifest
 from engine.version import version
+from engine.seats import terminal_of
+from agents.screen import screen_since
 from controllers.faults import broke, log_file
-from runner.hooks import answer, displayed
-from providers.payload import DISPLAYED
+from runner.chat_mirror import displayed
+from runner.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
 from providers.base import Provider
-from resources.base import AGENT, OPENED, USER, Refused, titled
-from resources.types import Ask
-from engine.stored import read_json, write_text, last_lines
-from features.plugins.dashboard import checked
-from features.plugins.declared import declared
-from features.plugins.lifecycle import called
-from features.plugins.source import data
-from engine.proc import git, ran
-from engine.project_files import UNLISTED, matching, project_path, read_source
+from resources.base import OPENED, USER, Refused, titled
+from engine.stored import last_lines
+from engine.git_view import commit, file_diff
+from engine.project_files import list_folder, matching, project_path, read_source
 from engine.paths import contained
-from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route
-from features.shaping import KEEP_SHAPED, settled, shaped
-from features.format import VIEWER, formatted
+from commands.dispatch import rank_routes, represented, route
+from features.routing import JSON, PLAIN, Reply, Request
+from resources.base import Missing
+
+from commands.invoke import invoked, takes_row
+from features.format import VIEWER, formatted, shaped
+from surfaces.attachments import attachments, listed_types
+from surfaces.listing import Listing, counted, listing
+from surfaces.settings import apply, settings
 from commands.dispatch import dispatch  # noqa: F401
-
-
-def renamed() -> dict:
-    return {(alias if isinstance(alias, str) else alias[0]):
-            (name if isinstance(alias, str) else f"{name}.{alias[1]}")
-            for name, f in features.FEATURES.items() for alias in f.aliases}
-
-
-def switches(record: Record) -> dict:
-    out = {}
-    for name, f in features.FEATURES.items():
-        out[name] = f.enabled(record)
-        for key in f.behaviours:
-            out[f.keyed(key)] = f.chosen(record, key)
-    return {**out, **{was: out[now] for was, now in renamed().items() if now in out}}
-
-
-def settings(record: Record) -> dict:
-    return {Record.features: switches(record),
-            Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery, Record.viewer: record.viewer,
-            **{name: view for name, f in features.FEATURES.items() if (view := f.settings_view(record)) is not None}}
 
 
 RESTART_GRACE = 15
 
 
-def unanswered(root: Path, env: str) -> None:
-    f = runtime.folder(root) / "hook-failures.log"
+def unanswered(root: Path) -> None:
+    f = runtime.hook_failures(root)
     try:
         logged = f.read_text(errors="replace")
     except FileNotFoundError:
@@ -93,14 +68,16 @@ def unanswered(root: Path, env: str) -> None:
     since = min(started - RESTART_GRACE, float(marked.read_text() or started)) if marked.is_file() else started - RESTART_GRACE
     lines = [line for line in logged.splitlines() if len(line.split()) > 2 and not since <= float(line.split()[0]) <= started]
     f.unlink(missing_ok=True)
-    if not lines:
-        return
-    codes = sorted({line.split()[1] for line in lines})
-    trouble = "\n".join([*lines[-5:], f"the hook got no answer from the server {len(lines)} times (codes {', '.join(codes)})"])
-    with log_file(root).open("a") as log:
-        log.write(f"the hook\n{trouble}\n")
-    broke(Record(root, env or runtime.env(root)), trouble, where="the hook")
-
+    by_env: dict[str, list[str]] = {}
+    for line in lines:
+        named = line.split()[3:4]
+        by_env.setdefault(named[0] if named else runtime.env(root), []).append(line)
+    for env, logged in by_env.items():
+        codes = sorted({line.split()[1] for line in logged})
+        trouble = "\n".join([*logged[-5:], f"the hook got no answer from the server {len(logged)} times (codes {', '.join(codes)})"])
+        with log_file(root).open("a") as log:
+            log.write(f"the hook\n{trouble}\n")
+        broke(Record(root, env), trouble, where="the hook")
 
 
 TRANSCRIPT_PAGE = 300
@@ -166,22 +143,6 @@ class Forgotten(Loaded):
 
 
 @dataclass(frozen=True)
-class SkillsQuery(Loaded):
-    agent: int = 0
-
-
-@dataclass(frozen=True)
-class Keywords(Loaded):
-    keywords: object = None
-
-    @property
-    def words(self) -> list:
-        if isinstance(self.keywords, list):
-            return self.keywords
-        return str(self.keywords).split(",") if self.keywords else []
-
-
-@dataclass(frozen=True)
 class TranscriptQuery(Loaded):
     since: int = 0
     before: int = 0
@@ -191,35 +152,6 @@ class TranscriptQuery(Loaded):
 @dataclass(frozen=True)
 class FindQuery(Loaded):
     q: str = ""
-
-
-@dataclass(frozen=True)
-class TerminalQuery(Loaded):
-    level: str = EVERYTHING
-
-
-@dataclass(frozen=True)
-class EditsQuery(Loaded):
-    since: float = 0.0
-    last: int = PAGE
-
-
-@dataclass(frozen=True)
-class OlderEditsQuery(Loaded):
-    before: float
-    last: int = PAGE
-
-
-@dataclass(frozen=True)
-class EditedFileQuery(Loaded):
-    id: str
-    side: str = Side.AFTER
-
-
-@dataclass(frozen=True)
-class PluginSource(Loaded):
-    source: str = ""
-    ref: str = ""
 
 
 @dataclass(frozen=True)
@@ -242,10 +174,10 @@ def post_hook(req: Request) -> Reply:
     asked = req.query_as(HookQuery)
     if Path(asked.root).resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
-    if req.body.get("hook_event_name") == DISPLAYED:
-        return Reply(200, {}, after=lambda: displayed(req.root, req.body))
-    unanswered(req.root, asked.env)
     provider = PROVIDERS[req.params["provider"]]()
+    chunk = provider.display_chunk(req.body)
+    if chunk is not None:
+        return Reply(200, {}, after=lambda: displayed(req.root, chunk))
     out = answer(provider, req.root, {**req.body, "inbox": asked.inbox}, asked.pid, asked.env)
     return Reply(403 if provider.refused(out) else 200, out)
 
@@ -264,50 +196,24 @@ def get_manifest(req: Request) -> Reply:
     return Reply(200, manifest(req.root))
 
 
-@route("GET", "/api/changelog")
-def get_changelog(req: Request) -> Reply:
-    from engine.version import version
-    from features.auto_update.check import journal_repository
-    from install import code
-    from surfaces.updates import FETCHING, newer
-    log = code(req.root) / "CHANGELOG.md"
-    if not log.is_file():
-        return Reply(404, {"error": "this install carries no changelog"})
-    cache = req.root / "runtime" / "upstream.cache"
-    latest = cache.read_text().strip() if cache.is_file() else ""
-    return Reply(200, {"version": version(), "changelog": log.read_text(), "latest": latest, "newer": newer(latest, version()),
-                       "checking": FETCHING.locked(), "updating": (req.root / "runtime" / "upgrading").exists(),
-                       "repository": journal_repository(req.root.parent)})
-
-
 @route("POST", "/api/update/check")
 def post_update_check(req: Request) -> Reply:
-    from surfaces.updates import check_now
     check_now(req.root)
     return Reply(200, {"checking": True})
 
 
-@route("POST", "/api/update")
-def post_update(req: Request) -> Reply:
-    from features.auto_update.check import installed, journal_repository
-    if journal_repository(req.root.parent):
-        raise Refused("this is the journal's own repository: it updates from its own code, not from a release")
-    threading.Thread(target=installed, args=(req.root,), daemon=True).start()
-    return Reply(200, {"updating": True})
-
-
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
-    names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).summaries() if not row["deleted"]]
-    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "environments": names})
+    names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries() if not row["deleted"]]
+    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "build": CODE.name, "pid": os.getpid(), "environments": names})
 
 
 @route("POST", "/api/identity")
 def post_identity(req: Request) -> Reply:
     try:
         set_color(req.root, req.body.get("color"))
-    except ValueError as e:
-        return Reply(400, {"error": str(e)})
+    except ValueError as error:
+        raise Refused(str(error)) from error
     return get_identity(req)
 
 
@@ -324,12 +230,6 @@ def get_agents(req: Request) -> Reply:
 @route("POST", "/api/{env}/appoint")
 def post_appoint(req: Request) -> Reply:
     return Reply(200, appoint(req.root, req.params["env"], req.body_as(Appointed).session))
-
-
-@route("POST", "/api/{env}/mode")
-def post_mode(req: Request) -> Reply:
-    from features.work_modes.modes import pick
-    return Reply(200, {"mode": pick(Record(req.root, req.params["env"]), str(req.body.get("mode", "")), USER)})
 
 
 @route("GET", "/api/agent-controls/{provider}")
@@ -349,29 +249,28 @@ def post_agent_shell(req: Request) -> Reply:
     return Reply(200, shell(req.root, req.params["env"], req.params["session"], line.command, line.now))
 
 
-@route("GET", "/api/{env}/agent/{session}/screen")
-def get_agent_screen(req: Request) -> Reply:
-    from engine.seats import terminal_of
-    from agents.terminal import screen_since
+def terminal_or_missing(req: Request) -> str:
     terminal = terminal_of(req.root, req.params["session"])
     if not terminal:
-        return Reply(404, {"error": f"no session {req.params['session']}"})
-    return Reply(200, asdict(screen_since(req.root, terminal, req.query_as(ScreenQuery).since)))
+        raise Missing(f"no session {req.params['session']}")
+    return terminal
+
+
+@route("GET", "/api/{env}/agent/{session}/screen")
+def get_agent_screen(req: Request) -> Reply:
+    return Reply(200, asdict(screen_since(req.root, terminal_or_missing(req), req.query_as(ScreenQuery).since)))
 
 
 @route("POST", "/api/{env}/agent/{session}/keys")
 def post_agent_keys(req: Request) -> Reply:
-    from engine.seats import terminal_of
-    from agents.terminal import type_keys
-    terminal = terminal_of(req.root, req.params["session"])
-    if not terminal:
-        return Reply(404, {"error": f"no session {req.params['session']}"})
-    return Reply(200, {"sent": type_keys(req.root, terminal, req.body_as(Keys).text)})
+    return Reply(200, {"sent": typist.send(req.root, terminal_or_missing(req), req.body_as(Keys).text.encode())})
 
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")
 def post_agent_relaunch(req: Request) -> Reply:
-    return Reply(200, relaunch(req.root, req.params["env"], req.params["session"], bool(req.body.get("skip"))))
+    skip = bool(req.body.get("skip"))
+    set_skipped(req.record(), skip)
+    return Reply(200, {**relaunch(req.root, req.params["env"], req.params["session"]), "skip": skip})
 
 
 @route("POST", "/api/{env}/agent/{session}/force")
@@ -413,8 +312,8 @@ def post_agent_hooks(req: Request) -> Reply:
     provider = provider_of(req)
     try:
         return Reply(200, {"hooks": provider.set_hooks(req.root.parent, req.body.get("hooks") or {})})
-    except ValueError as e:
-        return Reply(400, {"error": str(e)})
+    except ValueError as error:
+        raise Refused(str(error)) from error
 
 
 @route("GET", "/api/extension")
@@ -431,7 +330,7 @@ def get_extension_zip(req: Request) -> Reply:
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
     asked = req.query_as(EventsQuery)
-    return Reply(200, [e.to_json() for e in req.record().events(asked.since, asked.last)])
+    return Reply(200, [e.to_json() for e in req.record().event_log.events(asked.since, asked.last)])
 
 
 @route("GET", "/api/{env}/settings")
@@ -441,40 +340,7 @@ def get_settings(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/settings")
 def post_settings(req: Request) -> Reply:
-    record = req.record()
-    before = switches(record)
-    for key, value in req.body.items():
-        if key == Record.features and isinstance(value, dict):
-            moved, rows = renamed(), Features(record, actor=USER)
-            asked = {**{moved[name]: on for name, on in value.items() if name in moved}, **{name: on for name, on in value.items() if name not in moved}}
-            for name in (name for name in asked if "." not in name):
-                rows.switch(name, asked[name])
-            record.set_setting(key, {**{n: o for n, o in record.features.items() if "." in n},
-                                     **{n: o for n, o in asked.items() if "." in n}})
-            continue
-        if key == Record.viewer and isinstance(value, dict):
-            record.set_setting(key, {**record.viewer, **value})
-            continue
-        record.set_setting(key, value)
-    if "boards" in req.body:
-        from features.boards.agent_types import written
-        written(record.root.parent, record)
-    from features.session_briefing.block import rebuild
-    rebuild(record)
-    after = switches(record)
-    aliases = renamed()
-    turned = [f"{name} {'on' if on else 'off'}" for name, on in after.items() if name not in aliases and before.get(name) != on]
-    if turned:
-        Nudges(record, actor=USER)._to_primary(f"the user turned {', '.join(turned)}", "journal settings shows every switch")
-    return Reply(200, settings(record))
-
-
-@route("GET", "/api/upstream")
-def get_upstream(req: Request) -> Reply:
-    installed = version()
-    latest = upstream(req.root)
-    installs = features.FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in features.FEATURES else False
-    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs})
+    return Reply(200, apply(req.record(), req.body, USER))
 
 
 @route("POST", "/api/upgrade")
@@ -503,17 +369,6 @@ def command_of(args: list[str]) -> str:
     return " ".join(words[:2])
 
 
-@route("GET", "/api/{env}/changes")
-def get_changes(req: Request) -> Reply:
-    return Reply(200, {"changes": [asdict(note) for note in reversed(notes(req.record()))]})
-
-
-@route("GET", "/api/{env}/bar")
-def get_bar(req: Request) -> Reply:
-    from features.status_bar.bar import current
-    return Reply(200, current(req.record()))
-
-
 @route("POST", "/api/stop")
 def post_stop(req: Request) -> Reply:
     from engine.stop import ask
@@ -521,29 +376,10 @@ def post_stop(req: Request) -> Reply:
     return Reply(200, {"stopping": True})
 
 
-PROBED: list = [0.0, []]
-PROBE_FOR = 3.0
-PROBE_WAIT = 0.25
-
-
-def identity_at(port: int):
-    return viewer.identity(f"http://127.0.0.1:{port}/", PROBE_WAIT)
-
-
-def probe() -> None:
-    with ThreadPoolExecutor(len(viewer.PORTS)) as pool:
-        PROBED[:] = [time.time(), [(port, got) for port, got in zip(viewer.PORTS, pool.map(identity_at, viewer.PORTS)) if got]]
-
-
 @route("GET", "/api/journals")
 def get_journals(req: Request) -> Reply:
-    if not PROBED[0]:
-        probe()
-    elif time.time() - PROBED[0] >= PROBE_FOR:
-        PROBED[0] = time.time()
-        threading.Thread(target=probe, daemon=True).start()
     found = [{"port": port, "project": got.project, "version": got.version, "root": got.root, "current": got.root == str(req.root), "running": True}
-             for port, got in PROBED[1]]
+             for port, got in viewer.running_journals()]
     up = {str(req.root.resolve()), *(str(Path(j["root"]).resolve()) for j in found)}
     for j in viewer.known():
         if j.root not in up and Path(j.root).is_dir():
@@ -557,145 +393,19 @@ def post_forget(req: Request) -> Reply:
     return Reply(200, {"ok": True})
 
 
-@route("POST", "/api/{env}/browser/driver")
-def post_driver(req: Request) -> Reply:
-    Asks(req.record(), actor=USER)._drive(req.body.get("on"), req.body.get("url", ""), req.body.get("title", ""))
-    return Reply(200, {"ok": True})
-
-
-@route("POST", "/api/{env}/browser/pending")
-def post_pending(req: Request) -> Reply:
-    asks = Asks(req.record(), actor=USER).pending()
-    return Reply(200, {"data": [{"n": a.n, Ask.op: a.op, Ask.args: a.args} for a in asks]})
-
-
-@route("POST", "/api/{env}/browser/{n}/result")
-def post_result(req: Request) -> Reply:
-    got = Asks(req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
-    return Reply(200, shaped(got, req.record(), VIEWER))
-
-
-@route("GET", "/api/{env}/skills")
-def get_skills(req: Request) -> Reply:
-    return Reply(200, skills(req.record(), req.query_as(SkillsQuery).agent))
-
-
-@route("GET", "/api/{env}/skills/{name}")
-def get_skill(req: Request) -> Reply:
-    root = req.record().root.parent
-    hit = next((s for s in catalogue(root) if s[SKILL.name] == req.params["name"]), None)
-    if not hit:
-        return Reply(404, {"error": f"no skill {req.params['name']}"})
-    return Reply(200, {**hit, "text": (root / hit[SKILL.path]).read_text(errors="replace")})
-
-
-@route("POST", "/api/{env}/skills/{name}/load")
-def post_skill_load(req: Request) -> Reply:
-    return Reply(200, {"notice": load_now(req.record(), req.params["name"])})
-
-
-@route("POST", "/api/{env}/skills/{name}/always")
-def post_skill_always(req: Request) -> Reply:
-    record = req.record()
-    return Reply(200, {"skills": always(record, req.params["name"], bool(req.body.get("on")))})
-
-
-@route("POST", "/api/{env}/skills/{name}/keywords")
-def post_skill_keywords(req: Request) -> Reply:
-    words = req.body_as(Keywords).words
-    return Reply(200, {"keywords": set_keywords(req.record(), req.params["name"], [w.strip() for w in words if w.strip()])})
-
-
-def listed_types() -> list[str]:
-    return [t for t, c in CONTROLLERS.items() if tuple(c.resource.notified) != (AGENT,)]
-
-
-class AttachedFile(TypedDict):
-    type: str
-    n: int
-    title: str
-    name: str
-    description: str
-    size: int
-    at: float
-    image: bool
-    url: str
-
-
-def attached_file(record, type_: str, r, name: str, f: Path) -> AttachedFile:
-    return {"type": type_, "n": r.n, "title": r.title, "name": name, "description": r.files.get(name, ""), "size": f.stat().st_size,
-            "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
-            "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
-
-
-def listed_attachments(record, type_: str, controller) -> list[AttachedFile]:
-    files = []
-    for row in controller._attached():
-        folder = controller.folder(row.n)
-        for name in row.files:
-            file = contained(folder, name)
-            if file.is_file():
-                files.append(attached_file(record, type_, row, name, file))
-    return files
-
-
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
-    record = req.record()
-    controllers = [(type_, CONTROLLERS[type_](record, actor=USER)) for type_ in listed_types()]
-    summaries = [c.summaries() for _, c in controllers]
-    held = ATTACHED.get(str(record.home))
-    if held and all(a is b for a, b in zip(held[0], summaries, strict=True)):
-        return Reply(200, held[1])
-    out = []
-    for type_, c in controllers:
-        out.extend(listed_attachments(record, type_, c))
-    files = sorted(out, key=lambda x: -x["at"])
-    ATTACHED[str(record.home)] = (summaries, files)
-    return Reply(200, files)
-
-
-@route("GET", "/api/{env}/plugin/{n}/dashboard/{name}")
-def get_plugin_dashboard(req: Request) -> Reply:
-    row = Plugins(req.record(), actor=USER).load(req.params["n"])
-    board = next((b for b in declared(row).dashboards if b.name == req.params["name"]), None)
-    if board is None:
-        raise Missing(f"{called(row)} declares no dashboard {req.params['name']}")
-    found = read_json(data(req.record().root, called(row)) / "dashboards" / f"{board.name}.json", dict, None)
-    if found is None:
-        return Reply(200, {"title": board.title, "missing": f"{called(row)} has not written its {board.title} dashboard yet"})
-    try:
-        return Reply(200, {"title": board.title, **checked(found)})
-    except Refused as broken:
-        return Reply(200, {"title": board.title, "broken": str(broken)})
+    return Reply(200, attachments(req.record()))
 
 
 @route("GET", "/api/{env}/project-files")
 def get_project_files(req: Request) -> Reply:
-    project = req.root.parent.resolve()
-    asked = req.query.get("folder", "")
-    folder = project_path(project, asked) if asked else project
-    if not folder.is_dir():
-        raise Missing(f"no folder {asked} in the project")
-    out = []
-    for entry in os.scandir(folder):
-        if entry.name.startswith(".") or entry.name in UNLISTED:
-            continue
-        try:
-            project_path(project, str(Path(entry.path).relative_to(project)))
-        except Refused:
-            continue
-        inside = entry.is_dir()
-        listed = {"path": str(Path(entry.path).relative_to(project)), "name": entry.name, "folder": inside}
-        if not inside:
-            listed["size"] = entry.stat().st_size
-        out.append(listed)
-    return Reply(200, sorted(out, key=lambda x: (not x["folder"], x["name"].lower())))
+    return Reply(200, list_folder(req.checkout, req.query.get("folder", "")))
 
 
 @route("GET", "/api/{env}/project-files/find")
 def get_project_files_found(req: Request) -> Reply:
-    project = req.root.parent.resolve()
+    project = req.checkout
     asked = req.query_as(FindQuery).q
     files = []
     for found in found_files(project, asked):
@@ -713,7 +423,7 @@ class Transcript:
     path: Path
 
     def turns(self) -> list:
-        return self.provider.transcript(self.path)
+        return self.provider.turns(self.path)
 
     def links(self) -> list:
         return self.provider.work_links(self.path)
@@ -764,46 +474,9 @@ def get_subagent_links(req: Request) -> Reply:
     return Reply(200, {"links": found.links()})
 
 
-@route("GET", "/api/{env}/family")
-def get_family(req: Request) -> Reply:
-    return Reply(200, family(req.record()))
-
-
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
     return transcript_of(req)
-
-
-@route("GET", "/api/{env}/agent/{n}/edits")
-def get_edits(req: Request) -> Reply:
-    asked = req.query_as(EditsQuery)
-    return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), asked.since, asked.last)))
-
-
-@route("GET", "/api/{env}/agent/{n}/edits/older")
-def get_older_edits(req: Request) -> Reply:
-    asked = req.query_as(OlderEditsQuery)
-    return Reply(200, asdict(edits_before(req.record(), int(req.params["n"]), asked.before, asked.last)))
-
-
-@route("GET", "/api/{env}/agent/{n}/edits/file")
-def get_edited_file(req: Request) -> Reply:
-    asked = req.query_as(EditedFileQuery)
-    if asked.side not in Side:
-        raise Refused(f"side is {Side.BEFORE} or {Side.AFTER}")
-    try:
-        return Reply(200, asdict(edited_file(req.record(), int(req.params["n"]), asked.id, Side(asked.side))))
-    except NoSuchEdit as error:
-        raise Missing(str(error)) from error
-
-
-@route("GET", "/api/{env}/agent/{n}/terminal")
-def get_terminal(req: Request) -> Reply:
-    level = req.query_as(TerminalQuery).level
-    if level not in TERMINAL_LEVELS:
-        raise Refused(f"level is one of {', '.join(TERMINAL_LEVELS)}")
-    record = req.record()
-    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(req.params["n"]).title, level)})
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
@@ -811,76 +484,10 @@ def get_subagent_transcript(req: Request) -> Reply:
     return transcript_of(req, req.params["session"])
 
 
-@route("GET", "/api/pages")
-def get_pages(req: Request) -> Reply:
-    from engine.services import specs, status
-    from features.plugins.declared import declared
-    from features.plugins.lifecycle import called
-    from features.plugins.services import plugin_services, plugins as installed
-    where = {spec.id: spec for spec in specs(req.root, (plugin_services,))}
-    out = []
-    for row in installed(req.root):
-        plugin = called(row)
-        for page in declared(row).pages:
-            sid = f"{plugin}.{page.service}"
-            spec, state = where.get(sid), status(req.root, sid)
-            path = page.path if page.path else "/"
-            out.append({"plugin": plugin, "name": page.name, "title": page.title, "icon": page.icon if page.icon else "plug",
-                        "service": sid, "state": state.state if state.state else "not running", "path": path,
-                        "url": (spec.url if spec and spec.url else state.url) + path, "status": page.status})
-    return Reply(200, out)
-
-
-@route("GET", "/api/services")
-def get_services(req: Request) -> Reply:
-    from engine.services import listed
-    from features.plugins.services import plugin_services
-    return Reply(200, listed(req.root, (plugin_services,)))
-
-
-def asked_lines(req: Request) -> int:
-    return int(req.query.get("lines") or 200)
-
-
 @route("GET", "/api/services/{id}/log")
 def get_service_log(req: Request) -> Reply:
     from engine.services import log_file
-    return Reply(200, {"id": req.params["id"], "log": last_lines(log_file(req.root, req.params["id"]), asked_lines(req))})
-
-
-@route("POST", "/api/{env}/plugins/preview")
-def post_plugins_preview(req: Request) -> Reply:
-    from features.plugins.commands import VERSION
-    from features.plugins.lifecycle import drop
-    from features.plugins.source import previewed, staged
-    asked = req.body_as(PluginSource)
-    source = asked.source
-    where, manifest, commit, linked = staged(req.root, source, asked.ref, VERSION)
-    try:
-        return Reply(200, previewed(manifest, source, commit), timed=False)
-    finally:
-        drop(where, linked)
-
-
-@route("POST", "/api/{env}/plugins/{n}/upgrade-preview")
-def post_plugin_upgrade_preview(req: Request) -> Reply:
-    from controllers.types import Plugins
-    from features.plugins.commands import VERSION
-    from features.plugins.declared import Manifest
-    from features.plugins.lifecycle import changed, drop
-    from features.plugins.source import previewed, staged
-    row = Plugins(req.record(), actor=USER).load(req.params["n"])
-    where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
-    try:
-        return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(Manifest.of(row.manifest), manifest)}, timed=False)
-    finally:
-        drop(where, linked)
-
-
-@route("GET", "/api/plugins/{name}/log")
-def get_plugin_log(req: Request) -> Reply:
-    from features.plugins.source import log
-    return Reply(200, {"name": req.params["name"], "log": last_lines(log(req.root, req.params["name"]), asked_lines(req))})
+    return Reply(200, {"id": req.params["id"], "log": last_lines(log_file(req.root, req.params["id"]), req.asked_lines())})
 
 
 @route("POST", "/api/services/{id}")
@@ -895,23 +502,12 @@ def post_service(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/commit/{sha}")
 def get_commit(req: Request) -> Reply:
-    sha = req.params["sha"]
-    if not re.fullmatch(r"[0-9a-f]{7,40}", sha):
-        raise Missing("not a commit")
-    head = ran(["git", "show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], req.root.parent)
-    if head is None:
-        raise Missing("git did not answer")
-    stat = git(["show", "--stat=120", "--format=", sha], req.root.parent)
-    diff = git(["show", "--format=", "--no-color", sha], req.root.parent, timeout=10)
-    if head.returncode:
-        raise Missing(f"no commit {sha}")
-    full, author, at, subject, body = (head.stdout.rstrip("\n").split("\x1f", 4) + ["", "", "", ""])[:5]
-    return Reply(200, {"sha": full, "author": author, "at": float(at) if at else 0.0, "subject": subject, "body": body, "stat": stat, "diff": diff[:200000]})
+    return Reply(200, commit(req.checkout, req.params["sha"]))
 
 
 @route("GET", "/api/{env}/file")
 def get_file_text(req: Request) -> Reply:
-    project = req.root.parent.resolve()
+    project = req.checkout
     asked = req.query_as(FileQuery).path
     if asked and not Path(asked).is_absolute() and not (project / asked).is_file():
         matches = matching(project, asked)
@@ -922,14 +518,7 @@ def get_file_text(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/diff")
 def get_file_diff(req: Request) -> Reply:
-    project = req.root.parent.resolve()
-    asked = req.query_as(FileQuery).path
-    target = project_path(project, asked)
-    relative = str(target.relative_to(project))
-    diff = git(["diff", "--no-color", "HEAD", "--", relative], project, timeout=10)
-    if not diff and target.is_file() and not git(["ls-files", "--", relative], project):
-        diff = git(["diff", "--no-color", "--no-index", "--", "/dev/null", relative], project, timeout=10)
-    return Reply(200, {"path": relative, "diff": diff[:200000]})
+    return Reply(200, file_diff(req.checkout, req.query_as(FileQuery).path))
 
 
 @route("GET", "/api/{env}/search")
@@ -968,114 +557,6 @@ def get_stream(req: Request) -> Reply:
     return Reply(200, kind="text/event-stream", chunks=chunks())
 
 
-@dataclass(frozen=True)
-class ListingQuery(Loaded):
-    n: str = ""
-    last: int = LAST
-    completed: str = ""
-    before: int = 0
-    since: float = 0.0
-    by: str = ""
-
-
-@dataclass(frozen=True)
-class Listing:
-    only: frozenset
-    last: int
-    completed: bool
-    before: int
-    since: float
-    by_updated: bool
-
-    @classmethod
-    def from_query(cls, query: dict) -> "Listing":
-        asked = ListingQuery.from_json(query)
-        only = frozenset(int(n) for n in asked.n.split(",") if n)
-        return cls(only=only, last=0 if only else asked.last, completed=asked.completed in ("1", "true"), before=asked.before,
-                   since=asked.since, by_updated=asked.by == "updated")
-
-
-LISTED: dict[tuple, tuple] = {}
-ATTACHED: dict[str, tuple] = {}
-TALLIED: dict[tuple, tuple] = {}
-
-
-class ListedRows(TypedDict):
-    rows: list[dict]
-    more: bool
-
-
-def listing(controller, record, wanted: Listing) -> ListedRows:
-    summaries, stamp = controller.summaries(), settled(record)
-    key = (str(record.home), controller.type, wanted)
-    held = LISTED.get(key)
-    if held and held[0] is summaries and held[1] == stamp:
-        return held[2]
-    listed = _listed(controller, record, wanted, summaries, stamp)
-    if not wanted.since:
-        if len(LISTED) >= KEEP_SHAPED:
-            LISTED.clear()
-        LISTED[key] = (summaries, stamp, listed)
-    return listed
-
-
-def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> ListedRows:
-    since, only, last = wanted.since, wanted.only, wanted.last
-    rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"])
-            and (only or controller.resource.hidden_listed or not row.get("hidden"))
-            and (not wanted.before or row["n"] < wanted.before) and row["updated"] > since and (not only or row["n"] in only)]
-    if wanted.by_updated:
-        rows.sort(key=lambda row: row["updated"])
-    kept = rows[-last:] if last else rows
-    if wanted.completed and last:
-        standing = [row for row in rows if not row["completed"]][None if controller.resource.listed_open else -last:]
-        kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
-    return {"rows": [view for row in kept if (view := readable(controller, record, row["n"], row.get("stamp"), stamp))], "more": len(rows) > len(kept)}
-
-
-def readable(controller, record, n: int, row_stamp, settings: tuple) -> dict | None:
-    try:
-        return viewed(controller, record, n, row_stamp, settings)
-    except Refused:
-        return None
-
-
-VIEWED: dict[tuple, tuple] = {}
-
-
-def viewed(controller, record, n: int, row_stamp, settings: tuple) -> dict:
-    key = (str(record.home), controller.type, n)
-    stamp = (row_stamp, settings)
-    held = VIEWED.get(key)
-    if not row_stamp or not held or held[0] != stamp:
-        if len(VIEWED) >= KEEP_SHAPED:
-            VIEWED.clear()
-        held = VIEWED[key] = (stamp, shaped(controller.load(n), record, VIEWER))
-    return held[1]
-
-
-def counted(record, types) -> dict:
-    return {type_: _tally(record, type_) for type_ in types}
-
-
-def _tally(record, type_: str) -> dict:
-    summaries = CONTROLLERS[type_](record, actor=USER).summaries()
-    key = (str(record.home), type_)
-    held = TALLIED.get(key)
-    if held and held[0] is summaries:
-        return held[1]
-    tally = {"all": 0, "open": 0, "unread": 0}
-    for row in summaries:
-        if row["deleted"] or row.get("hidden"):
-            continue
-        tally["all"] += 1
-        if not row["completed"]:
-            tally["open"] += 1
-            tally["unread"] += USER not in (row.get("seen") or [])
-    TALLIED[key] = (summaries, tally)
-    return tally
-
-
 @route("GET", "/api/{env}/dashboard")
 def get_dashboard(req: Request) -> Reply:
     record = req.record()
@@ -1085,7 +566,7 @@ def get_dashboard(req: Request) -> Reply:
     whole = "events" in req.query
     body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
     if whole:
-        body.update(events=[e.to_json() for e in record.events(0, asked.events)], settings=settings(record))
+        body.update(events=[e.to_json() for e in record.event_log.events(0, asked.events)], settings=settings(record))
     return Reply(200, body)
 
 
@@ -1097,17 +578,15 @@ def get_all(req: Request) -> Reply:
 @route("POST", "/api/{env}/{type}")
 def post_create(req: Request) -> Reply:
     controller = req.controller()
-    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))}), req.record(), VIEWER))
+    created = invoked(controller, controller.named("create"), named={**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))})
+    return Reply(201, shaped(created, req.record(), VIEWER))
 
 
 @route("GET", "/api/{env}/{type}/{n}")
 def get_one(req: Request) -> Reply:
-    try:
-        controller = req.controller()
-        n = int(req.params["n"])
-        return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
-    except Refused as e:
-        raise Missing(str(e)) from e
+    controller = req.controller()
+    n = int(req.params["n"])
+    return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
 
 
 @route("GET", "/api/{env}/{type}/{n}/choices")
@@ -1150,16 +629,22 @@ def post_upload(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}/read-all")
 def post_read_all(req: Request) -> Reply:
-    controller = req.controller()
-    return Reply(200, represented(controller.read_all(req.body.get("numbers", [])), req.record()))
+    return Reply(200, represented(invoked(req.controller(), "read_all", (req.body.get("numbers", []),)), req.record()))
 
 
 @route("POST", "/api/{env}/{type}/{action}")
 def post_action_bare(req: Request) -> Reply:
-    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body), req.record()), timed=not networked(req.params["type"], req.params["action"]))
+    got = invoked(req.controller(), req.params["action"], named=req.body)
+    return Reply(201, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))
 
 
 @route("POST", "/api/{env}/{type}/{n}/{action}")
 def post_action(req: Request) -> Reply:
-    got = req.controller().method(req.params["action"])(int(req.params["n"]), **req.body)
+    controller, action = req.controller(), req.params["action"]
+    if not takes_row(controller.method(action)):
+        raise Refused(f"{controller.type} {action} takes no row number: POST /api/{controller.record.env}/{controller.type}/{action}")
+    got = invoked(controller, action, (int(req.params["n"]),), req.body)
     return Reply(200, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))
+
+
+rank_routes()

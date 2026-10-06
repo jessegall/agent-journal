@@ -5,17 +5,21 @@ from dataclasses import asdict, dataclass
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Docs, Environments
-from features.plans.resource import PHASE, Plan, rows_of
+from controllers.types import Docs, Environments, Todos, Works
+from features.plans.resource import (
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, REVIEWING, RUNNING, WAITING, Plan,
+)
+from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
+from resources.shapes import LEVELS
+from controllers.marks import action
+from engine.extension import Extension
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
-
-BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, DONE, ABANDONED = (
-    "building", "draft", "ready", "approved", "active", "waiting", "parked", "done", "abandoned"
-)
-RUNNING = (ACTIVE, WAITING)
-ENDED = (DONE, ABANDONED)
+CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)
+PHASE_ROWS = Extension()
+PHASE_STARTS = Extension()
+PLAN_STARTS = Extension()
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
 DEPTHS = {
@@ -43,19 +47,28 @@ def logged_at(part: dict, fallback: float) -> float:
     return time.mktime(time.strptime(stamp[0], "%Y-%m-%d %H:%M")) if stamp else fallback
 
 
+def status_after(last: bool, waits: bool) -> str:
+    if last:
+        return DONE
+    if waits:
+        return WAITING
+    return ACTIVE
+
+
 class Plans(Controller):
     resource = Plan
 
     def _finished(self, r) -> bool:
         return r.status in ENDED
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if data.get("depth", "normal") not in DEPTHS:
             self._refuse(f"a plan's depth is {' or '.join(DEPTHS)}")
         return super().create(title, abstract, brief, status=BUILDING, stage=PHASES, phases=[], current=1, **data)
 
+    @action
     def from_doc(self, doc: int):
-        from features.templates.shipped import MUST_HAVE
         source = Docs(self.record, actor=self.actor).load(doc)
         must = next((s[SECTION.body] for s in source.sections if s[SECTION.title].lower() == MUST_HAVE.lower()), "")
         brief = (f"Built from the functional design, doc {source.n}. Every row names the must-have points it covers, and the plan is "
@@ -68,14 +81,20 @@ class Plans(Controller):
                 self.phase(plan.n, s[SECTION.title].split(":", 1)[-1].split("—", 1)[-1].strip() or s[SECTION.title], brief=s[SECTION.body])
         return self.link(plan.n, source.ref)
 
+    @action
     def stage(self, n: int, at: str):
         if at not in STAGES:
             raise Refused(f"a plan is written in stages: {' or '.join(STAGES)}")
         return self.update(n, stage=at)
 
+    @action
     def phases(self, n: int) -> list[dict]:
         return self.load(n).phases
 
+    def add_part(self, n: int, title: str, body: str):
+        return self.phase(n, CHECKPOINT.sub("", title), when=body, checkpoint=bool(CHECKPOINT.search(title)))
+
+    @action
     def phase(self, n: int, title: str, when: str | None = None, checkpoint: bool = False, brief: str = "", before: int = 0):
         r = self.load(n)
         if before and not 1 <= int(before) <= len(r.phases) + 1:
@@ -84,6 +103,7 @@ class Plans(Controller):
         r.phases.insert(int(before) - 1 if before else len(r.phases), made)
         return self.save(r, "updated", phase=r.phases.index(made) + 1)
 
+    @action
     def rephrase(self, n: int, p: int, title: str | None = None, when: str | None = None, checkpoint: bool | None = None, brief: str | None = None):
         r = self.load(n)
         phase = self._phase(r, p)
@@ -92,19 +112,22 @@ class Plans(Controller):
                 phase[key] = check_title(value) if key in (PHASE.title, PHASE.when) and value else value
         return self.save(r, "updated", phase=int(p))
 
+    @action
     def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
-        return self._placed(n, p, PHASE.todos, "todo", todos, move, off)
+        return self._placed(n, p, "todo", todos, move, off)
 
+    @action
     def tickets(self, n: int, p: int, tickets: list, move: bool = False, off: bool = False):
-        return self._placed(n, p, PHASE.tickets, "ticket", tickets, move, off)
+        return self._placed(n, p, "ticket", tickets, move, off)
 
-    def _placed(self, n: int, p: int, key: str, kind: str, numbers: list, move: bool, off: bool):
+    def _placed(self, n: int, p: int, kind: str, numbers: list, move: bool, off: bool):
         r = self.load(n)
         phase = self._phase(r, p)
+        key = PHASE_FIELDS[kind]
         for ph in r.phases:
             ph.setdefault(key, [])
         for t in (int(x) for x in numbers):
-            elsewhere = next((i + 1 for i, ph in enumerate(r.phases) if t in ph[key]), 0)
+            elsewhere = r.phase_of(kind, t)
             if off:
                 phase[key] = [x for x in phase[key] if x != t]
                 continue
@@ -118,57 +141,78 @@ class Plans(Controller):
             r.refs = [x for x in r.refs if x != ref] if off else r.refs + [ref] * (ref not in r.refs)
         return self.save(r, "linked", phase=int(p), **{key: [int(t) for t in numbers]}, off=off)
 
+    @action
     def build(self, n: int):
-        return self._status(self.load(n), BUILDING, READY, DRAFT)
+        return self._status(self.load(n), BUILDING, READY, DRAFT, REVIEWING)
 
+    @action
+    def review(self, n: int):
+        return self._status(self.load(n), REVIEWING, BUILDING, DRAFT, READY)
+
+    def _under_review(self, ref: str):
+        kind, _, n = ref.partition(":")
+        plan = self.load(n) if kind == "plan" and n.isdigit() else None
+        return plan if plan and plan.status == REVIEWING else None
+
+    @action
     def ready(self, n: int):
         r = self.load(n)
-        for i, ph in enumerate(r.phases, 1):
-            if not rows_of(ph):
-                self._refuse(f"plan {n} cannot be ready: phase {i} has no to-dos or tickets")
+        empty = r.empty_phases()
+        if empty:
+            self._refuse(f"plan {n} cannot be ready: phase {empty[0]} has no to-dos or tickets")
         return self._status(r, READY, BUILDING, DRAFT)
 
+    @action
     def approve(self, n: int):
         self._user_only("approve")
-        return self._status(self.load(n), APPROVED, DRAFT, READY)
+        r = self.load(n)
+        if r.status == REVIEWING:
+            self._refuse(f"plan {n} is under review: its reviewers' report comes first")
+        return self._status(r, APPROVED, DRAFT, READY)
 
+    @action
     def start(self, n: int):
         r = self.load(n)
-        if r.status in (DRAFT, READY):
+        if r.status in (DRAFT, READY, REVIEWING):
             self._refuse(f"plan {n} waits for the user to approve it")
         self._allowed(r, ACTIVE, APPROVED, PARKED)
         first_start = r.status == APPROVED
-        for other in self._every():
+        for other in self.rows.every():
             if other.n != r.n and other.status in RUNNING:
-                self._status(other, PARKED, *RUNNING, parked_for=r.n)
+                self._status(self.load(other.n), PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
-        from features.plans.worker import start_phase_tickets, start_worker
         if first_start:
-            start_worker(self.record, started)
-        start_phase_tickets(self.record, started)
+            for begin in PLAN_STARTS.each(self.record):
+                begin(self.record, started)
+        self._start_phase(started)
         return started
 
+    @action
     def dismiss(self, n: int):
         return self.update(int(n), dismissed=True)
 
+    @action
     def park(self, n: int):
         return self._status(self.load(n), PARKED, APPROVED, *RUNNING)
 
+    @action
     def resume(self, n: int):
         self._user_only("continue")
         r = self.load(n)
         r.current += 1
         return self._status(r, ACTIVE, WAITING)
 
+    @action
     def abandon(self, n: int, why: str = ""):
-        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
+        plan = self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, REVIEWING, APPROVED, ACTIVE, WAITING, PARKED, why=why)
+        return self.complete(plan.n, how=why if why else "abandoned")
 
+    @action
     def progress(self, n: int) -> str:
-        from features.plans.progress import phase_rows
         r = self.load(n)
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
         for i, phase in enumerate(r.phases, 1):
-            rows = phase_rows(self.record, phase, self.actor)
+            rows = self._members(phase)
             closed = sum(1 for row in rows if row.completed)
             lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {closed} of {len(rows)} done")
             if i == r.current:
@@ -177,12 +221,12 @@ class Plans(Controller):
         lines += [f"lately: {moment['kind']} to-do {moment['todo']}, {moment['title']}" for moment in self.timeline(r.n)[-3:]]
         return "\n".join(lines)
 
+    @action
     def timeline(self, n: int) -> list[dict]:
-        from controllers.types import Todos, Works
         r = self.load(n)
         numbers = {t for phase in r.phases for t in phase[PHASE.todos]}
         todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).load, numbers)}
-        works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).summaries()
+        works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).rows.summaries()
                  if not row["deleted"] and row.get("todo") in numbers]
         items = [Moment.of(t, t.completed, "done", t.outcome) for t in todos.values() if t.completed]
         for work in works:
@@ -205,20 +249,78 @@ class Plans(Controller):
     def _phase(self, r, p: int) -> dict:
         if not 1 <= int(p) <= len(r.phases):
             raise Refused(f"plan {r.n} has no phase {p}")
-        try:
-            return r.phases[int(p) - 1]
-        except IndexError as error:
-            raise Refused(f"plan {r.n} has no phase {p}") from error
+        return r.phases[int(p) - 1]
+
+    def _running(self) -> list:
+        return [p for p in self.rows.every() if p.status in RUNNING]
+
+    def _active(self) -> list:
+        return [p for p in self.rows.every() if p.status == ACTIVE]
+
+    def _members(self, phase: dict) -> list:
+        found = []
+        for key, kind in {PHASE.todos: Todos, **PHASE_ROWS.keyed()}.items():
+            rows = kind(self.record, actor=self.actor)
+            found += [rows.load(n) for n in phase.get(key, []) if rows.rows.exists(int(n))]
+        return found
+
+    def _complete(self, phase: dict) -> bool:
+        return all(row.completed for row in self._members(phase))
+
+    def _opened_early(self, found) -> bool:
+        plan = self.load(found.n)
+        phase = plan.current_phase
+        return plan.status == ACTIVE and phase is not None and found.phase > plan.current and self._only_waiting(phase)
+
+    def _only_waiting(self, phase: dict) -> bool:
+        open_rows = [row for row in self._members(phase) if not row.completed]
+        return bool(open_rows) and all(row.type == "todo" and row.blocked for row in open_rows)
+
+    def _first_open(self, plan) -> int:
+        return next((p for p, phase in enumerate(plan.phases, 1) if not self._complete(phase)), 0)
+
+    def _holds(self, todo) -> bool:
+        plans = self.rows.every()
+        placements = [found for found in (plan.placement(todo) for plan in plans) if found]
+        if placements:
+            return all(found.holds and not self._opened_early(found) for found in placements)
+        return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
+
+    def _start_phase(self, plan) -> None:
+        for start in PHASE_STARTS.each(self.record):
+            start(self.record, plan)
+
+    def _step(self, plan) -> bool:
+        phase = plan.current_phase
+        if plan.status != ACTIVE or phase is None or not self._complete(phase):
+            return False
+        i = plan.current
+        last = i == len(plan.phases)
+        waits = bool(phase[PHASE.checkpoint]) and not passes_checkpoints(self.record)
+        plan.status = status_after(last, waits)
+        plan.current = i if last or waits else i + 1
+        self.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
+        if last:
+            self.complete(plan.n, how="every row in every phase is done")
+        elif not waits:
+            self._start_phase(plan)
+        return not (last or waits)
+
+    def _catch_up(self) -> None:
+        for running in self._running():
+            plan = self.load(running.n)
+            while self._step(plan):
+                pass
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:
             self._refuse(f"only the user can {word} a plan: they do it in the viewer{self._orchestrator_route(word)}")
 
     def _orchestrator_route(self, word: str) -> str:
-        place = Environments(self.record, actor=SYSTEM)._titled(self.record.env)
-        if place is None or not place.owner.startswith("ticket:"):
+        place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
+        n = place.owned_by("ticket") if place else 0
+        if not n:
             return ""
-        n = place.owner.partition(":")[2]
         return f". This is the plan of ticket {n}: the agent orchestrating its board does it with journal ticket {word}_plan {n}"
 
 

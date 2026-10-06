@@ -1,12 +1,13 @@
 <script setup>
+import {ui} from "../state/ui.js";
+import {href} from "../route.js";
 import FoldGroup from "../kit/FoldGroup.vue";
-import {litCard} from "../composables/litCard.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 
 defineProps({working: {type: Array, required: true}, domains: {type: Array, required: true}, organization: {type: String, required: true}});
 const {members: flipped, toggle} = useToggledSet();
 const open = (domain) => flipped.value.has(domain.name) !== !!domain.working;
-const light = (n) => (litCard.value = n);
+const light = (n) => (ui.litCard = n);
 </script>
 
 <template>
@@ -18,14 +19,20 @@ const light = (n) => (litCard.value = n);
                     <span class="board-roles-work-title">{{ chip.title }}</span>
                     <span class="board-roles-cards">#{{ chip.n }}</span>
                     <template v-if="chip.env">
-                        <a :href="`#/${chip.env}`">Open chat</a>
+                        <a :href="href.page(chip.env)">Open chat</a>
                     </template>
                 </div>
             </template>
         </template>
         <span class="board-roles-heading">All roles</span>
         <template v-for="domain in domains" :key="domain.name">
-            <FoldGroup :label="domain.title" :count="domain.working ? `${domain.working} working` : ''" :open="open(domain)" flush @toggle="toggle(domain.name)">
+            <FoldGroup
+                :label="domain.title"
+                :count="domain.working ? `${domain.working} working` : ''"
+                :open="open(domain)"
+                flush
+                @toggle="toggle(domain.name)"
+            >
                 <template v-for="role in domain.roles" :key="role.name">
                     <span :class="['board-roles-role', {busy: role.busy}]">
                         {{ role.title }}

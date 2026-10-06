@@ -1,22 +1,23 @@
 <script setup>
+import {feedOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {computed, inject} from "vue";
 import Icon from "../kit/Icon.vue";
 import AgentFact from "./AgentFact.vue";
-import {feedOn, store} from "../state/store.js";
 
 defineProps({open: {type: String, default: ""}});
 const emit = defineEmits(["toggle"]);
 const views = inject("views", null);
 const PANES = [
     {key: "chat", icon: "chat", title: "Chat"},
-    {key: "feed", icon: "edits", title: "File feed: the agent's edits as it makes them"},
+    {key: "feed", icon: "edits", title: "File edits: the agent's edits as it makes them"},
     {key: "terminal", icon: "terminal", title: "What the agent ran lately, like a terminal"},
 ];
 const panes = computed(() => PANES.filter((p) => p.key !== "feed" || feedOn.value));
 const viewGroups = computed(() =>
     ["agent", "panel"].map((key) => {
         const items = views ? views.items.value.filter((v) => v.group === key) : [];
-        return {key, items, shown: items.some((v) => !v.open)};
+        return {key, items, hasClosed: items.some((v) => !v.open)};
     })
 );
 </script>
@@ -31,7 +32,7 @@ const viewGroups = computed(() =>
         </template>
         <template v-for="(group, at) in viewGroups" :key="group.key">
             <template v-if="at">
-                <span :class="['agent-divider', 'agent-views-divider', {gone: !group.shown || !viewGroups[0].shown}]" />
+                <span :class="['agent-divider', 'agent-views-divider', {gone: !group.hasClosed || !viewGroups[0].hasClosed}]" />
             </template>
             <div class="agent-panes">
                 <template v-for="v in group.items" :key="v.key">

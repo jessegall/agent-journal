@@ -1,4 +1,10 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {autoOn, steered, workMode} from "../composables/settings.js";
+import {store} from "../state/store.js";
+import {barPlan, otherPlans} from "../domain/plans.js";
+import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
+import {silentIn} from "../domain/journals.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import PSection from "./PSection.vue";
 
@@ -14,22 +20,11 @@ import {peek, route} from "../route.js";
 import Segmented from "../kit/Segmented.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
-import {useHelpers} from "../chat/helpers.js";
+import {useHelpers} from "../composables/helpers.js";
 import {helperState} from "../domain/helpers.js";
-import {MODES, modeOf} from "../domain/modes.js";
-import {agent, autoOn, steered, store, workMode} from "../state/store.js";
-import {polled} from "../sync/polled.js";
+import {MODES} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
-import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
-import {silentIn} from "../sync/hub.js";
-import {SILENT} from "../domain/agentStates.js";
-import AgentStopButton from "../chat/AgentStopButton.vue";
-import {usePoll} from "../poll.js";
 import {runPlan, setAuto} from "../actions/work.js";
-
-usePoll(...polled.bar);
-usePoll(...polled.agents);
-usePoll(...polled.summary);
 
 const current = computed(() => currentWork(rows("work")));
 const reported = computed(() => stateOf(agent.value, rows("work")));
@@ -46,13 +41,15 @@ watch(
 
 const mode = workMode;
 const {rows: helpers, refresh: refreshHelpers} = useHelpers();
+const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
 const helpersOpen = ref(false);
 const helpersAnchor = ref(null);
-const modeTitle = computed(() =>
-    mode.value === "solo" && helpersOut.value
-        ? `${modeOf(mode.value).note} Helpers already out keep going until they finish.`
-        : modeOf(mode.value).note
+const modeOptions = computed(() =>
+    MODES.map((one) => ({
+        ...one,
+        title: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note,
+    }))
 );
 
 function toggleHelpers(e) {
@@ -140,7 +137,7 @@ async function runBar(p) {
             <Btn
                 kind="icon"
                 :class="['statusbar-pause', {paused}]"
-                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s turn and hold the journal\'s nudges'"
+                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'"
                 @click="pauseOrResume"
             >
                 <template v-if="wanted !== null">
@@ -150,12 +147,6 @@ async function runBar(p) {
                     <Icon :name="paused ? 'resume' : 'pause'" />
                 </template>
             </Btn>
-            <AgentStopButton
-                class="statusbar-stop"
-                :environment="route.env"
-                :work="state === 'working' && current ? current.title : ''"
-                :stop="() => api.stopAgentNamed(route.env)"
-            />
         </template>
         <span class="statusbar-tools">
             <template v-if="!steered">
@@ -171,7 +162,7 @@ async function runBar(p) {
                         "
                         @change="setAuto"
                     />
-                    <Segmented class="statusbar-mode" :options="MODES" :value="mode" :title="modeTitle" @pick="pickMode" />
+                    <Segmented class="statusbar-mode" :options="modeOptions" :value="mode" @pick="pickMode" />
                     <button
                         type="button"
                         :class="['statusbar-helpers', {none: !helpers.length}]"
@@ -190,14 +181,15 @@ async function runBar(p) {
                 <template v-if="helpersOpen">
                     <MenuPanel
                         :anchor="helpersAnchor"
+                        plain
                         :min-width="320"
                         :max-width="380"
-                        :max-height="480"
+                        :height="helpersHeight"
                         :gap="12"
                         @click.stop
                         @close="helpersOpen = false"
                     >
-                        <HelperList :rows="helpers" @changed="refreshHelpers" />
+                        <HelperList :rows="helpers" @changed="refreshHelpers" @close="helpersOpen = false" />
                     </MenuPanel>
                 </template>
             </template>
@@ -382,10 +374,6 @@ async function runBar(p) {
     position: relative;
     flex: none;
     margin-right: 8px;
-}
-
-.statusbar-stop {
-    margin: 0 8px 0 -4px;
 }
 
 .statusbar-pause.paused {

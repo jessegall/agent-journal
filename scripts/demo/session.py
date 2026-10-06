@@ -23,7 +23,7 @@ from engine.sessions import ACTIVE_ENV
 from engine.viewer import launch, running
 from features.helper_worktrees.controller import Worktrees
 from features.work_modes.modes import pick
-from providers import DRIVERS, PROVIDERS
+from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 
 NUMBER = re.compile(r'"n": (\d+)')
@@ -44,12 +44,6 @@ STARTING_SKILLS = ("journal", "journal-chat-etiquette", "journal-todos")
 
 class Refusal(Exception):
     pass
-
-
-@dataclass(frozen=True)
-class Fork:
-    question: int
-    rows: dict[str, int]
 
 
 @dataclass(frozen=True)
@@ -211,20 +205,18 @@ class Session:
     project: Path
     pace: float = 1.0
     name: str = "demo"
-    alive: list[Seat] = field(default_factory=list)
     hands: dict[str, Claude] = field(default_factory=dict)
     present: dict[str, Presence] = field(default_factory=dict)
     news: bool = True
+    picks: dict[int, str] = field(default_factory=dict)
 
     def __post_init__(self):
         self.root = self.project / ".journal"
         self.main = Seat(f"{self.name}-main")
         self.present[self.main.session] = Presence(self.root, self.main, self.hand(self.main), main=True)
-        self.revived(self.alive)
         features.load(self.root)
         helping.launched = lambda record, name, provider, args, cwd: name
-        for driver in DRIVERS.values():
-            driver.enter = lambda self, text: True
+        helping.tell_in = lambda record, environment, provider, text: True
         self.url = self.served()
 
     def served(self) -> str:
@@ -277,8 +269,8 @@ class Session:
     def onward(self, title: str, about: str, seat: Seat | None = None) -> None:
         self.journal("sequence", "next", str(self.sequence(title)), "--about", about, seat=seat)
 
-    def planned(self, title: str, goal: str, phases: list[Phase]) -> Planned:
-        n = self.made("plan", "create", title, "--set", f"goal={goal}")
+    def planned(self, title: str, goal: str, phases: list[Phase], depth: str = "normal") -> Planned:
+        n = self.made("plan", "create", title, "--set", f"goal={goal}", "--set", f"depth={depth}")
         about = f"plan:{n}"
         self.follow(BUILDING_A_PLAN, about)
         self.onward(BUILDING_A_PLAN, about)
@@ -413,14 +405,6 @@ class Session:
         self.hook("SessionEnd", seat, reason="exit")
         self.present.pop(seat.session).end()
 
-    def revived(self, alive: list[Seat]) -> None:
-        for seat in alive:
-            kept = self.root / "runtime" / "sessions" / seat.session / "session.json"
-            kept.write_text(json.dumps({**json.loads(kept.read_text()), "pid": self.arrived(seat).pid}))
-
-    def helping(self) -> list[Seat]:
-        return [presence.seat for session, presence in self.present.items() if session != self.main.session]
-
     def write(self, path: str, text: str, seat: Seat | None = None) -> None:
         seat = seat or self.main
         target = (seat.cwd or self.project) / path
@@ -458,21 +442,30 @@ class Session:
         self.wait(WRITING)
         self.journal("message", "create", text.split(".")[0][:70].replace(":", ","), "--brief", text)
 
-    def ask(self, title: str, about: str, options: dict[str, str]) -> int:
+    def ask(self, title: str, about: str, options: dict[str, str], picked: str) -> int:
         listed = json.dumps([{"title": label, "description": text} for label, text in options.items()])
-        n = self.made("question", "ask", title, "--set", f"about={about}", "--set", f"options={listed}")
+        n = self.made("question", "ask", title, "--set", f"about={about}", "--set", f"options={listed}", "--set", f"pick={[*options].index(picked) + 1}")
+        self.picks[n] = picked
         self.stop()
         return n
 
-    def answered(self, question: int, how: str) -> None:
-        self.journal("question", "answer", str(question), "--how", how, actor=USER)
+    def answered(self, question: int) -> None:
+        label = self.picks[question]
+        self.chose(label, "question", "answer", str(question), "--how", label)
+
+    def dump_answered(self, dump: int, how: str) -> None:
+        self.chose(how, "dump", "answer", str(dump), how)
+
+    def chose(self, how: str, *args: str) -> None:
+        self.journal(*args, actor=USER)
         self.hook("UserPromptSubmit", prompt=how)
         self.news = True
 
+    def dump_log(self, dump: int, title: str, *details: str) -> None:
+        self.journal("dump", "log", str(dump), title, *details)
+
     def approve(self, plan: int) -> None:
-        self.journal("plan", "approve", str(plan), actor=USER)
-        self.hook("UserPromptSubmit", prompt="approved")
-        self.news = True
+        self.chose("approved", "plan", "approve", str(plan))
 
     def mode(self, mode: str) -> None:
         pick(self.record(), mode, USER)
@@ -492,11 +485,14 @@ class Session:
 
     def helper_seat(self, name: str, provider: str, worktree: bool = False) -> Seat:
         env = "main-" + "-".join(name.lower().split()[:2])
-        cwd = Path(Worktrees(self.record(), actor=SYSTEM)._titled(env, standing=True).path) if worktree else self.project
+        cwd = Path(self.standing(env).path) if worktree else self.project
         return Seat(f"{self.name}-{name.split()[0].lower()}", provider, env, cwd)
 
     def worktree(self, seat: Seat) -> int:
-        return Worktrees(self.record(), actor=SYSTEM)._titled(seat.env, standing=True).n
+        return self.standing(seat.env).n
+
+    def standing(self, env: str):
+        return Worktrees(self.record(), actor=SYSTEM).rows.by_title(env, standing=True)
 
     def finish(self) -> None:
         for presence in self.present.values():

@@ -3,6 +3,7 @@ from controllers.types import Agents
 from engine.events.agents import SessionStarted
 from features.parts import AgentContext
 from features.worktrees.handlers import LinkWorktreeJournal
+from providers import workspace_folders
 from tests.conftest import fresh
 
 
@@ -30,7 +31,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     git("commit", "-q", "-m", "start")
     worktree = project / ".claude" / "worktrees" / "wt"
     git("worktree", "add", "-q", str(worktree))
-    runs = [threading.Thread(target=share_journal, args=(worktree, record.root)) for _ in range(4)]
+    runs = [threading.Thread(target=share_journal, args=(worktree, record.root, workspace_folders())) for _ in range(4)]
     for run in runs:
         run.start()
     for run in runs:
@@ -45,7 +46,7 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     git("init", "-q", where=other)
     git("commit", "-q", "--allow-empty", "-m", "start", where=other)
     git("worktree", "add", "-q", str(tmp_path / "other-wt"), where=other)
-    share_journal(tmp_path / "other-wt", record.root)
+    share_journal(tmp_path / "other-wt", record.root, workspace_folders())
     assert not (tmp_path / "other-wt" / ".journal").exists(), "another repository's worktree is never linked to this journal"
 
 def worktree_of(tmp_path, name: str):
@@ -79,7 +80,7 @@ def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tm
         "a session that only looks into a worktree another agent holds stays where it was, and the holder keeps it"
     from agents.terminal import launch_spec
     from unittest import mock
-    with mock.patch("providers.claude.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("agents.terminal.share_journal"):
+    with mock.patch("providers.claude_driver.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("agents.terminal.share_journal"):
         spec = launch_spec(record.root, tmp_path / "feature-y", record.env, "claude", [])
     assert spec["env"] == "feature-y-2", "a second agent started in a worktree another agent works gets an environment of its own"
 
@@ -101,6 +102,11 @@ def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_
     assert sessions.environment("resumed") == "feature-z", "a subagent's hook outside the worktree never moves the main conversation"
     hooked(record, "resumed", worktree_of(tmp_path, "feature-y") / "src", 5151, event="PostToolUse")
     assert sessions.environment("resumed") == "feature-z", "a tool call run from another folder never moves a running conversation out of its environment"
+    sessions.bind("claude-999991", "feature-z", pid=999991, provider="claude")
+    sessions.write("resumed", pid=999991)
+    hooked(record, "resumed", tmp_path / "feature-z" / "src", 5151, event="PostToolUse")
+    assert (sessions.read("resumed").pid, sessions.environment("claude-999991"), sessions.read("claude-999991").pid) == (5151, "", 0), \
+        "a relaunched agent's old terminal is retired, never handed the new process to hold its environment as a second live terminal"
 
 
 def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_path):
@@ -109,15 +115,25 @@ def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_pa
     Sessions(record.root).bind("main-conversation", record.env, pid=6161, provider="claude")
     hooked(record, "main-conversation", worktree_of(tmp_path, "agent-a1b2"), 6161, agent_id="a1b2")
     assert Sessions(record.root).environment("main-conversation") == record.env, "an isolated subagent's worktree is the subagent's, not the session's"
+    import os, subprocess
+    from engine.sessions import agent_pid
+    shell = subprocess.Popen(["sh", "-c", "sleep 30; true"])
+    try:
+        assert (agent_pid(shell.pid), agent_pid(os.getpid())) == (os.getpid(), os.getpid()), \
+            "the agent is found by walking up from the hook's shell to the first process that is no shell, and a process that is none stays itself"
+    finally:
+        shell.kill()
+        shell.wait(10)
+    assert agent_pid(shell.pid) == shell.pid, "a process that is gone is its own agent"
 
 
 def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
     from engine.sessions import Sessions
-    from agents.terminal import Seat, seated
+    from agents.terminal import TerminalSession, seated
     record = fresh()
-    first = seated(Seat(record.root, record.env, "claude", "claude-7171"))
+    first = seated(TerminalSession(record.root, record.env, "claude", "claude-7171"))
     Sessions(record.root).bind("claude-7171", "elsewhere")
-    again = seated(Seat(record.root, record.env, "claude", "claude-7171"))
+    again = seated(TerminalSession(record.root, record.env, "claude", "claude-7171"))
     assert (first.env, again.env, Sessions(record.root).environment("claude-7171")) == (record.env, "elsewhere", "elsewhere"), \
         "a new build restarts the worker, and the terminal stays where it was moved"
 
@@ -125,7 +141,7 @@ def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
 def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside_it(tmp_path, monkeypatch):
     import subprocess
     import pytest
-    from providers.claude import ClaudeDriver
+    from providers.claude_driver import ClaudeDriver
     project = tmp_path / "project"
     project.mkdir()
     for command in (["git", "init", "-q"], ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "start"]):
@@ -201,7 +217,7 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     assert "site work" in subprocess.run(["git", "log", "-1", "--format=%s", "refs/journal/worktrees/calm-river"], cwd=folder / "site", capture_output=True, text=True, timeout=30).stdout, \
         "leaving it keeps each repository's work under the worktree's name"
     from engine.worktree import checkout
-    assert (checkout(made / "site"), environment(checkout(made / "chronos"))) == (made, "calm-river"), \
+    assert (checkout(made / "site", workspace_folders()), environment(checkout(made / "chronos", workspace_folders()))) == (made, "calm-river"), \
         "an agent anywhere in it works the worktree's own environment, never the project's or one repository's"
 
 
@@ -217,11 +233,33 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
     text, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
     assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), text
 
+    from commands.queries import kept_work
+    from engine.worktree import KEPT
+    from tests.kit import commit, git
+    project = tmp_path / "project"
+    project.mkdir()
+    git(project, "init", "-q", "-b", "main")
+    git(project, "config", "user.email", "a@b.c")
+    git(project, "config", "user.name", "a")
+    commit(project, "base.txt", "base")
+    inside = project / ".claude" / "worktrees" / "cedar"
+    git(project, "worktree", "add", "-q", "-b", "helper-cedar", str(inside))
+    git(inside, "config", "user.email", "a@b.c")
+    git(inside, "config", "user.name", "a")
+    made = commit(inside, "work.txt", "work")
+    kept_work(inside)
+    assert git(project, "rev-parse", f"{KEPT}/cedar") == made, "a session ended in its worktree saves the branch's commits under a ref of the project"
+    git(project, "worktree", "remove", "--force", str(inside))
+    git(project, "branch", "-D", "helper-cedar")
+    assert git(project, "rev-parse", f"{KEPT}/cedar") == made, "the commits outlive the worktree and its branch"
+    kept_work(project)
+    assert git(project, "for-each-ref", KEPT).count("\n") == 0, "ending in the project itself keeps nothing more"
+
 
 def test_continuing_names_the_folders_latest_conversation(tmp_path, monkeypatch):
     import os
     import re
-    from providers.claude import ClaudeDriver
+    from providers.claude_driver import ClaudeDriver
     monkeypatch.setenv("HOME", str(tmp_path))
     project = tmp_path / "my.project"
     folder = tmp_path / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(project))
@@ -263,25 +301,25 @@ def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_
     (project / ".claude" / "skills" / "journal-boards").mkdir()
     (project / ".claude" / "skills" / "journal-boards" / "SKILL.md").write_text("never committed nor ignored")
     assert (worktree / ".journal" / "README.md").is_file(), "the checkout brings the committed journal files"
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").is_symlink() and (worktree / ".journal").resolve() == record.root.resolve(), \
         "committed journal files are not a journal: the worktree still gets the project's own"
     assert (worktree / ".claude" / "skills" / "journal-boards").is_symlink(), "a skill git neither tracks nor ignores is linked"
     assert not (worktree / ".claude" / "skills" / "mine").is_symlink(), "a skill the branch carries stays its own"
     assert git("status", "--porcelain", where=worktree) == "", "and git sees no change in the worktree"
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").resolve() == record.root.resolve(), "linking again changes nothing"
     (worktree / ".journal").unlink()
     (worktree / ".journal").symlink_to(tmp_path / "gone")
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").resolve() == record.root.resolve(), "a link to a journal that is gone is replaced"
     (worktree / ".journal").unlink()
     git("update-index", "--no-skip-worktree", ".journal/README.md", where=worktree)
     git("checkout", "--", ".journal/README.md", where=worktree)
-    share_journal(worktree, record.root)
+    share_journal(worktree, record.root, workspace_folders())
     assert (worktree / ".journal").resolve() == record.root.resolve(), "committed files checked out again do not win either"
     own = project / ".claude" / "worktrees" / "own"
     git("worktree", "add", "-q", str(own))
     (own / ".journal" / "environments").mkdir()
-    share_journal(own, record.root)
+    share_journal(own, record.root, workspace_folders())
     assert not (own / ".journal").is_symlink(), "a worktree with a journal record of its own keeps it"

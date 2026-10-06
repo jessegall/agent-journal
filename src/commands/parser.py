@@ -3,17 +3,18 @@ import contextvars
 from functools import cache
 import inspect
 import os
-from controllers.base import COMMANDS, actions
+from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
 import features
-from features.base import generation
+from features.switches import generation
 from features.session_briefing import start as briefing
 from providers import DRIVERS
 from engine.transcript import conversation, user
-from resources.base import AGENT
+from resources.base import ACTORS, AGENT
 from engine.version import version
-from features.runtime_cleanup.tidy import summary, tidy
-from commands.queries import attached, decided, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
+from features.runtime_cleanup.details import RuntimeCleanupDetails
+from features.runtime_cleanup.tidy import tidy
+from commands.queries import attached, decided, demo, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 argparse._ = str
 
@@ -21,7 +22,7 @@ argparse._ = str
 @cache
 def words(type_: str) -> set[str]:
     controller = CONTROLLERS[type_]
-    return {controller.resource.command_names.get(name, name) for name in {*actions(controller), *COMMANDS.get(type_, {})}}
+    return {controller.resource.command_names.get(name, name) for name in word_names(controller)}
 
 def truthy(word: str) -> bool:
     return word.strip().lower() in ("true", "yes", "on", "1")
@@ -29,8 +30,7 @@ def truthy(word: str) -> bool:
 def add_method(acts, controller: type, name: str) -> None:
     a = acts.add_parser(controller.resource.command_names.get(name, name))
     a.set_defaults(method=name)
-    fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
-    for p in list(inspect.signature(fn).parameters.values())[1:]:
+    for p in word_parameters(controller, name):
         required = p.default is inspect.Parameter.empty
         flag = p.name if required else f"--{p.name}"
         if p.kind is inspect.Parameter.VAR_KEYWORD:
@@ -89,17 +89,16 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
     top.add_argument("--env", dest="bound", default="")
     top.add_argument("--default-env", dest="fallback", default=os.environ.get("JOURNAL_ENV", ""), help=argparse.SUPPRESS)
-    top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
+    top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT), choices=ACTORS)
     top.add_argument("--session", dest="as_session", default=os.environ.get("JOURNAL_SESSION") or os.environ.get(os.environ.get("JOURNAL_SESSION_VARIABLE", ""), ""))
     top.add_argument("--cwd", default="", help=argparse.SUPPRESS)
     top.add_argument("--agent", dest="as_agent", default=os.environ.get("JOURNAL_AGENT", ""))
     top.add_argument("--plugin", dest="as_plugin", default=os.environ.get("JOURNAL_PLUGIN", ""), help=argparse.SUPPRESS)
     cmds = top.add_subparsers(dest="command", required=True)
-    features.load()
     for type_, controller in CONTROLLERS.items():
         t = cmds.add_parser(type_, help=controller.resource.details.abstract, description=controller.resource.details.help)
         acts = t.add_subparsers(dest="action", required=True)
-        for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}) if not only or only == type_ else ():
+        for name in sorted(word_names(controller)) if not only or only == type_ else ():
             add_method(acts, controller, name)
     add_query(cmds, "status", "where things stand", lambda ctx: briefing.status(ctx["record"]))
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: briefing.carry(ctx["record"]))
@@ -122,13 +121,15 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 0}))
     add_query(cmds, "attach", "watch a session that runs without a terminal and type into it; Ctrl+] leaves it running",
               lambda ctx: attached(ctx), ("target", {}))
-    add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
+    add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx), ("--yes", {"action": "store_true"}))
     add_query(cmds, "stop", "stop this journal: its viewer, its engine and every service a plugin runs", lambda ctx: halt(ctx))
     add_query(cmds, "ended", "a session's agent has exited: put back what was set aside, and stop the journal when no session is left", lambda ctx: ended(ctx))
     add_query(cmds, "heal", "go back to the last build that started, when the one installed will not", lambda ctx: healed(ctx))
     add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
-    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: summary(tidy(ctx["record"].root, features.FEATURES["runtime_cleanup"].values(ctx["record"]).days)))
+    add_query(cmds, "demo", "build a demo's data from a scrubbed recording, every moment answered by the real server",
+              lambda ctx: demo(ctx), ("folder", {}), ("into", {}), ("--environment", {"default": ""}), ("--name", {"default": ""}))
+    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: tidy(ctx["record"].root, RuntimeCleanupDetails.values(ctx["record"]).days).summary)
     add_query(cmds, "services", "the services plugins run: list them, start, stop or restart one, read its log, or keep them up in this terminal with up",
               lambda ctx: services(ctx), ("action", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
     return top

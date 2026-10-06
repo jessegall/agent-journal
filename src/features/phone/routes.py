@@ -7,13 +7,15 @@ from typing import TypedDict
 from http.cookies import SimpleCookie
 
 from engine.record import Record
-from features.phone.controller import Phones, Stale
+from engine.fields import Loaded
+from features.phone.controller import Phones
+from features.phone.surface import PhoneSurface
 from engine.color import identity
 from features.sharing.page import PICTURES, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
-from resources.base import SYSTEM, Refused
-from features.nudges import DAY
+from resources.base import SYSTEM, Refused, Stale
+from features.trigger import DAY
 from engine.wording import digest
 
 APP_PAGE = "phone.html"
@@ -31,162 +33,96 @@ BUILD = re.compile(r"assets/(phone-[\w-]+\.js)")
 
 
 @dataclass(frozen=True)
-class Pairing:
-    code: str
-    device: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Pairing":
-        return cls(code=str(given.get("code", "")), device=str(given.get("device", "")))
+class Pairing(Loaded):
+    code: str = ""
+    device: str = ""
 
 
 @dataclass(frozen=True)
-class Said:
-    brief: str
-    idempotency: str
-    about: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Said":
-        return cls(brief=str(given.get("brief", "")), idempotency=str(given.get("idempotency", "")), about=str(given.get("about", "")))
+class MessageBody(Loaded):
+    brief: str = ""
+    idempotency: str = ""
+    about: str = ""
 
 
 @dataclass(frozen=True)
-class Chosen:
-    n: int
-    answer: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Chosen":
-        return cls(n=int(given.get("n", 0)), answer=str(given.get("answer", "")))
+class Chosen(Loaded):
+    n: int = 0
+    answer: str = ""
 
 
 @dataclass(frozen=True)
-class Reacting:
-    n: int
-    face: str
-    type: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Reacting":
-        return cls(n=int(given.get("n", 0)), face=str(given.get("face", "")), type=str(given.get("type", "message")))
+class Reacting(Loaded):
+    n: int = 0
+    face: str = ""
+    type: str = "message"
 
 
 @dataclass(frozen=True)
-class Switching:
-    on: bool
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Switching":
-        return cls(on=given.get("on") is True)
+class Switching(Loaded):
+    on: bool = False
 
 
 @dataclass(frozen=True)
-class Numbered:
-    n: int
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Numbered":
-        return cls(n=int(given.get("n", 0)))
+class Numbered(Loaded):
+    n: int = 0
 
 
 @dataclass(frozen=True)
-class Choosing:
-    mode: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Choosing":
-        return cls(mode=str(given.get("mode", "")))
+class Choosing(Loaded):
+    mode: str = ""
 
 
 @dataclass(frozen=True)
-class Sharing:
-    ref: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Sharing":
-        return cls(ref=str(given.get("ref", "")))
+class Sharing(Loaded):
+    ref: str = ""
 
 
 @dataclass(frozen=True)
-class Commenting:
-    ref: str
-    text: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Commenting":
-        return cls(ref=str(given.get("ref", "")), text=str(given.get("text", "")))
+class Commenting(Loaded):
+    ref: str = ""
+    text: str = ""
 
 
 @dataclass(frozen=True)
-class Pressing:
-    ref: str
-    label: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Pressing":
-        return cls(ref=str(given.get("ref", "")), label=str(given.get("label", "")))
+class Pressing(Loaded):
+    ref: str = ""
+    label: str = ""
 
 
 @dataclass(frozen=True)
-class Subscribing:
-    endpoint: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Subscribing":
-        return cls(endpoint=str(given.get("endpoint", "")))
+class Subscribing(Loaded):
+    endpoint: str = ""
 
 
 @dataclass(frozen=True)
-class Arranging:
-    cards: list
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Arranging":
-        listed = given.get("cards")
-        return cls(cards=[str(card) for card in listed] if isinstance(listed, list) else [])
+class Arranging(Loaded):
+    cards: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
-class Starting:
-    journal: str
-    environment: str
-    agent: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Starting":
-        return cls(journal=str(given.get("journal", "")), environment=str(given.get("environment", "")), agent=str(given.get("agent", "claude")))
+class Starting(Loaded):
+    journal: str = ""
+    environment: str = ""
+    agent: str = "claude"
 
 
 @dataclass(frozen=True)
-class Moving:
-    journal: str
-    environment: str
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Moving":
-        return cls(journal=str(given.get("journal", "")), environment=str(given.get("environment", "")))
+class Moving(Loaded):
+    journal: str = ""
+    environment: str = ""
 
 
 @dataclass(frozen=True)
-class Permitting:
-    helper: int | None
-    allow: bool
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Permitting":
-        helper = given.get("helper")
-        return cls(helper=int(helper) if helper is not None else None, allow=bool(given.get("allow")))
+class Permitting(Loaded):
+    helper: int | None = None
+    allow: bool = False
 
 
 @dataclass(frozen=True)
-class Approval:
-    n: int
-    updated: float
-
-    @classmethod
-    def from_payload(cls, given: dict) -> "Approval":
-        return cls(n=int(given.get("n", 0)), updated=float(given.get("updated", 0)))
+class Approval(Loaded):
+    n: int = 0
+    updated: float = 0.0
 
 
 class Unasked(ValueError):
@@ -208,33 +144,46 @@ class Connection(TypedDict):
     color: str
 
 
+def made(row) -> dict:
+    return {"n": row.n}
+
+
+def done(name: str, _ran) -> dict:
+    return {"done": name}
+
+
+def permitted(surface: PhoneSurface, asked: Permitting) -> dict:
+    return done("allow" if asked.allow else "deny", surface.permit(asked.helper, asked.allow))
+
+
 def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]]) -> dict:
     asked = {name: values[0] for name, values in query.items()}
+    surface = PhoneSurface(phones, phone)
     if rest == ["list"]:
-        return phones._list(phone, asked.get("type", ""))
+        return surface.listing(asked.get("type", ""))
     if rest == ["source"]:
-        return phones._source(phone, asked.get("q", ""))
+        return surface.source(asked.get("q", ""))
     if rest == ["push-key"]:
         return {"key": phones._push_key()}
     if rest == ["places"]:
-        return Places(places=[asdict(place) for place in phones._picked(phone)], at=str(phones._home(phone).root.resolve()))
+        return Places(places=[asdict(place) for place in phones._picked(phone)], at=str(surface.home.root.resolve()))
     if rest == ["state"]:
-        known = identity(phones._home(phone).root)
+        known = identity(surface.home.root)
         return Connection(phone=phone.title, n=phone.n, environment=phone.environment, expires=phone.expires, home=phone.home,
                           project=known["project"], color=known["color"])
     if rest == ["feed"]:
         try:
-            return {**phones._feed(phone, float(asked.get("before", "inf"))), "build": built()}
+            return {**surface.feed(float(asked.get("before", "inf"))), "build": built()}
         except ValueError as error:
             raise Unasked("before is a time in seconds") from error
     if rest == ["helper"]:
         if not asked.get("n", "").isdigit():
             raise Unasked("a helper number is required")
-        return phones._helper(phone, int(asked["n"]))
+        return surface.helper(int(asked["n"]))
     if rest == ["bar"]:
-        return phones._bar(phone)
+        return surface.bar()
     if len(rest) == 3:
-        return phones._read(phone, f"{rest[1]}:{rest[2]}")
+        return surface.read(f"{rest[1]}:{rest[2]}")
     raise Refused("no such page")
 
 
@@ -278,7 +227,7 @@ class PhoneRoutes:
         if phone is None:
             return None
         try:
-            found = self.phones(handler)._file(phone, f"{rest[1]}:{rest[2]}", rest[3])
+            found = PhoneSurface(self.phones(handler), phone).file(f"{rest[1]}:{rest[2]}", rest[3])
         except Refused as refused:
             return handler.answer(404, str(refused))
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
@@ -293,10 +242,10 @@ class PhoneRoutes:
         phones = self.phones(handler)
         if rest[:1] == ["export"] and len(rest) == 3:
             try:
-                made = phones._export(phone, f"{rest[1]}:{rest[2]}")
+                exported = PhoneSurface(phones, phone).export(f"{rest[1]}:{rest[2]}")
             except Refused as refused:
                 return handler.answer(404, str(refused))
-            return handler.send(200, made.body, {"Content-Type": made.kind, "Content-Disposition": f"attachment; filename*=UTF-8''{quote(made.name)}"})
+            return handler.send(200, exported.body, {"Content-Type": exported.kind, "Content-Disposition": f"attachment; filename*=UTF-8''{quote(exported.name)}"})
         try:
             return self.json(handler, 200, read_body(phones, phone, rest, parse_qs(urlsplit(handler.path).query)))
         except Refused as refused:
@@ -312,6 +261,8 @@ class PhoneRoutes:
         return handler.send(200, json.dumps(body).encode(), {"Content-Type": "application/manifest+json", "Cache-Control": "no-store"})
 
     def post(self, handler, rest: list[str]) -> None:
+        if not rest:
+            return handler.answer(404, "no such action")
         if rest[:1] == ["attach"]:
             return self.attach(handler, rest[1:])
         if not self.trusted(handler):
@@ -320,65 +271,46 @@ class PhoneRoutes:
         if body is None:
             return handler.answer(413, "too large")
         if rest == ["pair"]:
-            return self.pair(handler, Pairing.from_payload(body))
+            return self.pair(handler, Pairing.from_json(body))
         phone = self.phone(handler)
         if phone is None:
             return None
         phones = self.phones(handler)
-        controls = {"pause": phones._pause, "resume": phones._resume, "stop": phones._stop}
-        if rest[:1] == rest and rest[0] in controls:
-            try:
-                controls[rest[0]](phone)
-            except Refused as refused:
-                return handler.answer(422, str(refused))
-            return self.json(handler, 201, {"done": rest[0]})
-        if rest == ["auto"]:
-            return self.json(handler, 201, {"auto": phones._auto(phone, Switching.from_payload(body).on)})
-        if rest == ["helper", "stop"]:
-            try:
-                phones._stop_helper(phone, Numbered.from_payload(body).n)
-            except Refused as refused:
-                return handler.answer(422, str(refused))
-            return self.json(handler, 201, {"done": "stop"})
-        if rest == ["permit"]:
-            asked = Permitting.from_payload(body)
-            try:
-                phones._permit(phone, asked.helper, asked.allow)
-            except Refused as refused:
-                return handler.answer(422, str(refused))
-            return self.json(handler, 201, {"done": "allow" if asked.allow else "deny"})
-        if rest == ["mode"]:
-            try:
-                return self.json(handler, 201, {"mode": phones._mode(phone, Choosing.from_payload(body).mode)})
-            except Refused as refused:
-                return handler.answer(422, str(refused))
-        if rest == ["share"]:
-            try:
-                return self.json(handler, 201, {"link": self.phones(handler)._share(phone, Sharing.from_payload(body).ref)})
-            except Refused as refused:
-                return handler.answer(422, str(refused))
-        acts = {"message": lambda phones: phones._say(phone, Said.from_payload(body)),
-                "answer": lambda phones: phones._answer(phone, Chosen.from_payload(body)),
-                "dismiss": lambda phones: phones._dismiss(phone, Chosen.from_payload(body).n),
-                "react": lambda phones: phones._react(phone, Reacting.from_payload(body)),
-                "approve": lambda phones: phones._approve(phone, Approval.from_payload(body)),
-                "continue": lambda phones: phones._continue(phone, Approval.from_payload(body)),
-                "switch": lambda phones: phones._switch(phone, Moving.from_payload(body)),
-                "start": lambda phones: phones._start(phone, Starting.from_payload(body)),
-                "arrange": lambda phones: phones._arrange(phone, Arranging.from_payload(body).cards),
-                "press": lambda phones: phones._press(phone, Pressing.from_payload(body)),
-                "comment": lambda phones: phones._comment(phone, Commenting.from_payload(body)),
-                "close": lambda phones: phones._close(phone, Chosen.from_payload(body).n),
-                "push": lambda phones: phones._subscribe(phone, Subscribing.from_payload(body).endpoint)}
-        if rest[:1] != rest or rest[0] not in acts:
+        acts = self.acts(phones, phone, body)
+        name = "/".join(rest)
+        if name not in acts:
             return handler.answer(404, "no such action")
         try:
-            made = acts[rest[0]](self.phones(handler))
+            reply = acts[name]()
         except Stale as stale:
             return handler.answer(409, str(stale))
         except (Refused, ValueError) as refused:
             return handler.answer(422, str(refused))
-        return self.json(handler, 201, {"n": made.n})
+        return self.json(handler, 201, reply)
+
+    def acts(self, phones: Phones, phone, body: dict) -> dict:
+        surface = PhoneSurface(phones, phone)
+        return {"pause": lambda: done("pause", surface.pause()),
+                "resume": lambda: done("resume", surface.resume()),
+                "stop": lambda: done("stop", surface.stop()),
+                "auto": lambda: {"auto": surface.auto(Switching.from_json(body).on)},
+                "helper/stop": lambda: done("stop", surface.stop_helper(Numbered.from_json(body).n)),
+                "permit": lambda: permitted(surface, Permitting.from_json(body)),
+                "mode": lambda: {"mode": surface.mode(Choosing.from_json(body).mode)},
+                "share": lambda: {"link": surface.share(Sharing.from_json(body).ref)},
+                "message": lambda: made(surface.say(MessageBody.from_json(body))),
+                "answer": lambda: made(surface.answer(Chosen.from_json(body))),
+                "dismiss": lambda: made(surface.dismiss(Chosen.from_json(body).n)),
+                "react": lambda: made(surface.react(Reacting.from_json(body))),
+                "approve": lambda: made(surface.approve(Approval.from_json(body))),
+                "continue": lambda: made(surface.continue_plan(Approval.from_json(body))),
+                "comment": lambda: made(surface.comment(Commenting.from_json(body))),
+                "close": lambda: made(surface.close(Chosen.from_json(body).n)),
+                "press": lambda: made(surface.press(Pressing.from_json(body))),
+                "switch": lambda: made(phones._switch(phone, Moving.from_json(body))),
+                "start": lambda: made(phones._start(phone, Starting.from_json(body))),
+                "arrange": lambda: made(phones._arrange(phone, list(Arranging.from_json(body).cards))),
+                "push": lambda: made(phones._subscribe(phone, Subscribing.from_json(body).endpoint))}
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):
@@ -391,10 +323,10 @@ class PhoneRoutes:
         if phone is None:
             return None
         try:
-            made = self.phones(handler)._attach(phone, int(rest[0]), rest[1], handler.rfile.read(size))
+            attached = PhoneSurface(self.phones(handler), phone).attach(int(rest[0]), rest[1], handler.rfile.read(size))
         except Refused as refused:
             return handler.answer(422, str(refused))
-        return self.json(handler, 201, {"n": made.n, "files": sorted(made.files)})
+        return self.json(handler, 201, {"n": attached.n, "files": sorted(attached.files)})
 
     def pair(self, handler, pairing: Pairing) -> None:
         paired = self.phones(handler)._pair(pairing.code, pairing.device)

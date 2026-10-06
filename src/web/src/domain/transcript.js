@@ -4,7 +4,7 @@ export function withWhispers(turns, nudges, session) {
     const whispers = nudges
         .filter((n) => n.data.session === session && n.created >= from)
         .map((n) => ({
-            line: `nudge ${n.n}`,
+            line: `reminder ${n.n}`,
             kind: "whisper",
             at: n.created,
             text: n.brief ? `${n.title} — ${n.brief}` : n.title,

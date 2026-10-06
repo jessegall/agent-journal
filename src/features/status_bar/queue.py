@@ -1,7 +1,7 @@
 from dataclasses import replace
 from itertools import accumulate
 from features.status_bar.dissect import MADE, TOUCHED, Dissected, Name
-from features.status_bar.runs import Outcome
+from engine.command_runs import Outcome
 from features.status_bar.shell import words
 from typing import TypedDict
 

@@ -138,7 +138,7 @@ async function act(what) {
             <p class="controls-told">{{ told }}</p>
         </template>
         <template v-if="alive && confirming">
-            <p class="controls-ask">Stop the agent in {{ environment }}? It ends its session.</p>
+            <p class="controls-ask">Stop the agent in {{ environment }}? Its session ends.</p>
             <div class="controls-row">
                 <button type="button" class="controls-button" @click="confirming = false">Cancel</button>
                 <button type="button" class="controls-button danger" :disabled="Boolean(busy)" @click="act('stop')">

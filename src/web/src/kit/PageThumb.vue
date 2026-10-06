@@ -13,7 +13,7 @@ const clip = useId();
 const LABEL_AT_MOST = 4;
 const WIDTHS = [16, 12, 15, 9, 14, 11, 13];
 const room = computed(() => (props.label ? 3 : WIDTHS.length));
-const shown = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), room.value)));
+const widths = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), room.value)));
 const tag = computed(() => props.label.slice(0, LABEL_AT_MOST).toUpperCase());
 </script>
 
@@ -35,7 +35,7 @@ const tag = computed(() => props.label.slice(0, LABEL_AT_MOST).toUpperCase());
             />
         </template>
         <path class="page-thumb-fold" d="M21 1v7a2 2 0 0 0 2 2h7z" />
-        <template v-for="(w, i) in shown" :key="i">
+        <template v-for="(w, i) in widths" :key="i">
             <rect class="page-thumb-line" x="8" :y="14 + i * 3.4" :width="w" height="1.5" rx="0.75" />
         </template>
         <template v-if="tag">

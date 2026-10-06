@@ -1,5 +1,6 @@
+from controllers.types import Todos
 from engine.record import Record
-from engine.organization import GLOBAL, WORKTREE, Domain, Role
+from engine.organization import GLOBAL, WORKTREE, Domain, Role, organization
 from resources.base import SYSTEM
 
 WAITS_FOR = "waits_for"
@@ -12,16 +13,18 @@ def missing(names: list, text: str) -> list:
 def queued_behind(todos, domain: Domain, role: Role):
     if role.cardinality != WORKTREE:
         return None
-    return max((r for r in todos._standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.n, default=None)
+    return max((r for r in todos.rows.standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.n, default=None)
+
+
+def role_of(record, todo) -> Role | None:
+    return organization(record.root.parent).domain(todo.data["domain"]).role(todo.data["role"]) if todo.data.get("role") else None
 
 
 def everywhere(root, domain: str, role: str) -> list[tuple[str, object]]:
-    from controllers.types import Todos
-    home = root / "environments"
     found = []
-    for folder in sorted(home.iterdir()) if home.is_dir() else []:
-        todos = Todos(Record(root, folder.name), actor=SYSTEM)
-        found += [(folder.name, todos.load(row["n"])) for row in todos.summaries() if not row["completed"] and not row["deleted"]]
+    for record in Record.every(root):
+        todos = Todos(record, actor=SYSTEM)
+        found += [(record.env, todos.load(row["n"])) for row in todos.rows.summaries() if not row["completed"] and not row["deleted"]]
     return [(env, r) for env, r in found if r.data.get("domain") == domain and r.data.get("role") == role]
 
 
@@ -36,11 +39,7 @@ def global_ahead(record, domain: Domain, role: Role) -> tuple[str, int] | None:
 
 
 def next_in_line(record, domain: str, role: str, env: str, n: int) -> list[tuple[str, object]]:
-    from controllers.types import Todos
-    waiting = [(e, r) for e, r in everywhere(record.root, domain, role) if r.data.get(WAITS_FOR) == f"{env}:{n}"]
-    for e, r in waiting:
-        Todos(Record(record.root, e), actor=SYSTEM).unblock(r.n)
-    return waiting
+    return [(e, r) for e, r in everywhere(record.root, domain, role) if r.data.get(WAITS_FOR) == f"{env}:{n}"]
 
 
 BROWSER = "browser"
@@ -54,7 +53,7 @@ def guidance(domain: Domain, role: Role) -> list[str]:
 
 
 def brief(domain: Domain, role: Role, n: int, task: str, given: str, app: str = "") -> str:
-    parts = [f"Dispatch this with model {role.model}, as its own job." if role.model else "",f"You are {role.title or role.name} in {domain.title or domain.name}.", role.description,
+    parts = [f"Dispatch this with model {role.model}, as its own job." if role.model else "",f"You are {role.label} in {domain.label}.", role.description,
              f"You answer for: {role.responsible}" if role.responsible else "", f"Not yours: {role.not_responsible}" if role.not_responsible else "",
              f"Skills to load: {', '.join(role.skills)}" if role.skills else "", f"Tools you may use: {', '.join(role.tools)}" if role.tools else "",
              *guidance(domain, role),

@@ -1,28 +1,28 @@
 <script setup>
+import {useEscape} from "../composables/windowEvent.js";
 import CloseButton from "../kit/CloseButton.vue";
-import {computed, onUnmounted} from "vue";
+import {computed} from "vue";
 import {go, peek, route} from "../route.js";
 import {missed} from "../domain/records.js";
 import {age, span} from "../format/time.js";
-import {away} from "../platform/visibility.js";
+import {ui} from "../state/ui.js";
 
-const lines = computed(() => missed(away.since).map((n) => ({key: n.ref, n: n.n, text: n.title, age: age(n.created)})));
-const forText = computed(() => (away.since ? `${span((away.back - away.since) / 1000)} away` : "last 24 hours"));
+const lines = computed(() => missed(ui.away.since).map((n) => ({key: n.ref, n: n.n, text: n.title, age: age(n.created)})));
+const forText = computed(() => (ui.away.since ? `${span((ui.away.back - ui.away.since) / 1000)} away` : "last 24 hours"));
 
 function open(n) {
-    away.open = false;
+    ui.away.open = false;
     peek("notification", n);
 }
 
 function toInbox() {
-    away.open = false;
+    ui.away.open = false;
     go(route.value.env);
 }
-const onEscape = (e) => {
-    if (e.key === "Escape" && away.open) away.open = false;
-};
-window.addEventListener("keydown", onEscape);
-onUnmounted(() => window.removeEventListener("keydown", onEscape));
+useEscape(
+    () => (ui.away.open = false),
+    () => ui.away.open
+);
 </script>
 
 <template>
@@ -33,7 +33,7 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
                 While you were away{{ lines.length ? `: ${lines.length} ${lines.length === 1 ? "notification" : "notifications"}` : "" }}
             </span>
             <span class="away-for">{{ forText }}</span>
-            <CloseButton title="Dismiss" @click="away.open = false" />
+            <CloseButton title="Close" @click="ui.away.open = false" />
         </div>
         <div class="away-lines">
             <template v-for="d in lines" :key="d.key">
@@ -43,7 +43,7 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
                 </button>
             </template>
             <template v-if="!lines.length">
-                <p class="away-line muted">No notifications you missed.</p>
+                <p class="away-line muted">You missed no notifications.</p>
             </template>
         </div>
         <div class="away-foot">

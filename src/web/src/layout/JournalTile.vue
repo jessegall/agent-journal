@@ -1,9 +1,22 @@
 <script setup>
+import {stopAgentNamed} from "../actions/agents.js";
+import {planButton} from "../domain/plans.js";
+import {
+    countsOf,
+    environmentsOf,
+    focusOf,
+    idleNote,
+    isActive,
+    journalState,
+    leadOf,
+    planMeter,
+    STATE_WORDS,
+    totalsOf,
+} from "../domain/journals.js";
+import {SILENT} from "../domain/agentState.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {runPlan, setAuto} from "../actions/work.js";
-import {planButton} from "./statusline.js";
-import {STATE_WORDS, countsOf, environmentsOf, focusOf, idleNote, journalState, leadOf, planMeter, totalsOf} from "../sync/hub.js";
 import {useNow} from "../composables/now.js";
 import {counted} from "../format/number.js";
 import Btn from "../kit/Btn.vue";
@@ -12,7 +25,6 @@ import Icon from "../kit/Icon.vue";
 import IconCount from "../kit/IconCount.vue";
 import Meter from "../kit/Meter.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
-import {SILENT} from "../domain/agentStates.js";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Tile from "../kit/Tile.vue";
 import JournalTileEnv from "./JournalTileEnv.vue";
@@ -64,7 +76,9 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
         <SwitchCase :value="shape">
             <template #live>
                 <div class="jt-now">
-                    <StatusLabel :class="{silent: state === SILENT}" :state="state" :note="note">{{ STATE_WORDS[state] }}</StatusLabel>
+                    <StatusLabel :class="{silent: state === SILENT}" :state="state" :lit="isActive(state)" :note="note">
+                        {{ STATE_WORDS[state] }}
+                    </StatusLabel>
                     <p :class="['jt-focus', {past: !focus.current}]">{{ focus.title }}</p>
                     <template v-if="focus.caption">
                         <span class="jt-caption">{{ focus.caption }}</span>
@@ -79,7 +93,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 </template>
             </template>
             <template #unreadable>
-                <p class="jt-focus past">This journal runs {{ journal.version || "an older version" }}; the hub reads 2.3.0 and up.</p>
+                <p class="jt-focus past">This page can only show journals on version 2.3.0 or later. This one runs {{ journal.version || "an older version" }}.</p>
             </template>
         </SwitchCase>
         <template v-if="lead" #foot>
@@ -87,14 +101,14 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 <IconCount :icon="c.icon" :count="c.n" :title="c.text" :hot="c.hot" />
             </template>
             <template v-if="lead.auto">
-                <Chip>auto</Chip>
+                <Chip>Auto mode</Chip>
             </template>
             <template v-if="soleRunning">
                 <AgentStopButton
                     quiet
                     :environment="lead.name"
                     :work="state === 'working' && lead.work ? lead.work.title : ''"
-                    :stop="() => server.in(lead.name).stopAgentNamed(lead.name)"
+                    :stop="() => stopAgentNamed(server.in(lead.name), lead.name)"
                     @stopped="emit('changed')"
                 />
             </template>

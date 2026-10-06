@@ -1,9 +1,11 @@
 import threading
+import time
 from functools import wraps
 from collections import defaultdict
 from contextlib import contextmanager
 from typing import Callable
 
+from engine.transaction import WORK, undoable
 from resources.base import Event
 
 Listener = Callable[[Event, object], None]
@@ -11,7 +13,6 @@ ANY = "*"
 
 _listeners: dict[str, list[tuple[str, Listener]]] = defaultdict(list)
 _watchers: list[Listener] = []
-_held = threading.local()
 _cause = threading.local()
 _command = threading.local()
 
@@ -40,11 +41,14 @@ def tell_watchers(event: Event, record=None) -> None:
 
 
 def emit(event: Event, record=None) -> None:
-    queue = getattr(_held, "queue", None)
-    if queue is not None:
-        queue.append((event, record))
+    if WORK.bus_queue is not None:
+        WORK.bus_queue.append((event, record))
         return
     run(event, record)
+
+
+def announce(record, type: str, n: int, action: str, actor: str, data: dict | None = None, at: float | None = None) -> None:
+    emit(Event(0, time.time() if at is None else at, type, n, action, actor, data or {}), record)
 
 
 def commanded(type_: str, name: str, fn):
@@ -88,16 +92,16 @@ def run(event: Event, record=None) -> None:
 
 @contextmanager
 def held():
-    _held.queue = []
+    previous, WORK.bus_queue = WORK.bus_queue, []
     try:
-        yield _held.queue
+        yield WORK.bus_queue
     finally:
-        _held.queue = None
+        WORK.bus_queue = previous
 
 
 @contextmanager
 def settled():
-    if getattr(_held, "queue", None) is not None:
+    if WORK.bus_queue is not None:
         yield
         return
     queue: list = []
@@ -108,16 +112,21 @@ def settled():
         release(queue)
 
 
+@contextmanager
+def unit():
+    with settled(), undoable():
+        yield
+
+
 def defer(job: Callable[[], None]) -> None:
-    queue = getattr(_held, "queue", None)
-    if queue is None:
+    if WORK.bus_queue is None:
         job()
         return
-    queue.append((job, None))
+    WORK.bus_queue.append((job, None))
 
 
 def defer_once(key: str, job: Callable[[], None]) -> None:
-    queue, after = getattr(_held, "queue", None), getattr(_held, "after", None)
+    queue, after = WORK.bus_queue, WORK.bus_after
     if queue is not None:
         if key not in (held for item, held in queue if callable(item)):
             queue.append((job, key))
@@ -129,7 +138,7 @@ def defer_once(key: str, job: Callable[[], None]) -> None:
 
 
 def release(queue: list) -> None:
-    _held.after = {}
+    previous, WORK.bus_after = WORK.bus_after, {}
     try:
         for item, record in queue:
             if callable(item):
@@ -137,13 +146,17 @@ def release(queue: list) -> None:
                 continue
             emit(item, record)
     finally:
-        after, _held.after = _held.after, None
+        after, WORK.bus_after = WORK.bus_after, previous
     for job in after.values():
         job()
 
 
 def listening() -> bool:
     return any(_listeners.values())
+
+
+def heard(pattern: str) -> bool:
+    return bool(_listeners.get(pattern))
 
 
 def clear() -> None:

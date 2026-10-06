@@ -13,7 +13,7 @@ const emit = defineEmits(["save", "cancel"]);
             v-model="abstract"
             rows="2"
             maxlength="200"
-            placeholder="Abstract, at most 200 characters"
+            placeholder="Summary, up to 200 characters"
             @keydown.esc="emit('cancel')"
         />
         <textarea v-model="brief" rows="6" :placeholder="briefLabel || 'Brief'" @keydown.esc="emit('cancel')" />

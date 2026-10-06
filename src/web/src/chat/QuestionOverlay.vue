@@ -1,9 +1,10 @@
 <script setup>
+import {closeQuestion, questionView} from "../state/overlays.js";
+import {useEscape} from "../composables/windowEvent.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
-import {EASE, still} from "../composables/hydrate.js";
-import {closeQuestion, questionView} from "./questionView.js";
+import {EASE, still} from "../platform/hydrate.js";
 import {answered} from "./answers.js";
 import {holding, rows} from "../sync/rows.js";
 import {route} from "../route.js";
@@ -17,7 +18,7 @@ const n = questionView.n;
 const question = computed(() => answered(rows("question").find((q) => q.n === n) || null));
 const leaving = ref(false);
 const kept = ref(null);
-const shown = computed(() => (leaving.value ? kept.value : question.value || kept.value));
+const current = computed(() => (leaving.value ? kept.value : question.value || kept.value));
 let height = 0;
 let growing = null;
 
@@ -93,29 +94,23 @@ watch(
     (done, before) => done && !before && setTimeout(leave, ANSWERED_BEAT)
 );
 
-const onKey = (e) => e.key === "Escape" && !route.value.open && leave();
-onMounted(() => {
-    window.addEventListener("keydown", onKey);
-    arrive();
-});
-onUnmounted(() => {
-    window.removeEventListener("keydown", onKey);
-    sized.disconnect();
-});
+useEscape(leave, () => !route.value.open);
+onMounted(arrive);
+onUnmounted(() => sized.disconnect());
 </script>
 
 <template>
     <div class="question-layer">
         <div ref="veil" class="question-veil" @click="leave" />
-        <template v-if="shown">
+        <template v-if="current">
             <section ref="card" class="question-card" role="dialog" aria-label="Question">
                 <div ref="inner">
                     <p class="question-label">Question</p>
-                    <h3 class="question-title">{{ shown.title }}</h3>
-                    <template v-if="shown.abstract">
-                        <TextDisplay class="question-context" :text="shown.abstract" />
+                    <h3 class="question-title">{{ current.title }}</h3>
+                    <template v-if="current.abstract">
+                        <TextDisplay class="question-context" :text="current.abstract" />
                     </template>
-                    <OptionsPicker :resource="shown" @elaborated="leave" />
+                    <OptionsPicker :resource="current" @elaborated="leave" />
                 </div>
             </section>
         </template>

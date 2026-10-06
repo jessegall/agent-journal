@@ -1,28 +1,36 @@
+import fcntl
 import json
 from dataclasses import asdict, dataclass
 import os
 import re
 import signal
-import socket
 import subprocess
 import sys
 import threading
 import time
 import webbrowser
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
 
+from engine import runtime
 from engine.focus import existing_tab
-from engine.stored import read_json, write_json, write_text
+from engine.stored import append_text, read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
 from engine.package import entry
+from engine.ports import free, url_of
 from engine.fields import Loaded
+from resources.base import Refused
 
 PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
 RUNNING_FOR = 5.0
 RUNNING: dict[str, tuple[float, str]] = {}
+SERVING: dict[str, str] = {}
 HEARTBEAT = 2.0
+LAUNCHING = "viewer.launching"
+COMING_UP = 20.0
+HUNG = -signal.SIGKILL
 PORT_WAIT = 30.0
 SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
@@ -36,7 +44,7 @@ RESTARTING = 15.0
 
 
 def marker(root: Path) -> Path:
-    return root / "runtime" / "viewer.json"
+    return runtime.folder(root) / "viewer.json"
 
 
 @dataclass(frozen=True)
@@ -60,6 +68,8 @@ class Identity(Loaded):
     root: str = ""
     project: str = ""
     version: str = ""
+    build: str = ""
+    pid: int = 0
 
     def serves(self, root: Path) -> bool:
         return Path(self.root).resolve() == root.resolve()
@@ -86,12 +96,13 @@ def forget(root: str) -> None:
 def remember(root: Path, port: int) -> str:
     url = beat(root, port)
     note(root, url)
+    SERVING[str(Path(root).resolve())] = url
     return url
 
 
 def beat(root: Path, port: int) -> str:
-    url = f"http://127.0.0.1:{port}/"
-    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (root / "runtime" / "heartbeat", f"{int(time.time())} {url}\n")):
+    url = url_of(port)
+    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (runtime.folder(root) / "heartbeat", f"{int(time.time())} {url}\n")):
         write_text(target, text)
     return url
 
@@ -108,10 +119,10 @@ def candidates(root: Path) -> list[str]:
     found = []
     found.append(last(root).url)
     try:
-        found.extend(URL.findall((root / "runtime" / "viewer.log").read_text())[-1:])
+        found.extend(URL.findall(runtime.viewer_log(root).read_text())[-1:])
     except OSError:
         pass
-    found.extend(f"http://127.0.0.1:{port}/" for port in PORTS)
+    found.extend(url_of(port) for port in PORTS)
     return list(dict.fromkeys(url for url in found if url))
 
 
@@ -135,28 +146,19 @@ def running(root: Path) -> str:
 
 def lately_running(root: Path) -> str:
     key, now = str(Path(root).resolve()), time.monotonic()
+    if key in SERVING:
+        return SERVING[key]
     held = RUNNING.get(key)
     if held is not None and now - held[0] <= RUNNING_FOR:
         return held[1]
     url = running(root)
-    if url:
-        RUNNING[key] = (now, url)
+    RUNNING[key] = (now, url)
     return url
 
 
 def marked(root: Path) -> str:
     url = candidates(root)[:1]
     return url[0] if url and answers(url[0], root, timeout=0.2) else ""
-
-
-def free(port: int) -> bool:
-    with socket.socket() as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        try:
-            sock.bind(("127.0.0.1", port))
-        except OSError:
-            return False
-        return True
 
 
 def waited(port: int, seconds: float = PORT_WAIT) -> bool:
@@ -169,7 +171,7 @@ def waited(port: int, seconds: float = PORT_WAIT) -> bool:
 
 
 def other_journal_on(port: int, root: Path) -> bool:
-    reply = identity(f"http://127.0.0.1:{port}/", 0.3)
+    reply = identity(url_of(port), 0.3)
     return reply is not None and Path(reply.root).resolve() != root.resolve()
 
 
@@ -184,7 +186,7 @@ def available(root: Path, prefer: int = 0) -> int:
     for port in PORTS:
         if free(port):
             return port
-    raise OSError("no viewer port available from 8420 through 8439")
+    raise Refused("no viewer port is free from 8420 through 8439: close a journal viewer or another program that uses one of them")
 
 
 def free_from(start: int) -> int:
@@ -197,15 +199,16 @@ def last(root: Path) -> ViewerMark:
 
 def restart(root: Path, project: Path) -> str:
     was = last(root)
-    if was.pid and running(root):
+    if was.pid and (reply := identity(was.url, timeout=0.2)) and reply.serves(root) and reply.pid == was.pid and alive(was.pid):
         os.kill(was.pid, signal.SIGTERM)
         waited(was.port)
     return start(root, project)
 
 
 def elsewhere(root: Path) -> str:
+    from engine.stop import serving
     was = last(root)
-    if not was.pid or was.pid == os.getpid() or not alive(was.pid):
+    if not was.pid or was.pid == os.getpid() or serving(Path(root)) != was.pid:
         return ""
     until = time.time() + RESTARTING
     while time.time() < until and alive(was.pid):
@@ -221,23 +224,35 @@ def start(root: Path, project: Path) -> str:
 
 
 def launch(root: Path, project: Path) -> tuple[str, int | None]:
-    already = running(root) or elsewhere(root)
-    if already:
-        return already, None
-    port = available(root, last(root).port)
-    log = root / "runtime" / "viewer.log"
+    log = runtime.viewer_log(root)
     log.parent.mkdir(parents=True, exist_ok=True)
-    command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
-    with log.open("a") as output:
-        server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
-    url, code = answered(root, server)
-    if code is None:
-        threading.Thread(target=server.wait, daemon=True).start()
-    return url, code
+    with (runtime.folder(root) / LAUNCHING).open("a") as held:
+        fcntl.flock(held, fcntl.LOCK_EX)
+        already = running(root) or elsewhere(root)
+        if already:
+            return already, None
+        port = available(root, last(root).port)
+        command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
+        with log.open("a") as output:
+            server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
+        url, code = answered(root, server)
+        if not url and code is None:
+            code = stopped(server, log)
+        if code is None:
+            threading.Thread(target=server.wait, daemon=True).start()
+        return url, code
+
+
+def stopped(server: subprocess.Popen, log: Path) -> int:
+    server.kill()
+    server.wait()
+    append_text(log, f"journal: the server did not answer within {COMING_UP:g}s and was stopped\n")
+    return HUNG
 
 
 def answered(root: Path, server: subprocess.Popen) -> tuple[str, int | None]:
-    for _ in range(60):
+    until = time.monotonic() + COMING_UP
+    while time.monotonic() < until:
         time.sleep(0.1)
         url = running(root)
         if url:
@@ -254,5 +269,24 @@ def show(url: str, env: str = "", opener=webbrowser.open, focuser=existing_tab) 
     return destination
 
 
-def ensure(root: Path, project: Path, opener=webbrowser.open, focuser=existing_tab) -> str:
-    return show(start(root, project), opener=opener, focuser=focuser)
+PROBED: list = [0.0, []]
+PROBE_FOR = 3.0
+PROBE_WAIT = 0.25
+
+
+def identity_at(port: int):
+    return identity(f"http://127.0.0.1:{port}/", PROBE_WAIT)
+
+
+def probe() -> None:
+    with ThreadPoolExecutor(len(PORTS)) as pool:
+        PROBED[:] = [time.time(), [(port, got) for port, got in zip(PORTS, pool.map(identity_at, PORTS)) if got]]
+
+
+def running_journals() -> list:
+    if not PROBED[0]:
+        probe()
+    elif time.time() - PROBED[0] >= PROBE_FOR:
+        PROBED[0] = time.time()
+        threading.Thread(target=probe, daemon=True).start()
+    return PROBED[1]

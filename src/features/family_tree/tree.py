@@ -66,14 +66,14 @@ class Family(TypedDict):
 
 
 def family(record) -> Family:
-    rows = {env.title: env for env in Environments(record, actor=SYSTEM)._every() if not env.deleted}
+    rows = {env.title: env for env in Environments(record, actor=SYSTEM).rows.every() if not env.deleted}
     envs = [Place(title, rows[title].owner if title in rows else "", rows[title].launched_from if title in rows else "")
             for title in dict.fromkeys([record.env, *rows])]
     members, links = {}, []
     primary = {}
     for env in envs:
         agents = Agents(Record(record.root, env.title), actor=SYSTEM)
-        for row in (row for row in agents._standing() if not row.parent):
+        for row in (row for row in agents.rows.standing() if not row.parent):
             key = agent_id(env.title, row.title)
             members[key] = Member(key, f"{env.title} · {row.provider or 'agent'}", env.owner.split(":", 1)[0] if env.owner else "main",
                                   env.title, row.status, env.owner, row.n, loops=len(row.data.get("loops") or {}))
@@ -104,7 +104,7 @@ def messaged(row, key: str, members: dict, named: dict) -> list[Link]:
     if held and held[0] == size:
         pairs = held[2]
     else:
-        turns = provider().transcript(row.transcript)
+        turns = provider().turns(row.transcript)
         read = held[1] if held and held[1] <= len(turns) else 0
         pairs = (held[2] if read else []) + exchanged(turns[read:])
         MESSAGED[row.transcript] = (size, len(turns), pairs)
@@ -119,13 +119,11 @@ def messaged(row, key: str, members: dict, named: dict) -> list[Link]:
 
 def exchanged(turns) -> list[tuple[str, str, str]]:
     pairs = []
-    for turn in turns:
-        kind, _, rest = turn.who.partition(":")
-        if kind == SENT and rest:
-            pairs.append((SENT, rest, rest))
-        elif kind == PEER and rest:
-            name, _, sender = rest.partition(":")
-            pairs.append((PEER, sender or name, name or sender))
+    for note in (turn.peer for turn in turns if turn.peer is not None):
+        if note.direction == SENT and note.address:
+            pairs.append((SENT, note.address, note.address))
+        elif note.direction == PEER:
+            pairs.append((PEER, note.address or note.name, note.name or note.address))
     return pairs
 
 

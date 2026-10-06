@@ -20,6 +20,7 @@ class ResourceEvent(RowAction):
     n: int = 0
     type: str = ""
     actor: str = ""
+    section: str = ""
 
     @classmethod
     def read(cls, event) -> "ResourceEvent":
@@ -39,6 +40,21 @@ class ResourceCreated(ResourceEvent):
 @dataclass(frozen=True)
 class MessageCreated(ResourceEvent):
     on: ClassVar[str] = "message.created"
+
+
+@dataclass(frozen=True)
+class RuleCreated(ResourceEvent):
+    on: ClassVar[str] = "rule.created"
+
+
+@dataclass(frozen=True)
+class CommentCreated(ResourceEvent):
+    on: ClassVar[str] = "comment.created"
+
+
+@dataclass(frozen=True)
+class WorkCreated(ResourceEvent):
+    on: ClassVar[str] = "work.created"
 
 
 @dataclass(frozen=True)

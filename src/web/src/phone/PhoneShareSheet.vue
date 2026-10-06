@@ -1,5 +1,5 @@
 <script setup>
-import {copyText} from "../kit/copy.js";
+import {copyText} from "../platform/clipboard.js";
 import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import {announce, tell} from "./announce.js";

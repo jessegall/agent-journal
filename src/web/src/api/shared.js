@@ -1,3 +1,5 @@
+import {answered} from "./transport.js";
+
 export async function sharedData() {
     const got = await fetch("./data.json", {cache: "no-store"});
     if (!got.ok) throw Object.assign(new Error(String(got.status)), {status: got.status});
@@ -10,10 +12,10 @@ async function posted(path, given, failed) {
         headers: {"Content-Type": "application/json", "X-Shared-Comment": "1"},
         body: JSON.stringify(given),
     });
-    const body = await got.json().catch(() => ({}));
-    if (!got.ok) throw new Error(body.error || failed);
-    return body;
+    return answered(got, failed);
 }
+
+export const sharedFileUrl = (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`;
 
 export function sendComment(about, name, text) {
     return posted("./comment", {about, name, text}, "The comment did not go through");

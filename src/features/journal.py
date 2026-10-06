@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field, replace
 from functools import cached_property
 
-from controllers.base import NAMED, Controller
+from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.wording import appended
-from features.parts import AgentHooks, Client, Commands, Events
+from features.wiring import AgentHooks, Client, Commands, Events, Routes
 from resources.base import SYSTEM, titled
 
 
@@ -21,21 +21,15 @@ class Message:
 
 def waiting(record, agent) -> bool:
     from controllers.types import Works
-    return any(w.awaiting for w in Works(record, actor=SYSTEM)._standing() if w.agent in ("", agent.title))
+    return any(w.awaiting for w in Works(record, actor=SYSTEM).rows.standing() if w.agent in ("", agent.title))
 
 
 class BoundJournal:
     def __init__(self, journal: "Journal", record, actor: str = SYSTEM):
         self.journal, self.record, self.actor = journal, record, actor
 
-    def __getattr__(self, name: str) -> Controller:
-        found = NAMED.get(name)
-        if found is None:
-            raise AttributeError(f"the journal has no resource called {name}")
-        return found(self.record, actor=self.actor)
-
-    def of(self, type_: str) -> Controller:
-        return CONTROLLERS[type_](self.record, actor=self.actor)
+    def get(self, controller: type[Controller]) -> Controller:
+        return controller(self.record, actor=self.actor)
 
     def acting(self, actor: str) -> "BoundJournal":
         return BoundJournal(self.journal, self.record, actor)
@@ -61,6 +55,10 @@ class Journal:
         return BoundJournal(self, record, actor)
 
     @cached_property
+    def routes(self) -> Routes:
+        return Routes(self.feature)
+
+    @cached_property
     def events(self) -> Events:
         return Events(self.feature)
 
@@ -77,7 +75,7 @@ class Journal:
         return AgentHooks(self.feature)
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, **values):
-        spec = self.feature.lines[line]
+        spec = self.feature.declared_line(line)
         if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
         lead, yields = spec.lead, not spec.while_waiting
@@ -103,12 +101,12 @@ class Journal:
         CONTROLLERS[row.type](record, actor=SYSTEM).complete(row.n, how=how)
 
     def message(self, kind: type, line: str, values: dict, actor: str = SYSTEM, **data) -> Message:
-        spec = self.feature.lines.get(line)
-        filled = set(spec.placeholders()) if spec else set()
-        title, brief = self.feature.line(line, {key: value for key, value in values.items() if key in filled})
+        spec = self.feature.declared_line(line)
+        filled = set(spec.placeholders())
+        title, brief = spec.filled({key: value for key, value in values.items() if key in filled})
         kept = {key: value for key, value in values.items() if key not in filled}
         abstract = str(kept.pop("abstract", ""))
-        if spec and spec.label:
+        if spec.label:
             kept["label"] = spec.label
         return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data})
 

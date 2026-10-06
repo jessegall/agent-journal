@@ -7,7 +7,7 @@ function state(row) {
     if (row.completed) return "Done";
     if (data.blocked) return "Blocked";
     if (data.work || IN_HAND.includes(data.status)) return "In hand";
-    if (data.status === "parked") return "Parked";
+    if (data.status === "parked") return "Paused";
     return "Open";
 }
 
@@ -21,7 +21,7 @@ export function todoFacts(row) {
     if (typeof data.blocked === "string" && data.blocked && !row.completed) facts.push({label: "Why", value: data.blocked, text: true});
     if (data.priority !== undefined && data.priority !== null && data.priority !== "")
         facts.push({label: "Priority", value: named(row.priority_name) || String(data.priority)});
-    if (data.assigned) facts.push({label: "Assigned to", value: data.assigned});
+    if (data.assigned) facts.push({label: "Assignee", value: data.assigned});
     facts.push({label: "Made", value: ago(row.created)});
     if (row.updated && row.updated !== row.created) facts.push({label: "Updated", value: ago(row.updated)});
     return {facts, after: waitsOn(row)};

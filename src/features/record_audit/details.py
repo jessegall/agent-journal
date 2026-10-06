@@ -1,21 +1,25 @@
 from features.base import FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
-class CleanupDetails(FeatureDetails):
+class RecordAuditDetails(FeatureDetails):
+    explains = 'The journal checks for items that point to missing files or commands. The agent sees the findings and can close outdated items.'
     name = "record_audit"
+    group = Group.RECORDS
+    label = "Find items that refer to missing files or commands"
     has_skill = False
 
-    title = "Record audit"
+    title = "Audit"
 
     aliases = ("cleanup",)
 
     abstract = """
-        Once a day you are told which rows in the record no longer hold: a file that is gone, a
-        command that does not exist, a row waiting on the user too long
+        Once a day the agent is told which items point at a file that is gone or a command that does
+        not exist, and which have waited on you too long.
     """
 
-    help = "Each finding names the row, what is wrong with it, and the command that retires it."
+    help = "Each finding names the item, what is wrong with it, and the command that closes it."
 
     trigger = Trigger(every=1440, unit=MINUTES)
 

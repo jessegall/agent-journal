@@ -1,8 +1,8 @@
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
+from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.wording import plural
@@ -14,7 +14,7 @@ KEY = "clean_slate"
 
 
 def place(record: Record) -> Path:
-    return record.root / "runtime" / "set-aside"
+    return runtime.folder(record.root) / "set-aside"
 
 
 def state(record: Record) -> dict:
@@ -26,14 +26,12 @@ def listed(record: Record) -> Path:
 
 
 def moved(record: Record) -> list[dict]:
-    return read_json(listed(record), list, []) + (state(record).get("moved") or [])
+    return read_json(listed(record), list, [])
 
 
 def keep_moved(record: Record, entries: list[dict]) -> None:
     place(record).mkdir(parents=True, exist_ok=True)
     write_json(listed(record), entries)
-    if state(record).get("moved"):
-        record.set_setting(KEY, {**state(record), "moved": []})
 
 
 def others(project: Path, agent: str) -> list[Path]:
@@ -43,16 +41,6 @@ def others(project: Path, agent: str) -> list[Path]:
 def held(record: Record, project: Path, agent: str) -> list[dict]:
     files = {str(f) for f in PROVIDERS[agent]().hook_files(project)}
     return [m for m in moved(record) if m["from"] in files]
-
-
-def git(folder: Path, *args: str) -> str:
-    done = subprocess.run(["git", "-C", str(folder), *args], capture_output=True, text=True, timeout=30)
-    return done.stdout if done.returncode == 0 else ""
-
-
-def hide(folder: Path, files: list[str], hidden: bool) -> None:
-    if files:
-        git(folder, "update-index", "--skip-worktree" if hidden else "--no-skip-worktree", "--", *files)
 
 
 def kept(settings) -> dict:
@@ -85,6 +73,18 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
     return f"set aside the other hooks in {plural(len(hooks), 'file')} until the journal stops"
 
 
+def without_hooks(settings: dict) -> dict:
+    return {key: value for key, value in settings.items() if key != "hooks"}
+
+
+def restore_hooks(kept_at: Path, home: Path) -> None:
+    original, current = read_json(kept_at, dict, {}), read_json(home, dict, {})
+    if not current or without_hooks(current) == without_hooks(original):
+        shutil.copy2(kept_at, home)
+        return
+    write_json(home, {**current, "hooks": original.get("hooks", {})}, indent=2)
+
+
 def put_back(record: Record) -> int:
     if Sessions(record.root).running():
         return 0
@@ -109,11 +109,10 @@ def restore(entries: list[dict]) -> None:
             continue
         home.parent.mkdir(parents=True, exist_ok=True)
         if m.get("copy"):
-            shutil.copy2(kept_at, home)
+            restore_hooks(kept_at, home)
             kept_at.unlink()
         elif not (home.exists() or home.is_symlink()):
             shutil.move(str(kept_at), str(home))
-            hide(home.parent, m.get("tracked") or [], False)
 
 
 def slate_of(record: Record) -> bool:

@@ -1,4 +1,5 @@
 <script setup>
+import {doneOf, NOT_STARTED, othersLine, phaseOf, planButton, rowsOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
@@ -10,7 +11,6 @@ import {useLanding} from "../composables/planFlight.js";
 import {usePlanRows} from "../composables/planRows.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
-import {doneOf, NOT_STARTED, othersLine, phaseOf, planButton, rowsOf} from "./statusline.js";
 
 const PARKABLE = ["approved", "active", "waiting"];
 const props = defineProps({p: Object, data: Object, others: Array, error: String});
@@ -93,8 +93,8 @@ async function park() {
                 <MenuItem @click="open">Open plan</MenuItem>
                 <template v-if="PARKABLE.includes(data.status)">
                     <MenuItem class="planbar-park" @click="park">
-                        <span>Park</span>
-                        <small>Stop it and set its open to-dos aside</small>
+                        <span>Pause</span>
+                        <small>Pause the plan and its open to-dos</small>
                     </MenuItem>
                 </template>
             </MenuPanel>

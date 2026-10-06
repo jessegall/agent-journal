@@ -1,23 +1,43 @@
 import {api} from "../api/client.js";
 import {startOutbox} from "../chat/outbox.js";
+import {wakePolls} from "../composables/poll.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {heardEvents} from "./rows.js";
+import {reload, takeEvents} from "./rows.js";
+
+const REOPEN_AFTER = 3000;
+const OFFLINE_AFTER = 15000;
+
+let source = null;
+let failing = 0;
 
 function receive(message) {
     try {
-        heardEvents([JSON.parse(message.data)]);
+        takeEvents([JSON.parse(message.data)]);
     } catch (e) {}
 }
 
-export function listen() {
-    if (store.stream) store.stream.close();
-    startOutbox(route.value.env);
-    store.stream = api.stream();
-    store.stream.onmessage = receive;
-    store.stream.onerror = () => {
-        if (store.stream && store.stream.readyState === EventSource.CLOSED) setTimeout(listen, REOPEN_AFTER);
-    };
+function opened() {
+    failing = 0;
+    store.streamOpen = true;
+    if (store.offline) reload();
+    store.offline = false;
+    wakePolls();
 }
 
-const REOPEN_AFTER = 3000;
+function failed() {
+    store.streamOpen = false;
+    failing ||= Date.now();
+    if (Date.now() - failing >= OFFLINE_AFTER) store.offline = true;
+    if (source && source.readyState === EventSource.CLOSED) setTimeout(listen, REOPEN_AFTER);
+}
+
+export function listen() {
+    if (source) source.close();
+    store.streamOpen = false;
+    startOutbox(route.value.env);
+    source = api.stream();
+    source.onopen = opened;
+    source.onmessage = receive;
+    source.onerror = failed;
+}

@@ -19,6 +19,8 @@ from pathlib import Path
 
 RELOAD, STOP, RELAUNCH, HEAL = 75, 76, 77, 78
 QUICK = 30.0
+UNHEALED_LIMIT = 5
+UNHEALED_BACKOFF = 2.0
 GRACE, STEP = 3.0, 0.05
 EXITING = 8.0
 CLEAR_LINE = b"\x05\x15"
@@ -26,11 +28,23 @@ LONGEST = 65536
 INBOX = 1 << 20
 TYPED_EVERY = 1.0
 HEADLESS_SIZE = (40, 120)
+PRINTED, SCREEN, SCREEN_SHAPE, TYPED, LAUNCHED = "printed", "screen", "screen.json", "typed", "launched.json"
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
 
 
 def typing(data: bytes) -> bool:
     return any(byte >= 0x20 for byte in ESCAPES.sub(b"", data))
+
+
+def waited(pid: int, seconds: float, drain) -> int | None:
+    until = time.time() + seconds
+    while time.time() < until:
+        drain()
+        ended, status = os.waitpid(pid, os.WNOHANG)
+        if ended:
+            return status
+        time.sleep(STEP)
+    return None
 
 
 def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
@@ -39,13 +53,9 @@ def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
             os.kill(pid, sent)
         except ProcessLookupError:
             break
-        until = time.time() + grace
-        while time.time() < until:
-            drain()
-            ended, status = os.waitpid(pid, os.WNOHANG)
-            if ended:
-                return status
-            time.sleep(STEP)
+        status = waited(pid, grace, drain)
+        if status is not None:
+            return status
     try:
         return os.waitpid(pid, 0)[1]
     except ChildProcessError:
@@ -116,12 +126,14 @@ class Supervisor:
         self.command, self.args, self.launch, self.exit = spec.start.command, spec.args, spec.start.launch, spec.start.exit
         self.worker = None
         self.worker_began = 0.0
+        self.unhealed = 0
+        self.worker_due = 0.0
         self.alive, self.lifeline = os.pipe()
         os.set_inheritable(self.alive, True)
         self.folder = self.root / "runtime" / "sessions" / self.session
         self.folder.mkdir(parents=True, exist_ok=True)
-        self.printed = (self.folder / "printed").open("ab")
-        self.screen = (self.folder / "screen").open("ab")
+        self.printed = (self.folder / PRINTED).open("ab")
+        self.screen = (self.folder / SCREEN).open("ab")
         self.inbox = self.listen()
         self.sources = [self.fd, self.inbox] if self.headless else [self.fd, self.inbox, self.stdin]
         self.typed_at = 0.0
@@ -130,9 +142,9 @@ class Supervisor:
         self.resize(self.fd)
 
     def record_launch(self) -> None:
-        written = self.folder / "launched.json.writing"
+        written = self.folder / f"{LAUNCHED}.writing"
         written.write_text(json.dumps({"pid": self.pid, "command": self.command, "args": self.args, "cwd": str(self.cwd), "launch": self.launch}))
-        os.replace(written, self.folder / "launched.json")
+        os.replace(written, self.folder / LAUNCHED)
 
     def spawn(self, command: list[str], environ: dict) -> tuple[int, int]:
         pid, fd = pty.fork()
@@ -142,11 +154,13 @@ class Supervisor:
         return pid, fd
 
     def socket_path(self) -> Path:
-        return Path("/tmp") / f"journal-{hashlib.sha1(str(self.root.resolve()).encode()).hexdigest()[:16]}" / f"typist-{self.session}.sock"
+        shared = Path("/tmp") / f"journal-{hashlib.sha1(str(self.root.resolve()).encode()).hexdigest()[:16]}"
+        folder = shared if not shared.exists() or shared.stat().st_uid == os.getuid() else shared.with_name(f"{shared.name}-{os.getuid()}")
+        return folder / f"typist-{self.session}.sock"
 
     def listen(self) -> socket.socket:
         where = self.socket_path()
-        where.parent.mkdir(parents=True, exist_ok=True)
+        where.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         where.unlink(missing_ok=True)
         inbox = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         inbox.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, INBOX)
@@ -169,7 +183,7 @@ class Supervisor:
             rows, cols = struct.unpack("HHHH", size)[:2]
         except OSError:
             return
-        (self.folder / "screen.json").write_text(json.dumps({"rows": rows, "cols": cols, "at": self.screen.tell(), "printed": self.printed.tell()}))
+        (self.folder / SCREEN_SHAPE).write_text(json.dumps({"rows": rows, "cols": cols, "at": self.screen.tell(), "printed": self.printed.tell()}))
 
     def start_worker(self) -> None:
         command = [*self.worker_command, str(self.root), str(self.cwd), self.env, self.agent, self.session, str(self.alive)]
@@ -194,14 +208,7 @@ class Supervisor:
             os.write(self.fd, b"\r")
         except OSError:
             return None
-        until = time.time() + EXITING
-        while time.time() < until:
-            self.drain()
-            ended, status = os.waitpid(self.pid, os.WNOHANG)
-            if ended:
-                return status
-            time.sleep(STEP)
-        return None
+        return waited(self.pid, EXITING, self.drain)
 
     def drain(self) -> None:
         while select.select([self.fd], [], [], 0)[0]:
@@ -274,7 +281,7 @@ class Supervisor:
         self.printed.flush()
 
     def typing(self, data: bytes) -> None:
-        typed = self.folder / "typed"
+        typed = self.folder / TYPED
         if b"\r" in data or b"\n" in data:
             typed.unlink(missing_ok=True)
         elif typing(data) and time.time() - self.typed_at >= TYPED_EVERY:
@@ -295,8 +302,17 @@ class Supervisor:
         elif code == HEAL or (code != RELOAD and time.time() - self.worker_began < QUICK):
             line = self.delegate(self.heal_command)
             if line:
+                self.unhealed = 0
                 os.write(self.stdout, f"\r\n{line}\r\n".encode())
-        self.start_worker()
+            else:
+                self.unhealed += 1
+            if self.unhealed >= UNHEALED_LIMIT:
+                os.write(self.stdout, b"\r\njournal: this build keeps failing to start and there is no earlier build to go back to, so the session is ending\r\n")
+                return self.stop_agent()
+        else:
+            self.unhealed = 0
+        self.worker = None
+        self.worker_due = time.time() + (UNHEALED_BACKOFF * 2 ** (self.unhealed - 1) if self.unhealed else 0)
         return None
 
     def run(self) -> int:
@@ -317,6 +333,8 @@ class Supervisor:
                 code = self.worker_ended()
                 if status is None and code is not None:
                     status = self.after_worker(code)
+                if status is None and self.worker is None and time.time() >= self.worker_due:
+                    self.start_worker()
         finally:
             self.stop_worker()
             if status is None:

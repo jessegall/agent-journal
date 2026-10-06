@@ -1,6 +1,7 @@
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import {api} from "../api/client.js";
 import {rows} from "../sync/rows.js";
+import {store} from "../state/store.js";
 
 const NAMED = /^(.*?) (?:\((\w+) (\d+)\)|\[\[chip (\w+):(\d+)\|[^\]]*\]\])$/;
 const now = () => Date.now() / 1000;
@@ -31,15 +32,30 @@ export function endsOf(share) {
 
 export const viewsOf = (share) => `${share.data.views || 0} ${share.data.views === 1 ? "view" : "views"}`;
 
-export const stopShare = (share) => api.act("share", share.n, "stop");
+export const stopShare = (share) => api.stopShare(share.n);
 
-export const approveShare = (share) => api.act("share", share.n, "approve");
+export const approveShare = (share) => api.approveShare(share.n);
 
-export const tunnelStatus = ref(null);
+export const tunnelStatus = computed(() => store.tunnel);
+
+const UNKNOWN_TUNNEL = {
+    installed: true,
+    logged_in: true,
+    command: "",
+    host: "",
+    server: "",
+    address: "",
+    problems: ["The journal could not find out whether sharing works. Check that it is running, then check again."],
+};
 
 export async function checkTunnel() {
-    tunnelStatus.value = await api.command("share", "tunnel").catch(() => null);
-    return tunnelStatus.value;
+    store.tunnel = await api.tunnelStatus().catch(() => UNKNOWN_TUNNEL);
+    return store.tunnel;
+}
+
+export async function recheckTunnel() {
+    store.tunnel = await api.tunnelRecheck().catch(() => UNKNOWN_TUNNEL);
+    return store.tunnel;
 }
 
 export const linkMessage = (title, link) => `Here's the link to ${title}: ${link}`;

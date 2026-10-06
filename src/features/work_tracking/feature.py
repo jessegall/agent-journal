@@ -1,4 +1,6 @@
 from features.base import Feature
+from features.work_tracking.auto import automatic
+from overview.parts import SUMMARY_PARTS
 from features.journal import Journal
 from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
@@ -22,9 +24,10 @@ class WorkFeature(Feature):
         return super().chosen(record, key) or (key == "auto" and bool(steered(record)))
 
     def settings_view(self, record) -> dict:
-        return {"steered": steered(record)}
+        return {**super().settings_view(record), "steered": steered(record)}
 
     def register(self, journal: Journal) -> None:
+        SUMMARY_PARTS.add(None, automatic, key="auto")
         journal.commands.add("work", LogWork())
         journal.commands.add("work", ParkWork())
         journal.commands.add("work", ResumeWork())

@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.files import announce
+from engine.files import announce, blobs
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
-from features.status_bar.commands import writes
+from providers.command_effects import writes
 from providers.codex import Codex
 from providers.payload import Hook
 from tests.conftest import fresh
@@ -33,6 +33,19 @@ def project_with(files: dict[str, str]) -> Project:
     row = Agents(record, actor="system").by_session("claude-1")
     announce(record, row.n, skill_folders())
     return Project(record, project, row.n)
+
+
+def test_hidden_and_secret_files_never_enter_the_edit_feed_or_git_objects():
+    project = project_with({"visible.py": "visible\n"})
+    (project.root / ".env").write_text("untracked hidden credential")
+    (project.root / "credentials").mkdir()
+    (project.root / "credentials" / "prod.json").write_text("untracked folder credential")
+    project.changed()
+    assert set(blobs(project.record, project.root, skill_folders())) == {"visible.py"}
+    assert not edits_since(project.record, project.agent, 0, PAGE).edits
+    for path in (".env", "credentials/prod.json"):
+        sha = subprocess.run(["git", "hash-object", path], cwd=project.root, capture_output=True, text=True, check=True).stdout.strip()
+        assert subprocess.run(["git", "cat-file", "-e", sha], cwd=project.root, capture_output=True).returncode != 0
 
 
 def test_a_changed_file_becomes_a_card_and_the_cursor_reads_only_what_came_after():
@@ -87,6 +100,14 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (len(older.edits), older.older) == (1, False), "the page before it holds the rest"
     whole = edited_file(project.record, project.agent, older.edits[0].id, Side.AFTER)
     assert (whole.path, whole.text) == ("a.py", "1\n"), "an edit gives the file as it stood after it"
+    from commands.http import dispatch
+    asked = lambda query: dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/file", project.record.root, query, {})
+    served = asked({"id": older.edits[0].id, "side": Side.AFTER})
+    assert (served.code, served.body["text"]) == (200, "1\n"), "the viewer's request for an edited file is served whole"
+    assert asked({"id": older.edits[0].id, "side": "sideways"}).code == 400, "a side that is neither before nor after is refused"
+    assert asked({"id": "no-such-edit", "side": Side.AFTER}).code == 404, "an edit nobody made is not found"
+    listed = dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/older", project.record.root, {"before": str(newest.edits[0].at), "last": "2"}, {})
+    assert (listed.code, len(listed.body["edits"])) == (200, 1), "the older page is served as the viewer asks for it"
 
 
 def test_a_project_folder_of_repositories_feeds_the_edits_of_each():

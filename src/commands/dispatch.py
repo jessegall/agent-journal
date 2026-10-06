@@ -1,100 +1,22 @@
-import json
 import mimetypes
-import re
-import time
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Iterator
 from urllib.parse import unquote
-import features
-from controllers.types import CONTROLLERS
-from engine import bus, runtime
-from engine.collecting import collecting
+from engine import bus
 from engine.record import Record
+from engine.timing import Stopwatch, profiler
 from controllers.faults import threw
-from features.shaping import shaped
-from resources.base import USER, Refused
+from features.format import shaped
+from resources.base import Missing, Refused
 from engine.package import data
-from engine.fields import Loaded
-from engine.paths import contained, environment_path
+from engine.memo import Memo
+from features.routing import FEATURE_ROUTES, Reply, Request, Route
+from engine.paths import contained, environment_home
 
 
 WEB = data("web", "dist")
 
-JSON = "application/json"
-
-PLAIN = "text/plain; charset=utf-8"
-
-
-@dataclass(frozen=True)
-class Named(Loaded):
-    env: str = ""
-
-
-@dataclass
-class Request:
-    root: Path
-    params: dict
-    query: dict
-    body: dict
-    kept: Record | None = None
-
-    def record(self) -> Record:
-        if self.kept is None:
-            self.kept = Record(self.root, self.params["env"], memo=True)
-        return self.kept
-
-    def query_as(self, kind):
-        return kind.from_json(self.query)
-
-    def body_as(self, kind):
-        return kind.from_json(self.body)
-
-    @property
-    def env(self) -> str:
-        named = Named.from_json(self.params).env or Named.from_json(self.query).env
-        return named if named else runtime.env(self.root)
-
-    def controller(self):
-        type_ = self.params["type"]
-        if type_ not in CONTROLLERS:
-            raise Missing(f"no type {type_}")
-        self.body.pop("actor", None)
-        return CONTROLLERS[type_](self.record(), actor=USER)
-
-
-@dataclass
-class Reply:
-    code: int = 200
-    body: object = None
-    kind: str = JSON
-    chunks: Iterator[bytes] | None = None
-    after: Callable[[], None] | None = None
-    timed: bool = True
-    named: str | None = None
-
-    def bytes(self) -> bytes:
-        if isinstance(self.body, bytes):
-            return self.body
-        return self.body.encode() if self.kind == PLAIN else json.dumps(self.body).encode()
-
-
-class Missing(Exception):
-    pass
-
-
-@dataclass
-class Route:
-    method: str
-    pattern: str
-    handler: Callable[[Request], Reply]
-    regex: re.Pattern = field(init=False)
-
-    def __post_init__(self):
-        self.regex = re.compile("^" + re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", self.pattern) + "$")
-
-
 ROUTES: list[Route] = []
+RANKED = Memo()
 
 def route(method: str, pattern: str):
     def register(fn):
@@ -103,8 +25,16 @@ def route(method: str, pattern: str):
     return register
 
 
+def rank_routes() -> None:
+    ROUTES.sort(key=lambda r: r.rank)
+
+
+def ranked() -> list[Route]:
+    return RANKED.get("routes", (len(ROUTES), FEATURE_ROUTES.version), lambda: sorted([*ROUTES, *FEATURE_ROUTES.each()], key=lambda r: r.rank))
+
+
 def resolve(method: str, path: str) -> tuple[Route, dict] | None:
-    for r in ROUTES:
+    for r in ranked():
         m = r.regex.match(path)
         if m and r.method == method:
             return r, {k: unquote(v) for k, v in m.groupdict().items()}
@@ -122,20 +52,30 @@ def later(reply: Reply, then) -> Reply:
     return reply
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple, profile=None) -> Reply:
-    faults = features.FEATURES.get("dev_faults")
-    if not faults or not reply.timed:
+def sooner(reply: Reply, first) -> Reply:
+    rest = reply.after
+
+    def after() -> None:
+        first()
+        if rest:
+            rest()
+    reply.after = after
+    return reply
+
+
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None) -> Reply:
+    if not reply.timed:
         return reply
-    took = (time.perf_counter() - began[0]) * 1000
-    working = (time.thread_time() - began[1]) * 1000
-    garbage = (collecting() - began[2]) * 1000
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
-    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", name, took, working, profile, garbage))
+    answered = []
+    kind = "hook" if "/hook/" in path else "request"
+    later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered[0] if answered else None))
+    return sooner(reply, lambda: answered.append(began.lap()))
 
 
 def known_environment(root: Path, env: str) -> bool:
     try:
-        return environment_path(Path(root) / "environments", env).is_dir()
+        return environment_home(root, env).is_dir()
     except Refused:
         return False
 
@@ -152,9 +92,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     r, params = found
     if method == "GET" and "env" in params and not known_environment(root, params["env"]):
         return Reply(404, {"error": f"no environment {params['env']}"})
-    faults = features.FEATURES.get("dev_faults")
-    profile = faults.reports.profiler(root) if faults else None
-    began = (time.perf_counter(), time.thread_time(), collecting())
+    profile = profiler(root)
+    began = Stopwatch()
     req = Request(root, params, query, body)
     try:
         with bus.held() as queued:
@@ -174,9 +113,6 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return Reply(404, {"error": str(e)})
     except Refused as e:
         return Reply(400, {"error": str(e)})
-    except (TypeError, AttributeError) as e:
-        threw(root, req.env, f"{method} {path}")
-        return Reply(400, {"error": f"not an action here: {e}"})
     except Exception as e:
         threw(root, req.env, f"{method} {path}")
         return Reply(500, {"error": f"{type(e).__name__}: {e}"})

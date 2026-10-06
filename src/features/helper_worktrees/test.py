@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import features
+from engine.worktree import tip
 from features.helper_worktrees.controller import Worktrees
 from providers import PROVIDERS
 from resources.base import AGENT
@@ -19,7 +20,7 @@ def test_a_helper_is_not_told_about_another_environments_worktrees():
     record = fresh("main")
     row = Worktrees(record, actor=SYSTEM).create("main-helper")
     helper = Record(record.root, "main-helper")
-    assert Worktrees(helper, actor=SYSTEM).summaries()[0]["environment"] == "main"
+    assert Worktrees(helper, actor=SYSTEM).rows.summaries()[0]["environment"] == "main"
     assert f"unread worktree {row.n}" in Engine(record, DRIVERS["claude"](record, "main")).owed()
     assert "unread worktree" not in Engine(helper, DRIVERS["claude"](helper, "helper")).owed()
 
@@ -29,6 +30,8 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     repo = project_on("phone-connection")
     record, project = repo.record, repo.project
     working_tip = commit(project, "later.txt", "later\n")
+    (project / "deps").mkdir()
+    (project / ".worktreelinks").write_text("deps\n")
     said = Worktrees(record, actor=AGENT).cut("rhea", helper="Rhea")
     row = Worktrees(record, actor=AGENT).all()[0]
     folder = Path(row.path)
@@ -38,6 +41,7 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
         "the worktree starts at the working branch's tip, with its latest commit, not at main"
     assert str(folder) in said and "helper-rhea" in said, "the path and branch are printed for the dispatch prompt"
     assert (folder / ".journal").resolve() == record.root.resolve(), "the helper writes to the project's journal"
+    assert (folder / "deps").resolve() == (project / "deps").resolve(), "a folder .worktreelinks lists, like node_modules, is linked in, not copied"
     assert refused(lambda: Worktrees(record, actor=AGENT).cut("rhea")).startswith("the worktree rhea is taken"), "a name is cut once"
 
 
@@ -58,6 +62,21 @@ def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased(
     assert worktrees.take(row.n).startswith("took 1 commit from helper-rhea onto phone-connection"), "a rebased branch is taken"
     assert (project / "helper.txt").read_text() == "from the helper\n" and git(project, "log", "-1", "--format=%s") == "write helper.txt", \
         "the helper's commit lands on the working branch by cherry-pick"
+
+
+def test_take_asks_for_a_wording_review_when_the_helper_changed_viewer_text():
+    features.load()
+    repo = project_on("phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    folder = Path(row.path)
+    (folder / "src" / "web" / "src").mkdir(parents=True)
+    commit(folder, "src/web/src/Field.vue", '<FormField label="Watch for the words in" />\n')
+    asked = refused(lambda: worktrees.take(row.n))
+    assert "Watch for the words in" in asked and f"journal worktree take {row.n} --reviewed" in asked, \
+        "a helper's new viewer text is read against rule 59 before it is taken, and the refusal names a line and the way on"
+    assert worktrees.take(row.n, reviewed=True).startswith("took 1 commit"), "once reviewed, it is taken"
 
 
 def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
@@ -88,6 +107,7 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
             "tool_input": {"file_path": str(folder / "shared.txt")}}
     helper = lambda: handle(provider, record.root, record.env, {**read, "agent_id": "rhea"}).get("reason", "")
     assert helper() == "", "nothing is said while the working branch has not moved"
+    assert worktrees.all()[0].checked_tip == tip(project, "phone-connection"), "the tip it checked is kept, so the next tool call runs no git"
     commit(project, "main.txt", "meanwhile\n")
     told = helper()
     assert told.startswith("phone-connection moved 1 commit") and "rebase onto phone-connection" in told, "the helper is told the branch moved"
@@ -114,3 +134,53 @@ def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
     assert (folder.exists(), git(project, "branch", "--list", "helper-rhea")) == (False, ""), "the worktree and its branch are gone"
     assert git(project, "rev-parse", "refs/journal/helpers/rhea") == last, "its last commit is kept under refs/journal/helpers"
     assert refused(lambda: worktrees.take(row.n)) == f"worktree {row.n} is dropped", "a dropped worktree takes nothing"
+
+
+def test_a_worktree_is_not_dropped_while_an_agent_runs_in_it():
+    import json
+    import os
+    import subprocess
+    from engine import runtime
+    features.load()
+    repo = project_on("phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    launched = runtime.sessions(repo.record.root) / "claude-1" / "launched.json"
+    launched.parent.mkdir(parents=True, exist_ok=True)
+    launched.write_text(json.dumps({"pid": os.getpid(), "cwd": row.path}))
+    assert "still running" in refused(lambda: worktrees.complete(row.n)), "a worktree with a live agent in it is kept"
+    ended = subprocess.Popen(["true"])
+    ended.wait()
+    launched.write_text(json.dumps({"pid": ended.pid, "cwd": row.path}))
+    assert worktrees.complete(row.n).completed, "once the agent is gone the worktree drops"
+
+
+def test_a_new_repository_a_detached_head_and_a_missing_git_identity_are_refused_in_plain_words(monkeypatch):
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    record.root.mkdir(parents=True, exist_ok=True)
+    project = record.root.resolve().parent
+    git(project, "init", "-q", "-b", "main")
+    said = refused(lambda: Worktrees(record, actor=AGENT).cut("rhea"))
+    assert "has no commits" in said and "invalid reference" not in said, said
+    from engine.worktree import branched
+    assert "could not be made from main" in branched(project, "ticket-1", "main"), "a branch off a repository with no commits is refused, not skipped"
+    repo = project_on("phone-connection")
+    git(repo.project, "checkout", "-q", "--detach")
+    assert "is on no branch" in refused(lambda: Worktrees(repo.record, actor=AGENT).cut("rhea"))
+    git(repo.project, "checkout", "-q", "phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    commit(Path(row.path), "helper.txt", "from the helper\n")
+    git(repo.project, "config", "--unset", "user.email")
+    git(repo.project, "config", "--unset", "user.name")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", "/dev/null")
+    monkeypatch.setenv("GIT_CONFIG_SYSTEM", "/dev/null")
+    monkeypatch.setenv("GIT_AUTHOR_NAME", "")
+    monkeypatch.setenv("GIT_COMMITTER_NAME", "")
+    monkeypatch.setenv("EMAIL", "")
+    said = refused(lambda: worktrees.take(row.n))
+    assert "was undone" in said and "Traceback" not in said and git(repo.project, "status", "--porcelain") == "", said

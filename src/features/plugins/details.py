@@ -1,14 +1,19 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class PluginsDetails(FeatureDetails):
+    explains = 'Plugins can add actions and pages to the journal. You can see and manage the plugins installed for this project.'
     name = "plugins"
+    group = Group.PROJECT
+    label = "Plugins"
+    hint = "Repositories installed into the journal"
     when = "a plugin is installed, upgraded, configured or answers"
 
     title = "Plugins"
 
 
-    abstract = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
+    abstract = "A plugin is a repository installed into the journal. It reacts to what happens in the journal and can run programs of its own."
 
     help = """
         Install a plugin with journal plugin install <url>, upgrade it with journal plugin upgrade <n>, and change a setting with
@@ -38,7 +43,8 @@ class PluginsDetails(FeatureDetails):
         outlives upgrades, never in the plugin's own folder or the project. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
         host drains a few at a time. Answering an event, that file belongs to the event's environment and its commands run
-        there; a line that names --env is refused. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
+        there; a line that names --env is refused. A service answering later writes to the queue its payload names
+        (plugin.queue), so its lines run in the environment the event came from. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
         manifest declares, with the same card and activity item as an answer that raises it. An event is declared as
         "events": {"<name>": {"title": "...", "tone": "...", "card": {"label", "icon", "color", "collapsed"}}}: the card
         shows it in the chat, and "collapsed": true makes its item in the activity list start folded to its title, opening

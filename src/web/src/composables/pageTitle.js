@@ -1,6 +1,7 @@
+import {pluralTitle} from "../domain/navigation.js";
+import {meta} from "../domain/spec.js";
 import {computed} from "vue";
 import {route} from "../route.js";
-import {meta} from "../state/store.js";
 
 const PAGES = {
     settings: "Settings",
@@ -11,7 +12,7 @@ const PAGES = {
     about: "About",
     plugins: "Plugins",
     page: "Plugin",
-    hub: "Hub",
+    hub: "Journals",
     file: "File",
     kanban: "Board",
     organization: "Organization",
@@ -19,5 +20,5 @@ const PAGES = {
 };
 
 export const pageTitle = computed(() =>
-    !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? `${meta(route.value.page).title}s` : route.value.page)
+    !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? pluralTitle(meta(route.value.page).title) : route.value.page)
 );

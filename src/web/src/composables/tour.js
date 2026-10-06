@@ -1,26 +1,17 @@
+import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {onUnmounted, ref, watch} from "vue";
-import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
+import {boxAround} from "../platform/boxes.js";
+import {useFollowedBox} from "./followedBox.js";
 
 const KEY = "tour_seen";
 const START_AFTER = 800;
-const FOLLOW = 250;
 
-function around(selector) {
-    const boxes = [...document.querySelectorAll(selector)].map((el) => el.getBoundingClientRect()).filter((r) => r.width > 4);
-    if (!boxes.length) return null;
-    return {
-        l: Math.min(...boxes.map((r) => r.left)),
-        t: Math.min(...boxes.map((r) => r.top)),
-        r: Math.max(...boxes.map((r) => r.right)),
-        b: Math.max(...boxes.map((r) => r.bottom)),
-    };
-}
+const around = (selector) => boxAround([...document.querySelectorAll(selector)]);
 
 export function useTour(steps, menu) {
     const step = ref(-1);
     const rect = ref(null);
     let waiting = 0;
-    let following = 0;
 
     function measure() {
         const now = steps[step.value];
@@ -29,6 +20,8 @@ export function useTour(steps, menu) {
         rect.value = around(now.target) || (now.fallback ? around(now.fallback) : null);
     }
 
+    const {follow, stop} = useFollowedBox(measure);
+
     function go(at) {
         step.value = at;
         if (!steps[at].menu && menu.isOpen()) menu.close();
@@ -36,10 +29,16 @@ export function useTour(steps, menu) {
         requestAnimationFrame(measure);
     }
 
+    const covered = () => Boolean(document.querySelector(".dialog, .veil"));
+
+    function attempt() {
+        if (covered()) waiting = setTimeout(attempt, START_AFTER);
+        else start();
+    }
+
     function start() {
         go(0);
-        clearInterval(following);
-        following = setInterval(measure, FOLLOW);
+        follow();
     }
 
     function end() {
@@ -47,7 +46,7 @@ export function useTour(steps, menu) {
         if (steps[step.value].menu) menu.close();
         step.value = -1;
         rect.value = null;
-        clearInterval(following);
+        stop();
         saveViewerSetting(KEY, true);
     }
 
@@ -57,14 +56,13 @@ export function useTour(steps, menu) {
     watch(
         settingsLoaded,
         (loaded) => {
-            if (loaded && !viewerSetting(KEY, false) && step.value < 0) waiting = setTimeout(start, START_AFTER);
+            if (loaded && !viewerSetting(KEY, false) && step.value < 0) waiting = setTimeout(attempt, START_AFTER);
         },
         {immediate: true}
     );
     window.addEventListener("keydown", key);
     onUnmounted(() => {
         clearTimeout(waiting);
-        clearInterval(following);
         window.removeEventListener("keydown", key);
     });
     return {step, rect, next, end};

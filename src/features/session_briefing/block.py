@@ -12,6 +12,13 @@ Load the journal skill again (Skill: journal); the compaction emptied it. Then c
 """
 
 
+def briefing(call) -> str:
+    path = start_file(call.record.root, call.record.env, call.provider.compacted(call.hook))
+    if not path.is_file():
+        rebuild(call.record)
+    return path.read_text() if path.is_file() else ""
+
+
 def rebuild(record) -> None:
     block = start_block(record)
     for compacted in (False, True):

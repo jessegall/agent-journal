@@ -21,7 +21,7 @@ async function toggle(on) {
 async function pin() {
     error.value = "";
     try {
-        await api.act("rule", props.resource.n, "pin");
+        await api.pinRule(props.resource.n);
     } catch (e) {
         error.value = e.message;
     }
@@ -30,9 +30,9 @@ async function pin() {
 
 <template>
     <div class="rule-controls">
-        <span class="rule-control-label">Inject into</span>
+        <span class="rule-control-label">Add to</span>
         <Switch :on="injected" word="instructions" framed @change="toggle" />
-        <Btn small @click="pin">Pin over chat</Btn>
+        <Btn small @click="pin">Pin to chat</Btn>
         <template v-if="error">
             <span class="error">{{ error }}</span>
         </template>

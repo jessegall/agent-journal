@@ -1,12 +1,15 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
-import {loadedSkills, usageWindows} from "../agents.js";
+import {loadedSkills, usageWindows} from "../domain/agents.js";
 import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import AgentAppoint from "./AgentAppoint.vue";
 import AgentBarViews from "./AgentBarViews.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentFacts from "./AgentFacts.vue";
+import AgentMenu from "./AgentMenu.vue";
 import AgentPresets from "./AgentPresets.vue";
 import AgentSkills from "./AgentSkills.vue";
 import AgentUsage from "./AgentUsage.vue";
@@ -14,11 +17,6 @@ import CrewList from "./CrewList.vue";
 import LoopList from "./LoopList.vue";
 import "./drop.css";
 import {go, peek, route} from "../route.js";
-import {agent, store} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.agents);
 
 const open = ref("");
 const schemesOpen = ref(false);
@@ -81,6 +79,9 @@ function openSkills() {
                     <template #appoint>
                         <AgentAppoint @done="open = ''" />
                     </template>
+                    <template #agent>
+                        <AgentMenu :agent="agent" @done="open = ''" />
+                    </template>
                     <template #skills>
                         <AgentSkills :skills="skills" @read="readSkill" @browse="openSkills" />
                     </template>
@@ -106,7 +107,7 @@ function openSkills() {
                     </template>
                     <template #shells>
                         <CrewList
-                            heading="Background shells"
+                            heading="Background commands"
                             :agent="agent ? agent.n : 0"
                             :rows="data.shell_rows || []"
                             :total="data.shells || 0"

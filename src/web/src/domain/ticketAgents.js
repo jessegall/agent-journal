@@ -2,7 +2,7 @@ import {rows} from "../sync/rows.js";
 
 const STATES = {
     working: {word: "Working", dot: "running"},
-    waiting: {word: "Waiting for you", dot: "you"},
+    waiting: {word: "Needs you", dot: "you"},
     stuck: {word: "Stuck", dot: "failed"},
     stopped: {word: "Stopped", dot: ""},
     idle: {word: "Idle", dot: "queued"},

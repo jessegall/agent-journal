@@ -1,14 +1,15 @@
 <script setup>
+import {MENUED, meta} from "../domain/spec.js";
 import {computed} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Chapters from "./Chapters.vue";
+import ResourceMenu from "./ResourceMenu.vue";
 import DownloadLink from "./DownloadLink.vue";
 import {isUpdate, updateLabel} from "../domain/updates.js";
 import {age} from "../format/time.js";
 import {peek} from "../route.js";
-import {meta} from "../state/store.js";
 
 const props = defineProps({
     resource: {type: Object, required: true},
@@ -23,7 +24,10 @@ const title = defineModel("title", {type: String, default: ""});
 const emit = defineEmits(["close", "follow", "cancel"]);
 const data = computed(() => props.resource.data || {});
 const template = computed(() => data.value.template || "");
-const source = computed(() => (data.value.source || "").split(":"));
+const origin = computed(() => {
+    const [type, n] = (data.value.source || "").split(":");
+    return meta(type) && Number(n) ? {type, n: Number(n), icon: meta(type).icon, title: meta(type).title.toLowerCase()} : null;
+});
 const chaptered = computed(
     () => props.kind.view === "document" && !["message", "sequence"].includes(props.resource.type) && props.resource.sections.length >= 2
 );
@@ -55,15 +59,15 @@ const chaptered = computed(
                 </SwitchCase>
             </template>
             <template v-if="data.system">
-                <span class="standing system" title="Ships with the journal; it can be read but not changed">
+                <span class="standing system" title="Comes with the journal; it can be read but not changed">
                     <Icon name="lock" :size="10" />
-                    System
+                    Comes with the journal
                 </span>
             </template>
             <template v-if="writing && kind.view === 'document' && !readOnly">
                 <button type="button" class="writing-now" title="Go to what the agent is writing" @click="emit('follow')">
                     <span class="writing-dot" />
-                    Agent writing
+                    The agent is writing this
                     <template v-if="writing.section">
                         <span class="writing-where">{{ writing.section }}</span>
                     </template>
@@ -75,7 +79,10 @@ const chaptered = computed(
                 <template v-if="kind.view === 'document'">
                     <DownloadLink :resource="resource" />
                 </template>
-                <CloseButton @click="emit('close')" />
+                <template v-if="MENUED.includes(resource.type) && !data.system">
+                    <ResourceMenu :resource="resource" @gone="emit('close')" />
+                </template>
+                <CloseButton :title="`Close the ${kind.title.toLowerCase()}`" @click="emit('close')" />
             </template>
         </div>
         <template v-if="data.template && !readOnly">
@@ -84,10 +91,10 @@ const chaptered = computed(
                 Made from template {{ template }}
             </button>
         </template>
-        <template v-if="data.source && !readOnly">
-            <button type="button" class="from" @click="peek(source[0], Number(source[1]))">
-                <Icon :name="meta(source[0]).icon" :size="11" />
-                Came from {{ meta(source[0]).title.toLowerCase() }} {{ source[1] }}
+        <template v-if="origin && !readOnly">
+            <button type="button" class="from" @click="peek(origin.type, origin.n)">
+                <Icon :name="origin.icon" :size="11" />
+                Came from {{ origin.title }} {{ origin.n }}
             </button>
         </template>
         <template v-if="editing">
@@ -99,7 +106,7 @@ const chaptered = computed(
                 @keydown.esc="emit('cancel')"
             />
         </template>
-        <template v-else>
+        <template v-else-if="resource.type !== 'trigger' || data.system || readOnly">
             <h2 class="title">{{ resource.title }}</h2>
             <template v-if="chaptered">
                 <Chapters :sections="resource.sections" :body="body" />

@@ -1,15 +1,20 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 AMBIGUOUS = "ambiguous"
 
 
 class RowLinksDetails(FeatureDetails):
+    explains = 'The viewer turns item numbers in text into links. You can open the named item directly.'
     name = "row_links"
+    group = Group.CHAT
+    label = "Turn item numbers into links"
+    hint = "“to-do 648” opens to-do 648"
     has_skill = False
 
-    title = "Row links"
+    title = "Links for item numbers"
 
-    abstract = "A row named in text, like to-do 648 or message 1712, becomes a link to it in the viewer"
+    abstract = "An item named in text, like “to-do 648” or “message 1712”, becomes a link to it."
 
     help = """
         Wherever the viewer shows text, a type followed by a number is marked on the server as a

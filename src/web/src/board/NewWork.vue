@@ -1,4 +1,9 @@
 <script setup>
+import {store} from "../state/store.js";
+import {word} from "../domain/spec.js";
+import {useFileHandIn} from "../composables/fileHandIn.js";
+import {useWindowEvent} from "../composables/windowEvent.js";
+import {wait} from "../platform/timing.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -7,7 +12,6 @@ import ChatPanel from "../kit/ChatPanel.vue";
 import FocusStage from "../kit/FocusStage.vue";
 import Icon from "../kit/Icon.vue";
 import {quoted} from "../format/quote.js";
-import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {useFloatingChat} from "../composables/floatingChat.js";
 import {useStepAbout} from "../composables/sequenceRuns.js";
@@ -44,7 +48,7 @@ let inFlight = null;
 let sessions = 0;
 const PENDING = Infinity;
 const START_OVER = "Start over";
-const shownDraft = ref(null);
+const openedDraft = ref(null);
 const FADED = 400;
 const HELD = 400;
 const WIDE = window.matchMedia("(min-width: 1160px)");
@@ -140,7 +144,7 @@ const cards = computed(() => {
     const slots = Array.from({length: ahead}, (_, i) => ({key: `slot-${i}`, order: drafts.value.length + i, ticket: null}));
     return [...drafts.value.map((ticket, order) => ({key: `ticket-${ticket.n}`, order, ticket})), ...slots];
 });
-const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
+const revealedDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
 const reveal = (n) => (revealed.value = [...revealed.value, n]);
 const STALLED_AFTER = 120000;
 const stalled = ref(false);
@@ -162,7 +166,7 @@ const row = computed(() => {
     return "";
 });
 const placeholder = computed(() => {
-    if (handing.value) return "Anything I should know? Optional";
+    if (handing.value) return "Anything the agent should know? Optional";
     if (asking.value) return "Pick one, or answer in your own words";
     if (drafts.value.length) return "Change these drafts…";
     if (since.value) return "Anything to add?";
@@ -199,13 +203,13 @@ const addLabel = computed(() => {
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
 const sameSet = (a, b) => a.length === b.length && a.every((n) => b.includes(n));
 const presets = computed(() => {
-    const shown = shownDrafts.value.map((t) => t.n);
+    const numbers = revealedDrafts.value.map((t) => t.n);
     const groups = Object.entries(store.board.drafting.groups || {}).map(([name, tickets]) => ({
         key: `group:${name}`,
         name,
-        tickets: tickets.map(Number).filter((n) => shown.includes(n)),
+        tickets: tickets.map(Number).filter((n) => numbers.includes(n)),
     }));
-    return [{key: "all", name: "All", tickets: shown}, ...groups.filter((g) => g.tickets.length)].map((g) => ({
+    return [{key: "all", name: "All", tickets: numbers}, ...groups.filter((g) => g.tickets.length)].map((g) => ({
         ...g,
         label: `${g.name} ${g.tickets.length}`,
     }));
@@ -218,16 +222,16 @@ let appliedPicks = 0;
 let flashTimer = 0;
 const toggle = (n) => added.value || (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
-const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
+const drop = (tickets) => Promise.all(tickets.map((t) => api.deleteTicket(t.n, "not picked in New work")));
 const say = (mine, text, id = `line-${lines.value.length}`, kind = "") =>
     (lines.value = [...lines.value, {id, mine, kind, text, at: (conversation.value.at(-1)?.at || 0) + 0.001}]);
 
 function onKey(e) {
-    if (!props.open || shownDraft.value) return;
+    if (!props.open || openedDraft.value) return;
     if (e.key === "Escape") return (e.preventDefault(), escape());
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && picked.value.length) return (e.preventDefault(), add());
-    const shown = shownDrafts.value[Number(e.key) - 1];
-    if (shown && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(shown.n));
+    const draft = revealedDrafts.value[Number(e.key) - 1];
+    if (draft && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(draft.n));
 }
 
 watch([() => store.board.drafting.picks?.at || 0, since], ([at]) => {
@@ -248,15 +252,14 @@ watch(
 
 const {openChat} = useFloatingChat();
 
-const LISTENERS = {keydown: onKey, dragover: (e) => hovering(e), drop: (e) => dropped(e), paste: (e) => pastedFile(e)};
+useWindowEvent("keydown", onKey);
+useFileHandIn({active: () => props.open && !since.value, take});
 onMounted(() => {
-    Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener));
     WIDE.addEventListener("change", fits);
     SMALL.addEventListener("change", fits);
     window.visualViewport && window.visualViewport.addEventListener("resize", measured);
 });
 onUnmounted(() => {
-    Object.entries(LISTENERS).forEach(([event, listener]) => window.removeEventListener(event, listener));
     WIDE.removeEventListener("change", fits);
     SMALL.removeEventListener("change", fits);
     window.visualViewport && window.visualViewport.removeEventListener("resize", measured);
@@ -269,7 +272,7 @@ function greet() {
     say(false, `What do you want to get done on ${props.board.title}?`, "greet", "lead");
     say(
         false,
-        "Say it in a sentence. I ask a few short questions until I understand, then draft tickets for you to pick from.",
+        "Say it in a sentence. The agent asks a few short questions until it understands, then drafts tickets for you to pick from.",
         "intro",
         "aside"
     );
@@ -347,22 +350,6 @@ async function hand() {
     }
 }
 
-function dropped(e) {
-    const file = e.dataTransfer && e.dataTransfer.files[0];
-    if (!props.open || !file || since.value) return;
-    e.preventDefault();
-    take(file);
-}
-
-function pastedFile(e) {
-    const file = props.open && e.clipboardData && e.clipboardData.files[0];
-    if (!file || since.value) return;
-    e.preventDefault();
-    take(file);
-}
-
-const hovering = (e) => props.open && !since.value && e.preventDefault();
-
 function filed(text, id) {
     if (drafts.value.length) return api.reviseWork(props.board.n, text, id);
     if (sent.value.length) return api.followUpWork(props.board.n, text, id);
@@ -392,7 +379,7 @@ const retrying = ref(false);
 async function retry() {
     retrying.value = true;
     try {
-        await api.act("board", props.board.n, "retry");
+        await api.retryBoard(props.board.n);
         lastSent.value = Date.now() / 1000;
     } finally {
         retrying.value = false;
@@ -410,25 +397,21 @@ function again() {
     panel.value.focus();
 }
 
-const pause = (ms) => new Promise((done) => setTimeout(done, ms));
-
 async function add() {
     if (adding.value || added.value) return;
     adding.value = true;
     const drafted = [...drafts.value];
     const keep = drafted.map((t) => t.n).filter((n) => picked.value.includes(n));
-    for (const n of keep) await api.act("ticket", n, "confirm");
+    for (const n of keep) await api.confirmTicket(n);
     for (const t of drafted.filter((d) => keep.includes(d.n) && proposed(d).length)) {
         const only = proposed(t).filter((n) => keep.includes(n) || !drafted.some((d) => d.n === n));
-        await (only.length
-            ? api.act("ticket", t.n, "accept_dependencies", {only: only.join(",")})
-            : api.act("ticket", t.n, "decline_dependencies"));
+        await (only.length ? api.acceptDependencies(t.n, only) : api.declineDependencies(t.n));
     }
     if (props.starts || first.value !== props.board.data.stages[0]) for (const n of keep) await api.moveTicket(n, first.value);
-    if (keep.length) await api.act("board", props.board.n, "added", {tickets: keep.join(",")});
+    if (keep.length) await api.addedToBoard(props.board.n, keep);
     adding.value = false;
     added.value = keep.length;
-    await pause(HELD);
+    await wait(HELD);
     if (keep.length) openChat();
     emit("added", keep.length);
     finish();
@@ -510,13 +493,7 @@ function startAnew() {
         >
             <div class="stage">
                 <div class="talk">
-                    <ChatPanel
-                        ref="panel"
-                        v-model="words"
-                        :locked="adding || added > 0"
-                        :placeholder="placeholder"
-                        @send="send"
-                    >
+                    <ChatPanel ref="panel" v-model="words" :locked="adding || added > 0" :placeholder="placeholder" @send="send">
                         <template #head>
                             <NewWorkHead
                                 :title="board.title"
@@ -542,7 +519,7 @@ function startAnew() {
                         <template v-if="lost">
                             <div class="lost">
                                 <ChatLine
-                                    text="I still don't know what you want. Let's start over: say it again in other words, or give me an example."
+                                    text="The agent still does not understand the request. Start over: say it again in other words, or give an example."
                                 />
                                 <Btn kind="primary" small @click="startOver">
                                     <Icon name="restore" :size="12" />
@@ -585,7 +562,7 @@ function startAnew() {
                         :presets="presets"
                         :preset="preset"
                         :phone="phone"
-                        :redraftable="Boolean(shownDrafts.length) && !writing && !(added > 0)"
+                        :redraftable="Boolean(revealedDrafts.length) && !writing && !(added > 0)"
                         :addable="Boolean(picked.length) && !(added > 0)"
                         :adding="adding"
                         :add-label="addLabel"
@@ -621,7 +598,7 @@ function startAnew() {
                                         :class="{flash: Boolean(card.ticket) && flashed.includes(card.ticket.n)}"
                                         @toggle="toggle(card.ticket.n)"
                                         @revealed="reveal(card.ticket.n)"
-                                        @more="(from) => (shownDraft = {ticket: card.ticket, from})"
+                                        @more="(from) => (openedDraft = {ticket: card.ticket, from})"
                                         @mouseenter="pointed = card.ticket"
                                         @mouseleave="pointed = null"
                                     />
@@ -635,14 +612,14 @@ function startAnew() {
                 </section>
             </div>
         </div>
-        <template v-if="shownDraft">
+        <template v-if="openedDraft">
             <DraftDetail
-                :ticket="shownDraft.ticket"
-                :from="shownDraft.from"
-                :picked="picked.includes(shownDraft.ticket.n)"
-                :measure="() => cardRect(shownDraft.ticket.n)"
-                @keep="toggle(shownDraft.ticket.n)"
-                @close="shownDraft = null"
+                :ticket="openedDraft.ticket"
+                :from="openedDraft.from"
+                :picked="picked.includes(openedDraft.ticket.n)"
+                :measure="() => cardRect(openedDraft.ticket.n)"
+                @keep="toggle(openedDraft.ticket.n)"
+                @close="openedDraft = null"
             />
         </template>
     </FocusStage>

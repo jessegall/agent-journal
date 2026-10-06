@@ -9,7 +9,7 @@ from engine.fields import Loaded
 from resources.types import TYPES
 from engine.stored import read_json, write_json, write_text
 from engine.proc import run
-from engine import runtime
+from engine import runtime, waits
 
 
 RECENT = 600.0
@@ -108,7 +108,8 @@ class Sessions:
     def write(self, session: str, **fields) -> SessionRecord:
         self.path(session).parent.mkdir(parents=True, exist_ok=True)
         with (self.path(session).parent / "session.lock").open("w") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
+            with waits.waited("sessions"):
+                fcntl.flock(lock, fcntl.LOCK_EX)
             raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)
@@ -185,6 +186,21 @@ class Sessions:
 
     def granted(self, session: str, env: str) -> bool:
         return env in self.read(session).grants
+
+
+class SessionsSnapshot(Sessions):
+    def __init__(self, root: Path):
+        super().__init__(root)
+        self.held: dict[str, SessionRecord] | None = None
+
+    def all(self) -> dict[str, SessionRecord]:
+        if self.held is None:
+            self.held = super().all()
+        return self.held
+
+    def write(self, session: str, **fields) -> SessionRecord:
+        self.held = None
+        return super().write(session, **fields)
 
 
 def allowed(sessions: Sessions, session: str, env: str, actor_id: str, type_: str) -> str:

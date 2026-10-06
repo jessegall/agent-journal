@@ -1,14 +1,19 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 
-class TrackingDetails(FeatureDetails):
+class SourceLinksDetails(FeatureDetails):
+    explains = 'The journal asks the agent to link new plans, documents, and reports to material it read. You can follow those links from the item.'
     name = "source_links"
+    group = Group.RECORDS
+    label = "Ask for source links"
+    hint = "On new plans, documents and reports"
     has_skill = False
 
     title = "Source links"
 
-    abstract = "If you create a plan, doc or report without linking what you read to build it, you are told which link to add"
+    abstract = "If you create a plan, doc or report without linking what you read to build it, the agent is told which link to add"
 
     help = """
         A plan, doc or report created soon after you read a report or doc, and citing none
@@ -21,8 +26,7 @@ class TrackingDetails(FeatureDetails):
         Setting(
             name="within",
             default=30,
-            title="Count what was read in the last",
-            abstract="A report or doc read this recently is one the new row could have been built on",
+            title="Count what the agent read in the last",
             unit="minutes",
         ),
     ]

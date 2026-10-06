@@ -11,9 +11,6 @@ function answered(ids, answers) {
 
 const expanded = (moments, answers) => moments.map(({at, answers: ids}) => ({at, ...answered(ids, answers)}));
 
-export function expand({answers, moments, branches = {}}) {
-    return {
-        moments: expanded(moments, answers),
-        branches: Object.fromEntries(Object.entries(branches).map(([label, grown]) => [label, expanded(grown, answers)])),
-    };
+export function expand({answers, moments}) {
+    return {moments: expanded(moments, answers)};
 }

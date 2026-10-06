@@ -1,8 +1,13 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class ChecksDetails(FeatureDetails):
+    explains = 'The agent can run saved checks and inspect their results. You can run a check in the viewer whenever you need it.'
     name = "checks"
+    group = Group.RECORDS
+    label = "Checks"
+    hint = "Scripts that pass or fail; a failure is filed"
     when = "a check is created, run or fails"
 
     title = "Checks"
@@ -36,6 +41,7 @@ class ChecksDetails(FeatureDetails):
         Line(
             name="failed",
             reply_kept=True,
+            while_waiting=True,
             title="{{title}}",
             brief="journal check show {{n}} says why; fix it, then journal check run {{n}}",
         ),

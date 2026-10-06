@@ -1,4 +1,8 @@
 <script setup>
+import {ui} from "../state/ui.js";
+import {remember, remembered} from "../platform/storage.js";
+import {projectPath, stoppedNote} from "../domain/journals.js";
+import {useHub} from "../composables/hub.js";
 import {computed, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -7,17 +11,14 @@ import JournalTile from "../layout/JournalTile.vue";
 import ListBox from "../kit/ListBox.vue";
 import ListRow from "../kit/ListRow.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
-import {projectPath, stoppedNote, useHub} from "../sync/hub.js";
 import {counted} from "../format/number.js";
-import {remember, remembered} from "../composables/remembered.js";
-import {stopsOpen} from "../chat/agentStop.js";
 
 const {loaded, running, online, stopped, needs, tally, refresh, forget} = useHub();
 const opened = reactive(new Set(remembered("journal.hub.open", [])));
 const stoppedFolded = ref(remembered("journal.hub.stopped.folded", false));
 const hovering = ref(false);
 const focused = ref(false);
-const holding = computed(() => hovering.value || focused.value || stopsOpen.value > 0);
+const holding = computed(() => hovering.value || focused.value || ui.stopsOpen > 0);
 const order = ref([]);
 watch([online, holding], () => !holding.value && (order.value = online.value.map((j) => j.root)), {immediate: true});
 const tiles = computed(() => {
@@ -43,7 +44,7 @@ function toggleStopped() {
         <ListBox title="Journals" :count="online.length">
             <template #aside>
                 <span class="hub-facts">
-                    <StatusLabel :state="tally.working ? 'working' : 'idle'" :note="`${tally.idle} idle`">
+                    <StatusLabel :state="tally.working ? 'working' : 'idle'" :lit="!!tally.working" :note="`${tally.idle} idle`">
                         {{ counted(tally.working, "agent working", "agents working") }}
                     </StatusLabel>
                     <IconCount icon="help" :count="tally.needs" label="waiting on you" :hot="tally.needs > 0" />
@@ -73,7 +74,7 @@ function toggleStopped() {
         </ListBox>
 
         <template v-if="needs.length">
-            <ListBox title="Waiting on you" :count="tally.needs">
+            <ListBox title="Needs you" :count="tally.needs">
                 <template v-for="item in needs" :key="item.key">
                     <ListRow :kind="`${item.journal.project} · ${item.env.name}`">
                         <template v-for="ask in item.asks" :key="ask.key">
@@ -89,7 +90,7 @@ function toggleStopped() {
                 <template v-for="j in stopped" :key="j.root">
                     <ListRow :kind="stoppedNote(j)" :title="j.project" :text="`Start it with journal claude in ${projectPath(j)}`">
                         <template v-if="!j.running" #end>
-                            <Btn small title="Take this journal off the hub until its viewer runs again" @click="forget(j)">Forget</Btn>
+                            <Btn small title="Remove this journal from the list until its viewer runs again" @click="forget(j)">Remove</Btn>
                         </template>
                     </ListRow>
                 </template>

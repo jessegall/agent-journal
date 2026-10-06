@@ -1,6 +1,6 @@
 import {nextTick, ref} from "vue";
 import {api} from "../api/client.js";
-import {pollKey, usePoll} from "../poll.js";
+import {pollKey, usePoll} from "./poll.js";
 
 const EVERY = 2000;
 const PAGE = 25;

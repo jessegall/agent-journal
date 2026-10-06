@@ -1,5 +1,5 @@
+import {remember, remembered} from "../platform/storage.js";
 import {ref} from "vue";
-import {remember, remembered} from "./remembered.js";
 import {route} from "../route.js";
 
 const seenKey = () => `journal.window-menus.seen.${route.value.env}`;

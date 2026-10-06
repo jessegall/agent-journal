@@ -1,6 +1,6 @@
+import {types} from "../domain/spec.js";
 import {computed} from "vue";
 import {quoted} from "../format/quote.js";
-import {types} from "../state/store.js";
 import {render} from "../text/index.js";
 import {standaloneUpdates} from "../text/cards.js";
 import "../text/all.js";

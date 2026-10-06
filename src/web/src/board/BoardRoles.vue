@@ -6,11 +6,12 @@ import Spinner from "../kit/Spinner.vue";
 import BoardRoleChip from "./BoardRoleChip.vue";
 import BoardRolesPanel from "./BoardRolesPanel.vue";
 import {useFitCount} from "../composables/fitCount.js";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 
 const SMALL = 6;
 const props = defineProps({roles: {type: Array, required: true}});
-const at = (role) => role.tickets.map((ticket) => ({key: `${role.name}-${ticket.n}`, title: role.title, n: ticket.n, task: ticket.title, env: ticket.env}));
+const at = (role) =>
+    role.tickets.map((ticket) => ({key: `${role.name}-${ticket.n}`, title: role.title, n: ticket.n, task: ticket.title, env: ticket.env}));
 const idle = (role) => [{key: role.name, title: role.title, n: 0, task: "", env: ""}];
 const small = computed(() => props.roles.length <= SMALL);
 const working = computed(() => props.roles.flatMap(at));
@@ -24,10 +25,12 @@ const domains = computed(() => {
     }
     return grouped.map((domain) => ({...domain, working: domain.roles.filter((role) => role.busy).length}));
 });
-const organization = computed(() => `#/${route.value.env}/organization/${props.roles[0].domain}`);
+const organization = computed(() => href.organization(route.value.env, props.roles[0].domain));
 const MORE = 140;
 const cards = computed(() => [...new Set(working.value.map((chip) => `#${chip.n}`))].join(", "));
-const summary = computed(() => (working.value.length ? `${working.value.length} working on ${cards.value}` : `None working; all ${props.roles.length} roles`));
+const summary = computed(() =>
+    working.value.length ? `${working.value.length} working on ${cards.value}` : `None working; all ${props.roles.length} roles`
+);
 const box = ref(null);
 const measure = ref(null);
 const fits = useFitCount(box, measure, chips, MORE);
@@ -73,7 +76,12 @@ const show = (e) => {
             <a class="board-roles-button" :href="organization">Organization</a>
         </template>
         <template v-else>
-            <button type="button" :class="['board-roles-button', 'board-roles-all', {open: anchor}]" :aria-expanded="!!anchor" @click.stop="show">
+            <button
+                type="button"
+                :class="['board-roles-button', 'board-roles-all', {open: anchor}]"
+                :aria-expanded="!!anchor"
+                @click.stop="show"
+            >
                 All {{ roles.length }} roles
                 <Icon name="caret" :size="12" :class="{flip: anchor}" />
             </button>

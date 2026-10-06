@@ -1,9 +1,13 @@
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 
 class RevisionsDetails(FeatureDetails):
+    explains = 'The journal keeps earlier versions of documents. You can read a previous version or keep the current one.'
     name = "revisions"
+    group = Group.RECORDS
+    label = "Keep document revisions"
     skill_of = "reports"
     when = "a doc is edited, kept or read at an earlier revision"
 
@@ -30,8 +34,7 @@ class RevisionsDetails(FeatureDetails):
         Setting(
             name="keep_after_minutes",
             default=30,
-            title="Keep an open revision after",
-            abstract="An open revision is kept by itself when nobody has edited it for this long",
+            title="Save an open revision after no edits for",
             unit="minutes",
         ),
     ]

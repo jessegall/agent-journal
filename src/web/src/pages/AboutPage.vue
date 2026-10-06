@@ -1,4 +1,5 @@
 <script setup>
+import {wait} from "../platform/timing.js";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -10,7 +11,6 @@ const UPDATE_TRIES = 150;
 const about = ref(null);
 const error = ref("");
 const target = ref("");
-const pause = (ms) => new Promise((done) => setTimeout(done, ms));
 
 const status = computed(() => {
     const a = about.value;
@@ -31,7 +31,7 @@ async function check() {
     for (let tries = 0; tries < CHECK_TRIES; tries++) {
         await load();
         if (!about.value.checking) return;
-        await pause(1000);
+        await wait(1000);
     }
 }
 
@@ -46,7 +46,7 @@ async function update() {
         return;
     }
     for (let tries = 0; tries < UPDATE_TRIES; tries++) {
-        await pause(2000);
+        await wait(2000);
         const now = await api.changelog().catch(() => null);
         if (now && now.version === target.value) return location.reload();
     }

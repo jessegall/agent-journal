@@ -3,7 +3,7 @@ import {computed} from "vue";
 
 const props = defineProps({tasks: {type: Array, required: true}});
 const emit = defineEmits(["open"]);
-const LABELS = {done: "done", doing: "in hand", waiting: "waiting"};
+const LABELS = {done: "done", doing: "in progress", waiting: "waiting"};
 const done = computed(() => props.tasks.filter((task) => task.state === "done").length);
 </script>
 

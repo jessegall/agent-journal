@@ -29,7 +29,7 @@ defineExpose({browse});
                 </span>
                 <template v-if="!file">
                     <span class="document-choice-line">
-                        I read it, choose the stages and fill them with tickets. A roadmap, a spec, a plan or meeting notes.
+                        The agent reads it, chooses the stages and fills them with tickets. A roadmap, a spec, a plan or meeting notes.
                     </span>
                 </template>
             </div>

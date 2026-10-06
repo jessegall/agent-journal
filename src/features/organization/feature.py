@@ -11,5 +11,5 @@ class OrganizationFeature(Feature):
     def register(self, journal: Journal) -> None:
         journal.commands.add("ticket", ShowOrganization())
         journal.commands.add("todo", Delegate())
-        journal.commands.intercept("update", ReportCoversOutputs())
+        journal.commands.intercept("todo.update", ReportCoversOutputs())
         journal.events.handler(StartNextForGlobalRole())

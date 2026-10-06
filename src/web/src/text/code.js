@@ -1,5 +1,5 @@
+import {withoutChips} from "./words.js";
 import {highlight} from "./highlight.js";
-import {words} from "./words.js";
 import {register} from "./index.js";
 
 const FENCE = /^(```|~~~)\s*(\w+)?\s*$/;
@@ -47,7 +47,7 @@ function lift(text) {
             const end = lines.findIndex((l, k) => k > i && l.trim().startsWith(fence[1]));
             const stop = end < 0 ? lines.length : end;
             flush();
-            out.push(block(lines.slice(i + 1, stop).map(words), fence[2] ? fence[2].toLowerCase() : ""));
+            out.push(block(lines.slice(i + 1, stop).map(withoutChips), fence[2] ? fence[2].toLowerCase() : ""));
             i = stop + 1;
             continue;
         }
@@ -57,7 +57,7 @@ function lift(text) {
             while (stop > i && !lines[stop - 1].trim()) stop -= 1;
             if (stop - i >= 2) {
                 flush();
-                out.push(block(lines.slice(i, stop).map(words), ""));
+                out.push(block(lines.slice(i, stop).map(withoutChips), ""));
                 i = stop;
                 continue;
             }

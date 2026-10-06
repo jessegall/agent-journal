@@ -12,9 +12,12 @@ from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
-from features import FEATURES  # noqa: E402
-from features.sharing.controller import HEALTH, LAYOUT_FILE, SharedComment  # noqa: E402
+from features import running  # noqa: E402
+from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
+from features.sharing.passwords import unlocked  # noqa: E402
+from features.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
+from features.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
 from features.sharing.routes import ROUTES, TICKS  # noqa: E402
 from controllers.faults import threw  # noqa: E402
@@ -25,6 +28,8 @@ APP_DIR = data("web", "dist")
 TICK_EVERY = 15
 READ_SECONDS = 15
 BODY_LIMIT = 8192
+OPEN = 200
+GONE_ON_POST = {410: 404}
 PACKED_FROM = 1024
 PACKED = ("text/", "application/javascript", "image/svg+xml")
 COMMENT_HEADER = "X-Shared-Comment"
@@ -44,8 +49,7 @@ HEADERS = {
 
 
 def routed(parts: list[str], record):
-    route = ROUTES.get(parts[0]) if parts else None
-    return route if route is not None and route.on(record) else None
+    return ROUTES.keyed(record).get(parts[0]) if parts else None
 
 
 @dataclass(frozen=True)
@@ -92,7 +96,23 @@ class ShareHandler(BaseHTTPRequestHandler):
         return
 
     def sharing(self) -> bool:
-        return FEATURES["sharing"].enabled(self.shares.record)
+        from features.sharing.feature import SharingFeature
+        return running(SharingFeature).enabled(self.shares.record)
+
+    def opened(self, token: str):
+        share = self.shares._by_token(token)
+        if share is None or not share.approved:
+            return share, 404
+        if share.ended:
+            return share, 410
+        if not unlocked(share, self.password()):
+            return share, 401
+        return share, OPEN
+
+    def closed(self, code: int) -> None:
+        if code == 401:
+            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        return self.page(code, unshared())
 
     def do_HEAD(self) -> None:
         self.do_GET()
@@ -100,18 +120,14 @@ class ShareHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if parts == [HEALTH]:
-            return self.send(200, b"ok", {"Content-Type": "text/plain"})
+            return self.send(200, HEALTH_MARKER.encode(), {"Content-Type": "text/plain"})
         if (route := routed(parts, self.shares.record)) is not None:
             return route.get(self, parts[1:])
         if len(parts) < 2 or parts[0] != "s" or not self.sharing():
             return self.page(404, unshared())
-        share = self.shares._by_token(parts[1])
-        if share is None or not share.approved:
-            return self.page(404, unshared())
-        if share.ended:
-            return self.page(410, unshared())
-        if not self.shares._unlocked(share, self.password()):
-            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        share, code = self.opened(parts[1])
+        if code != OPEN:
+            return self.closed(code)
         rest = parts[2:]
         if share.layout:
             if rest != [LAYOUT_FILE]:
@@ -147,11 +163,9 @@ class ShareHandler(BaseHTTPRequestHandler):
             return route.post(self, parts[1:])
         if len(parts) != 3 or parts[0] != "s" or parts[2] not in VISITOR_POSTS or not self.sharing():
             return self.refused()
-        share = self.shares._by_token(parts[1])
-        if share is None or not share.approved or share.ended:
-            return self.page(404, unshared())
-        if not self.shares._unlocked(share, self.password()):
-            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        share, code = self.opened(parts[1])
+        if code != OPEN:
+            return self.closed(GONE_ON_POST.get(code, code))
         if self.headers.get(COMMENT_HEADER) != "1" or not self.headers.get("Content-Type", "").startswith("application/json"):
             return self.answer(403, "refused")
         length = self.headers.get("Content-Length", "")
@@ -183,12 +197,13 @@ class ShareHandler(BaseHTTPRequestHandler):
         scope = self.shares._scope(share)
         if ref not in scope:
             return self.page(404, unshared())
-        page = Page(f"/s/{share.token}", scope)
+        record = self.shares._home(share)
+        page = Page(f"/s/{share.token}", scope, record)
         row = self.shares._shared_row(share, ref)
         members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
         body = page.collection(row, members) if members else page.row(row)
         back = None if ref == share.target else f"/s/{share.token}"
-        self.page(200, document(row.title, body, share.expires, back))
+        self.page(200, document(formatted(row.title, record, SHARED), body, share.expires, back))
 
     def preview(self, share) -> str:
         row = self.shares._shared_row(share, share.target)
@@ -196,7 +211,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         page = f"{'http' if host.startswith(('127.0.0.1', 'localhost')) else 'https'}://{host}/s/{share.token}"
         picture = next((name for name in row.files if Path(name).suffix.lower() in PICTURES), "")
         image = f"{page}/files/{row.type}/{row.n}/{quote(picture)}" if picture else f"{page}/{PREVIEW}"
-        return tags(row.title, row.abstract or row.brief, image, f"{page}/", identity(self.shares.record.root)["project"])
+        return tags(formatted(row.title, self.shares._home(share), SHARED), row.abstract or row.brief, image, f"{page}/", identity(self.shares.record.root)["project"])
 
     def file(self, share, ref: str, name: str) -> None:
         if ref not in self.shares._scope(share):
@@ -242,7 +257,7 @@ class ShareHandler(BaseHTTPRequestHandler):
 def ticking(shares) -> None:
     while True:
         time.sleep(TICK_EVERY)
-        for tick in TICKS:
+        for tick in TICKS.each(shares.record):
             try:
                 tick(shares)
             except Exception:
@@ -260,10 +275,12 @@ def main(argv: list[str]) -> None:
     import features
     from engine import runtime
     from engine.record import Record
-    from features.sharing.controller import LAYOUT_FILE, Shares
+    from features.sharing.controller import Shares
+    from features.switches import watch_change_log
     from resources.base import SYSTEM
     root = Path(argv[0])
     features.load(root)
+    watch_change_log()
     serve(Shares(Record(root, runtime.env(root)), actor=SYSTEM), int(argv[1]))
 
 

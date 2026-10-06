@@ -1,16 +1,16 @@
 <script setup>
+import {scrollIntoRoom} from "./reveal.js";
+import {cache, cached} from "./cache.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {CARDS, kindCard} from "./kinds.js";
-import {cached, remember} from "./cache.js";
-import {reveal} from "./reveal.js";
 import PhoneBoardList from "./PhoneBoardList.vue";
 import {useUnder} from "./under.js";
 
 const LIST_EVERY = 15000;
-const SHOWN = 5;
+const PREVIEW_ROWS = 5;
 const WAITING = "waiting";
 const DEFAULT = [WAITING, "todo", "question", "plan", "report", "doc", "agent"];
 const props = defineProps({
@@ -40,14 +40,14 @@ async function fetched() {
     );
 }
 
-const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = remember(CACHE, {...lists.value, ...got})));
+const refresh = usePoll("phone-board", fetched, LIST_EVERY, (got) => got && (lists.value = cache(CACHE, {...lists.value, ...got})));
 
 const newRefs = computed(() => new Set(props.waiting.map((item) => item.ref)));
 const board = ref(null);
 
 onMounted(() => {
     if (!props.waiting.length) return;
-    nextTick(() => reveal(board.value, board.value?.querySelector('[data-card="waiting"]')));
+    nextTick(() => scrollIntoRoom(board.value, board.value?.querySelector('[data-card="waiting"]')));
 });
 const listed = (kind) => lists.value[kind]?.rows || [];
 const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind));
@@ -68,7 +68,7 @@ function undoRemove() {
     removed.value = null;
     arranged(before);
 }
-const shown = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, SHOWN));
+const visibleRows = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, PREVIEW_ROWS));
 
 function more(kind) {
     opened.value = new Set([...opened.value, kind]);
@@ -145,7 +145,7 @@ function moved(i, by) {
                         <PhoneBoardList
                             :loaded="loaded(kind)"
                             :rows="rows(kind)"
-                            :shown="shown(kind)"
+                            :visibleRows="visibleRows(kind)"
                             :total="total(kind)"
                             :fresh="kind === 'waiting' ? [] : [...newRefs]"
                             :mark="kind === 'question' ? 'Waiting' : 'New'"

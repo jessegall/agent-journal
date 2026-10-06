@@ -44,7 +44,7 @@ async function act(action) {
                 </template>
             </div>
             <template v-if="log.length">
-                <Btn small @click="listing = !listing">{{ listing ? "Hide steps" : "What I did" }}</Btn>
+                <Btn small @click="listing = !listing">{{ listing ? "Hide steps" : "What the agent did" }}</Btn>
             </template>
             <template v-if="done">
                 <Btn small :disabled="busy" @click="act('discard')">Remove this board</Btn>

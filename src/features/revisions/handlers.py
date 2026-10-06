@@ -5,6 +5,7 @@ from engine.events.resources import ResourceEvent
 from features.parts import Context, Handler
 from features.revisions.history import revise
 from resources.base import PART_OF
+from controllers.types import Docs
 
 
 @dataclass(frozen=True)
@@ -17,7 +18,7 @@ class DocWritten(ResourceEvent):
 
 class KeepRevisions(Handler):
     def handle(self, context: Context, event: DocWritten) -> None:
-        docs = context.journal.docs
+        docs = context.journal.get(Docs)
         head = docs.load(event.n)
         if not head.data.get(PART_OF):
             revise(docs, head, float(context.settings.keep_after_minutes) * 60)

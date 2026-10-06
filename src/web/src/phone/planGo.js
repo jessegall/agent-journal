@@ -1,39 +1,27 @@
-import {computed, onUnmounted, reactive, ref, watch} from "vue";
+import {reactive, ref, watch} from "vue";
+import {useHeldSend} from "../composables/heldSend.js";
 import {ended, perform} from "./outbox.js";
-import {announce} from "./announce.js";
+import {announce, tryAgain} from "./announce.js";
 import {tick} from "./haptic.js";
-
-const HOLD_SECONDS = 3;
 
 export const WAITS = "waiting";
 export const here = (plan) => Math.min(Math.max(plan.current, 1), plan.phases.length);
 export const phaseAt = (plan, i) => plan.phases[i - 1];
 export const closed = (phase) => phase.todos.filter((todo) => todo.done).length;
-export const counted = (phase) => (phase.todos.length ? `${closed(phase)} of ${phase.todos.length} done` : "No to-dos yet");
+export const phaseProgress = (phase) => (phase.todos.length ? `${closed(phase)} of ${phase.todos.length} done` : "No to-dos yet");
 export const share = (phase) => (phase.todos.length ? (closed(phase) / phase.todos.length) * 100 : 0);
 
 export function usePlanGo(plan, refresh, failed) {
-    const left = ref(0);
-    const held = ref(false);
     const sent = ref(false);
     const waits = ref(false);
     const stale = ref(false);
     const trouble = ref("");
     const sendingNow = ref(false);
-    let timer = 0;
-    let sending = null;
+    const {left, holding: held, length: seconds, start: hold, undo: stop, sendNow} = useHeldSend({seconds: () => plan.value?.hold, send});
 
-    const seconds = computed(() => Number(plan.value?.hold ?? HOLD_SECONDS));
-
-    function stop() {
-        clearInterval(timer);
-        held.value = false;
-    }
-
-    async function send() {
-        if (sendingNow.value || !held.value) return;
+    async function send(sending) {
+        if (sendingNow.value) return;
         sendingNow.value = true;
-        stop();
         trouble.value = "";
         try {
             const went = await perform({kind: "proceed", n: sending.n, updated: sending.updated});
@@ -44,7 +32,7 @@ export function usePlanGo(plan, refresh, failed) {
         } catch (error) {
             if (error.status === 409) stale.value = true;
             else if (ended(error)) failed(error);
-            else trouble.value = `That didn't go through: ${error.message}. Try again.`;
+            else trouble.value = tryAgain(error);
         } finally {
             sendingNow.value = false;
         }
@@ -52,18 +40,12 @@ export function usePlanGo(plan, refresh, failed) {
 
     function start() {
         if (held.value || sendingNow.value || sent.value || waits.value) return;
-        sending = {n: plan.value.n, updated: plan.value.updated};
         stale.value = false;
         sent.value = false;
         waits.value = false;
         trouble.value = "";
-        held.value = true;
-        left.value = seconds.value;
         tick();
-        timer = setInterval(() => {
-            left.value -= 1;
-            if (left.value <= 0) send();
-        }, 1000);
+        hold({n: plan.value.n, updated: plan.value.updated});
     }
 
     function again() {
@@ -83,6 +65,5 @@ export function usePlanGo(plan, refresh, failed) {
         }
     );
 
-    onUnmounted(stop);
-    return reactive({left, held, sent, waits, stale, trouble, sendingNow, seconds, start, undo: stop, now: send, again});
+    return reactive({left, held, sent, waits, stale, trouble, sendingNow, seconds, start, undo: stop, now: sendNow, again});
 }

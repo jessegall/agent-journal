@@ -24,7 +24,7 @@ const HURRIED = 20;
 const {type, wait} = useTyping();
 const rate = () => (props.hurry ? HURRIED : props.speed);
 const pause = (ms) => wait(ms / rate());
-const shown = reactive({started: false, title: 0, owner: false, abstract: 0, done: false});
+const progress = reactive({started: false, title: 0, owner: false, abstract: 0, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
 const abstract = computed(() => (props.ticket ? props.ticket.abstract : ""));
 const origin = computed(() => (props.ticket && props.ticket.data.source !== "user" && props.ticket.data.source_id) || "");
@@ -33,8 +33,8 @@ const owner = computed(() => {
     return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
 });
 const stage = computed(() => {
-    if (shown.done) return "done";
-    if (shown.started) return "writing";
+    if (progress.done) return "done";
+    if (progress.started) return "writing";
     return props.paused ? "paused" : "waiting";
 });
 const TAGS = {waiting: "", paused: "Waits for your answer", writing: "Drafting", done: "Suggested ticket"};
@@ -44,9 +44,9 @@ const OWNER_BARS = [{width: "30%", height: 8}];
 const fields = computed(() => [
     {
         name: "title",
-        text: shown.done ? title.value : title.value.slice(0, shown.title),
-        typed: shown.title,
-        caret: stage.value === "writing" && !shown.owner,
+        text: progress.done ? title.value : title.value.slice(0, progress.title),
+        typed: progress.title,
+        caret: stage.value === "writing" && !progress.owner,
         bars: [
             {width: "78%", height: 12},
             {width: "44%", height: 12},
@@ -54,9 +54,9 @@ const fields = computed(() => [
     },
     {
         name: "abstract",
-        text: shown.done ? abstract.value : abstract.value.slice(0, shown.abstract),
-        typed: shown.abstract,
-        caret: stage.value === "writing" && shown.owner,
+        text: progress.done ? abstract.value : abstract.value.slice(0, progress.abstract),
+        typed: progress.abstract,
+        caret: stage.value === "writing" && progress.owner,
         bars: [
             {width: "100%", height: 9},
             {width: "62%", height: 9},
@@ -65,39 +65,39 @@ const fields = computed(() => [
 ]);
 const still = computed(() => stage.value !== "waiting");
 const editing = ref("");
-const edit = (field) => shown.done && (editing.value = field);
-const toggle = () => shown.done && !editing.value && emit("toggle");
+const edit = (field) => progress.done && (editing.value = field);
+const toggle = () => progress.done && !editing.value && emit("toggle");
 
 async function reveal() {
-    shown.started = true;
+    progress.started = true;
     await pause(200);
     await type(
         title.value,
         () => TITLE_MS / rate(),
-        (at) => (shown.title = at)
+        (at) => (progress.title = at)
     );
     await pause(120);
-    shown.owner = true;
+    progress.owner = true;
     await pause(160);
     await type(
         abstract.value,
         () => ABSTRACT_MS / rate(),
-        (at) => (shown.abstract = at)
+        (at) => (progress.abstract = at)
     );
     await pause(200);
-    shown.done = true;
+    progress.done = true;
     emit("revealed");
 }
 
 watch(
     () => props.active && Boolean(props.ticket),
-    (go) => go && !shown.started && reveal(),
+    (go) => go && !progress.started && reveal(),
     {immediate: true}
 );
 
 async function save(field, text) {
     editing.value = "";
-    if (text && text !== props.ticket[field]) await api.act("ticket", props.ticket.n, "update", {[field]: text});
+    if (text && text !== props.ticket[field]) await api.updateTicket(props.ticket.n, {[field]: text});
 }
 </script>
 
@@ -109,7 +109,7 @@ async function save(field, text) {
         tabindex="0"
         :aria-pressed="picked"
         :data-ticket="ticket ? ticket.n : null"
-        :title="shown.done ? 'Click to pick it; double-click its title or line to change them' : ''"
+        :title="progress.done ? 'Click to pick it; double-click its title or description to change them' : ''"
         @click="toggle"
         @keydown.space.prevent="toggle"
         @keydown.enter.prevent="toggle"
@@ -138,18 +138,18 @@ async function save(field, text) {
                 </template>
             </SkeletonLine>
         </template>
-        <SkeletonLine class="line-owner" :filled="shown.owner" :still="still" :bars="OWNER_BARS">
-            <template v-if="shown.owner && owner">
+        <SkeletonLine class="line-owner" :filled="progress.owner" :still="still" :bars="OWNER_BARS">
+            <template v-if="progress.owner && owner">
                 <span class="owner">For {{ owner }}</span>
             </template>
         </SkeletonLine>
-        <template v-if="shown.done && covers">
+        <template v-if="progress.done && covers">
             <span class="covers" :title="`Done when: ${covers}`">Done when: {{ covers }}</span>
         </template>
-        <template v-if="shown.done && origin">
+        <template v-if="progress.done && origin">
             <span class="origin" :title="`From ${ticket.data.source}`">{{ origin }}</span>
         </template>
-        <template v-if="shown.done">
+        <template v-if="progress.done">
             <Btn small class="more" @click.stop="(e) => emit('more', e.currentTarget.closest('.pick').getBoundingClientRect())">
                 More info
             </Btn>

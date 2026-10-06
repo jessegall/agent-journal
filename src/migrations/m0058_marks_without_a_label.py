@@ -8,7 +8,7 @@ def run(root: Path) -> list[str]:
     mended = []
     for record in environment_records(Path(root)):
         agents = Agents(record, actor=SYSTEM)
-        for row in [agents.load(found["n"]) for found in agents.summaries() if not found["deleted"]]:
+        for row in [agents.load(found["n"]) for found in agents.rows.summaries() if not found["deleted"]]:
             cards = row.data.get("cards") or []
             kept = [card for card in cards if "label" in card]
             if len(kept) != len(cards):

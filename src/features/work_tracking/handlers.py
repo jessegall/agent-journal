@@ -5,23 +5,21 @@ from typing import ClassVar
 from engine import bus
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
-from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
+from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted, WorkCreated
 from features import trigger
-from features.nudges import MINUTE, Sent
+from features.nudges import Sent
+from features.trigger import MINUTE
+from providers.payload import HookEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
 from features.work_tracking.next import asked, carried_on, named_rows, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
-from features.status_bar.runs import command_runs
+from engine.command_runs import command_runs
+from controllers.types import Agents, Todos, Works
 
 ASKED_AGAIN_AFTER = 60
-
-
-@dataclass(frozen=True)
-class WorkCreated(ResourceEvent):
-    on: ClassVar[str] = "work.created"
 
 
 @dataclass(frozen=True)
@@ -46,7 +44,7 @@ class WorkLogged(ResourceEvent):
 
 
 def working(context: Context) -> list:
-    return [w for w in context.journal.works._standing() if not w.parked]
+    return [w for w in context.journal.get(Works).rows.standing() if not w.parked]
 
 
 class HoldUntilDeclared(Handler):
@@ -65,23 +63,23 @@ class HoldUntilDeclared(Handler):
 class OpenWork(Handler):
     def handle(self, context: Context, event: WorkCreated) -> None:
         tracker.begin(event, context.record)
-        works = context.journal.works
+        works = context.journal.get(Works)
         n = works.load(event.n).todo
         if not n:
             return
-        todo = context.journal.todos.load(n)
+        todo = context.journal.get(Todos).load(n)
         works.link(event.n, todo.ref)
-        context.journal.todos.update(todo.n, status="started", work=event.n)
+        context.journal.get(Todos).update(todo.n, status="started", work=event.n)
 
 
 class CloseWork(Handler):
     def handle(self, context: Context, event: WorkCompleted) -> None:
         tracker.end(event, context.record)
         name_parked(context)
-        n = context.journal.works.load(event.n).todo
+        n = context.journal.get(Works).load(event.n).todo
         if not n:
             return
-        todos = context.journal.todos
+        todos = context.journal.get(Todos)
         if todos.load(n).completed:
             return
         if event.todo:
@@ -91,8 +89,8 @@ class CloseWork(Handler):
 
 
 def name_parked(context: Context) -> None:
-    parked = [w for w in context.journal.works._standing() if w.parked]
-    agent = context.journal.agents.primary()
+    parked = [w for w in context.journal.get(Works).rows.standing() if w.parked]
+    agent = context.journal.get(Agents).primary()
     state, now = context.record.state(context.feature.name), time.time()
     if not parked or not agent or now - float(state.get("parked_named", 0)) <= ASKED_AGAIN_AFTER:
         return
@@ -103,21 +101,21 @@ def name_parked(context: Context) -> None:
 
 class NameParkedOnTodoDone(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not any(int(w.todo) == event.n for w in context.journal.works._standing()):
+        if not any(int(w.todo) == event.n for w in context.journal.get(Works).rows.standing()):
             name_parked(context)
 
 
 def name_unblocked(context: Context, ref: str) -> None:
-    todos, agent = context.journal.todos, context.journal.agents.primary()
+    todos, agent = context.journal.get(Todos), context.journal.get(Agents).primary()
     if not agent:
         return
-    for row in [r for r in todos._standing() if ref in r.after and not r.blocked and not todos.waits(r)]:
+    for row in [r for r in todos.rows.standing() if ref in r.after and not r.blocked and not todos.waits(r)]:
         context.speaking_to(agent).agent.say("unblocked", n=row.n, title=row.title, closed=ref.replace(":", " "))
 
 
 class UnblockWaitingRows(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not context.journal.todos.load(event.n).struck:
+        if not context.journal.get(Todos).load(event.n).struck:
             name_unblocked(context, f"todo:{event.n}")
 
 
@@ -131,11 +129,11 @@ class AskStillBlocked(Handler):
         state = context.record.state(context.feature.name)
         closed = int(state.get("closed", 0)) + 1
         state.set("closed", closed)
-        agent = context.journal.agents.primary()
+        agent = context.journal.get(Agents).primary()
         if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
             return
         asked_at, now = state.get("asked", {}), time.time()
-        due = [r for r in context.journal.todos._standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
+        due = [r for r in context.journal.get(Todos).rows.standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
         for row in [r for r in due if not asked(context.record, r)]:
             context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked.rstrip("."))
             asked_at[str(row.n)] = now
@@ -144,10 +142,10 @@ class AskStillBlocked(Handler):
 
 class EndWorkWithTodo(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        works = context.journal.works
-        for work in works._standing():
+        works = context.journal.get(Works)
+        for work in works.rows.standing():
             if int(work.todo) == event.n:
-                works.complete(work.n, how=context.journal.todos.load(event.n).outcome or f"todo {event.n} done")
+                works.complete(work.n, how=context.journal.get(Todos).load(event.n).outcome or f"todo {event.n} done")
 
 
 class TrackFiles(Handler):
@@ -183,7 +181,7 @@ class ClearWaitOnActivity(Handler):
         for w in working(context)[:1]:
             if not w.is_self_clearing or started <= float(w.awaiting_since):
                 continue
-            context.journal.works.update(w.n, awaiting="")
+            context.journal.get(Works).update(w.n, awaiting="")
             context.agent.whisper("wait cleared", awaiting=w.awaiting)
 
 
@@ -207,6 +205,7 @@ class RemindOpenWork(Handler):
 
 
 class CountEdits(Handler):
+    hooks = (HookEvent.POST_TOOL_USE,)
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         work = working(context)[:1]
         if not context.agent.row.wrote or not work:

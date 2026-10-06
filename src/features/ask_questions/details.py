@@ -1,20 +1,23 @@
 from features.trigger import IDLE, MINUTES, Trigger
-from features.ask_questions.interceptors import FILED
+from features.ask_questions.interceptors import FILED, UNPICKED
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
 
-class QuestionsDetails(FeatureDetails):
+class AskQuestionsDetails(FeatureDetails):
+    explains = 'The agent can ask you a question with clear choices. You can answer in the viewer or on your phone.'
     name = "ask_questions"
+    group = Group.QUESTIONS
     when = "a decision only the user can make comes up, or before offering the user choices"
 
-    title = "Questions, not prose choices"
+    title = "Ask choices as questions"
 
     speaks_while_waiting = True
 
     abstract = """
-        A decision only the user can make is asked as a question, never offered in prose, and
-        the answer they pick is held for a moment before it is saved
+        A choice only you can make is asked as a question with options, not written into a reply. A
+        picked answer can be undone for a few seconds.
     """
 
     help = """
@@ -37,12 +40,14 @@ class QuestionsDetails(FeatureDetails):
 
         Each option carries its own title and text; the question's title, abstract and brief
         give the context only. A question that lists its options again, as A/B/C or numbered
-        lines or one line per option name, is refused.
+        lines or one line per option name, is refused. Every question with options names the one
+        you would pick, --set pick=<its number>, which the card marks as the agent's pick; one
+        without it is refused.
 
         A question tool the provider offers, such as Claude Code's AskUserQuestion, never opens
         in the terminal: each question in the call is filed as a journal question with its
-        options, and the call is refused with the numbers, so you carry on and hear the
-        answer as an event.
+        options and the one labelled (Recommended) as your pick, and the call is refused with the
+        numbers, so you carry on and hear the answer as an event.
     """
 
     fixed = True
@@ -53,8 +58,7 @@ class QuestionsDetails(FeatureDetails):
         Setting(
             name="hold",
             default=3,
-            title="Hold a picked answer",
-            abstract="Click the same answer again within this time to cancel it",
+            title="Time to undo a picked answer",
             unit="seconds",
         ),
     ]
@@ -62,14 +66,12 @@ class QuestionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="asking",
-            title="Ask through a question, not in prose",
-            abstract="Choices offered in a message hold the writes until they are asked as a question",
+            title="Require choices to be asked as questions before file changes",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="settled",
             title="Ask whether a question open for a day is still needed",
-            abstract="Once a day for each question still open after a day, the agent checks whether the project or the code has settled it",
             trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]
@@ -82,6 +84,11 @@ class QuestionsDetails(FeatureDetails):
                 if the project or the code has settled it since, dismiss it with journal question dismiss {{n}} --why
                 "<what settled it>"; if it still needs the user, leave it as it is.
             """,
+        ),
+        Line(
+            name=UNPICKED,
+            title="question {{question}} names no pick",
+            brief="label the option you would pick (Recommended) and ask again; the card marks it as the agent's pick",
         ),
         Line(
             name=FILED,
@@ -101,7 +108,7 @@ class QuestionsDetails(FeatureDetails):
             name="prose held",
             title="""
                 your last message offered the user choices in prose: ask them through journal
-                question ask --set options=… before any other write
+                question ask --set options=… --set pick=<n> before any other write
             """,
         ),
     ]

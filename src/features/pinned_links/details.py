@@ -1,19 +1,23 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 UNPINNED = "unpinned"
 
 
 class PinnedLinksDetails(FeatureDetails):
+    explains = 'The journal pins links the agent gives you above the chat. You can shrink or open them later.'
     name = "pinned_links"
+    group = Group.CHAT
+    label = "Pin links the agent gives you"
     when = "you point the user at a design, a page or anything else outside the journal"
 
     title = "Pinned links"
 
-    abstract = "A link the agent gives the user in the chat is pinned over the chat, so it is not lost as the chat scrolls"
+    abstract = "A link the agent gives the user in the chat is pinned to the chat, so it is not lost as the chat scrolls"
 
     help = """
         Whenever you point the user at something outside the journal - a design, a hosted page,
-        a document, any link they will come back to - pin it over the chat with
+        a document, any link they will come back to - pin it to the chat with
         journal notice create "<what it is>" --set link="<url>" --set label="<Open the design>" --set tone=note,
         as pull requests are pinned by themselves. A link in your chat text that no pin carries
         earns one reminder per link with the command to pin it. The user closes a pin when they

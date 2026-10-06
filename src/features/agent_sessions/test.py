@@ -1,3 +1,4 @@
+import os
 import pytest
 import subprocess
 import sys
@@ -8,7 +9,8 @@ from controllers.types import Agents, Environments, Works
 from engine.sessions import Sessions, allowed
 from engine.gates import held
 from resources.base import AGENT, USER
-from tests.kit import report
+from resources.types import STOPPED
+from tests.kit import report, tick
 from tests.conftest import fresh, refused
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
@@ -63,6 +65,9 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     report(record, "working", "PostToolUse", session="claude-1")
     assert gate("claude-1") == "environment 't' was claimed by session claude-2 (the terminal was closed): switch to another, or claim it back", \
         "evicted: held, naming who, why and what to do"
+    from engine.seats import offline
+    assert offline(record.root, "claude-1") == "session 'claude-1' is not online: session 'claude-2' took environment 't' from it (the terminal was closed)" \
+        and "no agent's terminal reports it" in offline(record.root, "claude-9"), "a session that is not online says why"
     one.claim(env.n, "it was mine")
     report(record, "working", "PostToolUse", session="claude-1")
     assert gate("claude-1") == "", "claimed back: released"
@@ -89,7 +94,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
         sessions.unbind(moved_away)
     assert asked_for(Record(record.root, "t"), answering=False) == "u", "a quiet start never lands in an environment another live agent holds"
     users = Environments(record, actor=USER)
-    held_env = users._titled("t")
+    held_env = users.rows.by_title("t")
     assert "journal environment stop" in refused(lambda: users.vacant("t")), "a held environment says how to end its agent"
     import subprocess
     outside = subprocess.Popen(["sleep", "30"])
@@ -97,7 +102,7 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     users.stop(held_env.n)
     assert outside.wait(timeout=5) != 0, "an agent in a terminal the journal did not open is ended by its process when the user stops it"
     sessions.bind("gone-9", "u", pid=999999, provider="claude")
-    assert "no agent holds" in refused(lambda: users.stop(users._titled("u").n)), "an agent that is gone holds nothing to stop"
+    assert "no agent holds" in refused(lambda: users.stop(users.rows.by_title("u").n)), "an agent that is gone holds nothing to stop"
     mine = f"claude-{os.getpid()}"
     sessions.bind("conversation-5", "t", pid=os.getpid(), provider="claude")
     sessions.bind(mine, "w", pid=os.getpid(), provider="claude")
@@ -151,7 +156,7 @@ def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the
 
     record.set_setting("agent_sessions", {"lapse": 0})
     agents.update(agents.by_session("runner-1").n, active=time.time() - 120)
-    report(record, "idle", "Stop")
+    tick(record)
     assert (todos.load(row.n).data.get("assigned"), todos.load(row.n).data.get("lapsed"),
             any("went silent" in t for t in [n.title for n in Nudges(record).all()])) == \
         ("", "runner-1", True), "a silent subagent's row is back on the list, and the dispatcher told which"
@@ -174,6 +179,51 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     sessions.write("claude-1", environment="")
     assert engines.Children(record.root).wanted() == {"main", "feature-x"} and sessions.environment("claude-1") == "main", \
         "a live agent's terminal that lost its environment gets back the one it was seated in, so its engine keeps running"
+    from controllers.types import Messages, Notices
+    children, ended = engines.Children(record.root), []
+    monkeypatch.setattr(children, "end", ended.append)
+    lost = Messages(record, actor=USER).create("are you getting these?")
+    children.unheard(record.env)
+    assert ended == [], "a message waits its few minutes before anything is restarted"
+    later = time.time() + engines.UNHEARD_AFTER + 1
+    monkeypatch.setattr(engines.time, "time", lambda: later)
+    children.unheard(record.env)
+    children.unheard(record.env)
+    assert (ended, [n.title for n in Notices(record).all()]) == ([record.env], [f"Message {lost.n} has not reached the agent"]), \
+        "a message the agent never saw restarts its engine once, with a notice saying so, and is not alarmed about again"
+    monkeypatch.undo()
+    from providers import DRIVERS
+    from runner.engine import Engine, SILENT_AFTER
+    report(record, "working", "PreToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    driver, pressed = engine.agent.driver, []
+    senses = {"alive": lambda: True, "quiet_for": lambda: SILENT_AFTER + 1, "asking": lambda: False, "interrupt": lambda: pressed.append("ctrl-c")}
+    for name, sense in senses.items():
+        monkeypatch.setattr(driver, name, sense)
+    monkeypatch.setattr(driver, "last_report", lambda: Agents(record, actor="system").by_session("claude-1"))
+    monkeypatch.setattr(engine.agent, "state", lambda: "working")
+    assert engine.probe() == "" and pressed == [], "an agent that reported moments ago is never interrupted"
+    monkeypatch.setattr(engines.time, "time", lambda: later + SILENT_AFTER)
+    monkeypatch.setattr(driver, "asking", lambda: True)
+    assert engine.probe() == "" and pressed == [], "nor one that is asking the user something"
+    monkeypatch.setattr(driver, "asking", lambda: False)
+    monkeypatch.setattr(engine.agent, "state", lambda: "idle")
+    assert engine.probe() == "" and pressed == [], "an idle agent is never probed, however silent"
+    monkeypatch.setattr(engine.agent, "state", lambda: "working")
+    assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], "a working agent silent for two minutes is probed with Ctrl-C"
+    import json
+    from datetime import datetime, timedelta, timezone
+    transcript = record.root / "rollout.jsonl"
+    transcript.write_text("")
+    report(record, "working", "PreToolUse", provider="codex", transcript=str(transcript))
+    ends = lambda message, ahead: json.dumps({"timestamp": (datetime.now(timezone.utc) + timedelta(seconds=ahead)).isoformat(), "type": "event_msg",
+                                              "payload": {"type": "task_complete", "error": {"message": message}}}, separators=(",", ":")) + "\n"
+    transcript.write_text(ends("old failure", -3600))
+    assert engine.failed() == "", "an error from before the agent's last report is not this turn's"
+    transcript.write_text(transcript.read_text() + ends("out of credits", 3600))
+    assert engine.failed() == "the turn failed: out of credits", "a turn that ends in an error is named"
+    row = Agents(record, actor="system").by_session("claude-1")
+    assert (row.status, row.data["failure"]) == ("idle", "out of credits"), "the agent goes idle with the failure set"
 
 
 def test_the_start_question_never_offers_a_busy_environment_on_enter():
@@ -210,19 +260,30 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     report(record, "compacting", "PreCompact")
     agent = Agents(record, actor="system").by_session("claude-1")
     assert len(agent.data.get("compactions") or []) == 1, "one compaction, one mark for the chat"
+    agents = Agents(record, actor="system")
+    record.set_setting("agent_sessions", {"quiet": 1})
+    record.set_setting("triggers", {"agent_sessions.liveness": {"every": 0, "unit": "minutes"}})
+    report(record, "working", "PreToolUse", session="claude-2")
+    held = agents.by_session("claude-2")
+    for row in (agent, held):
+        agents.stamp(row.n, at=time.time() - 3600)
+    Sessions(record.root).write("claude-1", pid=0, last_heard=0)
+    Sessions(record.root).write("claude-2", pid=os.getpid())
+    tick(record)
+    assert (agents.load(agent.n).status, agents.load(held.n).status) == (STOPPED, "working"), \
+        "an agent silent past the quiet setting is marked stopped, unless its session is still alive"
 
 
 def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():
-    from types import SimpleNamespace
-    from agents.seat import Seat
+    from agents.seat import SeatReport
     record = fresh()
     row = Agents(record, actor=AGENT).create("s-1", subagent_rows=[{"id": "old", "task": "earlier", "type": "Explore", "model": "haiku", "ended": 5.0}])
-    seat = SimpleNamespace(record=record, subagents_ended=None)
+    seat = SeatReport(record, agent=None)
     last = Agents(record, actor=AGENT).load(row.n)
     running = {"id": "t1", "task": "audit the hooks", "type": "auditor", "model": "sonnet", "ended": 0.0}
     for subagents in ([last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}]):
-        Seat.subagents_moved(seat, last, subagents)
-    heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+        seat.subagents_moved(last, subagents)
+    heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
     assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
     import json
     from providers.claude import Claude
@@ -293,7 +354,7 @@ def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcr
     monkeypatch.setattr(PROVIDERS["claude"], "conversation_file", lambda self, conversation: transcript if conversation == "conv-7" else None)
     asked_history(record, "claude", "conv-7", ask=lambda _: "1", answering=True)
     asked_history(record, "claude", "conv-7", ask=lambda _: "1", answering=True)
-    brought = [(m.brief, m.seen[0], bool(m.completed)) for m in Messages(record, actor=USER)._every()]
+    brought = [(m.brief, m.seen[0], bool(m.completed)) for m in Messages(record, actor=USER).rows.every()]
     assert brought == [("please fix the login", USER, True), ("Fixed: the token expired early.", AGENT, True)], \
         "what the user and the agent wrote reaches the chat once, as theirs and already dealt with"
     assert Sessions(record.root).environment("conv-7") == record.env, "the conversation now belongs to the environment, so it is not asked again"

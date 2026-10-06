@@ -1,14 +1,18 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class DumpsDetails(FeatureDetails):
+    explains = 'The agent sorts files you send together by subject and files them in a collection. You can rename or remove what it made.'
     name = "dumps"
+    group = Group.RECORDS
+    label = "Sort dumped files into a collection"
     when = "the user drops items into a dump, or a dump is being worked"
 
     title = "Dumps"
 
 
-    abstract = "Drop a whole pile in one place and the agent sorts it by subject and files it straight into a collection"
+    abstract = "Drop many files at once. The agent sorts them by subject and files them into a collection."
 
     help = """
         A dump holds pasted text and dropped files; each is an item. Sort the pile by subject:

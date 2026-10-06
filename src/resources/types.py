@@ -1,7 +1,8 @@
 import time
+from pathlib import Path
 from typing import ClassVar
 
-from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Resource, ResourceDetails
+from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
@@ -25,7 +26,7 @@ class Message(Shape, Resource):
     answer_command = "reply"
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "message"
-    event_labels = {"created": "Message", "completed": "Message processed", "updated.read": "Message read", "updated.process": "Message part filed",
+    event_labels = {"created": "Message", "completed": "Message closed", "updated.read": "Message read", "updated.process": "Message part filed",
                     "updated.edit": "Message edited", "updated.file": "Message file filed"}
     icon = "mail"
     listed_under = RESULTS
@@ -54,7 +55,7 @@ class Todo(Ranked, Placed, Resource):
     hidden_listed = False
     listed_open = True
     type = "todo"
-    event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",
+    event_labels = {"created": "To-do created", "completed": "To-do closed", "updated.read": "To-do read", "updated.assign": "To-do assigned",
                     "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
                     "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
     start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
@@ -81,7 +82,7 @@ class Work(Traced, Resource):
     )
     type = "work"
     indexed = ("todo",)
-    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
+    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work closed"}
     status_labels = {"create": "starting", "complete": "ending"}
     start_heading = "STILL OPEN, from this or an earlier session"
     icon = "play"
@@ -100,6 +101,7 @@ class Doc(Shape, Resource):
         Field(default=0, name="revisions"),
         Field(default=0, name="open_until"),
         Field(default=False, name="written"),
+        Field(default=False, name="hidden"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Document",
@@ -109,7 +111,7 @@ class Doc(Shape, Resource):
     loading = LAZY
     own_folder = True
     type = "doc"
-    event_labels = {"created": "Doc written", "completed": "Doc settled"}
+    event_labels = {"created": "Doc written", "completed": "Doc closed"}
     status_labels = {"complete": "settling"}
     start_heading = "docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all"
     start_as_count = True
@@ -140,7 +142,7 @@ class Report(Shape, Resource):
     )
     loading = LAZY
     type = "report"
-    event_labels = {"created": "Report written", "completed": "Report archived"}
+    event_labels = {"created": "Report written", "completed": "Report closed"}
     status_labels = {"complete": "archiving"}
     needs_attention = True
     icon = "report"
@@ -160,7 +162,7 @@ class Fact(Reasoned, Resource):
         help="A fact is handed to every session on its environment; it is struck when it stops being true.",
     )
     type = "fact"
-    event_labels = {"created": "Fact noted", "completed": "Fact struck"}
+    event_labels = {"created": "Fact noted", "completed": "Fact closed"}
     status_labels = {"complete": "striking"}
     start_heading = "FACTS about this environment"
     subagent_writable = False
@@ -181,7 +183,7 @@ class Rule(Reasoned, Resource):
         help="A rule is decided by the user, cited where it applies, and struck only by them.",
     )
     type = "rule"
-    event_labels = {"created": "Rule made", "completed": "Rule struck"}
+    event_labels = {"created": "Rule made", "completed": "Rule closed"}
     status_labels = {"complete": "striking"}
     start_heading = "RULES, in force on every environment"
     subagent_writable = False
@@ -199,10 +201,10 @@ class Reminder(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Reminder",
         abstract="An instruction said again until it is retired",
-        help="A reminder repeats at every start and every so often mid-work, because knowing is not doing. One written with --set whom=<session> is said to that agent alone, which is how an agent reminds itself or leaves one for another.",
+        help="A reminder is repeated to the agent at each start and every so often while it works.",
     )
     type = "reminder"
-    event_labels = {"created": "Reminder set", "completed": "Reminder retired"}
+    event_labels = {"created": "Reminder set", "completed": "Reminder closed"}
     status_labels = {"complete": "retiring"}
     start_heading = "REMINDERS, said again at every stop"
     needs_attention = True
@@ -225,7 +227,7 @@ class Question(Options, Resource):
     )
     listed_open = True
     type = "question"
-    event_labels = {"created": "Question asked", "completed": "Question answered"}
+    event_labels = {"created": "Question asked", "completed": "Question closed"}
     status_labels = {"create": "asking", "complete": "answering"}
     needs_attention = True
     cleared_by = COMPLETED
@@ -248,13 +250,13 @@ class Suggestion(Options, Resource):
     )
     listed_open = True
     type = "suggestion"
-    event_labels = {"created": "Suggestion made", "completed": "Suggestion decided"}
+    event_labels = {"created": "Suggestion made", "completed": "Suggestion closed"}
     status_labels = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
     start_heading = "SUGGESTIONS waiting on the user"
     needs_attention = True
     cleared_by = COMPLETED
     icon = "bulb"
-    listed_under = RESULTS
+    listed_under = SIDEBAR
     command_names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
 
@@ -268,7 +270,7 @@ class Comment(Shape, Resource):
     deduplicates = True
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "comment"
-    event_labels = {"created": "Comment", "completed": "Comment done"}
+    event_labels = {"created": "Comment", "completed": "Comment closed"}
     nested = True
     icon = "bubble"
     command_names = {"complete": "done", "comment": "reply"}
@@ -281,6 +283,7 @@ FAILED = "failed"
 AT_REST = (STOPPED, IDLE)
 SUBAGENT = "subagent"
 HELPER = "helper"
+RUN_KINDS = ("shell_rows", "subagent_rows", "monitor_rows")
 
 
 class AgentRow(Shape, Resource):
@@ -321,7 +324,6 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="monitors"),
         Field(default=list, name="monitor_rows"),
         Field(default="", name="parent"),
-        Field(default="", name="dispatcher"),
         Field(FLAG, False, name="compacting"),
         Field(default=dict, name="running"),
         Field(default=list, name="commands"),
@@ -335,7 +337,7 @@ class AgentRow(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent",
         abstract="A session of Claude or Codex, and what it is doing right now",
-        help="The hooks report activity; the engine distinguishes idle, busy, declared work and compaction.",
+        help="The journal watches what the agent reports and tells whether it is idle, busy, working, or has shortened its conversation.",
     )
     type = "agent"
     indexed = ("parent", "at")
@@ -359,9 +361,16 @@ class AgentRow(Shape, Resource):
         return bool(self.dispatcher or self.parent)
 
     @property
+    def live(self) -> bool:
+        return bool(self.status) and self.status != STOPPED
+
+    @property
+    def runs(self) -> list[dict]:
+        return [entry for kind in RUN_KINDS for entry in self.data.get(kind) or []]
+
+    @property
     def background_run(self) -> str:
-        return next((entry.get("task") or entry.get("command") or "a background run"
-                     for kind in ("shell_rows", "subagent_rows", "monitor_rows") for entry in self.data.get(kind) or [] if entry.get("running")), "")
+        return next((entry.get("task") or entry.get("command") or "a background run" for entry in self.runs if entry.get("running")), "")
 
 
 class Notification(Shape, Resource):
@@ -372,9 +381,9 @@ class Notification(Shape, Resource):
     )
     type = "notification"
     takes_comments = False
-    event_labels = {"completed": "Notification cleared", "updated.read": "Notification read"}
+    event_labels = {"completed": "Notification closed", "updated.read": "Notification read"}
     kept = 100
-    pruned_when = "seen"
+    pruned_when = Pruned.SEEN
     needs_attention = True
     icon = "bell"
     in_sidebar = False
@@ -384,13 +393,13 @@ class Notification(Shape, Resource):
 class Notice(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Notice",
-        abstract="One line kept over the chat while it matters",
-        help="A notice stays until the user's X or the agent's close; a tone and a link may ride on it.",
+        abstract="One line pinned to the chat while it matters",
+        help="A notice stays until you close it or the agent closes it. It can have a colour and a link.",
     )
     type = "notice"
     takes_comments = False
     kept = 100
-    pruned_when = "closed"
+    pruned_when = Pruned.CLOSED
     event_labels = {"created": "Notice", "completed": "Notice closed", "updated.read": "Notice read"}
     icon = "band"
     command_names = {"complete": "close"}
@@ -456,7 +465,7 @@ class Plugin(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Plugin",
         abstract="A repository installed into the journal: it hears the bus, answers, and may run services of its own",
-        help="Installed from a GitHub URL or a local path, pinned to a commit; its manifest says what it listens to, what it runs and which pages it shows.",
+        help="Installed from a GitHub URL or a local path, fixed at one exact version; its manifest says what it listens to, what it runs and which pages it shows.",
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="source"),
@@ -471,7 +480,7 @@ class Plugin(Shape, Resource):
         Field(NUMBER, 0.0, name="read_at"),
     ]
     type = "plugin"
-    event_labels = {"created": "Plugin installed", "completed": "Plugin removed"}
+    event_labels = {"created": "Plugin installed", "completed": "Plugin closed"}
     status_labels = {"complete": "removing"}
     subagent_writable = False
     in_sidebar = False
@@ -484,11 +493,12 @@ class Environment(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Environment",
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
-        help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
+        help="An agent works in one environment at a time. It can switch to a free one, or claim a taken one by giving a reason.",
     )
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched")]
+    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched"), Field(TEXT, "", name="folder")]
+    listed_open = True
     type = "environment"
-    event_labels = {"created": "Environment prepared", "completed": "Environment removed"}
+    event_labels = {"created": "Environment prepared", "completed": "Environment closed"}
     status_labels = {"create": "preparing", "complete": "removing"}
     subagent_writable = False
     icon = "branch"
@@ -501,6 +511,13 @@ class Environment(Shape, Resource):
     def helping(self) -> bool:
         return self.owner.startswith(f"{HELPER}:")
 
+    def owned_by(self, kind: str) -> int:
+        return int(self.owner.split(":")[1]) if self.owner.startswith(f"{kind}:") else 0
+
+    def checkout(self, project: Path) -> Path:
+        own = Path(self.folder) if self.folder else project
+        return own if own.is_dir() else project
+
 
 class Ask(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
@@ -508,15 +525,15 @@ class Ask(Shape, Resource):
         Field(default=list, name="args"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Browser ask",
+        title="Browser request",
         abstract="What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension",
-        help="journal browser ask shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar.",
+        help="Asks the browser tab for a screenshot, its text or a click. Turn on control in the chat window's bar.",
     )
     loading = LAZY
     type = "browser"
     takes_comments = False
     kept = 50
-    pruned_when = "closed"
+    pruned_when = Pruned.CLOSED
     nested = True
     icon = "open"
     in_sidebar = False
@@ -530,7 +547,7 @@ class FeatureRow(Shape, Resource):
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Feature",
-        abstract="A capability the engine loads, with its switch",
+        abstract="A built-in part of the journal that can be switched on or off",
         help="One row per feature the engine finds, carrying whether it is on. A row whose file is gone stays, switched off.",
     )
     type = "feature"
@@ -546,8 +563,8 @@ class Nudge(Shape, Resource):
         Field(name="session"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Nudge",
-        abstract="A line a feature has the engine type to the agent",
+        title="Agent instruction",
+        abstract="A short instruction the journal sends the agent by itself; you never see it in the chat.",
         help="A nudge is written by a feature and spoken to the agent as it is; the user never hears it.",
     )
     loading = LAZY

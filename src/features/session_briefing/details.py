@@ -1,15 +1,20 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
-class StartDetails(FeatureDetails):
+class SessionBriefingDetails(FeatureDetails):
+    explains = 'The journal gives each new agent session a current summary. You can inspect the work the session starts with.'
     name = "session_briefing"
+    group = Group.AGENT
+    label = "Brief each new session"
+    position = 4
     has_skill = False
 
     title = "Session briefing"
 
     aliases = ("start",)
 
-    abstract = "What a session is handed at its start, kept current on every change to the record"
+    abstract = "Each new session is handed a summary of the journal, kept up to date as anything in it changes."
 
     help = """
         The hook hands the file over at SessionStart; nothing is computed inside the hook.

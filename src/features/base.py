@@ -1,55 +1,34 @@
-import os
 import re
 from abc import ABC
 from dataclasses import asdict
 from functools import cached_property
-from pathlib import Path
 from typing import ClassVar
 
-from controllers.stored import CHANGES
-from controllers.types import Agents, Environments, Features
+from controllers.features import SETTING_KEYS
+from controllers.types import Agents
 from features import trigger
-from features.trigger import NEVER, Trigger
+from features.switches import switches
+from features.trigger import MINUTE, NEVER, Trigger
 from engine.gates import Hold, hold
 from engine.reach import Reach, Unreached
-from engine.record import Record
-from engine.runtime import env
+from features.groups import Group
 from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
 from resources.base import Refused, SYSTEM
-from engine.wording import plural
 
 REGISTRY: dict[str, type] = {}
-GLOBAL_ENTRIES: list[tuple[object, object]] = []
-
-
-class Switched:
-    def __init__(self, feature, target) -> None:
-        self.feature, self.target = feature, target
-
-    def on(self, record) -> bool:
-        return self.feature.enabled(record)
-
-    def __getattr__(self, name: str):
-        return getattr(self.target, name)
-
-
-def clear_global_entries() -> None:
-    for container, entry in GLOBAL_ENTRIES:
-        if isinstance(container, list):
-            container.remove(entry)
-        else:
-            container.pop(entry, None)
-    GLOBAL_ENTRIES.clear()
 
 
 class Behaviour:
-    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = ""):
+    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = "",
+                 prefix: str = ""):
         self.name, self.title, self.abstract, self.default, self.trigger = name, paragraphs(title), paragraphs(abstract), default, trigger
+        self.prefix = prefix
 
     def describe(self) -> dict:
-        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": self.trigger.spec()}
+        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": self.trigger.described(),
+                "prefix": self.prefix}
 
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
@@ -60,7 +39,7 @@ class Line:
                  reach: Reach = Reach.MAIN, reply_kept: bool = False):
         self.name, self.title, self.brief, self.lead, self.label, self.reach = name, paragraphs(title), paragraphs(brief), lead, label, reach
         self.reply_kept = reply_kept
-        self.while_waiting = while_waiting   # whether it is still said while the agent waits; None takes the feature's answer
+        self.while_waiting = while_waiting
 
     def placeholders(self) -> list[str]:
         return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))
@@ -76,73 +55,29 @@ class Line:
         return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders(), "reach": self.reach}
 
 
-SWITCHES: dict[str, tuple[int, dict[str, bool]]] = {}
-GENERATION = [0]
-CHANGE_LOGS: dict[str, str] = {}
-
-
-def written(record) -> int:
-    home = str(record.home)
-    if home not in CHANGE_LOGS:
-        CHANGE_LOGS[home] = str(Features(record, actor=SYSTEM)._folder() / CHANGES)
-    try:
-        return os.stat(CHANGE_LOGS[home]).st_size
-    except OSError:
-        return 0
-
-
-def booted(record) -> dict[str, bool]:
-    rows = Features(record, actor=SYSTEM)
-    SWITCHES[str(record.home)] = (written(record), {row.title: bool(row.enabled) for row in rows._every() if not row.deleted})
-    return SWITCHES[str(record.home)][1]
-
-
-def switches(record) -> dict[str, bool]:
-    held = SWITCHES.get(str(record.home))
-    return held[1] if held is not None and held[0] == written(record) else booted(record)
-
-
-def rebooted(event=None, record=None) -> None:
-    GENERATION[0] += 1
-    if record is None:
-        SWITCHES.clear()
-    else:
-        booted(record)
-
-
-ENVIRONMENT_NAMES: dict[str, tuple] = {}
-
-
-def environments_changed(event=None, record=None) -> None:
-    if record is None:
-        return rebooted(event, record)
-    names = tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).summaries() if not row["deleted"] and not row["completed"]))
-    if ENVIRONMENT_NAMES.get(str(record.root)) != names:
-        ENVIRONMENT_NAMES[str(record.root)] = names
-        rebooted(event, record)
-
-
-def generation() -> int:
-    return GENERATION[0]
-
-
 class FeatureDetails:
     name: ClassVar[str] = ""
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    explains: ClassVar[str] = ""
+    label: ClassVar[str] = ""
+    hint: ClassVar[str] = ""
+    position: ClassVar[int] = 100
+    group: ClassVar[Group]
+    trigger_label: ClassVar[str] = ""
     lines: ClassVar[list[Line]] = []
     behaviours: ClassVar[list[Behaviour]] = []
     settings: ClassVar[list[Setting]] = []
     trigger: ClassVar[Trigger] = NEVER
     aliases: ClassVar[tuple] = ()
-    keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
-    when: ClassVar[str] = ""   # when the agent should load its skill; empty for a feature that runs by itself
-    speaks_while_waiting: ClassVar[bool] = False   # whether its lines still reach an agent that declared a wait
+    keywords: ClassVar[tuple] = ()
+    when: ClassVar[str] = ""
+    speaks_while_waiting: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
-    has_skill: ClassVar[bool] = True   # False for housekeeping that asks nothing of the agent
-    skill_of: ClassVar[str] = ""   # the skill this feature is taught in, when it is folded into another
+    has_skill: ClassVar[bool] = True
+    skill_of: ClassVar[str] = ""
     default: ClassVar[bool] = True
 
     @classmethod
@@ -156,24 +91,33 @@ class Feature(ABC):
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
+    explains: ClassVar[str] = ""
+    label: ClassVar[str] = ""
+    hint: ClassVar[str] = ""
+    position: ClassVar[int] = 100
+    group: ClassVar[Group] = Group.DEVELOPER
+    trigger_label: ClassVar[str] = ""
     trigger: ClassVar[Trigger] = NEVER
     behaviours: ClassVar[dict] = {}
     lines: ClassVar[dict[str, Line]] = {}
     settings: ClassVar[list[Setting]] = []
-    aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
-    keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
+    aliases: ClassVar[tuple] = ()
+    keywords: ClassVar[tuple] = ()
     when: ClassVar[str] = ""
     speaks_while_waiting: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
     nudges: ClassVar[tuple] = ()
+    sequences: ClassVar[tuple] = ()
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
         if cls.details:
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
-            cls.title, cls.abstract, cls.help, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), d.when
+            cls.title, cls.abstract, cls.help, cls.explains, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), paragraphs(d.explains), d.when
+            cls.label, cls.hint, cls.group, cls.trigger_label = paragraphs(d.label), paragraphs(d.hint), d.group, paragraphs(d.trigger_label)
+            cls.position = d.position
             cls.aliases, cls.fixed, cls.default = d.aliases, d.fixed, d.default
             named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
             cls.speaks_while_waiting = d.speaks_while_waiting
@@ -190,31 +134,12 @@ class Feature(ABC):
 
     def wire(self) -> None:
         self.register(self.journal)
+        if self.settings:
+            SETTING_KEYS.add(None, tuple(setting.name for setting in self.settings), key=self.name)
         if self.nudges:
             from features.nudges import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))
             self.journal.events.handler(SendOnToolUse(self.nudges))
-
-    def register_always(self, container: list, entry) -> None:
-        container.append(entry)
-        GLOBAL_ENTRIES.append((container, entry))
-
-    def register_global(self, container, callback, empty, key=None) -> None:
-        def enabled(*args, **kwargs):
-            source = args[0]
-            record = Record(source, env(source)) if isinstance(source, Path) else getattr(source, "record", source)
-            return callback(*args, **kwargs) if self.enabled(record) else empty()
-
-        if not callable(callback):
-            container[key] = Switched(self, callback)
-            GLOBAL_ENTRIES.append((container, key))
-            return
-        if isinstance(container, list):
-            container.append(enabled)
-            GLOBAL_ENTRIES.append((container, enabled))
-            return
-        container[key] = enabled
-        GLOBAL_ENTRIES.append((container, key))
 
     @classmethod
     def default_for(cls, root) -> bool:
@@ -230,21 +155,8 @@ class Feature(ABC):
     def enabled(self, record) -> bool:
         return self.on_for(record)
 
-    def enable(self, record) -> None:
-        Features(record, actor=SYSTEM).switch(self.name, True)
-
-    def disable(self, record) -> None:
-        Features(record, actor=SYSTEM).switch(self.name, False)
-
-    def agent(self, event, record):
-        return Agents(record, actor=SYSTEM).load(event.n)
-
-    def agent_due(self, event, record):
-        agent = self.agent(event, record)
-        return agent if self.due(record, agent) else None
-
     def standing(self, record, controller: type) -> list:
-        return controller(record, actor=SYSTEM)._standing()
+        return controller(record, actor=SYSTEM).rows.standing()
 
     def keyed(self, key: str = "") -> str:
         return f"{self.name}.{key}" if key else self.name
@@ -257,12 +169,18 @@ class Feature(ABC):
     def chosen(self, record, key: str) -> bool:
         return bool(record.features.get(self.keyed(key), self.behaviours[key].default))
 
-    def cadence(self, record, key: str = "") -> dict:
-        return self.behaviours[key].trigger if key else self.trigger
+    def choose(self, record, key: str, on: bool) -> None:
+        record.set_setting("features", {**record.setting("features", {}), self.keyed(key): bool(on)})
+
+    def cadence(self, record, key: str = "") -> Trigger:
+        return trigger.saved(record, self.keyed(key), self.behaviours[key].trigger if key else self.trigger)
+
+    def interval(self, record, key: str = "") -> float:
+        return float(self.cadence(record, key).every) * MINUTE
 
     def due(self, record, agent, key: str = "") -> bool:
-        spec = self.cadence(record, key)
-        if not self.on(record, key) or not spec or not trigger.due(record, agent, self.keyed(key), spec):
+        cadence = self.cadence(record, key)
+        if not self.on(record, key) or not cadence or not trigger.due(record, agent, self.keyed(key), cadence):
             return False
         trigger.fired(record, agent, self.keyed(key))
         return True
@@ -271,24 +189,38 @@ class Feature(ABC):
         return dict(self.values(record)) if self.settings else None
 
     def values(self, record) -> Settings:
-        return Settings(self.settings, record.setting(self.name, {}))
+        return self.details.values(record)
 
     def setting(self, record, key: str, default=None):
         return record.setting(self.name, {}).get(key, default)
 
     def reached(self, record, reach: Reach) -> list:
-        return [agent for agent in Agents(record, actor=SYSTEM)._standing() if reach.reaches(agent.subagent)]
+        return [agent for agent in Agents(record, actor=SYSTEM).rows.standing() if reach.reaches(agent.subagent)]
 
-    def line(self, name: str, values: dict) -> tuple[str, str]:
+    def declared_line(self, name: str) -> Line:
         if name not in self.lines:
             raise Refused(f"the {self.name} feature has no line named {name!r}")
-        return self.lines[name].filled(values)
+        return self.lines[name]
+
+    def line(self, name: str, values: dict) -> tuple[str, str]:
+        return self.declared_line(name).filled(values)
+
+    def line_text(self, name: str, **values) -> str:
+        return " - ".join(self.line(name, values))
+
+    def settings_changed(self, record, actor: str) -> None:
+        return None
+
+    def to_primary(self, record, line: str, actor: str = SYSTEM, **values) -> None:
+        agent = Agents(record, actor=SYSTEM).primary()
+        if agent:
+            self.journal.say(record, agent, line, actor=actor, **values)
 
     def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:
         self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach), key, agent)
 
     def _gate(self, record, given: Hold, key: str, agent) -> None:
-        for row in [agent] if agent else Agents(record, actor=SYSTEM)._standing():
+        for row in [agent] if agent else Agents(record, actor=SYSTEM).rows.standing():
             if given.reach.reaches(row.subagent):
                 hold(record.root, record.env, row.title, self.keyed(key), given)
 
@@ -299,13 +231,16 @@ class Feature(ABC):
     def journal(self) -> Journal:
         return Journal(self)
 
-    def plural(self, n: int, word: str) -> str:
-        return plural(n, word)
+    @classmethod
+    def renamed_from(cls) -> dict[str, str]:
+        pairs = (alias if isinstance(alias, tuple) else (alias, "") for alias in cls.aliases)
+        return {old: f"{cls.name}.{key}" if key else cls.name for old, key in pairs}
 
     def describe(self) -> dict:
-        return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
+        return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "explains": self.explains, "default": self.default, "fixed": self.fixed,
+                "label": self.label, "hint": self.hint, "position": self.position, "group": self.group.key, "trigger_label": self.trigger_label,
                 "keywords": list(self.keywords), "when": self.when,
-                "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.spec(),
+                "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.described(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
                 "guards": [asdict(guard) for guard in self.journal.agent.guards],

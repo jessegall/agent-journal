@@ -1,8 +1,11 @@
 from features.base import Feature
+from features.plans.summary import plans_shown
+from overview.parts import SUMMARY_PARTS
 from features.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
+    EndReviewWithItsReport,
     GuideBuilding,
     PassCheckpointsInAuto,
     ReopenPlansWithTheirRows,
@@ -26,9 +29,11 @@ class PlansFeature(Feature):
     nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES), Nudge("blocked", behaviour="blocked", about=blocked_plans))
 
     def register(self, journal: Journal) -> None:
-        self.register_global(ROW_HOLDS, held, lambda: False)
+        SUMMARY_PARTS.add(None, plans_shown, key="plans")
+        ROW_HOLDS.add(self, held)
         journal.events.handler(StartBuilding())
         journal.events.handler(StartApproved())
+        journal.events.handler(EndReviewWithItsReport())
         journal.events.handler(TellParkedAndPickedUp())
         journal.events.handler(GuideBuilding())
         journal.events.handler(PassCheckpointsInAuto())

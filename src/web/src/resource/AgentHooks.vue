@@ -58,8 +58,7 @@ onMounted(fetchHooks);
 
 <template>
     <div class="agent-hooks">
-        <p class="where">
-            Read from and saved to
+        <p class="where">Hooks run commands when the agent does something. Read from and saved to
             <code>{{ path }}</code>
         </p>
         <template v-if="error">
@@ -78,7 +77,7 @@ onMounted(fetchHooks);
                                 <span class="matcher">{{ block.matcher }}</span>
                             </template>
                             <input v-model="hook.command" class="command" spellcheck="false" :placeholder="'command'" />
-                            <Btn kind="icon" title="Remove this hook" @click="remove(event, b, h)"><Icon name="x" /></Btn>
+                            <Btn kind="icon" title="Remove this command" @click="remove(event, b, h)"><Icon name="x" /></Btn>
                         </div>
                     </template>
                 </template>
@@ -94,7 +93,7 @@ onMounted(fetchHooks);
         <template v-for="file in elsewhere" :key="file.path">
             <section class="elsewhere">
                 <p class="where">
-                    Also registered, read only, in
+                    Also set, read only, in
                     <code>{{ file.path }}</code>
                 </p>
                 <template v-for="(blocks, event) in file.hooks" :key="event">

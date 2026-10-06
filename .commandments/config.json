@@ -5,7 +5,10 @@
     ],
     "exclude": [
         ".venv",
-        "__pycache__"
+        "__pycache__",
+        "src/web/dist",
+        "src/web/dist-demo",
+        ".claude/worktrees"
     ],
     "disable": {
         "languages": [
@@ -14,11 +17,232 @@
             "csharp"
         ]
     },
+    "detectors": [
+        "PlainViewerTextDetector",
+        "PlainServerTextDetector",
+        "PlainViewerScriptTextDetector",
+        "PlainViewerPageTextDetector"
+    ],
+    "parallel": 2,
     "configure": {
         "frontend/ComponentBudgetDetector": [
             {
                 "elements": [
                     50
+                ]
+            }
+        ],
+        "python/NamespaceDependencyDetector": [
+            {
+                "layer": [
+                    "supervisor"
+                ]
+            },
+            {
+                "layer": [
+                    "resources"
+                ]
+            },
+            {
+                "layer": [
+                    "engine",
+                    [
+                        "resources",
+                        "supervisor",
+                        "install"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "controllers",
+                    [
+                        "resources",
+                        "engine"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "providers",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "supervisor"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "agents",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "supervisor"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "runner",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "supervisor",
+                        "features",
+                        "migrations",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "overview",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "features",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "supervisor",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "migrations",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "features",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "surfaces",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "features",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "commands",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "agents",
+                        "runner",
+                        "features",
+                        "migrations",
+                        "surfaces",
+                        "install",
+                        "skills",
+                        "serve",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "skills",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "features",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "install",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "features",
+                        "migrations",
+                        "commands",
+                        "skills",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "serve",
+                    [
+                        "resources",
+                        "engine",
+                        "controllers",
+                        "providers",
+                        "runner",
+                        "features",
+                        "migrations",
+                        "surfaces",
+                        "commands",
+                        "overview"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "worker",
+                    [
+                        "commands",
+                        "runner"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "journal",
+                    [
+                        "commands"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "channel",
+                    [
+                        "providers"
+                    ]
                 ]
             }
         ]

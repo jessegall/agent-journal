@@ -3,6 +3,9 @@ from dataclasses import fields
 from pathlib import Path
 
 import features
+from engine.record import Record
+from features.format import catalogue
+from features import groups
 from controllers.base import actions
 from controllers.base import Controller
 from controllers.described import described_types
@@ -34,12 +37,13 @@ class Manifest(TypedDict):
     methods: tuple[str, ...]
     types: dict[str, dict]
     features: dict
+    groups: list[groups.Described]
 
 
-def manifest(root: Path | None = None) -> Manifest:
+def manifest(root: Path) -> Manifest:
     return {
-        "project": root.resolve().parent.name if root else "",
-        "environment": runtime.env(root) if root else runtime.DEFAULT_ENV,
+        "project": root.resolve().parent.name,
+        "environment": runtime.env(root),
         "version": version(),
         "build": built(),
         "actions": list(ACTIONS),
@@ -50,5 +54,6 @@ def manifest(root: Path | None = None) -> Manifest:
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
         "types": described_types(),
-        "features": features.describe(),
+        "features": catalogue(features.describe(), Record(root, runtime.env(root))),
+        "groups": groups.describe(),
     }

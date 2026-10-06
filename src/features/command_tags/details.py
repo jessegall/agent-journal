@@ -2,22 +2,28 @@ from features.base import Behaviour, FeatureDetails, Line
 from features.command_tags.reading import RUNS
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
-class TagsDetails(FeatureDetails):
+class CommandTagsDetails(FeatureDetails):
+    explains = 'The agent can place action tags in its messages and the journal carries out the matching action. You can see the resulting items in the viewer.'
     name = "command_tags"
+    group = Group.AGENT
+    label = "Run commands from tags"
+    position = 5
+    hint = "When the agent writes a tag such as [!reply:12], the journal runs the matching command: here, reply to message 12"
     skill_of = "messages"
     when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
 
-    title = "Command tags"
+    title = "Commands from tags"
 
     aliases = ("tags",)
 
     speaks_while_waiting = True
 
     abstract = """
-        Everything the agent writes reaches the chat, and a tag carrying a number or a name
-        runs the command it stands for
+        When the agent writes a tag such as [!reply:12], the journal runs the matching command:
+        here, reply to message 12.
     """
 
     help = """
@@ -28,7 +34,7 @@ class TagsDetails(FeatureDetails):
         work await command followed by a note. [!await on=("<id>", "helper:<n>")] <what> names
         the runs, subagents or helpers it waits on, so it stands until they are back.
 
-        tags.runs maps a tag to the command it stands for, so [!reply:12] runs
+        tags.runs maps a tag to the matching command, so [!reply:12] runs
         journal message reply 12 with the turn as its text ([!reply:12,13] answers both messages with one reply), and [!todo="the title"] files a
         to-do with that title and the turn as its brief. [!fact="the claim"] and [!rule="the ruling"]
         file a fact or a rule the same way.
@@ -50,15 +56,14 @@ class TagsDetails(FeatureDetails):
             name="runs",
             default=dict(RUNS),
             title="What each tag runs",
-            abstract="A tag's name and the journal command it runs; entries set here are laid over the shipped ones.",
+            abstract="A tag's name and the journal command it runs; your entries add to the built-in ones.",
         ),
     ]
 
     behaviours = [
         Behaviour(
             name="hint",
-            title="Show the tag for a command",
-            abstract="When the agent runs a command a tag stands for, it is shown the tag once in a while",
+            title="Remind the agent which tag runs which command",
             trigger=Trigger(every=30, unit=MINUTES),
         ),
     ]

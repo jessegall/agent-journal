@@ -1,16 +1,20 @@
 from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails
-from features.recital import BEHAVIOURS, LINES
+from features.recital import LINES, whispering
+from features.groups import Group
 
 
 class RemindersDetails(FeatureDetails):
+    explains = 'The journal repeats your standing reminders to the agent. You can change or close them in the viewer.'
     name = "reminders"
+    group = Group.MEMORY
+    label = "Repeat reminders to the agent"
     skill_of = "memory"
     when = "you keep forgetting something, or leave an instruction for another agent"
 
     title = "Reminders"
 
-    abstract = "The standing reminders said again to the agent when it comes to rest after work"
+    abstract = "Your standing reminders are repeated to the agent when it stops after working."
 
     help = """
         A reminder belongs to this environment. When you keep forgetting to do something you already know, write a
@@ -27,4 +31,4 @@ class RemindersDetails(FeatureDetails):
 
     lines = LINES
 
-    behaviours = BEHAVIOURS
+    behaviours = whispering("reminder")
