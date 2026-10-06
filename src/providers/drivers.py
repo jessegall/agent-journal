@@ -20,6 +20,7 @@ from providers.catalogue import workspace_folders
 ENTER_AFTER = 0.3
 AGENT_COMMAND = "/"
 RECHECK, RESUBMITS = 1.0, 3
+ECHO_WAIT, ECHO_STEP = 2.0, 0.1
 SCREEN_TAIL, LINE_START = 16384, 40
 PASTE_OVER, TYPED_PER_SECOND = 200, 4000
 PASTE_START, PASTE_END = b"\x1b[200~", b"\x1b[201~"
@@ -51,6 +52,7 @@ class Driver(ABC):
     DISPLAY_HOOK = False
     SHELL = ""
     INPUT_MARK = b""
+    ENTER_CAN_MISS = False
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
@@ -264,7 +266,7 @@ class Driver(ABC):
             return True
         if self.awaits_answer():
             return False
-        return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=False)
+        return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=self.ENTER_CAN_MISS)
 
     def _post(self, line: str, by: str) -> bool:
         raise NotImplementedError(f"{self.PRODUCT} takes no channel")
@@ -311,11 +313,14 @@ class Driver(ABC):
         self.clear_input()
         time.sleep(ENTER_AFTER)
         raw = line.encode()
-        if len(raw) > PASTE_OVER:
+        pasted = len(raw) > PASTE_OVER
+        if pasted:
             raw = PASTE_START + raw + PASTE_END
         if not self._wrote(raw):
             return False
         time.sleep(len(raw) / TYPED_PER_SECOND)
+        if not pasted:
+            self._echoed(line, shown)
         if not self._entered():
             return False
         if not confirmed and not self.INPUT_MARK:
@@ -328,6 +333,12 @@ class Driver(ABC):
                 return self._send_now(shown)
             self._wrote(b"\r")
         return self._landed(line, started, confirmed)
+
+    def _echoed(self, line: str, since: int) -> None:
+        start = b"".join(line.encode().split())[:LINE_START]
+        until = time.time() + ECHO_WAIT if self._screen_file().is_file() else 0.0
+        while start not in self._shown_since(since) and time.time() < until:
+            time.sleep(ECHO_STEP)
 
     def _queued(self, since: int) -> bool:
         return bool(self.QUEUED) and self.QUEUED in self._shown_since(since)
