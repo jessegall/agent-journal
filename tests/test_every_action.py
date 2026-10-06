@@ -35,7 +35,7 @@ from resources.pictures import dimensions
 from resources.shapes import normalize_options
 from resources.types import TYPES
 from tests.conftest import fresh, refused
-from tests.kit import project_on, report, run
+from tests.kit import Nudges, project_on, report, run
 from commands import http  # noqa: F401
 
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
@@ -908,3 +908,32 @@ def test_an_upload_and_the_file_route_stay_inside_the_rows_folder_for_every_type
             "a refused call leaves the attached files as they were": sorted(controller.load(row.n).files) == attached == ["a.txt", "b.txt"],
         })
     assert wrong == {}, "an upload and the file route stay inside the row's folder for every type"
+
+
+def test_no_chip_marker_is_kept_in_a_row_of_any_type_or_reaches_a_command_or_a_nudge():
+    marked = "see [[chip todo:1|to-do 1]] and [[file src/a.py|a.py]]"
+    leaked = {}
+    for type_, resource, record, controller in each_type():
+        fields = {name: "a title" if name == "title" else marked for name in TYPES[type_].required}
+        try:
+            row = controller.create("a title", abstract=marked, brief=marked, **fields)
+        except Refused:
+            continue
+        for step in (lambda: controller.section(row.n, "a part", marked), lambda: controller.complete(row.n, how=marked)):
+            try:
+                step()
+            except Refused:
+                pass
+        shown = []
+        for words in ([type_, "show", str(row.n)], [type_, "all"], ["carry"], ["status"], ["search", "see"]):
+            out = io.StringIO()
+            try:
+                run(["--root", str(record.root), "--env", record.env, *words], out=out, err=io.StringIO())
+            except SystemExit:
+                pass
+            shown.append(out.getvalue())
+        shown += [(n.title or "") + (n.brief or "") for n in Nudges(record).all()]
+        shown += [path.read_text() for path in record.home.rglob("*") if path.is_file() and path.suffix in (".json", ".md")]
+        if any("[[" in text for text in shown):
+            leaked[type_] = True
+    assert leaked == {}, "a marker the viewer made is stripped where a row is saved, in every text field it has, so no agent ever reads one"
