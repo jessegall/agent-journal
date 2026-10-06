@@ -28,7 +28,7 @@ def status(record) -> str:
 
 
 def handed(record, type_: str) -> list:
-    return [r for r in standing(record, type_) if r.data.get("status", "active") in ("active", "waiting") and not r.data.get(WHOM)]
+    return [r for r in standing(record, type_) if (type_ == "doc" or r.data.get("status", "active") in ("active", "waiting")) and not r.data.get(WHOM)]
 
 
 QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's work. Never mention the journal's notifications, "

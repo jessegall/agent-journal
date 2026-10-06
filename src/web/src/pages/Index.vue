@@ -9,7 +9,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, href, route} from "../route.js";
+import {go, href, peek, route} from "../route.js";
 import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
 import {earlier, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
@@ -56,6 +56,7 @@ const ORDERS = [
     {key: "title", label: "A to Z"},
 ];
 const search = ref(null);
+const libraryPane = ref(null);
 watch(
     library,
     async (on) => {
@@ -125,7 +126,8 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
                     placeholder="Search titles, text and files"
                     aria-label="Find a document"
                     @input="query = $event.target.value"
-                    @keydown.esc="query = ''"
+                    @keydown.esc="query ? (query = '') : $event.target.blur()"
+                    @keydown.down.prevent="libraryPane?.focusFirst()"
                 />
                 <Segmented class="order" :options="ORDERS" :value="order" @pick="order = $event" />
             </template>
@@ -147,7 +149,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
         <template v-if="adding">
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
-        <template v-if="!listed.length">
+        <template v-if="!listed.length && !library">
             <EmptyState class="empty">
                 No {{ kind.title.toLowerCase() }}s
                 {{
@@ -161,7 +163,15 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
         </template>
         <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
             <template #library>
-                <DocumentLibrary :docs="listed" :query="query" :order="order" @open="(d) => select(d.n)" @clear="query = ''" />
+                <DocumentLibrary
+                    ref="libraryPane"
+                    :docs="listed"
+                    :query="query"
+                    :order="order"
+                    @open="(d) => peek('doc', d.n)"
+                    @clear="query = ''"
+                    @new="adding = true"
+                />
             </template>
             <template #document>
                 <div class="cards">
@@ -239,7 +249,6 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
         padding: 0 10px;
     }
 
-    .bar.library .order,
     .bar.library .sep,
     .bar.library .new-word {
         display: none;

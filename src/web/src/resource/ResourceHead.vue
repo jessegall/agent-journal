@@ -82,7 +82,7 @@ const chaptered = computed(
                 <template v-if="MENUED.includes(resource.type) && !data.system">
                     <ResourceMenu :resource="resource" @gone="emit('close')" />
                 </template>
-                <CloseButton @click="emit('close')" />
+                <CloseButton :title="`Close the ${kind.title.toLowerCase()}`" @click="emit('close')" />
             </template>
         </div>
         <template v-if="data.template && !readOnly">

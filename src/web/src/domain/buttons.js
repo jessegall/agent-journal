@@ -30,6 +30,6 @@ export function choiceGroups(row) {
     });
 }
 
-export const unanswered = (row) => choiceGroups(row).some((group) => !group.chosen);
+export const unanswered = (row) => !row.data.answered_own && choiceGroups(row).some((group) => !group.chosen);
 
 export const doing = (button) => `${button.action.replaceAll("_", " ")} ${button.type}${button.n ? ` ${button.n}` : ""}`;

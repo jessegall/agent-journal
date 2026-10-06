@@ -51,6 +51,15 @@ defineProps({on: Boolean, danger: Boolean, description: {type: String, default: 
 .menu-item.danger:hover:enabled {
     color: var(--danger);
 }
+.menu-item.danger {
+    margin-top: 6px;
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 6px 6px;
+}
+.menu-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
 
 .menu-item.described {
     align-items: flex-start;

@@ -75,6 +75,10 @@ defineProps({
     background: var(--hover);
     color: var(--text);
 }
+.btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
 .btn.primary {
     border-color: var(--accent);
     background: var(--accent-dim);

@@ -19,7 +19,7 @@ const showPicture = (name) =>
 </script>
 
 <template>
-    <ResourceBlock heading="Files">
+    <ResourceBlock heading="Attached files">
         <template v-for="[name, description] in files" :key="name">
             <a class="file" :href="fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
                 <Icon name="clip" :size="13" />

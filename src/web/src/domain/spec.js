@@ -18,7 +18,7 @@ const NAMED_CLOSES = {
 };
 const STOPS = {trigger: "It stops acting.", sequence: "It stops starting by itself.", rule: "The agent stops following it."};
 
-export const closeWord = (type) => NAMED_CLOSES[type] || "Close";
+export const closeWord = (type) => NAMED_CLOSES[type] || `Close the ${meta(type).title.toLowerCase()}`;
 export const closeNote = (type) => `Moves it to Closed. ${STOPS[type] ? `${STOPS[type]} ` : ""}You can reopen it.`;
 export const MENUED = ["rule", "fact", "trigger"];
 export const DELETE_NOTE = "It leaves every list. Its history stays in Activity.";

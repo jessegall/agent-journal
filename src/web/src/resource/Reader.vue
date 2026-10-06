@@ -21,6 +21,7 @@ import UpdateReport from "./UpdateReport.vue";
 import {isUpdate} from "../domain/updates.js";
 import {scopeIn} from "../composables/scope.js";
 import {usePoll} from "../composables/poll.js";
+import {useWindowEvent} from "../composables/windowEvent.js";
 
 const props = defineProps({
     type: String,
@@ -77,6 +78,12 @@ const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
+useWindowEvent("keydown", (event) => {
+    if (event.key !== "Escape" || !route.value.open || route.value.open.type !== props.type || route.value.open.n !== props.n) return;
+    if (event.target.matches("input, textarea") && event.target.value) return;
+    event.preventDefault();
+    unpeek();
+});
 const stepTo = (n) => (route.value.open ? swap("report", n) : go(route.value.env, "report", n));
 const allUpdates = () => (location.hash = href.reportUpdates(route.value.env));
 const swapping = ref(false);
@@ -108,6 +115,7 @@ watch(
             :width="panelWidth"
             :depth="depth"
             :over="over"
+            :close-label="`Close the ${meta(type).title.toLowerCase()}`"
             @dismiss="close"
             @close="emit('gone')"
         >

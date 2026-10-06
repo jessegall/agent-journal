@@ -54,6 +54,10 @@ const emit = defineEmits(["pick"]);
 .segmented-option:hover {
     color: var(--text);
 }
+.segmented-option:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
 
 .segmented-dot {
     display: inline-block;

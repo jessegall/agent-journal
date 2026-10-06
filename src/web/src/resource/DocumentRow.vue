@@ -12,6 +12,7 @@ const props = defineProps({
     hit: {type: Object, default: null},
     words: {type: Array, default: () => []},
     shelf: {type: String, default: ""},
+    selected: Boolean,
 });
 const emit = defineEmits(["open"]);
 const DAY = 86400;
@@ -22,19 +23,32 @@ const changed = computed(() => props.doc.updated || props.doc.created);
 const fresh = computed(() => Date.now() / 1000 - changed.value < DAY);
 const facts = computed(() =>
     [
-        `Doc ${props.doc.n}`,
-        props.doc.sections.length ? counted(props.doc.sections.length, "part") : "",
+        `Document ${props.doc.n}`,
+        props.doc.sections.length ? counted(props.doc.sections.length, "section") : "",
         files.value ? counted(files.value, "file") : "",
         links.value ? counted(links.value, "link") : "",
         props.shelf ? `in ${props.shelf}` : "",
     ].filter(Boolean)
 );
-const summary = computed(() => props.hit?.text || props.doc.abstract || props.doc.brief || "");
+const summary = computed(
+    () => props.hit?.text || props.doc.abstract || props.doc.brief || (props.doc.sections.length ? "" : "No text yet")
+);
 </script>
 
 <template>
-    <button type="button" :class="['doc-row', state.key]" @click="emit('open', doc)">
-        <PageThumb :lines="doc.sections.length" :draft="state.key === 'draft'" :clipped="files > 0" :fresh="fresh" />
+    <button
+        type="button"
+        :data-doc="doc.n"
+        :aria-current="selected ? 'true' : undefined"
+        :class="['doc-row', state.key, {selected}]"
+        @click="emit('open', doc)"
+    >
+        <PageThumb
+            :lines="doc.sections.length"
+            :draft="['answer', 'approve', 'writing'].includes(state.key)"
+            :clipped="files > 0"
+            :fresh="fresh"
+        />
         <span class="doc-row-main">
             <span class="doc-row-title">
                 <MarkedText :text="doc.title" :words="words" />
@@ -43,9 +57,9 @@ const summary = computed(() => props.hit?.text || props.doc.abstract || props.do
                 </template>
             </span>
             <template v-if="summary">
-                <span class="doc-row-summary">
+                <span :class="['doc-row-summary', {nothing: summary === 'No text yet'}]">
                     <template v-if="hit?.where">
-                        <span class="doc-row-where">{{ hit.where }}</span>
+                        <span class="doc-row-where">In “{{ hit.where }}”</span>
                     </template>
                     <MarkedText :text="summary" :words="words" />
                 </span>
@@ -88,6 +102,23 @@ const summary = computed(() => props.hit?.text || props.doc.abstract || props.do
     border-color: var(--border);
     background: var(--hover);
     outline: none;
+}
+.doc-row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+.doc-row.selected {
+    border-color: var(--accent);
+    background: var(--sel);
+}
+.doc-row.answer .doc-row-state,
+.doc-row.approve .doc-row-state {
+    border-style: solid;
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+.doc-row-summary.nothing {
+    font-style: italic;
 }
 
 .doc-row:hover :deep(.page-thumb-sheet),

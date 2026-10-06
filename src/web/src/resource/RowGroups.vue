@@ -10,22 +10,33 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 
 <template>
     <TransitionGroup :name="settled ? 'group' : ''">
-        <div v-for="g in groups" :key="g.key" class="group">
-            <div class="ghead">
-                <span class="gtitle">{{ g.title }}</span>
-                <span class="gcount">{{ g.list.length }}</span>
-            </div>
-            <TransitionGroup tag="div" class="rows" :name="settled ? 'row' : ''">
-                <div v-for="(r, i) in g.list" :key="r.n" class="row-wrap" :style="{'--i': i}">
-                    <ResourceRow
-                        :resource="r"
-                        :selected="r.n === route.n && (g.env || route.env) === route.env"
-                        @click="go(g.env || route.env, type, r.n)"
-                    />
-                    <ResourceEnd :resource="r" />
+        <template v-for="g in groups" :key="g.key">
+            <div class="group">
+                <div class="ghead">
+                    <span class="gtitle">{{ g.title }}</span>
+                    <template v-if="g.count !== null">
+                        <span class="gcount">{{ g.count === undefined ? g.list.length : g.count }}</span>
+                    </template>
                 </div>
-            </TransitionGroup>
-        </div>
+                <template v-if="g.why">
+                    <p class="group-why">{{ g.why }}</p>
+                </template>
+                <TransitionGroup tag="div" class="rows" :name="settled ? 'row' : ''">
+                    <template v-for="(r, i) in g.list" :key="r.n">
+                        <div class="row-wrap" :style="{'--i': i}">
+                            <slot name="row" :resource="r">
+                                <ResourceRow
+                                    :resource="r"
+                                    :selected="r.n === route.n && (g.env || route.env) === route.env"
+                                    @click="go(g.env || route.env, type, r.n)"
+                                />
+                                <ResourceEnd :resource="r" />
+                            </slot>
+                        </div>
+                    </template>
+                </TransitionGroup>
+            </div>
+        </template>
     </TransitionGroup>
 </template>
 
@@ -124,5 +135,10 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 }
 .gcount {
     color: var(--text-3);
+}
+.group-why {
+    margin: 0 22px 8px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 </style>
