@@ -262,7 +262,7 @@ class Driver(ABC):
         return "" if self.failed else line
 
     def _deliver(self, line: str, by: str) -> bool:
-        if self.TAKES_CHANNEL and self._post(line, by):
+        if self.TAKES_CHANNEL and by == JOURNAL and self._post(line, by):
             return True
         if self.awaits_answer():
             return False

@@ -166,6 +166,19 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
 
 
+def test_a_follow_up_is_typed_as_an_instruction_and_only_the_journal_uses_the_channel(monkeypatch):
+    from providers import DRIVERS
+    driver = DRIVERS["claude"](fresh(), "claude-9")
+    posted, typed = [], []
+    monkeypatch.setattr(driver, "_post", lambda line, by: posted.append((line, by)) or True)
+    monkeypatch.setattr(driver, "_typed", lambda line, confirmed: typed.append(line) or True)
+    monkeypatch.setattr(driver, "awaits_answer", lambda: False)
+    assert driver.TAKES_CHANNEL and driver.send("do the next step", now=True, by="claude-1")
+    assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
+    assert driver.send("todo 5 next", now=True)
+    assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
+
+
 def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     import json
     import time
