@@ -220,3 +220,47 @@ def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_
     assert refused(lambda: codex.control_choice("model", "nowhere", "beta")), "a model the catalog lacks is refused"
     cache.write_text("{}")
     assert codex.control_options("beta")["groups"] == [] and refused(lambda: codex.control_choice("model", "beta", "beta")), "an empty catalog offers nothing, and its choice is refused"
+
+
+def test_codex_usage_comes_from_the_newest_token_count_and_its_crew_from_the_rollout(tmp_path):
+    import json
+    from providers.payload import Hook
+    from providers.codex import Codex
+    codex = Codex()
+    lines = lambda *rows: "".join(json.dumps({"timestamp": "2026-10-02T10:00:00Z", **row}, separators=(",", ":")) + "\n" for row in rows)
+    counted = lambda limits, used=0, window=0: {"type": "event_msg", "payload": {"type": "token_count", "rate_limits": limits, "info": {
+        "last_token_usage": {"total_tokens": used}, "model_context_window": window}}}
+    rollout = tmp_path / "rollout-2026-10-02T10-00-00-aaaaaaaa-0000-0000-0000-000000000001.jsonl"
+    rollout.write_text(lines(counted({"primary": {"used_percent": 10, "window_minutes": 300, "resets_at": 5}}),
+                             counted({"primary": {"used_percent": 20, "window_minutes": 300, "resets_at": 6},
+                                      "secondary": {"usedPercent": 30, "windowDurationMins": 10080, "resetsAt": 7}}, used=50000, window=200000),
+                             counted(None, used=100000, window=200000),
+                             counted({"primary": {"used_percent": None}, "secondary": {"used_percent": 1, "window_minutes": 2880, "resets_at": 9}})))
+    assert [(w.key, w.label, w.used, w.minutes, w.resets) for w in codex.usage(rollout)] == [("secondary", "2d", 1.0, 2880, 9)], \
+        "usage is the newest count that carries limits, and a window with no figures is left out"
+    rollout.write_text(lines(counted({"primary": {"used_percent": 20, "window_minutes": 300, "resets_at": 6},
+                                      "secondary": {"usedPercent": 30, "windowDurationMins": 10080, "resetsAt": 7}}, used=50000, window=200000),
+                             counted(None, used=100000, window=200000)))
+    assert [(w.key, w.label, w.used) for w in codex.usage(rollout)] == [("primary", "5h", 20.0), ("secondary", "7d", 30.0)], "both spellings of a window are read; a count without limits is passed over"
+    assert codex.context(Hook(transcript=rollout)) == 50.0 and (codex.usage(tmp_path / "none.jsonl"), codex.context(Hook(transcript=tmp_path / "none.jsonl"))) == (None, None), \
+        "context is the newest count's share of its window, and a missing rollout reports nothing"
+    assert [codex.window_label(m) for m in (300, 1440, 10080, 4320, 120, 45, 0)] == ["5h", "1d", "7d", "3d", "2h", "45m", "0m"]
+
+    child = "bbbbbbbb-0000-0000-0000-000000000002"
+    day = tmp_path / "2026" / "10" / "02"
+    day.mkdir(parents=True)
+    main = day / "rollout-2026-10-02T10-00-00-aaaaaaaa-0000-0000-0000-000000000001.jsonl"
+    call = lambda name, key, **more: {"type": "response_item", "payload": {"type": "function_call", "name": name, "call_id": key, **more}}
+    out = lambda key, text: {"type": "response_item", "payload": {"type": "function_call_output", "call_id": key, "output": text}}
+    script = 'const a = await tools.spawn_agent({task_name: "scan", agent_type: "explorer", model: "gpt-6-sol"});'
+    main.write_text(lines(call("exec", "s1", arguments=script), out("s1", json.dumps({"agent_id": child, "nickname": "Pip"})),
+                          call("exec_command", "b1", arguments=json.dumps({"cmd": "sleep 99 &"})), out("b1", "Script running with cell ID 7"),
+                          call("wait", "w1", arguments=json.dumps({"cell_id": "7"})), out("w1", "Script completed"),
+                          {"type": "compacted", "payload": {}}))
+    (day / f"rollout-2026-10-02T10-05-00-{child}.jsonl").write_text(lines({"type": "event_msg", "payload": {"type": "task_started"}}, {"type": "event_msg", "payload": {"type": "task_complete"}}))
+    crew = codex.crew(main)
+    subagent, = crew["subagent_rows"]
+    assert (subagent["task"], subagent["type"], subagent["model"], subagent["running"], subagent["session"]) == ("scan", "explorer", "gpt-6-sol", False, child), \
+        "a subagent spawned inside a script is found by its agent id, and its last task event says it finished"
+    assert (crew["subagents"], crew["compacting"]) == (1, True), "the rollout ending on a compaction says the agent is compacting"
+    assert codex.subagent_state(main, "cccccccc-0000-0000-0000-000000000003") == (True, 0.0), "a subagent whose rollout is not written yet is running"
