@@ -37,7 +37,7 @@ function slipMeta(item) {
 
 <template>
     <aside class="dump-rail">
-        <DumpEyebrow>The pile</DumpEyebrow>
+        <DumpEyebrow>Files</DumpEyebrow>
         <div class="dump-pile" @mouseleave="litItem = ''">
             <template v-for="item in items" :key="item.name">
                 <FileSlip

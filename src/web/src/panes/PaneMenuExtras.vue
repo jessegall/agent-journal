@@ -26,7 +26,7 @@ const emit = defineEmits(["pick", "open", "all"]);
         </MenuItem>
     </template>
     <template v-if="levels.length">
-        <PaneMenuLink icon="list" label="Verbosity" @click="emit('open', 'levels')" />
+        <PaneMenuLink icon="list" label="Detail level" @click="emit('open', 'levels')" />
     </template>
     <template v-if="agents">
         <PaneMenuLink icon="eye" label="View" @click="emit('open', 'agentView')" />

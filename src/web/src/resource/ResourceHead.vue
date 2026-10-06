@@ -67,7 +67,7 @@ const chaptered = computed(
             <template v-if="writing && kind.view === 'document' && !readOnly">
                 <button type="button" class="writing-now" title="Go to what the agent is writing" @click="emit('follow')">
                     <span class="writing-dot" />
-                    Agent writing
+                    The agent is writing this
                     <template v-if="writing.section">
                         <span class="writing-where">{{ writing.section }}</span>
                     </template>

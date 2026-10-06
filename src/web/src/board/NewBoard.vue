@@ -145,7 +145,7 @@ useFileHandIn({active: () => props.open, take, pastedText: true});
                 <span class="new-board-warning">{{ warning }}</span>
             </template>
             <template v-else-if="fromDocument">
-                The board opens straight away and fills while you watch. You can leave; I carry on.
+                The board opens straight away and fills while you watch. You can leave. The agent keeps working.
             </template>
             <template v-else>
                 {{ hint }}

@@ -32,7 +32,7 @@ class TriggersDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="watching",
-            title="Run a trigger when its word comes up",
+            title="Run a trigger when its word appears",
         ),
     ]
 

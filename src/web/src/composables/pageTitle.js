@@ -11,7 +11,7 @@ const PAGES = {
     about: "About",
     plugins: "Plugins",
     page: "Plugin",
-    hub: "Hub",
+    hub: "All journals",
     file: "File",
     kanban: "Board",
     organization: "Organization",

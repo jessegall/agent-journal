@@ -5,7 +5,7 @@ export const VISIBILITY_GROUPS = [
             {key: "thoughts", label: "Thoughts", icon: "bulb"},
             {key: "skills", label: "Skills the agent loads", icon: "book"},
             {key: "subagents", label: "Subagents", icon: "agents"},
-            {key: "compactions", label: "Conversation summarised to free space", icon: "gauge"},
+            {key: "compactions", label: "Conversation summarized", icon: "gauge"},
             {key: "made", label: "Documents the agent made", icon: "docs"},
             {key: "acknowledgements", label: "Replies that only say a reminder was seen", icon: "check"},
         ],

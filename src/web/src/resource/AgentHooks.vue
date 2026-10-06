@@ -58,7 +58,7 @@ onMounted(fetchHooks);
 
 <template>
     <div class="agent-hooks">
-        <p class="where">Hooks are commands the agent runs automatically at set moments. Read from and saved to
+        <p class="where">Hooks run commands when the agent does something. Read from and saved to
             <code>{{ path }}</code>
         </p>
         <template v-if="error">
@@ -93,7 +93,7 @@ onMounted(fetchHooks);
         <template v-for="file in elsewhere" :key="file.path">
             <section class="elsewhere">
                 <p class="where">
-                    Also registered, read only, in
+                    Also set, read only, in
                     <code>{{ file.path }}</code>
                 </p>
                 <template v-for="(blocks, event) in file.hooks" :key="event">

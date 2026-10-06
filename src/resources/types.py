@@ -393,7 +393,7 @@ class Notification(Shape, Resource):
 class Notice(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Notice",
-        abstract="One line kept over the chat while it matters",
+        abstract="One line pinned to the chat while it matters",
         help="A notice stays until you close it or the agent closes it. It can have a colour and a link.",
     )
     type = "notice"

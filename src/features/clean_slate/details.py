@@ -3,14 +3,14 @@ from features.groups import Group
 
 
 class CleanSlateDetails(FeatureDetails):
-    explains = 'The journal can keep commands that other tools run on the agent\'s events from interrupting its turn. You can choose whether this protection is on.'
+    explains = "The journal can stop other tools from running their own commands whenever the agent does something, so they don't interrupt its turn. You choose whether this is on."
     name = "clean_slate"
     group = Group.PROJECT
     label = "Pause other tools' commands while the agent runs"
     hint = "They are turned back on when the agent exits. Skills are not touched."
     has_skill = False
 
-    title = "Turn off other hooks"
+    title = "Pause other tools' hooks"
 
 
     abstract = """

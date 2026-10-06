@@ -66,7 +66,7 @@ class AskQuestionsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="asking",
-            title="Block file changes until a choice written in a reply is asked as a question",
+            title="Require choices to be asked as questions before file changes",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(

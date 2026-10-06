@@ -28,7 +28,7 @@ class SkillLoadingDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="reload",
-            title="After the context is summarized, block file changes until the journal skill is loaded",
+            title="After the conversation is summarized, block file changes until the journal skill is loaded",
         ),
         Behaviour(
             name="chat",
@@ -40,7 +40,7 @@ class SkillLoadingDetails(FeatureDetails):
         ),
         Behaviour(
             name="keywords",
-            title="Load a skill when one of its words comes up",
+            title="Load a skill when one of its words appears",
         ),
         Behaviour(
             name="stale",
@@ -53,7 +53,7 @@ class SkillLoadingDetails(FeatureDetails):
             name="most_refusals",
             default=5,
             title="Block tool calls at most",
-            abstract="After that, tool calls go through for a while",
+            abstract="After that, tool calls are allowed for a while",
             unit="times",
         ),
         Setting(
@@ -65,7 +65,7 @@ class SkillLoadingDetails(FeatureDetails):
         Setting(
             name="recent",
             default=5,
-            title="After the context is summarized, also reload this many recently used skills",
+            title="After the conversation is summarized, also reload this many recently used skills",
             unit="skills",
         ),
     ]

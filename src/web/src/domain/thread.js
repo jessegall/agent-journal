@@ -66,7 +66,7 @@ const sessions = (agents) => agents.filter((a) => !a.data.parent);
 const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads || []).map((load) => mark("skill", a, load.at, load.skill)));
 
 const compactions = (agents) =>
-    sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Conversation summarised to free space")));
+    sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Conversation summarized")));
 
 const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
 

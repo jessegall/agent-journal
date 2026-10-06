@@ -62,7 +62,7 @@ function pick(next) {
             </div>
         </template>
         <div class="timing-line">
-            <span class="timing-word">Or once, when</span>
+            <span class="timing-word">Or run once when</span>
             <Segmented wrap :options="events" :value="when.on || ''" @pick="pick(timingUnit(when, $event))" />
         </div>
         <div class="timing-foot">

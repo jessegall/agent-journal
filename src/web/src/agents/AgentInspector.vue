@@ -307,8 +307,8 @@ const openSkills = () => go(route.value.env, "skills");
                     </template>
                     <template #subagents>
                         <p class="pane-note">
-                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent and can't
-                            be messaged. Helpers are different: separate agents with their own environment, listed under Helpers.
+                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent and you can't
+                            send it messages. Helpers are different: separate agents with their own environment, listed under Helpers.
                         </p>
                         <template v-if="!subagents.length">
                             <EmptyState title="No subagents yet">The jobs this agent hands off show here.</EmptyState>

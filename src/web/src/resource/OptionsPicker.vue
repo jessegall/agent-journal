@@ -18,7 +18,7 @@ const own = ref("");
 const changing = ref(false);
 const elaborated = ref(false);
 const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
-const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and I will choose.";
+const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and you choose.";
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
 const options = computed(() =>
     (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {

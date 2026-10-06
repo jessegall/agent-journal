@@ -8,11 +8,11 @@ class RulesDetails(FeatureDetails):
     explains = 'The journal repeats relevant rules to the agent. You can edit or close a rule when it changes.'
     name = "rules"
     group = Group.MEMORY
-    label = "Repeat rules"
+    label = "Remind the agent of rules"
     skill_of = "memory"
     when = "the user makes a ruling that binds every environment"
 
-    title = "Repeat rules"
+    title = "Remind the agent of rules"
 
     abstract = """
         Rules are repeated to the agent at every quarter of its context. Rules marked for it are

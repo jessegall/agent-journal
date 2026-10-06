@@ -77,8 +77,7 @@ function hidePreview(r) {
             <section class="cards" aria-label="In this collection">
                 <template v-if="!members.length">
                     <EmptyState class="empty">
-                        Nothing in this collection yet. Add an item, or with journal collection add
-                        {{ resource.n }} &lt;ref&gt;.
+                        Nothing in this collection yet. Add an item to this collection.
                     </EmptyState>
                 </template>
                 <template v-for="r in cards" :key="r.ref">

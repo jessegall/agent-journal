@@ -4,20 +4,20 @@ const COMMON = {created: "is created", completed: "is closed"};
 const OWN = {
     message: {
         created: "is sent",
-        completed: "is handled",
+        completed: "is closed",
         requested: "asks for new work on a board",
-        revised: "asks to change a board's drafts",
-        commissioned: "hands over a document to turn into tickets",
+        revised: "asks for changes to a board's draft tickets",
+        commissioned: "sends a document to turn into tickets",
     },
     ticket: {
         plan_waits: "has a plan waiting for approval",
         checkpoint: "reaches a checkpoint",
         finished: "finishes its plan",
-        stuck: "has a stuck agent",
-        escalated: "is sent back to you",
+        stuck: "has an agent that is stuck",
+        escalated: "needs your attention",
     },
     board: {
-        commissioned: "is commissioned",
+        commissioned: "is created from a document",
         started: "starts",
         paused: "is paused",
         resumed: "is resumed",

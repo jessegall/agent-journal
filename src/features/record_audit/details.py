@@ -7,7 +7,7 @@ class RecordAuditDetails(FeatureDetails):
     explains = 'The journal checks for items that point to missing files or commands. The agent sees the findings and can close outdated items.'
     name = "record_audit"
     group = Group.RECORDS
-    label = "Find items that point at missing files or commands"
+    label = "Find items that refer to missing files or commands"
     has_skill = False
 
     title = "Find outdated items"

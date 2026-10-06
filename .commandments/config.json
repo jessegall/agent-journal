@@ -19,7 +19,9 @@
     },
     "detectors": [
         "PlainViewerTextDetector",
-        "PlainServerTextDetector"
+        "PlainServerTextDetector",
+        "PlainViewerScriptTextDetector",
+        "PlainViewerPageTextDetector"
     ],
     "parallel": 2,
     "configure": {

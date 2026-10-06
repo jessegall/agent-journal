@@ -34,13 +34,13 @@ const activityCounts = computed(() => [
         key: "subagents",
         icon: "agents",
         n: live(props.data && props.data.subagent_rows),
-        title: "Subagents: helpers the agent dispatched",
+        title: "Subagents: helpers the agent started",
     },
     {
         key: "monitors",
         icon: "crosshair",
         n: live(props.data && props.data.monitor_rows),
-        title: "Monitors: watchers the agent started, each telling it when something happens",
+        title: "Watchers the agent started in the background",
     },
 ]);
 const loops = computed(() => Object.keys((props.data && props.data.loops) || {}).length);
@@ -178,7 +178,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                 </AgentFact>
             </template>
             <template v-else-if="data.branch">
-                <AgentFact class="agent-fact" tag="span" icon="branch" title="the branch it works on">
+                <AgentFact class="agent-fact" tag="span" icon="branch" title="Current branch">
                     {{ data.branch }}
                 </AgentFact>
             </template>

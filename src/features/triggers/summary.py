@@ -23,11 +23,11 @@ def words_text(words: list) -> str:
 def watching(words: str, where: str) -> str:
     return {
         "user": f"When you write {words}",
-        "text": f"When {words} comes up in what you or the agent write",
+        "text": f"When {words} appears in what you or the agent write",
         "commands": f"When the agent runs a command with {words}",
-        "both": f"When {words} comes up in what is written or run",
-        "everything": f"When {words} comes up anywhere in the agent's work or your messages",
-    }.get(where, f"When {words} comes up")
+        "both": f"When {words} appears in what is written or run",
+        "everything": f"When {words} appears anywhere in the agent's work or your messages",
+    }.get(where, f"When {words} appears")
 
 
 def doing(row: Trigger, titles: list[str]) -> str:

@@ -15,7 +15,7 @@ const data = computed(() => props.agent.data);
 const filled = computed(() => Math.round(Number(data.value.context || 0)));
 const compacted = computed(() => {
     const marks = data.value.compactions || [];
-    return marks.length ? `Last compacted ${age(marks[marks.length - 1].at)}` : "Not compacted in this session";
+    return marks.length ? `Conversation last summarized ${age(marks[marks.length - 1].at)}` : "Not summarized yet";
 });
 const chosen = computed(() => controls.value.groups.filter((group) => group.key === props.control));
 const current = computed(() => (props.control === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));

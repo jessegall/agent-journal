@@ -74,8 +74,8 @@ class BoardsDetails(FeatureDetails):
         Setting(
             name="orchestrating",
             default=False,
-            title="This environment only hands out board work",
-            abstract="The agent hands every ticket to a helper and writes no code itself",
+            title="This environment only coordinates board work",
+            abstract="The agent gives every ticket to a helper and writes no code itself",
         ),
     ]
 

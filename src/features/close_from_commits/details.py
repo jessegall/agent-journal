@@ -15,9 +15,9 @@ class CloseFromCommitsDetails(FeatureDetails):
     aliases = ("commits",)
 
 
-    abstract = "A commit whose message carries Journal: todos done and a to-do number closes that row"
+    abstract = "A commit whose message carries Journal: todos done and a to-do number closes that to-do"
 
-    help = "The trailer starts at column 0; prose and indented examples close nothing. Every commit shows in the chat as a mark with its hash, branch and subject."
+    help = "Put the line on its own line in the commit message; indented examples and text inside a sentence are ignored. Every commit shows in the chat as a mark with its hash, branch and subject."
 
     lines = [
         Line(

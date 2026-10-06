@@ -8,11 +8,11 @@ class RemindersDetails(FeatureDetails):
     explains = 'The journal repeats your standing reminders to the agent. You can change or close them in the viewer.'
     name = "reminders"
     group = Group.MEMORY
-    label = "Repeat reminders"
+    label = "Repeat reminders to the agent"
     skill_of = "memory"
     when = "you keep forgetting something, or leave an instruction for another agent"
 
-    title = "Repeat reminders"
+    title = "Repeat reminders to the agent"
 
     abstract = "Your standing reminders are repeated to the agent when it stops after working."
 

@@ -11,7 +11,7 @@ class CommandTagsDetails(FeatureDetails):
     group = Group.AGENT
     label = "Run commands from tags"
     position = 5
-    hint = "When the agent writes a tag such as [!reply:12], the journal runs the command it stands for: here, reply to message 12"
+    hint = "When the agent writes a tag such as [!reply:12], the journal runs the matching command: here, reply to message 12"
     skill_of = "messages"
     when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
 
@@ -22,7 +22,7 @@ class CommandTagsDetails(FeatureDetails):
     speaks_while_waiting = True
 
     abstract = """
-        When the agent writes a tag such as [!reply:12], the journal runs the command it stands for:
+        When the agent writes a tag such as [!reply:12], the journal runs the matching command:
         here, reply to message 12.
     """
 
@@ -34,7 +34,7 @@ class CommandTagsDetails(FeatureDetails):
         work await command followed by a note. [!await on=("<id>", "helper:<n>")] <what> names
         the runs, subagents or helpers it waits on, so it stands until they are back.
 
-        tags.runs maps a tag to the command it stands for, so [!reply:12] runs
+        tags.runs maps a tag to the matching command, so [!reply:12] runs
         journal message reply 12 with the turn as its text ([!reply:12,13] answers both messages with one reply), and [!todo="the title"] files a
         to-do with that title and the turn as its brief. [!fact="the claim"] and [!rule="the ruling"]
         file a fact or a rule the same way.
@@ -56,7 +56,7 @@ class CommandTagsDetails(FeatureDetails):
             name="runs",
             default=dict(RUNS),
             title="What each tag runs",
-            abstract="A tag's name and the journal command it runs; entries set here are laid over the shipped ones.",
+            abstract="A tag's name and the journal command it runs; your entries add to the built-in ones.",
         ),
     ]
 

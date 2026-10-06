@@ -519,7 +519,7 @@ function startAnew() {
                         <template v-if="lost">
                             <div class="lost">
                                 <ChatLine
-                                    text="The agent still does not understand the request. Start over: say it again in other words, or give me an example."
+                                    text="The agent still does not understand the request. Start over: say it again in other words, or give an example."
                                 />
                                 <Btn kind="primary" small @click="startOver">
                                     <Icon name="restore" :size="12" />

@@ -40,7 +40,7 @@ const now = useNow(30000);
             <span class="jt-env-agent">{{ agentLine(env) }}</span>
             <template v-if="env.owner">
                 <Chip :title="`The journal runs this agent for ${env.owner.replace(':', ' ')}, so auto mode is not needed`">
-                    Steered by {{ env.owner.replace(":", " ") }}
+                    Controlled by {{ env.owner.replace(":", " ") }}
                 </Chip>
             </template>
             <template v-else>

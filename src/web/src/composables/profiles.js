@@ -32,6 +32,6 @@ export async function loadProfiles() {
 export const useProfile = (row) => saveSettings({form_of_address: {...form(), profile: row.n}});
 
 export const deleteReason = (row) => {
-    if (row.data.system) return "Ships with the journal, so it can't be deleted.";
+    if (row.data.system) return "Built in, so it can't be deleted.";
     return row.n === profileInUse.value ? "It is in use. Use another profile first." : "";
 };

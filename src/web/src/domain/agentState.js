@@ -50,55 +50,21 @@ export function wordOf(state) {
 export function lineOf(agent, works, auto = false) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
-    if (state === "compacting") return "compacting its context — it carries on after";
+    if (state === "compacting") return "summarizing the conversation, then it carries on";
     if (state === "waiting") return waitsFor(works) || `on its run: ${backgroundRun(agent)}`;
     if (state === "paused") return "held until you resume it";
     const current = currentWork(works);
     if (current) return named(current);
-    if (state === "idle") return phrase(auto ? "auto" : "idle", agent.data.at);
-    return phrase("bearings", agent.data.at);
+    if (state === "idle") return phrase(auto ? "auto" : "idle");
+    return phrase("bearings");
 }
 
 const PHRASES = {
-    auto: [
-        "for instructions",
-        "for the next row",
-        "for the engine's word",
-        "for the list to speak",
-        "between one row and the next",
-        "for the next to-do",
-        "for its next orders",
-        "for the queue",
-        "for the next thing",
-        "for the go-ahead",
-    ],
-    idle: [
-        "waiting for you",
-        "taking a breath",
-        "all ears",
-        "resting between rounds",
-        "nothing on its desk",
-        "standing by",
-        "ready when you are",
-        "kettle on, waiting",
-        "hands folded, listening",
-        "at your service",
-    ],
-    bearings: [
-        "finding its bearings",
-        "looking around",
-        "thinking",
-        "getting oriented",
-        "working out what is next",
-        "taking stock",
-        "considering",
-        "mulling it over",
-        "reading the room",
-        "gathering its thoughts",
-    ],
+    auto: "waiting for the next to-do",
+    idle: "waiting for you",
+    bearings: "starting up",
 };
 
-export function phrase(kind, seed) {
-    const words = PHRASES[kind] || PHRASES.bearings;
-    return words[Math.floor(Number(seed) || 0) % words.length];
+export function phrase(kind) {
+    return PHRASES[kind] || PHRASES.bearings;
 }

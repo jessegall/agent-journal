@@ -13,11 +13,11 @@ class PinnedLinksDetails(FeatureDetails):
 
     title = "Pinned links"
 
-    abstract = "A link the agent gives the user in the chat is pinned over the chat, so it is not lost as the chat scrolls"
+    abstract = "A link the agent gives the user in the chat is pinned to the chat, so it is not lost as the chat scrolls"
 
     help = """
         Whenever you point the user at something outside the journal - a design, a hosted page,
-        a document, any link they will come back to - pin it over the chat with
+        a document, any link they will come back to - pin it to the chat with
         journal notice create "<what it is>" --set link="<url>" --set label="<Open the design>" --set tone=note,
         as pull requests are pinned by themselves. A link in your chat text that no pin carries
         earns one reminder per link with the command to pin it. The user closes a pin when they

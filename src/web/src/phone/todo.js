@@ -21,7 +21,7 @@ export function todoFacts(row) {
     if (typeof data.blocked === "string" && data.blocked && !row.completed) facts.push({label: "Why", value: data.blocked, text: true});
     if (data.priority !== undefined && data.priority !== null && data.priority !== "")
         facts.push({label: "Priority", value: named(row.priority_name) || String(data.priority)});
-    if (data.assigned) facts.push({label: "Assigned to", value: data.assigned});
+    if (data.assigned) facts.push({label: "Assignee", value: data.assigned});
     facts.push({label: "Made", value: ago(row.created)});
     if (row.updated && row.updated !== row.created) facts.push({label: "Updated", value: ago(row.updated)});
     return {facts, after: waitsOn(row)};

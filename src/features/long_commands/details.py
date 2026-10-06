@@ -35,7 +35,7 @@ class LongCommandsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=WATCHED,
-            title="Tell the agent about commands it left running",
+            title="Remind the agent about commands still running",
             abstract="When one ends, or after it has run ten minutes",
         ),
     ]

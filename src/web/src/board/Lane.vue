@@ -51,7 +51,7 @@ function drop() {
             <span class="title">{{ lane.title }}</span>
             <span class="meaning">{{ meaningLabel }}</span>
             <template v-if="proposing.length > 1">
-                <Btn small :busy="accepting" title="Take every wait the agent proposed in this column" @click="acceptAll">
+                <Btn small :busy="accepting" title="Accept every dependency the agent suggested in this column" @click="acceptAll">
                     Accept all suggestions in this column
                 </Btn>
             </template>

@@ -97,7 +97,7 @@ watch(tree, async (drawn) => {
         </template>
         <template v-else-if="!tree.nodes.length">
             <EmptyState title="No agents yet">
-                Agents appear here once one runs, with the agents they start and the subagents they dispatch.
+                Agents appear here once one runs, with the agents they start and the subagents they start.
             </EmptyState>
         </template>
         <template v-else>
@@ -111,8 +111,8 @@ watch(tree, async (drawn) => {
                 </span>
                 <span class="family-key">
                     <span class="key key-started">started</span>
-                    <span class="key key-dispatched">dispatched</span>
-                    <span class="key key-talk">messaged</span>
+                    <span class="key key-dispatched">started a subagent</span>
+                    <span class="key key-talk">sent a message</span>
                 </span>
                 <template v-if="folds.length">
                     <Btn small @click="toggleAll">{{ allOpen ? "Fold them" : "Show all" }}</Btn>

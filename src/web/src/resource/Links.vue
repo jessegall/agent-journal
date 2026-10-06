@@ -31,8 +31,8 @@ const rows = computed(() => {
     return listed.filter((row, i) => listed.findIndex((other) => other.ref === row.ref) === i);
 });
 const DIRECTIONS = [
-    {key: "to", title: "Links to"},
-    {key: "from", title: "Linked by"},
+    {key: "to", title: "Outgoing links"},
+    {key: "from", title: "Incoming links"},
 ];
 const groups = computed(() =>
     DIRECTIONS.map((d) => ({...d, rows: rows.value.filter((r) => r.direction === d.key)})).filter((d) => d.rows.length)

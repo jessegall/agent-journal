@@ -12,6 +12,16 @@
         <CloseButton title="Dismiss" />
         <!-- @sin PlainViewerTextDetector -->
         <span title="This sequence ships with the journal" />
+        <!-- @sin PlainViewerTextDetector -->
+        <RadioGroup label="Watch for the words in" />
+        <!-- @sin PlainViewerTextDetector -->
+        <Btn title="Conversation summarised to free space" />
+        <!-- @sin PlainViewerTextDetector -->
+        <Btn title="Take this journal off the hub" />
+        <!-- @righteous PlainViewerTextDetector -->
+        <RadioGroup label="Trigger when" />
+        <!-- @righteous PlainViewerTextDetector -->
+        <Btn title="Copy the link with a short description" />
         <!-- @righteous PlainViewerTextDetector -->
         <FormField label="What the agent is doing" />
         <!-- @righteous PlainViewerTextDetector -->

@@ -65,7 +65,7 @@ class Group(Enum):
     UPDATES = Grouping("Updates", "How new versions of the journal are installed", Section.SYSTEM, Tab.SYSTEM)
     PROJECT = Grouping("This project", "For the whole project, in every environment", Section.SYSTEM, Tab.SYSTEM)
     BROWSER = Grouping("This browser", "Saved in this browser only", Section.SYSTEM, Tab.SYSTEM)
-    STOP = Grouping("Stop the journal", "Closes the viewer, the engine and every plugin. Nothing is deleted.", Section.SYSTEM, Tab.SYSTEM)
+    STOP = Grouping("Stop the journal", "Closes the viewer and every plugin. Nothing is deleted.", Section.SYSTEM, Tab.SYSTEM)
     SHARING = Grouping(
         "Share links",
         "Share one document, report, collection or plan with someone outside the journal. The link opens that item and nothing else.",

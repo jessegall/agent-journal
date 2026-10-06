@@ -27,7 +27,7 @@ export const PRESETS = [
     {
         key: "jesse",
         name: "Developer layout",
-        text: "The developer's favourite setup",
+        text: "A layout for developers",
         shape: split(
             "row",
             0.62,
@@ -77,7 +77,7 @@ export const PRESETS = [
     {
         key: "orchestrator",
         name: "Orchestrator",
-        text: "Chat and working agents",
+        text: "Agents",
         shape: split("row", 0.34, shaped(["chat"]), shaped(["agents"])),
     },
 ];
@@ -101,7 +101,7 @@ const WORK_TABS = ["terminal", "feed", "todos", "tasks", "plan", "history", "sub
 export const INSPECTOR_SHAPE = split("row", 0.5, shaped(["chat", "transcript"]), shaped(WORK_TABS));
 
 export const INSPECTOR_PRESETS = [
-    {key: "inspector-default", name: "Chat beside its work", text: "The chat on the left, the rest on the right", shape: INSPECTOR_SHAPE},
+    {key: "inspector-default", name: "Chat and side panels", text: "The chat on the left, the rest on the right", shape: INSPECTOR_SHAPE},
     {key: "inspector-chat", name: "Only the chat", text: "One wide column", shape: shaped(["chat", "transcript", ...WORK_TABS])},
     {
         key: "inspector-terminal",

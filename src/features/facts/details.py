@@ -8,11 +8,11 @@ class FactsDetails(FeatureDetails):
     explains = 'The journal repeats relevant facts about this environment to the agent. You can edit or close a fact when it changes.'
     name = "facts"
     group = Group.MEMORY
-    label = "Repeat facts"
+    label = "Remind the agent of facts"
     skill_of = "memory"
     when = "you learn something a later session would get wrong without, or at a context mark"
 
-    title = "Repeat facts"
+    title = "Remind the agent of facts"
 
     abstract = "Facts about this environment are repeated to the agent as its context fills."
 

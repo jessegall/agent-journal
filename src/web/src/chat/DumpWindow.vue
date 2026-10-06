@@ -206,7 +206,7 @@ const thinking = computed(() => {
     if (phase.value === "queued") return `Waiting in line behind dump ${inHand.value.n}`;
     if (phase.value === "quiet")
         return `No update for ${Math.round((now.value - dump.value.updated) / 60)} min; the agent may be busy elsewhere`;
-    if (phase.value === "filing" && !log.value.length) return "Reading the pile";
+    if (phase.value === "filing" && !log.value.length) return "Reading the files";
     if (summing.value) return "Summing up";
     return "";
 });
@@ -217,7 +217,7 @@ const note = computed(() => {
         case "removed":
             return `Removed. The collection and the ${counted(dump.value.data.removed_refs?.length || 0, "thing", "things")} it held are gone. What you dropped is still on dump ${dump.value.n}.`;
         case "stopped":
-            return `Stopped. ${counted(n, "thing was", "things were")} filed and stay in the collection; the rest of the pile was not read.`;
+            return `Stopped. ${counted(n, "thing was", "things were")} filed and stay in the collection; the rest of the files were not read.`;
         case "done":
             return `${counted(n, "thing", "things")} filed. Rename or merge anything; it changes in the journal right away.`;
         default:
@@ -458,8 +458,8 @@ const earlierRows = computed(() => earlier.value.map((d) => ({n: d.n, title: d.t
             <div class="dump-drop">
                 <DumpLane
                     drop
-                    title="Let go to add them to the pile"
-                    :meta="dump ? 'they join the pile, and the agent reads them next' : 'sorted by subject, filed into a new collection'"
+                    title="Drop to add the files"
+                    :meta="dump ? 'they are added to the files, and the agent reads them next' : 'sorted by subject, filed into a new collection'"
                 />
             </div>
         </template>

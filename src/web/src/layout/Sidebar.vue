@@ -45,7 +45,7 @@ function point(e) {
             <template v-if="!demo">
                 <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="href.page(route.env, 'hub')">
                     <Icon name="panel" />
-                    <span class="label">Hub</span>
+                    <span class="label">All journals</span>
                 </a>
             </template>
             <template v-for="g in groups" :key="g.key">
