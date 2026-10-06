@@ -86,6 +86,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     by_agent.start(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
     assert refused(lambda: Works(record, actor=AGENT).create("a quick fix")).startswith("a plan is active"), "free work waits for the plan"
+    assert "is not in the active plan's current phase" in refused(lambda: Works(record, actor=AGENT).create("too early", todo=3)), "a row of a later phase is not started before its phase"
     second = by_agent.create("Another")
     assert refused(lambda: by_agent.start(second.n)) == f"plan {second.n} is building, not one that can become active", "a plan still building cannot start"
 

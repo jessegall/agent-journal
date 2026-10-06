@@ -211,3 +211,41 @@ def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_
     assert found == [("thinking", "Weighing the two options\n\nthen the second"), ("text", "")], \
         "what an agent weighed in one turn is kept together, and an answer in words is only marked as spoken"
     assert Claude().thoughts(own, offset) == ([], offset), "reading on from where it stopped finds nothing twice"
+
+
+def test_a_codex_script_cell_the_agent_waits_on_is_followed_to_its_end(tmp_path):
+    import json
+    from providers import PROVIDERS
+    text = lambda body: [{"type": "input_text", "text": body}]
+    rows = [
+        ("custom_tool_call", {"call_id": "c1", "name": "exec", "input": 'const r=await tools.exec_command({cmd:"sleep 9"});text(r);'}),
+        ("custom_tool_call_output", {"call_id": "c1", "output": text("Script running with cell ID 7")}),
+        ("custom_tool_call", {"call_id": "c2", "name": "exec", "input": "await tools.other();"}),
+        ("custom_tool_call_output", {"call_id": "c2", "output": text("Script running with cell ID 8")}),
+        ("function_call", {"call_id": "w1", "name": "wait", "arguments": '{"cell_id":"7"}'}),
+        ("function_call_output", {"call_id": "w1", "output": text("Script running")}),
+        ("function_call", {"call_id": "w2", "name": "wait", "arguments": '{"cell_id":"8"}'}),
+        ("function_call_output", {"call_id": "w2", "output": text("Script completed")}),
+        ("function_call", {"call_id": "w3", "name": "wait", "arguments": '{"cell_id":"7"}'}),
+        ("function_call_output", {"call_id": "w3", "output": text("Script failed: boom")}),
+        ("function_call", {"call_id": "w4", "name": "wait", "arguments": '{"cell_id":"99"}'}),
+        ("function_call_output", {"call_id": "w4", "output": text("Script completed")}),
+        ("function_call", {"call_id": "w5", "name": "wait", "arguments": "{}"}),
+    ]
+    lines = [{"timestamp": "2026-10-01T10:00:00Z", "type": "response_item", "payload": {"type": kind, **body}} for kind, body in rows]
+    lines.insert(0, {"timestamp": "2026-10-01T09:59:00Z", "type": "event_msg", "payload": {
+        "type": "item_completed", "item": {"type": "CommandExecution", "process_id": "5", "status": "failed"}}})
+    lines += [{"timestamp": "2026-10-01T10:01:00Z", "type": "response_item", "payload": {"type": kind, **body}} for kind, body in (
+        ("custom_tool_call", {"call_id": "c9", "name": "exec", "input": 'tools.exec_command({cmd:"echo hi"})'}),
+        ("custom_tool_call_output", {"call_id": "c9", "output": text('{"chunk_id":"z","session_id":5,"output":"hi"}')}))]
+    lines += [{"timestamp": "2026-10-01T10:02:00Z", "type": "event_msg", "payload": {"type": "item_completed", "item": {"type": "CommandExecution", "process_id": str(1000 + i), "status": "completed"}}}
+              for i in range(205)]
+    transcript = tmp_path / "rollout.jsonl"
+    transcript.write_text("".join(json.dumps(line) + "\n" for line in lines))
+    tasks = PROVIDERS["codex"]().background_tasks(transcript)
+    assert (len(tasks.exits), "1000" in tasks.exits, "1204" in tasks.exits) == (200, False, True), "the ends of commands never seen start are kept for a while, the oldest forgotten first"
+    assert (tasks.commands["cell:7"], tasks.commands["cell:8"]) == ("sleep 9", "a script"), "a script cell is named by the command it ran, or as a script when it cannot be read"
+    assert ("cell:7" in tasks.printed, "cell:7" in tasks.failed, "cell:8" in tasks.ended, "cell:8" in tasks.failed) == (True, True, True, False), \
+        "waiting on a cell shows it printing, a failed answer ends it failed, a completed one ends it clean"
+    assert "cell:99" not in tasks.ended, "a wait on a cell nobody started ends nothing"
+    assert ("5" in tasks.ended and "5" in tasks.failed), "an end the transcript showed before the command's start still ends it, failed"

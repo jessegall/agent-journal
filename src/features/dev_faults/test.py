@@ -111,7 +111,7 @@ def test_the_budget_is_tunable_per_environment():
     assert DevFaults().reports.milliseconds(record, "command") == 50
 
 
-def test_what_the_viewer_throws_is_filed_under_the_same_switch():
+def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     features.load()
     record = fresh()
     turned(record, False)
@@ -120,6 +120,17 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch():
     turned(record, True)
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
+    assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "took long", "request", "", "slow") is True, "a report of a slow request that was already filed is taken as filed"
+    from features.dev_faults.developing import developing
+    from features.dev_faults.diagnostics import logged
+    project = record.root.parent / "dev-project"
+    project.mkdir()
+    (project / ".env").write_text("OTHER=1\nDEVELOPMENT_MODE=true\n")
+    monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
+    assert developing(project) is True, "development mode is read from the project's own .env"
+    blocked = record.root.parent / "not-a-folder"
+    blocked.write_text("")
+    assert logged(blocked, "no place to write") is None, "a log that cannot be written is left unwritten, not crashed on"
     from controllers import faults
     from controllers.types import Notices
     record = fresh()

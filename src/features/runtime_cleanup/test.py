@@ -111,6 +111,15 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     capture.write_bytes(b"y" * 200_000)
     tick(record)
     assert capture.stat().st_size == 64 * 1024, "the first tick sweeps"
+    capture.write_bytes(b"y" * 200_000)
+    tick(record)
+    assert capture.stat().st_size == 200_000, "a second tick within the hour finds it tidied and leaves it"
+    (runtime.folder(record.root) / "tidied").unlink()
+    from features.runtime_cleanup.handlers import claim
+    held = claim(runtime.folder(record.root) / "tidying.lock")
+    tick(record)
+    held.close()
+    assert capture.stat().st_size == 200_000, "a sweep another process is already making is not made twice"
 
 
 def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not_reached():

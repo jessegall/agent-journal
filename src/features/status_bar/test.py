@@ -68,6 +68,9 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
         "a run of git commands is one message, rooted under git"
     assert [text([{"command": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
         ["viewing", "watching"], "a picture and a film have their own words"
+    from features.status_bar.spoken import spoken
+    assert (spoken(["todo"], [{"name": "todo", "names": {}}]), spoken(["nothing-known"], [])) == ("listing todos", "checking nothing-known"), \
+        "a noun with no word after it is a listing of its rows, and an unknown one is a check"
     created = [shell("x", effect="writes", files=["a.py"], made=["a.py"])]
     assert (text(created)[0][0], queue(created, NOW)[0]["hold"]) == ("creating", HOLD), \
         "creating has its own word and holds its line like editing"
@@ -209,6 +212,35 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     claude.save(project, {"statusLine": {"type": "command", "command": "my-own-status"}})
     claude.wire(project, HookCommand(tmp_path / "hook.sh", "claude", project / ".journal"))
     assert claude.settings(project)["statusLine"]["command"] == "my-own-status", "a status line the user already has is kept"
+    from providers.claude import STATUS_HOME
+    from providers.payload import Hook
+    odd = tmp_path.joinpath(*STATUS_HOME)
+    (odd / "s-10.json").write_text(json.dumps({"rate_limits": {"five_hour": {"used_percentage": 5, "resets_at": "2026-10-01T00:00:00Z"}, "seven_day": {"used_percentage": None}}}))
+    (odd / "s-11.json").write_text(json.dumps({"rate_limits": {"five_hour": "none", "seven_day": {"used_percentage": 1, "resets_at": "31536000"}}}))
+    assert [(w.key, w.resets) for w in claude.usage(odd / "s-10.jsonl")] == [("five_hour", 1790812800)], "a reset time given as a date is read, and a window with no use reported is passed over"
+    assert [(w.key, w.resets) for w in claude.usage(odd / "s-11.jsonl")] == [("seven_day", 31536000)], "a reset time given as a number of seconds in text is read, and a window that is no object is passed over"
+    assert (claude.window(Hook(transcript=tmp_path / "s-9.jsonl"), 10), claude.window(Hook(transcript=tmp_path / "none.jsonl"), 10)) == (1000000, 200000), \
+        "the window the agent reports is the window; otherwise the usual one"
+    shared_file = project / ".claude" / "settings.json"
+    shared_file.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": f"sh {tmp_path}/hook.sh claude {project}/.journal"}]}]},
+                                       "statusLine": {"type": "command", "command": "sh /somewhere/claude-status.sh"}}))
+    claude.shared(project)
+    assert json.loads(shared_file.read_text()) == {}, "the journal's hooks and status line are taken out of the project's shared settings, so they live in the local ones"
+    (tmp_path / ".claude" / "projects" / "p").mkdir(parents=True)
+    (tmp_path / ".claude" / "projects" / "p" / "conversation-1.jsonl").write_text("")
+    assert (claude.conversation_file("conversation-1").name, claude.conversation_file("nowhere")) == ("conversation-1.jsonl", None), "a conversation is found by its name among the projects' transcripts"
+    from providers.claude_rows import Block
+    from providers.payload import ToolCall
+    assert claude.stopped({"u1": ("returned", 1.0), "u2": ("failed", 1.0)}, [ToolCall(name="TaskStop", task="t1", at=5.0), ToolCall(name="TaskStop", task="t2", at=6.0)],
+                          {"u1": "t1", "u2": "t2"}) == {"u1": ("stopped", 5.0), "u2": ("failed", 1.0)}, "a task the agent stopped says so, unless it had already ended some other way"
+    assert (claude.refused_by_hook(Block(is_error=True, content="PreToolUse hook error: no")), claude.refused_by_hook(Block(is_error=True, content="boom"))) == (True, False), \
+        "a tool call a hook turned back is told from one that failed"
+    (tmp_path / "hook.sh").write_text("")
+    (project / ".journal").mkdir()
+    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": "/no/such/python"}}}))
+    assert "which is gone" in claude.wiring_trouble(project), "a channel whose Python is gone is told so"
+    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": "/bin/echo"}}}))
+    assert "not Python 3.10 or newer" in claude.wiring_trouble(project), "a channel whose Python is too old is told so"
 
 
 def codex_models(*models) -> list:
@@ -237,6 +269,12 @@ def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_
     assert codex.commands_for("model", "bare", "beta")[:2] == ["/model", down], "a model that lists no effort is chosen without an effort step"
     assert codex.matched(codex.catalog(), "alpha-2026").slug == "alpha", "a dated name finds its model"
     assert refused(lambda: codex.control_choice("model", "nowhere", "beta")), "a model the catalog lacks is refused"
+    from providers.codex import arguments_of, initial_effort
+    assert (codex().dispatch_model("alpha"), codex().dispatch_model("nowhere")) == ("alpha", "beta"), "a model the catalog lacks is dispatched as the configured one"
+    assert [initial_effort("effort", "ultra", ["low"], "high"), initial_effort("effort", "", ["low"], "high"), initial_effort("model", "", ["low"], ""), initial_effort("model", "", [], "")] == \
+        ["", "high", "low", ""], "an effort the list lacks is not kept, and otherwise the default or the first standard one is the start"
+    assert [arguments_of({"a": 1}), arguments_of("not json"), arguments_of("[1]"), arguments_of(None)] == [{"a": 1}, {}, {}, {}], "tool arguments that are no object read as none"
+    assert codex.configuration(tmp_path / "missing.toml").model == "", "a configuration file that is not there names no model"
     cache.write_text("{}")
     assert codex.control_options("beta")["groups"] == [] and refused(lambda: codex.control_choice("model", "beta", "beta")), "an empty catalog offers nothing, and its choice is refused"
 

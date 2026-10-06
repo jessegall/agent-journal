@@ -47,6 +47,14 @@ def test_every_to_do_sits_in_one_lane_by_its_state_and_the_first_rule_that_match
     assert (cards[plain]["targets"], cards[blocked]["targets"], cards[waiting]["targets"], cards[started]["targets"], cards[done]["targets"]) == \
         (["held", "doing", "done"], ["todo", "done"], [], [], ["todo"]), "each card carries the lanes it may move to"
     assert "waits on todo" in cards[waiting]["reason"] and cards[blocked]["reason"] == "blocked: the api is down", "a held card says why"
+    helped, finished = todos.create("row with a helper").n, todos.create("row a helper finished").n
+    todos.assign(helped, "helper:3")
+    todos.assign(finished, "helper:4")
+    todos.update(finished, pending={"how": "built", "worktree": "w"})
+    from features.kanban.lanes import reason_of
+    sources = sources_of(features.FEATURES["kanban"].journal.at(record))
+    reasons = {n: reason_of(sources, todos.load(n)) for n in (helped, finished)}
+    assert (reasons[helped], reasons[finished]) == ("helper 3 has it", "done by helper 4, waits for its merge"), "a card a helper holds says which helper, and one it finished says it waits for its merge"
 
 
 def test_a_row_outside_an_active_plan_stays_in_to_do_and_the_hold_is_one_line():
