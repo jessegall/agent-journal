@@ -43,7 +43,9 @@ const connected = computed(() => made.value && reachable.value);
 const stalled = ref(false);
 const cause = ref(null);
 const paired = ref(false);
-const showCause = computed(() => cause.value && !connected.value && (stalled.value || cause.value.cause === "host"));
+const showCause = computed(
+    () => ready.value && !active.value && cause.value && !connected.value && (stalled.value || cause.value.cause === "host")
+);
 
 const askCause = async () => (cause.value = await api.tunnelCause().catch(() => null));
 watch(stalled, (now) => now && askCause());
@@ -62,7 +64,7 @@ usePoll(
     (got) => got && (reachable.value = Boolean(got.reachable))
 );
 usePoll("phone-tunnel-problems", () => (made.value && !reachable.value ? checkTunnel() : null), ASK_EVERY * 2);
-usePoll("phone-paired", () => (connected.value ? refresh(["phone"]) : null), ASK_EVERY);
+usePoll("phone-paired", () => (made.value ? refresh(["phone"]) : null), ASK_EVERY);
 
 async function fresh() {
     busy.value = true;

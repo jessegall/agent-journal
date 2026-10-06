@@ -5,11 +5,16 @@ import TunlerInstall from "./TunlerInstall.vue";
 import {checkTunnel, recheckTunnel} from "../composables/shares.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
+import {api} from "../api/client.js";
 
 const openSettings = () => (location.hash = `#/${route.value.env}/settings?sub=sharing`);
 
 defineProps({status: {type: Object, required: true}});
 const emit = defineEmits(["ready"]);
+const update = async () => {
+    await api.updateTunler().catch(() => null);
+    recheckTunnel();
+};
 </script>
 
 <template>
@@ -25,12 +30,25 @@ const emit = defineEmits(["ready"]);
                 <TunlerInstall @installed="checkTunnel" />
             </div>
         </template>
+        <template v-else-if="status.outdated">
+            <div class="tunnel-connect">
+                <p>{{ status.problems[0] }}</p>
+                <span class="tunnel-actions">
+                    <Btn small kind="primary" @click="update">Update tunler</Btn>
+                </span>
+            </div>
+        </template>
         <template v-else-if="!status.logged_in">
             <div class="tunnel-connect">
-                <p>
-                    <b>tunler</b>
-                    isn't connected on this machine. Connect once, and every journal here uses it:
-                </p>
+                <template v-if="status.rejected">
+                    <p>{{ status.problems[0] }}</p>
+                </template>
+                <template v-else>
+                    <p>
+                        <b>tunler</b>
+                        isn't connected on this machine. Connect once, and every journal here uses it:
+                    </p>
+                </template>
                 <TunnelLogin :host="status.host || status.server" @ready="(got) => emit('ready', got)" />
             </div>
         </template>

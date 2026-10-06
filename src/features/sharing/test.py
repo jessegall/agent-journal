@@ -312,6 +312,9 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
     settings.write_text(json.dumps({"subdomain": "kept-name", **claim, "machine": "another-machine"}))
     assert shares._subdomain() != "kept-name" and any(m.title == "This machine has a tunnel address of its own" for m in Messages(record).all()), \
         "the same project on another machine gets its own address, and the user is told when a link relied on the old one"
+    settled = shares._subdomain()
+    tunnel.KEPT_STATUS.update(at=time.time(), status={**tunnel.asked_status(), "account": "stale"})
+    assert shares._subdomain() == settled, "a process still holding an older tunler status asks again instead of moving the address"
     wrong = shares.login("someone", "wrong-pass", endpoint="t.example")
     assert (wrong["connected"], wrong["needs_master"], wrong["error"]) == (False, False, "login failed: wrong username or password")
     assert shares.version() == {"current": "v9.9.9", "latest": "v9.9.10", "update_available": True}, "whether a newer tunler is out"
