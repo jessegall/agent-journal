@@ -7,6 +7,7 @@ from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
 from features.routing import Reply, Request, handles
 from resources.base import Refused
+from install import changed_managed, changed_message
 
 
 @handles("GET", "/api/changelog")
@@ -27,7 +28,11 @@ def post_update(req: Request) -> Reply:
     from features.auto_update.check import installed, journal_repository
     if journal_repository(req.root.parent):
         raise Refused("this is the journal's own repository: it updates from its own code, not from a release")
-    threading.Thread(target=installed, args=(req.root,), daemon=True).start()
+    changed = changed_managed(req.root.parent, req.root)
+    if changed and not req.body.get("yes"):
+        return Reply(409, {"error": changed_message(req.root.parent, changed),
+                           "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})
+    threading.Thread(target=installed, args=(req.root, bool(req.body.get("yes"))), daemon=True).start()
     return Reply(200, {"updating": True})
 
 
@@ -36,4 +41,6 @@ def get_upstream(req: Request) -> Reply:
     installed = version()
     latest = upstream(req.root)
     installs = features.FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in features.FEATURES else False
-    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs})
+    changed = changed_managed(req.root.parent, req.root)
+    return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs,
+                       "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})

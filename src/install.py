@@ -6,6 +6,7 @@ import tarfile
 import subprocess
 import sys
 import hashlib
+import json
 import marshal
 import tempfile
 import time
@@ -33,6 +34,7 @@ ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
 KEPT_COPIES = 1
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
+MANAGED = "managed-files.json"
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
@@ -40,6 +42,82 @@ STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
 
 def code(root: Path) -> Path:
     return root / SRC
+
+
+def managed_paths(project: Path, root: Path) -> set[Path]:
+    paths = {path for path in code(root).rglob("*") if path.is_file() and not path.is_symlink()}
+    for home in (".agents/skills", ".claude/skills"):
+        folder = project / home
+        paths.update(path for skill in folder.glob("journal-*") if skill.is_dir() and not skill.is_symlink()
+                     for path in skill.rglob("*") if path.is_file() and not path.is_symlink())
+    for home, extension in ((".claude/agents", "md"), (".codex/agents", "toml")):
+        paths.update(path for path in (project / home).glob(f"*.{extension}") if path.is_file() and path.stem in
+                     {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"})
+    for home in (".claude/settings.local.json", ".codex/hooks.json"):
+        path = project / home
+        if path.is_file():
+            paths.add(path)
+    paths.update(project / name for name in ("CLAUDE.md", "AGENTS.md") if (project / name).is_file())
+    return paths
+
+
+def managed_bytes(path: Path) -> bytes:
+    if path.name in ("settings.local.json", "hooks.json"):
+        from providers.base import journal_hook
+        settings = json.loads(path.read_text())
+        hooks = {event: [block for block in blocks if journal_hook(json.dumps(block))]
+                 for event, blocks in (settings.get("hooks") or {}).items()}
+        status = settings.get("statusLine", {})
+        managed = {"hooks": {event: blocks for event, blocks in hooks.items() if blocks}}
+        if "claude-status.sh" in json.dumps(status):
+            managed["statusLine"] = status
+        return json.dumps(managed, sort_keys=True).encode()
+    if path.name not in ("CLAUDE.md", "AGENTS.md"):
+        return path.read_bytes()
+    from features.journal_laws.briefing import CURRENT
+    text = path.read_text(errors="replace")
+    return "\n".join(match.group() for match in CURRENT.finditer(text)).encode()
+
+
+def managed_hash(path: Path) -> str:
+    return hashlib.sha256(managed_bytes(path)).hexdigest()
+
+
+def remember_managed(project: Path, root: Path) -> None:
+    files = {path.relative_to(project).as_posix(): managed_hash(path) for path in managed_paths(project, root)}
+    target = root / MANAGED
+    target.write_text(json.dumps(files, indent=2, sort_keys=True) + "\n")
+
+
+def changed_managed(project: Path, root: Path) -> list[Path]:
+    target = root / MANAGED
+    if not target.is_file():
+        if not code(root).is_dir():
+            return []
+        return sorted(path for path in managed_paths(project, root) if path.is_file() and
+                      (path.is_relative_to(root) or managed_bytes(path)))
+    remembered = json.loads(target.read_text())
+    changed = {project / name for name, digest in remembered.items()
+               if not (project / name).is_file() or managed_hash(project / name) != digest}
+    changed.update(path for path in managed_paths(project, root)
+                   if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
+    return sorted(changed)
+
+
+def archive_changed(project: Path, root: Path, changed: list[Path]) -> Path:
+    attic = root / "attic"
+    attic.mkdir(parents=True, exist_ok=True)
+    copy = attic / f"changed-files-{int(time.time() * 1000)}.tar.gz"
+    with tarfile.open(copy, "w:gz") as archive:
+        for path in changed:
+            if path.is_file():
+                archive.add(path, arcname=path.relative_to(project).as_posix(), recursive=False)
+    return copy
+
+
+def changed_message(project: Path, changed: list[Path]) -> str:
+    names = ", ".join(path.relative_to(project).as_posix() for path in changed)
+    return f"Files changed since the journal wrote them: {names}. Run journal upgrade --yes to copy them into .journal/attic and update anyway."
 
 
 def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
@@ -190,11 +268,17 @@ def put_on_path(bin_: Path) -> str:
     return f"{bin_} added to your PATH in {profile}: open a new terminal, then type journal"
 
 
-def install(project: Path, root: Path | None = None) -> list[str]:
+def install(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
+    changed = changed_managed(project, root)
+    if changed and not yes:
+        return [changed_message(project, changed)]
+    if changed:
+        archive_changed(project, root, changed)
     refresh(PACKAGE, code(root))
     done = configure(project, root)
     retire(root)
+    remember_managed(project, root)
     return done
 
 
@@ -303,7 +387,7 @@ def half_done(root: Path) -> bool:
     return (code(root) / "__main__.py").is_file() and (root / ARCHIVE).exists()
 
 
-def upgrade(project: Path, root: Path | None = None) -> list[str]:
+def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
     mark = LOADED.upgrade_mark(root)
     mark.parent.mkdir(parents=True, exist_ok=True)
@@ -312,6 +396,11 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             return ["another upgrade of this journal is running; this one stepped aside"]
+        changed = changed_managed(project, root)
+        if changed and not yes:
+            return [changed_message(project, changed)]
+        if changed:
+            archive_changed(project, root, changed)
         mark.touch()
         try:
             return upgrading(project, root)
@@ -396,6 +485,7 @@ def finish(project: Path, root: Path) -> list[str]:
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
     done.append(pack(root))
+    remember_managed(project, root)
     return done
 
 
@@ -457,7 +547,7 @@ def pack(root: Path) -> str:
 def main(argv: list[str]) -> list[str]:
     word = argv[0] if argv else "install"
     if word == "upgrade":
-        return upgrade(Path(argv[1] if len(argv) > 1 else ".").resolve())
+        return upgrade(Path(next((arg for arg in argv[1:] if arg != "--yes"), ".")).resolve(), yes="--yes" in argv)
     if word == "finish":
         project = Path(argv[1] if len(argv) > 1 else ".").resolve()
         return finish(project, project / ".journal")

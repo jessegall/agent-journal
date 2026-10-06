@@ -15,6 +15,7 @@ from features import running
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from engine.upgrades import newer, shared_parts, stale, upstream
+from install import changed_managed
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
@@ -66,8 +67,11 @@ def settled(root: Path, latest: str, failed: str) -> None:
         tried[latest] = {**(tried.get(latest) or {}), "ok": not failed, "why": failed}
 
 
-def installed(root: Path) -> str:
-    started = subprocess.Popen([*entry("journal"), "--root", str(root), "upgrade"], cwd=root.parent, stdout=subprocess.PIPE,
+def installed(root: Path, yes: bool = False) -> str:
+    command = [*entry("journal"), "--root", str(root), "upgrade"]
+    if yes:
+        command.append("--yes")
+    started = subprocess.Popen(command, cwd=root.parent, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True, start_new_session=True)
     try:
         out, _ = started.communicate(timeout=INSTALL_WAIT)
@@ -102,6 +106,8 @@ class UpdateCheck:
             if first_refusal(root, latest):
                 self.tell(feature, "failed", latest=latest, why="it would not start here, so the journal went back to the build that works; it is tried again in 12 hours")
             return ""
+        if changed_managed(root.parent, root):
+            return "update held for changed files"
         if not claimed(root, latest, feature.values(record).installs):
             return ""
         if feature.on(record) and within(installed, latest, feature.values(record).installs) and not journal_repository(root.parent):
