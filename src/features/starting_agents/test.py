@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import features
 from controllers.types import Agents, Environments, Messages
@@ -98,15 +99,26 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
         "--worktree", "0922-disposal-date", "--resume", "7a1d-in-the-worktree"], "a named worktree carries on its own last conversation"
 
 
-def test_declining_a_takeover_asks_which_environment_again_and_never_makes_a_new_one():
-    from commands.launch import asked_for
+def test_declining_a_takeover_asks_which_environment_again_and_never_makes_a_new_one_and_a_helpers_environment_is_listed_as_the_helpers(monkeypatch):
+    import commands.launch as launch
     from engine.sessions import Sessions
+    from features.agent_sessions.launch import prepared
+    from features.helpers.controller import Helpers
     record = fresh()
     Environments(record, actor=SYSTEM).create(record.env)
     Environments(record, actor=SYSTEM).create("second")
+    helper = Helpers(record, actor=SYSTEM).create("a long job", name="Hedy", provider="claude", model="sonnet", environment="helper-hedy")
+    prepared(record, "helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent)
     Sessions(record.root).bind("claude-1", record.env, pid=os.getpid(), provider="claude")
+    Sessions(record.root).bind("claude-2", "helper-hedy", pid=os.getpid(), provider="claude")
     answers = iter(["1", "2", "2"])
     ask = lambda _="": next(answers)
+    offered = []
+    choose = launch.choose
+    monkeypatch.setattr(launch, "choose", lambda *given: offered.append(given[2]) or choose(*given))
+    asked_for = launch.asked_for
     assert asked_for(record, ask=ask, answering=True) == "second", "no to a takeover asks the choice again"
     assert list(answers) == [], "no name was asked for and no environment was made"
+    badges = {choice.label: choice.badges for choice in offered[0] if hasattr(choice, "badges")}
+    assert badges["helper-hedy"] == ("helper Hedy",), "a helper's environment is listed as the helper's, never as an agent working"
     assert Sessions(record.root).holder(record.env) == "claude-1", "the agent was not moved off"
