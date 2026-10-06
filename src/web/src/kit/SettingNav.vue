@@ -1,5 +1,5 @@
 <script setup>
-import {navMark} from "../domain/settingsCatalog.js";
+import {navMark, untitled} from "../domain/settingsCatalog.js";
 import Icon from "./Icon.vue";
 import SwitchCase from "./SwitchCase.vue";
 
@@ -17,7 +17,7 @@ const emit = defineEmits(["pick"]);
         <template v-for="section in sections" :key="section.title">
             <div class="setting-nav-section">{{ section.title }}</div>
             <div class="setting-nav-list">
-                <template v-for="group in section.groups" :key="group.key">
+                <template v-for="group in section.groups.filter((g) => !untitled(g))" :key="group.key">
                     <button type="button" :class="['setting-nav-item', {on: group.key === current}]" @click="emit('pick', group.key)">
                         <span class="setting-nav-name">{{ group.title }}</span>
                         <SwitchCase :value="navMark(group, searching).kind">

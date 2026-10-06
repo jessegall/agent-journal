@@ -69,10 +69,12 @@ watchEffect(() => {
     if (route.value.open) swap(type, Number(n));
     else go(route.value.env, type, Number(n));
 });
-const takesComments = computed(() => !!meta(props.type)?.takes_comments);
+const kind = computed(() => (props.type ? meta(props.type) : null));
+const kindTitle = computed(() => (kind.value ? kind.value.title : "item"));
+const takesComments = computed(() => !!kind.value?.takes_comments);
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
 const shape = computed(() =>
-    !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : meta(props.type).view
+    !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : kind.value?.view
 );
 const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
@@ -115,13 +117,13 @@ watch(
             :width="panelWidth"
             :depth="depth"
             :over="over"
-            :close-label="`Close the ${meta(type).title.toLowerCase()}`"
+            :close-label="`Close the ${kindTitle.toLowerCase()}`"
             @dismiss="close"
             @close="emit('gone')"
         >
             <template v-if="broken">
                 <div class="damaged">
-                    <EmptyState>{{ meta(type).title }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
+                    <EmptyState>{{ kindTitle }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
                     <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
                         {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
                     </Btn>

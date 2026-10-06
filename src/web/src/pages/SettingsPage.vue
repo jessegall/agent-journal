@@ -16,7 +16,7 @@ import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
 import Toast from "../kit/Toast.vue";
 import AgentVoice from "./AgentVoice.vue";
-import ServicesPanel from "./ServicesPanel.vue";
+import ServicesList from "./ServicesList.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import PluginSettings from "./PluginSettings.vue";
@@ -38,7 +38,6 @@ const filter = ref("all");
 const field = ref(null);
 const current = ref("");
 const chosen = ref("");
-const services = ref(false);
 const diagnostics = ref(false);
 const stopping = ref(false);
 const extension = ref(null);
@@ -126,7 +125,7 @@ async function stop() {
     }
 }
 
-const BUTTON_ACTIONS = {services: () => (services.value = true), diagnostics: () => (diagnostics.value = true), stop};
+const BUTTON_ACTIONS = {diagnostics: () => (diagnostics.value = true), stop};
 
 async function change(target, label, value) {
     await saveSetting(target, value);
@@ -204,6 +203,10 @@ onMounted(async () => {
                                 <p class="settings-line">{{ tabLine("environments") }}</p>
                                 <SettingsEnvironments :query="query" />
                             </template>
+                            <template #services>
+                                <p class="settings-line">{{ tabLine("services") }}</p>
+                                <ServicesList />
+                            </template>
                             <template #plugins>
                                 <PluginSettings :query="query" @saved="saved = {text: `Saved: ${$event}`}" />
                             </template>
@@ -234,9 +237,6 @@ onMounted(async () => {
             </template>
         </SwitchCase>
 
-        <template v-if="services">
-            <ServicesPanel @close="services = false" />
-        </template>
         <template v-if="diagnostics">
             <DiagnosticsLog @close="diagnostics = false" />
         </template>

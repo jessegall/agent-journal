@@ -122,7 +122,7 @@ defineExpose({scroller});
 }
 
 .turn {
-    padding: 8px 2px;
+    padding: 8px 16px;
     border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
@@ -135,7 +135,7 @@ defineExpose({scroller});
 }
 
 .turn.whisper {
-    padding-left: 10px;
+    padding-left: 14px;
     border-left: 2px solid var(--accent-dim);
 }
 

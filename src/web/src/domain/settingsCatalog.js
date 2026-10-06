@@ -271,14 +271,6 @@ function looseRows(settings, context) {
                           ]
                         : [],
                 }),
-                row({
-                    key: "services",
-                    kind: "buttons",
-                    label: "Services",
-                    hint: "Start, stop and read the logs of the journal's processes",
-                    words: "processes server tunnel plugin log restart",
-                    buttons: [{key: "services", label: "Show services"}],
-                }),
             ],
             browser: [
                 row({
@@ -407,6 +399,7 @@ export function narrowed(sections, query, filter) {
 export const TABS = [
     {key: "features", title: "Features", line: "What the agent and the journal do. Each feature can be switched off on its own."},
     {key: "system", title: "System", line: "Project settings, updates, browser settings and shutting down."},
+    {key: "services", title: "Services", line: "The processes the journal and its plugins keep running. Start, stop, restart and read their logs."},
     {key: "sharing", title: "Phone and share links", line: "Your phone and share links reach this journal through the tunler account below."},
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
@@ -414,6 +407,8 @@ export const TABS = [
 ];
 
 export const tabLine = (key) => TABS.find((t) => t.key === key).line;
+
+export const untitled = (group) => !group.items.length && group.danger.length > 0;
 
 export function inTab(sections, tab) {
     return sections.map((s) => ({...s, groups: s.groups.filter((g) => g.tab === tab)})).filter((s) => s.groups.length);

@@ -79,7 +79,7 @@ await runScenarios(process.argv[2], {
         const doc = numberOf(journal("doc", "create", `Shared ${Date.now()}`, "--brief", "to share"));
         journal("share", "create", `doc:${doc}`);
         const {drop} = await pill(page, url, working);
-        await drop.getByText("Waiting for you").first().waitFor({timeout: SHOWN});
+        await drop.getByText("Needs you").first().waitFor({timeout: SHOWN});
         await page.route(/\/api\/main\/share\/\d+\//, (route) => (route.request().method() === "POST" ? reply(route, {error: "the share could not be changed"}, 500) : route.fallback()));
         await drop.getByRole("button", {name: "Accept"}).first().click();
         await drop.getByText("the share could not be changed").waitFor({timeout: SHOWN});
