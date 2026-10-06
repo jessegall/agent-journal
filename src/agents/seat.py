@@ -3,6 +3,7 @@ from functools import cached_property
 from pathlib import Path
 from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS, workspace_folders
+from providers.payload import HookEvent
 from agents.terminal import seat_session
 from engine import runtime
 from engine.record import Record
@@ -144,7 +145,7 @@ class HookBinding:
         session = hook.session
         held = self.sessions.read(session)
         worked = self.worked_in(hook)
-        stays = bool(held.environment and held.provider) and not self.moving(session, held.environment, worked)
+        stays = bool(held.environment and held.provider) and (hook.event != HookEvent.SESSION_START or not self.moving(session, held.environment, worked))
         env = held.environment if stays else self.bound(session, worked, prefer)
         if stays and not alive(held.pid):
             self.relaunched(session, held.pid)

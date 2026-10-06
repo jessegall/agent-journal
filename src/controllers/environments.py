@@ -98,6 +98,14 @@ class Environments(Controller):
     def _record_of(self, env) -> Record:
         return Record(self.record.root, env.title)
 
+    def _agent(self, session: str) -> set[str]:
+        pid = self._sessions.read(session).pid
+        return {name for name, s in self._sessions.all().items() if pid and s.pid == pid} | {session}
+
+    def _bind_agent(self, session: str, env: str) -> None:
+        for each in self._agent(session):
+            self._sessions.bind(each, env)
+
     def _bound_session(self) -> str:
         if not self.session:
             raise Refused("no session to bind: say which with --session")
@@ -114,14 +122,10 @@ class Environments(Controller):
             return self.switch(self.find(was).n, move=who)
         env = self.load(n)
         holder = self._sessions.holder(env.title)
-        if holder and holder != who:
+        if holder and holder not in self._agent(who):
             self._refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
         before = self._sessions.environment(who)
-        self._sessions.bind(who, env.title)
-        running = self._sessions.read(who)
-        terminal = self._sessions.terminal(running.provider, running.pid) if running.pid else ""
-        if terminal and terminal != who:
-            self._sessions.bind(terminal, env.title)
+        self._bind_agent(who, env.title)
         if before and before != env.title:
             self._sessions.write(who, before=before)
         if project:
@@ -212,9 +216,10 @@ class Environments(Controller):
         env = self.load(n)
         session = self._bound_session()
         holder = self._sessions.holder(env.title)
-        if holder and holder != session:
-            self._sessions.evict(holder, session, env.title, why)
-        self._sessions.bind(session, env.title)
+        if holder and holder not in self._agent(session):
+            for each in self._agent(holder):
+                self._sessions.evict(each, session, env.title, why)
+        self._bind_agent(session, env.title)
         return self.update(n, holder=session, claimed={"from": holder, "why": why})
 
     @action
