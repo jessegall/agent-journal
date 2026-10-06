@@ -88,6 +88,10 @@ class Dispatch:
     task: str = ""
     description: str = ""
     name_supported: bool = False
+    models: tuple[str, ...] = ()
+
+    def offers_model(self) -> bool:
+        return not self.models or self.model in self.models
 
 
 @dataclass(frozen=True)
@@ -437,10 +441,14 @@ class Called(Loaded):
     tool_response: dict = field(default_factory=dict)
 
 
+def bare(name: str) -> str:
+    return name.rsplit(".", 1)[-1].rsplit("__", 1)[-1]
+
+
 def call_of(raw: dict, kinds: dict) -> ToolUse:
     called = Called.from_json(raw)
     name, given, response = called.tool_name, called.tool_input, called.tool_response
-    kind = kinds.get(name.rsplit(".", 1)[-1])
+    kind = kinds.get(bare(name))
     try:
         return kind.from_payload(name, given, response) if kind else ToolUse(name, given, response)
     except (KeyError, TypeError, ValueError):

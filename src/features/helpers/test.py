@@ -15,6 +15,7 @@ from tests.conftest import fresh, refused
 def started(monkeypatch) -> list:
     calls = []
     monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args: calls.append((cwd, env, agent, args)) or 1)
+    monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.5", "gpt-6-sol"))
     return calls
 
 
@@ -53,6 +54,8 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     helpers = Helpers(record, actor=AGENT)
     assert "runs on one of" in refused(lambda: helpers.dispatch("Rhea", "a job", "gemini", "x")), "an unknown provider is refused"
     assert "model is always named" in refused(lambda: helpers.dispatch("Rhea", "a job", "codex", " ")), "the model is never left out"
+    assert "gpt-5.5, gpt-6-sol" in refused(lambda: helpers.dispatch("Rhea", "a review", "codex", "gpt-5-mini")), \
+        "a model the provider does not offer is refused up front, naming the ones it does"
     helpers.dispatch("Rhea", "a job", "claude", "sonnet")
     assert "exists" in refused(lambda: helpers.dispatch("Rhea", "another job", "claude", "sonnet")), "one helper per name at a time"
 

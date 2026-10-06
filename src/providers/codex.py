@@ -1,16 +1,16 @@
 import json
 from functools import cache
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import re
 import time
 import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
-from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
+from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
 from providers.base import Asking, BackgroundTasks, Provider, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
-from providers.codex_rows import Chunk, Row
+from providers.codex_rows import Chunk, Payload, Row
 from engine.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import read_json, tail, write_text
@@ -53,7 +53,15 @@ def script_field(text: str, key: str, index: int) -> str:
 @dataclass(frozen=True)
 class Spawned(Loaded):
     task_name: str = "subagent"
+    agent_type: str = ""
     model: str = ""
+    at: float = 0.0
+
+
+@dataclass(frozen=True)
+class SpawnAnswer(Loaded):
+    agent_id: str = ""
+    task_name: str = ""
 
 
 def arguments_of(raw) -> dict:
@@ -227,9 +235,12 @@ class Codex(Provider):
         return CodexConfig(**found)
 
     def dispatch_model(self, chosen: str) -> str:
-        if chosen in {model.slug for model in self.catalog()}:
+        if chosen in self.models():
             return chosen
         return self.configuration().model or chosen
+
+    def models(self) -> tuple[str, ...]:
+        return tuple(model.slug for model in self.catalog())
 
     @classmethod
     @cache
@@ -291,7 +302,7 @@ class Codex(Provider):
     def dispatch(self, tool) -> Dispatch | None:
         if not isinstance(tool, AgentCall):
             return None
-        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True)
+        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True, models=self.models())
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
@@ -409,13 +420,25 @@ class Codex(Provider):
         return running, 0.0 if running or not found else found.stat().st_mtime
 
     def spawned(self, path: Path, script: str, output: str, at: float) -> list[dict]:
-        rows = []
-        for index, found in enumerate(SPAWNED.finditer(output)):
-            running, ended = self.subagent_state(path, found[1])
-            rows.append({"task": script_field(script, "task_name", index) or found[2] or "subagent", "type": script_field(script, "agent_type", index),
-                         "model": script_field(script, "model", index), "session": found[1], "running": running, "at": at, "ended": ended,
-                         "status": "" if running else "finished"})
-        return rows
+        return [self.subagent_row(path, Spawned(script_field(script, "task_name", index) or found[2] or "subagent", script_field(script, "agent_type", index),
+                                                script_field(script, "model", index), at), found[1])
+                for index, found in enumerate(SPAWNED.finditer(output))]
+
+    def subagent_row(self, path: Path, asked: Spawned, session: str) -> dict:
+        running, ended = self.subagent_state(path, session) if session else (True, 0.0)
+        return {"task": asked.task_name, "type": asked.agent_type, "model": asked.model, "session": session, "running": running, "at": asked.at,
+                "ended": ended, "status": "" if running else "finished"}
+
+    def spawned_session(self, path: Path, answer: SpawnAnswer, since: float) -> str:
+        """The session of a subagent spawned directly: named in the answer, or found by its path among the rollouts written since."""
+        if answer.agent_id or not answer.task_name:
+            return answer.agent_id
+        parent = path.stem[-36:]
+        for found in path.parent.parent.glob("*/rollout-*.jsonl"):
+            spawn = self.meta(found).source.subagent.thread_spawn if found.stat().st_mtime >= since else None
+            if spawn and spawn.parent_thread_id == parent and spawn.agent_path == answer.task_name:
+                return found.stem[-36:]
+        return ""
 
     def crew(self, path: Path) -> dict:
         rows = [row for _, row in self.entries(path)]
@@ -425,7 +448,7 @@ class Codex(Provider):
         shell_rows = []
         shells = 0
         compacting = False
-        pending, spawning = {}, {}
+        pending, spawning, asking = {}, {}, {}
         for row in rows:
             payload = row.payload
             if row.type == "response_item":
@@ -433,10 +456,12 @@ class Codex(Provider):
                 if name == "exec" and SPAWN_IN_SCRIPT.search(text):
                     spawning[key] = text
                 elif name.endswith("spawn_agent"):
-                    asked = Spawned.from_json(arguments_of(payload.arguments))
-                    subagent_rows.append({"task": asked.task_name, "model": asked.model})
-                elif name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
+                    asking[key] = replace(Spawned.from_json(arguments_of(payload.arguments)), at=row.at)
+                elif bare(name) in ("exec", "exec_command", "shell", "shell_command"):
                     pending[key] = text
+                asked = asking.pop(key, None) if payload.type == "function_call_output" else None
+                if asked:
+                    subagent_rows.append(self.subagent_row(path, asked, self.spawned_session(path, SpawnAnswer.from_json(arguments_of(payload.output)), asked.at)))
                 script = spawning.pop(key, None) if payload.type == "custom_tool_call_output" else None
                 if script:
                     subagent_rows += self.spawned(path, script, payload.output, row.at)
@@ -457,12 +482,15 @@ class Codex(Provider):
     def session(self, path: Path | None) -> dict:
         if path is None or not Path(path).is_file():
             return {}
+        return {AgentRow.parent: self.meta(path).parent_thread}
+
+    def meta(self, path: Path) -> Payload:
         with Path(path).open() as source:
             for line in source:
                 row = parsed(line, Row.from_payload)
                 if row and row.type == "session_meta":
-                    return {AgentRow.parent: row.payload.parent_thread}
-        return {}
+                    return row.payload
+        return Payload()
 
     def tool_uses(self, row: Row) -> list[ToolCall]:
         payload = row.payload
