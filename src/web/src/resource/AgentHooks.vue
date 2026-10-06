@@ -77,7 +77,7 @@ onMounted(fetchHooks);
                                 <span class="matcher">{{ block.matcher }}</span>
                             </template>
                             <input v-model="hook.command" class="command" spellcheck="false" :placeholder="'command'" />
-                            <Btn kind="icon" title="Remove this hook" @click="remove(event, b, h)"><Icon name="x" /></Btn>
+                            <Btn kind="icon" title="Remove this command" @click="remove(event, b, h)"><Icon name="x" /></Btn>
                         </div>
                     </template>
                 </template>

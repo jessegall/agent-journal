@@ -73,7 +73,7 @@ async function save() {
             <span class="steps-count">{{ draft.open ? draft.steps.length : track.length }}</span>
             <span class="grow" />
             <template v-if="resource.data.system">
-                <span class="steps-locked" title="This sequence ships with the journal and can't be changed">
+                <span class="steps-locked" title="This sequence comes with the journal and can't be changed">
                     <Icon name="lock" :size="11" />
                     Read-only
                 </span>

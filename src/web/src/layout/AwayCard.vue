@@ -33,7 +33,7 @@ useEscape(
                 While you were away{{ lines.length ? `: ${lines.length} ${lines.length === 1 ? "notification" : "notifications"}` : "" }}
             </span>
             <span class="away-for">{{ forText }}</span>
-            <CloseButton title="Dismiss" @click="ui.away.open = false" />
+            <CloseButton title="Close" @click="ui.away.open = false" />
         </div>
         <div class="away-lines">
             <template v-for="d in lines" :key="d.key">
