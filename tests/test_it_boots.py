@@ -25,7 +25,7 @@ from engine.record import Record
 from engine.sessions import Sessions, alive, hold_build
 from engine.stop import ask
 from engine.stored import append_text, write_text
-from install import STUBS
+from install import STUBS, fetch
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, launches
@@ -155,6 +155,24 @@ def test_an_upgrade_copies_a_changed_file_into_the_attic_before_replacing_it(tmp
     assert len(copies) == 1
     with tarfile.open(copies[0]) as archive:
         assert archive.extractfile(".journal/src/journal.py").read().endswith(b"# changed by hand\n")
+
+
+def test_a_fetch_from_inside_a_git_hook_leaves_the_pushing_repository_alone(tmp_path, monkeypatch):
+    def git(where: Path, *args: str) -> str:
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=where, capture_output=True, text=True, timeout=30, check=True).stdout.strip()
+    for repository in ("pushing", "release"):
+        (tmp_path / repository).mkdir()
+        git(tmp_path / repository, "init", "-q")
+        git(tmp_path / repository, "commit", "-q", "--allow-empty", "-m", repository)
+    pushing = tmp_path / "pushing"
+    head = git(pushing, "rev-parse", "HEAD")
+    monkeypatch.setenv("GIT_DIR", str(pushing / ".git"))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(pushing / ".git" / "index"))
+    fetched = fetch(tmp_path / "into", str(tmp_path / "release"))
+    monkeypatch.delenv("GIT_DIR")
+    monkeypatch.delenv("GIT_INDEX_FILE")
+    assert (fetched, git(pushing, "config", "core.bare"), (pushing / ".git" / "shallow").exists(), git(pushing, "rev-parse", "HEAD")) == \
+        ((git(tmp_path / "release", "rev-parse", "HEAD"), ""), "false", False, head), "a fetch run from a hook lands in its own folder and never touches the repository the hook runs in"
 
 
 def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_path):

@@ -11,6 +11,7 @@ HERE = Path(__file__).resolve().parent
 SRC = HERE.parents[1] / "src"
 sys.path.insert(0, str(SRC))
 
+from install import git_env  # noqa: E402
 from scripts.demo.session import Session  # noqa: E402
 
 SCENARIOS = ("bakery", "ledgerly", "subagents", "helpers", "docs", "memory", "dumps")
@@ -24,7 +25,7 @@ def scenario(key: str):
 
 
 def git(project: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=project, check=True, capture_output=True, timeout=60)
+    subprocess.run(["git", *args], cwd=project, check=True, capture_output=True, timeout=60, env=git_env())
 
 
 def stopped(project: Path) -> None:

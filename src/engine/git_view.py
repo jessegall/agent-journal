@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import TypedDict
 
-from engine.proc import git, ran
+from engine.proc import git, git_ran
 from engine.project_files import project_path, readable_path
 from resources.base import Missing, Refused
 
@@ -25,7 +25,7 @@ class FileDiff(TypedDict):
 def commit(project: Path, sha: str) -> Commit:
     if not re.fullmatch(r"[0-9a-f]{7,40}", sha):
         raise Missing("not a commit")
-    head = ran(["git", "show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], project)
+    head = git_ran(["show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], project)
     if head is None:
         raise Missing("git did not answer")
     if head.returncode:
