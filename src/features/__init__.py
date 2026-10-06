@@ -1,3 +1,4 @@
+import hashlib
 import importlib
 import importlib.util
 from functools import cache
@@ -5,12 +6,14 @@ from pathlib import Path
 
 from engine import bus
 from engine.package import modules
+from engine.stored import write_text
 
 FEATURES: dict[str, object] = {}
 SWITCHED: list = []
 RENAMED: set[str] = set()
 SEATED: dict[str, int] = {}
 CHANGE_SWITCHES = ("feature", "plugin")
+SEATED_STAMP = "features-seated"
 
 
 @cache
@@ -40,9 +43,7 @@ def rename_aliases(root: Path) -> None:
     if str(root) in RENAMED:
         return
     RENAMED.add(str(root))
-    for cls in REGISTRY.values():
-        for old, now in cls.renamed_from().items():
-            rename(root, old, now)
+    rename(root, {was: now for cls in REGISTRY.values() for was, now in cls.renamed_from().items()})
 
 
 def wire() -> None:
@@ -62,9 +63,19 @@ def subscribe() -> None:
 
 def sync_rows(root: Path) -> None:
     from features.switches import generation
-    if SEATED.get(str(root)) != generation():
+    if SEATED.get(str(root)) == generation():
+        return
+    stamp, kept = seating(root), Path(root) / SEATED_STAMP
+    if not kept.is_file() or kept.read_text() != stamp:
         seat(root)
-        SEATED[str(root)] = generation()
+        write_text(kept, stamp)
+    SEATED[str(root)] = generation()
+
+
+def seating(root: Path) -> str:
+    from engine.paths import environments
+    homes = sorted(p.name for p in environments(root).glob("*") if p.is_dir())
+    return hashlib.sha256("\n".join([*sorted(FEATURES), "", *homes]).encode()).hexdigest()
 
 
 def running(feature: type):
