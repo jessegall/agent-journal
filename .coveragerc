@@ -1,0 +1,21 @@
+[run]
+branch = true
+parallel = true
+patch = subprocess
+include =
+    */src/*
+    *.pyz/*
+omit =
+    */src/web/*
+    */site-packages/*
+
+[paths]
+source =
+    src/
+    */journal*.pyz/
+    */.journal/src/
+
+[report]
+skip_covered = true
+sort = cover
+fail_under = 91
