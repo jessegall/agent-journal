@@ -113,6 +113,12 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         f"{base}/p/attach/{n}/photo.jpg", b"\xff\xd8picture", {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"},
         method="POST"), timeout=5).status
     assert upload(made["n"]) == 201 and "photo.jpg" in Messages(record, actor=SYSTEM).load(made["n"]).files, "a photo goes onto the phone's message"
+    sent = lambda path, data, kind="application/json": urllib.request.Request(
+        f"{base}{path}", data, {"Origin": base, "X-Phone": "1", "Content-Type": kind, "Cookie": f"__Host-phone={key}"}, method="POST")
+    for request, status in ((sent("/p/message", b"not json"), 422), (sent("/p/attach/x/photo.jpg", b"bytes", "application/octet-stream"), 413), (sent(f"/p/attach/{made['n']}/photo.jpg", b"", "application/octet-stream"), 413)):
+        with pytest.raises(urllib.error.HTTPError) as refusal:
+            urllib.request.urlopen(request, timeout=5)
+        assert refusal.value.code == status, f"{request.full_url} is answered with {status}, because a body that is not JSON says nothing and a file needs a message and some bytes"
     fetched = urllib.request.urlopen(urllib.request.Request(f"{base}/p/file/message/{made['n']}/photo.jpg", headers={"Cookie": f"__Host-phone={key}"}), timeout=5)
     assert fetched.read() == b"\xff\xd8picture", "and opens again from the phone"
     assert call(base, f"/p/file/message/{made['n']}/..%2F..%2Fsecret", key=key).status == 404, "and nothing outside the message's own files"
