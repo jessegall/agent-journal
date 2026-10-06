@@ -39,7 +39,7 @@ const cardOf = (row) => ({
         </header>
         <div class="helpers-body">
             <template v-if="!rows.length">
-                <p class="helpers-none">No helper has been dispatched here.</p>
+                <p class="helpers-none">No helpers have been started here.</p>
             </template>
             <template v-for="row in grouped.open" :key="row.n">
                 <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />

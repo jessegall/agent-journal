@@ -17,7 +17,7 @@ export const PLAN_STATES = {
     approved: "Starting",
     active: "Being worked on",
     waiting: "Waiting for you",
-    parked: "Parked",
+    parked: "Paused",
     done: "Closed",
 };
 
@@ -47,7 +47,7 @@ export function otherPlans(plans) {
 export function othersLine(others) {
     const parked = others.filter((p) => p.data.status === "parked").length;
     const planned = others.length - parked;
-    const words = [planned && `+${planned} more planned`, parked && `${planned ? "" : "+"}${parked} parked`];
+    const words = [planned && `+${planned} more planned`, parked && `${planned ? "" : "+"}${parked} paused`];
     return words.filter(Boolean).join(" · ");
 }
 
@@ -78,5 +78,5 @@ export function doneOf(p, todos) {
 
 export function planButton(p) {
     if (p.completed) return null;
-    return {ready: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Finish"]}[p.data.status] || null;
+    return {ready: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Close"]}[p.data.status] || null;
 }

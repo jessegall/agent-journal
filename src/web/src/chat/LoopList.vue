@@ -25,7 +25,7 @@ const set = (at) => (at ? `set ${span(Date.now() / 1000 - at)} ago` : "");
 </script>
 
 <template>
-    <h4 class="loop-heading">Scheduled loops</h4>
+    <h4 class="loop-heading">Repeating prompts</h4>
     <p class="loop-none">Prompts the agent set to run again on a schedule.</p>
     <template v-for="loop in listed" :key="loop.id">
         <div class="loop-row">

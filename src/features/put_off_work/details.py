@@ -6,11 +6,11 @@ from features.groups import Group
 class PutOffWorkDetails(FeatureDetails):
     name = "put_off_work"
     group = Group.WORK_TRACKING
-    label = "Catch work put off for later"
+    label = "Remind the agent to file work it puts off"
     hint = "Tells the agent once when it says “later” without filing a to-do"
     has_skill = False
 
-    title = "Catch work put off for later"
+    title = "Remind the agent to file work it puts off"
 
     aliases = ("deferral",)
 

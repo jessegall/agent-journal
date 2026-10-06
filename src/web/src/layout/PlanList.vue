@@ -52,7 +52,7 @@ async function run(action, p) {
                         </div>
                         <span class="plan-list-acts">
                             <template v-if="p.data.status === 'approved'">
-                                <Btn small @click="run(parkPlan, p)">Park</Btn>
+                                <Btn small @click="run(parkPlan, p)">Pause</Btn>
                             </template>
                             <template v-if="p.data.status === 'ready'">
                                 <Btn small @click="run(approvePlan, p)">Start</Btn>
@@ -63,7 +63,7 @@ async function run(action, p) {
                         </span>
                     </div>
                 </template>
-                <p class="plan-list-hint">{{ running ? "Starting a plan parks the one that runs." : "One plan runs at a time." }}</p>
+                <p class="plan-list-hint">{{ running ? "Starting a plan pauses the one that runs." : "One plan runs at a time." }}</p>
                 <template v-if="error">
                     <p class="plan-list-error">{{ error }}</p>
                 </template>

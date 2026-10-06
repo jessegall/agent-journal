@@ -59,9 +59,9 @@ const chaptered = computed(
                 </SwitchCase>
             </template>
             <template v-if="data.system">
-                <span class="standing system" title="Ships with the journal; it can be read but not changed">
+                <span class="standing system" title="Comes with the journal; it can be read but not changed">
                     <Icon name="lock" :size="10" />
-                    Ships with the journal
+                    Comes with the journal
                 </span>
             </template>
             <template v-if="writing && kind.view === 'document' && !readOnly">

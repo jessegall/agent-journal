@@ -63,7 +63,7 @@ const sections = computed(() =>
             key: `${p.name}|${g.name}`,
             title: g.name || "Settings",
             mark: g.flags.length ? `${g.flags.filter((s) => s.value === "true").length} of ${g.flags.length}` : "",
-            markTitle: "Rules switched on",
+            markTitle: "Plugin rules switched on",
             head: null,
             items: [],
             danger: [],

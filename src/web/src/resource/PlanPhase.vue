@@ -61,7 +61,7 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                         <span class="rt">{{ t.title }}</span>
                     </button>
                     <template v-if="talk">
-                        <button type="button" class="say" title="Comment on this row" @click="talk.say(`#${t.n} ${t.title}`)">
+                        <button type="button" class="say" title="Comment on this to-do" @click="talk.say(`#${t.n} ${t.title}`)">
                             <Icon name="bubble" :size="12" />
                         </button>
                     </template>

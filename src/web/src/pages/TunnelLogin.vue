@@ -48,7 +48,7 @@ async function connect() {
 
 <template>
     <form class="tunnel-login" @submit.prevent="connect">
-        <FormField label="Server" for="tunnel-server">
+        <FormField label="Tunler server address" for="tunnel-server">
             <TextInput id="tunnel-server" :value="endpoint" placeholder="tunler.example.com" @input="endpoint = $event.target.value" />
         </FormField>
         <FormField label="Username" for="tunnel-username">

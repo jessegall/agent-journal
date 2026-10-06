@@ -12,15 +12,15 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     report(record, "working", "PreToolUse")
     assert (ship(record), ship(record)) == ([shipped.title for shipped in shipped_sequences()], []), "shipped once, never twice"
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Filing a dump")
+    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Sort dumped files")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     steps = lambda: [n for n in nudges(record) if n.startswith(f"sequence {filing['n']}")]
-    assert steps() == [f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything"], "a dump starts the sequence about it"
+    assert steps() == [f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file"], "a dump starts the sequence about it"
     handed = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {filing['n']}"))
     assert f"journal dump items {dump.n}" in handed and "<dump n>" not in handed, "the step names the dump it is about"
     sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
-    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 2 of 3 - File by subject", "done hands the next step"
+    assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 2 of 3 - File each subject", "done hands the next step"
     sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
     sequences.follow(filing["n"], about=dump.ref)
@@ -29,24 +29,24 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     cards = CONTROLLERS["agent"](record).primary().data["cards"]
     marks = [(c["label"], c["color"]) for c in cards]
     assert [label for label, _ in marks] == ["Sequence started", "Sequence moved on", "Sequence moved on", "Sequence finished"] \
-        and {c for _, c in marks} == {"#a78bfa"} and all(c["detail"].startswith("Filing a dump") for c in cards), \
+        and {c for _, c in marks} == {"#a78bfa"} and all(c["detail"].startswith("Sort dumped files") for c in cards), \
         f"the chat shows a violet mark for a shipped sequence as it starts, moves on and finishes, its name under it: {marks}"
     first = CONTROLLERS["dump"](record, actor=USER).create("Planning", brief="notes")
     second = CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
-    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 5, \
+    assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file" and len(steps()) == 5, \
         "a run started while another runs is handed at once, like a call"
     for _ in range(3):
         sequences.follow(filing["n"], about=second.ref)
         sequences.next(filing["n"], about=second.ref)
-    assert len(steps()) == 8 and steps()[-1].endswith("step 1 of 3 - Read everything"), "when the inner run ends, the one it interrupted is handed its step again"
+    assert len(steps()) == 8 and steps()[-1].endswith("step 1 of 3 - Read each file"), "when the inner run ends, the one it interrupted is handed its step again"
     report(record, "idle", "Stop")
-    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Filing a dump, is still at step 1 of 3 - carry on with it"], \
+    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Sort dumped files, is still at step 1 of 3 - carry on with it"], \
         "stopping with a run unfinished earns a reminder"
     review = next(key for key in sequences.load(filing["n"]).runs).split("|", 1)[1]
     assert "never taken up" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
         "a step never taken up cannot be given up"
     sequences.follow(filing["n"], about=review)
-    assert "skips Read everything; File by subject" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
+    assert "skips Read each file; File each subject" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
         "abandoning names the steps it would skip"
     sequences.abandon(filing["n"], about=review, why="the dump was a duplicate", sure=True)
     assert (sequences.load(filing["n"]).runs, sequences.load(filing["n"]).data["abandoned"][-1]["why"]) == ({}, "the dump was a duplicate"), \
@@ -107,7 +107,7 @@ def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
     agents.by_session("holder")
     agents.by_session("newer")
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Filing a dump")
+    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Sort dumped files")
     CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing['n']}")]
     assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
@@ -154,20 +154,20 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     ship(record)
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     titled = lambda title: sequences.load(next(r["n"] for r in sequences.rows.summaries() if r["title"] == title))
-    closing = [s["title"] for s in sequences.steps_of(titled("Finishing what you wrote"))]
-    assert [s["title"] for s in sequences.steps_of(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
+    closing = [s["title"] for s in sequences.steps_of(titled("Filing and sharing a document or report"))]
+    assert [s["title"] for s in sequences.steps_of(titled("Writing a report"))] == ["Add the report’s section headings", "Write the report’s sections", *closing], \
         "a shipped sequence reuses the closing steps it shares"
     written = record.root / "written.md"
     written.write_text("# Routes\nHow routes are planned.\n\n## Stops\nEvery stop has a window.\n\n## Drivers\nOne van each.\n")
     filed = CONTROLLERS["doc"](record, actor=AGENT).file("Route planning", str(written))
     assert (filed.brief, [s["title"] for s in filed.sections]) == ("How routes are planned.", ["Stops", "Drivers"]), "a written text is filed whole, a chapter per heading"
     about = sequences._key(f"doc:{filed.n}")
-    assert about in titled("Filing a written document").runs and about not in titled("Writing a document").runs, \
+    assert about in titled("Filing a document that is already written").runs and about not in titled("Writing a document").runs, \
         "a document filed whole goes straight to the closing steps"
-    sequences.follow(titled("Filing a written document").n, f"doc:{filed.n}")
-    sequences.abandon(titled("Filing a written document").n, f"doc:{filed.n}", "checked", sure=True)
+    sequences.follow(titled("Filing a document that is already written").n, f"doc:{filed.n}")
+    sequences.abandon(titled("Filing a document that is already written").n, f"doc:{filed.n}", "checked", sure=True)
     plain = sequences._key(f"doc:{CONTROLLERS['doc'](record, actor=AGENT).create('Depot hours').n}")
-    assert plain in titled("Writing a document").runs and plain not in titled("Filing a written document").runs, "a document begun empty is written chapter by chapter"
+    assert plain in titled("Writing a document").runs and plain not in titled("Filing a document that is already written").runs, "a document begun empty is written chapter by chapter"
     base = sequences.create("Base")
     for step in ("one", "two", "three"):
         sequences.section(base.n, step, f"do {step}")

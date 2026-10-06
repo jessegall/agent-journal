@@ -25,7 +25,7 @@ const linked = computed(() => (props.n ? startedBy(props.n) : open("sequence").f
 const others = computed(() => open("sequence").filter((s) => !linked.value.some((l) => l.n === s.n)));
 const groups = computed(() => [
     {key: "own", title: "", sequences: others.value.filter((s) => !s.data.system)},
-    {key: "shipped", title: "Ships with the journal", sequences: others.value.filter((s) => s.data.system)},
+    {key: "shipped", title: "Comes with the journal", sequences: others.value.filter((s) => s.data.system)},
 ]);
 const startsHere = () => `trigger:${props.n}`;
 
@@ -59,12 +59,12 @@ async function stop(sequence) {
 const made = (n) => (api.setStartsOn(n, startsHere()), (making.value = false));
 const reason = (sequence) =>
     sequence.data.system
-        ? "Ships with the journal; its start can't change"
+        ? "Comes with the journal; its start can't change"
         : `Starts ${startWords(sequence).replace(/^Only/, "only").replace(/^When/, "when")}`;
 </script>
 
 <template>
-    <FormField label="Sequence it starts">
+    <FormField label="Sequences this trigger starts">
         <template v-if="linked.length">
             <div class="list">
                 <template v-for="sequence in linked" :key="sequence.n">
@@ -74,7 +74,7 @@ const reason = (sequence) =>
                             <span class="card-title">{{ sequence.title }}</span>
                             <span class="card-note">
                                 Sequence {{ sequence.n }} · {{ sequence.sections.length }} steps{{
-                                    sequence.data.system ? " · Ships with the journal" : ""
+                                    sequence.data.system ? " · Comes with the journal" : ""
                                 }}
                             </span>
                         </span>
@@ -85,7 +85,7 @@ const reason = (sequence) =>
                                 title="This trigger no longer starts it. It then starts only when you or the agent start it."
                                 @click="stop(sequence)"
                             >
-                                Stop starting it
+                                Stop this trigger starting it
                             </Btn>
                         </template>
                     </div>

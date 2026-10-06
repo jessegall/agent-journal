@@ -7,10 +7,10 @@ from features.groups import Group
 class RuntimeCleanupDetails(FeatureDetails):
     name = "runtime_cleanup"
     group = Group.ARCHIVE
-    label = "Clean the runtime folder"
+    label = "Delete old temporary files"
     has_skill = False
 
-    title = "Clean the runtime folder"
+    title = "Delete old temporary files"
 
     aliases = ("housekeeping",)
 

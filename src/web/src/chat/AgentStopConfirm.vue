@@ -16,10 +16,10 @@ onMounted(() => nextTick(() => cancel.value?.$el.focus()));
 <template>
     <div class="stop-confirm" role="group" :aria-label="`Stop the agent in ${environment}`">
         <template v-if="work">
-            <p class="stop-ask">{{ environment }} is working on “{{ work }}”. Stop it anyway? It ends its session.</p>
+            <p class="stop-ask">{{ environment }} is working on “{{ work }}”. Stop it anyway? Its session ends.</p>
         </template>
         <template v-else>
-            <p class="stop-ask">Stop the agent in {{ environment }}? It ends its session.</p>
+            <p class="stop-ask">Stop the agent in {{ environment }}? Its session ends.</p>
         </template>
         <template v-if="error">
             <p class="stop-error" role="alert">{{ error }}</p>

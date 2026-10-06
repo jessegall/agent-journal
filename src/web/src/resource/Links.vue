@@ -32,7 +32,7 @@ const rows = computed(() => {
 });
 const DIRECTIONS = [
     {key: "to", title: "Links to"},
-    {key: "from", title: "Linked from"},
+    {key: "from", title: "Linked by"},
 ];
 const groups = computed(() =>
     DIRECTIONS.map((d) => ({...d, rows: rows.value.filter((r) => r.direction === d.key)})).filter((d) => d.rows.length)

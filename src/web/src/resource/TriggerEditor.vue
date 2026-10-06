@@ -75,7 +75,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
 <template>
     <div class="trigger">
         <template v-if="readonly">
-            <Notice>Ships with the journal. You can read it and open its sequence, but not change it.</Notice>
+            <Notice>Comes with the journal. You can read it and open its sequence, but not change it.</Notice>
         </template>
         <template v-else>
             <InlineName
@@ -106,7 +106,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                 <span class="sum-matched">{{ matches }}</span>
             </template>
         </div>
-        <ResourceBlock heading="When">
+        <ResourceBlock heading="When these words appear">
             <WatchedWords
                 ref="when"
                 :words="values.words || []"
@@ -118,9 +118,9 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                 @where="(words_in) => commit({words_in})"
             />
         </ResourceBlock>
-        <ResourceBlock heading="Then">
+        <ResourceBlock heading="What happens next">
             <div class="then">
-                <FormField label="What happens">
+                <FormField label="What this trigger does">
                     <ChoiceList stacked :choices="choices(DOES, values.does, doesReason(values))" :disabled="readonly" @pick="pickDoes" />
                     <template v-if="!readonly && values.words_in === 'user'">
                         <p class="help">

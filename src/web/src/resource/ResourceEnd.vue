@@ -7,7 +7,7 @@ defineProps({resource: {type: Object, required: true}});
 <template>
     <span class="resource-end">
         <template v-if="resource.data.system">
-            <span class="resource-end-mark" title="Ships with the journal. It cannot be closed or deleted.">Ships with the journal</span>
+            <span class="resource-end-mark" title="Comes with the journal. It cannot be closed or deleted.">Comes with the journal</span>
         </template>
         <template v-else>
             <ResourceMenu :resource="resource" />

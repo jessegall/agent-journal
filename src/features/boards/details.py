@@ -52,7 +52,7 @@ class BoardsDetails(FeatureDetails):
         Behaviour(
             name="ideas",
             title="Suggest new work",
-            abstract="Ideas show as chips under New work",
+            abstract="Ideas appear as buttons under New work",
             trigger=Trigger(every=720, unit=MINUTES),
         ),
     ]
@@ -74,7 +74,7 @@ class BoardsDetails(FeatureDetails):
             name="orchestrating",
             default=False,
             title="This environment only hands out board work",
-            abstract="Its agent delegates every ticket and writes no code itself",
+            abstract="The agent hands every ticket to a helper and writes no code itself",
         ),
     ]
 

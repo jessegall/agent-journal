@@ -72,7 +72,7 @@ onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));
             </template>
             <template v-if="detail.inHand">
                 <div class="detail-fact">
-                    <dt>In hand</dt>
+                    <dt>In progress</dt>
                     <dd>{{ counted(detail.inHand, "to-do", "to-dos") }}</dd>
                 </div>
             </template>
@@ -88,7 +88,7 @@ onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));
                 <template v-if="busy === 'open'">
                     <Spinner />
                 </template>
-                {{ running || current ? "Open" : "Open without starting" }}
+                {{ running || current ? "Open" : "Open without starting an agent" }}
             </button>
             <template v-if="!running">
                 <template v-for="agent in AGENTS" :key="agent.key">

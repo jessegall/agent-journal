@@ -28,7 +28,7 @@ const activityCounts = computed(() => [
         key: "shells",
         icon: "play",
         n: live(props.data && props.data.shell_rows),
-        title: "Background shells: commands the agent left running in the background",
+        title: "Background commands the agent left running",
     },
     {
         key: "subagents",
@@ -158,7 +158,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                 <AgentFact
                     :class="['agent-fact', 'agent-count', 'agent-loops', {open: open === 'loops'}]"
                     icon="loop"
-                    :title="`${loops} scheduled loop${loops === 1 ? '' : 's'}: prompts the agent set to run again on a schedule`"
+                    :title="`${loops} repeating prompt${loops === 1 ? '' : 's'}: prompts the agent set to run again on a schedule`"
                     :aria-expanded="open === 'loops'"
                     @click="toggle('loops', $event)"
                 >

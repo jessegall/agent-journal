@@ -11,7 +11,7 @@ const {pins, minimised, toggle} = usePins(() => props.notices);
         <button
             type="button"
             :class="['pins-toggle', {minimised, inline}]"
-            :title="minimised ? 'Show the pinned links' : 'Tuck the pinned links into this corner'"
+            :title="minimised ? 'Show the pinned links' : 'Shrink the pinned links to this corner'"
             @click.stop="toggle"
         >
             <Icon :name="minimised ? 'pin' : 'up'" :size="12" />

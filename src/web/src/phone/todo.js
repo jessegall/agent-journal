@@ -7,7 +7,7 @@ function state(row) {
     if (row.completed) return "Done";
     if (data.blocked) return "Blocked";
     if (data.work || IN_HAND.includes(data.status)) return "In hand";
-    if (data.status === "parked") return "Parked";
+    if (data.status === "parked") return "Paused";
     return "Open";
 }
 

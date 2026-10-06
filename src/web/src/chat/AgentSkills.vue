@@ -6,7 +6,7 @@ const emit = defineEmits(["read", "browse"]);
 </script>
 
 <template>
-    <p class="bar-none">Loaded in this window, newest last. A compaction empties it.</p>
+    <p class="bar-none">Loaded in this window, newest last. Shortening the conversation empties it.</p>
     <template v-if="!skills.length">
         <p class="bar-none">None — the agent is working from memory.</p>
     </template>

@@ -78,20 +78,20 @@ const others = computed(() => triggers.value.filter((t) => t.n !== current.value
         </template>
         <p class="sentence">{{ sentence }}</p>
         <template v-if="editable">
-            <FormField label="Starts">
+            <FormField label="How this sequence starts">
                 <Segmented fill wrap :options="MODES" :value="mode" @pick="pickMode" />
             </FormField>
             <template v-if="mode === 'event'">
-                <FormField label="Kind of item">
+                <FormField label="Item that starts this sequence">
                     <ChoiceList :choices="kindChoices" @pick="(type) => save(`${type}.created`)" />
                 </FormField>
-                <FormField label="What happens to it">
+                <FormField label="Change that starts this sequence">
                     <ChoiceList :choices="momentChoices" @pick="(value) => save(`${kind}.${value}`)" />
                 </FormField>
             </template>
             <template v-if="mode === 'trigger'">
                 <template v-if="current">
-                    <FormField label="The trigger">
+                    <FormField label="Trigger that starts this sequence">
                         <div class="card">
                             <span class="card-text">
                                 <span class="card-title">{{ current.title }}</span>

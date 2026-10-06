@@ -89,7 +89,7 @@ const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
         <template v-if="settled && !steady">
             <template v-if="dismissed">
                 <div class="own-words">
-                    <span>Dismissed</span>
+                    <span>Closed</span>
                     <template v-if="given.reason">
                         <TextDisplay inline class="own-words-text" :text="given.reason" />
                     </template>
@@ -115,10 +115,10 @@ const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
                         <template v-if="resource.type === 'question' && !resource.data.hidden">
                             <Btn
                                 small
-                                title="Close this question without answering it; anything typed here goes with it as the reason"
+                                title="Close the question without answering. Anything you typed is sent as the reason."
                                 @click="dismiss(resource, own)"
                             >
-                                Dismiss
+                                Close
                             </Btn>
                         </template>
                         <Btn kind="primary" small @click="submit(own)">{{ capitalised(word(resource.type, "complete")) }}</Btn>

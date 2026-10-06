@@ -35,7 +35,7 @@ function react(face) {
                     <button type="button" class="thread-face-pick" :title="`React ${f}`" @click.stop="react(f)">{{ f }}</button>
                 </template>
             </div>
-            <button type="button" class="thread-tool" title="Never mind" @click.stop="emit('update:picking', false)">
+            <button type="button" class="thread-tool" title="Cancel" @click.stop="emit('update:picking', false)">
                 <Icon name="close" />
             </button>
         </template>
@@ -52,7 +52,7 @@ function react(face) {
                 <button
                     type="button"
                     class="thread-tool"
-                    title="Delete it — it comes off the list and stays in the record"
+                    title="Delete. It leaves the list but stays in the history."
                     @click.stop="emit('delete')"
                 >
                     Delete

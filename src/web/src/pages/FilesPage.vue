@@ -83,7 +83,7 @@ const pickKind = (key) => {
                 icon="search"
                 type="search"
                 :value="query"
-                placeholder="Search names, descriptions and rows"
+                placeholder="Search file names, descriptions and attached items"
                 aria-label="Find a file"
                 @input="query = $event.target.value"
                 @keydown.esc="query = ''"

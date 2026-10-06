@@ -28,7 +28,7 @@ const STATES = {
         dot: "running",
         word: "Running",
         line: "by the main agent",
-        hint: "The main agent reviews each plan and each change, then merges; it stays free for your requests. Pause is the run's only control: no new ticket starts, and running agents finish their step.",
+        hint: "The main agent reviews each plan and change, then merges it. The agent stays free for your requests. Pause stops new tickets; running agents finish their steps.",
     },
     paused: {dot: "", word: "Paused", line: "no new ticket starts; running agents finish their step"},
     finished: {
@@ -162,11 +162,11 @@ const counting = ref(false);
                         />
                     </div>
                     <p class="run-note">
-                        One limit for every board.
+                        This limit applies to every board.
                         {{
                             limit
-                                ? "Lower it to none and every started ticket gets its agent straight away."
-                                : "At none, every started ticket has its agent."
+                                ? "Set it to none (no limit) and every started ticket gets an agent at once."
+                                : "At none, every started ticket gets an agent at once."
                         }}
                     </p>
                     <template v-if="running.length">

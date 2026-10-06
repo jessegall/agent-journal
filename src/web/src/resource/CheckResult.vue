@@ -56,7 +56,7 @@ async function save(key, value) {
                         {{ last.ok ? "passed" : `failed with exit ${last.code}` }} {{ age(last.at) }} in
                         {{ seconds(last.took) }}
                     </template>
-                    <template v-else>press Run to see where it stands</template>
+                    <template v-else>press Run to check now</template>
                 </span>
             </div>
             <span class="grow" />
@@ -78,7 +78,7 @@ async function save(key, value) {
         <h3>Configuration</h3>
         <label class="field">
             <span class="label">Command</span>
-            <span class="help">Run from the project root; exit 0 passes, anything else fails</span>
+            <span class="help">Run from the project root; Exit code 0 means pass; anything else means fail.</span>
             <textarea v-model="command" class="command" rows="2" spellcheck="false" @change="save('command', command)" />
         </label>
         <label class="field inline">

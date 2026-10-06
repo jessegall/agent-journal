@@ -30,7 +30,7 @@ const emit = defineEmits(["send", "files", "paste", "remove"]);
                 <textarea
                     v-model="text"
                     rows="2"
-                    :placeholder="files.length ? 'Anything I should know before I sort it? Optional' : 'Type or paste anything'"
+                    :placeholder="files.length ? 'Anything the agent should know before sorting it? Optional' : 'Type or paste anything'"
                     @keydown.meta.enter.prevent="emit('send')"
                     @keydown.ctrl.enter.prevent="emit('send')"
                 />
@@ -53,8 +53,8 @@ const emit = defineEmits(["send", "files", "paste", "remove"]);
                 </DumpLane>
             </template>
             <p class="dump-context">
-                Mixed is fine. I sort it by subject, one document per subject with a proper name, and file each one straight into a new
-                collection. Rename or merge anything afterwards, or remove the whole collection.
+                Mixed is fine. The agent sorts it by subject, one document per subject with a proper name, and files each one straight into a new
+                collection. You can rename or merge anything afterwards, or remove the whole collection.
             </p>
             <template v-if="earlier.length">
                 <div class="dump-earlier">

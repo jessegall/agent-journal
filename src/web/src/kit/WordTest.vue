@@ -25,7 +25,7 @@ function type(value) {
 </script>
 
 <template>
-    <FormField label="Test the words" :help="result">
+    <FormField label="Try a sentence against these words" :help="result">
         <TextInput :value="text" placeholder="Type a sentence to see whether it matches" @input="type($event.target.value)" />
     </FormField>
 </template>

@@ -100,12 +100,12 @@ onMounted(checkTunnel);
                         <div class="phone-code-empty">
                             <template v-if="made || busy">
                                 <Spinner />
-                                {{ made ? "Opening the tunnel" : "Making a code" }}
+                                {{ made ? "Opening a secure connection" : "Making a code" }}
                             </template>
                         </div>
                     </template>
                     <div class="phone-code-side">
-                        <p class="phone-how">Scan this with your phone's camera. The code works once, for 10 minutes.</p>
+                        <p class="phone-how">Scan this with your phone's camera. The code can be used once and expires after 10 minutes.</p>
                         <span class="phone-label">Stays connected for</span>
                         <Segmented :options="DAYS" :value="days" @pick="pick" />
                         <Btn small :busy="busy" @click="fresh">New code</Btn>
@@ -128,7 +128,7 @@ onMounted(checkTunnel);
                     </template>
                 </ul>
                 <p class="phone-cannot">
-                    It can't change settings, run commands or reach other environments. Everything it does is recorded as you.
+                    It can't change settings, run commands or reach other environments. Everything it does is logged as done by you.
                 </p>
             </div>
         </div>

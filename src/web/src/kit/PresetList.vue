@@ -62,7 +62,7 @@ async function copyLink(key) {
         const url = await props.linkFor(key, once ? {expires: "7d", once} : {expires: lasting.value, once});
         await copyText(url);
         const label = LASTS.find((l) => l.key === lasting.value).label;
-        copied.value = {key, url, note: once ? "It opens once, then stops working." : `It works for ${label}.`};
+        copied.value = {key, url, note: once ? "The link works once." : `It works for ${label}.`};
     } catch (error) {
         linkError.value = error.message;
     } finally {

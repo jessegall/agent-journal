@@ -24,7 +24,7 @@ const skillMark = computed(() => ({
     at: props.turn.created,
     title: `Read the ${props.turn.title} skill`,
 }));
-const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "The agent compacted its context", at: props.turn.created}));
+const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation summarised to free space", at: props.turn.created}));
 const cardMark = computed(() => ({...data.value, at: props.turn.created}));
 
 function markClick(data) {

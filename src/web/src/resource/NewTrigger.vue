@@ -52,7 +52,7 @@ async function submit() {
     <Dialog title="New trigger" @close="emit('close')">
         <TriggerEditor :draft="draft">
             <template #examples>
-                <FormField label="Start from an example">
+                <FormField label="Start with an example trigger">
                     <div class="examples">
                         <template v-for="example in EXAMPLES" :key="example.name">
                             <Btn small @click="start(example)">{{ example.name }}</Btn>

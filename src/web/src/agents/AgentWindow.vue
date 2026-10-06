@@ -35,7 +35,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
         </template>
         <p class="aw-title">{{ entry.title }}</p>
         <template v-if="quiet">
-            <p :class="['aw-seen', quiet.tone, {waits: entry.waits && quiet.tone}]" :title="`Its last hook report or transcript write`">
+            <p :class="['aw-seen', quiet.tone, {waits: entry.waits && quiet.tone}]" :title="`Last sign of life from the agent`">
                 Last active {{ clock(entry.at) }} · {{ quiet.ago }}
             </p>
         </template>

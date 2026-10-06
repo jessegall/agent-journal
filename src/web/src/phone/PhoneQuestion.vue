@@ -19,7 +19,7 @@ const answered = ref("");
 const trouble = ref("");
 const options = computed(() => props.question.data.options || []);
 const outcome = computed(() =>
-    props.question.data.dismissed || answered.value === "Dismissed" ? "Dismissed" : `Answered: ${props.question.outcome || answered.value}`
+    props.question.data.dismissed || answered.value === "Closed" ? "Closed" : `Answered: ${props.question.outcome || answered.value}`
 );
 
 function holdOwn(hold) {
@@ -46,7 +46,7 @@ async function reconciled(mine) {
     refresh();
     try {
         const real = await phone.row(`question:${props.question.n}`);
-        const theirs = real.data?.dismissed ? "Dismissed" : real.outcome || "";
+        const theirs = real.data?.dismissed ? "Closed" : real.outcome || "";
         if (!theirs) return;
         answered.value = theirs;
         if (theirs !== mine) tell(trouble, `Already answered on the computer: ${theirs}`);
@@ -64,7 +64,7 @@ function missed(error, mine) {
 
 async function dismiss() {
     list.value?.undo();
-    answered.value = "Dismissed";
+    answered.value = "Closed";
     try {
         const went = await perform({kind: "dismiss", n: props.question.n});
         if (went === "held") tell(trouble, HELD);
@@ -72,7 +72,7 @@ async function dismiss() {
         refresh();
         if (went !== "held") emit("done");
     } catch (error) {
-        missed(error, "Dismissed");
+        missed(error, "Closed");
     }
 }
 </script>
@@ -100,7 +100,7 @@ async function dismiss() {
                     </form>
                 </template>
             </OptionList>
-            <button type="button" class="question-dismiss" @click="dismiss">Dismiss</button>
+            <button type="button" class="question-dismiss" @click="dismiss">Close</button>
             <template v-if="trouble">
                 <p class="question-trouble">{{ trouble }}</p>
             </template>

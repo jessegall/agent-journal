@@ -86,7 +86,7 @@ onMounted(() =>
                 </div>
             </template>
             <template v-else>
-                <Btn small class="helper-remove" @click="confirming = true">Remove helper and its working copy</Btn>
+                <Btn small class="helper-remove" @click="confirming = true">Remove the helper and its worktree</Btn>
             </template>
         </template>
         <template v-if="refusal">

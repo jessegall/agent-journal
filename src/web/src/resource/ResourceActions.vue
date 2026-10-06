@@ -68,7 +68,7 @@ async function run(method) {
 <template>
     <div class="actions">
         <template v-if="locked">
-            <Chip :title="`Made by the ${locked} plugin: it goes when the plugin is removed, and nothing else can remove or close it`">
+            <Chip :title="`Made by the ${locked} plugin. It is deleted when the plugin is removed and cannot be closed or removed otherwise.`">
                 <Icon name="lock" :size="11" />
                 Locked · {{ locked }}
             </Chip>
@@ -80,7 +80,7 @@ async function run(method) {
             <TextInput
                 :value="text"
                 class="grow"
-                :placeholder="meta(resource.type).labels.outcome || 'A word on how'"
+                :placeholder="meta(resource.type).labels.outcome || 'Say how it ended'"
                 autofocus
                 @keydown.enter="run(prompt)"
                 @input="text = $event.target.value"

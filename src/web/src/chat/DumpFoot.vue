@@ -22,8 +22,8 @@ const emit = defineEmits(["confirmed"]);
                 <span class="dump-confirm">
                     Remove the collection and the {{ counted(filed, "thing", "things") }} in it? What you dropped is not touched.
                 </span>
-                <Btn small @click="confirming = ''">Keep it</Btn>
-                <Btn kind="danger" small @click="emit('confirmed')">Remove</Btn>
+                <Btn small @click="confirming = ''">Keep the collection</Btn>
+                <Btn kind="danger" small @click="emit('confirmed')">Remove the collection</Btn>
             </template>
             <template #stop>
                 <span class="dump-confirm">Stop filing? What is filed stays; the rest of the pile is not read.</span>

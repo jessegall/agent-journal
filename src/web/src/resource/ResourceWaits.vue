@@ -8,7 +8,7 @@ defineProps({resource: {type: Object, required: true}, blocked: {type: String, d
 <template>
     <p class="waits">
         <template v-if="blocked">Blocked: {{ blocked }}</template>
-        <template v-if="parkedFor(resource)">Parked: {{ parkedFor(resource) }}</template>
+        <template v-if="parkedFor(resource)">Paused: {{ parkedFor(resource) }}</template>
         <template v-if="waits.length">
             Waits on
             <template v-for="(ref, i) in waits" :key="ref">

@@ -31,7 +31,7 @@ defineEmits(["change", "timing", "act"]);
         <template v-if="region.key === 'sharing' && !across">
             <div class="settings-region-head">
                 <h3 class="settings-subhead">Tunler account</h3>
-                <p class="settings-line">The account that share links and phones connect through.</p>
+                <p class="settings-line">Tunler is the service that gives share links and phones their web address. Connect an account here.</p>
             </div>
             <SettingsTunnel />
         </template>
