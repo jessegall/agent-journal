@@ -935,7 +935,7 @@ def menu_in_terminal(*typed) -> tuple[str, int]:
     import termios
     master, slave = pty.openpty()
     child = subprocess.Popen([sys.executable, "-c", program], stdin=slave, stdout=slave, stderr=slave, start_new_session=True,
-                             preexec_fn=lambda: fcntl.ioctl(0, termios.TIOCSCTTY, 0))
+                             preexec_fn=lambda: (signal.signal(signal.SIGINT, signal.SIG_DFL), fcntl.ioctl(0, termios.TIOCSCTTY, 0)))
     os.close(slave)
     seen = b""
     try:

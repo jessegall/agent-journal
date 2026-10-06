@@ -36,11 +36,11 @@ def test_other_systems_and_a_missing_tab_leave_opening_to_the_normal_path():
         "a missing macOS tab leaves opening to the normal browser path"
 
 
-def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
+def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does(monkeypatch):
     visible = []
     up = {"url": "http://127.0.0.1:8422/"}
-    viewer.running = lambda root: up["url"]
-    viewer.show = lambda url, env="": visible.append(f"{url}#/{env}")
+    monkeypatch.setattr(viewer, "running", lambda root: up["url"])
+    monkeypatch.setattr(viewer, "show", lambda url, env="": visible.append(f"{url}#/{env}"))
 
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
