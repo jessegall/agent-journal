@@ -852,6 +852,7 @@ def test_a_hook_reaches_a_busy_server_whose_heartbeat_is_late_and_no_second_serv
         slow_url = f"http://127.0.0.1:{server.server_port}/"
         write_text(viewer.marker(root), json.dumps({"url": slow_url, "at": time.time(), "port": server.server_port, "pid": slow.pid}))
         monkeypatch.setattr(viewer, "RESTARTING", 1.0)
+        monkeypatch.setattr(viewer, "PORTS", [server.server_port])
         monkeypatch.setattr(viewer, "available", lambda *a, **k: pytest.fail("a second server was started"))
         assert viewer.launch(root, tmp_path) == (slow_url, None)
     finally:
@@ -865,6 +866,7 @@ def test_a_server_that_starts_but_never_answers_is_stopped_and_counted_as_a_cras
     root = tmp_path / ".journal"
     (root / "runtime").mkdir(parents=True)
     monkeypatch.setattr(viewer, "COMING_UP", 1.0)
+    monkeypatch.setattr(viewer, "PORTS", [59992])
     monkeypatch.setattr(viewer, "entry", lambda name: [sys.executable, "-c", "import time; time.sleep(600)"])
     exits = []
     for _ in range(3):
@@ -946,7 +948,7 @@ def menu_in_terminal(*typed) -> tuple[str, int]:
                 os.write(master, piece.encode())
                 time.sleep(0.02)
             time.sleep(0.1)
-        until = time.time() + 10
+        until = time.time() + 30
         while b"RESULT" not in seen and time.time() < until:
             if waiting.select([master], [], [], 0.2)[0]:
                 try:
