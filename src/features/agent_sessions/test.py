@@ -65,6 +65,9 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     report(record, "working", "PostToolUse", session="claude-1")
     assert gate("claude-1") == "environment 't' was claimed by session claude-2 (the terminal was closed): switch to another, or claim it back", \
         "evicted: held, naming who, why and what to do"
+    from engine.seats import offline
+    assert offline(record.root, "claude-1") == "session 'claude-1' is not online: session 'claude-2' took environment 't' from it (the terminal was closed)" \
+        and "no agent's terminal reports it" in offline(record.root, "claude-9"), "a session that is not online says why"
     one.claim(env.n, "it was mine")
     report(record, "working", "PostToolUse", session="claude-1")
     assert gate("claude-1") == "", "claimed back: released"
