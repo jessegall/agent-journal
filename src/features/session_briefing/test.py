@@ -276,3 +276,8 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     monkeypatch.setattr(codex, "_wrote", lambda raw: True)
     monkeypatch.setattr(codex, "clear_input", lambda: None)
     assert codex.run_command("/status"), "a driver without an input-box mark types a command and returns at once"
+    pressed.clear()
+    monkeypatch.setattr(codex, "_wrote", lambda raw: pressed.append(raw) or True)
+    monkeypatch.setattr(codex, "_submitted", lambda since: pressed.count(b"\r") >= 2)
+    assert codex.send("deploy it", now=True, by="ticket-8") and pressed.count(b"\r") == 2, \
+        "an Enter Codex read as a new line is pressed again until Codex takes the message"
