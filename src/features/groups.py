@@ -61,11 +61,10 @@ class Group(Enum):
     RECORDS = Grouping("Documents and checks", "Documents, collections, checks and other things the agent files", Section.MEMORY)
     ARCHIVE = Grouping("Archive and cleanup", "How long closed items and runtime files are kept", Section.MEMORY)
     CHAT = Grouping("Chat", "What the chat shows", Section.CHAT)
-    VIEWER = Grouping("Viewer", "Parts of the viewer you can turn off", Section.CHAT)
+    VIEWER = Grouping("Viewer", "What the viewer shows, and when it opens", Section.CHAT)
     UPDATES = Grouping("Updates", "How new versions of the journal are installed", Section.SYSTEM, Tab.SYSTEM)
     PROJECT = Grouping("This project", "For the whole project, in every environment", Section.SYSTEM, Tab.SYSTEM)
     BROWSER = Grouping("This browser", "Saved in this browser only", Section.SYSTEM, Tab.SYSTEM)
-    ALWAYS = Grouping("Always on", "Parts of the journal that cannot be turned off", Section.SYSTEM, Tab.SYSTEM)
     STOP = Grouping("Stop the journal", "Closes the viewer, the engine and every plugin. Nothing is deleted.", Section.SYSTEM, Tab.SYSTEM)
     SHARING = Grouping(
         "Share links",

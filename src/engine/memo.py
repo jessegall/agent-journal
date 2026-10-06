@@ -17,7 +17,7 @@ class Memo:
 
     def put(self, key, stamp, value):
         if self.limit and len(self.held) >= self.limit and key not in self.held:
-            self.held.clear()
+            self.held.pop(next(iter(self.held)))
         self.held[key] = (stamp, value)
         return value
 

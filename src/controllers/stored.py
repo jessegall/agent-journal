@@ -368,8 +368,8 @@ class RowStore:
         days: dict[str, list[dict]] = {}
         for row in chosen:
             days.setdefault(time.strftime("%Y-%m-%d", time.localtime(row["updated"])), []).append(row)
-        with self.record.locked(self.resource.scope):
-            for day, rows in days.items():
+        for day, rows in days.items():
+            with self.record.locked(self.resource.scope):
                 self._packed_into(folder, f"{day}.zip", rows)
         return len(chosen)
 

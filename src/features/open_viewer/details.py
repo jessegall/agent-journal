@@ -5,7 +5,7 @@ from features.groups import Group
 class OpenViewerDetails(FeatureDetails):
     explains = 'The viewer opens when the agent starts, or its existing tab comes forward. You can turn this off in Settings.'
     name = "open_viewer"
-    group = Group.ALWAYS
+    group = Group.VIEWER
     label = "Open the viewer at launch"
     hint = "Or bring its open tab to the front"
     has_skill = False

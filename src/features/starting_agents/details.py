@@ -6,7 +6,7 @@ from features.groups import Group
 class StartingAgentsDetails(FeatureDetails):
     explains = 'You can start an agent in an environment from the viewer. The journal opens its session and tracks its work.'
     name = "starting_agents"
-    group = Group.ALWAYS
+    group = Group.SESSIONS
     label = "Start agents from the viewer"
     hint = "The Start button opens an agent in an environment's own terminal"
     has_skill = False

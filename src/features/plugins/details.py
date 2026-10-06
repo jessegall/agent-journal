@@ -5,7 +5,7 @@ from features.groups import Group
 class PluginsDetails(FeatureDetails):
     explains = 'Plugins can add actions and pages to the journal. You can see and manage the plugins installed for this project.'
     name = "plugins"
-    group = Group.ALWAYS
+    group = Group.PROJECT
     label = "Plugins"
     hint = "Repositories installed into the journal"
     when = "a plugin is installed, upgraded, configured or answers"
