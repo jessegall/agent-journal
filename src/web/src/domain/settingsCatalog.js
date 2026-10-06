@@ -136,7 +136,7 @@ function settingRow(f, setting, settings) {
 }
 
 function featureRows(f, settings, extras) {
-    const declared = f.settings.filter((s) => s.kind !== "map");
+    const declared = f.settings.filter((s) => s.kind !== "map" && !s.hidden);
     const under = (key) => declared.filter((s) => s.under === key).map((s) => settingRow(f, s, settings));
     const own =
         hasTiming(f.trigger) && f.trigger_label
@@ -176,7 +176,7 @@ function block(f, settings, extras) {
 }
 
 function normalised(f) {
-    const settings = (f.settings || []).filter((s) => s.kind !== "map");
+    const settings = (f.settings || []).filter((s) => s.kind !== "map" && !s.hidden);
     return {
         ...f,
         settings: f.settings || [],

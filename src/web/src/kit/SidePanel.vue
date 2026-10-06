@@ -33,6 +33,11 @@ const {visible, close, closed} = closing(emit, props);
                     <div class="body">
                         <slot />
                     </div>
+                    <template v-if="$slots.foot">
+                        <footer class="foot">
+                            <slot name="foot" />
+                        </footer>
+                    </template>
                 </template>
                 <template v-else>
                     <slot />
@@ -145,6 +150,14 @@ h2 {
     color: var(--text-2);
     font-size: 12.5px;
     line-height: 1.45;
+}
+
+.foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
 }
 
 .body {
