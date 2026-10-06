@@ -165,6 +165,42 @@ def test_the_worker_stops_on_request_or_signal_reloads_when_its_session_moves_an
     timely.tick()
     assert sent == ["go"], "within its time the start-up confirm is typed once"
 
+    pressed = []
+    asking = SimpleNamespace(printed=printed, printed_tail=lambda size: b"ready", consent=lambda early: b"y", opening=lambda early: "", press_raw=pressed.append, CONFIRM_AFTER=0.0)
+    consenting = worker.Confirm(asking)
+    consenting.tick()
+    assert pressed == [], "a consent question is not answered again within a moment of the start"
+    consenting.consented -= worker.CONSENT_EVERY + 1
+    consenting.tick()
+    assert pressed == [b"y"], "a consent question the agent puts at start-up is answered"
+
+    waiting = threading.Event()
+    viewer_thread = threading.Thread(target=waiting.wait, daemon=True)
+    viewer_thread.start()
+    assert worker.keep_viewer(record.root, Path(record.root).parent, viewer_thread, []) is viewer_thread, "a viewer that is still running is left alone"
+    waiting.set()
+    monkeypatch.setattr(worker.features, "load", lambda: 1 / 0)
+    assert worker.checks(SimpleNamespace(root=record.root, env=record.env), asked) == [], "checks that cannot start leave the worker running without them"
+    monkeypatch.undo()
+
+    monkeypatch.setattr(worker, "watch_change_log", lambda: None)
+    monkeypatch.setattr(worker, "TICK", 0.01)
+    monkeypatch.setattr(worker, "CHECKS_EVERY", 0.0)
+    monkeypatch.setattr(worker, "RELOAD_EVERY", 0.0)
+    monkeypatch.setattr(worker, "own_build", lambda root: True)
+    monkeypatch.setattr(worker, "supervise", lambda root, stopping: stopping.wait(10))
+    monkeypatch.setattr(worker, "run_services", lambda seat, services: None)
+    sessions.write("claude-1", environment=record.env)
+    crashes = []
+    monkeypatch.setattr(worker, "keep_viewer", lambda root, cwd, watching, exits: exits.extend([1] * worker.SERVER_CRASHES) or crashes.append(1))
+    from supervisor import HEAL
+    assert start() == HEAL and crashes, "a server that keeps crashing at start asks the supervisor to heal the build"
+    monkeypatch.setattr(worker, "keep_viewer", lambda root, cwd, watching, exits: None)
+    built, stamps = [], iter(["a", "a", "a", "b", "b", "b", "b", "b"])
+    monkeypatch.setattr(worker, "checks", lambda seat, driver: built.append(1) or [])
+    monkeypatch.setattr(worker, "installed_stamp", lambda root: next(stamps))
+    assert start() == RELOAD and len(built) >= 2, "checks that could not start are tried again, and a newly installed build reloads the worker"
+
 
 def fake_engine(monkeypatch, state="idle"):
     from providers import DRIVERS
@@ -430,7 +466,7 @@ def test_an_agent_silent_for_two_minutes_is_probed_and_then_marked_idle_or_stopp
     assert engine.probe() == "probe: working" and engine.probed_at == 0.0, "an agent that printed something in the meantime is working"
 
 
-def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_reports_a_failed_command(tmp_path):
+def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_reports_a_failed_command(tmp_path, monkeypatch):
     import collections
     import os
     import socket
@@ -479,5 +515,42 @@ def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_re
     ignoring.wait()
     reader.close()
     writer.close()
+
+    seat.exit, seat.fd = "bye", os.open(os.devnull, os.O_RDONLY)
+    assert seat.exited() is None, "an agent whose terminal is already closed has no farewell to type and is left to be stopped"
+    os.close(seat.fd)
+    seat.fd, seat.inbox = os.open(os.devnull, os.O_RDONLY), socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    printed = []
+    seat.output = printed.append
+    from types import SimpleNamespace
+    patched = lambda **changes: monkeypatch.setattr(supervisor, "os", SimpleNamespace(**{**vars(os), **changes}))
+    chosen = lambda ready, writable: monkeypatch.setattr(supervisor, "select", SimpleNamespace(select=lambda sources, writing, other, wait=None: (ready, writable, [])))
+    patched(read=lambda fd, size: (_ for _ in ()).throw(OSError("terminal gone")))
+    chosen([seat.fd], [])
+    seat.drain()
+    assert printed == [], "a terminal that fails while the rest of its output is drained is left alone"
+    seat.sources, seat.pid, seat.stdin = [seat.fd], os.getpid(), os.open(os.devnull, os.O_RDONLY)
+    patched(read=lambda fd, size: (_ for _ in ()).throw(OSError("terminal gone")), waitpid=lambda pid, flags: (pid, 7 << 8))
+    assert seat.relay() == 7 << 8, "an agent whose terminal fails while it is read has ended, and its status is the answer"
+    chosen([seat.stdin], [seat.fd])
+    seat.pending = collections.deque([b"waiting"])
+    seat.feed = lambda: seat.pending.clear()
+    patched(read=lambda fd, size: b"")
+    seat.stop_agent = lambda: 99
+    assert seat.relay() == 99 and not seat.pending, "a terminal that closes ends the agent, after what was waiting to be typed is sent"
+    patched(read=lambda fd, size: b"more")
+    seat.typing = lambda data: printed.append(data)
+    assert seat.relay() is None and list(seat.pending) == [b"more"] and printed == [b"more"], "what is typed in the terminal is queued for the agent"
+    monkeypatch.undo()
+    os.close(seat.fd)
+    os.close(seat.stdin)
+    seat.inbox.close()
+
+    seat.stdout, seat.ended_command, seat.cwd = os.open(tmp_path / "shown", os.O_WRONLY | os.O_APPEND), ["journal", "ended", "claude-1"], tmp_path / "nowhere"
+    seat.start_ended()
+    assert "did not start" in (tmp_path / "shown").read_text(), "a cleanup that cannot start is said in the terminal"
+    seat.heal_command, seat.cwd, seat.unhealed, seat.worker_began = ["python3", "-c", "pass"], tmp_path, supervisor.UNHEALED_LIMIT - 1, time.time()
+    seat.stop_agent = lambda: 77
+    assert seat.after_worker(1) == 77 and "no earlier build" in (tmp_path / "shown").read_text(), "a build that keeps failing to start ends the session, and the terminal says why"
 
 

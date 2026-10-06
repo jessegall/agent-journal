@@ -347,6 +347,87 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     assert len(list((journal / "attic").glob("before-*.tar.gz"))) == install.KEPT_COPIES, "only the newest copy of the record is kept"
     assert install.keep_copy(tmp_path / "no-record") == "", "a project with no record keeps no copy"
 
+    import subprocess
+    import sys
+    site = tmp_path / "site"
+    site_root = site / ".journal"
+    (site_root / "src").mkdir(parents=True)
+    with monkeypatch.context() as patch:
+        patch.setattr(install.subprocess, "run", lambda *args, **kwargs: (_ for _ in ()).throw(OSError("no git here")))
+        assert install.fetch(tmp_path / "nowhere") == ("", "no git here"), "a git that cannot start is a failed fetch with its reason, not a crash"
+    with monkeypatch.context() as patch:
+        patch.setattr(install, "keep_copy", lambda record: "")
+        patch.setattr(install, "installed_here", lambda *args: True)
+        patch.delenv(install.BOOTSTRAPPED, raising=False)
+        patch.setattr(install, "released", lambda *args: "9.9.9")
+        patch.setattr(install, "fetch", lambda into, repository=None, ref="": ("", "offline"))
+        assert install.upgrading(site, site_root) == ["package not refreshed: offline"], "an upgrade that cannot fetch the release stops with the reason"
+        patch.setattr(install, "fetch", lambda into, repository=None, ref="": (into.mkdir(parents=True), ("sha", ""))[1])
+        assert install.upgrading(site, site_root)[-1].startswith("package not refreshed: ") and "holds no journal package" in install.upgrading(site, site_root)[-1], \
+            "a fetched release that holds no package is refused and nothing is emptied"
+        patch.setattr(install, "refresh", lambda source, target: ([], []))
+        patch.setattr(install, "version_in", lambda folder, missing="": "1.0.0")
+        assert install.upgrading(site, site_root)[-1] == "package refreshed but failed to reach the release: installed 1.0.0, not 9.9.9", \
+            "an install that did not reach the release says which version it holds"
+        patch.setattr(install, "version_in", lambda folder, missing="": "9.9.9")
+        patch.setattr(install, "handed_over", lambda site, site_root, marks=(): ["handed over"])
+        assert install.upgrading(site, site_root)[-1] == "handed over", "an install that reached the release hands the rest to its own installer"
+    checkout = tmp_path / "checkout"
+    subprocess.run(["git", "init", "-q", str(checkout)], check=True, timeout=30)
+    with monkeypatch.context() as patch:
+        patch.setattr(install, "keep_copy", lambda record: "")
+        patch.setattr(install, "PACKAGE", checkout)
+        patch.setattr(install, "installed_here", lambda *args: False)
+        patch.setattr(install, "refresh", lambda source, target: (_ for _ in ()).throw(OSError("disk full")))
+        lines = install.upgrading(site, site_root)
+        assert lines[0].startswith("package not pulled") and lines[-1] == "package not refreshed: disk full", \
+            "a checkout that cannot pull says so and a refresh that cannot write is reported"
+    with monkeypatch.context() as patch:
+        patch.setattr(install, "PACKAGE", site_root)
+        refreshed = []
+
+        def refuse_a_fetched_package(source, target):
+            if source == site_root:
+                return refreshed.append(source) or ([], [])
+            raise OSError("disk full")
+        patch.setattr(install, "refresh", refuse_a_fetched_package)
+        patch.setattr(install, "fetch", lambda into, repository=None, ref="": ("", ""))
+        patch.setattr(install, "handed_over", lambda *args: ["handed over"])
+        patch.setattr(install, "complete", lambda folder: False)
+        patch.delenv(install.REPAIRED, raising=False)
+        patch.setattr(install, "configure", lambda site, site_root: ["configured"])
+        patch.setattr(install, "LOADED", SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles"))
+        patch.setattr(install, "retire", lambda site_root: 3)
+        patch.setattr(install, "pack", lambda site_root: "packed")
+        patch.setattr(install, "remember_managed", lambda site, site_root: None)
+        lines = install.finish(site, site_root)
+        assert "package files an older installer did not know: disk full" in lines and "package moved into src/: 3 files out of the record" in lines and lines[-1] == "packed", \
+            "a repair that cannot write is said, and the install still configures and packs"
+        assert refreshed == [site_root], "a package that is the record itself is refreshed in place"
+        patch.setattr(install, "retire", lambda site_root: 0)
+        assert "migrations run" not in " ".join(lines) and "record already in shape" in lines, "a record already in shape is said so"
+        patch.setattr(install, "changed_managed", lambda site, site_root: ["a.md"])
+        patch.setattr(install, "copy_legacy_managed", lambda site, site_root: ["copied"])
+        patch.setattr(install, "changed_message", lambda site, changed: "files you changed")
+        assert install.install(site, site_root) == ["files you changed"], "an install over files the user changed asks first"
+        kept = []
+        patch.setattr(install, "archive_changed", lambda site, site_root, changed: kept.append(changed))
+        patch.setattr(install, "refresh", lambda source, target: ([], []))
+        assert install.install(site, site_root, yes=True) == ["copied", "configured"] and kept == [["a.md"]], "a confirmed install keeps the changed files and configures"
+    with monkeypatch.context() as patch:
+        class Absent:
+            def present(self, site):
+                return False
+        patch.setattr(install, "LOADED", SimpleNamespace(providers={"ghost": Absent}))
+        assert install.configure(site, site_root)[-1] == "no agent found here: neither Ghost", "a site with no agent in it is told so"
+    broken = tmp_path / "broken"
+    broken.mkdir()
+    (broken / "install.py").write_text((Path(install.__file__)).read_text())
+    ran = subprocess.run([sys.executable, str(broken / "install.py")], env={"PATH": "/usr/bin:/bin", install.HEALED: "1"}, capture_output=True, text=True, timeout=60)
+    assert ran.returncode != 0 and "ModuleNotFoundError" in ran.stderr, "an install that was already healed and still has no package fails loudly instead of looping"
+    ran = subprocess.run([sys.executable, str(broken / "install.py")], env={"PATH": "/usr/bin:/bin", install.REPOSITORY_ENV: str(tmp_path / "no-repository")}, capture_output=True, text=True, timeout=60)
+    assert "could not be fetched" in str(ran.stderr), "an installer with no package beside it and no source to fetch from says what is missing"
+
 
 def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):
     import http.server
