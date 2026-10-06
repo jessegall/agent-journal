@@ -8,7 +8,7 @@ ASKING = re.compile(r"\?|\b(should I|shall I|do you want|would you like|would yo
                     r"|jij beslist|aan jou|kies jij|jouw beslissing|één vraag voor je|een vraag voor je)\b", re.IGNORECASE)
 NAMED = re.compile(r"\b(?:questions?|vra(?:a)?g(?:en)?) (\d+)(?:\s*(?:-|–|to|tot)\s*(\d+))?", re.IGNORECASE)
 LEADING = re.compile(r"^\s*(?:[-*•]\s*)?\**(\d+)\b")
-QUOTED = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”")
+QUOTED = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”|https?://\S+")
 OPTION = 80
 
 

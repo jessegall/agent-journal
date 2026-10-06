@@ -137,7 +137,7 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     assert (start(f), READ_AT in os.environ) == (at, False), "the restarted channel reads on from where it stopped, so nothing queued meanwhile is skipped"
 
 
-def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
+def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_follow_up_is_typed_as_an_instruction(monkeypatch):
     from providers import DRIVERS
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-99")
@@ -149,6 +149,15 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
     driver.sent_at -= 5
     driver.pump()
     assert sent == ["first", "second"], "the queue goes out when the window ends"
+    follow = DRIVERS["claude"](fresh(), "claude-9")
+    posted, typed = [], []
+    monkeypatch.setattr(follow, "_post", lambda line, by: posted.append((line, by)) or True)
+    monkeypatch.setattr(follow, "_typed", lambda line, confirmed: typed.append(line) or True)
+    monkeypatch.setattr(follow, "awaits_answer", lambda: False)
+    assert follow.TAKES_CHANNEL and follow.send("do the next step", now=True, by="claude-1")
+    assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
+    assert follow.send("todo 5 next", now=True)
+    assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
 
 
 def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
@@ -164,19 +173,6 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     driver._report = lambda: SimpleNamespace(at=time.time(), asking={}) if written.count(b"\r") >= 2 else None
     assert (driver.send("hello", now=True), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
-
-
-def test_a_follow_up_is_typed_as_an_instruction_and_only_the_journal_uses_the_channel(monkeypatch):
-    from providers import DRIVERS
-    driver = DRIVERS["claude"](fresh(), "claude-9")
-    posted, typed = [], []
-    monkeypatch.setattr(driver, "_post", lambda line, by: posted.append((line, by)) or True)
-    monkeypatch.setattr(driver, "_typed", lambda line, confirmed: typed.append(line) or True)
-    monkeypatch.setattr(driver, "awaits_answer", lambda: False)
-    assert driver.TAKES_CHANNEL and driver.send("do the next step", now=True, by="claude-1")
-    assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
-    assert driver.send("todo 5 next", now=True)
-    assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
 
 
 def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
