@@ -8,7 +8,7 @@ from controllers.types import Agents
 from runner.hooks import handle
 from features.terminal.log import COMMANDS, JOURNAL, MOST_LINES, lines
 from providers import PROVIDERS
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 from tests.kit import report
 
 
@@ -213,6 +213,39 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert engine.typing().startswith("holding"), "nothing is typed while the user types in the terminal"
     os.utime(typed, (time.time() - 60,) * 2)
     assert (engine.typing(), calls, typed.exists()) == ("", ["clear_input"], False), "the stale draft is cleared once"
+    import providers.drivers as drivers
+    from providers import DRIVERS
+    from resources.base import Refused
+    monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
+    record = fresh()
+    read, write = os.pipe()
+    claude = DRIVERS["claude"](record, "claude-5", fd=write)
+    assert claude.press_raw(b"\x1b[B\r") is None and claude.press_raw(b"\r") is None, "raw keys are written, the enter after them in a write of its own"
+    claude.stop_turn()
+    claude.interrupt()
+    claude.permit(True)
+    claude.permit(False)
+    sent = os.read(read, 4096)
+    assert sent == b"\x1b[B\r\r\x1b\x03" + claude.ALLOW + claude.DENY, "stop, interrupt and the answer to a permission are written to the terminal as keys"
+    assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"
+    os.close(read)
+    assert claude._wrote(b"x") is False and claude.fd == -1, "a terminal that is closed stops being written to"
+    mute = DRIVERS["claude"](record, "claude-6")
+    assert mute.fd == -1 and mute._wrote(b"x") is False, "a driver with no terminal of its own types through the engine, which finds nobody"
+
+    assert claude.resuming(["--resume", "abc"]) and not claude.resuming(["--model", "x"]), "an agent started on a conversation is told from one started fresh"
+    assert claude.conversation(["--resume", "abc", "--model", "x"]) == "abc" and claude.conversation(["--resume", "--model", "x"]) == "", \
+        "the conversation is the name that follows the flag, never another flag"
+    assert claude.unresumed(["--resume", "abc", "--model", "x"]) == ["--model", "x"], "the flag and its name are taken out of the arguments"
+    assert claude.resumed(["--model", "x"], "def")[-2:] == [next(iter(claude.RESUMING)), "def"], "a conversation is resumed with the flag the agent knows"
+    assert claude.launch_args(["--model", "x"], automatic=True) == [*claude.AUTO_ARGS, "--model", "x"], "automatic mode adds the flags that approve"
+    assert claude.launch_args(list(claude.APPROVAL_FLAGS)[:1], automatic=True) == list(claude.APPROVAL_FLAGS)[:1], "an approval the user chose is not doubled"
+    assert claude.skipping(["--model", "x"], True)[:len(claude.SKIP_ARGS)] == list(claude.SKIP_ARGS) and claude.skipping([*claude.SKIP_ARGS, "a"], False) == ["a"], \
+        "skipping permissions is added and taken away"
+    assert claude.unautomated([*claude.AUTO_ARGS, "a"]) == ["a"] and claude.unautomated(["a"]) == ["a"], "the automatic flags are taken out when present"
+    monkeypatch.setenv("PATH", "/nonexistent")
+    monkeypatch.setattr(type(claude), "HOMES", ("/nonexistent",))
+    assert "was not found on this computer" in refused(lambda: claude.binary("/nonexistent")), "an agent that is not installed is named, with how to put it right"
 
 
 def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_was_born(monkeypatch):
@@ -236,6 +269,54 @@ def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_
 
     engine.moved_on()
     assert Agents(engine.record).by_session("claude-1").data.get("cards"), "a message typed while a command runs leaves a card"
+    import features
+    from types import SimpleNamespace
+    from agents.actors import Agent
+    from controllers.types import Agents, Todos, Works
+    from engine.event_log import Event
+    from resources.base import AGENT, SYSTEM
+    from resources.types import BUSY, COMPACTING, IDLE, STOPPED, WORKING
+    features.load()
+    record = fresh()
+    seen = {"alive": True, "report": None, "quiet": 0.0, "sent": []}
+
+    class Driver:
+        QUIET = 3.0
+        session = "claude-1"
+        alive = lambda self: seen["alive"]
+        last_report = lambda self: seen["report"]
+        quiet_for = lambda self: seen["quiet"]
+        ready = lambda self: True
+        send = lambda self, line, groups=None, yielding="": seen["sent"].append((line, yielding)) or True
+
+    agent = Agent(record, Driver())
+    reporting = lambda status: seen.update(report=SimpleNamespace(status=status, title="claude-1"))
+    assert agent.state() == BUSY, "an agent that never reported and just spoke is busy"
+    seen["quiet"] = 5.0
+    assert agent.state() == IDLE, "one that never reported and has been quiet is idle"
+    reporting(STOPPED)
+    assert agent.state() == STOPPED, "an agent whose last report said it stopped is stopped"
+    reporting(COMPACTING)
+    assert agent.state() == COMPACTING, "one that is summarising its conversation says so"
+    reporting(IDLE)
+    seen["quiet"] = 0.5
+    assert agent.state() == BUSY, "an idle report is not believed while the terminal is still moving"
+    seen["quiet"] = 2.0
+    assert agent.state() == IDLE and agent.is_idle() and not agent.is_working(), "an idle report with a quiet terminal is idle"
+    Works(record, actor=AGENT).create("a job")
+    reporting("busy")
+    assert (agent.state(), agent.is_working()) == (WORKING, True), "an agent busy with work open is working"
+    seen["alive"] = False
+    assert agent.state() == STOPPED, "an agent whose terminal is gone is stopped whatever it reported"
+    seen["alive"] = True
+    row = Agents(record, actor=SYSTEM).create("claude-1", status="working")
+    agent.mark("idle", "Stop")
+    marked = Agents(record, actor=SYSTEM).load(row.n)
+    assert (marked.status, marked.event) == ("idle", "Stop"), "marking an agent writes its status and the event behind it"
+    todo = Todos(record, actor=AGENT).create("something for the agent")
+    agent.notify(next(e for e in record.event_log.events(0, 50) if e.type == "todo" and e.n == todo.n))
+    assert agent.flush() == "1 new todo 1", "what is waiting for the agent is sent to it in one line"
+    assert len(seen["sent"]) == 1 and agent.pending == [], "and is no longer waiting once it has gone"
 
 
 def test_a_worker_that_keeps_failing_with_no_earlier_build_is_retried_slower_then_the_session_ends(monkeypatch):
@@ -375,3 +456,5 @@ def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_re
     ignoring.wait()
     reader.close()
     writer.close()
+
+

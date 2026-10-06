@@ -146,3 +146,43 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
     assert (agents, len(launched)) == (["plan-3-developer", "plan-3-developer"], 2), \
         "a plan role keeps one agent for the whole plan and hands it each next task"
     assert Todos(ticket, actor=AGENT).load(given["todo"]).data["role_environment"] == "ticket-5-developer-1" and "Nothing to dispatch" in given["brief"]
+
+
+def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_the_one_session_that_holds_it():
+    import features
+    from controllers.types import Environments, Todos
+    from engine.record import Record
+    from engine.sessions import Sessions
+    from resources.base import AGENT, SYSTEM
+    from tests.conftest import fresh, refused
+    features.load()
+    record = fresh()
+    envs = lambda session="claude-1": Environments(record, actor=SYSTEM, session=session)
+    first = envs().create("alpha")
+    assert "needs a name" in refused(lambda: envs().create("  ")), "an environment is never nameless"
+    assert "exists" in refused(lambda: envs().create("alpha")), "a name already taken is refused"
+    assert "viewer's own addresses" in refused(lambda: envs().create("plugins")), "a word the viewer's own addresses use is not a name"
+    assert "no session to bind" in refused(lambda: Environments(record, actor=SYSTEM).switch(first.n)), "taking an environment needs a session to take it"
+    second = envs().create("beta")
+    envs().switch(first.n)
+    assert Sessions(record.root).holder("alpha") == "claude-1", "the session that took an environment holds it"
+    assert "is taken by session claude-1" in refused(lambda: envs("claude-2").switch(first.n)), "another session cannot take a held environment without a reason"
+    envs().switch(second.n)
+    assert Sessions(record.root).read("claude-1").before == "alpha", "a session remembers where it came from"
+    envs().switch(0, back=True)
+    assert Sessions(record.root).environment("claude-1") == "alpha", "going back returns to the environment it came from"
+    assert "came from nowhere" in refused(lambda: envs("claude-9").switch(0, back=True)), "a session that came from nowhere has nowhere to go back to"
+    picked = envs().pickup(first.n)
+    assert picked["environment"] == "alpha" and picked["holder"] == "claude-1", "picking up an environment says who holds it"
+    assert "does not hold" in refused(lambda: envs().leave(second.n)), "a session cannot leave an environment it does not hold"
+    envs().leave(first.n)
+    assert Sessions(record.root).holder("alpha") == "", "leaving frees the environment"
+    Todos(Record(record.root, "alpha"), actor=AGENT).create("an open job")
+    swept = envs().sweep(first.n)
+    assert "a sweep of 'alpha'" in swept and "--yes sweeps" in swept, "a sweep says what it would pack before it does"
+    assert "has nothing to sweep" in envs().sweep(second.n, yes=True), "an environment with nothing finished has nothing to sweep"
+    assert "no archived environment 'gone'" in refused(lambda: envs().unarchive("gone")), "bringing back an environment that was never archived is refused"
+    envs().complete(second.n, yes=True)
+    assert [r["title"] for r in envs().rows.summaries() if not r["deleted"]].count("beta") == 0, "a removed environment is gone from the list"
+    again = envs().unarchive("beta")
+    assert again.title == "beta", "an archived environment comes back under its own name"

@@ -85,3 +85,28 @@ def test_the_conversation_a_summary_replaced_and_your_own_words_are_read_back(ca
     own = read("user")
     assert "make the tunnel restart itself" in own and "now the phone dialog" in own and "watchdog" not in own, "your own words are read back, and only yours"
     assert "make the tunnel restart itself" in read("search", "restart itself"), "a search finds words in any conversation of the environment"
+
+
+def test_an_agents_transcript_and_the_links_in_it_are_read_for_it_and_for_its_subagents():
+    import json
+    from datetime import datetime, timezone
+    from commands.http import dispatch
+    features.load()
+    record = fresh()
+    stamp = datetime.now(timezone.utc).isoformat()
+    def written(path, text):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"type": "assistant", "timestamp": stamp, "message": {"content": [{"type": "text", "text": text}]}}) + "\n")
+    main = record.root.parent / "claude-1.jsonl"
+    written(main, "Pull request https://github.com/jessegall/agent-journal/pull/12 is open")
+    written(main.with_suffix("") / "subagents" / "agent-abc.jsonl", "Design at https://claude.ai/design/p/xyz")
+    row = Agents(record, actor=SYSTEM).create("claude-1", provider="claude", transcript=str(main), subagent_rows=[{"id": "t1", "session": "abc"}])
+    bare = Agents(record, actor=SYSTEM).create("claude-2")
+    at = lambda n, *tail: dispatch("GET", f"/api/{record.env}/agent/{n}/{'/'.join(tail)}", record.root, {}, {})
+    assert at(row.n, "links").body == {"links": ["https://github.com/jessegall/agent-journal/pull/12"]}, "the links the agent gave are listed"
+    assert at(row.n, "subagent", "abc", "links").body == {"links": ["https://claude.ai/design/p/xyz"]}, "a subagent's links come from its own transcript"
+    assert [t["text"] for t in at(row.n, "transcript").body["turns"]] == ["Pull request https://github.com/jessegall/agent-journal/pull/12 is open"], \
+        "the transcript's turns are read back"
+    assert [t["text"] for t in at(row.n, "subagent", "abc", "transcript").body["turns"]] == ["Design at https://claude.ai/design/p/xyz"], "so are a subagent's"
+    assert (at(bare.n, "links").body, at(bare.n, "transcript").body["turns"]) == ({"links": []}, []), "an agent with no transcript has no turns and no links"
+    assert at(row.n, "subagent", "gone", "transcript").code == 404, "a subagent that never ran is not found"
