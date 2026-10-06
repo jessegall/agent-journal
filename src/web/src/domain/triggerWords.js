@@ -124,10 +124,10 @@ const quoted = (word) => `“${word}”`;
 
 export function wordsText(words) {
     if (!words.length) return "";
-    const shown = words.slice(0, 3).map(quoted);
+    const quotes = words.slice(0, 3).map(quoted);
     const more = words.length - 3;
-    if (more > 0) return `${shown.join(", ")} or ${more} other ${more === 1 ? "phrase" : "phrases"}`;
-    return shown.length > 1 ? `${shown.slice(0, -1).join(", ")} or ${shown.at(-1)}` : shown[0];
+    if (more > 0) return `${quotes.join(", ")} or ${more} other ${more === 1 ? "phrase" : "phrases"}`;
+    return quotes.length > 1 ? `${quotes.slice(0, -1).join(", ")} or ${quotes.at(-1)}` : quotes[0];
 }
 
 const watching = (words, where) =>

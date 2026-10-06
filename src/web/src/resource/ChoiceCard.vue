@@ -4,11 +4,19 @@ import {api} from "../api/client.js";
 import {allButtons, choiceGroups, doing, liveButtons, pressedLabels, spent as usedUp} from "../domain/buttons.js";
 import {rows} from "../sync/rows.js";
 import Btn from "../kit/Btn.vue";
+import PickTag from "../kit/PickTag.vue";
 import ChoiceChosen from "./ChoiceChosen.vue";
 import Spinner from "../kit/Spinner.vue";
+import TextArea from "../kit/TextArea.vue";
 
+const OWN_WORDS = "own words";
 const props = defineProps({resource: Object});
 const running = ref("");
+const writing = ref(false);
+const own = ref("");
+const written = ref([]);
+const card = ref(null);
+const flashing = ref(false);
 const error = ref("");
 const pressed = computed(() => pressedLabels(props.resource));
 const spent = (button) => usedUp(props.resource, button);
@@ -29,12 +37,37 @@ const outcome = (button) => {
     const sent = sentAs(button);
     return `Sent as your message${sent ? ` ${sent.n}` : ""}: “${button.say}”. The answer comes in the chat.`;
 };
+const open = computed(() => groups.value.some((group) => !group.chosen) || alone.value.length > 0);
 const done = computed(() =>
     allButtons(props.resource)
         .filter((button) => !button.choice && pressed.value.includes(button.label))
         .map(outcome)
 );
 const means = (button) => (button.say ? `Sends as your message: “${button.say}”` : `Runs: ${doing(button)}`);
+
+function show() {
+    card.value?.scrollIntoView({behavior: "smooth", block: "center"});
+    flashing.value = true;
+    setTimeout(() => (flashing.value = false), 1600);
+}
+
+defineExpose({show});
+
+async function sendOwn() {
+    const text = own.value.trim();
+    if (!text || running.value) return;
+    running.value = OWN_WORDS;
+    error.value = "";
+    try {
+        const sent = await api.create("message", {brief: text, about: props.resource.ref});
+        written.value.push(`Sent as your message ${sent.n}: “${text}”. The answer comes in the chat.`);
+        own.value = "";
+        writing.value = false;
+    } catch (e) {
+        error.value = e.message;
+    }
+    running.value = "";
+}
 
 async function press(button) {
     if (running.value || spent(button)) return;
@@ -57,7 +90,7 @@ async function press(button) {
 
 <template>
     <template v-if="groups.length || alone.length || done.length">
-        <div class="choice">
+        <div :class="['choice', {flash: flashing}]" ref="card">
             <template v-for="group in groups" :key="group.choice">
                 <section class="card">
                     <span class="kind">Your answer</span>
@@ -68,13 +101,11 @@ async function press(button) {
                         <p class="ask">{{ group.ask }}</p>
                         <div class="answers">
                             <div class="buttons">
-                                <template v-for="(button, i) in group.buttons" :key="button.label">
-                                    <button
-                                        type="button"
-                                        :class="['answer', {first: i === 0}]"
-                                        :disabled="Boolean(running)"
-                                        @click="press(button)"
-                                    >
+                                <template v-for="button in group.buttons" :key="button.label">
+                                    <button type="button" class="answer" :disabled="Boolean(running)" @click="press(button)">
+                                        <template v-if="button === group.pick">
+                                            <PickTag class="answer-pick">The agent's pick</PickTag>
+                                        </template>
                                         <span class="answer-label">
                                             <template v-if="running === button.label">
                                                 <Spinner />
@@ -116,7 +147,28 @@ async function press(button) {
                     </div>
                 </div>
             </template>
-            <template v-for="line in done" :key="line">
+            <template v-if="open">
+                <div class="own">
+                    <template v-if="writing">
+                        <TextArea
+                            :value="own"
+                            @input="own = $event.target.value"
+                            placeholder="Write your answer"
+                            rows="3"
+                            autofocus
+                            @keydown.esc="writing = false"
+                        />
+                        <div class="row">
+                            <Btn small kind="primary" :disabled="!own.trim() || Boolean(running)" @click="sendOwn">Send</Btn>
+                            <Btn small @click="writing = false">Cancel</Btn>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <Btn small kind="text" @click="writing = true">Answer in your own words</Btn>
+                    </template>
+                </div>
+            </template>
+            <template v-for="line in [...done, ...written]" :key="line">
                 <p class="note">{{ line }}</p>
             </template>
             <template v-if="error">
@@ -190,16 +242,21 @@ async function press(button) {
     cursor: pointer;
 }
 
-.answer.first {
-    border-color: var(--accent);
-}
-
 .answer:hover:not(:disabled) {
     border-color: var(--accent);
     background: var(--hover);
 }
 
+.answer-pick {
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+}
+
 .answer-label {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -211,6 +268,37 @@ async function press(button) {
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.own {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.own :deep(.text-area) {
+    width: 100%;
+}
+
+.own .row {
+    display: flex;
+    gap: 6px;
+}
+
+.choice.flash {
+    border-radius: 12px;
+    animation: flash 1.6s ease-out;
+}
+
+@keyframes flash {
+    from {
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);
+    }
+
+    to {
+        box-shadow: 0 0 0 3px transparent;
+    }
 }
 
 .alone .row {

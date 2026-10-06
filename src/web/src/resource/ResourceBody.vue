@@ -5,7 +5,6 @@ import {computed, inject, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import {byRef, parkedFor, waitsOn} from "../domain/records.js";
 import {unanswered} from "../domain/buttons.js";
-import Notice from "../kit/Notice.vue";
 import Sections from "./Sections.vue";
 import {useWriting} from "../composables/writing.js";
 import OptionsPicker from "./OptionsPicker.vue";
@@ -19,6 +18,7 @@ import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
 import CheckResult from "./CheckResult.vue";
 import ChoiceCard from "./ChoiceCard.vue";
+import ChoiceNeeded from "./ChoiceNeeded.vue";
 import TriggerEditor from "./TriggerEditor.vue";
 import RuleControls from "./RuleControls.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -92,6 +92,7 @@ const docs = computed(() =>
 );
 const PAGE = Math.round(window.innerHeight * 0.9);
 const page = ref(null);
+const choice = ref(null);
 const writing = useWriting(() => props.resource.ref);
 
 async function follow() {
@@ -122,6 +123,9 @@ async function follow() {
             <template #tools><slot name="tools" /></template>
         </ResourceHead>
         <slot name="head" />
+        <template v-if="unanswered(resource) && !readOnly">
+            <ChoiceNeeded class="choose" :resource="resource" @go="choice.show()" />
+        </template>
         <template v-if="editing">
             <ResourceEdit
                 v-model:abstract="draft.abstract"
@@ -153,18 +157,6 @@ async function follow() {
         </template>
         <template v-if="resource.type === 'rule' && !resource.completed">
             <RuleControls :resource="resource" />
-        </template>
-        <template v-if="unanswered(resource) && !readOnly">
-            <Notice>
-                This {{ resource.type }} asks you to choose, at the end.
-                <button
-                    type="button"
-                    class="go"
-                    @click="page.querySelector('.choice')?.scrollIntoView({behavior: 'smooth', block: 'center'})"
-                >
-                    Go to the choice
-                </button>
-            </Notice>
         </template>
         <template v-if="resource.type === 'check'">
             <CheckResult :resource="resource" />
@@ -204,7 +196,7 @@ async function follow() {
             <Sections :sections="resource.sections" />
         </template>
         <template v-if="buttons.length && !readOnly">
-            <ChoiceCard :resource="resource" />
+            <ChoiceCard ref="choice" :resource="resource" />
         </template>
         <template v-if="traced">
             <Trace :resource="resource" />
@@ -252,13 +244,8 @@ async function follow() {
     color: var(--text-2);
 }
 
-.go {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    cursor: pointer;
+.choose {
+    margin-top: 10px;
 }
 
 .foot {

@@ -5,7 +5,7 @@ from resources.base import Refused, SYSTEM
 from engine.fields import Loaded
 
 MOST = 5
-LABEL = 40
+LABEL = 120
 
 
 def runs(record, type_: str, action: str) -> bool:

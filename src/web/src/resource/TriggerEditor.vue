@@ -10,6 +10,7 @@ import ChoiceList from "../kit/ChoiceList.vue";
 import FormField from "../kit/FormField.vue";
 import InlineName from "../kit/InlineName.vue";
 import Notice from "../kit/Notice.vue";
+import TextArea from "../kit/TextArea.vue";
 import ResourceBlock from "./ResourceBlock.vue";
 import TriggerSequences from "./TriggerSequences.vue";
 import WatchedWords from "./WatchedWords.vue";
@@ -149,8 +150,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                 </template>
                 <template v-else>
                     <FormField :label="does.ask" :help="values.does === 'message' ? 'It reaches the chat as if you had typed it.' : ''">
-                        <textarea
-                            class="text"
+                        <TextArea
                             :value="values.text || ''"
                             :disabled="readonly"
                             :placeholder="does.example"
@@ -238,23 +238,6 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
-}
-
-.text {
-    min-height: 70px;
-    padding: 8px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-    resize: vertical;
-}
-
-.text:focus {
-    border-color: var(--accent);
-    outline: 0;
 }
 
 .error {

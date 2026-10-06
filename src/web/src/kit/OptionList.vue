@@ -2,6 +2,7 @@
 import {computed, ref, useSlots} from "vue";
 import {useHeldSend} from "../composables/heldSend.js";
 import Btn from "./Btn.vue";
+import PickTag from "./PickTag.vue";
 
 const props = defineProps({
     options: {type: Array, default: () => []},
@@ -94,10 +95,10 @@ defineExpose({undo});
                         <span class="tick">✓</span>
                     </template>
                     <template v-if="i === suggested && !disabled">
-                        <span class="pick">The agent's pick</span>
+                        <PickTag class="pick">The agent's pick</PickTag>
                     </template>
                     <template v-if="chosen && chosen === o.title">
-                        <span class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</span>
+                        <PickTag class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</PickTag>
                     </template>
                     <span class="label">{{ o.title }}</span>
                     <template v-if="o.description">
@@ -232,11 +233,6 @@ defineExpose({undo});
     margin: -9px -12px 8px;
     padding: 4px 12px;
     border-radius: 7px 7px 0 0;
-    background: color-mix(in srgb, var(--tone) 22%, var(--raised));
-    color: color-mix(in srgb, var(--tone) 60%, var(--text));
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
 }
 
 .reason {
