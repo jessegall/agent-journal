@@ -115,6 +115,16 @@ def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_pa
     Sessions(record.root).bind("main-conversation", record.env, pid=6161, provider="claude")
     hooked(record, "main-conversation", worktree_of(tmp_path, "agent-a1b2"), 6161, agent_id="a1b2")
     assert Sessions(record.root).environment("main-conversation") == record.env, "an isolated subagent's worktree is the subagent's, not the session's"
+    import os, subprocess
+    from engine.sessions import agent_pid
+    shell = subprocess.Popen(["sh", "-c", "sleep 30; true"])
+    try:
+        assert (agent_pid(shell.pid), agent_pid(os.getpid())) == (os.getpid(), os.getpid()), \
+            "the agent is found by walking up from the hook's shell to the first process that is no shell, and a process that is none stays itself"
+    finally:
+        shell.kill()
+        shell.wait(10)
+    assert agent_pid(shell.pid) == shell.pid, "a process that is gone is its own agent"
 
 
 def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
