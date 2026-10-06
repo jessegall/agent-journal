@@ -14,13 +14,19 @@ from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import TunlerVersion, install, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
+from engine.services import FAILED, log_file, status
+from features.sharing.tunnel import TUNNEL, TunlerVersion, install, refused_address, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
 from features.trigger import DAY
 from controllers.marks import action
+
+NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
+LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
+ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
+TUNNEL_STOPPED = "The tunnel to this journal stopped and could not start again."
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
@@ -146,7 +152,19 @@ class Shares(ShareVisits, SharePages, Controller):
 
     @action
     def tunnel(self) -> dict:
-        return {**tunler_status(), "address": self._address()}
+        standing = tunler_status()
+        return {**standing, "address": self._address(), "problems": self._problems(standing["installed"], standing["logged_in"])}
+
+    def _problems(self, installed: bool, logged_in: bool) -> list[str]:
+        if not installed:
+            return [NOT_INSTALLED]
+        if not logged_in:
+            return [LOGGED_OUT]
+        if refused_address(log_file(self.record.root, TUNNEL)):
+            return [ADDRESS_TAKEN]
+        if status(self.record.root, TUNNEL).state == FAILED:
+            return [TUNNEL_STOPPED]
+        return []
 
     def _address(self) -> str:
         host = self._host()

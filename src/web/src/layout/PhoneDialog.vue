@@ -32,7 +32,7 @@ const made = ref(null);
 const busy = ref(false);
 const failure = ref("");
 const stopping = ref(0);
-const ready = computed(() => tunnelStatus.value && tunnelStatus.value.installed && tunnelStatus.value.logged_in);
+const ready = computed(() => tunnelStatus.value && !tunnelStatus.value.problems.length);
 const active = computed(() => connectedPhones.value[0] || null);
 const reachable = ref(false);
 const connected = computed(() => made.value && reachable.value);
@@ -43,6 +43,7 @@ usePoll(
     ASK_EVERY,
     (got) => got && (reachable.value = Boolean(got.reachable))
 );
+usePoll("phone-tunnel-problems", () => (made.value && !reachable.value ? checkTunnel() : null), ASK_EVERY * 2);
 
 async function fresh() {
     busy.value = true;

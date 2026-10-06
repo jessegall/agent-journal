@@ -20,6 +20,7 @@ HELD = "409 Conflict"
 LAST_LINES = 4
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
+SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
 DOWNLOAD_SECONDS = 60
 
