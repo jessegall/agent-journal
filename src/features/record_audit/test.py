@@ -59,3 +59,5 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_pat
     tick(record)
     assert any(n.startswith("3 things in the record have evidence against them") for n in nudges(record)) is True, \
         "the first report says what has evidence, with the retiring commands under it"
+    rules.create("when stuck run `journal nosuchnoun now`", keywords="word")
+    assert [e.evidence for e in evidence(record) if e.ref == "rule:4"] == ["names journal nosuchnoun, which the CLI does not answer to"], "a claim naming a command that does not exist at all"

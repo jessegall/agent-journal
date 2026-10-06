@@ -79,7 +79,9 @@ def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
         call(base, "/p/pair", {"code": "wrong-guess", "device": "Pixel"})
     assert call(base, "/p/pair", {"code": guessed["link"].split("#", 1)[1], "device": "Pixel"})[0] == 410, \
         "ten wrong codes cancel the code that was waiting"
+    earlier = Phones(record, actor=USER).connect(7)
     made = Phones(record, actor=USER).connect(7)
+    assert Phones(record, actor=SYSTEM).load(earlier["n"]).completed, "a new code replaces the one that was never used"
     code = made["link"].split("#", 1)[1]
     assert made["link"].startswith("https://") and "/p/#" in made["link"], "the code rides in the fragment, which never reaches a server"
     call(base, "/p/", method="HEAD")
@@ -242,6 +244,17 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     monkeypatch.setattr(launch, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
     assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
     assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
+    from engine.sessions import Sessions
+    outside = subprocess.Popen(["sleep", "30"])
+    try:
+        Sessions(record.root).bind("busy", "elsewhere", pid=outside.pid, provider="claude")
+        assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 409, "an environment whose agent is at work is not started again"
+        assert call(base, "/p/stop", {}, key).status == 201, "the phone ends the agent working in its environment"
+        assert outside.wait(timeout=5) != 0, "and that agent is ended"
+    finally:
+        outside.kill()
+        outside.wait(timeout=5)
+        Sessions(record.root).unbind("busy")
     Todos(Record(record.root, "elsewhere"), actor=AGENT).create("Tidy the attic")
     listed = call(base, "/p/list?type=todo", key=key).body
     assert ([row["title"] for row in listed["rows"]], listed["total"]) == (["Tidy the attic"], 1), "a card knows how many rows there are in all"
@@ -351,6 +364,14 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert any(item["type"] == "comment" and item["brief"] == "Looks right to me" for item in call(base, "/p/feed", key=key).body["items"]), "a comment on a row shows in the phone's chat, as on the desktop"
     with urllib.request.urlopen(urllib.request.Request(f"{base}/p/export/doc/{proposal.n}", headers={"Cookie": f"__Host-phone={key}"}), timeout=30) as sent:
         assert "Proposal" in sent.headers["Content-Disposition"] and sent.read(), "a document leaves the phone as a file named for it"
+    import shutil
+    which = shutil.which
+    shutil.which = lambda name, *more, **options: None if name == "textutil" else which(name, *more, **options)
+    try:
+        with urllib.request.urlopen(urllib.request.Request(f"{base}/p/export/doc/{proposal.n}", headers={"Cookie": f"__Host-phone={key}"}), timeout=30) as sent:
+            assert (".html" in sent.headers["Content-Disposition"], sent.read().startswith(b"<")) == (True, True), "on a machine with no converter a document leaves the phone as a web page"
+    finally:
+        shutil.which = which
     shared = call(base, "/p/share", {"ref": f"doc:{proposal.n}"}, key)
     assert shared.status == 201 and "/s/" in shared.body["link"], "and as a share link the user made, open at once"
     said = [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m["title"] == "I accept this proposal"]
