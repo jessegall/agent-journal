@@ -52,6 +52,21 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     shells = {row["command"]: row["running"] for row in Claude().crew(transcript)["shell_rows"]}
     assert shells == {"sleep 1": False, "sleep 2": True, "sleep 3": True}, \
         "a refused call never started; one that started, or was moved to the background, runs until it ends"
+    said = lambda text: {"type": "user", "timestamp": "2026-09-23T00:00:02Z", "message": {"content": text}}
+    wrote = lambda text: {"type": "assistant", "timestamp": "2026-09-23T00:00:03Z", "message": {"content": [{"type": "text", "text": text}]}}
+    with transcript.open("a") as more:
+        for row in (said("<task-notification><task-id>b3x</task-id><status>failed</status></task-notification>"),
+                    said("<bash-input>ls</bash-input>"), said("<bash-stdout>a.py</bash-stdout><bash-stderr></bash-stderr>"),
+                    said("<command-name>/model</command-name><command-args>opus</command-args>"),
+                    wrote("Pull request 8: https://github.com/jessegall/agent-journal/pull/8. Earlier draft https://github.com/jessegall/agent-journal/pull/8"),
+                    wrote("The design: https://claude.ai/design/abc?file=x.png and https://claude.ai/design/def?file=page.html")):
+            more.write(json.dumps(row) + "\n")
+    tasks = Claude().background_tasks(transcript)
+    assert ("b3x" in tasks.started, "b3x" in tasks.ended, tasks.failed) == (True, True, {"b3x"}), "a task moved to the background is started, and its notice ends it, failed"
+    assert [(run.command, run.output) for run in Claude().typed_runs(transcript)] == [("!ls", "a.py"), ("/model opus", None)], \
+        "a shell line and a slash command you typed are read with what they printed"
+    assert Claude().work_links(transcript) == ["https://claude.ai/design/def?file=page.html", "https://github.com/jessegall/agent-journal/pull/8"], \
+        "the links worth opening are kept once each, newest first, and an image inside a design is not one"
 
 
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
