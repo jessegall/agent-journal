@@ -2,26 +2,11 @@
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import {MOMENTS, momentDays, timeOf} from "../domain/timeline.js";
 
 const props = defineProps({items: {type: Array, default: () => []}});
 const emit = defineEmits(["open"]);
-const KINDS = {
-    started: {icon: "play", word: "Started"},
-    log: {icon: "pencil", word: "Logged"},
-    ended: {icon: "flag", word: "Work ended"},
-    done: {icon: "tick", word: "Done"},
-};
-const dayOf = (at) => new Date(at * 1000).toLocaleDateString(undefined, {weekday: "short", day: "numeric", month: "short"});
-const timeOf = (at) => new Date(at * 1000).toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"});
-const days = computed(() => {
-    const grouped = [];
-    for (const item of [...props.items].reverse()) {
-        const day = dayOf(item.at);
-        if (grouped.at(-1)?.day !== day) grouped.push({day, items: []});
-        grouped.at(-1).items.push(item);
-    }
-    return grouped;
-});
+const days = computed(() => momentDays(props.items));
 </script>
 
 <template>
@@ -34,10 +19,10 @@ const days = computed(() => {
             <ol class="moments">
                 <template v-for="item in group.items" :key="`${item.at}-${item.kind}-${item.todo}`">
                     <li :class="['moment', item.kind]">
-                        <span class="mark"><Icon :name="KINDS[item.kind].icon" :size="11" /></span>
+                        <span class="mark"><Icon :name="MOMENTS[item.kind].icon" :size="11" /></span>
                         <div class="what">
                             <div class="head">
-                                <span class="word">{{ KINDS[item.kind].word }}</span>
+                                <span class="word">{{ MOMENTS[item.kind].word }}</span>
                                 <button type="button" class="todo" :title="`Open to-do ${item.todo}`" @click="emit('open', item.todo)">
                                     #{{ item.todo }} {{ item.title }}
                                 </button>

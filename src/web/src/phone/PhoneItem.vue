@@ -256,6 +256,11 @@ onMounted(async () => {
                         <TextDisplay :text="part.body" />
                     </template>
                     <PhoneReaderPhases :plan="row" />
+                    <template v-if="row.type === 'plan'">
+                        <CellGroup>
+                            <Cell label="Timeline" sub="What happened on this plan's to-dos" icon="clock" @pick="emit('open', `timeline:${row.n}`)" />
+                        </CellGroup>
+                    </template>
                     <template v-if="files.length">
                         <CellGroup head="Files">
                             <template v-for="name in files" :key="name">
