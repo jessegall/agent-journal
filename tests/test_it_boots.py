@@ -4,6 +4,7 @@ import os
 import shutil
 import signal
 import subprocess
+import tarfile
 import sys
 import threading
 import time
@@ -928,9 +929,12 @@ def menu_in_terminal(*typed) -> tuple[str, int]:
                "try:\n    chosen = pick('Start where?', ['one note'], ['first', 'second', 'third'], 0)\n"
                "except BaseException as stopped:\n    chosen = type(stopped).__name__ + ':' + str(stopped)\n"
                "print('RESULT', chosen, 'RESTORED', attrs() == before)\n") % str(CODE)
-    pid, master = pty.fork()
-    if pid == 0:
-        os.execv(sys.executable, [sys.executable, "-c", program])
+    import fcntl
+    import termios
+    master, slave = pty.openpty()
+    child = subprocess.Popen([sys.executable, "-c", program], stdin=slave, stdout=slave, stderr=slave, start_new_session=True,
+                             preexec_fn=lambda: fcntl.ioctl(0, termios.TIOCSCTTY, 0))
+    os.close(slave)
     seen = b""
     try:
         for chunk in typed:
@@ -953,11 +957,9 @@ def menu_in_terminal(*typed) -> tuple[str, int]:
                     break
                 seen += more
     finally:
-        try:
-            os.kill(pid, 9)
-        except ProcessLookupError:
-            pass
-        os.waitpid(pid, 0)
+        child.kill()
+        child.wait(timeout=10)
+        os.close(master)
     return seen.decode(errors="replace"), 0
 
 
@@ -981,3 +983,23 @@ def test_a_start_menu_whose_input_ends_leaves_instead_of_spinning():
     with pytest.raises(SystemExit, match="input ended"):
         read_keys(reading)
     os.close(reading)
+
+
+def test_a_record_made_by_version_2_60_0_upgrades_through_every_migration_and_the_journal_starts_on_it(tmp_path):
+    import migrations
+    place = tmp_path
+    (place / PROJECT).mkdir(parents=True)
+    with tarfile.open(HERE / "tests" / "fixtures" / "journal-2.60.0.tar.gz") as old:
+        old.extractall(place / PROJECT, filter="data")
+    for agent in (".claude", ".codex"):
+        (place / PROJECT / agent).mkdir()
+    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1", "AGENT_JOURNAL_HOME": str(place / "home")}
+    env.pop("JOURNAL_ENV", None)
+    upgraded = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=180)
+    root = place / PROJECT / ".journal"
+    assert (upgraded.returncode, "Traceback" in upgraded.stderr) == (0, False), upgraded.stdout + upgraded.stderr
+    assert set(migrations.names()) <= set(migrations.applied(root)), f"every migration ran: {sorted(set(migrations.names()) - set(migrations.applied(root)))}"
+    for words, expected in ((["status"], ""), (["doc", "all"], "Style guide"), (["todo", "all", "--completed"], "Write the first chapter"), (["rule", "all"], "Never ship on Friday")):
+        ran = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), *words], cwd=place / PROJECT, env=env, capture_output=True, text=True, timeout=120)
+        assert (ran.returncode, "Traceback" in ran.stderr, expected in ran.stdout) == (0, False, True), f"{words}: {ran.stdout[-400:]}{ran.stderr[-400:]}"
+    launches(place, root / "journal.py", "claude")
