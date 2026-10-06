@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import features
-from controllers.types import Agents, Environments, Messages, Nudges
+from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine.record import Record
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on
 from features.helpers.controller import Helpers
-from resources.base import AGENT, SYSTEM
+from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
 from overview.summary import summarize
 from tests.conftest import fresh, refused
@@ -122,6 +122,39 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
     assert "is finished" in refused(lambda: helpers.say(1, "more")), "a finished helper takes no follow-up"
+
+
+def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_come_back_when_it_stops(monkeypatch):
+    from features.kanban.lanes import DONE, Sources, lane_of
+    from tests.kit import commit
+    features.load()
+    calls = started(monkeypatch)
+    repo = project_on("phone-connection")
+    todos = Todos(repo.record, actor=AGENT)
+    fixed, dropped, left = (todos.create(title).n for title in ("fix the tunnel", "name the cause", "test the dialog"))
+    helpers = Helpers(repo.record, actor=AGENT)
+    helpers.dispatch("Rhea", "The tunnel", "codex", "gpt-5.5", worktree=True, todos=f"{fixed},{dropped},{left}")
+    row = helpers.load(1)
+    helper = Helpers(Record(repo.record.root, row.environment), actor=AGENT)
+    assert todos.load(fixed).assigned == row.ref and f"to-do {fixed}: fix the tunnel" in calls[0][3][-1], "the rows are handed over and the kickoff names them"
+    for closing in (lambda: todos.complete(fixed, "done here"), lambda: todos.strike(fixed, "not needed"), lambda: todos.unassign(fixed)):
+        assert "journal helper stop 1 gives it back first" in refused(closing), "the agent that dispatched it cannot close, strike or take back a handed row"
+    assert "assigned to helper:1" in refused(lambda: todos.start(fixed)), "nor start it"
+    assert "not handed to you" in refused(lambda: helper.done(todos.create("another").n, "x"))
+    helper.done(fixed, "restarts within seconds")
+    marked = todos.load(fixed)
+    assert not marked.completed and lane_of(Sources(todos), marked) == DONE, "a row the helper marks shows as done, waiting for its merge"
+    commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
+    assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
+    helper.done(dropped, "names the cause")
+    assert "gives it back first" in refused(lambda: todos.reopen(dropped, "not yet")), "the agent cannot unmark a row the helper marked"
+    Todos(repo.record, actor=USER).reopen(dropped, "not yet")
+    assert not todos.load(dropped).pending and todos.load(dropped).assigned == row.ref, "you can pull a row waiting for its merge back, and it stays the helper's"
+    helper.done(dropped, "names the cause")
+    monkeypatch.setattr(Environments, "stop", lambda self, n: "stopped")
+    assert helpers.stop(1).endswith(f"given back: to-do {left}") and todos.load(left).assigned == "", "stopping the helper gives back what it did not mark"
+    Worktrees(repo.record, actor=SYSTEM).complete(int(row.worktree))
+    assert (todos.load(dropped).assigned, todos.load(dropped).pending) == ("", None), "dropping its worktree untaken gives back what waited for the merge"
 
 
 def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, tmp_path):

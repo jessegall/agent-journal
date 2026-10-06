@@ -10,7 +10,8 @@ from features.agent_sessions.launch import running_at
 from engine.worktree import contains, current_branch, git, included, lines, link_folders, present, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
-from resources.base import Refused
+from controllers.types import Todos
+from resources.base import Refused, SYSTEM
 from controllers.marks import action
 
 NAMED = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
@@ -105,7 +106,19 @@ class Worktrees(Controller):
             git(project, "cherry-pick", "--abort")
             raise Refused(f"the cherry-pick stopped and was undone: {(picked.stderr or picked.stdout).strip()}")
         self.update(row.n, taken=tip(project, row.branch))
-        return f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
+        landed = self._land(row)
+        return (f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
+                + (f"; closed to-do {', '.join(str(n) for n in landed)}" if landed else ""))
+
+    def _land(self, row) -> list[int]:
+        listed = Todos(self.record, actor=SYSTEM)
+        waiting = self._waiting(row)
+        for todo in waiting:
+            listed.complete(todo.n, f"{todo.merge_wait.how} (taken from {row.branch})")
+        return [t.n for t in waiting]
+
+    def _waiting(self, row) -> list:
+        return [t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.merge_wait.worktree == str(row.n)]
 
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):
@@ -121,6 +134,9 @@ class Worktrees(Controller):
         if row.branch and present(project, f"refs/heads/{row.branch}"):
             git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
             git(project, "branch", "-D", row.branch)
+        listed = Todos(self.record, actor=SYSTEM)
+        for todo in self._waiting(row):
+            listed.unassign(todo.n)
         return super().complete(n, how or f"dropped; its last commit is kept at {KEPT}/{row.title}", **data)
 
     def _drift(self, row) -> Drift:
