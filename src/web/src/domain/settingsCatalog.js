@@ -1,3 +1,5 @@
+export const DIAGNOSTICS_LINE = "Slow pages and errors, saved on your computer for the developer";
+
 export const COUNTED = ["percent", "uses", "minutes"];
 export const EVENTS = ["idle", "worked", "start"];
 
@@ -316,7 +318,7 @@ function looseRows(settings, context) {
                     key: "diagnostics",
                     kind: "buttons",
                     label: "Developer error log",
-                    hint: "Slow requests and errors, saved in .journal/runtime/diagnostics.log",
+                    hint: DIAGNOSTICS_LINE,
                     words: "diagnostics log errors slow",
                     buttons: [{key: "diagnostics", label: "Show the log"}],
                 }),

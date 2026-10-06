@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
+import {DIAGNOSTICS_LINE} from "../../domain/settingsCatalog.js";
 import PhonePage from "./PhonePage.vue";
 import PhoneTerm from "./PhoneTerm.vue";
 
@@ -14,7 +15,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <PhonePage title="Developer error log" line="Slow requests and errors, saved in .journal/runtime/diagnostics.log" :back="back" @back="emit('back')">
+    <PhonePage title="Developer error log" :line="DIAGNOSTICS_LINE" :back="back" @back="emit('back')">
         <PhoneTerm :text="text" />
     </PhonePage>
 </template>

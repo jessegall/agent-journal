@@ -45,12 +45,12 @@ onMounted(() => {
                     <Cell :label="`Version ${about.latest} is out`" sub="Open About this journal to install it" tone="accent" icon="download" @pick="emit('open', 'region:about')" />
                 </CellGroup>
             </template>
-            <CellGroup head="Everything you can set">
+            <CellGroup head="All settings">
                 <template v-for="one in REGIONS" :key="one.key">
                     <Cell :label="one.title" :sub="one.line" :icon="one.icon" @pick="emit('open', one.route)" />
                 </template>
             </CellGroup>
-            <CellGroup head="Show only">
+            <CellGroup head="Filter settings">
                 <Cell label="Changed" sub="Changed from the default" icon="dots" :count="tally.changed" @pick="emit('open', 'region:changed')" />
                 <Cell label="Off" sub="Switched off now" icon="dots" :count="tally.off" @pick="emit('open', 'region:off')" />
             </CellGroup>

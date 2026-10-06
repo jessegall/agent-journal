@@ -52,7 +52,7 @@ onMounted(() => loaded.value || loadCatalog());
                     <PhoneGroupRows :group="group" :head="group.title" />
                 </template>
                 <template v-if="loaded && !filtered.length">
-                    <EmptyList icon="check" :title="target === 'off' ? 'Nothing is off' : 'Every setting is at its default'" reason="Nothing to show here right now." />
+                    <EmptyList icon="check" :title="target === 'off' ? 'Nothing here is switched off' : 'Every setting here is at its default'" reason="Settings you change or switch off show up here." />
                 </template>
             </template>
             <template #services>

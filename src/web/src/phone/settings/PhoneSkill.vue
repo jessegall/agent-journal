@@ -62,7 +62,7 @@ onMounted(async () => {
     <PhonePage :title="target" :line="skill ? skill.description : ''" :back="back" @back="emit('back')">
         <template v-if="skill">
             <CellGroup>
-                <Cell label="Is it loaded?" :sub="status" still />
+                <Cell label="Loaded in the agent" :sub="status" still />
                 <Cell :label="skill.loaded ? 'Ask the agent to reload it' : 'Ask the agent to load it now'" tone="accent" :chevron="false" @pick="busy || loadNow()" />
                 <Cell label="Load at session start" sub="The agent loads it when each session starts." still>
                     <template #end>

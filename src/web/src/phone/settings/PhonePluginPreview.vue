@@ -1,5 +1,6 @@
 <script setup>
 import {ref} from "vue";
+import {CHANGE_WORDS, PREVIEW_KINDS, SAME_VERSION} from "../../domain/pluginWords.js";
 import PhoneSheet from "../PhoneSheet.vue";
 import PhoneTerm from "./PhoneTerm.vue";
 
@@ -11,7 +12,6 @@ defineProps({
 });
 const emit = defineEmits(["close", "install"]);
 const sheet = ref(null);
-const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 </script>
 
 <template>
@@ -39,19 +39,19 @@ const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listen
                 <p class="preview-lead">
                     {{
                         previewed.current
-                            ? "It is already at this commit. Run goes through its install steps again."
+                            ? SAME_VERSION
                             : previewed.changes.length
                               ? "What it runs changes:"
                               : "It runs the same commands as the version you have."
                     }}
                 </p>
                 <template v-for="(change, i) in previewed.changes || []" :key="i">
-                    <p class="preview-row"><b>{{ change.kind === "new" ? "Now also" : "No longer" }}</b><code>{{ change.line }}</code></p>
+                    <p class="preview-row"><b>{{ CHANGE_WORDS[change.kind] }}</b><code>{{ change.line }}</code></p>
                 </template>
             </template>
             <p class="preview-lead">It runs as you, with your files and your network. This is everything it does:</p>
             <template v-for="(row, i) in previewed.rows" :key="i">
-                <p class="preview-row"><b>{{ KINDS[row.kind] || row.kind }}</b>{{ row.label }}<code>{{ row.command }}</code></p>
+                <p class="preview-row"><b>{{ PREVIEW_KINDS[row.kind] }}</b>{{ row.label }}<code>{{ row.command }}</code></p>
             </template>
             <div class="preview-buttons">
                 <button type="button" class="preview-no" @click="sheet.close()">Cancel</button>

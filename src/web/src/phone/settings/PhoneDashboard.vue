@@ -19,7 +19,7 @@ usePoll(
 </script>
 
 <template>
-    <PhonePage :title="document ? document.title || name : name" line="Updates by itself." :back="back" @back="emit('back')">
+    <PhonePage :title="document ? document.title || name : name" line="This dashboard updates by itself." :back="back" @back="emit('back')">
         <template v-if="document">
             <Dashboard :document="document" />
         </template>

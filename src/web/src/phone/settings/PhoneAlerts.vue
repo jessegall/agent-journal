@@ -31,7 +31,7 @@ async function copyKey() {
         await navigator.clipboard.writeText(key.value);
         toast("The alerts key is copied");
     } catch {
-        toast("The phone would not copy it");
+        toast("Could not copy the alerts key");
     }
 }
 
