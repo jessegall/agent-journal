@@ -22,6 +22,8 @@ from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
 from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
+from engine.viewer import SERVING
+from serve import Handler, JournalServer
 from features.sharing.services import wanted
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
@@ -157,6 +159,23 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
     assert call(base, "/p/message", words, "not-a-key")[0] == 401, "a guessed key opens nothing"
     assert call(base, "/p/", {}, key)[0] == 404, "a phone post without an action has no route"
     assert not [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "x"]
+    desk = JournalServer(("127.0.0.1", 0), type("Desk", (Handler,), {"root": record.root}))
+    threading.Thread(target=desk.serve_forever, daemon=True).start()
+    SERVING[str(record.root.resolve())] = f"http://127.0.0.1:{desk.server_port}/"
+    try:
+        made = {"title": "From the phone"}
+        assert call(base, f"/p/api/{record.env}/todo", made)[0] == 401, "the desktop's pages need the phone's key"
+        assert call(base, f"/p/api/{record.env}/todo", made, "not-a-key")[0] == 401
+        assert call(base, f"/p/api/{record.env}/todo", made, key, Origin="https://evil.example")[0] == 403
+        assert call(base, "/p/api/elsewhere/todo", made, key)[0] == 403, "another environment stays closed"
+        assert call(base, "/p/api/summary?env=elsewhere", key=key)[0] == 403
+        assert call(base, "/p/api/run", made, key)[0] == 403, "the command line is never the phone's"
+        status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
+        assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
+        assert call(base, f"/p/api/{record.env}/todo/{answered['n']}", key=key).body["title"] == "From the phone"
+    finally:
+        SERVING.pop(str(record.root.resolve()))
+        desk.shutdown()
 
 
 def test_a_disconnected_or_expired_phone_is_refused_on_its_next_tap(served):

@@ -9,6 +9,7 @@ from http.cookies import SimpleCookie
 from engine.record import Record
 from engine.fields import Loaded
 from features.phone.controller import Phones
+from features.phone.desktop import Desktop
 from features.phone.surface import PhoneSurface
 from engine.color import identity
 from features.sharing.page import PICTURES, unshared
@@ -205,6 +206,8 @@ class PhoneRoutes:
             return handler.asset(rest[1])
         if rest[:1] == ["file"] and len(rest) == 4:
             return self.file(handler, rest)
+        if rest[:1] == ["api"]:
+            return self.desktop(handler)
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/", **APP_HEADERS})
@@ -265,6 +268,8 @@ class PhoneRoutes:
             return handler.answer(404, "no such action")
         if rest[:1] == ["attach"]:
             return self.attach(handler, rest[1:])
+        if rest[:1] == ["api"]:
+            return self.desktop(handler)
         if not self.trusted(handler):
             return handler.answer(403, "refused")
         body = self.body(handler)
@@ -311,6 +316,18 @@ class PhoneRoutes:
                 "start": lambda: made(phones._start(phone, Starting.from_json(body))),
                 "arrange": lambda: made(phones._arrange(phone, list(Arranging.from_json(body).cards))),
                 "push": lambda: made(phones._subscribe(phone, Subscribing.from_json(body).endpoint))}
+
+    def desktop(self, handler) -> None:
+        if handler.command == "POST" and not self.trusted(handler, ""):
+            return handler.answer(403, "refused")
+        length = handler.headers.get("Content-Length", "")
+        size = int(length) if length.isdigit() else 0
+        if size > UPLOAD_LIMIT:
+            return handler.answer(413, "too large")
+        phone = self.phone(handler)
+        if phone is None:
+            return None
+        return Desktop(handler, phone.environment).forward(handler.rfile.read(size) if size else b"")
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):
