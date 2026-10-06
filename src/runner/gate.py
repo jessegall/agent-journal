@@ -27,10 +27,7 @@ class ShellLine:
 
     @classmethod
     def of(cls, shells: tuple) -> "ShellLine":
-        try:
-            found = [piece for shell in shells for piece in pieces(shell)]
-        except ValueError:
-            return cls((), 1, False)
+        found = [piece for shell in shells for piece in pieces(shell)]
         calls = tuple(JournalCall(piece) for piece in found if piece[0] == "journal")
         return cls(calls, len(found) - len(calls), not any(mark in shell for shell in shells for mark in EXPANDING))
 

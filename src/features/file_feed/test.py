@@ -132,3 +132,43 @@ def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
     announce(record, agent, skill_folders())
     cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(record, agent, 0, PAGE).edits}
     assert cards == {"site/main.py": ("edit", 2, 1), "api/new.py": ("new", 1, 0)}, cards
+
+
+def test_a_repository_with_nothing_in_it_a_missing_folder_and_a_job_that_fails_are_all_handled_quietly(tmp_path):
+    import threading
+    import pytest
+    from engine import files
+    record = fresh()
+    project = tmp_path / "project"
+    project.mkdir()
+    assert files.internal(record, project, ("home",)) == ("home/journal",), "a journal folder outside the project marks nothing of the project as the journal's own"
+    assert (files.nested_repositories(project, 0), files.nested_repositories(project / "missing", 2)) == ([], []), "no depth left or a folder that cannot be read has no repositories"
+    subprocess.run(["git", "init", "-q", str(project)], check=True, timeout=30)
+    assert files.tracked_in(project) == {}, "a repository that has no index yet tracks nothing"
+    assert [files.match_rank(path, "note") for path in ("docs/notes.md", "docs/my-notes.md", "docs/x.md")] == [0, 1, 2], \
+        "a file that starts with the search ranks before one that only contains it"
+
+    coalesced, ran, release, begun = files.Coalesced(), [], threading.Event(), threading.Event()
+
+    def slow():
+        ran.append("first")
+        begun.set()
+        release.wait(10)
+    first = threading.Thread(target=coalesced.run, args=("key", slow))
+    first.start()
+    assert begun.wait(10)
+    coalesced.run("key", lambda: ran.append("second"))
+    coalesced.run("key", lambda: ran.append("third"))
+    release.set()
+    first.join(10)
+    assert ran == ["first", "third"], "a job asked for while it runs is run once more afterwards, with only the newest request kept"
+
+    class JobFailed(Exception):
+        pass
+
+    def failing():
+        raise JobFailed()
+    with pytest.raises(JobFailed):
+        coalesced.run("key", failing)
+    coalesced.run("key", lambda: ran.append("after the failure"))
+    assert ran[-1] == "after the failure", "a job that fails does not leave its key blocked"
