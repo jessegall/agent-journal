@@ -328,6 +328,50 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
         typist.join(timeout=5)
         monkeypatch.undo()
     assert handed[-1][0] == record.env, "a start in a real terminal asks its questions there and takes the default on Enter"
+    from commands.menu import pick
+
+    def picked(*keys):
+        master, slave = pty.openpty()
+        monkeypatch.setattr("sys.stdin", os.fdopen(slave, "r"))
+        monkeypatch.setattr("sys.stdout", os.fdopen(os.dup(slave), "w"))
+
+        def type_keys():
+            for group in keys:
+                time.sleep(0.3)
+                for key in group:
+                    try:
+                        os.write(master, key)
+                    except OSError:
+                        return
+                    time.sleep(0.005)
+
+        def drain():
+            while select.select([master], [], [], 0.1)[0] or not done.is_set():
+                try:
+                    os.read(master, 4096)
+                except OSError:
+                    return
+
+        done = threading.Event()
+        threading.Thread(target=type_keys, daemon=True).start()
+        threading.Thread(target=drain, daemon=True).start()
+        try:
+            return pick("Which one", ["a note"], ["first", "second", "third"], 0)
+        except BaseException as stopped:
+            return type(stopped).__name__
+        finally:
+            done.set()
+            monkeypatch.undo()
+
+    assert [picked((b"j",), (b"\r",)), picked((b"k",), (b"\r",)), picked((b"3",), (b"\r",)), picked((b"\x1b", b"[", b"B"), (b"\r",))] == [1, 2, 2, 1], \
+        "the start menu moves with the keys typed in a real terminal, wrapping at the ends, and takes a number or an arrow sent in pieces"
+    assert picked((b"\x1b",)) == "SystemExit", "Escape leaves the menu without choosing"
+    from commands.menu import read_keys
+    try:
+        read_keys(2 ** 20)
+        raise AssertionError("a terminal that cannot be read ends the menu")
+    except SystemExit as ended:
+        assert "input ended" in str(ended), "a terminal that cannot be read says its input ended"
 
 
 def test_stopping_the_journal_names_what_was_left_open_and_the_other_commands_answer_for_a_session_that_ended(monkeypatch, capsys):

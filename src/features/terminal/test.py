@@ -289,6 +289,38 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"
     os.close(read)
     assert claude._wrote(b"x") is False and claude.fd == -1, "a terminal that is closed stops being written to"
+    sent_lines = []
+    monkeypatch.setattr(DRIVERS["claude"], "_typed", lambda self, line, confirmed: sent_lines.append(line) or line != "refused")
+    keyed_read, keyed_write = os.pipe()
+    keyed = DRIVERS["claude"](record, "claude-8", fd=keyed_write)
+    assert (keyed.press(("refused", "next")), keyed.press(("first", "", "third")), sent_lines[-1]) == (False, True, "first"), \
+        "keys are pressed line by line, and the whole press fails when its first line is not taken"
+    assert os.read(keyed_read, 4096) == b"\rthird\r", "each later line is written and entered on its own"
+    os.close(keyed_read)
+    os.close(keyed_write)
+    assert keyed.press(("first", "more")) is False, "a press whose terminal has closed is told so"
+    codex_driver = DRIVERS["codex"](record, "codex-8")
+    try:
+        codex_driver._post("a line", "journal")
+        raise AssertionError("a driver without a channel posts nothing")
+    except NotImplementedError as why:
+        assert "takes no channel" in str(why), "and says so"
+    monkeypatch.undo()
+    monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
+    from pathlib import Path
+    from providers.drivers import Driver
+    assert (Driver.latest(Path(".")), Driver.trusted(Path(".")), Driver.consent(b"anything"), Driver.opening(b"anything"), Driver.asked(None)) == ("", None, b"", "", None), \
+        "an agent whose driver knows nothing extra has no last conversation, nothing to trust, no question to answer, and no opening line"
+    import agents.control as control
+    from types import SimpleNamespace
+    relaunched = []
+    monkeypatch.setattr(control, "online", lambda root, env, session: SimpleNamespace(provider="codex", terminal="term-1"))
+    monkeypatch.setattr(control, "relaunch_session", lambda root, env, terminal, session: relaunched.append(terminal))
+    monkeypatch.setattr(control, "pressed", lambda root, env, session, label, *more: {"pressed": label})
+    assert "has no shell command" in refused(lambda: control.shell(record.root, record.env, "codex-1", "ls")), "a command is not typed into an agent that has no shell line"
+    assert "does not support" in refused(lambda: control.choice("nobody", "effort", "high", "m")), "a choice for an agent the journal does not know is refused in words"
+    assert (control.relaunch(record.root, record.env, "codex-1"), relaunched, control.move_to_background(record.root, record.env, "codex-1")) == \
+        ({"relaunching": True}, ["term-1"], {"pressed": "Move to the background"}), "a relaunch goes to the session's terminal, and the background key is pressed for it"
     mute = DRIVERS["claude"](record, "claude-6")
     assert mute.fd == -1 and mute._wrote(b"x") is False, "a driver with no terminal of its own types through the engine, which finds nobody"
 
@@ -376,6 +408,14 @@ def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_
     agent.notify(next(e for e in record.event_log.events(0, 50) if e.type == "todo" and e.n == todo.n))
     assert agent.flush() == "1 new todo 1", "what is waiting for the agent is sent to it in one line"
     assert len(seen["sent"]) == 1 and agent.pending == [], "and is no longer waiting once it has gone"
+    from agents.actors import User, event_data, finished
+    assert (finished(record, "nothing:1"), finished(record, "todo:99999"), finished(record, f"todo:{todo.n}")) == (False, False, False), \
+        "a row that cannot be found, or is not finished, does not count as finished"
+    Todos(record, actor=AGENT).complete(todo.n, "done")
+    assert finished(record, f"todo:{todo.n}") is True, "a finished row does"
+    assert event_data(record, Event(2, 0.0, "nudge", 99999, "created", AGENT)) == {}, "an event of a line that is gone carries no data"
+    assert (event_data(record, Event(1, 0.0, "todo", todo.n, "created", AGENT)), User(record).unread()) == ({}, []), \
+        "an event of a row that is not told by its title carries no data, and nothing unread waits for you"
 
 
 def test_a_worker_that_keeps_failing_with_no_earlier_build_is_retried_slower_then_the_session_ends(monkeypatch):
