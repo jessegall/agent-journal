@@ -11,7 +11,7 @@ from features.sharing.address import relied_on
 from features.sharing.controller import HEALTH, HEALTH_MARKER, Shares
 from features.sharing.details import HOST_DOWN, RESTARTED
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import ADDRESS_REFUSED, alerts, default_route, held_by_server, refused_address, tunler_status
+from features.sharing.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, tunler_status
 from resources.base import SYSTEM, Refused
 
 MISSES_BEFORE_RESTART = 2
@@ -23,7 +23,7 @@ JUMP_SECONDS = 20.0
 SLEEP_GAP = 60.0
 READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
 SETTINGS_UNREADABLE, HOST_IS_DOWN, TUNLER_UNUSABLE = "settings_unreadable", "host_down", "tunler_unusable"
-MISSES, RESTARTED_AT, UNREACHABLE_SINCE, RESTARTS, READDRESSED = "misses", "restarted", "unreachable_since", "restarts", "readdressed"
+MISSES, RESTARTED_AT, UNREACHABLE_SINCE, RESTARTS = "misses", "restarted", "unreachable_since", "restarts"
 HOLD_FOR = 60.0
 
 
@@ -48,6 +48,9 @@ class TunnelWatch:
             alert_once(state, TUNLER_UNUSABLE, lambda: Messages(record, actor=SYSTEM).create("The tunnel cannot start", brief=unusable))
             return
         state.set(TUNLER_UNUSABLE, 0)
+        if state.get(SIGNED_OUT):
+            state.set(SIGNED_OUT, 0)
+            want(record.root, TUNNEL, UP, nonce=time.time())
         if refused_address(log_file(record.root, TUNNEL)):
             self.refused(shares, state)
             return

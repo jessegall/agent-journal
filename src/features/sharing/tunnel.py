@@ -15,8 +15,8 @@ from engine.state import State
 from engine.wording import slugged
 from resources.base import Refused
 
-TUNNEL_FILE = "sharing.json"
-ADDRESS_REFUSED = "address_refused"
+TUNNEL_FILE, BACKUP_FILE = "sharing.json", "sharing.backup.json"
+ADDRESS_REFUSED, READDRESSED, SIGNED_OUT = "address_refused", "readdressed", "signed_out"
 OWNED = "domain is owned by another user"
 HELD = "409 Conflict"
 MOVED = "the journal moved the tunnel to a new address:"
@@ -29,10 +29,7 @@ DOWNLOAD_SECONDS = 60
 ROUTE_LINES = ("gateway", "interface")
 
 
-def kept_address(root: Path) -> dict:
-    path = Path(root) / TUNNEL_FILE
-    if not path.exists():
-        return {}
+def read_address(path: Path) -> dict:
     unreadable = f"cannot read the tunnel address in {path}; the address has not changed"
     try:
         kept = json.loads(path.read_text())
@@ -43,13 +40,27 @@ def kept_address(root: Path) -> dict:
     return kept
 
 
+def kept_address(root: Path) -> dict:
+    path, backup = Path(root) / TUNNEL_FILE, Path(root) / BACKUP_FILE
+    if not path.exists():
+        return {}
+    try:
+        return read_address(path)
+    except Refused:
+        if not backup.exists():
+            raise
+    kept = read_address(backup)
+    keep_address(root, kept)
+    return kept
+
+
+def keep_address(root: Path, kept: dict) -> None:
+    write_json(Path(root) / TUNNEL_FILE, kept)
+    write_json(Path(root) / BACKUP_FILE, kept)
+
+
 def alerts(root: Path) -> State:
     return State(Path(root) / "runtime" / "sharing-tunnel.json")
-
-
-def subdomain(root: Path) -> str:
-    kept = kept_address(root)
-    return kept.get("subdomain") or addressed(root, kept)
 
 
 def readable_address(root: Path) -> dict:
@@ -59,14 +70,14 @@ def readable_address(root: Path) -> dict:
         return {}
 
 
-def new_address(root: Path) -> str:
-    return addressed(root, {key: value for key, value in readable_address(root).items() if key != "subdomain"})
+def new_address(root: Path, claim: dict) -> str:
+    return addressed(root, {**readable_address(root), **claim})
 
 
 def addressed(root: Path, kept: dict) -> str:
     prefix = slugged(Path(root).resolve().parent.name, limit=20) or "journal"
     name = f"{prefix}-{secrets.token_hex(NAME_BYTES)}"
-    write_json(Path(root) / TUNNEL_FILE, {**kept, "subdomain": name})
+    keep_address(root, {**kept, "subdomain": name})
     return name
 
 
@@ -129,6 +140,7 @@ def tunler_status() -> dict:
 class TunnelStatus(TypedDict):
     installed: bool
     logged_in: bool
+    rejected: bool
     account: str
     host: str
     unreadable: bool
@@ -143,16 +155,17 @@ class Login(TypedDict):
 def asked_status() -> TunnelStatus:
     command = tunler()
     if not command:
-        return TunnelStatus(installed=False, logged_in=False, account="", host="", unreadable=False)
+        return TunnelStatus(installed=False, logged_in=False, rejected=False, account="", host="", unreadable=False)
     done = ran_command([command, "status", "--json"], timeout=STATUS_SECONDS)
     try:
         fields = json.loads(done.stdout) if done else None
     except ValueError:
         fields = None
     if not isinstance(fields, dict):
-        return TunnelStatus(installed=True, logged_in=False, account="", host="", unreadable=True)
-    return TunnelStatus(installed=True, logged_in=bool(fields.get("logged_in") and fields.get("auth_ok")), account=fields.get("user") or fields.get("email", ""),
-                        host=fields.get("host", ""), unreadable=False)
+        return TunnelStatus(installed=True, logged_in=False, rejected=False, account="", host="", unreadable=True)
+    saved = bool(fields.get("logged_in"))
+    return TunnelStatus(installed=True, logged_in=saved and bool(fields.get("auth_ok")), rejected=saved and not fields.get("auth_ok"),
+                        account=fields.get("user") or fields.get("email", ""), host=fields.get("host", ""), unreadable=False)
 
 
 LOGIN_SECONDS = 30

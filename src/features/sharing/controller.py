@@ -14,8 +14,9 @@ from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
-from engine.services import FAILED, UP, log_file, status, want
-from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, subdomain, tunler_status, unclaim, updated, versions
+from engine.services import DOWN, FAILED, UP, log_file, status, want
+from features.sharing.address import Claim, relied_on, this_machine
+from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -25,6 +26,8 @@ from controllers.marks import action
 
 NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
 LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
+REJECTED = "tunler is logged in as {account}, but {host} does not accept that login. The server may be down, or the account was deleted after 30 days without use, together with its addresses. Log in again to make a new one."
+ELSEWHERE = "This project's tunnel address {old} belongs to another machine, so this machine now uses {new}. A phone paired on this machine has to be paired again, and share links made here have to be sent again."
 ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
 TUNNEL_STOPPED = "The tunnel to this journal keeps stopping. The journal starts it again every few seconds."
 HOST_MISMATCH = "This journal uses the tunler server {saved}, but tunler is logged in to {host}. Log in to {saved} again, so the phone and share links reach this journal."
@@ -156,7 +159,10 @@ class Shares(ShareVisits, SharePages, Controller):
     @action
     def tunnel(self) -> dict:
         standing = tunler_status()
-        return {**standing, "address": self._address(), "problems": self._problems(standing)}
+        try:
+            return {**standing, "address": self._address(), "problems": self._problems(standing)}
+        except Refused as unreadable:
+            return {**standing, "address": "", "problems": [str(unreadable)]}
 
     @action
     def check_tunnel(self) -> dict:
@@ -166,6 +172,8 @@ class Shares(ShareVisits, SharePages, Controller):
     def _unusable(self, standing: TunnelStatus) -> str:
         if not standing["installed"]:
             return NOT_INSTALLED
+        if standing["rejected"]:
+            return REJECTED.format(account=standing["account"], host=standing["host"])
         return "" if standing["logged_in"] or standing["unreadable"] else LOGGED_OUT
 
     def _problems(self, standing: TunnelStatus) -> list[str]:
@@ -181,7 +189,27 @@ class Shares(ShareVisits, SharePages, Controller):
 
     def _address(self) -> str:
         host = self._host()
-        return f"{subdomain(self.record.root)}.{host}" if host else ""
+        return f"{self._subdomain()}.{host}" if host else ""
+
+    def _subdomain(self) -> str:
+        root, claim = self.record.root, self._claim()
+        kept = kept_address(root)
+        name, kept_claim = kept.get("subdomain", ""), Claim.kept(kept)
+        if not name:
+            return addressed(root, {**kept, **claim.fields()})
+        if kept_claim == claim or not claim.account:
+            return name
+        elsewhere, relied = kept_claim.is_elsewhere(claim), relied_on(self.record)
+        if not elsewhere and (relied or f"{name}.{claim.host}" in owned()):
+            keep_address(root, {**kept, **claim.fields()})
+            return name
+        fresh = addressed(root, {**kept, **claim.fields()})
+        if elsewhere and relied:
+            Messages(self.record, actor=SYSTEM).create("This machine has a tunnel address of its own", brief=ELSEWHERE.format(old=name, new=fresh))
+        return fresh
+
+    def _claim(self) -> Claim:
+        return Claim(this_machine(), tunler_status()["account"], self._host())
 
     @action
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
@@ -190,7 +218,15 @@ class Shares(ShareVisits, SharePages, Controller):
         made = log_in(host, username.strip(), password, master_password or None)
         if made["connected"]:
             Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", host)
+            self._reconnect()
         return {**made, **self.tunnel()}
+
+    def _reconnect(self) -> None:
+        state = alerts(self.record.root)
+        for key in (ADDRESS_REFUSED, READDRESSED, SIGNED_OUT):
+            state.set(key, 0)
+        self._subdomain()
+        want(self.record.root, TUNNEL, UP, nonce=time.time())
 
     @action
     def logout(self) -> dict:
@@ -198,6 +234,8 @@ class Shares(ShareVisits, SharePages, Controller):
         failed = log_out()
         if failed:
             raise Refused(failed)
+        alerts(self.record.root).set(SIGNED_OUT, time.time())
+        want(self.record.root, TUNNEL, DOWN)
         return self.tunnel()
 
     @action
@@ -242,7 +280,7 @@ class Shares(ShareVisits, SharePages, Controller):
     def _readdress(self) -> str:
         root, host = self.record.root, self._host()
         old = readable_address(root).get("subdomain", "")
-        name = new_address(root)
+        name = new_address(root, self._claim().fields())
         moved(log_file(root, TUNNEL), name)
         alerts(root).set(ADDRESS_REFUSED, 0)
         want(root, TUNNEL, UP, nonce=time.time())
