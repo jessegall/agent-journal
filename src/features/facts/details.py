@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class FactsDetails(FeatureDetails):
+    explains = 'The journal repeats relevant facts about this environment to the agent. You can edit or close a fact when it changes.'
     name = "facts"
     group = Group.MEMORY
     label = "Repeat facts"

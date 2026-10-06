@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class CollectionsDetails(FeatureDetails):
+    explains = 'The agent can gather related items into a named collection. You can open, rename, or rearrange the collection.'
     name = "collections"
     group = Group.RECORDS
     label = "Collections"

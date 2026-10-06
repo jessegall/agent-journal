@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class PlansDetails(FeatureDetails):
+    explains = 'The agent can make a plan in phases and move it along as its to-dos close. You can review it and approve checkpoints.'
     name = "plans"
     group = Group.PLANS
     when = "the user asks for a plan, phases or a roadmap, or a plan is started, advanced or finished"

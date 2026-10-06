@@ -9,6 +9,7 @@ TOO_LONG = "too long"
 
 
 class LawDetails(FeatureDetails):
+    explains = 'The journal gives every agent the same built-in rules for reading and delegating work. You can read their wording in the project’s instruction files.'
     name = "journal_laws"
     group = Group.LAWS
     has_skill = False

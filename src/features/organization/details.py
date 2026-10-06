@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class OrganizationDetails(FeatureDetails):
+    explains = "The viewer reads the project's domains and roles from its files. You can open the organization to see who handles each area."
     name = "organization"
     group = Group.VIEWER
     label = "Show the agent organization"

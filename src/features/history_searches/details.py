@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class HistorySearchesDetails(FeatureDetails):
+    explains = 'The chat marks when the agent searches past journal work. You can see what it looked for.'
     name = "history_searches"
     group = Group.CHAT
     label = "Show history searches"

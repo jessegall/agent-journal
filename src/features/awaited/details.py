@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class AwaitedDetails(FeatureDetails):
+    explains = 'The agent can wait for named helpers or background commands and continue when they finish. You can see what it is waiting for.'
     name = "awaited"
     group = Group.SESSIONS
     label = "Wait for named agents and background commands"

@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class PhoneDetails(FeatureDetails):
+    explains = 'The journal can connect your phone to this environment. You can read the chat and answer questions from your phone.'
     name = "phone"
     group = Group.VIEWER
     label = "Connect a phone"

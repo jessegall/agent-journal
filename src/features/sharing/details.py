@@ -6,6 +6,7 @@ from features.groups import Group
 ANSWERED, ALLOWED, HOST_DOWN, RESTARTED = "answered", "allowed", "host down", "restarted"
 
 class SharingDetails(FeatureDetails):
+    explains = 'The journal can make a private link to a document, report, collection, or plan. You can send that link to someone outside the journal.'
     name = "sharing"
     group = Group.SHARING
     when = "the user wants to show a document, a report, a collection or a plan to someone outside the journal"

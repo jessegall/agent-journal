@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class AttachmentDescriptionsDetails(FeatureDetails):
+    explains = 'The journal reads attached files and gives the agent a short description. You can open the files yourself at any time.'
     name = "attachment_descriptions"
     group = Group.RECORDS
     label = "Read attachments for the agent"

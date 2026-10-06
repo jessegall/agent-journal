@@ -155,6 +155,7 @@ function featureHead(f, label, hint, settings) {
         key: f.name,
         label,
         hint,
+        explains: f.explains,
         words: `${f.title} ${(f.keywords || []).join(" ")}`,
         timing: f.trigger_label ? null : timing(f.name, f.trigger, settings),
     };
@@ -169,7 +170,7 @@ function block(f, settings, extras) {
     return {
         key: f.name,
         block: true,
-        help: f.help,
+        explains: f.explains,
         head: featureHead(f, f.label, f.hint, settings),
         rows: featureRows(f, settings, extras),
     };
@@ -202,7 +203,7 @@ function group(g, members, settings, loose) {
         line: head && head.off ? OFF_LINE : g.line,
         section: g.section,
         tab: g.tab,
-        help: lead ? lead.help : "",
+        explains: lead ? lead.explains : "",
         head,
         items: [
             ...(lead ? featureRows(lead, settings, extras) : []),
@@ -211,7 +212,7 @@ function group(g, members, settings, loose) {
                 .filter((f) => flat.includes(f) || blocks.includes(f))
                 .map((f) => (flat.includes(f) ? featureHead(f, f.label, f.hint, settings) : block(f, settings, extras))),
         ],
-        always: always.map((f) => f.label),
+        always: always.map((f) => ({key: f.name, label: f.label, explains: f.explains})),
         danger: loose.danger[g.key] || [],
     };
 }

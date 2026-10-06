@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class HelperWorktreesDetails(FeatureDetails):
+    explains = 'The journal gives each helper a separate working copy of the project. You can inspect and take its work when it finishes.'
     name = "helper_worktrees"
     group = Group.SESSIONS
     label = "Give each helper its own worktree"

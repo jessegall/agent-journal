@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class SkillLoadingDetails(FeatureDetails):
+    explains = 'The journal reminds the agent to load the guidance it needs after a fresh start. You can see which skills it loaded.'
     name = "skill_loading"
     group = Group.SKILLS
     trigger_label = "Remind the agent to load the journal skill"

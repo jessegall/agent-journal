@@ -6,6 +6,7 @@ from features.groups import Group
 
 
 class AskQuestionsDetails(FeatureDetails):
+    explains = 'The agent can ask you a question with clear choices. You can answer in the viewer or on your phone.'
     name = "ask_questions"
     group = Group.QUESTIONS
     when = "a decision only the user can make comes up, or before offering the user choices"

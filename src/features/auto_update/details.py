@@ -5,6 +5,7 @@ from features.settings import Setting
 
 
 class AutoUpdateDetails(FeatureDetails):
+    explains = 'The journal can install updates automatically or ask the agent to install them. You can choose how updates are handled.'
     name = "auto_update"
     group = Group.UPDATES
     label = "Install updates automatically"

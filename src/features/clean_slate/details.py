@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class CleanSlateDetails(FeatureDetails):
+    explains = 'The journal can keep other agent hooks from interrupting its turn. You can choose whether this protection is on.'
     name = "clean_slate"
     group = Group.PROJECT
     label = "Turn off other hooks while the agent runs"

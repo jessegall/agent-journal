@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class TicketsDetails(FeatureDetails):
+    explains = 'A ticket gives one piece of board work its own environment and agent. You can review its plan and result.'
     name = "tickets"
     group = Group.TICKETS
     trigger_label = "Check the tickets"

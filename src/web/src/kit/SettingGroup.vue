@@ -3,6 +3,7 @@ import {computed} from "vue";
 import {useToggledSet} from "../composables/toggledSet.js";
 import Chip from "./Chip.vue";
 import SettingControl from "./SettingControl.vue";
+import SettingHowButton from "./SettingHowButton.vue";
 import Switch from "./Switch.vue";
 import TextDisplay from "./TextDisplay.vue";
 
@@ -12,7 +13,6 @@ const emit = defineEmits(["change", "timing", "act"]);
 const {members: opened, toggle} = useToggledSet();
 const bare = computed(() => !props.group.items.length && props.group.danger.length > 0);
 const off = computed(() => Boolean(props.group.head && props.group.head.off));
-const helps = computed(() => Object.fromEntries(props.group.items.filter((item) => item.block).map((item) => [item.key, item.help])));
 </script>
 
 <template>
@@ -23,10 +23,8 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
                     <h2>{{ group.title }}</h2>
                     <p>
                         {{ group.line }}
-                        <template v-if="group.help">
-                            <button type="button" class="setting-how" :aria-expanded="opened.has(group.key)" @click="toggle(group.key)">
-                                How it works
-                            </button>
+                        <template v-if="group.explains">
+                            <SettingHowButton :expanded="opened.has(group.key)" @click="toggle(group.key)" />
                         </template>
                     </p>
                 </div>
@@ -49,7 +47,7 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
             </header>
         </template>
         <template v-if="opened.has(group.key)">
-            <TextDisplay class="setting-help" :text="group.help" />
+            <TextDisplay class="setting-help" :text="group.explains" />
         </template>
         <slot name="before" />
         <template v-if="!bare">
@@ -64,19 +62,12 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
                             @change="emit('change', item.head, $event)"
                             @timing="emit('timing', item.head, $event)"
                         >
-                            <template v-if="helps[item.key]" #title>
-                                <button
-                                    type="button"
-                                    class="setting-how small"
-                                    :aria-expanded="opened.has(item.key)"
-                                    @click="toggle(item.key)"
-                                >
-                                    How it works
-                                </button>
+                            <template v-if="item.explains" #title>
+                                <SettingHowButton small :expanded="opened.has(item.key)" @click="toggle(item.key)" />
                             </template>
                         </SettingControl>
                         <template v-if="opened.has(item.key)">
-                            <TextDisplay class="setting-help inside" :text="helps[item.key]" />
+                            <TextDisplay class="setting-help inside" :text="item.explains" />
                         </template>
                         <template v-for="row in item.rows" :key="row.key">
                             <SettingControl
@@ -98,19 +89,32 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
                             @change="emit('change', item, $event)"
                             @timing="emit('timing', item, $event)"
                             @act="emit('act', item, $event)"
-                        />
+                        >
+                            <template v-if="item.explains" #title>
+                                <SettingHowButton small :expanded="opened.has(item.key)" @click="toggle(item.key)" />
+                            </template>
+                        </SettingControl>
+                        <template v-if="opened.has(item.key) && item.explains">
+                            <TextDisplay class="setting-help inside" :text="item.explains" />
+                        </template>
                     </template>
                 </template>
                 <template v-if="group.always.length">
                     <div class="setting-always">
                         <b>Always on</b>
-                        <template v-for="(label, i) in group.always" :key="label">
+                        <template v-for="(item, i) in group.always" :key="item.key">
                             <template v-if="i">
                                 <span>·</span>
                             </template>
-                            <span>{{ label }}</span>
+                            <span>{{ item.label }}</span>
+                            <SettingHowButton small :expanded="opened.has(item.key)" @click="toggle(item.key)" />
                         </template>
                     </div>
+                    <template v-for="item in group.always" :key="`${item.key}:explains`">
+                        <template v-if="opened.has(item.key)">
+                            <TextDisplay class="setting-help inside" :text="item.explains" />
+                        </template>
+                    </template>
                 </template>
             </div>
         </template>
@@ -161,28 +165,6 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
     gap: 10px;
     color: var(--text-3);
     font-size: 12px;
-}
-
-.setting-how {
-    margin-left: 6px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.setting-how:hover {
-    color: var(--text);
-}
-
-.setting-how.small {
-    margin-left: 2px;
-    color: var(--text-3);
-    font-size: 11.5px;
-    font-weight: 400;
 }
 
 .setting-help {

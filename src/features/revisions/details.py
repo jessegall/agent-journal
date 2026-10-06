@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class RevisionsDetails(FeatureDetails):
+    explains = 'The journal keeps earlier versions of documents. You can read a previous version or keep the current one.'
     name = "revisions"
     group = Group.RECORDS
     label = "Keep document revisions"

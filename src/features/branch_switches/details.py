@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class BranchSwitchesDetails(FeatureDetails):
+    explains = 'The chat marks each time the agent changes branches. You can see which working copy and branches were involved.'
     name = "branch_switches"
     group = Group.CHAT
     label = "Show branch switches"

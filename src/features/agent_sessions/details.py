@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class AgentSessionsDetails(FeatureDetails):
+    explains = 'The journal tracks each agent session and its current work. You can open a session to see its activity and controls.'
     name = "agent_sessions"
     group = Group.SESSIONS
     label = "Track agent sessions"

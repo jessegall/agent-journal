@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class BrowserControlDetails(FeatureDetails):
+    explains = 'The agent can request a screenshot, text, or a click from your browser tab. You choose when to turn tab control on.'
     name = "browser_control"
     group = Group.ALWAYS
     label = "Let the agent use your browser tab"

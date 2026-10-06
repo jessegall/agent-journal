@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class WorktreesDetails(FeatureDetails):
+    explains = 'Working copies of this project share one journal. You can see their sessions and work together.'
     name = "worktrees"
     group = Group.SESSIONS
     label = "Link worktrees to the project's journal"

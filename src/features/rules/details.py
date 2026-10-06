@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class RulesDetails(FeatureDetails):
+    explains = 'The journal repeats relevant rules to the agent. You can edit or close a rule when it changes.'
     name = "rules"
     group = Group.MEMORY
     label = "Repeat rules"

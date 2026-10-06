@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class TriggersDetails(FeatureDetails):
+    explains = 'The journal watches for words you choose and starts the matching action. You can edit or test each trigger.'
     name = "triggers"
     group = Group.RECORDS
     label = "Triggers"

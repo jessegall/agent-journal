@@ -5,6 +5,7 @@ AMBIGUOUS = "ambiguous"
 
 
 class RowLinksDetails(FeatureDetails):
+    explains = 'The viewer turns item numbers in text into links. You can open the named item directly.'
     name = "row_links"
     group = Group.CHAT
     label = "Turn item numbers into links"

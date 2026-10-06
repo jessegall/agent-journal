@@ -5,6 +5,7 @@ OPEN = "open"
 
 
 class PullRequestsDetails(FeatureDetails):
+    explains = 'The journal pins pull requests the agent opens above the chat. You can open one and follow its state.'
     name = "pull_requests"
     group = Group.CHAT
     label = "Pin open pull requests"

@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class FileFeedDetails(FeatureDetails):
+    explains = 'The chat shows files as the agent edits them. You can open a file card to inspect the change.'
     name = "file_feed"
     group = Group.CHAT
     label = "Show file edits as they happen"

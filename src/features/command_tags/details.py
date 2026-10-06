@@ -6,6 +6,7 @@ from features.groups import Group
 
 
 class CommandTagsDetails(FeatureDetails):
+    explains = 'The agent can place action tags in its messages and the journal carries out the matching action. You can see the resulting items in the viewer.'
     name = "command_tags"
     group = Group.AGENT
     label = "Run commands from tags"

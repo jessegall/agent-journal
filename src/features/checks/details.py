@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class ChecksDetails(FeatureDetails):
+    explains = 'The agent can run saved checks and inspect their results. You can run a check in the viewer whenever you need it.'
     name = "checks"
     group = Group.RECORDS
     label = "Checks"

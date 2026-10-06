@@ -6,6 +6,7 @@ SHOP, REMIND, THIRD_PERSON = "shop", "remind", "third person"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
+    explains = "The agent keeps its chat replies about your work. You can still inspect the journal's activity in the viewer."
     name = "chat_etiquette"
     group = Group.AGENT
     label = "Keep journal talk out of the chat"

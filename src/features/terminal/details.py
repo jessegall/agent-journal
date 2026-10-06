@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class TerminalDetails(FeatureDetails):
+    explains = "The viewer shows the agent's terminal commands and their output. You can open it to follow technical work."
     name = "terminal"
     group = Group.VIEWER
     label = "Show the agent's terminal"

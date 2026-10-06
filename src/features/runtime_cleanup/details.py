@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class RuntimeCleanupDetails(FeatureDetails):
+    explains = 'The journal deletes old temporary files and trims large logs. You can choose how long quiet session files stay.'
     name = "runtime_cleanup"
     group = Group.ARCHIVE
     label = "Delete old temporary files"

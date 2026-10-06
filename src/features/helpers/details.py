@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class HelpersDetails(FeatureDetails):
+    explains = "The agent can start a helper for a bounded job. You can see the helper's progress and report."
     name = "helpers"
     group = Group.SESSIONS
     label = "Allow helper agents"

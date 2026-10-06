@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class RemindersDetails(FeatureDetails):
+    explains = 'The journal repeats your standing reminders to the agent. You can change or close them in the viewer.'
     name = "reminders"
     group = Group.MEMORY
     label = "Repeat reminders"

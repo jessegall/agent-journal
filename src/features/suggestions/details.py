@@ -3,6 +3,7 @@ from features.groups import Group
 
 
 class SuggestionsDetails(FeatureDetails):
+    explains = 'The agent can make a suggestion for later work. You can accept, change, or decline it.'
     name = "suggestions"
     group = Group.RECORDS
     label = "Turn accepted suggestions into to-dos"

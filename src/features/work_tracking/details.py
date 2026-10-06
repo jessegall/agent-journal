@@ -5,6 +5,7 @@ from features.groups import Group
 
 
 class WorkDetails(FeatureDetails):
+    explains = 'The agent records the work it starts, changes, and closes. You can follow its progress from the to-do.'
     name = "work_tracking"
     group = Group.WORK_TRACKING
     trigger_label = "Check for open work"

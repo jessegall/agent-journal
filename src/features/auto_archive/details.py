@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class AutoArchiveDetails(FeatureDetails):
+    explains = 'The journal moves older closed items into an archive. You can still read and search them.'
     name = "auto_archive"
     group = Group.ARCHIVE
     label = "Archive closed items"

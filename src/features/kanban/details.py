@@ -4,6 +4,7 @@ from features.groups import Group
 
 
 class KanbanDetails(FeatureDetails):
+    explains = 'The viewer places your to-dos in columns by their state. You can move a card to change its state.'
     name = "kanban"
     group = Group.BOARDS
     label = "Show to-dos as a kanban board"
