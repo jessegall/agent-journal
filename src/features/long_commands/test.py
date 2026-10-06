@@ -17,6 +17,12 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     assert (moved, [n for n in nudges(record) if "moved to the background" in n]) == \
         (["claude-1"], ["your command ran 45s in the foreground and was moved to the background"]), \
         "moved once, and the agent is told"
+    from features.long_commands import move
+    from providers.base import BackgroundTasks
+    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}, ended={"b1": time.time()}, failed={"b1"}))
+    tick(record)
+    mark = Agents(record, actor="system").load(Agents(record, actor="system").by_session("claude-1").n).data["cards"][-1]
+    assert (mark["label"], mark["state"]) == ("Moved a long command to the background", "failed"), "the mark of a moved command turns to failed when its task ends that way"
 
 
 def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):

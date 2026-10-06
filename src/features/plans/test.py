@@ -111,6 +111,19 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     reopened = by_agent.load(plan.n)
     assert (reopened.data["status"], reopened.data["current"], bool(reopened.completed)) == ("active", 3, False), \
         "a row of a finished plan reopens: the plan goes back to its phase and runs again"
+    todos.start(4)
+    work = next(w for w in Works(record, actor=SYSTEM).all() if w.data.get("todo") == 4 and not w.completed)
+    Works(record, actor=AGENT).section(work.n, f"1 · {time.strftime('%Y-%m-%d %H:%M')}", "measured the parity")
+    Works(record, actor=AGENT).complete(work.n, how="parity holds")
+    moments = {(moment["kind"], moment["todo"]) for moment in by_agent.timeline(plan.n)}
+    assert {("started", 4), ("log", 4), ("ended", 4), ("done", 5)} <= moments, "a plan's timeline tells when its to-dos were taken up, logged, ended and closed"
+    from features.plans.summary import plans_shown
+    assert [(entry["title"], entry["status"], entry["phase"], entry["phases"], entry["rows"], entry["done"]) for entry in plans_shown(record)] == \
+        [("Port everything", "active", "Third", 3, 5, 4), ("Another", "building", "", 0, 0, 0)], "the viewer's plan list shows each plan with its phase and how many of its rows are done, one still being written included"
+    from features.plans.handlers import doable
+    assert doable(record, by_agent.load(plan.n)) == "take to-do 4", "a plan's next step names the to-dos ready to take"
+    todos.start(4)
+    assert doable(record, by_agent.load(plan.n)) == "go on with to-do 4", "and the ones already in hand"
 
 
 def test_under_auto_a_checkpoint_is_passed_not_waited_at():

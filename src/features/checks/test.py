@@ -117,6 +117,20 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     checks.gate(suite.n, "break the hook", paths="hooks/code.py", wait=True)
     assert git(repo.project, "log", "-1", "--format=%s") == "change the hook", "a failure commits nothing"
     assert any("failed, nothing was committed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "and the agent is nudged why"
+    assert "name the paths" in refused(lambda: checks.gate(suite.n, "nothing named", paths=" ")), "a gate names the paths it commits"
+    checks.update(suite.n, command="true", then="echo after")
+    (repo.project / "hooks" / "code.py").write_text("four\n")
+    checks.gate(suite.n, "then runs", paths="hooks/code.py", wait=True)
+    assert any("then ran" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "what a check runs after its commit is run and told"
+    checks.gate(suite.n, "missing path", paths="nowhere.txt", wait=True)
+    assert any("the commit failed" in n.title for n in Nudges(repo.record, actor=SYSTEM).all()), "a commit that git refuses is told, not hidden"
+    bare = checks.create("no touched command", command="true")
+    assert "names no command for touched tests" in refused(lambda: checks.touched(bare.n)), "touched needs the command that runs the tests beside what changed"
+    assert "no test covers what changed" in checks.touched(suite.n), "with nothing changed no test is run and the full check stays the gate"
+    monkeypatch.setattr(Checks, "in_background", lambda self, n: False)
+    assert "is already running" in checks.run(suite.n), "a check that is running is not started again"
+    monkeypatch.setattr(Checks, "in_background", lambda self, n: True)
+    assert "is running; its result lands on the row" in checks.run(suite.n), "a check started on its own tells where its result lands"
 
 
 def test_a_check_that_runs_out_of_time_says_so():

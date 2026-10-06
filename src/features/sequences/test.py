@@ -186,6 +186,19 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     assert sequences.load(outer.n).runs, "the run counts the included steps"
     sequences.follow(outer.n)
     assert sequences.next(outer.n) == f"Sequence {outer.n} is finished." and not sequences.load(outer.n).runs, "and ends after the last of them"
+    assert "steps is one step or a range" in refused(lambda: sequences.include(outer.n, base.n, steps="two")), "a range of steps is numbers"
+    sequences.steps(outer.n, '[{"title": "first", "body": "do it"}, {"title": "second"}]')
+    assert [(step["title"], step["body"]) for step in sequences.steps_of(sequences.load(outer.n))] == [("first", "do it"), ("second", "")], "steps are replaced whole from a list"
+    assert [("JSON list" in refused(lambda: sequences.steps(outer.n, text))) for text in ("{broken", '[{"body": "no title"}]', '"one"')] == [True] * 3, \
+        "steps must be a list whose every step has a title"
+    assert "share a title" in refused(lambda: sequences.steps(outer.n, '[{"title": "x"}, {"title": "x"}]')), "two steps never share a title"
+    empty = sequences.create("Empty")
+    assert "has no steps" in refused(lambda: sequences.run(empty.n)), "a sequence without steps cannot run"
+    sequences.run(outer.n)
+    assert "never taken up" in refused(lambda: sequences.next(outer.n)), "an agent takes a step up before it moves on"
+    sequences.follow(outer.n)
+    assert "names a step from" in refused(lambda: sequences.next(outer.n, through=9)), "the steps to skip over are steps still ahead"
+    assert "say why" in refused(lambda: sequences.abandon(outer.n, why=" ")), "abandoning a run says why"
 
 
 def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
