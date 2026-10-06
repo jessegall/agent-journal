@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.13 — test coverage rises from 91% to about 97%, and the bugs it found are fixed
+Tests now cover the command line, the viewer's routes, an agent's screen and appointment, the start question, settings, services and to-do marks. They found two bugs, both fixed: switching back to an earlier environment crashed, and declining a takeover at start asked for a name. A session record no longer declares its earlier environment twice, the action list is cached once, and the feature-switch upgrade test no longer depends on the clock. Nothing to do.
+
 ## 2.253.12 — the phone shows an answered question's chips as chips, and typing brings the chat down
 The phone's answered-question card now draws links to rows as chips, as the desktop card does, instead of their bare labels. Typing the first words in the chat box, on the phone and on the desktop, now scrolls the chat to the newest message. Nothing to do.
 
