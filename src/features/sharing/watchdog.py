@@ -15,6 +15,7 @@ MISSES_BEFORE_RESTART = 3
 PATIENCE = 10.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
+SETTLE = 60.0
 READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
 
 
@@ -26,11 +27,21 @@ class KeepTunnelAnswering(Handler):
             return
         state, shares = State(context.record.root / "runtime" / "sharing-tunnel.json"), Shares(context.record, actor=SYSTEM)
         if refused_address(log_file(context.record.root, TUNNEL)):
+            if not state.get("readdressed"):
+                state.set("readdressed", time.time())
+                name = shares._readdress()
+                Messages(context.record, actor=SYSTEM).create(
+                    "The tunnel moved to a new address",
+                    brief=f"Another tunler account owns the old address, so the journal chose {name} and restarted the tunnel on it. "
+                          "Share links sent before now stop working: send them again. A paired phone has to be paired again.")
+                return
+            if time.time() - float(state.get("readdressed")) < SETTLE:
+                return
             if not state.get("address_refused"):
                 state.set("address_refused", time.time())
                 Messages(context.record, actor=SYSTEM).create(
                     "The tunnel address is owned by another user", buttons=[READDRESS],
-                    brief="The phone and share links cannot use this address. Choosing a new one changes the phone's address, so it has to be paired again.")
+                    brief="The new address was refused as well. Choosing another one changes the phone's address, so it has to be paired again.")
             return
         state.set("address_refused", 0)
         try:
@@ -43,6 +54,7 @@ class KeepTunnelAnswering(Handler):
             return
         state.set("settings_unreadable", 0)
         if answering:
+            state.set("readdressed", 0)
             state.set("misses", 0)
             state.set("host_down", 0)
             return

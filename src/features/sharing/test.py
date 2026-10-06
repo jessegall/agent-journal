@@ -7,6 +7,7 @@ from http.server import ThreadingHTTPServer
 from controllers.types import Agents, Comments, Docs, Messages
 from runner.hooks import handle
 from engine.ran import announce
+from features import FEATURES
 from features.sharing.controller import Shares
 from features.sharing.server import ShareHandler
 from features.sharing.visitors import AGREEMENT
@@ -252,10 +253,13 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
     monkeypatch.setattr(tunnel, "tunler", lambda: str(tool))
     record = fresh()
     shares = Shares(record, actor=USER)
+    tunnel.KEPT_STATUS.clear()
+    assert shares.tunnel()["address"].endswith(".t.example"), "with no server saved, the address is on the server tunler is logged in to"
     asked = shares.login("newbie", "right-pass", endpoint="t.example")
     assert (asked["connected"], asked["needs_master"]) == (False, True), "an unknown account asks for the master password"
     made = shares.login("newbie", "right-pass", endpoint="t.example", master_password="master")
     assert made["connected"] and made["account"] == "newbie", "with it, the account is made and the login kept"
+    assert FEATURES["sharing"].setting(record, "host", "") == "t.example", "a login keeps the server it logged in to"
     wrong = shares.login("someone", "wrong-pass", endpoint="t.example")
     assert (wrong["connected"], wrong["needs_master"], wrong["error"]) == (False, False, "login failed: wrong username or password")
     assert shares.version() == {"current": "v9.9.9", "latest": "v9.9.10", "update_available": True}, "whether a newer tunler is out"
@@ -267,11 +271,11 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
         pass
 
 
-def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
+def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch):
     import features
     from engine import runtime
     from engine.services import log_file
-    from features.sharing import watchdog
+    from features.sharing import controller, watchdog
     from features.sharing.tunnel import OWNED, subdomain
     from tests.kit import tick
     features.load()
@@ -284,12 +288,32 @@ def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
     asked = []
     monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
+    monkeypatch.setattr(controller, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
+    monkeypatch.setattr(controller, "tunler_status", lambda: {"installed": True, "logged_in": True, "account": "me", "host": "tunler.example"})
     log = log_file(record.root, watchdog.TUNNEL)
     log.parent.mkdir(parents=True, exist_ok=True)
-    log.write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
+    refusal = f"rejected by server: {OWNED} (403 Forbidden)\n"
+    log.write_text(refusal)
+    assert Shares(record, actor=USER).tunnel()["problems"] == [controller.ADDRESS_TAKEN], "the phone and sharing dropdowns say why the tunnel is down"
     tick(record)
-    assert subdomain(record.root) == before and asked == [], "a refused address stays unchanged"
-    assert any("tunnel address is owned by another user" in message.title.lower() for message in Messages(record).all()), "the user is told to choose another address"
+    moved = subdomain(record.root)
+    assert moved != before and asked == [watchdog.TUNNEL], "a refused address is replaced by a new one and the tunnel restarted on it"
+    assert [m.title for m in Messages(record).all() if "new address" in m.title] == ["The tunnel moved to a new address"], "the user is told once"
+    assert Shares(record, actor=USER).tunnel()["problems"] == [], "the old refusal no longer counts once the address moved"
+    tick(record)
+    assert (subdomain(record.root), asked) == (moved, [watchdog.TUNNEL]), "the old refusal still in the log moves nothing again"
+    with log.open("a") as written:
+        written.write(f"12:00:00 inspector: http://127.0.0.1:1\n{refusal}12:00:01 inspector: http://127.0.0.1:1\nconnected\n")
+    assert Shares(record, actor=USER).tunnel()["problems"] == [], "only the latest run of the tunnel counts"
+    with log.open("a") as written:
+        written.write(refusal)
+    tick(record)
+    assert not [m for m in Messages(record).all() if "owned by another user" in m.title.lower()], "a refusal right after the move waits for the tunnel to settle"
+    monkeypatch.setattr(watchdog, "SETTLE", 0.0)
+    tick(record)
+    tick(record)
+    assert (subdomain(record.root), asked) == (moved, [watchdog.TUNNEL]), "a new address refused as well is never moved in a loop"
+    assert len([m for m in Messages(record).all() if "owned by another user" in m.title.lower()]) == 1, "the user is asked once to choose another address"
     settings = record.root / "sharing.json"
     settings.write_text("{broken")
     assert "cannot read the tunnel address" in refused_with(lambda: subdomain(record.root))
@@ -302,7 +326,6 @@ def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
 def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_path, monkeypatch):
     import io
     import stat
-    from features import FEATURES
     from features.sharing import tunnel
     record = fresh()
     shares = Shares(record, actor=USER)

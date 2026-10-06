@@ -152,6 +152,11 @@ const pageTabs = computed(() => [
     {key: "tunnel", title: "Tunler"},
 ]);
 watch(tab, (key) => remember(TAB, key));
+watch(
+    () => route.value.sub,
+    (sub) => pageTabs.value.some((t) => t.key === sub) && (tab.value = sub),
+    {immediate: true}
+);
 const nothing = computed(() => Object.values(sections.value).every((list) => !list.length));
 
 function showAll() {

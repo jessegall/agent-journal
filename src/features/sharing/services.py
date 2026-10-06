@@ -7,10 +7,9 @@ from engine.package import entry
 from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for
 from features.sharing.controller import Shares
-from features.sharing.tunnel import subdomain, tunler
+from features.sharing.tunnel import SERVER, TUNNEL, subdomain, tunler
 from resources.base import Refused, SYSTEM
 
-SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 KEEP_UP: list = []
 
 
