@@ -1,8 +1,8 @@
 export const refused = (card, meaning) => card.type === "ticket" && meaning === "start" && card.state === "draft";
 
 const SHIFT_QUESTIONS = {
-    held: {title: "Why is it held?", word: "why", required: true},
-    done: {title: "How did it land?", word: "how", required: false},
+    held: {title: "Why is it blocked?", word: "why", required: true},
+    done: {title: "How did it end?", word: "how", required: false},
     todo: {title: "Why reopen it?", word: "why", required: true},
 };
 

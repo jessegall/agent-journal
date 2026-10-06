@@ -18,7 +18,8 @@ class Collections(Controller):
     @action
     def add(self, n: int, refs: list[str]):
         collection = self.load(n)
-        for ref in refs:
+        for named in refs:
+            ref = str(resources_module.ref_named(named))
             self._member(ref)
             collection = self.link(collection.n, ref)
         return collection

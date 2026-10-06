@@ -235,7 +235,7 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
         <PhoneActs ref="acts" :row="acting" @changed="refresh" @gone="refresh" />
     </template>
     <template v-if="asking">
-        <FormSheet :title="asking.title" :about="asking.about" :fields="asking.fields" button="Move it" @send="asking.send" @close="asking = null" />
+        <FormSheet :title="asking.title" :about="asking.about" :fields="asking.fields" button="Move" @send="asking.send" @close="asking = null" />
     </template>
 </template>
 
