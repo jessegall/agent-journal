@@ -76,6 +76,10 @@ def test_an_agent_that_is_not_installed_is_refused_before_anything_is_changed(tm
     for given in (["--no-interaction"], None):
         assert "install" in refused(lambda: launch(record, "codex", given)), "the missing agent is refused in words"
     assert viewers == [] and moved(record) == [] and hooks.read_text() == before, "no viewer started and no hook set aside"
+    place = Environments(record, actor=USER).create("worktree-one")
+    assert "only the user starts an agent" in refused(lambda: Environments(record, actor=AGENT).action("launch")(place.n)), "an agent never starts another agent in an environment"
+    assert "no agent called 'gemini'" in refused(lambda: Environments(record, actor=USER).action("launch")(place.n, agent="gemini")), \
+        "an agent that is not one of the journal's is refused with the ones it has"
 
 
 def test_the_start_offers_to_carry_on_the_environments_last_session():

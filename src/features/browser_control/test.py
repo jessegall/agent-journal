@@ -19,3 +19,6 @@ def test_the_extension_drives_a_tab_answers_an_ask_and_its_picture_is_attached()
     assert (bool(done.completed), done.outcome, agent.files(asked.n)) == (True, "a picture of the page", ["shot.png"]), \
         "the answer closes the ask with its text and attaches its picture, under its own name only"
     assert sent("pending", {}).body["data"] == [], "an answered ask is no longer handed out"
+    assert "an ask is one of" in refused(lambda: agent.ask("fly")), "an ask the extension does not know is refused with the ones it does"
+    waiting = agent.ask("text", wait=1)
+    assert not waiting.completed, "an ask nobody answers in time comes back still waiting"
