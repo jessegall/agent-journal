@@ -4,7 +4,7 @@ from resources import types
 from controllers.marks import action
 from resources.base import SYSTEM
 
-ACCEPT, ADJUST, DECLINE = "Accept", "Adjust", "Decline"
+ACCEPT, ADJUST, DECLINE, INSTALL = "Accept", "Adjust", "Decline", "Install"
 OPEN_SUGGESTIONS = 5
 
 
@@ -28,12 +28,12 @@ class Suggestions(Controller):
         options = [{"title": ACCEPT, "description": "a to-do is filed from it", "code": ""},
                    {"title": ADJUST, "description": "say what to do differently below; a to-do is filed from your words", "code": ""},
                    {"title": DECLINE, "description": "it is not proposed again", "code": ""}]
-        return super().create(title, abstract, brief, options=options, **data)
+        return super().create(title, abstract, brief, options=options[-1:] if data.get("buttons") else options, **data)
 
     @action
     def complete(self, n: int, how: str = "", **data):
         word = how.strip().split(":", 1)[0].strip().lower()
-        decision = word if word in (ACCEPT.lower(), DECLINE.lower()) else adjusted(how)
+        decision = word if word in (ACCEPT.lower(), DECLINE.lower(), INSTALL.lower()) else adjusted(how)
         return super().complete(n, how, decision=decision, **data)
 
 

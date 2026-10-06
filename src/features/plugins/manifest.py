@@ -11,7 +11,7 @@ from engine.gates import CANCELABLE
 from features.plugins.declared import Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels", "fits")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
@@ -23,6 +23,7 @@ TONES = ("", "warn", "good")
 SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail", "parent")
 KINDS = ("text", "textarea", "list", "number", "flag", "options")
 RESTARTS = ("always", "on-failure", "never")
+FITS = {"languages": '["PHP", "Python"]', "files": '["composer.json", "*.csproj"]'}
 
 
 def read(folder: Path, version: str = "") -> Manifest:
@@ -72,6 +73,7 @@ def read(folder: Path, version: str = "") -> Manifest:
         checked["cancels"] = {event: command(f"cancels.{event}", run) for event, run in checked["cancels"].items()}
     if "refuse" in checked:
         checked["refuse"] = command("refuse", checked["refuse"])
+    checked["fits"] = fits(given.get("fits") or {})
     checked["reads"] = bool(given.get("reads"))
     if "installed" in checked and not isinstance(checked["installed"], str):
         raise Refused("plugin.json: installed is one command, run right after the plugin is installed or upgraded; its answer fills the settings")
@@ -86,6 +88,16 @@ def unknown_keys(given: dict, known, where: str) -> None:
     for key in given:
         if key not in known:
             raise Refused(f"{where} has unknown key {key!r}; known: {', '.join(known)}")
+
+
+def fits(given) -> dict:
+    if not isinstance(given, dict):
+        raise Refused("plugin.json: fits is an object with languages and files, naming the projects the plugin is for")
+    unknown_keys(given, FITS, "plugin.json: fits")
+    for key, value in given.items():
+        if not isinstance(value, list) or not value or not all(isinstance(entry, str) and entry.strip() for entry in value):
+            raise Refused(f"plugin.json: fits.{key} is a list of names, such as {FITS[key]}")
+    return {key: list(value) for key, value in given.items()}
 
 
 def command(where: str, given) -> str | list:

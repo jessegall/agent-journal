@@ -780,25 +780,80 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
         assert hosting.watch(record.root, FEATURES["plugins"].journal) is None, "a second host in the same journal leaves at once"
 
 
-def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_path):
+def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_path, monkeypatch):
     record = fresh("scanner")
     rows = Plugins(record, actor=AGENT)
     manifest = {**WORKS, "name": "scanner", "settings": {"folders": {"type": "list", "default": ""}},
                 "installed": "sh scan.sh"}
     made = rows.action("install")(repository(tmp_path, manifest, {"scan.sh": "echo '{\"settings\": {\"folders\": \"src\"}}'\n"}), yes=True)
     assert (rows.load(made.n).settings or {}).get("chosen") == {"folders": "src"}, "what the plugin found is chosen by the time the install is done"
+    from features.plugins import fitting
+    from features.plugins.manifest import fits, read
+    for given in ("PHP", {"languages": "PHP"}, {"language": ["PHP"]}, {"files": []}, {"files": [3]}):
+        assert "plugin.json: fits" in refused(lambda: fits(given)), f"a plugin that declares {given!r} as the projects it fits is refused in plain words"
+    declaring = tmp_path / "declaring"
+    (declaring / MANIFEST).parent.mkdir(parents=True)
+    (declaring / MANIFEST).write_text(json.dumps({**WORKS, "name": "declaring", "fits": {"languages": ["PHP"], "files": ["*.csproj"]}}))
+    assert read(declaring).fits.found({"PHP"}, ["a/App.csproj", "b.txt"]) == ["PHP", "App.csproj"], "a declared fit names the languages and the files it matched"
     from engine.events.agents import SessionStarted
+    from features.message_buttons.pressing import press
     from features.parts import AgentContext
-    from features.plugins.recommended import SuggestFittingPlugins
     from features.suggestions.controller import Suggestions
+    from controllers.types import Todos
     from tests.kit import project_on
     import features
+    fitting_manifest = {**WORKS, "fits": {"languages": ["Python"]}}
+    listed = repository(tmp_path, [], {"plugins.json": json.dumps([
+        {"source": repository(tmp_path, {**fitting_manifest, "name": "snake"}, name="snake"), "title": "Snake"},
+        {"source": repository(tmp_path, {**WORKS, "name": "gem", "fits": {"languages": ["Ruby"], "files": ["Gemfile"]}}, name="gem"), "title": "Gem"},
+        {"source": repository(tmp_path, {**fitting_manifest, "name": "broken", "setup": [{"name": "boom", "run": "echo no disk left >&2; exit 3"}]}, name="broken"), "title": "Broken"},
+    ])}, name="official")
+    monkeypatch.setenv("AGENT_JOURNAL_REPO", listed)
     repo = project_on("work")
     (repo.project / "app.py").write_text("print('hi')\n")
     subprocess.run(["git", "add", "app.py"], cwd=repo.project, capture_output=True, timeout=30)
     row = Agents(repo.record, actor="system").by_session("claude-1")
-    for _ in range(2):
-        SuggestFittingPlugins().handle(AgentContext.of(features.FEATURES["plugins"], repo.record, row), SessionStarted())
-    suggested = [s for s in Suggestions(repo.record, actor="system").rows.every() if s.title == "Install the Code Commandments plugin"]
-    assert len(suggested) == 1 and "written in Python" in suggested[0].brief, \
-        "a project written in a language a known plugin judges is offered that plugin once, as a suggestion the user takes or leaves"
+    context = AgentContext.of(features.FEATURES["plugins"], repo.record, row)
+
+    def started():
+        fitting.SuggestFittingPlugins().handle(context, SessionStarted())
+        for thread in [t for t in threading.enumerate() if t.name == "plugin-fit"]:
+            thread.join(60)
+        return {s.title: s for s in Suggestions(repo.record, actor="system").rows.every()}
+
+    asked = []
+    official = fitting.official
+    monkeypatch.setattr(fitting, "official", lambda root: asked.append(root) or official(root))
+    suggested = started()
+    started()
+    assert sorted(suggested) == ["Install the Broken plugin", "Install the Snake plugin"], \
+        f"a listed plugin whose declared languages the project is written in is suggested, and one that declares other languages is not: {sorted(suggested)}"
+    assert len(asked) == 1, "the official list is read once a day, not at every session start"
+    assert "written" not in suggested["Install the Snake plugin"].brief and "Python" in suggested["Install the Snake plugin"].brief, "the suggestion says which part of the project fits"
+    snake = suggested["Install the Snake plugin"]
+    press(repo.record, snake, fitting.YES, "user", "viewer")
+    assert [r.source for r in Plugins(repo.record, actor="system").rows.every()] == [snake.data["plugin"]], "pressing the button installs the plugin right away"
+    assert (Todos(repo.record, actor="system").rows.every(), Suggestions(repo.record, actor="system").load(snake.n).decision) == ([], "install"), \
+        "and no to-do stands between the press and the install"
+    marks = [c for c in Agents(repo.record, actor="system").primary().data["cards"] if c.get("side") == "user"]
+    assert [m["label"] for m in marks] == ["You installed the snake plugin"], "the chat holds a mark, on the user's side, that it was installed"
+    broken = suggested["Install the Broken plugin"]
+    why = refused(lambda: press(repo.record, broken, fitting.YES, "user", "viewer"))
+    card = Agents(repo.record, actor="system").primary().data["cards"][-1]
+    assert "boom" in why and "no disk left" in card["detail"] and card["label"].startswith("Could not install"), \
+        f"a failed install shows in the chat with its reason: {why} / {card}"
+    assert [r.source for r in Plugins(repo.record, actor="system").rows.every()] == [snake.data["plugin"]], "and nothing is left half installed"
+    release = threading.Event()
+    monkeypatch.setattr(fitting, "official", lambda root: release.wait(30) and [])
+    (repo.record.root / "runtime" / fitting.KEPT).unlink()
+    began = time.monotonic()
+    fitting.SuggestFittingPlugins().handle(context, SessionStarted())
+    stalled = [t for t in threading.enumerate() if t.name == "plugin-fit"]
+    assert time.monotonic() - began < 5 and stalled, "a session start returns at once while the official list is still being read"
+    release.set()
+    for thread in stalled:
+        thread.join(60)
+    monkeypatch.setenv("AGENT_JOURNAL_REPO", str(tmp_path / "nowhere"))
+    monkeypatch.setattr(fitting, "official", official)
+    (repo.record.root / "runtime" / fitting.KEPT).unlink()
+    assert sorted(started()) == ["Install the Broken plugin", "Install the Snake plugin"], "a list that cannot be reached adds nothing and breaks nothing"
