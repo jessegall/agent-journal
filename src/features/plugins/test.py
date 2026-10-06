@@ -154,8 +154,12 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     row = plugins.action("install")(source, yes=True)
     assert "is installed from" in refused(lambda: plugins.action("install")(source, yes=True)), "a plugin is installed once"
     assert "is already at" in plugins.action("upgrade")(row.n), "an upgrade with nothing new says so"
+    from tests.kit import dispatch
+    looking = lambda: dispatch("POST", f"/api/{fine.env}/plugins/{row.n}/upgrade-preview", fine.root, {}, {}).body["current"]
+    assert looking() is True, "the viewer's upgrade preview says when the plugin is current"
     git("commit", "-q", "--allow-empty", "-m", "two", cwd=tmp_path / "upgraded")
     assert "Nothing has changed yet" in plugins.action("upgrade")(row.n), "an upgrade shows what it would change before it does it"
+    assert looking() is False, "and when there is something new"
     assert plugins.action("upgrade")(row.n, yes=True).commit != row.commit, "and moves the plugin to the new commit"
     assert (plugins.action("disable")(row.n).enabled, plugins.action("enable")(row.n).enabled) == (False, True), "a plugin is switched off and on again"
     assert "remove it first" in refused(lambda: plugins.action("purge")(row.n)), "what an installed plugin keeps is never purged"
@@ -326,7 +330,8 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     from features import FEATURES
     from features.plugins.services import notice_stopped
     from controllers.types import Notices
-    installed(record, "server", "exit 0", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}})
+    installed(record, "server", "exit 0", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}},
+              pages=[{"name": "home", "title": "Home", "service": "web", "path": "/start"}])
     spec, = plugin_services(record.root, set())
     assert (spec.id, spec.run, spec.env["WHERE"]) == ("server.web", f"serve {spec.port} {folder(record.root, 'server')}", str(folder(record.root, "server"))), \
         "a service a plugin declares runs on a port of its own, with its port and folder filled into its command and env"
@@ -335,6 +340,10 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     status_file(record.root, "server.web").write_text(json.dumps({"state": "ready"}))
     notice_stopped(record.root, FEATURES["plugins"])
     assert [n.title for n in Notices(record, actor=SYSTEM).all() if not n.completed and "server.web" in n.title] == [], "and the notice goes once it runs again"
+    from tests.kit import dispatch
+    page, = dispatch("GET", "/api/pages", record.root, {}, {}).body
+    assert (page["plugin"], page["title"], page["state"], page["url"].endswith("/start")) == ("server", "Home", "ready", True), \
+        "the viewer lists a plugin's pages with the state of the service behind each"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():
