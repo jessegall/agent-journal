@@ -654,3 +654,61 @@ def test_the_supervisor_runs_one_child_per_environment_and_ends_the_unwanted_and
     finally:
         kept.kill()
         kept.wait(10)
+
+
+def test_a_branch_links_to_its_web_page_only_on_a_known_host_and_a_compaction_ends_with_its_status(tmp_path):
+    from agents.seat import status_after, web_remote
+    from resources.types import COMPACTING, WORKING
+    assert [web_remote(url) for url in ("git@github.com:owner/repo.git", "ssh://git@gitlab.com/owner/repo.git", "https://bitbucket.org/owner/repo/",
+                                        "https://github.com/owner/repo.git", "http://github.com/owner/repo", "git@example.com:owner/repo.git", "", "/local/path")] == \
+        ["https://github.com/owner/repo", "https://gitlab.com/owner/repo", "https://bitbucket.org/owner/repo", "https://github.com/owner/repo", "", "", "", ""], \
+        "an ssh or https remote on github, gitlab or bitbucket is a web address, and any other is none"
+    assert web_remote("ssh://git@github.com:22/owner/repo.git") == "https://github.com/owner/repo", "a port in an ssh remote is not part of the web path"
+    assert (status_after(True, "idle"), status_after(False, COMPACTING), status_after(None, COMPACTING), status_after(False, "idle"), status_after(None, None)) == \
+        (COMPACTING, WORKING, COMPACTING, "idle", ""), "compacting shows while it lasts, and working returns when it ends"
+    from agents.seat import SeatReport
+    from tests.kit import commit, git
+    project = tmp_path / "project"
+    project.mkdir()
+    git(project, "init", "-q", "-b", "feature")
+    git(project, "config", "user.email", "a@b.c")
+    git(project, "config", "user.name", "a")
+    commit(project, "a.txt", "a")
+    git(project, "remote", "add", "origin", "git@github.com:owner/repo.git")
+    marks = []
+    last = types.SimpleNamespace(cwd=str(project), title="claude-1", status="idle", event="Stop", at=1.0, branch="", branch_url="")
+    driver = types.SimpleNamespace(last_report=lambda: last)
+    agent = types.SimpleNamespace(driver=driver, mark=lambda status, event, **given: marks.append(given))
+    seat = SeatReport(types.SimpleNamespace(root=project / ".journal"), agent)
+    assert seat.branch() == "feature" and marks == [{"branch": "feature", "branch_url": "https://github.com/owner/repo/tree/feature", "at": 1.0}], \
+        "the branch the agent works on and its web page are put on the agent"
+    assert seat.branch() == "feature" and len(marks) == 1, "looking again within moments reads nothing and says nothing more"
+
+
+def test_a_second_journal_gets_a_free_viewer_port_and_a_journal_already_served_says_where(tmp_path, monkeypatch, capsys):
+    import serve
+    from engine import viewer
+    from engine.viewer import Identity
+    mine, theirs = tmp_path / "a" / ".journal", tmp_path / "b" / ".journal"
+    monkeypatch.setattr(viewer, "PORTS", [8420, 8421, 8422])
+    taken = {8420}
+    monkeypatch.setattr(viewer, "free", lambda port: port not in taken)
+    assert (viewer.free_from(8421), viewer.free_from(8422)) == (8421, 8422), "the first free port from the one asked for"
+    taken.update({8421, 8422})
+    assert viewer.free_from(8421) == 0, "none free is none"
+    taken.clear()
+    assert viewer.free_from(8422) == 8422 and viewer.free_from(8999) == 8420, "past the last port the search wraps to the first"
+    serving = {8420: Identity(root=str(theirs)), 8421: Identity(root=str(mine))}
+    monkeypatch.setattr(viewer, "identity", lambda url, timeout=0.05: serving.get(int(url.rsplit(":", 1)[1].rstrip("/"))))
+    assert (viewer.other_journal_on(8420, mine), viewer.other_journal_on(8421, mine), viewer.other_journal_on(8422, mine)) == (True, False, False), \
+        "a port is another journal's only when another root answers on it"
+    taken.add(8420)
+    assert viewer.available(mine, prefer=8420) == 8421, "a journal whose port went to another gets a free one"
+    assert "another project's journal" in capsys.readouterr().err, "and says so"
+    monkeypatch.setattr(viewer, "identity_at", lambda port: serving.get(port))
+    viewer.PROBED[:] = [0.0, []]
+    assert [port for port, _ in viewer.running_journals()] == [8420, 8421], "every journal answering on a viewer port is listed"
+    monkeypatch.setattr(serve, "elsewhere", lambda root: "http://127.0.0.1:8421/")
+    with pytest.raises(SystemExit) as stopped:
+        serve.serve(mine)
+    assert stopped.value.code == 0 and "already served at http://127.0.0.1:8421/" in capsys.readouterr().out, "a journal that is already served says where and starts nothing"
