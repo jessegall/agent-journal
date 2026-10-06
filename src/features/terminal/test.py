@@ -124,6 +124,9 @@ def test_the_worker_stops_on_request_or_signal_reloads_when_its_session_moves_an
     seat = SimpleNamespace(root=record.root, env=record.env)
     worker.run_checks(seat, SimpleNamespace(pump=lambda: ran.append("pump")), [boom, after])
     assert ran == ["pump", "after"], "one failing check does not stop the ones after it"
+    worker.run_services(seat, SimpleNamespace(tick=lambda: 1 / 0))
+    worker.run_services(seat, SimpleNamespace(tick=lambda: ran.append("services")))
+    assert ran[-1] == "services", "a services tick that throws is reported and never ends the worker, and so the tunnel with it"
 
     sent = []
     printed = record.root / "printed"

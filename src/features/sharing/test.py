@@ -230,9 +230,12 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel():
     share, doc = shared_with_comments(record)
     shares = Shares(record, actor=USER)
     shares.update(share.n, approved=True)
-    assert share_services(record.root, set()), "an open share runs the server"
+    running = share_services(record.root, set())
+    assert running and not any(spec.idle for spec in running), "an open share runs the server"
     shares.complete(share.n, "stopped")
-    assert share_services(record.root, set()) == [], "with the last share stopped, the server and its tunnel stop too"
+    idle = share_services(record.root, set())
+    assert idle and all("nothing is shared" in spec.idle.lower() for spec in idle), \
+        "with the last share stopped, the server and its tunnel are declared idle, saying plainly that nothing is shared"
     assert "Nothing is shared on this link" in unshared(), "a stopped, ended or unknown link lands on one calm page"
 
 
@@ -395,6 +398,15 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
     shares.update(share.n, approved=True)
     monkeypatch.setattr(share_pages, "tunler", lambda: "")
     assert [spec.id for spec in share_pages.share_services(record.root, set())] == [share_pages.SERVER], "with no tunler only the server runs, never a tunnel"
+    from engine.services import log_file
+    from features.sharing.tunnel import OWNED, TUNNEL
+    monkeypatch.setattr(share_pages, "tunler", lambda: "/bin/true")
+    log_file(record.root, TUNNEL).write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
+    tunnel_spec = next(spec for spec in share_pages.share_services(record.root, set()) if spec.id == TUNNEL)
+    assert "another tunler account" in tunnel_spec.blocked, "a tunnel whose address another account owns waits for the user instead of being retried"
+    log_file(record.root, TUNNEL).write_text("")
+    tunnel_spec = next(spec for spec in share_pages.share_services(record.root, set()) if spec.id == TUNNEL)
+    assert not tunnel_spec.blocked, "any other failure is retried forever by the manager"
     tunnel.KEPT_STATUS.clear()
 
 
