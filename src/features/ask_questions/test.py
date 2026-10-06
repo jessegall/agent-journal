@@ -31,6 +31,7 @@ def test_offers_choices_recognizes_numbered_and_lettered_options_but_not_prose()
     assert offers_choices("**Did the hook fire?** I checked.\n\n- **Does it fire?** Yes, for every real message, and the server passed each one on to the chat, whole.\n"
                           "- **Why some went missing:** they were written into hidden thinking, never as messages at all.") is False, \
         "a summary answering questions in long points offers no choices"
+    assert offers_choices("Status:\n- built the page\n- tested it\n\nDesign: https://claude.ai/design/p/abc?file=X") is False, "a question mark inside a link asks nothing"
     assert offers_choices("I found two ways.\n\n- keep it\n- drop it\n\nWhich do you prefer?") is True, "a closing question after the options still counts"
 
 

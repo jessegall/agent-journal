@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.11 — a link with a question mark is not a question, and the briefing tests fit the cap
+The check for choices offered in prose now ignores web links, so a bullet list beside a link such as `?file=X` no longer holds the agent's writes. The briefing tests are folded back to ten. Nothing to do.
+
 ## 2.253.10 — a helper marks a handed to-do with the command its kickoff names
 The kickoff and the helpers help text told a helper to run `journal helper done <n> --how "<what landed>"`, which the command refuses. They now name `journal helper done <n> "<what landed>"`, and a test runs the command the kickoff names. Nothing to do.
 
