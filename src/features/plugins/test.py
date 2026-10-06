@@ -230,6 +230,34 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert [shown["sin"]["when"], shown["either"]["when"]] == [[{"php": True}], [{"php": True}, {"vue": True}]], \
         "a setting may be shown only while another has a value, or while any of several do"
     assert "names settings" in refused(lambda: checked({"sin": {"type": "flag", "when": {"ruby": True}}})), "a condition names a setting that exists"
+    from features.plugins.manifest import read
+    bad = record.root.parent / "bad-plugin"
+    assert "not a journal plugin" in refused(lambda: read(bad, "2.0.0")), "a folder without a manifest is no plugin"
+    for given, words in [
+        ("not json", "is not JSON"), ([1], "holds one object"), ({"name": "X Y"}, "name must be"),
+        ({"name": "messages"}, "is a built-in feature"), ({"name": "pp", "journal": "99.0.0"}, "needs journal 99.0.0 or newer"),
+        ({"name": "pp", "wat": 1}, "unknown key 'wat'"), ({"name": "pp", "refuse_socket": "x"}, "refuse_socket names one of its services"),
+        ({"name": "pp", "events": {"e": {"title": "E", "tone": "loud"}}}, "tone is one of"),
+        ({"name": "pp", "events": {"e": {"title": "E", "card": {"size": 1}}}}, "unknown key 'size'"),
+        ({"name": "pp", "cancels": {"todo.created": "x"}}, "events that can be cancelled"), ({"name": "pp", "installed": ["a"]}, "installed is one command"),
+        ({"name": "pp", "skills": "/abs"}, "skills is a folder inside the plugin"), ({"name": "pp", "refuse_seconds": "x"}, "a number of seconds"),
+        ({"name": "pp", "env": {"A": 1}}, "env names values"), ({"name": "pp", "requires": ["x"]}, "requires names one entry each"),
+        ({"name": "pp", "requires": {"a": {"hint": "h"}}}, "requires.a needs check"), ({"name": "pp", "settings": {"a": {"type": "weird"}}}, "a setting is one of"),
+        ({"name": "pp", "settings": {"a": {"type": "options"}}}, "needs a list of options"), ({"name": "pp", "settings": {"a": {"type": "flag", "when": 5}}}, "when names settings"),
+        ({"name": "pp", "setup": "x"}, "setup is a list of steps"), ({"name": "pp", "setup": [5]}, "setup step 1 is a command"),
+        ({"name": "pp", "services": ["web"]}, "names one service each"), ({"name": "pp", "services": {"Bad": {}}}, "lowercase words"),
+        ({"name": "pp", "services": {"web": "x"}}, "is an object with"), ({"name": "pp", "services": {"web": {"run": "x", "port": "x"}}}, "takes a port number"),
+        ({"name": "pp", "services": {"web": {"run": "x", "restart": "sometimes"}}}, "restarts always"),
+        ({"name": "pp", "services": {"web": {"run": "x", "when": 5}}}, 'takes "when" as one shell command'),
+        ({"name": "pp", "chat": {"find": "x"}}, "chat is a list"), ({"name": "pp", "chat": [{"find": "x"}]}, "each chat rule is"),
+        ({"name": "pp", "chat": [{"find": "(", "as": "x"}]}, "is not a pattern"), ({"name": "pp", "load": ["s"]}, "load names"),
+        ({"name": "pp", "load": {"nothing.here": ["s"]}}, "matches no event"), ({"name": "pp", "load": {"todo.created": "s"}}, "a list of skill names"),
+        ({"name": "pp", "on": ["x"]}, "on names an event pattern"), ({"name": "pp", "on": {"nothing.here": "x"}}, "matches no event; a pattern is"),
+        ({"name": "pp", "refuse": 5}, "is a command, a line or a list of words"),
+    ]:
+        (bad / MANIFEST).parent.mkdir(parents=True, exist_ok=True)
+        (bad / MANIFEST).write_text(given if isinstance(given, str) else json.dumps(given))
+        assert words in refused(lambda: read(bad, "2.0.0")), (given, words)
 
 
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
