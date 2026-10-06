@@ -169,3 +169,22 @@ def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():
     written = agent.load(dump.n)
     assert (written.data["question"]["guesses"], written.data["log"][-1]["making"]) == (["The standup", "Neither"], "plan, Autoscaler rollout"), \
         "a question carries the agent's guesses and a log line names what it is about to make"
+
+
+def test_a_closed_dump_lets_go_of_the_drafts_it_still_held():
+    from controllers.stored import DRAFT_OF
+    from migrations.m0050_dump_drafts_released import run
+
+    record = fresh()
+    dumps = CONTROLLERS["dump"](record, actor=AGENT)
+    dump = dumps.create("Old dump")
+    held = Todos(record, actor=AGENT).create("held draft", **{DRAFT_OF: dump.ref})
+    other = Todos(record, actor=AGENT).create("someone else's", **{DRAFT_OF: "dump:99"})
+    dumps.link(dump.n, held.ref)
+    dumps.link(dump.n, other.ref)
+    dumps.link(dump.n, "todo:77")
+    dumps.link(dump.n, "mystery:1")
+    dumps.complete(dump.n, how="filed")
+    assert run(record.root) == [held.ref], "only a row still held by this dump is released"
+    assert not Todos(record, actor=AGENT).load(held.n).data.get(DRAFT_OF), "the released row no longer names the dump"
+    assert Todos(record, actor=AGENT).load(other.n).data[DRAFT_OF] == "dump:99", "a row held by another dump stays held"

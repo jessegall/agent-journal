@@ -86,3 +86,38 @@ def test_moving_a_real_record_into_doc_folders_keeps_every_doc_file_and_revision
     docs_ = Docs(Record(tmp_path, "main"), actor=USER)
     assert sorted(f"{n:03d}" for n in docs_.rows.numbers() if readable(docs_.rows.text(n))) == sorted(n for n, text in before.items() if readable(text)), \
         "the store reads every moved doc back by its number, as readable as it was"
+
+
+def test_old_designs_and_loose_revision_files_become_docs_and_inner_revisions(tmp_path):
+    import shutil
+    from engine.record import RESOURCES
+    from migrations.m0012_designs_become_docs import run as fold_designs
+    from migrations.m0015_revisions_inside_docs import run as move_revisions
+
+    record = fresh()
+    root = record.root
+    Docs(record, actor=AGENT).create("Already a doc")
+    folder = root / RESOURCES / "doc"
+    text = (folder / "001" / "doc.md").read_text()
+    shutil.rmtree(folder / "001")
+    (folder / "001.md").write_text(text)
+    design = root / RESOURCES / "design"
+    design.mkdir(parents=True)
+    (design / "001.md").write_text(text.replace("Already a doc", "An old design"))
+    (design / "002.md").write_text("")
+    mentions = root / RESOURCES / "todo"
+    mentions.mkdir(parents=True, exist_ok=True)
+    (mentions / "001.md").write_text("see design:1 for it")
+    (mentions / "002.md").write_text("nothing to repoint")
+    assert fold_designs(root / "elsewhere") == "no designs to fold into docs", "a record without designs has nothing to fold"
+    assert fold_designs(root).startswith("1 designs became docs"), "every design with content becomes a doc"
+    assert "An old design" in (folder / "002.md").read_text(), "the design is a doc numbered after the existing ones"
+    assert (mentions / "001.md").read_text() == "see doc:2 for it", "a row that pointed at the design points at the doc"
+    assert not design.exists(), "the design folder is packed away"
+
+    (folder / "007.md").write_text(text.replace("Already a doc", "Old revision"))
+    (folder / "009.md").write_text("")
+    (folder / "001.md").write_text(text.replace('"revisions": 1', '"revisions": [7, 8]'))
+    assert move_revisions(root).startswith("1 revisions moved inside their docs"), "a revision that exists moves under its doc"
+    assert (folder / "revisions" / "001" / "001.md").is_file() and not (folder / "007.md").exists(), "the loose revision file moves under its doc"
+    assert move_revisions(tmp_path) == "0 revisions moved inside their docs; 0 files point at the docs now", "a record without docs moves nothing"
