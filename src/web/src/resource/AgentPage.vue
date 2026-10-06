@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
 import {stopAgentNamed} from "../actions/agents.js";
@@ -94,7 +95,7 @@ const mainInfo = computed(() => ({
 }));
 
 const subagentInfo = computed(() => ({
-    kind: "Subagent",
+    kind: capitalised(helperWord()),
     name: picked.value.type || "general",
     title: picked.value.task,
     back: "Main agent",
@@ -105,7 +106,7 @@ const subagentInfo = computed(() => ({
               word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Closed",
               dot: "done",
           },
-    facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.n}`, environment.value],
+    facts: [picked.value.model || "its parent's model", `${helperWord()} of agent ${props.resource.n}`, environment.value],
     actions: [],
 }));
 
