@@ -30,7 +30,9 @@ const mode = computed(() => chosen.value || stored.value);
 const kind = computed(() => start.value.split(".")[0]);
 const moment = computed(() => start.value.split(".")[1] || "");
 const kinds = computed(() =>
-    types.value.filter((t) => (t.in_sidebar || t.needs_attention) && t.moments?.length && !["sequence", "trigger"].includes(t.name))
+    types.value.filter(
+        (t) => (t.in_sidebar || t.needs_attention || t.name === "board") && t.moments?.length && !["sequence", "trigger"].includes(t.name)
+    )
 );
 const triggers = computed(() => open("trigger"));
 const current = computed(() => triggers.value.find((t) => start.value === `trigger:${t.n}`));
@@ -58,8 +60,8 @@ function pickMode(key) {
 const asTrigger = (t) => ({
     value: `trigger:${t.n}`,
     label: t.title,
-    hint: t.data.does === "start" ? wordsText(t.data.words) : `${doesOf(t.data.does).label}. Set it to Start a sequence first.`,
-    unavailable: t.data.does === "start" ? "" : `${doesOf(t.data.does).hint} Set it to Start a sequence first.`,
+    hint: wordsText(t.data.words),
+    unavailable: t.data.does === "start" ? "" : `${doesOf(t.data.does).short} Set it to Start a sequence first.`,
     current: start.value === `trigger:${t.n}`,
 });
 const kindChoices = computed(() => kinds.value.map((t) => ({value: t.name, label: t.title, current: kind.value === t.name})));

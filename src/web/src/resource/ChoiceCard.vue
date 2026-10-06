@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {choiceGroups, doing, liveButtons, pressedLabels, spent as usedUp} from "../domain/buttons.js";
+import {allButtons, choiceGroups, doing, liveButtons, pressedLabels, spent as usedUp} from "../domain/buttons.js";
 import {rows} from "../sync/rows.js";
 import Btn from "../kit/Btn.vue";
 import ChoiceChosen from "./ChoiceChosen.vue";
@@ -24,7 +24,16 @@ const answered = (group) => ({
 });
 const groups = computed(() => choiceGroups(props.resource).map((group) => ({...group, answer: group.chosen && answered(group)})));
 const alone = computed(() => liveButtons(props.resource).filter((b) => !b.choice));
-const done = computed(() => pressed.value.filter((label) => !groups.value.some((g) => g.buttons.some((b) => b.label === label))));
+const outcome = (button) => {
+    if (!button.say) return `Ran: ${doing(button)}.`;
+    const sent = sentAs(button);
+    return `Sent as your message${sent ? ` ${sent.n}` : ""}: “${button.say}”. The answer comes in the chat.`;
+};
+const done = computed(() =>
+    allButtons(props.resource)
+        .filter((button) => !button.choice && pressed.value.includes(button.label))
+        .map(outcome)
+);
 const means = (button) => (button.say ? `Sends as your message: “${button.say}”` : `Runs: ${doing(button)}`);
 
 async function press(button) {
@@ -53,7 +62,7 @@ async function press(button) {
                 <section class="card">
                     <span class="kind">Your answer</span>
                     <template v-if="group.answer">
-                        <ChoiceChosen :answer="group.answer" />
+                        <ChoiceChosen :answer="group.answer" :about="resource" />
                     </template>
                     <template v-else>
                         <p class="ask">{{ group.ask }}</p>
@@ -107,8 +116,8 @@ async function press(button) {
                     </div>
                 </div>
             </template>
-            <template v-if="done.length">
-                <p class="note">You pressed {{ done.join(", ") }}.</p>
+            <template v-for="line in done" :key="line">
+                <p class="note">{{ line }}</p>
             </template>
             <template v-if="error">
                 <p class="error">{{ error }}</p>

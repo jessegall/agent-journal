@@ -85,3 +85,14 @@ def test_deleting_a_trigger_sets_the_sequences_it_starts_back_to_by_hand():
     made = sequences.create("Release checklist", starts_on=f"trigger:{trigger.n}")
     triggers.delete(trigger.n)
     assert sequences.load(made.n).data["starts_on"] == "", "a sequence never points at a trigger that is gone"
+
+
+def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its_matches():
+    record = fresh()
+    triggers = Triggers(record, actor="system")
+    row = triggers.create("no force push", **{"words": ["push --force"], "does": "deny", "words_in": "commands", "text": "Never force-push."})
+    assert triggers.load(row.n).brief == "When the agent runs a command with “push --force”, block it and tell the agent “Never force-push.”", \
+        "the brief is the sentence the viewer shows"
+    triggers.fired(row.n)
+    triggers.fired(row.n)
+    assert (triggers.load(row.n).matched, bool(triggers.load(row.n).matched_at)) == (2, True), "each match is counted and dated"

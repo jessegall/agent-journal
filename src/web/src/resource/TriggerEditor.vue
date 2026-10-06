@@ -3,11 +3,13 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {DOES, WHERE, doesOf, doesReason, plain, sentence, startedBy, whereReason} from "../domain/triggerWords.js";
 import {open} from "../domain/records.js";
+import {ago} from "../format/time.js";
 import Btn from "../kit/Btn.vue";
 import Caution from "../kit/Caution.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import FormField from "../kit/FormField.vue";
 import InlineName from "../kit/InlineName.vue";
+import Notice from "../kit/Notice.vue";
 import ResourceBlock from "./ResourceBlock.vue";
 import TriggerSequences from "./TriggerSequences.vue";
 import WatchedWords from "./WatchedWords.vue";
@@ -25,6 +27,16 @@ const sequences = computed(() =>
     n.value ? startedBy(n.value) : open("sequence").filter((s) => (props.draft.sequences || []).includes(s.n))
 );
 const parts = computed(() => sentence(values.value, sequences.value));
+const titles = computed(() => sequences.value.map((s) => s.title).join(", "));
+const consequence = computed(() => {
+    const [it, them] = sequences.value.length === 1 ? ["it", "it"] : ["they", "them"];
+    return `. If the trigger does something else, ${it} will start only when you or the agent start ${them}.`;
+});
+const matches = computed(() => {
+    const {matched = 0, matched_at: last} = values.value;
+    if (!matched) return "Never matched yet";
+    return matched === 1 ? `Matched once, ${ago(last)}` : `Matched ${matched} times, last ${ago(last)}`;
+});
 const does = computed(() => doesOf(values.value.does));
 const choices = (options, current, unavailable) =>
     options.map((option) => ({...option, current: option.value === current, unavailable: readonly.value ? "" : unavailable[option.value]}));
@@ -61,15 +73,20 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
 
 <template>
     <div class="trigger">
-        <InlineName
-            :key="renamed"
-            class="name"
-            :select="false"
-            :value="values.title"
-            placeholder="Name it, for example: No force push"
-            @done="rename"
-            @cancel="renamed++"
-        />
+        <template v-if="readonly">
+            <Notice>Ships with the journal. You can read it and open its sequence, but not change it.</Notice>
+        </template>
+        <template v-else>
+            <InlineName
+                :key="renamed"
+                class="name"
+                :select="false"
+                :value="values.title"
+                placeholder="Name it, for example: No force push"
+                @done="rename"
+                @cancel="renamed++"
+            />
+        </template>
         <slot name="examples" />
         <div class="sum">
             <span class="sum-kind">What it does</span>
@@ -84,6 +101,9 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                     <template v-else>{{ part.text }}</template>
                 </template>
             </p>
+            <template v-if="n">
+                <span class="sum-matched">{{ matches }}</span>
+            </template>
         </div>
         <ResourceBlock heading="When">
             <WatchedWords
@@ -111,9 +131,8 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                 <template v-if="leaving">
                     <Caution>
                         {{ sequences.length === 1 ? "1 sequence starts" : `${sequences.length} sequences start` }} on this trigger:
-                        <b>{{ sequences.map((s) => s.title).join(", ") }}</b>
-                        . If the trigger does something else, {{ sequences.length === 1 ? "it" : "they" }} will start only when you or the
-                        agent start {{ sequences.length === 1 ? "it" : "them" }}.
+                        <b>{{ titles }}</b>
+                        {{ consequence }}
                         <template #actions>
                             <Btn small @click="leaving = ''">Keep “Start a sequence”</Btn>
                             <Btn small kind="primary" @click="change">Change it</Btn>
@@ -161,8 +180,19 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
 
 .name :deep(.inline-name-field) {
     padding: 4px 6px;
+    border-color: transparent;
+    background: none;
     font-size: 19px;
     font-weight: 600;
+}
+
+.name :deep(.inline-name-field:hover) {
+    border-color: var(--border-2);
+}
+
+.name :deep(.inline-name-field:focus) {
+    border-color: var(--accent);
+    background: var(--bg-2);
 }
 
 .sum {
@@ -187,6 +217,11 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
     color: var(--text);
     font-size: 14px;
     line-height: 1.55;
+}
+
+.sum-matched {
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .sum-text i {

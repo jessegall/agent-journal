@@ -4,6 +4,7 @@ import {kept, remembered} from "../platform/storage.js";
 export const store = reactive({
     spec: null,
     drafting: 0,
+    quoting: null,
     dumping: false,
     dumpSelected: 0,
     dumpFiles: [],

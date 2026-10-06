@@ -56,6 +56,11 @@ const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
 const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(owner.value));
 const feedKey = computed(() => (owner.value ? `${owner.value.n}:${owner.value.data.transcript}` : ""));
 const quote = ref({text: "", ref: ""});
+watch(
+    () => store.quoting,
+    (asked) => asked && ((quote.value = asked), (store.quoting = null)),
+    {immediate: true}
+);
 const editing = ref(null);
 const pageTools = chatOnly
     ? [

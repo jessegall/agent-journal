@@ -16,7 +16,7 @@ const NAMED_CLOSES = {
     worktree: "Remove worktree",
     helper: "Remove helper and its working copy",
 };
-const STOPS = {trigger: "It stops starting by itself.", sequence: "It stops starting by itself.", rule: "The agent stops following it."};
+const STOPS = {trigger: "It stops acting.", sequence: "It stops starting by itself.", rule: "The agent stops following it."};
 
 export const closeWord = (type) => NAMED_CLOSES[type] || "Close";
 export const closeNote = (type) => `Moves it to Closed. ${STOPS[type] ? `${STOPS[type]} ` : ""}You can reopen it.`;

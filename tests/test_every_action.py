@@ -605,7 +605,7 @@ def test_a_row_of_every_type_moved_to_another_environment_keeps_its_words_and_fi
         there = CONTROLLERS[type_](Record(record.root, "west"), actor=USER)
         whys = [e.data["why"] for e in record.event_log.events() if e.type == type_ and e.action == "deleted" and e.n == row.n]
         reckon(wrong, type_, {
-            "words": (there.load(moved.n).title, there.load(moved.n).brief) == (row.title, "the brief"),
+            "words": (there.load(moved.n).title, there.load(moved.n).brief) == (row.title, row.brief),
             "file": (there.folder(moved.n) / "note.txt").read_text() == "kept",
             "archived": (users.load(row.n).deleted > 0, whys) == (True, [f"moved to west as {type_} {moved.n}"]),
         })
@@ -641,6 +641,8 @@ def other_than(field_, choices: dict):
     held = field_.default() if callable(field_.default) else field_.default
     if field_.name in choices:
         return next(choice for choice in choices[field_.name] if choice != held)
+    if type(held) is int:
+        return held + 1
     return {bool: not held, str: "todo.created", dict: {"a": 1}, list: ["a"], type(None): "set"}[type(held)]
 
 

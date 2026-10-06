@@ -1,7 +1,9 @@
 <script setup>
 import {computed} from "vue";
 import {api} from "../api/client.js";
+import {timingWords} from "../domain/settingsCatalog.js";
 import {KEYWORD_WHERE} from "../domain/triggerWords.js";
+import {store} from "../state/store.js";
 import {href, route} from "../route.js";
 import ResourceBlock from "./ResourceBlock.vue";
 import WatchedWords from "./WatchedWords.vue";
@@ -9,6 +11,8 @@ import WatchedWords from "./WatchedWords.vue";
 const props = defineProps({resource: {type: Object, required: true}});
 const noun = computed(() => props.resource.type);
 const words = computed(() => (Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []));
+const REPEAT = {every: 100, unit: "uses"};
+const cadence = computed(() => timingWords(store.settings?.triggers?.[`${noun.value}s.whisper`] || REPEAT));
 const closed = computed(() => Boolean(props.resource.completed));
 const help = computed(() =>
     words.value.length
@@ -36,8 +40,8 @@ const matchIn = (value) => api.act(noun.value, props.resource.n, "set", {key: "k
         >
             <p class="note">Your own messages never count here: a {{ noun }} is repeated to the agent while it works.</p>
             <p class="note">
-                How often it is repeated is a setting.
-                <a :href="href.page(route.env, 'settings')">Open Settings</a>
+                It is repeated at most once {{ cadence }}.
+                <a :href="href.page(route.env, 'settings')">Change that in Settings</a>
             </p>
         </WatchedWords>
     </ResourceBlock>

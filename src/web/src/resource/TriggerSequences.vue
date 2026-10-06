@@ -23,6 +23,10 @@ const error = ref("");
 
 const linked = computed(() => (props.n ? startedBy(props.n) : open("sequence").filter((s) => chosen.value.includes(s.n))));
 const others = computed(() => open("sequence").filter((s) => !linked.value.some((l) => l.n === s.n)));
+const groups = computed(() => [
+    {key: "own", title: "", sequences: others.value.filter((s) => !s.data.system)},
+    {key: "shipped", title: "Ships with the journal", sequences: others.value.filter((s) => s.data.system)},
+]);
 const startsHere = () => `trigger:${props.n}`;
 
 async function start(sequence, on) {
@@ -101,7 +105,7 @@ const reason = (sequence) =>
                     </Btn>
                 </template>
                 <template v-if="n">
-                    <Btn small @click="making = true">Make a new sequence for it</Btn>
+                    <Btn small kind="text" @click="making = true">Make a new sequence for it</Btn>
                 </template>
             </div>
             <template v-if="picking">
@@ -122,11 +126,18 @@ const reason = (sequence) =>
                         </Caution>
                     </template>
                     <div class="pick-list">
-                        <template v-for="sequence in others" :key="sequence.n">
-                            <button type="button" class="pick" :disabled="Boolean(sequence.data.system)" @click="pick(sequence)">
-                                <span class="card-title">{{ sequence.title }}</span>
-                                <span class="card-note">{{ reason(sequence) }}</span>
-                            </button>
+                        <template v-for="group in groups" :key="group.key">
+                            <template v-if="group.sequences.length">
+                                <template v-if="group.title">
+                                    <span class="pick-heading">{{ group.title }}</span>
+                                </template>
+                                <template v-for="sequence in group.sequences" :key="sequence.n">
+                                    <button type="button" class="pick" :disabled="Boolean(sequence.data.system)" @click="pick(sequence)">
+                                        <span class="card-title">{{ sequence.title }}</span>
+                                        <span class="card-note">{{ reason(sequence) }}</span>
+                                    </button>
+                                </template>
+                            </template>
                         </template>
                     </div>
                 </div>
@@ -219,6 +230,15 @@ const reason = (sequence) =>
     overflow: auto;
     border: 1px solid var(--border);
     border-radius: 8px;
+}
+
+.pick-heading {
+    padding: 8px 10px 4px;
+    border-top: 1px solid var(--line);
+    color: var(--text-3);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
 .pick {
