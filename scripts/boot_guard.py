@@ -28,7 +28,8 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
     standin = place / "bin" / name
     standin.write_text(STANDIN)
     standin.chmod(0o755)
-    env = {**os.environ, "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home")}
+    env = {**os.environ, "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home"),
+           "AGENT_JOURNAL_REPO": str(place / "no-journal-releases")}
     env.pop("JOURNAL_ENV", None)
     journal = [sys.executable, str(entry), "--root", str(place / PROJECT / ".journal")]
     launched = subprocess.Popen([*journal, name], cwd=place / PROJECT, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -97,7 +98,8 @@ def guard() -> float:
     place = Path(tempfile.mkdtemp(prefix="guard-"))
     try:
         (place / PROJECT).mkdir()
-        env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+        env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1",
+               "AGENT_JOURNAL_REPO": str(place / "no-journal-releases")}
         env.pop("JOURNAL_ENV", None)
         installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=WAIT)
         root = place / PROJECT / ".journal"

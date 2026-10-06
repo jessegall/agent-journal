@@ -385,17 +385,21 @@ def version_key(version: str) -> tuple:
     return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
-def released(repository: str = REPOSITORY) -> str:
+def repository_of(given: str | None) -> str:
+    return given if given is not None else os.environ.get(REPOSITORY_ENV, REPOSITORY)
+
+
+def released(repository: str | None = None) -> str:
     try:
-        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=without_prompt())
+        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository_of(repository), "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=without_prompt())
     except (OSError, subprocess.TimeoutExpired):
         return ""
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
     return max(versions, key=version_key) if versions else ""
 
 
-def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
-    wanted = repository or os.environ.get(REPOSITORY_ENV, REPOSITORY)
+def fetch(into: Path, repository: str | None = None, ref: str = "") -> tuple[str, str]:
+    wanted = repository_of(repository)
     secret = token() if wanted.startswith("https://github.com/") else ""
     source = with_token(wanted, secret)
     into.mkdir(parents=True, exist_ok=True)
@@ -461,7 +465,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
     source, temporary, newest = PACKAGE, None, ""
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
-        newest = released(os.environ.get(REPOSITORY_ENV, REPOSITORY))
+        newest = released()
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
         _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
