@@ -40,7 +40,7 @@ const choices = computed(() =>
             />
         </FormField>
         <WordTest :words="words" :yes="yes" :no="no" @text="tried = $event" />
-        <FormField label="Where the words count">
+        <FormField label="Watch for the words in">
             <ChoiceList stacked :choices="choices" :disabled="readonly" @pick="emit('where', $event)" />
             <slot />
         </FormField>

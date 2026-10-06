@@ -125,7 +125,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                     <template v-if="!readonly && values.words_in === 'user'">
                         <p class="help">
                             To block something, the words must count somewhere other than your messages.
-                            <Btn small @click="towhere">Change where the words count</Btn>
+                            <Btn small @click="towhere">Change where the words are watched</Btn>
                         </p>
                     </template>
                 </FormField>
