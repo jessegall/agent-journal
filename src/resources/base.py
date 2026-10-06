@@ -87,6 +87,16 @@ def copied(value):
     return value
 
 
+def reworded(value, words):
+    if isinstance(value, str):
+        return words(value)
+    if isinstance(value, dict):
+        return {k: reworded(v, words) for k, v in value.items()}
+    if isinstance(value, list):
+        return [reworded(v, words) for v in value]
+    return value
+
+
 @dataclass(frozen=True)
 class Ref:
     type: str
@@ -231,7 +241,8 @@ class Resource:
 
     def rewrite(self, words) -> None:
         self.title, self.abstract, self.brief, self.outcome = words(self.title), words(self.abstract), words(self.brief), words(self.outcome)
-        self.sections = [{**s, SECTION.body: words(s[SECTION.body])} for s in self.sections]
+        self.sections = [{**s, SECTION.title: words(s[SECTION.title]), SECTION.body: words(s[SECTION.body])} for s in self.sections]
+        self.data = reworded(self.data, words)
 
     def fork(self) -> "Resource":
         return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=copied(self.data))
