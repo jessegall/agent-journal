@@ -17,6 +17,8 @@ NAMED = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
 BRANCH = "helper-"
 KEPT = "refs/journal/helpers"
 SHOWN = 5
+VIEWER_TEXT = ("src/web/src/*.vue", "src/web/src/*.js", "src/features/*/details.py")
+WORDED = re.compile(r"^\+(?!\+\+).*[\"'`][A-Z][a-z]+ [a-z][^\"'`]{6,}[\"'`]")
 
 
 @dataclass(frozen=True)
@@ -72,7 +74,7 @@ class Worktrees(Controller):
         return f"{moved}; {row.branch} {'contains' if found.current else 'does not contain'} its tip {found.tip[:10]}"
 
     @action(network=True)
-    def take(self, n: int) -> str:
+    def take(self, n: int, reviewed: bool = False) -> str:
         row = self._unfinished(n, "dropped")
         project = self._project()
         if self._working(project) != row.working:
@@ -90,6 +92,12 @@ class Worktrees(Controller):
         dirty = lines(project, "status", "--porcelain", "--", *touched)
         if dirty:
             raise Refused(f"the main checkout has changes in files this take would touch: {', '.join(line[3:] for line in dirty)}; commit or move them first")
+        worded = [line[1:].strip() for line in lines(project, "diff", "-U0", f"{row.working}...{row.branch}", "--", *VIEWER_TEXT) if WORDED.match(line)]
+        if worded and not reviewed:
+            raise Refused(f"{row.branch} changes {plural(len(worded), 'line')} of text people read in the viewer, such as {worded[0][:120]!r}: "
+                          f"before taking it, have a read-only subagent read only those lines (git diff {row.working}...{row.branch} -- "
+                          f"{' '.join(VIEWER_TEXT)}) against rule 59 and return the text now and plain dashboard wording; send the fixes "
+                          f"to the helper, then journal worktree take {n} --reviewed")
         picked = git(project, "cherry-pick", *commits)
         if picked.returncode:
             git(project, "cherry-pick", "--abort")
