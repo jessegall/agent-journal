@@ -20,6 +20,10 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     Todos(record, actor=USER).create("later")
     block = f.read_text()
     assert block == start_block(record), "every write rewrites the start block"
+    f.write_text("as it was")
+    Works(record, actor=AGENT).section(Works(record, actor=AGENT).rows.standing()[0].n, "Log", "a long entry the block never shows")
+    assert f.read_text() == "as it was", "a work log entry leaves the start block alone: a section never shows in it"
+    f.write_text(block)
     assert [line for line in block.splitlines() if line and not line.startswith("  ")] == \
         ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", QUIET,
          start_block(record).splitlines()[4], "LAWS THE JOURNAL SHIPS, always in force:",
@@ -213,6 +217,7 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     monkeypatch.setattr(claude, "CONFIRM_POLL", 0.01)
     monkeypatch.setattr(claude, "CONFIRM_WAIT", 0.2)
     monkeypatch.setattr("providers.drivers.ENTER_AFTER", 0)
+    monkeypatch.setattr("providers.drivers.ECHO_WAIT", 0)
     sent = []
 
     def wrote(raw):
@@ -234,6 +239,7 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     from providers import DRIVERS
     monkeypatch.setattr(providers.drivers, "ENTER_AFTER", 0)
     monkeypatch.setattr(providers.drivers, "RECHECK", 0)
+    monkeypatch.setattr(providers.drivers, "ECHO_WAIT", 0)
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-7")
     screen = runtime.session_file(record.root, "claude-7", "screen")
