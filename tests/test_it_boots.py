@@ -539,3 +539,15 @@ def test_old_feature_names_are_renamed_in_settings_gates_and_triggers_in_one_pas
         "a switch and a setting under an old feature name move to its new name"
     assert (read_json(session / "gate-main.json", dict, {}), (session / "trigger-ask_questions.json").is_file()) == \
         ({"ask_questions": {"why": "held"}}, True), "a session's held writes and triggers follow the new name too"
+
+
+def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back(monkeypatch):
+    import serve
+
+    def broken(root, env):
+        raise RuntimeError("a broken build")
+    exits = []
+    monkeypatch.setattr(serve, "warm_viewer", broken)
+    monkeypatch.setattr(serve.os, "_exit", exits.append)
+    serve.warmed(fresh().root)
+    assert exits == [1], "warming runs beside the server, so a failure in it must end the process for the supervisor to roll back"
