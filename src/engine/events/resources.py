@@ -20,6 +20,7 @@ class ResourceEvent(RowAction):
     n: int = 0
     type: str = ""
     actor: str = ""
+    section: str = ""
 
     @classmethod
     def read(cls, event) -> "ResourceEvent":
