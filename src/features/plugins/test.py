@@ -323,6 +323,18 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     clock[0] += 31.0
     first.tick()
     assert len(asked) == 3 and Beat.read(record.root).token == first.token, "and manages again when the one that took over has gone quiet in its turn"
+    from features import FEATURES
+    from features.plugins.services import notice_stopped
+    from controllers.types import Notices
+    installed(record, "server", "exit 0", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}})
+    spec, = plugin_services(record.root, set())
+    assert (spec.id, spec.run, spec.env["WHERE"]) == ("server.web", f"serve {spec.port} {folder(record.root, 'server')}", str(folder(record.root, "server"))), \
+        "a service a plugin declares runs on a port of its own, with its port and folder filled into its command and env"
+    status_file(record.root, "server.web").write_text(json.dumps({"state": "failed", "why": "it crashed"}))
+    assert notice_stopped(record.root, FEATURES["plugins"]) == ["server.web"] and notice_stopped(record.root, FEATURES["plugins"]) == [], "a service that stops is told once"
+    status_file(record.root, "server.web").write_text(json.dumps({"state": "ready"}))
+    notice_stopped(record.root, FEATURES["plugins"])
+    assert [n.title for n in Notices(record, actor=SYSTEM).all() if not n.completed and "server.web" in n.title] == [], "and the notice goes once it runs again"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():
