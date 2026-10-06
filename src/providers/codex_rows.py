@@ -67,6 +67,7 @@ class TokenInfo(Loaded):
 @dataclass(frozen=True)
 class Spawn(Loaded):
     parent_thread_id: str = ""
+    agent_path: str = ""
 
 
 @dataclass(frozen=True)

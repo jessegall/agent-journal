@@ -310,6 +310,13 @@ class Provider(ABC):
     def dispatch_model(self, chosen: str) -> str:
         return chosen
 
+    def models(self) -> tuple[str, ...]:
+        """The models a dispatch may name; empty when the provider cannot tell."""
+        return ()
+
+    def offers(self, model: str) -> bool:
+        return not self.models() or model in self.models()
+
     def asking(self, hook) -> Asking | None:
         return Asking(hook.tool.name, hook.tool.text[:300], time.time()) if hook.event == PERMISSION else None
 

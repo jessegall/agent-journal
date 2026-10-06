@@ -96,15 +96,24 @@ def banner(agent: str, project: Path) -> str:
 
 def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
     from features import FEATURES
-    from features.clean_slate.slate import others, state
+    from features.clean_slate.slate import held, others, put_back_held, state
     answering = sys.stdin.isatty() if answering is None else answering
-    hooks = others(project, agent)
-    if not answering or not FEATURES["clean_slate"].enabled(record) or not hooks:
+    hooks, aside = others(project, agent), [Path(m["from"]) for m in held(record, project, agent)]
+    if not answering or not FEATURES["clean_slate"].enabled(record) or not (hooks or aside):
         return False
     last = state(record).get("last", True)
-    notes = [f"Hooks that are not the journal's, in {plural(len(hooks), 'file')}:", *(f"  {f.name}" for f in hooks),
-             "", "Your skills stay where they are. The hooks are put back when the agent exits or the journal stops."]
-    return choose("Set aside the other hooks", notes, ["Yes, set them aside", "No, keep them"], 0 if last else 1, ask) == 0
+    notes = [*(lines_of(f"Hooks that are not the journal's, in {plural(len(hooks), 'file')}:", hooks)),
+             *(lines_of(f"Already set aside by another session, in {plural(len(aside), 'file')}:", aside)),
+             "Your skills stay where they are. The hooks are put back when the agent exits or the journal stops."]
+    choices = ["Yes, set them aside", "No, put them back" if aside else "No, keep them"]
+    if choose("Set aside the other hooks", notes, choices, 0 if last else 1, ask) == 0:
+        return True
+    put_back_held(record, project, agent)
+    return False
+
+
+def lines_of(heading: str, files: list[Path]) -> list[str]:
+    return [heading, *(f"  {f}" for f in files), ""] if files else []
 
 
 def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:

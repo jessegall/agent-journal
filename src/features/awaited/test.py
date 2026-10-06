@@ -9,6 +9,7 @@ from tests.kit import nudges, report, tick
 def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_back_their_results(monkeypatch):
     features.load()
     monkeypatch.setattr("agents.terminal.detached", lambda *given: 1)
+    monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.5",))
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
     run = {"id": "toolu_1", "task_id": "b2gb9ud45", "command": "pytest -q", "task": "the suite", "running": True, "ended": 0.0, "status": ""}
