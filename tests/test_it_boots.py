@@ -108,6 +108,27 @@ def test_an_installed_journal_keeps_its_records_and_upgrades_itself_from_a_relea
         f"an installed journal upgrades itself from a release, keeps its records, and runs from a versioned build:\n{itself.stdout}{itself.stderr}"
 
 
+def test_an_upgrade_copies_a_changed_file_into_the_attic_before_replacing_it(tmp_path):
+    import tarfile
+    root = installed(tmp_path)
+    changed = root / "src" / "journal.py"
+    original = changed.read_bytes()
+    changed.write_bytes(original + b"\n# changed by hand\n")
+    env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+    command = [sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)]
+    held = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
+    assert "src/journal.py" in held.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
+    by_hand = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], env=env,
+                             capture_output=True, text=True, timeout=120)
+    assert "src/journal.py" in by_hand.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
+    updated = subprocess.run([*command, "--yes"], env=env, capture_output=True, text=True, timeout=120)
+    assert updated.returncode == 0 and changed.read_bytes() == original, updated.stdout + updated.stderr
+    copies = list((root / "attic").glob("changed-files-*.tar.gz"))
+    assert len(copies) == 1
+    with tarfile.open(copies[0]) as archive:
+        assert archive.extractfile(".journal/src/journal.py").read().endswith(b"# changed by hand\n")
+
+
 @pytest.mark.parametrize("name", list(DRIVERS))
 def test_every_agent_launches_from_an_installed_zip(tmp_path, name):
     launches(tmp_path, installed(tmp_path) / "journal.py", name)

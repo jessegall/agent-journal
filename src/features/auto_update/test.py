@@ -52,7 +52,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
     from controllers.types import Notices
     from features import FEATURES
-    monkeypatch.setattr(updates, "installed", lambda root: "package not refreshed: the network was down")
+    monkeypatch.setattr(updates, "installed", lambda root, yes=False: "package not refreshed: the network was down")
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
         "a failed install is told to the agent and filed as a notice"
@@ -66,6 +66,19 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert dispatch("POST", "/api/update", record.root, {}, {}).code == 400, "the journal's own repository is never updated from a release"
     monkeypatch.setattr(updates, "journal_repository", lambda project: False)
     assert dispatch("POST", "/api/update", record.root, {}, {}).body == {"updating": True}, "the viewer's Update button starts an install"
+    import install
+    managed = record.root / "src" / "install.py"
+    managed.parent.mkdir(parents=True, exist_ok=True)
+    managed.write_text("generated\n")
+    install.remember_managed(record.root.parent, record.root)
+    managed.write_text("changed by hand\n")
+    assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], \
+        "the Update button refuses files changed by hand"
+    assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and managed.read_text() == "changed by hand\n", \
+        "journal upgrade refuses the same changed file before touching it"
+    check.checked_at = 0.0
+    assert check.tick() == "update held for changed files", "automatic updates wait for a decision about changed files"
+    managed.write_text("generated\n")
     Features(record, actor=SYSTEM).switch("auto_update", False)
     record.set_setting("triggers", {"auto_update": {"every": 5, "unit": "minutes"}})
     monkeypatch.setattr(updates, "stale", lambda root: True)

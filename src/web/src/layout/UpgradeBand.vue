@@ -4,6 +4,7 @@ import {saveSettings} from "../actions/settings.js";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import Notice from "../kit/Notice.vue";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
 
@@ -12,8 +13,9 @@ const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
 const visible = computed(
-    () => upstream.value && upstream.value.newer && !upstream.value.installs && dismissed.value !== upstream.value.latest
+    () => upstream.value && upstream.value.newer && (!upstream.value.installs || upstream.value.changed?.length) && dismissed.value !== upstream.value.latest
 );
+const changed = computed(() => upstream.value?.changed || []);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
 const stale = computed(() => {
     const serving = store.spec && store.spec.build;
@@ -48,11 +50,11 @@ function dismiss() {
     remember("journal.upgrade.dismissed", dismissed.value);
 }
 
-async function upgrade(always = false) {
+async function upgrade(always = false, yes = false) {
     running.value = true;
     try {
         if (always) await saveSettings({features: {auto_update: true}});
-        await api.update();
+        await api.update(yes);
         lines.value = [`Installing ${upstream.value.latest}; this page reloads once it runs`];
     } catch (e) {
         lines.value = [e.message];
@@ -80,7 +82,19 @@ async function upgrade(always = false) {
             <span class="drain" :style="{animationDuration: `${RELOAD_AFTER}s`, animationPlayState: waiting ? 'paused' : 'running'}" />
         </div>
     </template>
-    <template v-if="visible">
+    <template v-if="visible && changed.length">
+        <Notice tone="need" class="changed-files">
+            These files changed since the journal wrote them: {{ changed.join(", ") }}. Updating will copy them into .journal/attic before replacing them.
+            <template v-if="lines.length">
+                <span>{{ lines.join(" · ") }}</span>
+            </template>
+            <template #actions>
+                <Btn small @click="dismiss">Keep my changes</Btn>
+                <Btn kind="primary" small :disabled="running" @click="upgrade(false, true)">Update anyway</Btn>
+            </template>
+        </Notice>
+    </template>
+    <template v-else-if="visible">
         <div class="band">
             <span class="text">
                 Agent journal {{ upstream.latest }} is out — this is {{ upstream.installed }}.
@@ -98,6 +112,9 @@ async function upgrade(always = false) {
 </template>
 
 <style scoped>
+.changed-files {
+    margin: 6px 12px;
+}
 .band {
     flex: none;
     display: flex;

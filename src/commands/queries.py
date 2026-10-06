@@ -120,7 +120,7 @@ def demo(ctx) -> str:
 def upgrade_here(ctx) -> str:
     from install import upgrade
     root = ctx["record"].root
-    return "\n".join(upgrade(root.parent, root))
+    return "\n".join(upgrade(root.parent, root, yes=ctx["yes"]))
 
 def halt(ctx) -> str:
     from engine.stop import ask, clear, ended

@@ -50,8 +50,8 @@ export class ApiClient {
         return this.post("/update/check", {});
     }
 
-    update() {
-        return this.post("/update", {});
+    update(yes = false) {
+        return this.post("/update", {yes});
     }
 
     manifest() {
