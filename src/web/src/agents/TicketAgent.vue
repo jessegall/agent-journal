@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {computed, ref} from "vue";
 import {useEscape} from "../composables/windowEvent.js";
 import {api} from "../api/client.js";
@@ -42,7 +43,7 @@ const STOP = {
 };
 const REMOVE = (who) => ({
     key: "remove",
-    label: "Remove helper and its working copy",
+    label: `Remove ${helperWord()} and its working copy`,
     title: "Removes its environment and its copy of the code. Its report and commits are kept.",
     danger: true,
     confirm: {
@@ -66,7 +67,7 @@ const reportLink = computed(() =>
     filed.value ? {href: href.page(env.value || route.value.env, "report", filed.value.n), label: `Open report ${filed.value.n}`} : {}
 );
 const state = computed(() => (helper.value ? HELPER_STATES[helperState(helper.value)] : agentState(props.card)));
-const kicker = computed(() => ({plan: "Plan agent", helper: "Helper"})[props.kind] || "Ticket agent");
+const kicker = computed(() => ({plan: "Plan agent", helper: capitalised(helperWord())})[props.kind] || "Ticket agent");
 const actions = computed(() => {
     if (!helper.value) return state.value.key === "stopped" ? [] : [STOP];
     const phase = helperState(helper.value);
