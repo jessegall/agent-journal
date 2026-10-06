@@ -13,7 +13,6 @@ import NewButton from "./kit/NewButton.vue";
 import {newestFirst} from "./kit/listed.js";
 import {toast} from "./kit/toast.js";
 import PhoneFamily from "./places/PhoneFamily.vue";
-import PhonePluginAdd from "./places/PhonePluginAdd.vue";
 import PhoneRowActions from "./places/PhoneRowActions.vue";
 import PhoneShelves from "./places/PhoneShelves.vue";
 import {dotOf, linesOf} from "./places/rowLines.js";
@@ -32,7 +31,6 @@ const list = ref(null);
 const acting = ref(null);
 const choosing = ref(false);
 const making = ref(false);
-const adding = ref(false);
 const spec = ref(false);
 const counts = ref({open: 0, all: 0});
 const closed = ref([]);
@@ -196,10 +194,7 @@ onMounted(async () => {
         </template>
         <template #foot>
             <div class="kind-foot">
-                <template v-if="target === 'plugin'">
-                    <NewButton label="Add a plugin" @press="adding = true" />
-                </template>
-                <template v-else-if="makes">
+                <template v-if="makes">
                     <NewButton :label="kind.make" @press="making = true" />
                 </template>
                 <template v-else>
@@ -214,9 +209,6 @@ onMounted(async () => {
     </template>
     <template v-if="choosing">
         <ActionSheet :title="`Order the ${kind.many.toLowerCase()}`" :about="kind.many" :actions="orders" @close="choosing = false" />
-    </template>
-    <template v-if="adding">
-        <PhonePluginAdd :changed="changed" @close="adding = false" />
     </template>
     <template v-if="making">
         <FormSheet :title="kind.make" :fields="newFields" button="Add" @close="making = false" @submit="make" />

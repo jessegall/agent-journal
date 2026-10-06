@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {pluginFrom} from "../../composables/plugins.js";
+import {pluginRequest} from "../../domain/plugins.js";
 import {usePluginInstall} from "../../composables/pluginInstall.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import Cell from "../kit/Cell.vue";
@@ -36,7 +37,7 @@ async function check(text) {
 }
 
 function make(wish) {
-    hold(`Please make a new journal plugin: ${wish}`, "");
+    hold(pluginRequest("", wish), "");
     toast("Sent to the agent");
 }
 </script>
