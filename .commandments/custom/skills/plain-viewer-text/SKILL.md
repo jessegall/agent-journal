@@ -17,7 +17,7 @@ says what it is about, or what happens when they press it, in the words a newcom
   - speaks as the app: "I sort it by subject", "What I'm doing", "my", "we";
   - uses a word from inside the journal: row, hook, nudge, engine, compaction, inject, dispatched,
     "ships with";
-  - uses one of the words the house has replaced: park (Pause), dismiss, handled or abandon (Close).
+  - uses one of the words the house has replaced: park (Pause), dismiss or abandon (Close).
 
 ## How to fix it
 

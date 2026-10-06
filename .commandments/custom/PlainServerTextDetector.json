@@ -28,7 +28,7 @@
                 }
             },
             {
-                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed)|rows?|inject(ed|s)?|dispatch(ed|es)?|ships with|parked?|dismiss(ed)?|handled|abandon(ed)?)\\b)"
+                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed)|rows?|inject(ed|s)?|dispatch(ed|es)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b)"
             }
         ],
         "reject": [
