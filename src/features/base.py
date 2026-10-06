@@ -191,9 +191,6 @@ class Feature(ABC):
     def values(self, record) -> Settings:
         return self.details.values(record)
 
-    def setting(self, record, key: str, default=None):
-        return record.setting(self.name, {}).get(key, default)
-
     def reached(self, record, reach: Reach) -> list:
         return [agent for agent in Agents(record, actor=SYSTEM).rows.standing() if reach.reaches(agent.subagent)]
 
