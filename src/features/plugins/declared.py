@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field, replace
+from fnmatch import fnmatch
+from pathlib import PurePath
 
 from engine.fields import Loaded
 from resources.base import Refused
@@ -139,6 +141,16 @@ class DeclaredEvent(Loaded):
 
 
 @dataclass(frozen=True)
+class Fits(Loaded):
+    languages: tuple[str, ...] = ()
+    files: tuple[str, ...] = ()
+
+    def found(self, languages: set[str], names: list[str]) -> list[str]:
+        files = {PurePath(name).name for name in names}
+        return [*sorted(languages.intersection(self.languages)), *sorted(name for name in files if any(fnmatch(name, pattern) for pattern in self.files))]
+
+
+@dataclass(frozen=True)
 class Manifest(Loaded):
     aliases = {"handlers": ("on",)}
     stored: dict = field(default_factory=dict)
@@ -164,6 +176,7 @@ class Manifest(Loaded):
     events: tuple[DeclaredEvent, ...] = ()
     cancels: dict = field(default_factory=dict)
     load: dict = field(default_factory=dict)
+    fits: Fits = field(default_factory=Fits)
 
     @classmethod
     def of(cls, raw) -> "Manifest":
