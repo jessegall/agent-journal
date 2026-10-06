@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.1 — the phone no longer stays loading after you switch journal
+
+**Switching journal on the phone loads the chat again.** A shared poll kept asking with the first screen that
+started it, so after a switch the new screen waited on an ask that never answered. Each screen now brings its own
+ask, and the poll asks with the newest one still there. Nothing to do.
+
 ## 2.253.0 — to-dos handed to a helper are its alone
 
 **A helper can be handed rows of your list.** `journal helper dispatch … --todos 3001,3002` gives those to-dos to the

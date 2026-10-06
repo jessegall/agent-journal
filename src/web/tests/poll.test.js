@@ -100,4 +100,19 @@ describe("a poll", () => {
         expect(live).toHaveBeenCalledTimes(1);
         stop();
     });
+
+    test("when the first user of a shared poll leaves, the next round asks with the user that stayed", async () => {
+        const key = `poll-${++keys}`;
+        const first = vi.fn().mockResolvedValue("old");
+        const second = vi.fn().mockResolvedValue("new");
+        const taken = vi.fn();
+        const stopFirst = startPoll(key, first, 1000, () => {}, () => false);
+        const stopSecond = startPoll(key, second, 1000, taken);
+        stops.push(stopFirst, stopSecond);
+        stopFirst();
+        await passed(1000);
+        expect(second).toHaveBeenCalled();
+        expect(first).not.toHaveBeenCalled();
+        expect(taken).toHaveBeenCalledWith("new");
+    });
 });
