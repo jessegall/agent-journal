@@ -51,6 +51,9 @@ class Helpers(Controller):
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")
         place = Environments(self.record, actor=SYSTEM).unused(slugged(f"{self.record.env}-{slug}", limit=30), ": finish that helper first, or choose another name")
         row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place, checkout=str(folder) if checkout else "")
+        for earlier in self.rows.standing():
+            if earlier.n != row.n and earlier.environment == place:
+                Controller.complete(self, earlier.n, how=f"carried on by helper {row.n} in the same environment")
         if worktree:
             given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name)
             folder = Path(given.path)

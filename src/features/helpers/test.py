@@ -139,3 +139,8 @@ def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, t
     assert "not a git checkout" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout="docs")), "a folder that is no checkout is refused"
     assert "inside the project" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout=str(tmp_path))), "a checkout outside the project is refused"
     assert "either" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout="platform", worktree=True)), "a checkout and a worktree are never both given"
+    first = helpers.all()[0]
+    Environments(record, actor=SYSTEM).complete(Environments(record, actor=SYSTEM).rows.by_title(first.environment).n, how="its helper stopped", yes=True)
+    helpers.dispatch("Ada", "carry on with the queue", "claude", "sonnet", checkout="platform")
+    assert [h.title for h in helpers.all()] == ["carry on with the queue"] and helpers.load(first.n).completed, \
+        "a helper started again in a stopped helper's environment takes its place: the stopped row is closed, never listed twice"
