@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.9 — a follow-up to a helper arrives as its dispatcher's instruction, not as a journal line
+A line someone says to an agent, such as `journal helper say` or a plan agent's task, is now typed into its input as its own instruction. Only the journal's own lines go over the channel, which Claude Code marks as untrusted, so a helper no longer ignores its dispatcher. Nothing to do.
+
 ## 2.253.8 — stopping the journal stops its helpers, and the start screen names a helper's environment
 `journal stop` now stops each helper's agent through the helper's own stop, which also gives back the to-dos it held, before it stops the rest. The start screen lists a helper's environment as `helper <name>` and no longer as `agent working`. A helper still keeps working when the session that dispatched it ends. Nothing to do.
 
