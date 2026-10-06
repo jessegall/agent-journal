@@ -15,10 +15,10 @@ const DEPTHS = [
 const writing = ref(false);
 const kind = computed(() => kindOf(props.type));
 const fields = computed(() => [
-    {name: "title", label: "Title", placeholder: `${kind.value.one} title, at most 80 characters`, required: true},
-    {name: "abstract", label: "One short line about it", placeholder: "You can leave this empty"},
-    {name: "brief", label: "Details", placeholder: "As long as they need to be", area: true},
-    ...(props.type === "plan" ? [{name: "depth", label: "How thorough", options: DEPTHS}] : []),
+    {key: "title", label: "Title", placeholder: `${kind.value.one} title, at most 80 characters`, required: true},
+    {key: "abstract", label: "One short line about it", placeholder: "You can leave this empty"},
+    {key: "brief", label: "Details", placeholder: "As long as they need to be", area: true},
+    ...(props.type === "plan" ? [{key: "depth", label: "How thorough", options: DEPTHS, value: "normal"}] : []),
 ]);
 
 async function make(values) {
@@ -41,9 +41,8 @@ async function make(values) {
         <FormSheet
             :title="kind.make || `New ${kind.word}`"
             :fields="fields"
-            :values="{depth: 'normal'}"
             button="Add"
-            @send="make"
+            @submit="make"
             @close="writing = false"
         />
     </template>

@@ -125,7 +125,7 @@ const comments = computed(() => [
     ...heldComments.value,
 ]);
 
-const COMMENT = [{name: "text", label: "Your comment", placeholder: "Write a comment", required: true, area: true}];
+const COMMENT = [{key: "text", label: "Your comment", placeholder: "Write a comment", required: true, area: true}];
 const FIRST = {todo: "start", held: "unblock", doing: "done", asked: "done", done: "reopen"};
 const SECOND = ["block", "comment"];
 const acts = ref(null);
@@ -353,7 +353,7 @@ onMounted(async () => {
             <PhoneShareSheet :target="`${row.type}:${row.n}`" :title="row.title" @close="sharing = false" />
         </template>
         <template v-if="commenting && row">
-            <FormSheet title="Comment" :about="row.title" :fields="COMMENT" button="Comment" @close="commenting = false" @send="commented" />
+            <FormSheet title="Comment" :sub="row.title" :fields="COMMENT" button="Comment" @close="commenting = false" @submit="commented" />
         </template>
         <template v-if="moreOpen && row">
             <ActionSheet :title="row.title" :about="`${kindTitle(row.type)} ${row.n}`" :actions="actions" @close="moreOpen = false" />
