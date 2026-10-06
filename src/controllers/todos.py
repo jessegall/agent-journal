@@ -107,6 +107,10 @@ class Todos(Prioritised, Controller):
             return ""
         if r.completed:
             return "  [done]"
+        if r.pending:
+            return f"  [done by {r.assigned.replace(':', ' ')}, waits for its merge]"
+        if r.assigned:
+            return f"  [assigned to {r.assigned.replace(':', ' ')}]"
         if r.blocked:
             return f"  [blocked: {r.blocked}]"
         waits = self.waits(r)

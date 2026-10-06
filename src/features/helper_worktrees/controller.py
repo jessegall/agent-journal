@@ -10,7 +10,8 @@ from features.agent_sessions.launch import running_at
 from engine.worktree import contains, current_branch, git, included, lines, link_folders, present, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
-from resources.base import Refused
+from controllers.types import Todos
+from resources.base import Refused, SYSTEM
 from controllers.marks import action
 
 NAMED = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
@@ -105,7 +106,16 @@ class Worktrees(Controller):
             git(project, "cherry-pick", "--abort")
             raise Refused(f"the cherry-pick stopped and was undone: {(picked.stderr or picked.stdout).strip()}")
         self.update(row.n, taken=tip(project, row.branch))
-        return f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
+        landed = self._land(row)
+        return (f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
+                + (f"; closed to-do {', '.join(str(n) for n in landed)}" if landed else ""))
+
+    def _land(self, row) -> list[int]:
+        listed = Todos(self.record, actor=SYSTEM)
+        pending = [t for t in listed.rows.standing() if t.pending and t.pending.get("worktree") == str(row.n)]
+        for todo in pending:
+            listed.complete(todo.n, f"{todo.pending['how']} (taken from {row.branch})", assigned="", pending=None)
+        return [t.n for t in pending]
 
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):

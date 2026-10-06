@@ -34,4 +34,10 @@ class HelpersDetails(FeatureDetails):
         it. journal helper say <n> "<text>" sends it a follow-up; journal helper stop <n> ends its
         agent; once its work is taken (journal worktree take) or dropped, journal helper finish <n>
         packs its environment away.
+
+        --todos <n>,<n> hands the helper rows of your own list: they are its alone, so nobody else
+        starts or closes them. The helper marks one with journal helper done <n> --how "<what
+        landed>": it shows as done, waiting for its merge, and closes once its worktree is taken.
+        Stopping the helper, or its turn ending in an error, gives back the rows it has not
+        finished; finishing it gives back the rest.
     """
