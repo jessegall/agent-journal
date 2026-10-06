@@ -87,6 +87,13 @@ def test_a_change_made_while_work_is_open_is_counted_on_that_work():
     project.changed()
     changed = Works(project.record).load(work.n).changed
     assert [(c["path"], c["added"], c["removed"]) for c in changed] == [("a.py", 3, 1)], "the work counts the file against how it stood when the work began"
+    (project.root / "b.py").write_text("brand new\n")
+    project.changed()
+    made = {c["path"]: c["created"] for c in Works(project.record).load(work.n).changed}
+    assert made == {"a.py": False, "b.py": True}, "a file the work made is counted as created"
+    (project.root / "a.py").write_text("one\ntwo\n")
+    project.changed()
+    assert [c["path"] for c in Works(project.record).load(work.n).changed] == ["b.py"], "a file put back as it was is no longer a change of the work"
 
 
 def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
