@@ -6,12 +6,13 @@ import SettingControl from "./SettingControl.vue";
 import SettingHowButton from "./SettingHowButton.vue";
 import Switch from "./Switch.vue";
 import TextDisplay from "./TextDisplay.vue";
+import {untitled} from "../domain/settingsCatalog.js";
 
 const props = defineProps({group: {type: Object, required: true}, sheet: Boolean});
 const emit = defineEmits(["change", "timing", "act"]);
 
 const {members: opened, toggle} = useToggledSet();
-const bare = computed(() => !props.group.items.length && props.group.danger.length > 0);
+const bare = computed(() => untitled(props.group));
 const off = computed(() => Boolean(props.group.head && props.group.head.off));
 </script>
 

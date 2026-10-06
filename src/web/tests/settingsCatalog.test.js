@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords} from "../src/domain/settingsCatalog.js";
+import {same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
 
 describe("timing words", () => {
     test.each([
@@ -66,5 +66,13 @@ describe("setting changes", () => {
     test("defaults keep only the saved values that differ", () => {
         const target = {path: ["a", "b"], defaults: {b: 1, c: 2}};
         expect(settingChanges(target, 3, {a: {b: 1, c: 9, other: 7}})).toEqual({a: {c: 9, b: 3}});
+    });
+});
+
+describe("untitled groups", () => {
+    test("a group holding only a danger row is drawn without a heading and left out of the side list", () => {
+        expect(untitled({items: [], danger: [{key: "stop"}]})).toBe(true);
+        expect(untitled({items: [{key: "color"}], danger: []})).toBe(false);
+        expect(untitled({items: [{key: "color"}], danger: [{key: "stop"}]})).toBe(false);
     });
 });

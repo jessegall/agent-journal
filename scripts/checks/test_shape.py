@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HERE = ROOT / "src"
 TESTS = 10
-GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py"}
+GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py", "test_the_viewer.py"}
 
 
 def kept(feature: Path) -> list[Path]:
