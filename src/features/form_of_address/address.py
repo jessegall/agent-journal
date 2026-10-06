@@ -1,28 +1,17 @@
-from engine.git import git_user_name
-from features.form_of_address.details import FormOfAddressDetails
-from features.form_of_address.voices import BUTLER, HAT, VOICES, Calling, Voice
-
-
-def first_name(record) -> str:
-    return str(FormOfAddressDetails.values(record).first_name).strip() or (git_user_name(record.root.parent).split() or [""])[0]
-
-
-def title(record) -> str:
-    return str(FormOfAddressDetails.values(record).title).strip()
-
-
-def called(record) -> str:
-    return Calling.TITLE_AND_NAME.called(title(record), first_name(record))
+from features.form_of_address.controller import Profiles
+from features.form_of_address.names import first_name, in_use, title
+from features.form_of_address.voices import BUTLER, Voice
+from resources.base import SYSTEM, Refused
 
 
 def voice_of(record) -> Voice:
-    key = FormOfAddressDetails.values(record).profile
-    return VOICES.get(key) if key else BUTLER
+    try:
+        return Profiles(record, actor=SYSTEM).voice(in_use(record))
+    except (ValueError, Refused):
+        return BUTLER
 
 
 def address(record) -> str:
     voice = voice_of(record)
-    called_as = voice.calling.called(title(record), first_name(record))
-    if not called_as:
-        return ""
-    return voice.text.format(called=called_as, title=title(record) or "by a title", hat=HAT)
+    instruction = voice.calling.instruction(voice.calling.called(title(record), first_name(record)))
+    return f"HOW TO TALK TO THE USER: {voice.text} {instruction}".strip()

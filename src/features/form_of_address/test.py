@@ -1,32 +1,84 @@
 import features
+from controllers.types import Nudges
+from features.form_of_address.controller import Profiles, ship
+from features.form_of_address.voices import SHIPPED
 from features.session_briefing.start import start_block
-from tests.conftest import fresh
+from resources.base import SYSTEM, USER, Refused
+from surfaces.settings import apply
+from tests.conftest import fresh, refused
+from tests.kit import report
+
+PERSON = {"title": "Captain", "first_name": "Ada"}
 
 
-def test_the_start_block_addresses_the_user_only_while_the_feature_is_on():
+def shipped_record():
     features.load()
     record = fresh()
-    record.set_setting("form_of_address", {"title": "Captain", "first_name": "Ada"})
-    assert 'ADDRESS THE USER as "Captain Ada"' in start_block(record), "the title and first name the user set are how the agent addresses them"
+    ship(record)
+    return record
+
+
+def choose(record, n: int) -> None:
+    apply(record, {"form_of_address": {**PERSON, "profile": n}}, USER)
+
+
+def number_of(record, title: str) -> int:
+    return next(row["n"] for row in Profiles(record, actor=SYSTEM).rows.summaries() if row["title"] == title)
+
+
+def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_while_the_feature_is_on():
+    features.load()
+    record = fresh()
+    record.set_setting("form_of_address", PERSON)
+    assert 'Address them as "Captain Ada"' in start_block(record), "an empty choice talks as the Butler, by the title and first name you set"
     record.features = {**record.features, "form_of_address": False}
-    assert "ADDRESS THE USER" not in start_block(record), "switched off, the start block says nothing about it"
+    assert "HOW TO TALK TO THE USER" not in start_block(record), "switched off, the start block says nothing about it"
 
 
-def test_the_chosen_profile_is_the_voice_and_a_change_reaches_the_running_agent():
-    from features.form_of_address.voices import SHIPPED
-    from tests.kit import report
+def test_the_four_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
+    record = shipped_record()
+    profiles = Profiles(record, actor=USER)
+    assert [row["title"] for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the four ship as rows"
+    n = number_of(record, "Homie")
+    assert refused(lambda: profiles.update(n, brief="my own")) and refused(lambda: profiles.delete(n)), "a shipped profile cannot be changed or deleted"
+    row = Profiles(record, actor=SYSTEM).load(n)
+    row.brief = "stale wording"
+    Profiles(record, actor=SYSTEM).save(row, "updated")
+    assert ship(record) == ["Homie"] and ship(record) == [], "an upgrade puts the shipped wording back, and only that"
+
+
+def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():
+    record = shipped_record()
+    lines = {}
+    for voice in SHIPPED:
+        choose(record, number_of(record, voice.title))
+        lines[voice.title] = start_block(record)
+    assert all(voice.text in lines[voice.title] for voice in SHIPPED), "each shipped profile's own voice reaches the start block"
+    assert 'Address them as "Ada"' in lines["Homie"] and "Never address them by name or title" in lines["Colleague"], "a profile says what it calls you"
+    choose(record, 999)
+    assert SHIPPED[0].text in start_block(record), "a choice that names no profile talks as the Butler"
+
+
+def test_a_profile_in_use_cannot_be_deleted_and_changing_it_reaches_the_running_agent():
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
-    record.set_setting("form_of_address", {"title": "Captain", "first_name": "Ada"})
-    assert 'ADDRESS THE USER as "Captain Ada" the way a good butler would' in start_block(record), "until a profile is chosen the agent talks as the Butler"
-    lines = {voice.key: start_block(record) for voice in SHIPPED if not record.set_setting("form_of_address", {"title": "Captain", "first_name": "Ada", "profile": voice.key})}
-    assert all(voice.text.split("{")[0] in lines[voice.key] for voice in SHIPPED) and len({voice.text for voice in SHIPPED}) == 4, \
-        "each shipped profile's own voice reaches the start block"
-    assert '"Ada"' in lines["homie"] and "Captain" not in lines["homie"].split("TALK TO THE USER")[1].split("\n")[0], \
-        "a profile that calls you by name drops the title, which stays in Settings"
-    from surfaces.settings import apply
-    apply(record, {"form_of_address": {"title": "Captain", "first_name": "Ada", "profile": "coach"}}, "user")
-    from controllers.types import Nudges
+    profiles = Profiles(record, actor=USER)
+    own = profiles.create("Quiet", brief="Keep every answer to one line.", calling="none", sample="In and green.")
+    choose(record, own.n)
+    assert refused(lambda: profiles.delete(own.n)), "the profile in use is refused deletion until another is chosen"
+    profiles.update(own.n, brief="Keep every answer to two lines.")
     briefs = [n.brief for n in Nudges(record).all() if n.title == "the user changed how you talk to them"]
-    assert len(briefs) == 1 and "encouraging coach" in briefs[0], "a change saved in Settings reaches the running agent at once, with the new voice"
+    assert any("two lines" in brief for brief in briefs), "editing the profile in use tells the agent at once"
+    choose(record, 0)
+    profiles.delete(own.n)
+
+
+def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three():
+    record = shipped_record()
+    profiles = Profiles(record, actor=USER)
+    copy = profiles.duplicate(number_of(record, "Coach"))
+    assert copy.title == "Coach (my copy)" and not copy.system and copy.brief == SHIPPED[3].text, "a copy carries the voice and is yours to change"
+    assert profiles.update(copy.n, brief="Cheer less.").brief == "Cheer less.", "a copy can be edited"
+    assert refused(lambda: profiles.create("Odd", brief="x", calling="sir")), "a calling outside the three is refused"
+    assert profiles.callings()["none"] == "", "calling you nothing reads as nothing"

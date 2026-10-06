@@ -3,9 +3,9 @@ from resources.text import paragraphs
 
 class Setting:
     def __init__(self, name: str, default, title: str, abstract: str = "", unit: str = "", under: str = "",
-                 choices: tuple[str, ...] = (), labels: tuple[tuple[str, str], ...] = (), examples: tuple[tuple[str, str], ...] = ()):
+                 choices: tuple[str, ...] = (), labels: tuple[tuple[str, str], ...] = (), examples: tuple[tuple[str, str], ...] = (), hidden: bool = False):
         self.name, self.default, self.title, self.abstract, self.unit, self.under = name, default, paragraphs(title), paragraphs(abstract), unit, under
-        self.choices, self.labels, self.examples = choices, dict(labels), dict(examples)
+        self.choices, self.labels, self.examples, self.hidden = choices, dict(labels), dict(examples), hidden
 
     def kind(self) -> str:
         if self.choices:
@@ -18,7 +18,7 @@ class Setting:
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "default": self.default, "unit": self.unit, "kind": self.kind(),
-                "under": self.under, "choices": list(self.choices), "labels": self.labels, "examples": self.examples}
+                "under": self.under, "choices": list(self.choices), "labels": self.labels, "examples": self.examples, "hidden": self.hidden}
 
     def allows(self, value) -> bool:
         return not self.choices or value in self.choices

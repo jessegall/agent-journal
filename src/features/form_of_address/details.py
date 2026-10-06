@@ -1,5 +1,4 @@
 from features.base import FeatureDetails, Line
-from features.form_of_address.voices import KEYS, SHIPPED
 from features.settings import Setting
 from features.groups import Group
 
@@ -9,13 +8,13 @@ VOICE_SET = "voice set"
 class FormOfAddressDetails(FeatureDetails):
     name = "form_of_address"
     group = Group.AGENT
-    label = "How the agent talks to you"
+    label = "Your title and name"
     position = 1
     has_skill = False
 
-    title = "Your profile, title and name"
+    title = "Your title and name"
 
-    abstract = "The agent talks to you in the voice of the profile you choose, by your title and first name."
+    abstract = "The agent talks to you in the voice of the profile you choose, by your title and first name, as the profile says."
 
     help = """
         Every session start, and every start after a compaction, tells the agent how to talk to you, in the voice of
@@ -42,9 +41,8 @@ class FormOfAddressDetails(FeatureDetails):
             name="profile",
             default="",
             title="Profile",
-            abstract="How the agent talks to you; until you choose, it talks as the Butler",
-            choices=("", *KEYS),
-            labels=(("", "Not chosen yet"), *((voice.key, voice.title) for voice in SHIPPED)),
+            abstract="The profile the agent talks as; until you choose, it talks as the Butler",
+            hidden=True,
         ),
     ]
 
