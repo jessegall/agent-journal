@@ -25,6 +25,11 @@ class PluginsDetails(FeatureDetails):
         dispatched. A plugin cancels one through "cancels": {"agent.dispatching": "<command>"} in its manifest: the command
         reads the event as JSON and answers {"cancel": "<reason>"} to stop it, and the reason is what the agent is told.
 
+        "fits": {"languages": ["PHP", "Python"], "files": ["composer.json", "*.csproj"]} names the projects a plugin is for.
+        Plugins listed in plugins.json in the journal's own repository are read from their repositories once a day, and the
+        ones that fit the project and are not installed are suggested at a session start, with a Yes, I want this button that
+        installs the plugin at once.
+
         Its "refuse" command is asked about every write, and every read too with "reads": true. A process started for each
         tool call is slow, so "refuse_socket": "<service>" names one of its services that answers instead: the service listens
         on the Unix socket at $JOURNAL_PLUGIN_SOCKET, reads one JSON line and writes its answer, and the command runs only

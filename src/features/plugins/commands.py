@@ -5,6 +5,7 @@ from features.parts import Command, Context
 from features.plugins.answer import Posting, raised
 from features.plugins.declared import called, declared, named, settings_of, settings_choosing
 from features.plugins.environment import environment, ports_for
+from features.plugins.fitting import mark_failed, mark_installed
 from features.plugins.lifecycle import difference, fetched, install_staged, reread, restarted
 from features.plugins.manifest import read
 from features.plugins.paths import data, folder, log
@@ -30,6 +31,17 @@ class Install(Command):
     network = True
 
     def run(self, context: Context, plugins, source: str, ref: str = "", yes: bool = False):
+        try:
+            made = self.install(context, plugins, source, ref, yes)
+        except Refused as error:
+            if yes:
+                mark_failed(plugins, source, str(error))
+            raise
+        if yes:
+            mark_installed(plugins, source, made)
+        return made
+
+    def install(self, context: Context, plugins, source: str, ref: str, yes: bool):
         root = plugins.record.root
         with fetched(root, source, ref) as stage:
             name = stage.manifest.name
