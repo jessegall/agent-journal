@@ -68,3 +68,5 @@ src/web/demo-check/
 
 # code-commandments published skills (regenerated on composer update)
 .claude/skills/commandments-*
+.coverage
+.coverage.*
