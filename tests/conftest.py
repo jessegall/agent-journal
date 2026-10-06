@@ -101,3 +101,19 @@ def forgotten_memos():
     from engine.memo import forget_all
     forget_all()
     yield
+
+
+_VIEWER_FUNCTIONS = {}
+
+
+@pytest.fixture(autouse=True)
+def viewer_functions_restored(request):
+    import engine.viewer as viewer
+    names = ("running", "start", "launch", "show", "identity", "answers", "elsewhere", "available", "free")
+    if not _VIEWER_FUNCTIONS:
+        _VIEWER_FUNCTIONS.update({name: getattr(viewer, name) for name in names})
+    yield
+    changed = [name for name in names if getattr(viewer, name) is not _VIEWER_FUNCTIONS[name]]
+    for name in changed:
+        setattr(viewer, name, _VIEWER_FUNCTIONS[name])
+    assert not changed, f"{request.node.nodeid} left engine.viewer.{', '.join(changed)} replaced for every later test"
