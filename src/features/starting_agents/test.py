@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 
 import features
 from controllers.types import Agents, Environments, Messages
@@ -104,31 +104,6 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
         "--worktree", "0922-disposal-date", "--resume", "7a1d-in-the-worktree"], "a named worktree carries on its own last conversation"
 
 
-def test_declining_a_takeover_asks_which_environment_again_and_never_makes_a_new_one_and_a_helpers_environment_is_listed_as_the_helpers(monkeypatch):
-    import commands.launch as launch
-    from engine.sessions import Sessions
-    from features.agent_sessions.launch import prepared
-    from features.helpers.controller import Helpers
-    record = fresh()
-    Environments(record, actor=SYSTEM).create(record.env)
-    Environments(record, actor=SYSTEM).create("second")
-    helper = Helpers(record, actor=SYSTEM).create("a long job", name="Hedy", provider="claude", model="sonnet", environment="helper-hedy")
-    prepared(record, "helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent)
-    Sessions(record.root).bind("claude-1", record.env, pid=os.getpid(), provider="claude")
-    Sessions(record.root).bind("claude-2", "helper-hedy", pid=os.getpid(), provider="claude")
-    answers = iter(["1", "2", "2"])
-    ask = lambda _="": next(answers)
-    offered = []
-    choose = launch.choose
-    monkeypatch.setattr(launch, "choose", lambda *given: offered.append(given[2]) or choose(*given))
-    asked_for = launch.asked_for
-    assert asked_for(record, ask=ask, answering=True) == "second", "no to a takeover asks the choice again"
-    assert list(answers) == [], "no name was asked for and no environment was made"
-    badges = {choice.label: choice.badges for choice in offered[0] if hasattr(choice, "badges")}
-    assert badges["helper-hedy"] == ("helper Hedy",), "a helper's environment is listed as the helper's, never as an agent working"
-    assert Sessions(record.root).holder(record.env) == "claude-1", "the agent was not moved off"
-
-
 def test_the_command_line_answers_what_is_wired_what_is_set_and_what_a_command_does(capsys, tmp_path, monkeypatch):
     from commands.cli import run
     features.load()
@@ -212,8 +187,11 @@ def test_a_running_agents_screen_is_read_from_where_the_viewer_stopped_and_a_liv
     assert dispatch("POST", f"/api/elsewhere/appoint", record.root, {}, {"session": "claude-404"}).code == 400, "a session that is not online is refused"
 
 
-def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only_when_told_to(capsys):
+def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only_when_told_to(capsys, monkeypatch):
+    import commands.launch as launch
     from commands.launch import asked_for, banner, choose, defaults
+    from features.agent_sessions.launch import prepared
+    from features.helpers.controller import Helpers
     from engine.sessions import Sessions
     features.load()
     record = fresh()
@@ -247,6 +225,14 @@ def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only
     assert "A number from 1 to 5" in capsys.readouterr().out, "a wrong number is told how to answer"
     assert choose("Pick", [], ["a", "b"], 0, ask=lambda prompt: (_ for _ in ()).throw(EOFError)) is None, "a closed input answers nothing"
     assert "agent-journal" in banner("claude", record.root.parent) and "claude".capitalize() in banner("claude", record.root.parent), "the banner names the agent about to start"
+    helper = Helpers(record, actor=SYSTEM).create("a long job", name="Hedy", provider="claude", model="sonnet", environment="helper-hedy")
+    prepared(record, "helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent)
+    Sessions(record.root).bind("claude-2", "helper-hedy", pid=os.getpid(), provider="claude")
+    offered = []
+    monkeypatch.setattr(launch, "choose", lambda *given: offered.append(given[2]) or choose(*given))
+    asked_for(record, ask=script(""), answering=True)
+    badges = {choice.label: choice.badges for choice in offered[0] if hasattr(choice, "badges")}
+    assert badges["helper-hedy"] == ("helper Hedy",), "a helper's environment is listed as the helper's, never as an agent working"
 
 
 def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_it_was_asked_for(monkeypatch, capsys):
