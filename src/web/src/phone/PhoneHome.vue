@@ -33,6 +33,8 @@ import PhoneHomeOlder from "./PhoneHomeOlder.vue";
 import PhoneHomeSending from "./PhoneHomeSending.vue";
 import PhoneAtWork from "./PhoneAtWork.vue";
 import PhonePlanSheet from "./PhonePlanSheet.vue";
+import PhoneSuggestionLayer from "./PhoneSuggestionLayer.vue";
+import {phoneActs} from "./suggestionActs.js";
 import {usePlanGo} from "./planGo.js";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
@@ -354,6 +356,10 @@ const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     else took(got);
 });
 provide("phoneRefresh", refresh);
+provide(
+    "suggestionActs",
+    phoneActs((target) => open(target), refresh)
+);
 const go = usePlanGo(
     computed(() => feed.value.plan),
     refresh,
@@ -769,6 +775,7 @@ function pick(key) {
             @close="held = null"
         />
     </template>
+    <PhoneSuggestionLayer :items="items" />
     <p class="phone-hidden" aria-live="polite">{{ spoken }}</p>
 </template>
 

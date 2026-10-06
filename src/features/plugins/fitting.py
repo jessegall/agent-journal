@@ -17,13 +17,13 @@ from features.plugins.declared import Fits, called
 from features.plugins.lifecycle import fetched
 from features.plugins.paths import home
 from features.plugins.preview import RUNS_AS, preview_rows
-from features.suggestions.controller import INSTALL, OPEN_SUGGESTIONS, Suggestions
+from features.plugins.staging import Unreached
+from features.suggestions.controller import Decision, OPEN_SUGGESTIONS, Suggestions
 from resources.base import Refused, SYSTEM, USER
 
 LISTED = "plugins.json"
 KEPT = "plugin-offers.json"
 FRESH_FOR = 86400
-YES = "Yes, I want this"
 LANGUAGES = {".php": "PHP", ".py": "Python", ".ts": "TypeScript", ".vue": "Vue", ".cs": "C#"}
 REFRESHING = threading.Lock()
 
@@ -53,9 +53,6 @@ class Offer(Loaded):
 {RUNS_AS}
 
 {commands}"""
-
-    def button(self) -> dict:
-        return {"label": YES, "type": "plugin", "action": "install", "body": {"source": self.source, "ref": self.commit, "yes": True}}
 
 
 def written_in(names: list[str]) -> set[str]:
@@ -119,7 +116,7 @@ def suggest(record, offers: list[Offer]) -> None:
             continue
         if len(suggestions.rows.standing()) >= OPEN_SUGGESTIONS:
             return
-        suggestions.create(offer.suggestion(), brief=offer.brief(found), plugin=offer.source, buttons=[offer.button()])
+        suggestions.create(offer.suggestion(), brief=offer.brief(found), plugin=offer.source, commit=offer.commit, name=offer.title)
 
 
 def refresh(record) -> None:
@@ -131,26 +128,47 @@ def refresh(record) -> None:
         REFRESHING.release()
 
 
-def mark_failed(plugins, source: str, why: str) -> None:
-    if plugins.actor != USER:
-        return
-    agents = Agents(plugins.record, actor=SYSTEM)
-    row = agents.primary()
-    if not row:
-        return
-    agents.card(row.n, label=f"Could not install the plugin from {source}", detail=why, icon="warn", tone="warn")
+@dataclass(frozen=True)
+class InstallMark:
+    plugins: object
+    source: str
+    key: str
+    tried: int
+    offered: tuple
 
+    @classmethod
+    def begin(cls, plugins, source: str) -> "InstallMark":
+        suggestions = Suggestions(plugins.record, actor=SYSTEM)
+        offered = tuple(row for row in suggestions.rows.standing() if row.data.get("plugin") == source)
+        tried = 1 + max((row.data.get("install", {}).get("try", 0) for row in offered), default=0)
+        key = f"install:{offered[0].n}:{tried}" if offered else f"install:{source}:{time.time()}"
+        mark = cls(plugins, source, key, tried, offered)
+        mark.state(state="running")
+        mark.card(label="Installing", name=offered[0].data.get("name", source) if offered else source, state="running", started=time.time(),
+                  row=offered[0].ref if offered else "")
+        return mark
 
-def mark_installed(plugins, source: str, made) -> None:
-    if plugins.actor != USER:
-        return
-    suggestions = Suggestions(plugins.record, actor=SYSTEM)
-    for row in [row for row in suggestions.rows.standing() if row.data.get("plugin") == source]:
-        suggestions.complete(row.n, f"{INSTALL}: {called(made)} was installed")
-    agents = Agents(plugins.record, actor=SYSTEM)
-    row = agents.primary()
-    if row:
-        agents.card(row.n, label=f"You installed the {called(made)} plugin", icon="check", side=USER, row=made.ref)
+    def state(self, **install) -> None:
+        suggestions = Suggestions(self.plugins.record, actor=SYSTEM)
+        for row in self.offered:
+            suggestions.update(row.n, install={"try": self.tried, **install})
+
+    def card(self, **card) -> None:
+        agents = Agents(self.plugins.record, actor=SYSTEM)
+        row = agents.primary()
+        if self.plugins.actor != USER or not row:
+            return
+        agents.card(row.n, key=self.key, icon="plug", side=USER, **card)
+
+    def failed(self, error: Refused) -> None:
+        self.state(state="failed", why=str(error), network=isinstance(error, Unreached))
+        self.card(label="Install failed for", state="failed", ended=time.time(), detail=f"{error} Nothing was kept.")
+
+    def installed(self, made) -> None:
+        suggestions = Suggestions(self.plugins.record, actor=SYSTEM)
+        for row in self.offered:
+            suggestions.complete(row.n, f"{Decision.INSTALL}: {called(made)} was installed", installed=made.ref)
+        self.card(label="Installed", name=called(made), state="done", ended=time.time(), row=made.ref)
 
 
 class SuggestFittingPlugins(Handler):

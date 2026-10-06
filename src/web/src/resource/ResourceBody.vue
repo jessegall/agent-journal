@@ -18,6 +18,7 @@ import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
 import CheckResult from "./CheckResult.vue";
 import ChoiceCard from "./ChoiceCard.vue";
+import SuggestionCard from "../chat/SuggestionCard.vue";
 import ChoiceNeeded from "./ChoiceNeeded.vue";
 import TriggerEditor from "./TriggerEditor.vue";
 import RuleControls from "./RuleControls.vue";
@@ -52,7 +53,7 @@ const seenBy = computed(() => props.resource.seen.join(", ") || "nobody");
 const briefLabel = computed(() => kind.value.labels.brief || "");
 const buttons = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
 const hasFields = computed(() => kind.value.shown_fields.length > 0 && props.resource.type !== "trigger");
-const optioned = computed(() => !!kind.value.fields.options);
+const optioned = computed(() => !!kind.value.fields.options && props.resource.type !== "suggestion");
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
 const madeFor = computed(() => (kind.value.fields.applies_to ? props.resource.data.applies_to || [] : null));
@@ -194,6 +195,9 @@ async function follow() {
         </template>
         <template v-else-if="resource.type !== 'message'">
             <Sections :sections="resource.sections" />
+        </template>
+        <template v-if="resource.type === 'suggestion' && !readOnly">
+            <SuggestionCard :suggestion="resource" bare briefless />
         </template>
         <template v-if="buttons.length && !readOnly">
             <ChoiceCard ref="choice" :resource="resource" />

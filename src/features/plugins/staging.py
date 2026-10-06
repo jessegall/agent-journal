@@ -16,6 +16,12 @@ REPOSITORY = re.compile(r"[\w.-]+/[\w.-]+$")
 REMOTE = ("http://", "https://", "git@", "file://", "ssh://")
 
 
+class Unreached(Refused):
+    @classmethod
+    def fetching(cls, where: str, failed: str) -> "Unreached":
+        return cls(f"Could not reach {where}: {failed}")
+
+
 def remote(address: str) -> bool:
     return address.startswith(REMOTE)
 
@@ -58,7 +64,7 @@ def staged(root: Path, source: str, revision: str, version: str) -> Staged:
     commit, failed = fetch(staging, where, revision)
     if failed:
         shutil.rmtree(staging, ignore_errors=True)
-        raise Refused(f"{where} could not be fetched: {failed}")
+        raise Unreached.fetching(where, failed)
     try:
         return Staged(staging, read(staging, version), commit, False)
     except Refused:

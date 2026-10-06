@@ -2,6 +2,7 @@
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
 import Dialog from "../kit/Dialog.vue";
+import {PLUGIN_KINDS} from "../domain/pluginKinds.js";
 
 defineProps({
     previewed: {type: Object, required: true},
@@ -10,7 +11,6 @@ defineProps({
     busy: {type: String, default: ""},
 });
 const emit = defineEmits(["close", "back", "install"]);
-const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 </script>
 
 <template>
@@ -58,7 +58,7 @@ const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listen
             <div class="preview-rows">
                 <template v-for="(row, i) in previewed.rows" :key="i">
                     <div class="preview-row">
-                        <span :class="['preview-kind', row.kind]">{{ KINDS[row.kind] || row.kind }}</span>
+                        <span :class="['preview-kind', row.kind]">{{ PLUGIN_KINDS[row.kind] || row.kind }}</span>
                         <span class="preview-label">{{ row.label }}</span>
                         <code class="preview-command">{{ row.command }}</code>
                     </div>

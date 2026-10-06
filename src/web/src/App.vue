@@ -5,7 +5,7 @@ import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
 import {activityVisible, closeOverlays} from "./actions/panels.js";
 
-import {computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
+import {computed, defineAsyncComponent, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
 import {project} from "./state/identity.js";
 import {ui} from "./state/ui.js";
@@ -47,6 +47,9 @@ import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {firstChoice, loadProfiles, unchosen} from "./composables/profiles.js";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
+import SuggestionLayer from "./chat/SuggestionLayer.vue";
+import {desktopActs} from "./chat/suggestionActs.js";
+import {useTurnLinks} from "./chat/turnLinks.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 
 const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
@@ -63,6 +66,7 @@ function startBoot() {
         .finally(() => clearTimeout(bootTimer));
 }
 const retryBoot = () => location.reload();
+provide("suggestionActs", desktopActs(useTurnLinks().openRef));
 
 const page = computed(() =>
     !route.value.page
@@ -279,6 +283,7 @@ watch(
                     <FirstChoiceDialog />
                 </template>
                 <DetachedWindows />
+                <SuggestionLayer />
             </div>
         </div>
     </template>

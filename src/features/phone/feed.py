@@ -17,6 +17,8 @@ from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
 from features.phone.places import WAITED, owed
+from features.suggestions.controller import Suggestions
+from features.suggestions.details import SuggestionsDetails
 from features.plans.controller import Plans
 from features.plans.resource import PHASE
 from features.work_modes.modes import mode_of
@@ -26,7 +28,8 @@ from overview.summary import JournalSummary, lately_summarized, subagents
 
 FEED = 40
 HELPERS_SHOWN = 10
-POSTED = {"message": Messages, "question": Questions, "comment": Comments}
+POSTED = {"message": Messages, "question": Questions, "comment": Comments, "suggestion": Suggestions}
+ASKED = ("question", "suggestion")
 
 
 class Marked(TypedDict):
@@ -218,10 +221,12 @@ def latest(home: Record, kind: str, before: float) -> list:
 
 
 def entry(home: Record, kind: str, row) -> dict:
-    item = {**shaped(row, home, VIEWER), "who": row.author if kind != "question" and row.seen else "agent", "files": dict(row.files)}
-    if kind != "question":
-        return item
-    return {**item, "hold": hold(home)}
+    item = {**shaped(row, home, VIEWER), "who": "agent" if kind in ASKED or not row.seen else row.author, "files": dict(row.files)}
+    return {**item, **EXTRAS.get(kind, lambda _: {})(home)}
+
+
+EXTRAS = {"question": lambda home: {"hold": hold(home)},
+          "suggestion": lambda home: {"window_after": SuggestionsDetails.values(home).window_after}}
 
 
 def running(home: Record, environment: str) -> Running:

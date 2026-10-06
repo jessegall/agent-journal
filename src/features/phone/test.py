@@ -20,6 +20,7 @@ from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
+from features.suggestions.controller import Suggestions
 from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from features.sharing.services import wanted
@@ -147,7 +148,8 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
     spoken = {"message": lambda: Messages(record, actor=AGENT).create("the build is green"),
               "question": lambda: Questions(record, actor=AGENT).create("Which port should it use"),
-              "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"])}
+              "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"]),
+              "suggestion": lambda: Suggestions(record, actor=AGENT).create("Keep the file list between searches")}
     assert set(spoken) == set(POSTED), "every kind the phone's chat speaks is checked below"
     for kind, make in spoken.items():
         row = make()
