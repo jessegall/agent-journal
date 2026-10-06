@@ -4,6 +4,8 @@ import Folded from "../kit/Folded.vue";
 import {computed, inject, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import {byRef, parkedFor, waitsOn} from "../domain/records.js";
+import {unanswered} from "../domain/buttons.js";
+import Notice from "../kit/Notice.vue";
 import Sections from "./Sections.vue";
 import {useWriting} from "../composables/writing.js";
 import OptionsPicker from "./OptionsPicker.vue";
@@ -16,7 +18,8 @@ import Asked from "./Asked.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
 import CheckResult from "./CheckResult.vue";
-import Buttons from "./Buttons.vue";
+import ChoiceCard from "./ChoiceCard.vue";
+import TriggerEditor from "./TriggerEditor.vue";
 import RuleControls from "./RuleControls.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {standing} from "../domain/documents.js";
@@ -48,14 +51,12 @@ const blocked = computed(() => props.resource.data.blocked || "");
 const seenBy = computed(() => props.resource.seen.join(", ") || "nobody");
 const briefLabel = computed(() => kind.value.labels.brief || "");
 const buttons = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
-const hasFields = computed(() => kind.value.shown_fields.length > 0);
+const hasFields = computed(() => kind.value.shown_fields.length > 0 && props.resource.type !== "trigger");
 const optioned = computed(() => !!kind.value.fields.options);
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
 const madeFor = computed(() => (kind.value.fields.applies_to ? props.resource.data.applies_to || [] : null));
-const keywords = computed(() =>
-    kind.value.fields.keywords && Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []
-);
+const keyworded = computed(() => Boolean(kind.value.fields.keywords));
 const waits = computed(() => (props.resource.completed ? [] : waitsOn(props.resource)));
 const editing = ref(false);
 const draft = reactive({title: "", abstract: "", brief: "", error: ""});
@@ -153,11 +154,20 @@ async function follow() {
         <template v-if="resource.type === 'rule' && !resource.completed">
             <RuleControls :resource="resource" />
         </template>
+        <template v-if="unanswered(resource) && !readOnly">
+            <Notice>
+                This {{ resource.type }} asks you to choose, at the end.
+                <button
+                    type="button"
+                    class="go"
+                    @click="page.querySelector('.choice')?.scrollIntoView({behavior: 'smooth', block: 'center'})"
+                >
+                    Go to the choice
+                </button>
+            </Notice>
+        </template>
         <template v-if="resource.type === 'check'">
             <CheckResult :resource="resource" />
-        </template>
-        <template v-if="buttons.length && !readOnly">
-            <Buttons :resource="resource" />
         </template>
         <template v-if="hasFields">
             <DataFields :resource="resource" />
@@ -171,10 +181,13 @@ async function follow() {
         <template v-if="madeFor">
             <ResourceMadeFor :types="madeFor" />
         </template>
-        <template v-if="keywords.length">
-            <ResourceKeywords :resource="resource" :keywords="keywords" />
+        <template v-if="resource.type === 'trigger'">
+            <TriggerEditor :resource="resource" />
         </template>
-        <template v-if="resource.brief && !editing">
+        <template v-if="keyworded && !readOnly">
+            <ResourceKeywords :resource="resource" />
+        </template>
+        <template v-if="resource.brief && !editing && resource.type !== 'trigger'">
             <ResourceBlock :heading="briefLabel">
                 <TextDisplay :text="resource.brief" />
             </ResourceBlock>
@@ -189,6 +202,9 @@ async function follow() {
         </template>
         <template v-else-if="resource.type !== 'message'">
             <Sections :sections="resource.sections" />
+        </template>
+        <template v-if="buttons.length && !readOnly">
+            <ChoiceCard :resource="resource" />
         </template>
         <template v-if="traced">
             <Trace :resource="resource" />
@@ -234,6 +250,15 @@ async function follow() {
 .abstract {
     margin: 12px 0 8px;
     color: var(--text-2);
+}
+
+.go {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    cursor: pointer;
 }
 
 .foot {

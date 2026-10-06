@@ -35,6 +35,7 @@ class Button(Loaded):
     again: bool = False
     say: str = ""
     choice: str = ""
+    ask: str = ""
 
     @classmethod
     def from_payload(cls, given: dict) -> "Button":
@@ -43,7 +44,7 @@ class Button(Loaded):
 
     def to_json(self) -> dict:
         kept = {"label": self.label, "type": self.type, "action": self.action, "n": self.n, "body": self.body, "again": self.again,
-                "say": self.say, "choice": self.choice.strip()}
+                "say": self.say, "choice": self.choice.strip(), "ask": self.ask.strip()}
         return {key: value for key, value in kept.items() if value not in (None, False, "")}
 
 
@@ -57,7 +58,7 @@ def one(record, given) -> dict:
         return {}
     button = Button.from_payload(given)
     if button.label and button.say.strip():
-        return Button(label=button.label, say=button.say.strip(), again=button.again, choice=button.choice).to_json()
+        return Button(label=button.label, say=button.say.strip(), again=button.again, choice=button.choice, ask=button.ask).to_json()
     if not button.label or not button.action or not runs(record, button.type, button.action):
         return {}
     return button.to_json()

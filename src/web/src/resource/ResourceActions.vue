@@ -1,5 +1,5 @@
 <script setup>
-import {closeWord, meta, word} from "../domain/spec.js";
+import {MENUED, closeWord, meta, word} from "../domain/spec.js";
 import TextInput from "../kit/TextInput.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";
@@ -53,7 +53,7 @@ async function makePlan() {
 
 const locked = computed(() => (props.resource.data.locked === true && props.resource.data.plugin) || "");
 const offered = computed(() =>
-    props.resource.data.system || locked.value
+    props.resource.data.system || locked.value || MENUED.includes(props.resource.type)
         ? []
         : props.resource.completed
           ? ["delete"]
@@ -126,7 +126,7 @@ async function run(method) {
                     Make the plan
                 </Btn>
             </template>
-            <template v-if="!resource.completed && !resource.data.system">
+            <template v-if="!resource.completed && !resource.data.system && resource.type !== 'trigger'">
                 <Btn small @click="emit('edit')">
                     <Icon name="pencil" :size="12" />
                     Edit

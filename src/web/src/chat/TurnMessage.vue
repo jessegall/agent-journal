@@ -3,7 +3,7 @@ import {openUpdate} from "../state/overlays.js";
 import {meta, types} from "../domain/spec.js";
 import {store} from "../state/store.js";
 import {computed, ref} from "vue";
-import Buttons from "../resource/Buttons.vue";
+import ChoiceCard from "../resource/ChoiceCard.vue";
 import Attachments from "./Attachments.vue";
 import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
@@ -205,7 +205,7 @@ async function drop() {
                 <TurnQuestion :turn="turn" />
             </template>
             <template v-if="turn.type === 'message'">
-                <Buttons :resource="turn" />
+                <ChoiceCard :resource="turn" />
             </template>
             <template v-if="files.length">
                 <Attachments :resource="turn" @grew="emit('grew')" />

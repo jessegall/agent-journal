@@ -6,9 +6,9 @@ import Btn from "../kit/Btn.vue";
 import TextInput from "../kit/TextInput.vue";
 import Dialog from "../kit/Dialog.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
-import {route} from "../route.js";
+import NewTrigger from "./NewTrigger.vue";
 
-const props = defineProps({type: String});
+const props = defineProps({type: String, sequence: {type: Number, default: 0}});
 const emit = defineEmits(["made", "close"]);
 const title = ref("");
 const abstract = ref("");
@@ -69,85 +69,90 @@ async function submit() {
 
 <template>
     <Dialog :title="`New ${meta(type).title.toLowerCase()}`" @close="emit('close')">
-        <form class="new" @submit.prevent="submit">
-            <TextInput
-                :value="title"
-                class="new-title"
-                :placeholder="`${meta(type).title} title`"
-                maxlength="80"
-                autofocus
-                @input="title = $event.target.value"
-            />
-            <TextInput
-                :value="abstract"
-                :placeholder="label(type, 'abstract', 'One short line about it')"
-                maxlength="200"
-                @input="abstract = $event.target.value"
-            />
-            <textarea v-model="brief" :placeholder="label(type, 'brief', 'As long as it needs to be')" rows="10" />
-            <template v-if="detailing">
-                <textarea v-model="details" placeholder="Extra details, as long as they need to be" rows="6" />
-            </template>
-            <template v-if="files.length">
-                <div class="files">
-                    <template v-for="(file, i) in files" :key="file.name + i">
-                        <span class="file">
-                            {{ file.name }}
-                            <Btn class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</Btn>
-                        </span>
-                    </template>
-                </div>
-            </template>
-            <div class="extras">
-                <template v-if="!detailing">
-                    <Btn class="extra" @click="detailing = true">Add details</Btn>
+        <template v-if="type === 'trigger'">
+            <NewTrigger :sequence="sequence" @made="emit('made', $event)" @close="emit('close')" />
+        </template>
+        <template v-else>
+            <form class="new" @submit.prevent="submit">
+                <TextInput
+                    :value="title"
+                    class="new-title"
+                    :placeholder="`${meta(type).title} title`"
+                    maxlength="80"
+                    autofocus
+                    @input="title = $event.target.value"
+                />
+                <TextInput
+                    :value="abstract"
+                    :placeholder="label(type, 'abstract', 'One short line about it')"
+                    maxlength="200"
+                    @input="abstract = $event.target.value"
+                />
+                <textarea v-model="brief" :placeholder="label(type, 'brief', 'As long as it needs to be')" rows="10" />
+                <template v-if="detailing">
+                    <textarea v-model="details" placeholder="Extra details, as long as they need to be" rows="6" />
                 </template>
-                <label class="extra">
-                    Attach files
-                    <input type="file" multiple hidden @change="files = [...files, ...$event.target.files]" />
-                </label>
-            </div>
-            <template v-if="type === 'plan'">
-                <div class="template">
-                    <span class="label">How thorough</span>
-                    <ChoiceList :choices="depths" @pick="depth = $event" />
-                </div>
-            </template>
-            <template v-if="templates.length">
-                <div class="template">
-                    <span class="label">Start from</span>
-                    <ChoiceList :choices="choices" @pick="template = $event" />
-                </div>
-            </template>
-            <template v-if="fields.length">
-                <div class="fields">
-                    <template v-for="f in fields" :key="f.name">
-                        <label class="field">
-                            <span class="label">{{ f.label }}</span>
-                            <template v-if="f.kind === 'choice'">
-                                <ChoiceList
-                                    :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
-                                    @pick="values[f.name] = $event"
-                                />
-                            </template>
-                            <template v-else>
-                                <TextInput
-                                    :value="values[f.name]"
-                                    :type="f.kind === 'number' ? 'number' : 'text'"
-                                    :placeholder="f.default || ''"
-                                    @input="values[f.name] = $event.target.value"
-                                />
-                            </template>
-                        </label>
+                <template v-if="files.length">
+                    <div class="files">
+                        <template v-for="(file, i) in files" :key="file.name + i">
+                            <span class="file">
+                                {{ file.name }}
+                                <Btn class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</Btn>
+                            </span>
+                        </template>
+                    </div>
+                </template>
+                <div class="extras">
+                    <template v-if="!detailing">
+                        <Btn class="extra" @click="detailing = true">Add details</Btn>
                     </template>
+                    <label class="extra">
+                        Attach files
+                        <input type="file" multiple hidden @change="files = [...files, ...$event.target.files]" />
+                    </label>
                 </div>
-            </template>
-            <div class="foot">
-                <span class="error">{{ error }}</span>
-                <Btn @click="emit('close')">Cancel</Btn>
-                <Btn kind="primary" @click="submit">{{ word(type, "create").replace(/^\w/, (c) => c.toUpperCase()) }}</Btn>
-            </div>
-        </form>
+                <template v-if="type === 'plan'">
+                    <div class="template">
+                        <span class="label">How thorough</span>
+                        <ChoiceList :choices="depths" @pick="depth = $event" />
+                    </div>
+                </template>
+                <template v-if="templates.length">
+                    <div class="template">
+                        <span class="label">Start from</span>
+                        <ChoiceList :choices="choices" @pick="template = $event" />
+                    </div>
+                </template>
+                <template v-if="fields.length">
+                    <div class="fields">
+                        <template v-for="f in fields" :key="f.name">
+                            <label class="field">
+                                <span class="label">{{ f.label }}</span>
+                                <template v-if="f.kind === 'choice'">
+                                    <ChoiceList
+                                        :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
+                                        @pick="values[f.name] = $event"
+                                    />
+                                </template>
+                                <template v-else>
+                                    <TextInput
+                                        :value="values[f.name]"
+                                        :type="f.kind === 'number' ? 'number' : 'text'"
+                                        :placeholder="f.default || ''"
+                                        @input="values[f.name] = $event.target.value"
+                                    />
+                                </template>
+                            </label>
+                        </template>
+                    </div>
+                </template>
+                <div class="foot">
+                    <span class="error">{{ error }}</span>
+                    <Btn @click="emit('close')">Cancel</Btn>
+                    <Btn kind="primary" @click="submit">{{ word(type, "create").replace(/^\w/, (c) => c.toUpperCase()) }}</Btn>
+                </div>
+            </form>
+        </template>
     </Dialog>
 </template>
 

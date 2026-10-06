@@ -2,12 +2,12 @@
 import {ref, watch} from "vue";
 import TextInput from "./TextInput.vue";
 
-const props = defineProps({value: {type: String, default: ""}, placeholder: {type: String, default: ""}});
+const props = defineProps({value: {type: String, default: ""}, placeholder: {type: String, default: ""}, select: {type: Boolean, default: true}});
 const emit = defineEmits(["done", "cancel"]);
 const name = ref(props.value);
 const field = ref(null);
 
-watch(field, (input) => input && input.$el.select());
+watch(field, (input) => props.select && input && input.$el.select());
 
 let finished = false;
 

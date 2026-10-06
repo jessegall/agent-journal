@@ -74,3 +74,14 @@ def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
     cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
     assert (cards, [n for n in nudges(record) if "no greeting" in n] != []) == ([("Trigger no greeting caught a denied word in the agent's message", "danger")], True), \
         "a denied word in the agent's own chat is marked and the agent is told"
+
+
+def test_deleting_a_trigger_sets_the_sequences_it_starts_back_to_by_hand():
+    from features.sequences.controller import Sequences
+    record = fresh()
+    triggers = Triggers(record, actor="system")
+    sequences = Sequences(record, actor="system")
+    trigger = triggers.create("release", **{"words": ["release"], "does": "start"})
+    made = sequences.create("Release checklist", starts_on=f"trigger:{trigger.n}")
+    triggers.delete(trigger.n)
+    assert sequences.load(made.n).data["starts_on"] == "", "a sequence never points at a trigger that is gone"
