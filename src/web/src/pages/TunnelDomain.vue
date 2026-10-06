@@ -3,7 +3,7 @@ import {ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 
-const props = defineProps({domain: {type: String, required: true}});
+const props = defineProps({domain: {type: String, required: true}, own: {type: Boolean, default: false}});
 const emit = defineEmits(["released"]);
 const asking = ref(false);
 const busy = ref(false);
@@ -13,7 +13,12 @@ async function release() {
     busy.value = true;
     failure.value = "";
     try {
-        emit("released", await api.tunnelRelease(props.domain));
+        if (props.own) {
+            await api.tunnelReaddress();
+            emit("released", await api.tunnelDomains());
+        } else {
+            emit("released", await api.tunnelRelease(props.domain));
+        }
     } catch (e) {
         failure.value = e.message;
     } finally {
@@ -26,13 +31,23 @@ async function release() {
 <template>
     <div class="domain">
         <span class="domain-name">{{ domain }}</span>
-        <template v-if="asking">
+        <template v-if="own">
+            <span class="domain-own">This journal's address</span>
+        </template>
+        <template v-if="asking && own">
+            <span class="domain-ask">
+                Move this journal to a new address? Share links stop working and a paired phone has to be paired again.
+            </span>
+            <Btn small kind="primary" :busy="busy" @click="release">Move</Btn>
+            <Btn small @click="asking = false">Keep</Btn>
+        </template>
+        <template v-else-if="asking">
             <span class="domain-ask">Release it? Anyone can claim it after.</span>
             <Btn small kind="primary" :busy="busy" @click="release">Release</Btn>
             <Btn small @click="asking = false">Keep</Btn>
         </template>
         <template v-else>
-            <Btn small @click="asking = true">Release</Btn>
+            <Btn small @click="asking = true">{{ own ? "Move to a new address" : "Release" }}</Btn>
         </template>
         <template v-if="failure">
             <span class="domain-failure">{{ failure }}</span>
@@ -59,6 +74,11 @@ async function release() {
     font-size: 12.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.domain-own {
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .domain-ask {

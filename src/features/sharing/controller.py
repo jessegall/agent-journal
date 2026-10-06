@@ -15,7 +15,7 @@ from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
 from engine.services import FAILED, UP, log_file, status, want
-from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, moved, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import ADDRESS_REFUSED, KEPT_STATUS, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -27,6 +27,8 @@ NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share
 LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
 ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
 TUNNEL_STOPPED = "The tunnel to this journal keeps stopping. The journal starts it again every few seconds."
+HOST_MISMATCH = "This journal uses the tunler server {saved}, but tunler is logged in to {host}. Log in to {saved} again, so the phone and share links reach this journal."
+OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new address instead: the old one is released once the new one is in use."
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
@@ -169,6 +171,8 @@ class Shares(ShareVisits, SharePages, Controller):
     def _problems(self, standing: TunnelStatus) -> list[str]:
         if unusable := self._unusable(standing):
             return [unusable]
+        if standing["host"] and self._host() != standing["host"]:
+            return [HOST_MISMATCH.format(saved=self._host(), host=standing["host"])]
         if refused_address(log_file(self.record.root, TUNNEL)):
             return [ADDRESS_TAKEN]
         if status(self.record.root, TUNNEL).state == FAILED:
@@ -223,6 +227,8 @@ class Shares(ShareVisits, SharePages, Controller):
     @action
     def release(self, domain: str) -> list[str]:
         self._user_only("release a tunler domain")
+        if domain == self._address():
+            raise Refused(OWN_ADDRESS.format(domain=domain))
         failed = unclaim(domain, self._host())
         if failed:
             raise Refused(failed)
@@ -234,10 +240,14 @@ class Shares(ShareVisits, SharePages, Controller):
         return self._readdress()
 
     def _readdress(self) -> str:
-        name = new_address(self.record.root)
-        moved(log_file(self.record.root, TUNNEL), name)
-        alerts(self.record.root).set(ADDRESS_REFUSED, 0)
-        want(self.record.root, TUNNEL, UP, nonce=time.time())
+        root, host = self.record.root, self._host()
+        old = readable_address(root).get("subdomain", "")
+        name = new_address(root)
+        moved(log_file(root, TUNNEL), name)
+        alerts(root).set(ADDRESS_REFUSED, 0)
+        want(root, TUNNEL, UP, nonce=time.time())
+        if old and f"{old}.{host}" in owned():
+            unclaim(old, host)
         return name
 
     def _user_only(self, what: str) -> None:

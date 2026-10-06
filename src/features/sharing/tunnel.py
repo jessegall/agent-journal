@@ -20,7 +20,6 @@ ADDRESS_REFUSED = "address_refused"
 OWNED = "domain is owned by another user"
 HELD = "409 Conflict"
 MOVED = "the journal moved the tunnel to a new address:"
-STARTED = " inspector: "
 LAST_LINES = 4
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
@@ -53,12 +52,15 @@ def subdomain(root: Path) -> str:
     return kept.get("subdomain") or addressed(root, kept)
 
 
-def new_address(root: Path) -> str:
+def readable_address(root: Path) -> dict:
     try:
-        kept = kept_address(root)
+        return kept_address(root)
     except Refused:
-        kept = {}
-    return addressed(root, {key: value for key, value in kept.items() if key != "subdomain"})
+        return {}
+
+
+def new_address(root: Path) -> str:
+    return addressed(root, {key: value for key, value in readable_address(root).items() if key != "subdomain"})
 
 
 def addressed(root: Path, kept: dict) -> str:
@@ -70,20 +72,19 @@ def addressed(root: Path, kept: dict) -> str:
 
 def last_lines(log: Path) -> list[str]:
     try:
-        latest_run = log.read_text(errors="ignore").split(MOVED)[-1].split(STARTED)[-1]
+        return log.read_text(errors="ignore").split(MOVED)[-1].splitlines()[-LAST_LINES:]
     except OSError:
         return []
-    return latest_run.splitlines()[-LAST_LINES:]
+
+
+def refused_address(log: Path) -> bool:
+    return any(OWNED in line for line in last_lines(log))
 
 
 def moved(log: Path, name: str) -> None:
     log.parent.mkdir(parents=True, exist_ok=True)
     with log.open("a") as written:
         written.write(f"{MOVED} {name}\n")
-
-
-def refused_address(log: Path) -> bool:
-    return any(OWNED in line for line in last_lines(log))
 
 
 def held_by_server(log: Path) -> bool:

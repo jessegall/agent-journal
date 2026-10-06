@@ -196,6 +196,10 @@ def phones_live(root) -> bool:
     return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM)._live())
 
 
+def phones_paired(root) -> bool:
+    return Phones(Record(root, runtime.env(root)), actor=SYSTEM)._active() is not None
+
+
 def phones_told(shares) -> None:
     Phones(shares.record, actor=SYSTEM)._notify()
 

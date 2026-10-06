@@ -22,6 +22,10 @@ def open_shares(root: Path) -> list:
             and not ended(row["completed"], row.get("expires"))]
 
 
+def links_open(root: Path) -> bool:
+    return bool(open_shares(root))
+
+
 def why_idle(root: Path) -> str:
     from features import running
     from features.sharing.feature import SharingFeature
