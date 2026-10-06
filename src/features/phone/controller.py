@@ -77,6 +77,9 @@ class Phones(Controller):
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")
         if int(days) not in DAYS:
             raise Refused(f"a phone stays connected for {', '.join(map(str, DAYS))} days, not {days}")
+        address = Shares(self.record, actor=SYSTEM)._address()
+        if not address:
+            raise Refused("a phone connects through the tunnel address, and this journal has none yet: log tunler in under Settings, Sharing, then connect again")
         active = self._active()
         if active is not None:
             raise Refused(f"{active.title} is connected: stop that session first, one phone at a time")
@@ -87,7 +90,6 @@ class Phones(Controller):
         short = "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
         made = super().create("A phone, not yet connected", environment=self.record.env, code=hashed(code), short=hashed(short),
                               code_until=time.time() + CODE_SECONDS, days=int(days))
-        address = Shares(self.record, actor=SYSTEM)._address()
         return Code(n=made.n, link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", code_until=made.code_until, address=address)
 
     def _pair(self, code: str, device: str) -> tuple[Phone, str] | None:
@@ -175,9 +177,12 @@ class Phones(Controller):
         phone = self._active()
         if phone is None or phone.push is None:
             return
+        address = Shares(self.record, actor=SYSTEM)._address()
+        if not address:
+            return
         owed = [item["ref"] for item in waiting(self._home(phone), phone)]
         if set(owed) - set(phone.pushed):
-            send(Keys.kept(self.record.root), phone.push, f"https://{Shares(self.record, actor=SYSTEM)._address()}")
+            send(Keys.kept(self.record.root), phone.push, f"https://{address}")
         if owed != phone.pushed:
             super().update(phone.n, pushed=owed)
 
