@@ -4,6 +4,36 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.252.0 — the overnight refactor lands, and the phone tunnel keeps itself up
+
+**This release brings the overnight refactor into main**: everything listed under 2.251.0 and 2.250.0 below, released
+together with the work of the last day.
+
+**The phone tunnel works out of the box and repairs itself.** A failed tunnel is retried forever with a capped backoff,
+and one bad service never stops the others. The tunnel is watched by the share server, which asks the address for its
+own marker, so a tunler page answering for an empty address no longer counts as healthy. It restarts within seconds
+after sleep or a network change, and a journal upgrade no longer restarts it. A wedged worker hands the services to
+another after 30 seconds. The address is checked once for each machine and tunler account: one this account owns or a
+phone relies on is kept, anything else is replaced without a word, and a copy on another machine gets an address of its
+own. Logging in settles the address and starts the tunnel, logging out stops it, and a login the server no longer
+accepts says so. `sharing.json` is kept with a backup and repaired from it. tunler is found in the usual install folders,
+an install is checked before it replaces a working one, and an old tunler, a binary macOS stops or missing certificates
+are named with their fix. The phone dialog says Connected the moment a phone pairs; when it cannot connect, it names one
+cause, with Restart the tunnel and Update tunler.
+
+**Settings has a Services tab** listing what the journal keeps running, and every place in the viewer is named in plain
+dashboard words: Agent, Memory, Chat, Sessions, Rules, Results, Inbox, Needs you.
+
+**The agent keeps going.** Once only blocked rows are left in a plan's phase, the rows of every later phase are offered,
+and a choice you delegated is decided rather than asked. A failing check reaches the agent even while it waits on
+something else, and is told again only when what it reports changes. A to-do named in the agent's reply to your message
+is linked to that message, and one filed but left unlinked is pointed out.
+
+**Also in this release**: Codex gets Enter-always-sends, its own subagents and the hooks question; a Codex model that
+lists no effort no longer fails; `journal sequence next` names the step that follows; a GitHub issue counts as answered
+only when its last comment is the maintainer's; a shell command with a quoted command substitution no longer raises in
+the hooks.
+
 ## 2.251.0 — one job per module
 
 **The codebase is refactored so each module does one job, and each kind of operation has one funnel.** The CLI and HTTP
