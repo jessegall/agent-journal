@@ -24,8 +24,11 @@ LOOK_EVERY = 10.0
 
 
 def web_remote(url: str) -> str:
-    if url.startswith("git@") or (url.startswith("ssh://") and "@" in url):
-        url = f"https://{url.removeprefix('ssh://').split('@', 1)[-1].replace(':', '/', 1)}"
+    if url.startswith("ssh://") and "@" in url:
+        host, _, path = url.removeprefix("ssh://").split("@", 1)[-1].partition("/")
+        url = f"https://{host.split(':', 1)[0]}/{path}"
+    elif url.startswith("git@"):
+        url = f"https://{url.split('@', 1)[-1].replace(':', '/', 1)}"
     url = url.removesuffix(".git").rstrip("/")
     host = url.split("://", 1)[-1].split("/", 1)[0]
     return url if url.startswith("https://") and host in WEB_HOSTS else ""
