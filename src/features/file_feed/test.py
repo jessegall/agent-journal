@@ -76,6 +76,19 @@ def test_a_deleted_file_is_one_line_with_its_removed_count():
     project.changed()
     card = edits_since(project.record, project.agent, 0, PAGE).edits[0]
     assert (card.kind, card.removed, card.rows) == ("deleted", 3, ()), "a deleted file carries no diff rows"
+    from features.file_feed import diff as diffing
+    long = diffing.Diff.between([], [f"line {i}" for i in range(diffing.MOST_ROWS + 25)])
+    assert (len(long.rows), long.rows[-1].kind, long.added) == (diffing.MOST_ROWS + 1, "fold", diffing.MOST_ROWS + 25), "a very long change shows its first rows and says how many more there are"
+    diffing.DIFFS.clear()
+    diffing.DIFFS.update({("a", "b"): long, ("c", "d"): long})
+    real = diffing.MOST_DIFFS
+    diffing.MOST_DIFFS = 1
+    try:
+        diffing.diffed(project.root, [])
+        assert list(diffing.DIFFS) == [("c", "d")], "the oldest diffs are dropped once too many are kept"
+    finally:
+        diffing.MOST_DIFFS = real
+        diffing.DIFFS.clear()
 
 
 def test_a_change_made_while_work_is_open_is_counted_on_that_work():
@@ -113,6 +126,13 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (served.code, served.body["text"]) == (200, "1\n"), "the viewer's request for an edited file is served whole"
     assert asked({"id": older.edits[0].id, "side": "sideways"}).code == 400, "a side that is neither before nor after is refused"
     assert asked({"id": "no-such-edit", "side": Side.AFTER}).code == 404, "an edit nobody made is not found"
+    import features.file_feed.feed as feeding
+    kept = feeding.blob_texts
+    feeding.blob_texts = lambda project, shas: {}
+    try:
+        assert asked({"id": older.edits[0].id, "side": Side.AFTER}).code == 404, "an edit whose file is no longer kept in git is not found either"
+    finally:
+        feeding.blob_texts = kept
     listed = dispatch("GET", f"/api/{project.record.env}/agent/{project.agent}/edits/older", project.record.root, {"before": str(newest.edits[0].at), "last": "2"}, {})
     assert (listed.code, len(listed.body["edits"])) == (200, 1), "the older page is served as the viewer asks for it"
 

@@ -61,6 +61,10 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     collection = CONTROLLERS["collection"](record, actor=USER).create("Keep")
     assert refused(lambda: CONTROLLERS["collection"](record, actor=USER).add(collection.n, [f"sequence:{filing['n']}"])) == \
         f"sequence:{filing['n']} ships with the journal and cannot be put in a collection", "nor collected"
+    from features.sequences.shipped import retire
+    from resources.base import SYSTEM
+    retire(CONTROLLERS["sequence"](record, actor=SYSTEM), {shipped.title for shipped in shipped_sequences()} - {"Sort dumped files"})
+    assert sequences.load(filing["n"]).deleted, "a sequence the journal no longer ships is taken away on upgrade, and the ones it still ships stay"
 
 
 def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refused():

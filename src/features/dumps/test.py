@@ -30,6 +30,8 @@ def test_a_dump_is_read_and_filed_item_by_item_and_closes_when_every_item_is_set
     agent.failed(dump.n, "notes.md", "the file is empty")
     closed = agent.load(dump.n)
     assert (bool(closed.completed), closed.outcome) == (True, "1 filed, 1 failed"), "the last settled item closes the dump"
+    assert agent.items(dump.n)[1] == "notes.md: failed - the file is empty", "an item that failed says why in the list"
+    assert refused(lambda: agent.log(dump.n, "Adding files")) == f"dump {dump.n} is closed", "a closed dump takes no more of the agent's progress lines"
     assert refused(lambda: dumps.attach(dump.n, str(dropped))) == f"dump {dump.n} is already filed: start a new dump for more", \
         "more can be dropped only while a dump is still filing"
 

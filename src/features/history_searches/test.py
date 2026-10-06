@@ -61,6 +61,12 @@ def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache
     transcript.write_text(entry("the first word!") + entry("and more of them"))
     assert [turn.text for turn in claude.turns(transcript)][0] == "the first word!", "one replaced at a size it had before is read again too"
     assert "engine.transcript" in SHAPED_BY and code_mark(), "the cache is keyed on the code that shapes a turn, so an upgrade never reads old turns"
+    from providers.transcript_cache import TranscriptCache
+    blocked = tmp_path / "a-file-not-a-folder"
+    blocked.write_text("")
+    cache = TranscriptCache(blocked)
+    assert (cache.write(("a",), 1, "state"), cache.recent(tmp_path / "gone.jsonl", lambda raw: raw), cache.before(tmp_path / "gone.jsonl", 10, 5)) == (None, [], b""), \
+        "a cache that cannot be written, and a transcript that is gone, leave nothing and fail nothing"
 
 
 def test_the_conversation_a_summary_replaced_and_your_own_words_are_read_back(capsys):
@@ -118,6 +124,9 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     from datetime import datetime, timezone
     from controllers.types import Agents
     from providers.jsonl import complete_lines, parsed
+    from features.history_searches.handlers import searches
+    assert searches("journal 'search never closed") == [], "a command line that cannot be split is no search"
+    from providers.claude import Claude
     from providers.turns import last_text, last_turn, read_transcripts, turns
     from resources.base import SYSTEM
     from tests.conftest import fresh
@@ -140,6 +149,50 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     assert (turns(nobody), last_turn(nobody), last_text(nobody)) == ([], None, ""), "an agent with no transcript has no turns and no last word"
     agents.update(row.n, transcript=str(tmp_path / "gone.jsonl"))
     assert turns(agents.load(row.n)) == [], "a transcript that was removed has no turns"
+    pick = [{"question": "Pick one?", "options": [{"label": "A"}, {"label": "B"}]}, {"question": "Why?"}]
+    assistant_line = lambda *blocks, **more: {"type": "assistant", "timestamp": stamp, "message": {"content": list(blocks)}, **more}
+    user_line = lambda content, **more: {"type": "user", "timestamp": stamp, "message": {"content": content}, **more}
+    conversation = tmp_path / "claude-3.jsonl"
+    conversation.write_text("".join(json.dumps(line) + "\n" for line in (
+        assistant_line({"type": "tool_use", "id": "q1", "name": "AskUserQuestion", "input": {"questions": pick}}),
+        user_line([{"type": "tool_result", "tool_use_id": "q1", "content": "A"}]),
+        user_line("hi from a peer", origin={"kind": "peer", "from": "uds:abc", "name": "nina", "body": "the peer's own words"}),
+        assistant_line({"type": "tool_use", "id": "s1", "name": "SendMessage", "input": {"to": "nina", "message": "hello nina"}}),
+        user_line("first try", parentUuid="p1"), user_line("second try", parentUuid="p1"),
+        {"type": "assistant", "isSidechain": True, "timestamp": stamp, "message": {"content": [{"type": "text", "text": "hidden"}]}},
+        {"type": "progress", "timestamp": stamp})))
+    seen = Claude().turns(conversation)
+    assert "asked: Pick one?  [A / B]\nasked: Why?" in seen[0].text, "a question the agent put to you is read as words, with the choices it offered"
+    assert (seen[1].kind, seen[1].who) == ("human", "user"), "what answers that question is your answer, not a tool's result"
+    assert (seen[2].peer.name, seen[2].text) == ("nina", "the peer's own words"), "a line another session sent is read with who sent it, in the sender's words"
+    assert (seen[3].kind, seen[3].peer.address, seen[3].text) == ("peer", "nina", "hello nina"), "a message the agent sent to a peer is read as sent"
+    assert [t.kind for t in seen[4:]] == ["superseded", "human"], "a line typed again under the same parent replaces the first try"
+    assert len(seen) == 6, "a subagent's own rows and rows that say nothing are left out"
+    listed = tmp_path / "claude-4.jsonl"
+    listed.write_text(json.dumps(user_line([{"type": "tool_result", "tool_use_id": "z", "content": [{"type": "text", "text": "a result in parts"}, "stray", {"type": "text", "text": "and more"}]}])) + "\n")
+    assert [turn.text for turn in Claude().turns(listed)] == ["a result in parts\nand more"], "a tool's result given in parts is read as one text"
+    quiet = tmp_path / "claude-5.jsonl"
+    quiet.write_text("not a row at all\n" + "".join(json.dumps(line) + "\n" for line in (
+        assistant_line({"type": "thinking", "thinking": "weighing it up"}), user_line("a summary of the earlier conversation", isCompactSummary=True))))
+    assert (Claude().turns(quiet)[0].kind, len(Claude().turns(quiet))) == ("summary", 1), "a turn of nothing but thinking is not shown, and the summary that replaces an earlier conversation is"
+    thinking = tmp_path / "claude-6.jsonl"
+    thinking.write_text("not a row at all\n" + json.dumps(assistant_line({"type": "thinking", "thinking": "weighing it up"}, {"type": "tool_use", "id": "t1", "name": "Read", "input": {}})) + "\n")
+    assert Claude().thoughts(thinking, 0)[0] == [("thinking", "weighing it up")], "a line that is no row is passed over when reading what the agent thought"
+    assert "shell_rows" in Claude().crew(quiet), "a transcript that starts over with a summary is read for its crew from there"
+    from providers.codex import Codex
+    item = lambda kind, **more: {"type": "response_item", "timestamp": stamp, "payload": {"type": kind, **more}}
+    rollout = tmp_path / "rollout-2026-10-02T10-00-00-aaaaaaaa-0000-0000-0000-000000000009.jsonl"
+    rollout.write_text("".join(json.dumps(line) + "\n" for line in (
+        item("message", role="assistant", content=[{"type": "output_text", "text": "Built it."}]),
+        item("message", role="user", content=[{"type": "input_text", "text": "  "}]),
+        item("message", role="system", content=[{"type": "input_text", "text": "rules"}]),
+        item("function_call", name="exec", call_id="c1", arguments="{}"),
+        item("function_call_output", call_id="c1", output="done"),
+        item("reasoning", summary=[]),
+        {"type": "event_msg", "timestamp": stamp, "payload": {"type": "task_started"}})))
+    heard = Codex().turns(rollout)
+    assert [(turn.who, turn.text) for turn in heard if turn.text] == [("agent", "Built it."), ("tool", "done")], \
+        "a Codex rollout is read as what the agent wrote and what its tools returned, leaving out blank lines, system text, reasoning and events"
     agents.update(row.n, transcript=str(transcript), status="working")
     read_transcripts(record.root)
 
@@ -169,3 +222,5 @@ def test_a_provider_that_knows_nothing_extra_answers_neutrally(tmp_path):
     assert (bare.conversation_file("c"), bare.subagent_transcript(path, "s"), bare.is_subagent(object()), bare.thoughts(path, 7), bare.skill_load("journal")) == (None, None, False, ([], 7), "Skill: journal"), \
         "it finds no conversation file or subagent, no thoughts, and names a loaded skill plainly"
     assert bare.commands_for("effort", "high", "m") == [], "one with no controls types nothing to choose an effort"
+    assert (bare.dispatch_model("m"), bare.skills(None), bare.skills(tmp_path / "gone.jsonl"), bare.hook_files(tmp_path)) == ("m", [], [], [bare.config(tmp_path)]), \
+        "it dispatches the model it was given, finds no skills loaded without a transcript, and keeps its hooks in the one file"

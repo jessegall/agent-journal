@@ -84,6 +84,14 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     todos = Todos(record, actor=SYSTEM)
     one, two = todos.create("one"), todos.create("two")
     assert "has no open question" in refused(lambda: todos.answer(one.n, "x")), "answering a to-do with no question is refused"
+    todos.ask(one.n, "Which way?")
+    assert todos.answer(one.n, "this way").completed, "an answer closes the question a to-do waits on"
+    assert "has no open question" in refused(lambda: todos.answer(one.n, "again")), "and a question already answered is not answered twice"
+    from types import SimpleNamespace
+    assert todos.waits(SimpleNamespace(after=["nothing:1", "todo:99999"])) == [], "something a to-do waits on that cannot be found is no longer waited on"
+    handed = SimpleNamespace(type="todo", completed=False, pending=True, assigned="helper:7")
+    assert (todos.mark(handed), todos.mark(SimpleNamespace(type="plan"))) == ("  [done by helper 7, waits for its merge]", ""), \
+        "a to-do a helper finished says it waits for its merge, and a row of another kind is not marked"
     assert "waits on another to-do" in refused(lambda: todos.after(one.n, "banana")), "a to-do waits on a to-do or a plan"
     todos.after(two.n, one.n)
     assert todos.mark(todos.load(two.n)).startswith("  [waits on"), "a to-do that waits says on what"
@@ -112,6 +120,46 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     User(record).notify(event)
     System(record).notify(event)
     assert (User(record).cursor(), System(record).cursor()) == (event.id, event.id), "the person's and the system's events are marked as handled"
+    from controllers.features import setting_value
+    from controllers.types import Agents, Features
+    assert "name the task to stop" in refused(lambda: Agents(record, actor=SYSTEM).stop_task(1, " ")), "stopping a task needs its name"
+    assert Agents(record, actor=SYSTEM)._shared("claude-77").title == "claude-77", "a session the journal has not met is made as stopped when it is first asked for"
+    assert "has settings" in refused(lambda: Features(record, actor=SYSTEM).configure("nothing", "k", "v")), "a feature that does not exist has no settings to set"
+    assert "has no setting" in refused(lambda: Features(record, actor=SYSTEM).configure("sharing", "nokey", "v")), "a setting the feature lacks is refused with the ones it has"
+    assert (setting_value("3"), setting_value("[1]"), setting_value("plain")) == (3, "[1]", "plain"), "a setting is read as a number or switch when it is one, and otherwise as the text given"
+    from controllers.types import Notices, Works
+    from resources.base import check_title
+    from resources.shapes import check, typed as shaped_value
+    assert "calls that processed" in refused(lambda: Messages(record, actor=AGENT).method("complete")), "a message is closed with the word it has for it, not the general one"
+    quoting = Messages(record, actor=USER).create("An old quote and new words", brief="> an old quote\n\nthe new words\nsecond line")
+    assert Messages(record, actor=AGENT)._quoted(quoting.n) == "> the new words\n> second line", "a reply quotes what was written, without the quotes already in it"
+    assert Notices(record, actor=SYSTEM)._damaged("todo/1.md", "bad") is None, "a notice board has nothing to say about a damaged row of its own"
+    finished = Todos(record, actor=AGENT).create("already finished")
+    Todos(record, actor=AGENT).complete(finished.n, "done")
+    assert "is already done" in refused(lambda: Works(record, actor=AGENT).create("working on it", todo=finished.n)), "work is not opened on a row that is done"
+    assert (shaped_value("[broken"), shaped_value("2.5"), isinstance(check("p", "number", "high"), (int, float))) == ("[broken", 2.5, True), \
+        "text that only looks like a list stays text, and a named priority is a number"
+    assert "a title is required" in refused(lambda: check_title("   ")), "a title of nothing is refused"
+    from controllers.stored import INDEXED, STAMPED, SUMMARIES
+    hurt = Todos(record, actor=AGENT).create("a row that will be damaged")
+    Todos(record, actor=SYSTEM).path(hurt.n).write_text("this is not a row")
+    STAMPED.clear()
+    INDEXED.clear()
+    SUMMARIES.clear()
+    from engine.record import Record
+    listed = [row["n"] for row in Todos(Record(record.root, record.env), actor=SYSTEM).rows.summaries()]
+    assert hurt.n not in listed and listed, "a row file that cannot be read is left out of the list, and the rest still list"
+    assert any("could not be read" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), "and the damage is filed for the user"
+    import controllers.discussion as discussion
+    faces = Messages(record, actor=AGENT)
+    liked = Messages(record, actor="user").create("a message to like")
+    faces.react(liked.n, "👍")
+    window = discussion.TWICE_WITHIN
+    discussion.TWICE_WITHIN = 0
+    try:
+        assert faces.react(liked.n, "👍") is None, "a face given again after a while takes the reaction back"
+    finally:
+        discussion.TWICE_WITHIN = window
     warm(record.root)
 
 
