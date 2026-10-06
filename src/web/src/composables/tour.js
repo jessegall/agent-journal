@@ -29,6 +29,13 @@ export function useTour(steps, menu) {
         requestAnimationFrame(measure);
     }
 
+    const covered = () => Boolean(document.querySelector(".dialog, .veil"));
+
+    function attempt() {
+        if (covered()) waiting = setTimeout(attempt, START_AFTER);
+        else start();
+    }
+
     function start() {
         go(0);
         follow();
@@ -49,7 +56,7 @@ export function useTour(steps, menu) {
     watch(
         settingsLoaded,
         (loaded) => {
-            if (loaded && !viewerSetting(KEY, false) && step.value < 0) waiting = setTimeout(start, START_AFTER);
+            if (loaded && !viewerSetting(KEY, false) && step.value < 0) waiting = setTimeout(attempt, START_AFTER);
         },
         {immediate: true}
     );
