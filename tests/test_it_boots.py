@@ -504,3 +504,38 @@ def test_a_supervisor_relays_the_agent_resizes_it_heals_a_crashing_worker_and_le
         f"a worker that crashes at once is healed and started again, and one that exits to stop ends the agent: {done.stdout}{done.stderr}"
     assert (b"hello from the agent" in (session / "printed").read_bytes(), (shape["rows"], shape["cols"])) == (True, (40, 120)), "what the agent prints is relayed and a headless agent has a fixed size"
     assert ((tmp_path / "ended").is_file(), subprocess.run(["kill", "-0", str(pid)], capture_output=True).returncode != 0) == (True, True), "the journal is told the agent ended and no agent process is left"
+
+
+def test_feature_rows_are_seated_again_only_when_the_features_or_environments_change(monkeypatch):
+    import features
+    from controllers.types import Features
+    from engine.record import Record
+    record = fresh("main")
+    features.load(record.root)
+    assert Features(record, actor=SYSTEM).rows.summaries(), "a new journal's environment gets its feature rows"
+    seated = []
+    monkeypatch.setattr(features, "seat", seated.append)
+    features.SEATED.clear()
+    features.load(record.root)
+    assert seated == [], "a process that starts on a journal whose features and environments are as seated seats nothing"
+    Record(record.root, "other").home.mkdir(parents=True)
+    features.SEATED.clear()
+    features.load(record.root)
+    assert seated == [record.root], "a new environment is seated"
+
+
+def test_old_feature_names_are_renamed_in_settings_gates_and_triggers_in_one_pass():
+    import features
+    from engine.stored import read_json, write_json
+    record = fresh("main")
+    session = record.root / "runtime" / "sessions" / "claude-1"
+    session.mkdir(parents=True)
+    write_json(record.home / "settings.json", {"features": {"questions": False, "questions.hold": 5}})
+    write_json(session / "gate-main.json", {"questions": {"why": "held"}})
+    write_json(session / "trigger-questions.json", {"at": 1})
+    features.RENAMED.clear()
+    features.load(record.root)
+    assert read_json(record.home / "settings.json", dict, {})["features"] == {"ask_questions": False, "ask_questions.hold": 5}, \
+        "a switch and a setting under an old feature name move to its new name"
+    assert (read_json(session / "gate-main.json", dict, {}), (session / "trigger-ask_questions.json").is_file()) == \
+        ({"ask_questions": {"why": "held"}}, True), "a session's held writes and triggers follow the new name too"
