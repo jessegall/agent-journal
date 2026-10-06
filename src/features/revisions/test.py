@@ -123,7 +123,7 @@ def test_old_designs_and_loose_revision_files_become_docs_and_inner_revisions(tm
     assert move_revisions(tmp_path) == "0 revisions moved inside their docs; 0 files point at the docs now", "a record without docs moves nothing"
 
 
-def test_upgrades_restore_feature_switches_from_the_old_settings_and_switch_back_on_what_one_turned_off():
+def test_upgrades_restore_feature_switches_from_the_old_settings_and_switch_back_on_what_one_turned_off(monkeypatch):
     import json
     from migrations.m0006_feature_rows import run as rows_from_settings
     from migrations.m0013_revisions_on import run as revisions_on
@@ -140,6 +140,7 @@ def test_upgrades_restore_feature_switches_from_the_old_settings_and_switch_back
     assert features.on("revisions"), "the revisions row is on"
     assert revisions_on(record.root) == "revisions switched back on in 0 environments", "revisions already on is left alone"
     assert back_on(record.root) == "no feature was switched off by an upgrade", "nothing marked missing means nothing to restore"
+    monkeypatch.setattr("controllers.base.time.time", lambda: 1_000_000.5)
     features.switch("old_two", False)
     features.update(features.rows.every()[0].n, missing=True)
     assert back_on(record.root) == "switched back on: t:old_two", "a feature switched off in the same moment as one marked missing is switched back on"
