@@ -60,6 +60,8 @@ def refusal(dispatch, cartoon: bool = False) -> str:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
     if dispatch.model_supported and not dispatch.model:
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
+    if not dispatch.offers_model():
+        return f"{dispatch.model} is not a model this account offers. Choose one of {', '.join(dispatch.models)}."
     if dispatch.name_supported and not NAMED.match(dispatch.description):
         return f"Journal law L5 requires a name on every subagent dispatch. {NAMING[cartoon]}"
     return ""

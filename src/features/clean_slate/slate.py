@@ -38,6 +38,11 @@ def others(project: Path, agent: str) -> list[Path]:
     return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, dict, {})) != read_json(f, dict, {})]
 
 
+def held(record: Record, project: Path, agent: str) -> list[dict]:
+    files = {str(f) for f in PROVIDERS[agent]().hook_files(project)}
+    return [m for m in moved(record) if m["from"] in files]
+
+
 def kept(settings) -> dict:
     if not isinstance(settings, dict) or not isinstance(settings.get("hooks"), dict):
         return settings
@@ -47,23 +52,23 @@ def kept(settings) -> dict:
 
 def set_aside(record: Record, project: Path, agent: str) -> str:
     put_back(record)
-    if moved(record):
+    already = moved(record)
+    hooks = [f for f in others(project, agent) if str(f) not in {m["from"] for m in already}]
+    if not hooks and held(record, project, agent):
         return "the other hooks are already set aside until the journal stops"
-    hooks = others(project, agent)
     folder = place(record)
     folder.mkdir(parents=True, exist_ok=True)
     entries = []
     try:
-        for i, f in enumerate(hooks):
+        for i, f in enumerate(hooks, len(already)):
             to = folder / f"hooks-{i}-{f.name}"
             shutil.copy2(f, to)
             entries.append({"from": str(f), "to": str(to), "copy": True})
             write_json(f, kept(read_json(f, dict, {})), indent=2)
     except Exception as error:
-        keep_moved(record, entries)
-        put_back(record)
+        restore(entries)
         return f"nothing set aside, everything is where it was: {error}"
-    keep_moved(record, entries)
+    keep_moved(record, already + entries)
     remember(record, True)
     return f"set aside the other hooks in {plural(len(hooks), 'file')} until the journal stops"
 
@@ -72,6 +77,20 @@ def put_back(record: Record) -> int:
     if Sessions(record.root).running():
         return 0
     entries = moved(record)
+    restore(entries)
+    if entries:
+        keep_moved(record, [])
+    return len(entries)
+
+
+def put_back_held(record: Record, project: Path, agent: str) -> int:
+    mine = held(record, project, agent)
+    restore(mine)
+    keep_moved(record, [m for m in moved(record) if m not in mine])
+    return len(mine)
+
+
+def restore(entries: list[dict]) -> None:
     for m in entries:
         kept_at, home = Path(m["to"]), Path(m["from"])
         if not (kept_at.exists() or kept_at.is_symlink()):
@@ -82,9 +101,6 @@ def put_back(record: Record) -> int:
             kept_at.unlink()
         elif not (home.exists() or home.is_symlink()):
             shutil.move(str(kept_at), str(home))
-    if entries:
-        keep_moved(record, [])
-    return len(entries)
 
 
 def slate_of(record: Record) -> bool:

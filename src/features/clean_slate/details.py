@@ -25,5 +25,8 @@ class CleanSlateDetails(FeatureDetails):
         they are.
 
         They are put back when the agent exits, when journal stop runs, and at the next launch
-        if the last one ended without putting them back. Enter repeats the last answer.
+        if the last one ended without putting them back. Enter repeats the last answer. When
+        another running session already set them aside, the question still comes, and No puts
+        them back. Claude's hooks live in its settings files, Codex's in ~/.codex/hooks.json
+        and the project's .codex/hooks.json.
     """

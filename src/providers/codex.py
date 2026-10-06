@@ -6,11 +6,11 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
-from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow
+from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
 from providers.base import BackgroundTasks, Provider, SubagentRow, running_and_latest
 from providers.jsonl import last_lines, parsed, rows
 from providers.payload import Dispatch, Hook, ToolCall
-from providers.codex_rows import Chunk, Row
+from providers.codex_rows import Chunk, Payload, Row
 from engine.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import read_json
@@ -62,6 +62,11 @@ class Spawned(Loaded):
     task_name: str = "subagent"
     agent_type: str = ""
     model: str = ""
+
+
+@dataclass(frozen=True)
+class SpawnAnswer(Loaded):
+    task_name: str = ""
 
 
 def arguments_of(raw) -> dict:
@@ -135,6 +140,7 @@ class SpawnedAgent:
     model: str
     session: str
     at: float
+    agent_path: str = ""
 
 
 @dataclass(frozen=True)
@@ -261,9 +267,12 @@ class Codex(Provider):
         return CodexConfig(**found)
 
     def dispatch_model(self, chosen: str) -> str:
-        if chosen in {model.slug for model in self.catalog()}:
+        if chosen in self.models():
             return chosen
         return self.configuration().model or chosen
+
+    def models(self) -> tuple[str, ...]:
+        return tuple(model.slug for model in self.catalog())
 
     @classmethod
     @cache
@@ -319,7 +328,7 @@ class Codex(Provider):
     def dispatch(self, tool) -> Dispatch | None:
         if not isinstance(tool, AgentCall):
             return None
-        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True)
+        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True, models=self.models())
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
@@ -438,8 +447,20 @@ class Codex(Provider):
         return running, 0.0 if running or not found else found.stat().st_mtime
 
     def subagent_row(self, path: Path, spawn: SpawnedAgent) -> dict:
-        running, ended = self.subagent_state(path, spawn.session) if spawn.session else (True, 0.0)
-        return SubagentRow(spawn.session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", spawn.session).to_json()
+        session = spawn.session or self.spawned_session(path, spawn)
+        running, ended = self.subagent_state(path, session) if session else (True, 0.0)
+        return SubagentRow(session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", session).to_json()
+
+    def spawned_session(self, path: Path, spawn: SpawnedAgent) -> str:
+        """The session of a subagent spawned directly whose answer named only its path, found among the rollouts written since."""
+        if not spawn.agent_path:
+            return ""
+        parent = Path(path).stem[-36:]
+        for found in Path(path).parent.parent.glob("*/rollout-*.jsonl"):
+            spawned = self.meta(found).source.subagent.thread_spawn if found.stat().st_mtime >= spawn.at else None
+            if spawned and spawned.parent_thread_id == parent and spawned.agent_path == spawn.agent_path:
+                return found.stem[-36:]
+        return ""
 
     def crew_rows(self, crew: CodexCrew, row: Row) -> CodexCrew:
         if row.type == "compacted":
@@ -450,7 +471,7 @@ class Codex(Provider):
         payload = row.payload
         name, key, script = payload.name, payload.key, payload.argument_text
         is_call = payload.type in ("function_call", "custom_tool_call")
-        if is_call and name.rsplit(".", 1)[-1] in SHELL_TOOLS:
+        if is_call and bare(name) in SHELL_TOOLS:
             crew.pending[key] = script
         if is_call and name == "exec" and SPAWN_IN_SCRIPT.search(script):
             crew.spawning[key] = script
@@ -476,7 +497,8 @@ class Codex(Provider):
         asked = crew.direct.pop(key, None)
         if asked:
             found = SPAWNED.search(output)
-            crew.subagents.append(SpawnedAgent(asked.task_name, asked.agent_type, asked.model, found[1] if found else "", at))
+            crew.subagents.append(SpawnedAgent(asked.task_name, asked.agent_type, asked.model, found[1] if found else "", at,
+                                               SpawnAnswer.from_json(arguments_of(output)).task_name))
         command = crew.pending.pop(key, "")
         cell = CELL_RUNNING.search(output)
         if cell:
@@ -509,9 +531,12 @@ class Codex(Provider):
     def session(self, path: Path | None) -> dict:
         if path is None or not Path(path).is_file():
             return {}
+        return {AgentRow.parent: self.meta(path).parent_thread}
+
+    def meta(self, path: Path) -> Payload:
         with Path(path).open("rb") as source:
             found = next((row for row in rows(source, Row.from_payload) if row.type == "session_meta"), None)
-        return {AgentRow.parent: found.payload.parent_thread} if found else {}
+        return found.payload if found else Payload()
 
     def tool_uses(self, row: Row) -> list[ToolCall]:
         payload = row.payload

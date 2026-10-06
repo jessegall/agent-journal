@@ -34,11 +34,14 @@ class Helpers(Controller):
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
 
     def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False):
-        from providers import DRIVERS
+        from providers import DRIVERS, PROVIDERS
         if provider not in DRIVERS:
             raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
         if not model.strip():
             raise Refused("a helper's model is always named: --model <model>")
+        offered = PROVIDERS[provider]()
+        if not offered.offers(model):
+            raise Refused(f"{provider} does not offer {model}; choose one of {', '.join(offered.models())}")
         slug = slugged(name, limit=30)
         if not slug:
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")
