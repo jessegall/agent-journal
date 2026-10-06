@@ -7,6 +7,7 @@ SEPARATORS = frozenset(";&|()\n")
 PUNCTUATION = "".join(SEPARATORS) + "<>"
 SEPARATED = re.compile("[" + re.escape("".join(SEPARATORS)) + "]+")
 NAMED = re.compile(r"(?:^|(?<=[\s/;&|()'\"`=]))journal(?:\.py)?(?=\s)")
+REDIRECTION = re.compile(r"""("(?:\\.|[^"\\])*"|'[^']*')|(?:(?<!\S)\d+)?(?:&>>?|>>?&?|<<?<?)\s*[^\s;&|()<>"']*""")
 ENDS = re.compile(r"[;&|()\n\"'`]")
 
 
@@ -77,6 +78,7 @@ def tokens(text: str) -> list[str]:
 
 
 def pieces(shell: str) -> list[tuple[str, ...]]:
+    shell = REDIRECTION.sub(lambda found: found.group(1) or " ", shell)
     try:
         return lexed(shell)
     except ValueError:
