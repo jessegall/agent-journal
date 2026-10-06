@@ -125,3 +125,25 @@ def test_a_check_that_runs_out_of_time_says_so():
     last = Checks(record, actor=USER).run(check.n, wait=True).last
     assert (last["ok"], last["output"].splitlines()[0]) == (False, "started"), "the run fails and keeps what the command printed"
     assert "ran out of time: stopped after 1 seconds" in last["output"].splitlines()[-1], "its last line names the time limit, which the failure notice shows"
+
+
+def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_changes():
+    from controllers.types import Agents, Nudges, Works
+    from resources.base import AGENT
+    features.load()
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    works = Works(record, actor=AGENT)
+    works.update(works.create("the long run").n, awaiting="the suite")
+    (record.root.parent / "said").write_text("issue 5 waits\n")
+    checks = Checks(record, actor=USER)
+    check = checks.create("Every issue is answered", command="cat said; exit 1")
+    told = lambda: [n.title for n in Nudges(record, actor=SYSTEM).rows.every() if n.title.startswith(f"check {check.n} failed")]
+    checks.run(check.n, wait=True)
+    assert told() == [f"check {check.n} failed - issue 5 waits"], "a failure reaches the agent while it waits on something else"
+    checks.run(check.n, wait=True)
+    assert len(told()) == 1 and len(open_notices(record)) == 1, "the same failure again is neither filed nor told twice"
+    (record.root.parent / "said").write_text("issue 6 waits\n")
+    checks.run(check.n, wait=True)
+    assert told()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
+        "a failure that reports something else is told again and replaces the one before"

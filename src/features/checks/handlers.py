@@ -6,6 +6,7 @@ from engine.command_runs import CommandRun
 from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceEvent
+from engine.wording import digest
 from features.checks.output import summary
 from providers.payload import HookEvent
 from features.parts import AgentContext, Context, Handler
@@ -37,12 +38,17 @@ class ReportCheckResult(Handler):
         last = check.last_run
         output = last.output
         title = check.failure_title(summary(output) or check.title)
+        filed = [row for row in context.journal.get(Notifications).linked_to(check.ref) if not row.completed]
         if last.ok:
-            for stale in context.journal.get(Notifications).linked_to(check.ref):
-                if not stale.completed:
-                    context.journal.clear(stale, "the check passes again")
+            for stale in filed:
+                context.journal.clear(stale, "the check passes again")
             return
-        context.journal.notify("failing", title=title, output=output if output else "it said nothing", about=check.ref)
+        reported = digest(output, 12)
+        if any(row.data.get("reported") == reported for row in filed):
+            return
+        for stale in filed:
+            context.journal.clear(stale, "the check reports something else now")
+        context.journal.notify("failing", title=title, output=output if output else "it said nothing", about=check.ref, reported=reported)
         speaking = context.to_primary()
         if speaking:
             speaking.agent.say("failed", title=title, n=check.n)
