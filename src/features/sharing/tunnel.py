@@ -19,6 +19,8 @@ TUNNEL_FILE = "sharing.json"
 ADDRESS_REFUSED = "address_refused"
 OWNED = "domain is owned by another user"
 HELD = "409 Conflict"
+MOVED = "the journal moved the tunnel to a new address:"
+STARTED = " inspector: "
 LAST_LINES = 4
 NAME_BYTES = 12
 LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
@@ -68,9 +70,16 @@ def addressed(root: Path, kept: dict) -> str:
 
 def last_lines(log: Path) -> list[str]:
     try:
-        return log.read_text(errors="ignore").splitlines()[-LAST_LINES:]
+        latest_run = log.read_text(errors="ignore").split(MOVED)[-1].split(STARTED)[-1]
     except OSError:
         return []
+    return latest_run.splitlines()[-LAST_LINES:]
+
+
+def moved(log: Path, name: str) -> None:
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("a") as written:
+        written.write(f"{MOVED} {name}\n")
 
 
 def refused_address(log: Path) -> bool:
