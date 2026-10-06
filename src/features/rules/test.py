@@ -140,3 +140,19 @@ def test_a_rule_the_agent_makes_is_sent_back_to_be_read_as_a_ruling_for_the_whol
     assert f"Is rule {made.n} a ruling for the whole project?" in nudges(record), "the agent is asked whether its rule binds every environment"
     Rules(record, actor=USER).create("Never change the git branch", keywords=["git switch"])
     assert len([n for n in nudges(record) if n.startswith("Is rule")]) == 1, "a rule the user makes is not sent back"
+
+
+def test_old_rule_injection_flags_are_folded_into_one_flag_by_the_upgrades():
+    from migrations.m0002_rule_targets import run as targets
+    from migrations.m0003_unify_rule_injection import run as unify
+
+    record = fresh()
+    rules = Rules(record, actor=AGENT)
+    both, plain, claude = (rules.create(title, keywords="word") for title in ("both", "plain", "claude"))
+    for rule, data in ((both, {"injected": True, "injected_codex": True}), (claude, {"injected": True})):
+        rules.update(rule.n, **data)
+    assert targets(record.root) == [both.ref, claude.ref], "only a rule with an old flag is rewritten"
+    assert rules.load(both.n).data["targets"] == ["claude", "codex"] and rules.load(claude.n).data["targets"] == ["claude"], "each old flag becomes a target"
+    assert unify(record.root) == [both.ref, claude.ref], "the targets are folded into one flag again"
+    assert rules.load(both.n).data["injected"] is True and "targets" not in rules.load(both.n).data, "a rule with any target is injected"
+    assert "injected" not in rules.load(plain.n).data, "a rule without any flag stays as it was"

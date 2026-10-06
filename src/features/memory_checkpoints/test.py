@@ -69,3 +69,14 @@ def test_a_fact_rule_or_reminder_the_agent_writes_shows_in_the_chat():
     marks = [(card["label"], card["detail"]) for card in CONTROLLERS["agent"](record).primary().data.get("cards", [])]
     assert marks == [("Wrote a fact", "The server runs the installed copy"), ("Set a reminder", "Log each turn")], \
         "what the agent keeps shows as a mark in the chat; what the user writes needs none"
+
+
+def test_the_last_reread_time_moves_into_the_features_own_state_once():
+    from features.memory_checkpoints.reread import READ_AT, STATE
+    from migrations.m0064_reread_time_in_memory_checkpoints_state import run
+
+    record = fresh()
+    record.set_setting(READ_AT, 123.0)
+    assert run(record.root) == ["t: the last reread of rules and facts moved into memory_checkpoints' state"], "a time kept in settings is moved"
+    assert record.state(STATE).get(READ_AT) == 123.0, "the feature's state now holds the time"
+    assert run(record.root) == [], "a time already moved is not moved again"
