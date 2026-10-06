@@ -55,6 +55,9 @@ function closed() {
                             class="form-input"
                             :placeholder="field.placeholder || ''"
                             :list="field.choices ? `form-${field.key}` : null"
+                            :autocapitalize="field.verbatim ? 'off' : null"
+                            :autocorrect="field.verbatim ? 'off' : null"
+                            :spellcheck="field.verbatim ? 'false' : null"
                         />
                         <template v-if="field.choices">
                             <datalist :id="`form-${field.key}`">

@@ -166,14 +166,14 @@ const answers = computed(() =>
 const ending = computed(() => {
     if (props.row.data.system || ANSWERED.includes(props.row.type)) return [];
     return props.row.completed
-        ? [{key: "reopen", label: "Reopen", sub: "Moves it back to Open", run: reopen}]
+        ? [{key: "reopen", label: "Reopen", sub: "Marks it open again", run: reopen}]
         : [{key: "close", label: closeWord(props.row.type), sub: closeNote(props.row.type), run: close}];
 });
 
 const actions = computed(() => [
     {key: "open", label: "Open", run: () => emit("open", props.row.ref)},
     ...answers.value,
-    ...(props.row.type === "check" ? [{key: "run", label: "Run it now", run}] : []),
+    ...(props.row.type === "check" ? [{key: "run", label: "Run this check now", run}] : []),
     ...(props.row.seen && !props.row.seen.includes("user") ? [{key: "read", label: "Mark as read", run: read}] : []),
     ...(COLLECTABLE.includes(props.row.type) ? [{key: "collect", label: "Add to a collection", run: collect}] : []),
     ...(MOVABLE.includes(props.row.type) && environments.value.length && !props.row.data.system

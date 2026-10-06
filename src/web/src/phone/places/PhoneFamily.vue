@@ -37,7 +37,7 @@ function pick(node) {
 
 <template>
     <template v-if="nodes.length">
-        <CellGroup head="Family tree" :line="line">
+        <CellGroup head="Agents and who started them" :line="line">
             <template v-for="node in nodes" :key="node.id">
                 <Cell
                     :label="nodeLook(node).label"

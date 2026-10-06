@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import PhoneAsk from "./PhoneAsk.vue";
+import FormSheet from "../kit/FormSheet.vue";
 import PhoneGroupRows from "./PhoneGroupRows.vue";
 import PhonePage from "./PhonePage.vue";
 import {groupNamed, loadCatalog, loaded, stopJournal} from "./catalog.js";
@@ -25,14 +25,14 @@ onMounted(() => loaded.value || loadCatalog());
         </template>
     </PhonePage>
     <template v-if="asking === 'stop'">
-        <PhoneAsk
+        <FormSheet
             title="Shut down the journal?"
             sub="The phone cannot reach it until you start it on your computer. Nothing is deleted."
             button="Shut down"
             keep="Keep it running"
             danger
             @close="asking = ''"
-            @done="stopJournal"
+            @submit="stopJournal"
         />
     </template>
 </template>

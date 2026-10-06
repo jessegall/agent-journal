@@ -9,7 +9,7 @@ import ActionSheet from "../kit/ActionSheet.vue";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import {toast} from "../kit/toast.js";
-import PhoneAsk from "./PhoneAsk.vue";
+import FormSheet from "../kit/FormSheet.vue";
 import PhonePage from "./PhonePage.vue";
 import PhonePluginPreview from "./PhonePluginPreview.vue";
 import PhoneTerm from "./PhoneTerm.vue";
@@ -120,12 +120,12 @@ onMounted(load);
         </template>
     </PhonePage>
     <template v-if="asking === 'setup'">
-        <PhoneAsk
+        <FormSheet
             :title="`Run the setup of ${plugin.title} again?`"
             sub="Its settings stay. Its services restart."
             button="Run setup again"
             @close="asking = ''"
-            @done="act('upgrade', {yes: true, again: true}, 'Setup ran again')"
+            @submit="act('upgrade', {yes: true, again: true}, 'Setup ran again')"
         />
     </template>
     <template v-if="asking === 'remove'">

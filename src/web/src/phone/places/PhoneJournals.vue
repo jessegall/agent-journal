@@ -72,7 +72,7 @@ onMounted(load);
             <EmptyList icon="warn" title="The journals did not load" :reason="failed" action="Try again" @act="((failed = ''), load())" />
         </template>
         <template v-for="place in places || []" :key="place.root">
-            <CellGroup :head="headOf(place)" :line="place.running ? place.root : 'Stopped; its viewer is not running'">
+            <CellGroup :head="headOf(place)" :line="place.running ? place.root : 'Stopped. Its viewer is not running.'">
                 <template v-for="name in place.environments" :key="name">
                     <Cell
                         :label="name"
