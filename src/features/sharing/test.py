@@ -469,6 +469,12 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     log.write_text("tunler: connection reset by peer\n")
     stopped = Shares(record, actor=USER).tunnel_cause()
     assert (stopped["cause"], stopped["lines"][-1]) == (controller_words.Cause.STOPPED, "tunler: connection reset by peer"), "a tunnel that is not running shows its last lines"
+    from types import SimpleNamespace
+    monkeypatch.setattr(controller_words, "status", lambda root, sid: SimpleNamespace(state=controller_words.READY))
+    monkeypatch.setattr(controller_words, "versions", lambda host: {"update_available": False})
+    for answering, cause in ((True, controller_words.Cause.OPEN), (False, controller_words.Cause.WAITING)):
+        monkeypatch.setattr(controller_words, "vouched", lambda url, marker, wait, answering=answering: answering)
+        assert Shares(record, actor=USER).tunnel_cause()["cause"] == cause, "a running tunnel is called open only while its address answers"
     assert "only the user" in refused_with(lambda: Shares(record, actor=AGENT).restart_tunnel()), "only the user restarts the tunnel"
 
 
