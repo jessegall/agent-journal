@@ -21,7 +21,8 @@ from controllers.types import Todos
 from engine import bus, heal, locks, runtime, viewer
 from engine.heal import broken
 from engine.package import code_stamp, point
-from engine.sessions import alive, hold_build
+from engine.record import Record
+from engine.sessions import Sessions, alive, hold_build
 from engine.stop import ask
 from engine.stored import append_text, write_text
 from install import STUBS
@@ -955,6 +956,48 @@ print(ZIPPED, ready, reached("stopped"))
 """
     ran = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, timeout=90)
     assert ran.stdout.split() == ["True", "ready", "stopped"], ran.stdout + ran.stderr
+
+
+def test_stopping_the_journal_stops_the_agent_of_every_helper_and_leaves_its_environment_free(tmp_path):
+    root = installed(tmp_path)
+    bin_ = tmp_path / "bin"
+    bin_.mkdir()
+    stand_in = bin_ / "claude"
+    stand_in.write_text(f'#!/bin/sh\necho $$ > "{bin_}/started-$JOURNAL_ENV"\nwhile [ ! -f "{bin_}/quit-$JOURNAL_ENV" ] && [ ! -f "{bin_}/quit-all" ]; do sleep 0.2; done\n')
+    stand_in.chmod(0o755)
+    home = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_HOME": str(tmp_path / "home"), "PATH": f"{bin_}{os.pathsep}{os.environ['PATH']}"}
+    home.pop("JOURNAL_ENV", None)
+    journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
+
+    def running(env: str) -> bool:
+        return alive((bin_ / f"started-{env}").read_text().strip())
+
+    def reached(name: str) -> bool:
+        deadline = time.time() + WAIT
+        while not (bin_ / name).exists() and time.time() < deadline:
+            time.sleep(0.2)
+        return (bin_ / name).exists()
+
+    subprocess.run([*journal, "--env", "main", "todo", "create", "a long job"], cwd=tmp_path / PROJECT, env=home, capture_output=True, timeout=90)
+    main = subprocess.Popen([*journal, "claude"], cwd=tmp_path / PROJECT, env=home, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    try:
+        assert reached("started-main"), "the dispatching session's agent runs"
+        dispatched = subprocess.run([*journal, "--env", "main", "helper", "dispatch", "Hedy", "a long job", "--provider", "claude", "--model", "sonnet", "--todos", "1"],
+                                    cwd=tmp_path / PROJECT, env=home, capture_output=True, text=True, timeout=90)
+        assert reached("started-main-hedy"), f"the helper's agent runs: {dispatched.stdout}{dispatched.stderr}"
+        (bin_ / "quit-main").touch()
+        main.communicate(timeout=WAIT)
+        assert running("main-hedy"), "the helper's agent keeps working after the session that dispatched it ends"
+        subprocess.run([*journal, "stop"], cwd=tmp_path / PROJECT, env=home, capture_output=True, timeout=90)
+        deadline = time.time() + WAIT
+        while running("main-hedy") and time.time() < deadline:
+            time.sleep(0.2)
+        assert (running("main-hedy"), Sessions(root).holder("main-hedy"), Todos(Record(root, "main"), actor=SYSTEM).load(1).assigned) == (False, "", ""), \
+            "stopping the journal stops the helper through its own stop: no agent runs, its environment is free and the to-do it held is given back"
+    finally:
+        (bin_ / "quit-all").touch()
+        main.kill()
+        subprocess.run(["pkill", "-9", "-f", f"{bin_}/claude"], capture_output=True)
 
 
 def menu_in_terminal(*typed) -> tuple[str, int]:

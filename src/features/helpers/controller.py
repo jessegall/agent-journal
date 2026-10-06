@@ -44,6 +44,12 @@ def give_back(record, todos: list[Todo]) -> None:
         listed.unassign(todo.n)
 
 
+def stop_helpers(record: Record) -> list[str]:
+    root = record.root
+    standing = [place for place in Environments(record, actor=SYSTEM).rows.standing() if place.helping and Sessions(root).holder(place.title)]
+    return [Helpers(Record(root, place.launched_from), actor=SYSTEM).stop(place.owned_by(HELPER)) for place in standing]
+
+
 def given_back(todos: list[Todo]) -> str:
     return f"; given back: to-do {', '.join(str(t.n) for t in todos)}" if todos else ""
 

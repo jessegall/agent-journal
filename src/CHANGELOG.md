@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.8 — stopping the journal stops its helpers, and the start screen names a helper's environment
+`journal stop` now stops each helper's agent through the helper's own stop, which also gives back the to-dos it held, before it stops the rest. The start screen lists a helper's environment as `helper <name>` and no longer as `agent working`. A helper still keeps working when the session that dispatched it ends. Nothing to do.
+
 ## 2.253.7 — no git chip shows shell syntax
 A git chip whose path holds `${NAME:?}`, any other `${...}` form, `$(...)` or backticks now shows the path by its last plain component, as `$NAME` already did. Nothing to do.
 
