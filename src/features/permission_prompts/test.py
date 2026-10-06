@@ -61,6 +61,16 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     del driver.last_report
     driver.printed.write_bytes(f"{screen}\r\n\x1b[2m> Ask Codex to do anything\x1b[0m".encode())
     assert driver.asked() is None, "once the prompt is gone, nothing is asked"
+    driver.QUIET = 0.0
+    assert driver.at_prompt() is True, "an agent whose screen ends at its empty prompt is at the prompt"
+    driver.printed.write_bytes(b"esc to interrupt\r\n\x1b[2m> Ask Codex to do anything\x1b[0m\r\nesc to interrupt")
+    assert driver.at_prompt() is False, "and one still busy under it is not"
+    assert launch_args(fresh(), "nobody-we-know", ["--x"]) == ["--x"], "arguments for an agent the journal does not know are left as they are"
+    from pathlib import Path
+    assert (codex.command([], Path.cwd())[:2], codex.command([codex.TRUSTS_HOOKS])[0:2]) == (["codex", codex.TRUSTS_HOOKS], ["codex", codex.TRUSTS_HOOKS]), \
+        "Codex is started trusting the journal's hooks, once, and the folder it is started in"
+    assert any("trust_level" in word for word in codex.command([], Path.cwd())), "and trusting the folder it starts in"
+    assert codex.resumed(["--model", "x"], "") == ["--model", "x"], "with no conversation to carry on, the arguments are as they were"
     from runner.engine import Engine
     from tests.kit import report
     record = driver.record

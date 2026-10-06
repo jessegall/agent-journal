@@ -241,6 +241,9 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     assert "which is gone" in claude.wiring_trouble(project), "a channel whose Python is gone is told so"
     (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": "/bin/echo"}}}))
     assert "not Python 3.10 or newer" in claude.wiring_trouble(project), "a channel whose Python is too old is told so"
+    import sys
+    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": sys.executable}}}))
+    assert claude.wiring_trouble(project) == "", "a channel whose Python runs and is new enough is no trouble"
 
 
 def codex_models(*models) -> list:
@@ -321,3 +324,6 @@ def test_codex_usage_comes_from_the_newest_token_count_and_its_crew_from_the_rol
         "a subagent spawned inside a script is found by its agent id, and its last task event says it finished"
     assert (crew["subagents"], crew["compacting"]) == (1, True), "the rollout ending on a compaction says the agent is compacting"
     assert codex.subagent_state(main, "cccccccc-0000-0000-0000-000000000003") == (True, 0.0), "a subagent whose rollout is not written yet is running"
+    from providers.codex import SpawnedAgent
+    assert (codex.spawned_session(main, SpawnedAgent("scan", "explorer", "m", "", 0.0)), codex.spawned_session(main, SpawnedAgent("scan", "explorer", "m", "", 0.0, "root/scan"))) == ("", ""), \
+        "a subagent that was not given a path, or whose rollout has not been written, is not found among the sessions"

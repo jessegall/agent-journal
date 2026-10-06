@@ -50,6 +50,9 @@ def test_the_templates_instructions_come_before_the_work_for_the_agent():
     plans = Plans(record, actor=USER)
     plans.approve(plan.n)
     plans.start(plan.n)
+    from types import SimpleNamespace
+    from features.templates.instructions import template_of
+    assert template_of(features.FEATURES["templates"].journal.at(record), SimpleNamespace(data={"template": 99999}, type="doc")) is None, "a template that is gone gives no instructions"
     Works(record, actor=AGENT).create("digest research", todo=row.n)
     assert [n.title for n in Nudges(record).all() if n.title.startswith(f"template {flow.n}")], "starting its work tells the agent the instructions"
 

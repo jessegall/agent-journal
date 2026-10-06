@@ -103,7 +103,12 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
     (project / ".claude" / "skills" / "journal" / "SKILL.md").write_text("committed\n")
     for command in (["init", "-q"], ["add", "."], ["-c", "user.email=a@b", "-c", "user.name=a", "commit", "-qm", "skills"]):
         subprocess.run(["git", *command], cwd=project, check=True, timeout=30)
+    for leftover in ("journal-memory", "journal-retired"):
+        (project / ".claude" / "skills" / leftover).mkdir()
+        (project / ".claude" / "skills" / leftover / "SKILL.md").write_text("an old copy\n")
     publish(project, ("claude",))
+    assert ((project / ".claude" / "skills" / "journal-memory").is_symlink(), (project / ".claude" / "skills" / "journal-retired").exists()) == (True, False), \
+        "a folder where a skill is linked is replaced by the link, and a journal skill that no longer exists is taken away"
     kept = project / ".claude" / "skills" / "journal"
     assert (kept.is_symlink(), "committed" in (kept / "SKILL.md").read_text(), (project / ".claude" / "skills" / "journal-todos").is_symlink()) == \
         (False, False, True), "a skill folder git tracks keeps real files, brought up to date; an untracked one is linked"

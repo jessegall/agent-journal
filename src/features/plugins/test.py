@@ -8,10 +8,12 @@ import sys
 import threading
 import time
 import pytest
+from types import SimpleNamespace
 
 from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
 from engine.keeper import ServiceState
+from engine.runtime import folder as runtime_folder
 from engine.services import UP, Manager, allocate, status, status_file, want
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
@@ -108,7 +110,7 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
         path.unlink()
 
 
-def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
+def test_a_guard_that_fails_or_hangs_never_stops_the_agent(monkeypatch):
     broken = alone("broken")
     installed(broken, "broken", "exit 9\n")
     assert writing(broken) == {}, "a guard that crashes lets the write through"
@@ -132,6 +134,28 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
     finally:
         viewer.identity = real
         viewer.SERVING.clear()
+    from features.plugins import queue as lines, run as running
+    assert running.call("true", broken.root.parent / "nowhere", {}, {})[0] is False, "a command that cannot be started is a failure, not a crash"
+    stubborn_ok, stubborn_why = running.call("trap '' TERM; while :; do sleep 1; done", broken.root.parent, dict(os.environ), {}, 0.2)
+    assert (stubborn_ok, "still running" in stubborn_why) == (False, True), "a command that will not stop when asked is killed, and the plugin is told it ran over"
+    assert running.stop(SimpleNamespace(pid=2 ** 22 + 1)) is None, "stopping something that is already gone is no error"
+    assert [running.read(""), running.read("[]"), running.read("5")[0], running.read("nope")[0]] == [(True, {}), (True, {}), False, False], \
+        "an empty reply or an empty list says nothing, and a reply that is no object is a failure"
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as silent:
+        quiet = plugin_socket(broken.root, "quiet")
+        quiet.parent.mkdir(parents=True, exist_ok=True)
+        quiet.unlink(missing_ok=True)
+        silent.bind(str(quiet))
+        silent.listen()
+        ok, why = running.asked(quiet, {}, 0.2)
+        assert (ok, "did not answer" in why) == (False, True), "a service that takes the line and never answers is given up on"
+    monkeypatch.setattr(lines, "command_line", lambda: SimpleNamespace(run=lambda argv: (_ for _ in ()).throw(SystemExit(2))))
+    assert lines.ran(broken.root, broken.env, "todo list") == (False, "the words were not a journal command (2)"), "a line the command line exits on is refused in words"
+    monkeypatch.setattr(lines, "command_line", lambda: SimpleNamespace(run=lambda argv: 1 / 0))
+    assert lines.ran(broken.root, broken.env, "todo list") == (False, "division by zero"), "a line that crashes is refused with the reason"
+    monkeypatch.undo()
+    assert [lines.ran(broken.root, broken.env, line)[0] for line in ("echo 'open", "", "todo list --env x", "no-such-noun", "todo create")] == [False, True, False, False, False], \
+        "a queued line that is badly quoted, names an environment, is no journal command or lacks its words is not run, and an empty one is nothing to run"
 
 
 def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_path):
@@ -165,6 +189,38 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     assert "remove it first" in refused(lambda: plugins.action("purge")(row.n)), "what an installed plugin keeps is never purged"
     plugins.complete(row.n, "removed")
     assert "is gone" in plugins.action("purge")(row.n), "once removed, what it kept can be purged"
+    from features.plugins import staging
+    assert staging.address("owner/repo") == "https://github.com/owner/repo", "an owner and a repository name is a repository on GitHub"
+    assert "neither a repository URL" in refused(lambda: staging.address("no such place")), "a source that is no repository and no folder is refused"
+    assert "could not be fetched" in refused(lambda: plugins.action("install")((tmp_path / "missing").as_uri(), yes=True)), "a repository that cannot be fetched is refused and leaves nothing behind"
+    badly = repository(tmp_path, {"name": "X Y"}, name="badly")
+    assert "name must be" in refused(lambda: plugins.action("install")(badly, yes=True)), "a repository whose manifest is wrong is refused"
+    assert list(home(fine.root).glob(".staging-*")) == [], "and the copy fetched for it is taken away"
+    linked = tmp_path / "linked"
+    (linked / MANIFEST).parent.mkdir(parents=True)
+    (linked / MANIFEST).write_text(json.dumps({**WORKS, "name": "linked", "setup": [], "requires": {"nothere": {"check": "false", "hint": "install nothere"}}}))
+    assert "needs nothere: install nothere" in refused(lambda: plugins.action("install")(str(linked), yes=True)), "a tool a plugin requires and the machine lacks is named with how to get it"
+    (linked / MANIFEST).write_text(json.dumps({**WORKS, "name": "linked", "setup": []}))
+    shown = plugins.action("preview")(repository(tmp_path, WORKS, name="peeked"))
+    assert "works" in shown.lower() and "peeked" not in str(list(home(fine.root).glob(".staging-*"))), "a plugin can be looked at without installing it, and leaves no copy"
+    in_place = plugins.action("install")(str(linked), yes=True)
+    assert in_place.linked, "a folder on this machine is installed in place, not copied"
+    assert plugins.action("upgrade")(in_place.n, again=True).linked, "a plugin installed in place is read again, and its setup run again, on request"
+    from features.plugins.lifecycle import clear, difference
+    link = tmp_path / "a-link"
+    link.symlink_to(linked)
+    clear(link)
+    assert (link.exists(), linked.exists()) == (False, True), "taking a plugin's place removes a link, never the folder it points to"
+    old_commands, new_commands = Manifest.of({"name": "x", "setup": [{"name": "build", "run": "make old"}]}), Manifest.of({"name": "x", "setup": [{"name": "build", "run": "make new"}]})
+    assert (difference(old_commands, new_commands).splitlines()[1:], difference(old_commands, old_commands)) == (
+        ["  no longer: setup build: make old", "  now also: setup build: make new"], "It runs the same commands as the version you have."), \
+        "an upgrade says which commands the plugin no longer runs and which it newly runs"
+    ghost = Plugins(fine, actor=SYSTEM).create("ghost", enabled=True, token="t", settings={}, manifest={})
+    Plugins(fine, actor=SYSTEM).complete(ghost.n, "removed")
+    assert "never named itself" in refused(lambda: plugins.action("purge")(ghost.n)), "a plugin that never named itself kept nothing to purge"
+    held = staging.alone(fine.root, "twice")
+    assert "is being installed already" in refused(lambda: staging.alone(fine.root, "twice")), "the same plugin is not installed twice at once"
+    held.close()
 
 
 
@@ -216,7 +272,19 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
                       events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
-    from features.plugins.answer import apply
+    from features.plugins.answer import KEYS, apply
+    from features.plugins.environment import ports_for
+    from features.plugins.declared import Setting
+    assert [Setting(key="a", env="HOME").summary, Setting(key="a", title="Title").summary, Setting(key="a").summary] == ["reads HOME", "Title", "a"], \
+        "a setting is summed up by the variable it reads, else its title, else its key"
+    assert "is a number" in refused(lambda: Setting(key="n", kind="number").check("x")) and Setting(key="n", kind="number").check("-3.5") is None, "a number setting takes numbers"
+    before = settings_of(plugins.load(typed.n)).chosen
+    apply(record, None, "nobody-installed", "", {"settings": {"level": "high"}})
+    assert settings_of(plugins.load(typed.n)).chosen == before, "a plugin that is not installed fills in nothing"
+    from features.plugins.payload import resource
+    assert [resource(record, SimpleNamespace(type="nothing", n=1)), resource(record, SimpleNamespace(type="todo", n=99999))] == [None, None], \
+        "an event of a type nobody controls, or of a row that is gone, carries no row"
+    assert isinstance(ports_for(record.root, Manifest.of({"name": "portly", "services": {"web": {"run": "true", "port": "auto"}}}))["web"], int), "a service that asks for a port is given one"
     apply(record, None, "typed", "", {"settings": {"level": "high", "made-up": "x"}})
     assert settings_of(plugins.load(typed.n)).chosen == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
     from features import FEATURES
@@ -242,6 +310,10 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert "declares no event" in refused(lambda: Raise().run(None, plugins, "typed", "made-up", "")), "and refuses one it does not declare"
     off()
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"
+    everything = {"whisper": "psst", "say": "hello", "notify": {"title": "Heads up", "brief": "b"}, "notice": "A notice", "todo": {"title": "From a plugin"},
+                  "hold": "wait", "raise": [{"event": "sin-found"}, {"event": "sin-found"}], "settings": "not a dict"}
+    assert apply(record, FEATURES["plugins"].journal, "typed", "", everything) == list(KEYS), "a plugin's answer may whisper, say, notify, notice, file a to-do, hold and raise"
+    assert "From a plugin" in [t.title for t in Todos(record, actor=SYSTEM).all()], "a to-do a plugin answers with is filed"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
                      "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
@@ -272,10 +344,20 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         ({"name": "pp", "load": {"nothing.here": ["s"]}}, "matches no event"), ({"name": "pp", "load": {"todo.created": "s"}}, "a list of skill names"),
         ({"name": "pp", "on": ["x"]}, "on names an event pattern"), ({"name": "pp", "on": {"nothing.here": "x"}}, "matches no event; a pattern is"),
         ({"name": "pp", "refuse": 5}, "is a command, a line or a list of words"),
+        ({"name": "pp", "requires": {"a": 5}}, "requires.a is an object with"),
+        ({"name": "pp", "on": {"todo.created": {"post": ""}}}, 'is a command, or {"post"'),
+        ({"name": "pp", "pages": "x"}, "pages is a list"), ({"name": "pp", "pages": ["x"]}, "each page is an object"),
+        ({"name": "pp", "dashboards": "x"}, "dashboards is a list"), ({"name": "pp", "dashboards": [{"title": "T"}]}, "each dashboard is an object with a name"),
     ]:
         (bad / MANIFEST).parent.mkdir(parents=True, exist_ok=True)
         (bad / MANIFEST).write_text(given if isinstance(given, str) else json.dumps(given))
         assert words in refused(lambda: read(bad, "2.0.0")), (given, words)
+    (bad / MANIFEST).write_text(json.dumps({"name": "pp", "setup": ["echo a", {"run": ["echo", "b"], "cwd": "sub"}], "cancels": {"agent.command.long": "true"},
+                                            "services": {"web": {"run": "true"}}, "chat": [{"find": "x", "as": "y"}], "refuse": ["true"],
+                                            "on": {"todo.created": {"post": "http://x"}}}))
+    made = read(bad, "2.0.0")
+    assert (made.setup[0].name, made.setup[1].cwd, made.refuse, made.chat[0].replacement) == ("step 1", "sub", ["true"], "y"), \
+        "a manifest may give setup as bare commands or steps, a refuse as a word list, a chat rule and a post handler"
 
 
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
@@ -561,7 +643,8 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     record = alone()
     project = record.root.parent
     shipped = folder(record.root, "teacher") / "out"
-    for name in ("teacher-one", "teacher-two"):
+    (project / ".git" / "info").mkdir(parents=True, exist_ok=True)
+    for name in ("teacher-one", "teacher-two", "teacher-mine"):
         (shipped / name).mkdir(parents=True, exist_ok=True)
         (shipped / name / "SKILL.md").write_text(f"---\nname: {name}\n---\n\nbody\n")
     (project / LIBRARY / "teacher-mine").mkdir(parents=True, exist_ok=True)
@@ -569,6 +652,11 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     published(record.root, "teacher", Manifest.of({"name": "teacher", "skills": "out"}))
     assert "plugin: teacher" in (project / LIBRARY / "teacher-one" / "SKILL.md").read_text(), "a published skill says which plugin it came from"
     assert (project / ".claude" / "skills" / "teacher-one").is_symlink(), "and every agent reads it"
+    assert "/teacher-one" in (project / ".git" / "info" / "exclude").read_text(), "a published skill is kept out of the project's commits"
+    assert "plugin:" not in (project / LIBRARY / "teacher-mine" / "SKILL.md").read_text(), "a skill of the user's own with the same name is not overwritten"
+    from features.plugins.skills import owner, stamped
+    assert (stamped("plain body\n", "teacher").startswith("---\nplugin: teacher\n---\nplain"), owner(project / "no-such-skill")) == (True, ""), \
+        "a skill with no heading gets one naming its plugin, and a folder with no skill has no owner"
     shutil.rmtree(shipped / "teacher-two")
     published(record.root, "teacher", Manifest.of({"name": "teacher", "skills": "out"}))
     assert not (project / LIBRARY / "teacher-two").exists(), "an upgrade that drops a skill takes it back"
@@ -590,6 +678,17 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     written["pages"]["overview"]["view"]["children"].append({"type": "chart"})
     (data(record.root, "teacher") / "dashboards" / "sins.json").write_text(json.dumps(written))
     assert "pages.overview.view.children[1]" in ask()["broken"], "a node that does not fit the format is named by its place"
+    from features.plugins.dashboard import checked as dashboard_checked
+    lone = lambda view, **more: {"pages": {"p": {"title": "P", "view": view}}, **more}
+    for document, words in [
+        ([], "a dashboard is a JSON object"), ({"pages": {}}, "an object of pages"), (lone({"type": "text", "body": "x"}, start="gone"), "is not one of the pages"),
+        ({"pages": {"p": []}}, "a page is an object with a title and a view"), (lone({"type": "stat", "label": "L"}), "needs 'value'"),
+        (lone({"type": "stat", "label": "L", "value": 1, "tone": "loud"}), "tone is one of"), (lone({"type": "stat", "label": "L", "value": 1, "open": "nowhere"}), "which the dashboard does not have"),
+        (lone({"type": "text", "body": "x", "children": []}), "holds no children"), (lone({"type": "list", "items": ["x"]}), "an item is an object with"),
+        (lone({"type": "list", "items": [{"label": "a", "tone": "loud"}]}), "tone is one of"),
+        (lone({"type": "table", "columns": ["a"], "rows": [{"cells": ["x"], "open": "nowhere"}]}), "rows[0]"),
+    ]:
+        assert words in refused(lambda: dashboard_checked(document)), (document, words)
     import os
     import time
     from features.plugins.lifecycle import changed_on_disk, reread
@@ -604,7 +703,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     assert [d["name"] for d in plugins.load(row.n).manifest["dashboards"]] == ["sins", "trend"], "and read again without an upgrade"
 
 
-def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():
+def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     from tests.kit import run
     record = alone()
     plugin = installed(record, "checker", "exit 0")
@@ -655,6 +754,30 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():
     host.step(now + 61)
     server.shutdown()
     assert Answering.payloads[-1]["event"] == "todo.created" and "Posted the new to-do" in open_notices(), "an event can be posted to a plugin's server, and its reply is applied"
+    import features.plugins.host as hosting
+    from features.plugins.queue import Refusal
+    ok, why = hosting.post(f"http://127.0.0.1:{server.server_port}/event", {}, "t0ken")
+    assert (ok, "did not answer" in why) == (False, True), "a plugin server that is gone does not answer, and that is a failure, not a crash"
+    Todos(record, actor=SYSTEM).create("Posted after it went away")
+    host.step(now + 200)
+    assert "poster" in host.trouble, "a plugin whose server does not answer is marked as in trouble"
+    Todos(record, actor=SYSTEM).create("Far too old")
+    assert host.step(now + 100000) == 0, "an event older than the replay window is passed over, not delivered late"
+    told = lambda: [n.title for n in Notices(record, actor=SYSTEM).all() if n.title.endswith("a line the journal refused")]
+    host.refusal("answerer", Refusal(record.env, "todo", "no such word"))
+    host.refusal("answerer", Refusal(record.env, "todo", "no such word"))
+    assert told() == ["Plugin answerer queued a line the journal refused"], "the same refusal of a plugin's line is told once"
+    watched = []
+    monkeypatch.setattr(hosting.Host, "step", lambda self, now=0.0: 1 / 0)
+    monkeypatch.setattr(hosting, "threw", lambda root, env, where: watched.append(where))
+    monkeypatch.setattr(hosting.time, "sleep", lambda seconds: (_ for _ in ()).throw(SystemExit))
+    with pytest.raises(SystemExit):
+        hosting.watch(record.root, FEATURES["plugins"].journal)
+    assert watched == ["delivering events to plugins"], "a step that crashes is reported and the host carries on"
+    import fcntl
+    with (runtime_folder(record.root) / "plugins.lock").open("w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        assert hosting.watch(record.root, FEATURES["plugins"].journal) is None, "a second host in the same journal leaves at once"
 
 
 def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_path):

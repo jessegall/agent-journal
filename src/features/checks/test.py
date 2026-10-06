@@ -90,13 +90,18 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     (repo.project / "hooks").mkdir()
     commit(repo.project, "hooks/test.py", "def test(): pass\n")
     commit(repo.project, "hooks/code.py", "one\n")
+    (repo.project / "hooks" / "deep").mkdir()
+    commit(repo.project, "hooks/deep/inner.py", "inner\n")
     commit(repo.project, "old.txt", "gone soon\n")
     Agents(repo.record, actor=SYSTEM).create("claude-1")
     checks = Checks(repo.record, actor=USER)
     suite = checks.create("the suites pass", command="true", touched="echo ran {tests}")
     (repo.project / "hooks" / "code.py").write_text("two\n")
     (repo.project / "notes.txt").write_text("a note\n")
+    (repo.project / "hooks" / "deep" / "inner.py").write_text("changed inner\n")
     said = checks.touched(suite.n)
+    assert "no test covers hooks/deep/inner.py" not in said, "a changed file in a folder with no test is covered by the test of the folder above"
+    (repo.project / "hooks" / "deep" / "inner.py").write_text("inner\n")
     assert "ran hooks/test.py" in said and "no test covers notes.txt" in said, "the test beside a changed file runs, and what no test covers is named"
     spawned = []
     monkeypatch.setattr("features.checks.controller.subprocess.Popen", lambda args, **how: spawned.append((args, how)))
