@@ -14,6 +14,7 @@ from commands.queries import asked_for  # noqa: F401
 from commands.queries import asked_history  # noqa: F401
 from commands.queries import asked_prompts  # noqa: F401
 from commands.queries import asked_resume  # noqa: F401
+from commands.queries import asked_slate  # noqa: F401
 from commands.queries import defaults  # noqa: F401
 from commands.queries import ended  # noqa: F401
 from features.plans.controller import Plans  # noqa: F401

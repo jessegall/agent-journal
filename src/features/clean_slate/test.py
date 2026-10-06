@@ -90,3 +90,31 @@ def test_an_agent_ending_stops_the_journal_only_when_no_other_agent_still_runs()
     Sessions(record.root).write("claude-starting", pid=2 ** 22 + 7)
     ended({"record": record})
     assert (stop.at(record.root) > 0.0, home.exists()) == (True, True), "the last agent ending stops the journal and puts the hooks back"
+
+
+def test_codex_is_asked_about_hooks_another_session_already_set_aside_and_no_puts_them_back(tmp_path, monkeypatch):
+    import os
+    from engine.sessions import Sessions
+    from tests.kit import asked_slate
+
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    record = fresh()
+    project = record.root.parent
+    claude = project / ".claude" / "settings.local.json"
+    claude.parent.mkdir()
+    claude.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
+    codex = project / ".codex" / "hooks.json"
+    codex.parent.mkdir()
+    codex.write_text(json.dumps({"hooks": {"PreToolUse": [{"hooks": [{"type": "command", "command": "block-production-commands.py"}]}]}}))
+    before = codex.read_text()
+    set_aside(record, project, "claude")
+    Sessions(record.root).bind("other", record.env, pid=os.getpid(), provider="claude")
+    set_aside(record, project, "codex")
+    assert others(project, "codex") == [], "hooks a live Claude session set aside do not keep Codex's own from being set aside"
+
+    assert asked_slate(record, project, "codex", ask=lambda _: "1", answering=True), \
+        "the menu asks although the hook file holds only the journal's hooks, because a live session set the others aside"
+    assert asked_slate(record, project, "codex", ask=lambda _: "2", answering=True) is False
+    assert codex.read_text() == before, "No puts Codex's hooks back while the other session still runs"
+    assert "keep-going.sh" not in claude.read_text(), "and leaves what the other session set aside for Claude where it is"
+    assert asked_slate(record, project, "codex", ask=lambda _: "1", answering=True), "hooks back in the file are asked about as before"

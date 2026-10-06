@@ -235,6 +235,24 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     crew = {sub["task"]: sub["running"] for sub in Claude().crew(transcript)["subagent_rows"]}
     assert crew == {"Ada: review": False, "Rex: research": True}, "a subagent that returned its answer is done; one sent to the background works on until it goes quiet"
 
+    from providers.codex import Codex
+    parent, child = "01a0fe58-a59b-7910-b452-68b6adf88ce9", "01a0fe67-b6bf-7260-8a22-b2b6bf0f549f"
+    day = record.root / "codex" / "2026" / "10" / "02"
+    day.mkdir(parents=True)
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    lines = lambda *rows: "".join(json.dumps({"timestamp": now, **row}) + "\n" for row in rows)
+    main = day / f"rollout-2026-10-02T22-40-17-{parent}.jsonl"
+    main.write_text(lines({"type": "session_meta", "payload": {"id": parent}},
+                          {"type": "response_item", "payload": {"type": "function_call", "namespace": "collaboration", "name": "spawn_agent", "call_id": "c1",
+                                                                "arguments": json.dumps({"task_name": "iris_auth", "agent_type": "plan-reviewer", "model": "gpt-6-sol"})}},
+                          {"type": "response_item", "payload": {"type": "function_call_output", "call_id": "c1", "output": json.dumps({"task_name": "/root/iris_auth"})}}))
+    (day / f"rollout-2026-10-02T22-56-45-{child}.jsonl").write_text(lines(
+        {"type": "session_meta", "payload": {"id": child, "source": {"subagent": {"thread_spawn": {"parent_thread_id": parent, "agent_path": "/root/iris_auth"}}}}},
+        {"type": "event_msg", "payload": {"type": "task_started"}}))
+    spawned, = Codex().crew(main)["subagent_rows"]
+    assert (spawned["task"], spawned["type"], spawned["session"], spawned["running"]) == ("iris_auth", "plan-reviewer", child, True), \
+        "a subagent Codex spawns directly is found by its path, so the viewer's agent list can show it"
+
 
 def test_a_report_filed_after_a_subagent_ended_is_linked_to_it():
     from controllers.types import Reports

@@ -70,7 +70,8 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     assert record.state("journal_laws").get("instructions") != seen, "and so is the project's own text changing"
 
 
-def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
+def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one(monkeypatch):
+    monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.6-luna", "gpt-6-sol"))
     record = fresh()
     cases = (("claude", "Agent", {"subagent_type": "general-purpose", "model": "sonnet"}),
              ("claude", "Agent", {"subagent_type": "Explore"}),
@@ -89,6 +90,12 @@ def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
     for name, tool, given in allowed:
         result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
         assert result == {}, f"{name}: a bounded dispatch with a model goes through"
+
+    spawn = {"hook_event_name": "PreToolUse", "session_id": "codex-law", "tool_name": "multi_agent_v1__spawn_agent",
+             "tool_input": {"agent_type": "plan_reviewer", "model": "gpt-5-mini", "message": "Ada Lovelace: review plan 6"}}
+    result = handle(PROVIDERS["codex"](), record.root, record.env, spawn)
+    assert result.get("decision") == "block" and "gpt-5.6-luna, gpt-6-sol" in result.get("reason", ""), \
+        "a spawn from Codex's code mode on a model the account does not offer is refused, naming the ones it does"
 
 
 def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once():
