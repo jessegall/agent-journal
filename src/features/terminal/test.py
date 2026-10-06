@@ -1,4 +1,9 @@
 import time
+
+
+import os
+import time
+
 from controllers.types import Agents
 from runner.hooks import handle
 from features.terminal.log import COMMANDS, JOURNAL, MOST_LINES, lines
@@ -253,3 +258,39 @@ def test_a_worker_that_keeps_failing_with_no_earlier_build_is_retried_slower_the
     ours.worker_began = time.time() - supervisor.QUICK - 1
     ours.unhealed = 3
     assert ours.after_worker(supervisor.RELOAD) is None and ours.unhealed == 0, "a worker that ran on resets the count"
+
+
+def test_long_typed_text_arrives_whole_a_full_queue_is_reported_and_another_users_folder_is_stepped_around(tmp_path, monkeypatch):
+    import threading
+    from engine import typist
+    from supervisor import Supervisor
+    root = tmp_path / ".journal"
+    root.mkdir()
+    inbox = typist.listen(root, "claude-1")
+    raw = bytes(range(256)) * 4096
+    got, done = [], threading.Event()
+
+    def drain():
+        while not done.is_set():
+            got.extend(typist.receive(inbox))
+            time.sleep(0.001)
+    reading = threading.Thread(target=drain)
+    reading.start()
+    sent = typist.send(root, "claude-1", raw)
+    time.sleep(0.3)
+    done.set()
+    reading.join()
+    got.extend(typist.receive(inbox))
+    assert (sent, b"".join(got) == raw), "a megabyte typed at once arrives whole and in order"
+    typist.close(inbox, root, "claude-1")
+    stalled = typist.listen(root, "claude-2")
+    monkeypatch.setattr(typist, "FULL_FOR", 0.3)
+    assert typist.send(root, "claude-2", raw) is False, "with nobody reading, the sender is told the text did not all go"
+    here = typist.folder(root)
+    monkeypatch.setattr(typist.os, "getuid", lambda: os.stat(here).st_uid + 1)
+    elsewhere = typist.folder(root)
+    assert elsewhere != here and elsewhere.name.startswith(here.name), "a folder another user owns is not shared: this user gets a folder of their own"
+    seat = object.__new__(Supervisor)
+    seat.root, seat.session = root, "claude-2"
+    assert seat.socket_path().parent == elsewhere, "the supervisor and the sender agree on which folder"
+    stalled.close()
