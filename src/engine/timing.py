@@ -15,18 +15,29 @@ PROFILING = runtime.flag("profile-requests")
 
 
 @dataclass(frozen=True)
+class Lap:
+    took: float
+    working: float
+
+
+@dataclass(frozen=True)
 class Stopwatch:
     wall: float = field(default_factory=time.perf_counter)
     working: float = field(default_factory=time.thread_time)
     garbage: float = field(default_factory=collecting)
     waiting: float = field(default_factory=waits.total)
 
-    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None) -> None:
+    def lap(self) -> Lap:
+        return Lap((time.perf_counter() - self.wall) * 1000, (time.thread_time() - self.working) * 1000)
+
+    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None, answered: Lap | None = None) -> None:
         if not bus.heard(EVENT):
             return
+        total = self.lap()
+        answer = answered if answered else total
         bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
             "root": str(record.root), "env": record.env, "kind": kind, "target": name, "profile": profile,
-            "took": (time.perf_counter() - self.wall) * 1000, "working": (time.thread_time() - self.working) * 1000,
+            "took": answer.took, "working": answer.working, "after": total.took - answer.took,
             "garbage": (collecting() - self.garbage) * 1000, "waiting": waits.total() - self.waiting})
 
 

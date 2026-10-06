@@ -79,6 +79,7 @@ class Measured(TypedEvent):
     target: str = ""
     took: float = 0.0
     working: float = 0.0
+    after: float = 0.0
     garbage: float = 0.0
     waiting: float = 0.0
     profile: object = None
