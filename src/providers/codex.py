@@ -285,6 +285,8 @@ class Codex(Provider):
         source_model = models.index(cls.matched(models, current_model))
         target_model = models.index(target)
         commands = ["/model", cls.move(source_model, target_model)]
+        if not target.efforts:
+            return commands
         supported = list(target.efforts)
         standard = [item for item in supported if item not in ("max", "ultra")]
         advanced = [item for item in supported if item in ("max", "ultra")]

@@ -4,7 +4,7 @@ from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
 from features.status_bar.bar import bar, current
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 
 NOW = 1_000_000.0
@@ -190,3 +190,33 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     claude.save(project, {"statusLine": {"type": "command", "command": "my-own-status"}})
     claude.wire(project, HookCommand(tmp_path / "hook.sh", "claude", project / ".journal"))
     assert claude.settings(project)["statusLine"]["command"] == "my-own-status", "a status line the user already has is kept"
+
+
+def codex_models(*models) -> list:
+    return [{"slug": slug, "display_name": slug.upper(), "visibility": "list", "supported_in_api": True, "default_reasoning_level": default,
+             "supported_reasoning_levels": [{"effort": effort} for effort in efforts]} for slug, default, efforts in models]
+
+
+def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_the_catalog_lacks(tmp_path, monkeypatch):
+    import json
+    from providers import PROVIDERS
+    from resources.base import Refused
+    codex = PROVIDERS["codex"]
+    monkeypatch.setenv("HOME", str(tmp_path))
+    (tmp_path / codex.home).mkdir()
+    down, up = "\x1b[B", "\x1b[A"
+    (tmp_path / codex.home / "config.toml").write_text('model = "beta"\nmodel_reasoning_effort = "high"\nproject_doc_max_bytes = 4096\n')
+    cache = tmp_path / codex.home / "models_cache.json"
+    cache.write_text(json.dumps({"models": codex_models(("alpha", "medium", ["low", "medium", "high", "max", "ultra"]), ("beta", "high", ["low", "high"]), ("bare", "", []))}))
+    options = codex.control_options("")
+    assert [choice["value"] for choice in options["groups"][1]["choices"]] == ["low", "high"], "with no model named, the configured model's efforts are offered"
+    assert [group["key"] for group in options["groups"][:1]] == ["model"]
+    assert codex.control_choice("effort", "low", "")["commands"] == ["/model", "", up], "an effort is one key press from the current one"
+    assert codex.commands_for("effort", "max", "alpha") == ["/model", "", down, ""], "max is the row after the standard ones, which the picker lists beside them"
+    assert codex.commands_for("effort", "ultra", "alpha") == ["/model", "", down, down], "ultra is the one after max"
+    assert codex.commands_for("model", "alpha", "beta") == ["/model", up, ""], "a model above the current one is one key up, and its own default effort needs no move"
+    assert codex.commands_for("model", "bare", "beta")[:2] == ["/model", down], "a model that lists no effort is chosen without an effort step"
+    assert codex.matched(codex.catalog(), "alpha-2026").slug == "alpha", "a dated name finds its model"
+    assert refused(lambda: codex.control_choice("model", "nowhere", "beta")), "a model the catalog lacks is refused"
+    cache.write_text("{}")
+    assert codex.control_options("beta")["groups"] == [] and refused(lambda: codex.control_choice("model", "beta", "beta")), "an empty catalog offers nothing, and its choice is refused"
