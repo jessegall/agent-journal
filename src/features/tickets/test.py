@@ -357,6 +357,10 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     unmerged = Docs(Record(record.root, second.work_environment), actor=USER).create("How light mode works")
     tickets.complete(second.n, how="dropped", yes=True)
     assert Docs(record).load(unmerged.n).deleted, "a doc a ticket proposed goes with it when the ticket closes without its branch merged"
+    from features.tickets.landing import Landing
+    assert tickets._clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
+    assert [Landing(project, f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(project, f"worktree-{second.work_environment}", ticket.base, home).state()] \
+        == ["merged", "changed"], "a branch is merged, changed or untouched by where its commits are"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
@@ -643,6 +647,24 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     assert "no provider 'nowhere'" in refused(lambda: tickets.start(fourth.n, provider="nowhere")), "a provider the journal does not know is refused before anything starts"
     assert "never started" in refused(lambda: tickets.merge(fifth.n)), "a ticket that never started has no branch to merge"
     from commands.http import dispatch
+    from resources.base import Refused
+    asked_to_start = []
+
+    def refusing(*given):
+        raise Refused("no room")
+
+    with monkeypatch.context() as scoped:
+        scoped.setattr(Tickets, "start", lambda self, n: asked_to_start.append(n) or refusing())
+        tickets.start_queued()
+        scoped.setattr(Tickets, "start", lambda self, n: asked_to_start.append(n) or SimpleNamespace(queued=True))
+        tickets.start_queued()
+        scoped.setattr(Tickets, "complete", lambda self, n, **given: refusing())
+        tickets._closed([tickets.load(first.n)])
+        assert not tickets.load(first.n).completed, "a ticket that cannot be closed stays open"
+    assert len(asked_to_start) == len(tickets._queue()) + 1, "the queue is walked until one ticket stays queued, and a ticket that cannot start is passed over"
+    with monkeypatch.context() as scoped:
+        scoped.setattr("engine.organization.organization", refusing)
+        assert dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body["owner"] == [], "a project with no organization offers no owners"
     choices = dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body
     assert ([found["label"] for found in choices["board"]], [found["key"] for found in choices["stage"]]) == (["Queue"], ["Ideas", "Building"]), \
         "a ticket's form offers the boards and the stages of its own board"
@@ -651,3 +673,13 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     held = COMMANDS["ticket"]["todos"](tickets)
     assert [(found["ticket"], [row["title"] for row in found["todos"]]) for found in held] == [(fourth.n, ["Draw the dark theme"])], \
         "the to-dos a ticket's own agent keeps are listed under their ticket"
+    from features.tickets.cards import SILENT_AFTER
+    from resources.types import IDLE
+    tickets.update(fifth.n, dependencies={first.ref: "proposed"})
+    tickets.update(fourth.n, dependencies={first.ref: "confirmed"})
+    assert (reasons()[fifth.n], tickets._runtime(tickets.load(fourth.n), {}, 0).text.startswith(f"waiting on ticket {first.n}")) == (f"the agent proposes it waits on ticket {first.n}", True), \
+        "a card says which ticket its agent proposed it waits on, and which it is held by"
+    watching = lambda **row: tickets._live_state(SimpleNamespace(**{"asking": False, "at": 5.0, "quiet_for": 0.0, "status": "working", "background_run": False, **row}), "ticket-x").text
+    assert [watching(asking=True), watching(at=0.0), watching(quiet_for=SILENT_AFTER + 120), watching(status=IDLE, quiet_for=SILENT_AFTER + 120)] == \
+        ["waiting for you", "starting", "silent for 7m", "idle for 7m with nothing running in the background"], \
+        "a ticket's agent is called waiting, starting, silent or idle by what it last did and how long ago"
