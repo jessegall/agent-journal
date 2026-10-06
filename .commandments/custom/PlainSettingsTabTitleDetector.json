@@ -1,0 +1,25 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "file": "**/settingsCatalog.*"
+            },
+            {
+                "of": "parent",
+                "name": "title"
+            },
+            {
+                "textMatches": "(?i)^(this|the)\\b|^(show|hide|stop|start|shut|make|choose|run|save|delete|find|pause|remind|brief|sort|open|close|turn|add|remove|keep|move|send|clean|install|switch|download|connect|manage)\\b"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plain-settings-title",
+        "description": "A settings group or tab title starts with \"This\" or \"The\", or is a verb phrase.",
+        "rule": "A place in Settings is a short noun: Project, Memory, Share links. Never \"This project\", \"The agent\" or \"Shut down\"; a button or switch inside it is the verb.",
+        "skill": "plain-viewer-text"
+    }
+}

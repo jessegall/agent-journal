@@ -11,7 +11,7 @@ class MemoryCheckpointsDetails(FeatureDetails):
     skill_of = "memory"
     when = "a context mark holds your writes until you record a fact, a rule or nothing"
 
-    title = "Save to memory as context fills"
+    title = "Memory checkpoints"
 
     aliases = ("context",)
 

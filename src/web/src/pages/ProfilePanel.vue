@@ -123,7 +123,7 @@ function startFrom(row) {
                 <p class="profile-panel-answer">{{ sample || "Write a sample line below to hear it." }}</p>
             </FormField>
             <FormField
-                label="How it talks"
+                label="Style"
                 :help="`Plain words, as you would brief a person: the tone, the humour, how it uses your name and when it reacts to your messages. The agent reads this when it starts${isNew || locked ? '' : ', and is told as soon as you change it'}.`"
             >
                 <TextArea
@@ -133,11 +133,11 @@ function startFrom(row) {
                     @input="edit('brief', $event.target.value)"
                 />
             </FormField>
-            <FormField label="How the agent addresses you" help="Your title and first name are set in Settings › Agent, under Your title and name.">
+            <FormField label="Address" help="Your title and first name are set in Settings › Agent, under Your title and name.">
                 <ChoiceList stacked :choices="choices" :disabled="locked" @pick="edit('calling', $event)" />
             </FormField>
             <FormField
-                label="How it answers the sample question"
+                label="Sample answer"
                 :help="`You write it, in the voice above, as this profile would answer “${QUESTION}”. It is only an example: it is shown in How it sounds and when you choose a profile. The agent's real answers follow How it talks.`"
             >
                 <TextInput

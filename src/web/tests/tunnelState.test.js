@@ -10,7 +10,7 @@ describe("what the sharing pill says", () => {
         ["a problem wins over everything", broken, share, share, {state: "ready"}, "down", "Not connected"],
         ["nothing shared and nothing waiting", fine, [], [], undefined, "idle", "Nothing shared"],
         ["no status yet is not a problem", null, [], [], undefined, "idle", "Nothing shared"],
-        ["only a share waiting for approval", fine, [], share, undefined, "waiting", "Waiting for you"],
+        ["only a share waiting for approval", fine, [], share, undefined, "waiting", "Needs you"],
         ["an open share and no tunnel service yet", fine, share, [], undefined, "starting", "Starting"],
         ["a tunnel that is ready", fine, share, [], {state: "ready"}, "up", "Open"],
         ["a tunnel that is starting", fine, share, [], {state: "starting"}, "starting", "Starting"],

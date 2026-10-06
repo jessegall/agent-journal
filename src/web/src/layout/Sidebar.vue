@@ -45,7 +45,7 @@ function point(e) {
             <template v-if="!demo">
                 <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="href.page(route.env, 'hub')">
                     <Icon name="panel" />
-                    <span class="label">All journals</span>
+                    <span class="label">Journals</span>
                 </a>
             </template>
             <template v-for="g in groups" :key="g.key">
@@ -75,7 +75,7 @@ function point(e) {
                 </FoldGroup>
             </template>
             <template v-if="domains.length">
-                <FoldGroup class="group" label="Organization" :open="!folded.organization" @toggle="fold('organization')">
+                <FoldGroup class="group" label="Domains" :open="!folded.organization" @toggle="fold('organization')">
                     <template v-for="d in domains" :key="d.name">
                         <a
                             :class="['item', {on: route.page === 'organization' && route.n === d.name}]"

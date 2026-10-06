@@ -74,7 +74,7 @@ function toggleStopped() {
         </ListBox>
 
         <template v-if="needs.length">
-            <ListBox title="Waiting on you" :count="tally.needs">
+            <ListBox title="Needs you" :count="tally.needs">
                 <template v-for="item in needs" :key="item.key">
                     <ListRow :kind="`${item.journal.project} · ${item.env.name}`">
                         <template v-for="ask in item.asks" :key="ask.key">

@@ -1,6 +1,6 @@
 export const VISIBILITY_GROUPS = [
     {
-        title: "The agent at work",
+        title: "Agent",
         kinds: [
             {key: "thoughts", label: "Thoughts", icon: "bulb"},
             {key: "skills", label: "Skills the agent loads", icon: "book"},
@@ -11,7 +11,7 @@ export const VISIBILITY_GROUPS = [
         ],
     },
     {
-        title: "Reminders sent to the agent",
+        title: "Reminders",
         kinds: [
             {key: "rules", label: "Rules", icon: "rules"},
             {key: "facts", label: "Facts", icon: "pins"},
@@ -19,7 +19,7 @@ export const VISIBILITY_GROUPS = [
         ],
     },
     {
-        title: "Marks",
+        title: "Other",
         kinds: [
             {key: "commands", label: "Long commands and outputs", icon: "terminal"},
             {key: "commits", label: "Commits", icon: "branch"},
@@ -28,7 +28,7 @@ export const VISIBILITY_GROUPS = [
             {key: "plugins", label: "Plugin notes", icon: "plug"},
             {key: "visitors", label: "Visitor comments", icon: "chat"},
             {key: "filed", label: "Filed from your messages", icon: "inbox"},
-            {key: "notes", label: "Other journal messages", icon: "bell"},
+            {key: "notes", label: "Notices", icon: "bell"},
         ],
     },
 ];

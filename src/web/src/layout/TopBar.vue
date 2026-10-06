@@ -122,7 +122,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <button
                     type="button"
                     :class="['icon-btn', {on: activityVisible()}]"
-                    :title="activityVisible() ? 'Hide Activity' : 'Show Activity'"
+                    :title="activityVisible() ? 'Hide activity' : 'Show activity'"
                     @click="toggleActivity"
                 >
                     <Icon name="activity" />

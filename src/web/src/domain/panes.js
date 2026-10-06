@@ -26,7 +26,7 @@ export const PRESETS = [
     {key: "default", name: "Default", text: "Chat and side panels", shape: DEFAULT_SHAPE},
     {
         key: "jesse",
-        name: "Developer layout",
+        name: "Developer",
         text: "A layout for developers",
         shape: split(
             "row",
@@ -54,29 +54,29 @@ export const PRESETS = [
             )
         ),
     },
-    {key: "zen", name: "Zen", text: "Only the chat", shape: {...shaped(["chat"]), width: CONTAINED}},
+    {key: "zen", name: "Chat only", text: "Only the chat", shape: {...shaped(["chat"]), width: CONTAINED}},
     {
         key: "hacker",
-        name: "Hacker",
+        name: "Terminal",
         text: "Big terminal, small chat",
         shape: split("row", 0.72, shaped(["terminal"]), shaped(["chat"])),
     },
     {key: "review", name: "Review", text: "Feed and chat", shape: split("row", 0.5, shaped(["feed"]), shaped(["chat"]))},
     {
         key: "watch",
-        name: "Watch",
+        name: "Monitor",
         text: "Terminal, feed, notifications",
         shape: split("row", 0.62, shaped(["terminal"]), split("col", 0.55, shaped(["feed"]), shaped(["waiting"]))),
     },
     {
         key: "triage",
-        name: "Triage",
+        name: "Inbox",
         text: "Chat, questions, to-dos",
         shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["question", "waiting"]), shaped(["todos", "suggestion"]))),
     },
     {
         key: "orchestrator",
-        name: "Orchestrator",
+        name: "Agents",
         text: "Agents",
         shape: split("row", 0.34, shaped(["chat"]), shaped(["agents"])),
     },
@@ -101,17 +101,17 @@ const WORK_TABS = ["terminal", "feed", "todos", "tasks", "plan", "history", "sub
 export const INSPECTOR_SHAPE = split("row", 0.5, shaped(["chat", "transcript"]), shaped(WORK_TABS));
 
 export const INSPECTOR_PRESETS = [
-    {key: "inspector-default", name: "Chat and side panels", text: "The chat on the left, the rest on the right", shape: INSPECTOR_SHAPE},
-    {key: "inspector-chat", name: "Only the chat", text: "One wide column", shape: shaped(["chat", "transcript", ...WORK_TABS])},
+    {key: "inspector-default", name: "Default", text: "The chat on the left, the rest on the right", shape: INSPECTOR_SHAPE},
+    {key: "inspector-chat", name: "Chat only", text: "One wide column", shape: shaped(["chat", "transcript", ...WORK_TABS])},
     {
         key: "inspector-terminal",
-        name: "Big terminal",
+        name: "Terminal",
         text: "The terminal wide, the chat beside it",
         shape: split("row", 0.62, shaped(["terminal", ...WORK_TABS.filter((v) => v !== "terminal")]), shaped(["chat", "transcript"])),
     },
     {
         key: "inspector-review",
-        name: "Files beside the chat",
+        name: "File edits",
         text: "What it changed, next to what it says",
         shape: split("row", 0.5, shaped(["feed", ...WORK_TABS.filter((v) => v !== "feed")]), shaped(["chat", "transcript"])),
     },

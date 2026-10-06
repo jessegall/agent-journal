@@ -9,7 +9,7 @@ class WorktreesDetails(FeatureDetails):
     label = "Link worktrees to the project's journal"
     has_skill = False
 
-    title = "Worktrees use the project's journal"
+    title = "Worktrees"
 
 
     abstract = """

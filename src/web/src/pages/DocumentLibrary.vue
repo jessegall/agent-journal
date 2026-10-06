@@ -72,7 +72,7 @@ const groups = computed(() =>
             ? [
                   {
                       key: "waiting",
-                      title: "Waiting on you",
+                      title: "Needs you",
                       count: waitingDocs.value.length,
                       why: searched.value.length ? "" : "Your answer or approval is needed for these documents.",
                       list: waitingDocs.value,

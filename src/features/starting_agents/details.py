@@ -11,7 +11,7 @@ class StartingAgentsDetails(FeatureDetails):
     hint = "The Start button opens an agent in an environment's own terminal"
     has_skill = False
 
-    title = "Start an agent in an environment"
+    title = "Starting agents"
 
     abstract = "The viewer's Start button, and journal environment launch, open an agent in an environment's own terminal"
 

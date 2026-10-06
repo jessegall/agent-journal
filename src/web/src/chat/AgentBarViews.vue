@@ -10,7 +10,7 @@ const emit = defineEmits(["toggle"]);
 const views = inject("views", null);
 const PANES = [
     {key: "chat", icon: "chat", title: "Chat"},
-    {key: "feed", icon: "edits", title: "File feed: the agent's edits as it makes them"},
+    {key: "feed", icon: "edits", title: "File edits: the agent's edits as it makes them"},
     {key: "terminal", icon: "terminal", title: "What the agent ran lately, like a terminal"},
 ];
 const panes = computed(() => PANES.filter((p) => p.key !== "feed" || feedOn.value));

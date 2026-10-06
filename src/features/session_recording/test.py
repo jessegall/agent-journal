@@ -198,4 +198,4 @@ def test_a_visitor_plays_every_shipped_lesson_to_the_end_pressing_only_what_is_o
     assert all(got[("bakery", "")]["todos"]), "the plan's work plays through to its last to-do"
     assert got[("bakery", "")]["moves"][:3] == ["send", "answer", "approve"], "the visitor asks for a plan, says how thorough, and approves it"
     assert got[("bakery", "")]["cards"] > 0, "the file feed shows the agent's recorded edits"
-    assert "Agents at work" in got[("helpers", "")]["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"
+    assert "Agents" in got[("helpers", "")]["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"

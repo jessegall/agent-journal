@@ -59,7 +59,7 @@ onMounted(loadProfiles);
     <section class="profiles">
         <header class="profiles-head">
             <div class="profiles-text">
-                <h2>How the agent talks</h2>
+                <h2>Profiles</h2>
                 <p>
                     A profile is the agent's voice: its tone, its humour, how it uses your name and when it reacts to your messages. What
                     the agent may say about the journal itself is the same in every profile.

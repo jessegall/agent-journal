@@ -10,7 +10,7 @@ class SessionBriefingDetails(FeatureDetails):
     position = 4
     has_skill = False
 
-    title = "Brief each new session"
+    title = "Session briefing"
 
     aliases = ("start",)
 

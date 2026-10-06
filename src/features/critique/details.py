@@ -13,7 +13,7 @@ class CritiqueDetails(FeatureDetails):
     skill_of = "reports"
     when = "a new design needs its critique round, or the designer revised it and the critics should look again"
 
-    title = "Run design critique rounds"
+    title = "Design critique"
 
     abstract = """
         One command sends critics through the app, each with a lens of their own, and gathers what

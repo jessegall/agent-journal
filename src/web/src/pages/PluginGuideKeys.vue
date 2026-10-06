@@ -3,7 +3,7 @@ import PluginGuidePart from "./PluginGuidePart.vue";
 </script>
 
 <template>
-    <PluginGuidePart title="What each key does">
+    <PluginGuidePart title="Keys">
         <dl>
             <dt>name</dt>
             <dd>2 to 32 lowercase letters, digits or dashes; not the name of a built-in feature.</dd>

@@ -525,7 +525,7 @@ class Ask(Shape, Resource):
         Field(default=list, name="args"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Browser ask",
+        title="Browser request",
         abstract="What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension",
         help="Asks the browser tab for a screenshot, its text or a click. Turn on control in the chat window's bar.",
     )
@@ -563,7 +563,7 @@ class Nudge(Shape, Resource):
         Field(name="session"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Nudge",
+        title="Agent instruction",
         abstract="A short instruction the journal sends the agent by itself; you never see it in the chat.",
         help="A nudge is written by a feature and spoken to the agent as it is; the user never hears it.",
     )

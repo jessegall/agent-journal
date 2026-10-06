@@ -11,7 +11,7 @@ class OrganizationDetails(FeatureDetails):
     hint = "Domains and roles read from the project"
     when = "a ticket's work is split over domains and roles, or the organization's files change"
 
-    title = "Agent organization"
+    title = "Organization"
 
     abstract = "The project's domains and the roles under them, read from files in the project"
 

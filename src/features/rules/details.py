@@ -12,7 +12,7 @@ class RulesDetails(FeatureDetails):
     skill_of = "memory"
     when = "the user makes a ruling that binds every environment"
 
-    title = "Remind the agent of rules"
+    title = "Rules"
 
     abstract = """
         Rules are repeated to the agent at every quarter of its context. Rules marked for it are

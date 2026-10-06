@@ -339,7 +339,7 @@ function looseRows(settings, context) {
                           kind: "danger",
                           label: "Stop the journal",
                           hint: "Closes the viewer and every plugin. Nothing is deleted.",
-                          words: "shut down quit engine viewer",
+                          words: "shut down quit viewer",
                           buttons: [{key: "stop", label: context.stopping ? "Stopping" : "Stop"}],
                       }),
                   ],

@@ -14,7 +14,7 @@ class LawDetails(FeatureDetails):
     group = Group.LAWS
     has_skill = False
 
-    title = "Built-in rules"
+    title = "Laws"
 
     aliases = ("law",)
 

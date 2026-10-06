@@ -9,7 +9,7 @@ class HistorySearchesDetails(FeatureDetails):
     label = "Show history searches"
     has_skill = False
 
-    title = "History searches in the chat"
+    title = "History searches"
 
     abstract = "Whenever the agent searches the journal's history, the chat shows a mark saying what it looked for"
 

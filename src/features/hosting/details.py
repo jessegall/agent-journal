@@ -14,7 +14,7 @@ class HostingDetails(FeatureDetails):
     skill_of = "organization"
     when = "a ticket's app is started, opened or stopped"
 
-    title = "A copy of the app for each ticket"
+    title = "Ticket apps"
 
     abstract = "While a ticket is worked on, a copy of the project's app runs from the ticket's worktree."
 

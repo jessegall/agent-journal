@@ -66,7 +66,7 @@ onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));
             </template>
             <template v-if="waits">
                 <div class="detail-fact">
-                    <dt>Waiting on you</dt>
+                    <dt>Needs you</dt>
                     <dd>{{ waits }}</dd>
                 </div>
             </template>

@@ -11,7 +11,7 @@ class RuntimeCleanupDetails(FeatureDetails):
     label = "Delete old temporary files"
     has_skill = False
 
-    title = "Delete old temporary files"
+    title = "Cleanup"
 
     aliases = ("housekeeping",)
 

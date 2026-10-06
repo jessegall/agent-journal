@@ -109,7 +109,7 @@ async function stop(shares) {
                 </template>
                 <template v-if="waitingShares.length">
                     <div class="tunnel-shares">
-                        <span class="tunnel-group">Waiting for you</span>
+                        <span class="tunnel-group">Needs you</span>
                         <template v-for="share in waitingShares" :key="share.n">
                             <div class="tunnel-share waiting">
                                 <div class="tunnel-share-head">

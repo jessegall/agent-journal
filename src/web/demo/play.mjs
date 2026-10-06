@@ -55,7 +55,7 @@ for (let moves = 0; moves < 100; moves++) {
     await page.waitForFunction((was) => demo.state.at > was, at, {timeout: 30000});
     done.push(move.kind);
 }
-const feed = await page.$('.pane-tab[title="File feed"]');
+const feed = await page.$('.pane-tab[title="File edits"]');
 if (feed) await feed.click();
 await page.waitForTimeout(1500);
 const got = await page.evaluate(() => ({

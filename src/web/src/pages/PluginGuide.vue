@@ -25,11 +25,11 @@ const EXAMPLE = `{
 
 <template>
     <SidePanel
-        title="How to make a plugin"
+        title="Make a plugin"
         abstract="A repository with one file that says what it listens to, runs and shows"
         @close="emit('close')"
     >
-        <PluginGuidePart title="The manifest">
+        <PluginGuidePart title="Manifest">
             <p>
                 A plugin is any repository with
                 <code>.journal-plugin/plugin.json</code>
@@ -51,7 +51,7 @@ const EXAMPLE = `{
                 a folder for its own data.
             </p>
         </PluginGuidePart>
-        <PluginGuidePart title="Trying it">
+        <PluginGuidePart title="Testing">
             <p>
                 Paste a folder path instead of a repository to install from your disk while you build it.
                 <code>journal services list</code>

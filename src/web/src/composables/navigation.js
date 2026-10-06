@@ -2,7 +2,7 @@ import {boardOn} from "./settings.js";
 import {recordCount} from "../domain/records.js";
 import {types} from "../domain/spec.js";
 import {computed} from "vue";
-import {PAGES, RESOURCE_GROUPS, SIDEBAR} from "../domain/navigation.js";
+import {PAGES, RESOURCE_GROUPS, SIDEBAR, pluralTitle} from "../domain/navigation.js";
 import {demo} from "../platform/demo.js";
 
 const countOf = (t) => recordCount(t.name, t.needs_attention ? "unread" : "open");
@@ -10,7 +10,7 @@ const countOf = (t) => recordCount(t.name, t.needs_attention ? "unread" : "open"
 const typeLink = (t) => ({
     key: t.name,
     page: t.name,
-    title: `${t.title}s`,
+    title: pluralTitle(t.title),
     icon: t.icon,
     text: t.abstract,
     count: countOf(t),

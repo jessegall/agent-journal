@@ -11,10 +11,10 @@ class Tab(StrEnum):
 
 
 class Section(StrEnum):
-    AGENT = "The agent"
+    AGENT = "Agent"
     WORK = "Work"
-    MEMORY = "Memory and records"
-    CHAT = "Chat and viewer"
+    MEMORY = "Memory"
+    CHAT = "Chat"
     SYSTEM = "System"
     SHARING = "Sharing"
     DEVELOPER = "Developer"
@@ -40,12 +40,12 @@ class Grouping:
 
 class Group(Enum):
     AGENT = Grouping("Agent", "How the agent works and talks to you", Section.AGENT)
-    SESSIONS = Grouping("Sessions and helpers", "Agent sessions, subagents and helpers", Section.AGENT)
+    SESSIONS = Grouping("Sessions", "Agent sessions, subagents and helpers", Section.AGENT)
     LONG_COMMANDS = Grouping(
         "Long commands", "Moves a command that blocks the agent's terminal to the background", Section.AGENT, lead="long_commands"
     )
     LAWS = Grouping(
-        "Built-in rules", "Rules the journal gives every agent: how it starts subagents and how much it reads", Section.AGENT, lead="journal_laws"
+        "Rules", "Rules the journal gives every agent: how it starts subagents and how much it reads", Section.AGENT, lead="journal_laws"
     )
     SKILLS = Grouping("Skills", "When the agent loads skills", Section.AGENT, lead="skill_loading")
     WORK_TRACKING = Grouping(
@@ -58,14 +58,14 @@ class Group(Enum):
     BOARDS = Grouping("Boards", "Ticket boards and the agents that fill them", Section.WORK, lead="boards")
     TICKETS = Grouping("Tickets", "Each ticket runs in an environment of its own", Section.WORK, lead="tickets")
     MEMORY = Grouping("Memory", "Facts, rules and reminders repeated to the agent", Section.MEMORY)
-    RECORDS = Grouping("Documents and checks", "Documents, collections, checks and other things the agent files", Section.MEMORY)
-    ARCHIVE = Grouping("Archive and cleanup", "How long closed items and runtime files are kept", Section.MEMORY)
+    RECORDS = Grouping("Documents", "Documents, collections, checks and other things the agent files", Section.MEMORY)
+    ARCHIVE = Grouping("Archive", "How long closed items and runtime files are kept", Section.MEMORY)
     CHAT = Grouping("Chat", "What the chat shows", Section.CHAT)
     VIEWER = Grouping("Viewer", "What the viewer shows, and when it opens", Section.CHAT)
     UPDATES = Grouping("Updates", "How new versions of the journal are installed", Section.SYSTEM, Tab.SYSTEM)
     PROJECT = Grouping("Project", "Settings for the whole project, in every environment", Section.SYSTEM, Tab.SYSTEM)
     BROWSER = Grouping("Browser", "Settings saved in this browser only", Section.SYSTEM, Tab.SYSTEM)
-    STOP = Grouping("Shut down", "Stop the journal: closes the viewer and every plugin. Nothing is deleted.", Section.SYSTEM, Tab.SYSTEM)
+    STOP = Grouping("Journal", "Stop the journal: closes the viewer and every plugin. Nothing is deleted.", Section.SYSTEM, Tab.SYSTEM)
     SHARING = Grouping(
         "Share links",
         "Share one document, report, collection or plan with someone outside the journal. The link opens that item and nothing else.",

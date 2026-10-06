@@ -22,7 +22,7 @@ async function choose(row) {
 </script>
 
 <template>
-    <Dialog title="How should the agent talk to you?" :closable="false" fits>
+    <Dialog title="Choose a profile" :closable="false" fits>
         <p class="first-choice-line">
             Here is the same answer in four voices. Pick the one you want. You can change it, or write your own, any time in Settings
             › Agent.
