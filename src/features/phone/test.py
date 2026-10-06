@@ -346,6 +346,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     pins = lambda: [notice["n"] for notice in call(base, "/p/feed", key=key).body["notices"]]
     assert pinned.n in pins(), "the chat's pinned notices reach the phone"
     assert call(base, "/p/close", {"n": pinned.n}, key).status == 201 and pinned.n not in pins(), "and closing one there closes it everywhere"
+    subagents = Notices(record, actor=AGENT).create("A subagent's own notice", agent="sub-1")
+    assert call(base, "/p/close", {"n": subagents.n}, key).status == 422, "a notice that belongs to a subagent's chat is not the phone's to close"
     assert any(item["type"] == "comment" and item["brief"] == "Looks right to me" for item in call(base, "/p/feed", key=key).body["items"]), "a comment on a row shows in the phone's chat, as on the desktop"
     with urllib.request.urlopen(urllib.request.Request(f"{base}/p/export/doc/{proposal.n}", headers={"Cookie": f"__Host-phone={key}"}), timeout=30) as sent:
         assert "Proposal" in sent.headers["Content-Disposition"] and sent.read(), "a document leaves the phone as a file named for it"

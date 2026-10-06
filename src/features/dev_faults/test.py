@@ -10,6 +10,7 @@ from features import FEATURES
 from features.dev_faults.feature import DevFaults
 from resources.base import SYSTEM
 from tests.conftest import fresh
+from tests.kit import report
 
 
 def turned(record, on: bool):
@@ -73,6 +74,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     features.load()
     record = fresh()
     turned(record, True)
+    report(record, "working", "PreToolUse")
     for _ in range(2):
         with measured(record, "command", "message all"):
             busy(0.08)
@@ -80,6 +82,12 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
     events = [e for e in record.event_log.events() if e.type == "notification" and e.action == "updated" and e.data.get("fields")]
     assert events == [], "a repeat inside the window is stamped quietly, with no update line in the chat"
+    from controllers.types import Agents
+    main = Agents(record, actor=SYSTEM).primary()
+    Agents(record, actor=SYSTEM).update(main.n, uses=main.uses + 30)
+    with measured(record, "command", "message all"):
+        busy(0.08)
+    assert "Seen 3 times" in Notifications(record, actor=SYSTEM).rows.every()[0].brief, "once the agent has worked on, a fault that comes again is reported afresh with its count"
     import cProfile
     profile = cProfile.Profile()
     profile.runcall(busy, 0.01)
