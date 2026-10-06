@@ -1,3 +1,4 @@
+import pytest
 
 from controllers.types import Messages
 from features.message_buttons.shaping import MOST, shaped
@@ -37,6 +38,20 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
     later = rows.create("buttons put on afterwards")
     rows.update(later.n, buttons=[{"label": "Go", "type": "plan", "n": 1, "action": "detonate"}, start])
     assert rows.load(later.n).data["buttons"] == [start], "buttons added after the message was written are cleaned the same way"
+    from controllers.types import Todos
+    from features.message_buttons.pressing import press
+    from resources.base import USER, Stale
+    new = {"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "from a button"}}
+    offered = rows.create("Want a to-do?", buttons=[new])
+    press(record, rows.load(offered.n), "New to-do", USER, "viewer")
+    assert [row.title for row in Todos(record, actor=AGENT).rows.standing()] == ["from a button"], "a button that names no row runs its action on the type"
+    assert rows.load(offered.n).data["pressed"] == ["New to-do"], "and the message remembers it was pressed"
+    with pytest.raises(Stale):
+        press(record, rows.load(offered.n), "New to-do", USER, "viewer")
+    target = Todos(record, actor=AGENT).create("close me from a button")
+    closing = rows.create("Close it?", buttons=[{"label": "Close it", "type": "todo", "n": target.n, "action": "complete", "body": {"how": "pressed"}}])
+    press(record, rows.load(closing.n), "Close it", USER, "viewer")
+    assert Todos(record, actor=AGENT).load(target.n).completed, "a button that names a row runs its action on that row"
 
 
 def test_a_document_carries_buttons_that_say_something_for_the_user():

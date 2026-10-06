@@ -102,6 +102,7 @@ def ports_of_its_own(monkeypatch):
 def outside_the_callers_session(monkeypatch):
     for name in ("JOURNAL_ENV", "JOURNAL_SESSION", "JOURNAL_AGENT", "JOURNAL_ACTOR"):
         monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("AGENT_JOURNAL_REPO", str(Path(tempfile.gettempdir()) / "no-journal-releases"))
 
 
 @pytest.fixture(autouse=True)

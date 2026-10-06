@@ -15,7 +15,7 @@ from features.plugins.paths import data, folder, home, log, logged
 from features.plugins.run import SECONDS, call
 from features.plugins.setup import checked, prepared
 from features.plugins.skills import published
-from features.plugins.staging import Staged, said_version, staged
+from features.plugins.staging import Staged, on_disk, said_version, staged
 
 
 def runs(manifest: Manifest) -> list[str]:
@@ -94,13 +94,14 @@ def welcomed(journal, plugins, manifest: Manifest, env: dict) -> None:
 
 def install_staged(journal, plugins, stage: Staged, source: str, ref: str, secret: str, ports: dict, chosen: dict | None = None, row=None):
     root, manifest = plugins.record.root, stage.manifest
-    env = environment(root, manifest.name, manifest, secret, ports, chosen)
-    checked(manifest, stage.where, env)
-    data(root, manifest.name).mkdir(parents=True, exist_ok=True)
-    prepared(manifest, stage.where, env, log(root, manifest.name))
-    made = place(plugins, stage.where, stage.linked, manifest, source, ref, stage.commit, secret, row=row, ports=ports)
-    welcomed(journal, plugins, manifest, env)
-    restarted(root, manifest)
+    with on_disk(manifest.name):
+        env = environment(root, manifest.name, manifest, secret, ports, chosen)
+        checked(manifest, stage.where, env)
+        data(root, manifest.name).mkdir(parents=True, exist_ok=True)
+        prepared(manifest, stage.where, env, log(root, manifest.name))
+        made = place(plugins, stage.where, stage.linked, manifest, source, ref, stage.commit, secret, row=row, ports=ports)
+        welcomed(journal, plugins, manifest, env)
+        restarted(root, manifest)
     return made
 
 

@@ -47,9 +47,17 @@ const owner = computed(() =>
 );
 const threadRoot = ref(null);
 const askHere = (n) => !!threadRoot.value?.offsetParent && (openQuestion(n, threadRoot.value), true);
+function showSuggestion(n) {
+    const card = threadRoot.value?.offsetParent && threadRoot.value.querySelector(`[data-ref="suggestion:${n}"]`);
+    if (!card) return false;
+    card.scrollIntoView({behavior: "smooth", block: "center"});
+    card.querySelector(".sg-title")?.focus({preventScroll: true});
+    return true;
+}
 let unask = () => {};
-onMounted(() => here && (unask = openInChat("question", askHere)));
-onUnmounted(() => unask());
+let unsuggest = () => {};
+onMounted(() => here && ((unask = openInChat("question", askHere)), (unsuggest = openInChat("suggestion", showSuggestion))));
+onUnmounted(() => (unask(), unsuggest()));
 const dumpHere = computed(() => store.dumping && !props.view);
 const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
 const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
@@ -201,6 +209,7 @@ const thread = computed(() => {
             message: rows("message").filter((m) => !boardRequests.value.has(m.ref)),
             comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
             question: rows("question"),
+            suggestion: rows("suggestion"),
             reaction: rows("reaction"),
             doc: rows("doc"),
             agent: here ? store.agents : rows("agent"),
@@ -462,6 +471,7 @@ watch(
                     :quote="quote.text"
                     quote-label="Replying to"
                     @unquote="quote = {text: '', ref: ''}"
+                    @typing="toBottom(true)"
                     :preset="editing ? editing.text : ''"
                     :up="editLast"
                     :down="unedit"

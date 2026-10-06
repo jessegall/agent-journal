@@ -4,6 +4,27 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.17 — the installer's git never acts on the repository it is pushed from
+A git hook hands its commands GIT_DIR and the other variables that point git at a repository. The pre-push hook runs the boot guard, which installs a journal, and the installer's git init, fetch and checkout inherited those variables. So they acted on the repository being pushed instead of a temporary folder: it was marked bare, cut to a shallow history, and a checkout's HEAD moved to a detached FETCH_HEAD. Every git command the journal runs now drops the variables git itself lists as pointing at a repository, and the boot guard starts everything without them. If your repository says it must be run in a work tree, run git config core.bare false; if it has a .git/shallow file, run git fetch --unshallow.
+
+## 2.253.16 — a suggestion shows in the chat as a card, and opens once in a window after three hours
+Every suggestion now shows in the chat as a card, with Yes, I want this, Change it first and No, don't do this. The same card shows in its side panel, on the phone and in a window. Yes on a plugin suggestion installs the commit the suggestion showed. The card first shows where the plugin comes from and the commands it runs. The chat marks Installing, then Installed or Install failed with the reason. Your answers are marked on your side of the chat. A No can be undone for six seconds. A suggestion still unanswered after the hours set in Settings › Suggestions (three by default, 0 for never) opens once in a window, never over a draft you are writing. On the phone it opens in a sheet. Only you install a suggested plugin. Nothing to do.
+
+## 2.253.15 — a helper dispatched into a checkout can be told something, stopped and finished
+A helper launched with --checkout bound its session to the checkout folder's name instead of the environment it was dispatched for, so helper say, stop and finish answered "not running" for a helper that was. A helper's session now binds to its own environment whatever folder it runs in. Nothing to do.
+
+## 2.253.14 — a plugin that fits the project is suggested, and one press installs it
+A plugin can now say in its plugin.json which projects it fits, by language and by file. Once a day the journal reads an official list of plugins and suggests the ones that fit the project. The suggestion quotes the plugin's own description and lists every command the plugin runs. Pressing Yes, I want this installs exactly the version the suggestion showed. The chat then marks that it was installed, or why the install failed. Nothing to do.
+
+## 2.253.13 — test coverage rises from 91% to about 97%, and the bugs it found are fixed
+Tests now cover the command line, the viewer's routes, an agent's screen and appointment, the start question, settings, services and to-do marks. They found two bugs, both fixed: switching back to an earlier environment crashed, and declining a takeover at start asked for a name. A session record no longer declares its earlier environment twice, the action list is cached once, and the feature-switch upgrade test no longer depends on the clock. Nothing to do.
+
+## 2.253.12 — the phone shows an answered question's chips as chips, and typing brings the chat down
+The phone's answered-question card now draws links to rows as chips, as the desktop card does, instead of their bare labels. Typing the first words in the chat box, on the phone and on the desktop, now scrolls the chat to the newest message. Nothing to do.
+
+## 2.253.11 — a link with a question mark is not a question, and the briefing tests fit the cap
+The check for choices offered in prose now ignores web links, so a bullet list beside a link such as `?file=X` no longer holds the agent's writes. The briefing tests are folded back to ten. Nothing to do.
+
 ## 2.253.10 — a helper marks a handed to-do with the command its kickoff names
 The kickoff and the helpers help text told a helper to run `journal helper done <n> --how "<what landed>"`, which the command refuses. They now name `journal helper done <n> "<what landed>"`, and a test runs the command the kickoff names. Nothing to do.
 

@@ -26,3 +26,140 @@ def test_a_reply_links_the_new_to_dos_it_names_and_points_out_the_one_it_leaves_
     assert f"to-do {forgotten} came from message {asked.n}?" in nudged, "a new to-do the reply leaves unnamed and unlinked is pointed out"
     Messages(record, actor=AGENT).reply(asked.n, "And one more thing.")
     assert [n.title for n in Nudges(record, actor=SYSTEM).rows.every()].count(f"to-do {forgotten} came from message {asked.n}?") == 1, "once"
+
+
+def test_a_message_is_filed_replied_edited_and_processed_by_the_agent_that_reads_it(tmp_path):
+    import features
+    from controllers.types import Comments, Docs, Messages, Todos
+    from resources.base import AGENT, USER
+    from tests.conftest import fresh, refused
+    features.load()
+    record = fresh()
+    user, agent = Messages(record, actor=USER), Messages(record, actor=AGENT)
+    first = user.create("make the tunnel restart itself")
+    second = user.create("and the phone dialog too")
+    note = tmp_path / "notes.txt"
+    note.write_text("details")
+    user.attach(first.n, str(note))
+    assert "has no file" in refused(lambda: agent.file(first.n, "missing.txt")), "a file the message lacks is named"
+    agent.file(first.n, "notes.txt")
+    assert agent.load(first.n).files["notes.txt"] == "kept", "a file is kept on the message by default"
+    doc = Docs(record, actor=AGENT).create("Tunnel notes")
+    agent.file(first.n, "notes.txt", into=f"doc {doc.n}")
+    assert agent.load(first.n).files["notes.txt"] == f"filed into doc {doc.n}", "a file can be filed into a doc"
+    assert "that part is not in message" in refused(lambda: agent.process(first.n, "something else", "todo 1")), "processing quotes the words it is about"
+    todo = Todos(record, actor=AGENT).create("restart the tunnel")
+    agent.process(first.n, "tunnel restart", f"todo {todo.n}, nonsense")
+    assert f"todo:{todo.n}" in agent.load(first.n).refs, "a message is linked to what it became"
+    assert "name the message" in refused(lambda: agent.reply("  ", "hello")), "a reply must say which message"
+    assert "is a reaction" in refused(lambda: agent.reply(str(first.n), "👍")), "a reply that is only a face is a reaction"
+    made = agent.reply(f"{first.n},{second.n}", "both are on the list", file=str(note))
+    assert "> make the tunnel restart itself" in made.brief and "both are on the list" in made.brief, "a reply quotes what it answers"
+    assert Comments(record, actor=AGENT).load(made.n).files, "a reply can carry a file"
+    assert f"message:{second.n}" in Comments(record, actor=AGENT).load(made.n).refs, "a reply to several messages is linked to each"
+    assert "has been read" in refused(lambda: user.edit(first.n, "changed")), "a message that was read cannot be reworded by the person"
+    fresh_one = user.create("a draft")
+    assert user.edit(fresh_one.n, "a better draft").brief == "a better draft", "a message nobody read can be reworded"
+    assert "written by the user" in refused(lambda: agent.archive(second.n, "done")), "an agent cannot put away what the person wrote"
+    assert user.archive(second.n, "done").deleted, "the person can put a message away"
+
+
+def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
+    import features
+    from controllers.types import Messages, Todos, Tools
+    from resources.base import AGENT, SYSTEM, USER
+    from tests.conftest import fresh, refused
+    features.load()
+    record = fresh()
+    tool = Tools(record, actor=SYSTEM).create("echoer", entry="echo")
+    assert Tools(record, actor=SYSTEM).run(tool.n, "hello")["out"].strip() == "hello", "a tool runs its entry with the words given"
+    Tools(record, actor=SYSTEM).update(tool.n, entry="/definitely/not/a/program")
+    assert "could not run" in refused(lambda: Tools(record, actor=SYSTEM).run(tool.n)), "a tool that cannot start says so"
+    message = Messages(record, actor=USER).create("hello")
+    reactions = Messages(record, actor=AGENT)
+    assert "a reaction is one of" in refused(lambda: reactions.react(message.n, "zzz")), "only the known faces are reactions"
+    first = reactions.react(message.n, "👍")
+    assert reactions.react(message.n, "👍").n == first.n, "the same face twice in a moment is one reaction"
+    assert reactions.comments(message.n) == [], "a message with no comment has none"
+    todos = Todos(record, actor=SYSTEM)
+    one, two = todos.create("one"), todos.create("two")
+    assert "has no open question" in refused(lambda: todos.answer(one.n, "x")), "answering a to-do with no question is refused"
+    todos.ask(one.n, "Which way?")
+    assert todos.answer(one.n, "this way").completed, "an answer closes the question a to-do waits on"
+    assert "has no open question" in refused(lambda: todos.answer(one.n, "again")), "and a question already answered is not answered twice"
+    from types import SimpleNamespace
+    assert todos.waits(SimpleNamespace(after=["nothing:1", "todo:99999"])) == [], "something a to-do waits on that cannot be found is no longer waited on"
+    handed = SimpleNamespace(type="todo", completed=False, pending=True, assigned="helper:7")
+    assert (todos.mark(handed), todos.mark(SimpleNamespace(type="plan"))) == ("  [done by helper 7, waits for its merge]", ""), \
+        "a to-do a helper finished says it waits for its merge, and a row of another kind is not marked"
+    assert "waits on another to-do" in refused(lambda: todos.after(one.n, "banana")), "a to-do waits on a to-do or a plan"
+    todos.after(two.n, one.n)
+    assert todos.mark(todos.load(two.n)).startswith("  [waits on"), "a to-do that waits says on what"
+    from agents.actors import System, User
+    from controllers.base import check_abstract, controller_of
+    from controllers.types import warm
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    row = todos.create("a row to mark")
+    todos.block(row.n, "waiting for the build")
+    assert todos.mark(todos.load(row.n)) == "  [blocked: waiting for the build]", "a blocked to-do says why"
+    todos.unblock(row.n)
+    todos.assign(row.n, "helper:3")
+    assert todos.mark(todos.load(row.n)) == "  [assigned to helper 3]", "an assigned to-do says to whom"
+    todos.complete(row.n, how="finished")
+    assert todos.mark(todos.load(row.n)) == "  [done]", "a finished to-do says so"
+    assert controller_of(record, f"todo:{row.n}").load(row.n).title == "a row to mark", "a reference names the row it points to"
+    assert "is not a row" in refused(lambda: controller_of(record, "nothing:1")), "a reference to a type that does not exist is refused"
+    assert "an abstract is at most" in refused(lambda: check_abstract("x " * 400)), "a long abstract is sent back to be shortened"
+    note = Todos(record, actor=AGENT).create("a row with a file")
+    folder = todos.folder(note.n)
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "found.txt").write_text("here")
+    assert "found.txt" in todos.index(note.n).files, "a file that was put beside a row by hand is indexed"
+    event = record.event_log.events(0, 5)[0]
+    User(record).notify(event)
+    System(record).notify(event)
+    assert (User(record).cursor(), System(record).cursor()) == (event.id, event.id), "the person's and the system's events are marked as handled"
+    from controllers.features import setting_value
+    from controllers.types import Agents, Features
+    assert "name the task to stop" in refused(lambda: Agents(record, actor=SYSTEM).stop_task(1, " ")), "stopping a task needs its name"
+    assert Agents(record, actor=SYSTEM)._shared("claude-77").title == "claude-77", "a session the journal has not met is made as stopped when it is first asked for"
+    assert "has settings" in refused(lambda: Features(record, actor=SYSTEM).configure("nothing", "k", "v")), "a feature that does not exist has no settings to set"
+    assert "has no setting" in refused(lambda: Features(record, actor=SYSTEM).configure("sharing", "nokey", "v")), "a setting the feature lacks is refused with the ones it has"
+    assert (setting_value("3"), setting_value("[1]"), setting_value("plain")) == (3, "[1]", "plain"), "a setting is read as a number or switch when it is one, and otherwise as the text given"
+    from controllers.types import Notices, Works
+    from resources.base import check_title
+    from resources.shapes import check, typed as shaped_value
+    assert "calls that processed" in refused(lambda: Messages(record, actor=AGENT).method("complete")), "a message is closed with the word it has for it, not the general one"
+    quoting = Messages(record, actor=USER).create("An old quote and new words", brief="> an old quote\n\nthe new words\nsecond line")
+    assert Messages(record, actor=AGENT)._quoted(quoting.n) == "> the new words\n> second line", "a reply quotes what was written, without the quotes already in it"
+    assert Notices(record, actor=SYSTEM)._damaged("todo/1.md", "bad") is None, "a notice board has nothing to say about a damaged row of its own"
+    finished = Todos(record, actor=AGENT).create("already finished")
+    Todos(record, actor=AGENT).complete(finished.n, "done")
+    assert "is already done" in refused(lambda: Works(record, actor=AGENT).create("working on it", todo=finished.n)), "work is not opened on a row that is done"
+    assert (shaped_value("[broken"), shaped_value("2.5"), isinstance(check("p", "number", "high"), (int, float))) == ("[broken", 2.5, True), \
+        "text that only looks like a list stays text, and a named priority is a number"
+    assert "a title is required" in refused(lambda: check_title("   ")), "a title of nothing is refused"
+    from controllers.stored import INDEXED, STAMPED, SUMMARIES
+    hurt = Todos(record, actor=AGENT).create("a row that will be damaged")
+    Todos(record, actor=SYSTEM).path(hurt.n).write_text("this is not a row")
+    STAMPED.clear()
+    INDEXED.clear()
+    SUMMARIES.clear()
+    from engine.record import Record
+    listed = [row["n"] for row in Todos(Record(record.root, record.env), actor=SYSTEM).rows.summaries()]
+    assert hurt.n not in listed and listed, "a row file that cannot be read is left out of the list, and the rest still list"
+    assert any("could not be read" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), "and the damage is filed for the user"
+    import controllers.discussion as discussion
+    faces = Messages(record, actor=AGENT)
+    liked = Messages(record, actor="user").create("a message to like")
+    faces.react(liked.n, "👍")
+    window = discussion.TWICE_WITHIN
+    discussion.TWICE_WITHIN = 0
+    try:
+        assert faces.react(liked.n, "👍") is None, "a face given again after a while takes the reaction back"
+    finally:
+        discussion.TWICE_WITHIN = window
+    warm(record.root)
+
+

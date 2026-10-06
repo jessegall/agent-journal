@@ -60,6 +60,7 @@ export const phone = {
         ),
     answer: (n, answer) => sent("./answer", {n, answer}),
     dismiss: (n) => sent("./dismiss", {n}),
+    suggestion: (n, act, how = "") => sent("./suggestion", {n, act, how}),
     react: (n, face, type = "message") => sent("./react", {n, face, type}),
     approve: (n, updated) => sent("./approve", {n, updated}),
     proceed: (n, updated) => sent("./continue", {n, updated}),

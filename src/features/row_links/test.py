@@ -47,6 +47,15 @@ def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone
     assert shaped(row, record)["brief"] == row.brief, "outside the viewer the text stays plain"
 
 
+def test_a_path_in_text_names_a_file_only_when_it_is_in_the_project():
+    from features.row_links.paths import existing
+    record = fresh()
+    project = record.root.parent
+    (project / "web").mkdir()
+    (project / "web" / "Turn.vue").write_text("")
+    assert (existing(project, "web/Turn.vue"), existing(project, "web/Missing.vue")) == ("web/Turn.vue", ""), "a path is kept when the file is there and dropped when it is not"
+
+
 def test_a_file_chip_into_another_project_cannot_read_its_files():
     from commands.http import dispatch
     record = fresh()

@@ -71,6 +71,8 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert refused(lambda: by_agent.approve(plan.n)) == "only the user can approve a plan: they do it in the viewer", "not the agent"
     assert refused(lambda: by_agent.start(plan.n)) == f"plan {plan.n} waits for the user to approve it", "nor start one not approved"
     assert ready(record) == [], "a plan not yet started holds its rows: next skips them"
+    from tests.kit import nudges, report
+    report(record, "working", "PreToolUse")
     by_agent.review(plan.n)
     assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is under review: its reviewers' report comes first", \
         "a plan under review cannot be approved"
@@ -78,11 +80,13 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     review = Reports(record, actor=AGENT).create("what the reviewers found")
     Reports(record, actor=AGENT).link(review.n, plan.ref)
     assert by_agent.load(plan.n).data["status"] == "building", "linking the reviewers' report hands it back for revising"
+    assert any(f"the review of plan {plan.n}, Port everything, is in - report {review.n}" in line for line in nudges(record)), "the agent is told when the reviewers' report is in"
     by_agent.ready(plan.n)
     by_user.approve(plan.n)
     by_agent.start(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
     assert refused(lambda: Works(record, actor=AGENT).create("a quick fix")).startswith("a plan is active"), "free work waits for the plan"
+    assert "is not in the active plan's current phase" in refused(lambda: Works(record, actor=AGENT).create("too early", todo=3)), "a row of a later phase is not started before its phase"
     second = by_agent.create("Another")
     assert refused(lambda: by_agent.start(second.n)) == f"plan {second.n} is building, not one that can become active", "a plan still building cannot start"
 
@@ -111,6 +115,21 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     reopened = by_agent.load(plan.n)
     assert (reopened.data["status"], reopened.data["current"], bool(reopened.completed)) == ("active", 3, False), \
         "a row of a finished plan reopens: the plan goes back to its phase and runs again"
+    todos.start(4)
+    work = next(w for w in Works(record, actor=SYSTEM).all() if w.data.get("todo") == 4 and not w.completed)
+    Works(record, actor=AGENT).section(work.n, f"1 · {time.strftime('%Y-%m-%d %H:%M')}", "measured the parity")
+    Works(record, actor=AGENT).complete(work.n, how="parity holds")
+    moments = {(moment["kind"], moment["todo"]) for moment in by_agent.timeline(plan.n)}
+    assert {("started", 4), ("log", 4), ("ended", 4), ("done", 5)} <= moments, "a plan's timeline tells when its to-dos were taken up, logged, ended and closed"
+    from features.plans.summary import plans_shown
+    assert [(entry["title"], entry["status"], entry["phase"], entry["phases"], entry["rows"], entry["done"]) for entry in plans_shown(record)] == \
+        [("Port everything", "active", "Third", 3, 5, 4), ("Another", "building", "", 0, 0, 0)], "the viewer's plan list shows each plan with its phase and how many of its rows are done, one still being written included"
+    from features.plans.handlers import doable
+    from types import SimpleNamespace
+    assert doable(record, SimpleNamespace(current_phase=None)) == "", "a plan with no phase in hand has nothing to take next"
+    assert doable(record, by_agent.load(plan.n)) == "take to-do 4", "a plan's next step names the to-dos ready to take"
+    todos.start(4)
+    assert doable(record, by_agent.load(plan.n)) == "go on with to-do 4", "and the ones already in hand"
 
 
 def test_under_auto_a_checkpoint_is_passed_not_waited_at():
@@ -190,6 +209,29 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):
     todos.complete(row.n, "done before the plan ran")
     by_user.start(by_user.approve(late.n).n)
     assert by_agent.load(late.n).data["status"] == "done", "its rows already closed, it completes itself when started"
+
+    from features.plans.resource import ABANDONED
+    from migrations.m0056_plans_with_open_rows import run as reopen_plans
+    from migrations.m0065_abandoned_plans_closed import run as close_abandoned
+    stale = by_agent.create("done too early", goal="rows are still open")
+    by_agent.phase(stale.n, "only phase", when="its row is closed")
+    by_agent.place(stale.n, 1, [todos.create("a row still open").n])
+    by_agent.ready(stale.n)
+    for how in ("closed", "marked"):
+        marked = by_agent.load(stale.n)
+        marked.status = "done"
+        by_agent.save(marked, "updated", status="done")
+        if how == "closed":
+            by_agent.complete(stale.n, how="finished")
+        assert reopen_plans(record.root) == [f"t {stale.ref}"], f"a plan {how} done with an open row is reopened"
+        assert (by_agent.load(stale.n).status, by_agent.load(stale.n).completed) == ("active", 0.0), "the reopened plan runs again at its open phase"
+    assert reopen_plans(record.root) == [], "a plan that is not done is left alone"
+    gone = by_agent.create("given up", goal="never mind")
+    given_up = by_agent.load(gone.n)
+    given_up.status = ABANDONED
+    by_agent.save(given_up, "updated", status=ABANDONED)
+    assert close_abandoned(record.root) == [f"t: plan {gone.n} was abandoned, so it is closed"], "an abandoned plan is closed"
+    assert close_abandoned(record.root) == [], "a closed plan is not closed twice"
 
 
 def test_an_agent_building_a_plan_is_told_each_next_step():
@@ -351,6 +393,14 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"
+    from types import SimpleNamespace
+    from features.tickets.phases import start_tickets_of_phase
+    from resources.base import Refused
+    assert start_tickets_of_phase(record, SimpleNamespace(current=9, phases=[])) == [], "a plan past its last phase starts no tickets"
+    monkeypatch.setattr(Tickets, "start", lambda self, n: (_ for _ in ()).throw(Refused("no room")))
+    third = tickets.create("Print", board=board.n)
+    assert start_tickets_of_phase(record, SimpleNamespace(current=1, phases=[{"tickets": [third.n]}], worktree="")) == [], \
+        "a ticket that cannot start yet is not counted as started"
 
 
 def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkeypatch):
@@ -391,3 +441,9 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
     tickets.close_merged()
     assert (all(tickets.load(n).completed for n in (first.n, second.n)), stopped, bool(plans.load(plan.n).merged)) == \
         (True, [f"session-plan-{plan.n}"], True), "once the plan's branch is merged its tickets close together and its agent stops, once"
+    from resources.base import Refused
+    straggler = tickets.update(tickets.create("Still going", board=board.n).n, work_environment=f"plan-{plan.n}")
+    tickets._close_plan_worktree(f"plan-{plan.n}")
+    assert stopped == [f"session-plan-{plan.n}"], "a plan's agent is left running while one of its tickets is still open"
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
+    assert tickets._hand_to_plan(straggler).queued, "a ticket the plan's agent cannot be told of waits in the queue"

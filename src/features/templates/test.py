@@ -50,6 +50,9 @@ def test_the_templates_instructions_come_before_the_work_for_the_agent():
     plans = Plans(record, actor=USER)
     plans.approve(plan.n)
     plans.start(plan.n)
+    from types import SimpleNamespace
+    from features.templates.instructions import template_of
+    assert template_of(features.FEATURES["templates"].journal.at(record), SimpleNamespace(data={"template": 99999}, type="doc")) is None, "a template that is gone gives no instructions"
     Works(record, actor=AGENT).create("digest research", todo=row.n)
     assert [n.title for n in Nudges(record).all() if n.title.startswith(f"template {flow.n}")], "starting its work tells the agent the instructions"
 
@@ -66,6 +69,20 @@ def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
     plan = Plans(record, actor=USER).from_doc(design.n)
     assert ([s["title"] for s in plan.sections], design.ref in plan.refs, plan.brief.startswith(f"Built from the functional design, doc {design.n}")) == \
         (["Must have"], True, True), "the plan carries the checklist its rows must cover, and points at the design"
+    phased = Docs(record, actor=AGENT).create("Rollout", abstract="Ship it in steps")
+    Docs(record, actor=AGENT).section(phased.n, "Phase 1: Build the queue", "Make it work")
+    Docs(record, actor=AGENT).section(phased.n, "Notes", "Not a phase")
+    assert [phase["title"] for phase in Plans(record, actor=USER).from_doc(phased.n).data["phases"]] == ["Build the queue"], \
+        "a design's phase sections become the phases of its plan, and its other sections stay out"
+
+    from engine import runtime
+    from migrations.m0021_functional_design_is_a_doc import run
+    older = fresh()
+    runtime.env_file(older.root).parent.mkdir(parents=True, exist_ok=True)
+    runtime.env_file(older.root).write_text(older.env)
+    blank = Templates(older, actor=USER).create("Blank plan")
+    assert run(older.root).startswith("plan templates replaced by the functional design doc: 1 retired, Functional design"), "an old blank plan template is retired and the new one shipped"
+    assert Templates(older, actor=USER).load(blank.n).completed, "the retired template is closed"
 
 
 def test_a_template_asks_for_its_fields_and_fills_them_in():
@@ -79,6 +96,8 @@ def test_a_template_asks_for_its_fields_and_fills_them_in():
     templates.field(critique.n, "Focus", kind="choice", options="mistakes, additions")
     assert refused(lambda: templates.field(critique.n, "Tone", kind="choice")) == "a choice field needs --options \"one, two, three\"", \
         "a choice field without options is refused"
+    assert "a field is one of" in refused(lambda: templates.field(critique.n, "Tone", kind="colour")), "a field is one of the kinds a template knows"
+    assert "needs a label with a letter or a number" in refused(lambda: templates.field(critique.n, "!!!")), "a field is named by its label, so the label needs a letter or a number"
     row = Todos(record, actor=USER).create("Critique plan 3", template=critique.n, template_values={"focus": "mistakes"})
     assert Todos(record, actor=USER).load(row.n).sections[0]["body"] == "2 reviewers, mistakes", \
         "the parts are filled from the values given, a field left out takes its default"

@@ -98,6 +98,10 @@ def test_the_days_to_keep_is_a_setting():
     record.set_setting("runtime_cleanup", {"days": 1})
     tidy(record.root, house.values(record).days)
     assert old.parent.exists() is False, "housekeeping.days shortens the wait"
+    from features.runtime_cleanup.tidy import Tidied
+    assert (Tidied(trimmed=2, removed=1, events=3, leftovers=1).summary, Tidied().summary) == \
+        ("2 logs cut to their tail; 1 quiet session folder removed; 3 old events dropped; 1 leftover removed", "nothing to tidy"), \
+        "what housekeeping did is said in one line, and nothing done says so"
 
 
 def test_it_runs_on_its_own_on_the_engines_clock():
@@ -107,6 +111,15 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     capture.write_bytes(b"y" * 200_000)
     tick(record)
     assert capture.stat().st_size == 64 * 1024, "the first tick sweeps"
+    capture.write_bytes(b"y" * 200_000)
+    tick(record)
+    assert capture.stat().st_size == 200_000, "a second tick within the hour finds it tidied and leaves it"
+    (runtime.folder(record.root) / "tidied").unlink()
+    from features.runtime_cleanup.handlers import claim
+    held = claim(runtime.folder(record.root) / "tidying.lock")
+    tick(record)
+    held.close()
+    assert capture.stat().st_size == 200_000, "a sweep another process is already making is not made twice"
 
 
 def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not_reached():
@@ -206,3 +219,46 @@ def test_tidy_drops_the_folds_of_an_old_code_mark_whole_and_keeps_the_current_on
     leftovers(record.root)
     assert (current.exists(), old.exists(), recent.exists(), (folds / "flat.pickle").exists()) == (True, False, True, False), \
         "an old mark's folds go in one folder, another build still running keeps its own, and folds from before marks had folders go"
+
+
+def test_the_attic_packs_unpacks_and_finds_what_was_put_away_and_a_stubborn_server_is_ended_in_steps(tmp_path, monkeypatch):
+    from engine import attic, stop
+
+    root = tmp_path / ".journal"
+    kept = attic.folder(root) / "main"
+    kept.mkdir(parents=True)
+    (kept / "row.md").write_text("kept")
+    assert attic.compress(tmp_path / "no-record") == [] and attic.compress(root) == ["main"], "every folder in the attic is packed, and a project without an attic packs nothing"
+    (attic.folder(root) / "main-2.tar.gz").write_text("not an archive")
+    (attic.folder(root) / "main-12.tar.gz").write_text("not an archive")
+    (attic.folder(root) / "main-x.tar.gz").write_text("not an archive")
+    assert attic.latest(root, "main").name == "main-12.tar.gz" and attic.latest(root, "other") is None, "the newest archive of an environment is found by its number"
+    assert attic.unpack(attic.folder(root) / "main.tar.gz", tmp_path / "back") == tmp_path / "back" and (tmp_path / "back" / "row.md").read_text() == "kept", \
+        "an archive unpacks into the folder it came from and is used up"
+
+    tries = []
+    monkeypatch.setattr(attic.time, "sleep", lambda seconds: None)
+    real = attic.shutil.rmtree
+
+    def stubborn(path, *args, **kwargs):
+        tries.append(path)
+        if len(tries) < 3:
+            raise OSError("busy")
+        if len(tries) == 3:
+            raise FileNotFoundError(path)
+        return real(path, *args, **kwargs)
+    monkeypatch.setattr(attic.shutil, "rmtree", stubborn)
+    attic.removed(tmp_path / "back")
+    assert len(tries) == 3, "a folder that is busy is tried again, and one that is already gone ends the tries"
+
+    kills, gone_after = [], iter([False, False, True])
+    monkeypatch.setattr(stop, "serving", lambda root: 4242)
+    monkeypatch.setattr(stop, "gone", lambda root, seconds=stop.WAIT: next(gone_after))
+    monkeypatch.setattr(stop.os, "kill", lambda pid, signal_: kills.append((pid, signal_)))
+    assert stop.ended(root) is True and [name for _, name in kills] == [stop.signal.SIGTERM, stop.signal.SIGKILL], "a server that ignores the polite ask is ended with the hard one"
+    kills.clear()
+    monkeypatch.setattr(stop, "gone", lambda root, seconds=stop.WAIT: False)
+    assert stop.ended(root) is False and len(kills) == 2, "a server that cannot be ended is reported"
+    monkeypatch.setattr(stop, "serving", lambda root: 0)
+    monkeypatch.setattr(stop, "running", lambda root: False)
+    assert stop.ended(root) is True, "a server that vanished while it was being asked is ended"

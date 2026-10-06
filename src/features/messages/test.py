@@ -58,6 +58,13 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     Messages(record, actor=AGENT).reply(asked.n, "done")
     assert f"todo:{unrelated.n}" not in Messages(record).load(asked.n).refs, \
         "a row filed while a message is in hand is not linked to it: only processing links, never a guess"
+    ask = Messages(record, actor="user").create("please wire up the footer too")
+    Messages(record, actor=AGENT).read(ask.n)
+    footer = Todos(record, actor=AGENT).create("wire up the footer")
+    Messages(record, actor=AGENT).process(ask.n, "please wire up the footer too", f"todo {footer.n}")
+    report(record, "working", "PreToolUse")
+    report(record, "idle", "Stop")
+    assert Messages(record).load(ask.n).completed, "a message that asked for no answer is closed once the agent has filed what it asked for"
 
 
 def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read():
@@ -165,6 +172,15 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
     assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "f", "index": 0, "final": True, "delta": "👍"}))
+    assert ("👍" in chat(), any("your message was only 👍, so it was not posted" in line for line in nudges(record))) == (False, True), \
+        "a message that is only a face is not posted, and the agent is told to react instead"
+    before = len(chat())
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "g", "index": 0, "final": True, "delta": "   "}))
+    assert len(chat()) == before, "a message of nothing but spaces is not posted"
+    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Done. " * 80}]}}) + "\n")
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Done. " * 80})
+    assert any("paragraph" in line.lower() for line in nudges(record)), "a long answer in one block of sentences is told to be set in paragraphs"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():

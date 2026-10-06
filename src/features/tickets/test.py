@@ -1,5 +1,5 @@
 import time
-from controllers.types import Comments
+from controllers.types import Comments, Todos
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
@@ -7,7 +7,7 @@ from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
 
 
-def test_a_ticket_belongs_to_the_project_and_one_source_event_stays_one_ticket():
+def test_a_ticket_belongs_to_the_project_and_one_source_event_stays_one_ticket(tmp_path):
     record = fresh()
     Boards(record, actor=USER).create("Bugs", stages=["New", "Doing", "Done"])
     made = Tickets(record, actor=USER).create("Checkout fails on empty cart", brief="the pay button errors", board=1)
@@ -19,6 +19,20 @@ def test_a_ticket_belongs_to_the_project_and_one_source_event_stays_one_ticket()
     other = elsewhere.create("TypeError in checkout", source="sentry", source_id="evt-2")
     assert (again.n, again.brief, other.n != first.n) == (first.n, "seen 40 times", True), \
         "the same event from the same source updates its ticket; another event makes another"
+
+    from migrations.m0055_card_backs_in_parts import run as reshape
+    from migrations.m0059_tickets_name_their_provider import run as name_provider
+    plain = Tickets(record, actor=AGENT).create("Plain card", brief="just words")
+    lettered = Tickets(record, actor=AGENT).create("Lettered card")
+    Tickets(record, actor=AGENT).update(lettered.n, brief="What: fix it Why: it breaks")
+    assert reshape(record.root) == [lettered.ref], "only a card back written in run-on parts is reshaped"
+    assert Tickets(record, actor=AGENT).load(lettered.n).brief == "**What:** fix it\n\n**Why:** it breaks", "each part gets its own paragraph"
+    assert Tickets(record, actor=AGENT).load(plain.n).brief == "just words", "a card back without parts is left as it was"
+    assert reshape(tmp_path) == [] and name_provider(tmp_path) == [], "a project without environments has nothing to reshape or name"
+    Tickets(record, actor=AGENT).update(plain.n, agent="codex")
+    assert name_provider(record.root) == [f"ticket {plain.n} runs on codex"], "a ticket stamped with its agent names that provider"
+    assert Tickets(record, actor=AGENT).load(plain.n).provider == "codex", "the provider is now its own field"
+    assert name_provider(record.root) == [], "a ticket that names its provider is left alone"
 
 
 def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():
@@ -200,6 +214,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert launched[-1][2][:2] == ["--model", "sonnet"], "the ticket's agent starts on the model it was given"
     Comments(Record(record.root, f"ticket-{ticket.n}"), actor=AGENT).create("Measured", brief="parity holds", about=ticket.ref)
     assert "Measured" in [c.title for c in tickets.comments(ticket.n)], "a ticket agent's comment shows on its ticket from the main environment"
+    queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch)
     calls_fire_once_and_repeat_on_time(monkeypatch)
 
 
@@ -329,6 +344,24 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert across.merge(spanning.n).completed and "site work" in site("log", "-1", "--format=%s").stdout, \
         "journal ticket merge merges each repository it changed, skips the untouched one, and closes it"
 
+    second = tickets.bind(tickets.create("Light mode", board=board.n).n)
+    git("switch", "-q", "-c", f"worktree-{second.work_environment}", home)
+    (project / "clash.txt").write_text("the ticket's version\n")
+    git("add", "clash.txt")
+    git("commit", "-q", "-m", "the ticket's change")
+    git("switch", "-q", home)
+    (project / "clash.txt").write_text("the board's version\n")
+    git("add", "clash.txt")
+    git("commit", "-q", "-m", "the board's change")
+    assert "was not merged into" in refused(lambda: tickets.merge(second.n)), "a ticket whose branch conflicts with the board's is not merged, and says why"
+    unmerged = Docs(Record(record.root, second.work_environment), actor=USER).create("How light mode works")
+    tickets.complete(second.n, how="dropped", yes=True)
+    assert Docs(record).load(unmerged.n).deleted, "a doc a ticket proposed goes with it when the ticket closes without its branch merged"
+    from features.tickets.landing import Landing
+    assert tickets._clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
+    assert [Landing(project, f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(project, f"worktree-{second.work_environment}", ticket.base, home).state()] \
+        == ["merged", "changed"], "a branch is merged, changed or untouched by where its commits are"
+
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
     from resources.base import AGENT
@@ -387,6 +420,12 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     user.complete(api.n, how="shipped")
     user.start_queued()
     assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "once its dependency closes, the sweep starts it"
+    first, left, right, last = (user.create(title, board=board.n) for title in ("First", "Left", "Right", "Last"))
+    for waiting, on in ((left, first), (right, first), (last, left), (last, right)):
+        user.update(waiting.n, dependencies={**user.load(waiting.n).dependencies, on.ref: "confirmed"})
+    assert "would wait on itself" in refused(lambda: user.depend(first.n, last.n)), "a cycle through two ways to the same ticket is found, and each way is followed once"
+    user.update(last.n, dependencies={"ticket:999": "confirmed"})
+    assert user._waiting_on(user.load(last.n)) == [], "a wait on a ticket that is gone holds nothing"
 
 
 def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypatch):
@@ -433,6 +472,10 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
+    assert "no plan waiting for you to approve" in refused(lambda: tickets.approve_plan(ticket.n)), "a plan that is already approved is not approved again"
+    Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status="ready")
+    tickets.approve_plan(ticket.n)
+    assert plans.load(plan.n).status == APPROVED, "you approve the plan from its ticket's card as well"
     from features.plans.controller import ACTIVE, WAITING
     Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status=WAITING)
     drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
@@ -535,3 +578,108 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
     monkeypatch.setattr(Tickets, "_clean", lambda self, found: False)
     assert not ticket_calls.handed_in(tickets, ticket), "a dirty branch is not handed in"
+    from types import SimpleNamespace
+    from controllers.types import Questions
+    whispered = []
+    context = SimpleNamespace(record=record, agent=SimpleNamespace(whisper=lambda line, **values: whispered.append(line)), every=lambda *args: True)
+    monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [])
+    monkeypatch.setattr(Tickets, "_needing_a_look", lambda self, boards: [(ticket, SimpleNamespace(kind="stopped", text="its agent is gone"))])
+    monkeypatch.setattr(Tickets, "_revive", lambda self, found: True)
+    handlers.look_at_stuck(context, tickets)
+    assert whispered == ["ticket_restarted"] and handlers.STUCK not in moments, "a ticket whose agent died is restarted and the orchestrator hears of it"
+    monkeypatch.setattr(Tickets, "_revive", lambda self, found: False)
+    handlers.look_at_stuck(context, tickets)
+    assert moments[-1] == handlers.STUCK, "one that cannot be restarted is raised to the orchestrator"
+    delivered = []
+    monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: ticket.n)
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: delivered.append(note))
+    question = Questions(record, actor=AGENT).create("Which one?")
+    Questions(record, actor=USER).complete(question.n, how="Both")
+    assert delivered == [f"Your question {question.n}, Which one?, is answered: Both"], "a ticket's agent is told when the user answers its question"
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
+    handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
+    monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: 0)
+    handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
+
+
+def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
+    import agents.terminal
+    from tests.conftest import refused
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args: 1)
+    record = fresh()
+    board = Boards(record, actor=USER).create("Queue", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    record.set_setting("tickets", {"running": 1})
+    tickets = Tickets(record, actor=USER)
+    first, second, third, fourth, fifth = (tickets.create(title, board=board.n) for title in ("One", "Two", "Three", "Four", "Five"))
+    for ticket in (first, second, third):
+        tickets.move(ticket.n, "Building")
+    assert [tickets.load(t.n).queued for t in (first, second, third)] == [False, True, True], "past the limit the later tickets wait in the order they were moved"
+    tickets.queue_before(third.n, second.n)
+    assert tickets._queue() == [third.n, second.n], "a queued ticket moves before another queued one"
+    assert "only a queued" in refused(lambda: tickets.queue_before(first.n, second.n)), "a ticket that is not waiting has no place in the queue"
+    tickets.start_next(second.n)
+    assert tickets._queue() == [second.n, third.n], "a ticket told to start next goes to the front of the queue"
+    assert "is not queued" in refused(lambda: tickets.start_next(first.n)), "only a queued ticket starts next"
+    tickets.place(third.n, second.n)
+    assert tickets._queue() == [third.n, second.n], "dropping one queued ticket on another reorders the queue"
+    tickets.place(first.n, third.n)
+    assert tickets.load(first.n).queued is False, "dropping a ticket that is not queued only moves it within its column"
+    from features.tickets.cards import ago, ordinal
+    assert [ordinal(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22, 103)] == ["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "103rd"], \
+        "a place in the queue is written as an ordinal"
+    assert [ago(seconds) for seconds in (30, 120, 7200)] == ["30s", "2m", "2h"], "a quiet time is written in its largest whole unit"
+    reasons = lambda: {card["n"]: card["reason"] for lane in tickets.board(board.n)["lanes"] for card in lane["cards"]}
+    assert (reasons()[third.n].startswith("1st in the queue, starts when one of 1 agents finishes"), reasons()[second.n].startswith("2nd in the queue, starts when")) == (True, True), \
+        "a queued card says its place and what it waits for"
+    record.set_setting("tickets", {"running": 0})
+    assert reasons()[third.n].startswith("1st in the queue, starts with the next minute's check"), "with no limit a queued card waits only for the next check"
+    record.set_setting("tickets", {"running": 1})
+    assert "no agent running to look at" in refused(lambda: tickets.screen(second.n)), "a queued ticket has no screen to show"
+    assert "no agent running to tell" in refused(lambda: tickets.tell(second.n, "hello")), "a queued ticket has no agent to tell"
+    from types import SimpleNamespace
+    typed = []
+    with monkeypatch.context() as scoped:
+        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: typed.append(text) or bool(text)))
+        tickets.tell(second.n, "  hello  ")
+        assert (typed, "told" in tickets.load(second.n).data) == (["hello"], True), "a note to a ticket's agent is typed into its terminal and remembered"
+        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: False))
+        assert "stayed in its input box" in refused(lambda: tickets.tell(second.n, "again")), "a note the terminal would not take says its agent may be stuck"
+    assert "no provider 'nowhere'" in refused(lambda: tickets.start(fourth.n, provider="nowhere")), "a provider the journal does not know is refused before anything starts"
+    assert "never started" in refused(lambda: tickets.merge(fifth.n)), "a ticket that never started has no branch to merge"
+    from commands.http import dispatch
+    from resources.base import Refused
+    asked_to_start = []
+
+    def refusing(*given):
+        raise Refused("no room")
+
+    with monkeypatch.context() as scoped:
+        scoped.setattr(Tickets, "start", lambda self, n: asked_to_start.append(n) or refusing())
+        tickets.start_queued()
+        scoped.setattr(Tickets, "start", lambda self, n: asked_to_start.append(n) or SimpleNamespace(queued=True))
+        tickets.start_queued()
+        scoped.setattr(Tickets, "complete", lambda self, n, **given: refusing())
+        tickets._closed([tickets.load(first.n)])
+        assert not tickets.load(first.n).completed, "a ticket that cannot be closed stays open"
+    assert len(asked_to_start) == len(tickets._queue()) + 1, "the queue is walked until one ticket stays queued, and a ticket that cannot start is passed over"
+    with monkeypatch.context() as scoped:
+        scoped.setattr("engine.organization.organization", refusing)
+        assert dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body["owner"] == [], "a project with no organization offers no owners"
+    choices = dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body
+    assert ([found["label"] for found in choices["board"]], [found["key"] for found in choices["stage"]]) == (["Queue"], ["Ideas", "Building"]), \
+        "a ticket's form offers the boards and the stages of its own board"
+    from controllers.base import COMMANDS
+    Todos(Record(record.root, tickets.load(fourth.n).work_environment), actor=AGENT).create("Draw the dark theme")
+    held = COMMANDS["ticket"]["todos"](tickets)
+    assert [(found["ticket"], [row["title"] for row in found["todos"]]) for found in held] == [(fourth.n, ["Draw the dark theme"])], \
+        "the to-dos a ticket's own agent keeps are listed under their ticket"
+    from features.tickets.cards import SILENT_AFTER
+    from resources.types import IDLE
+    tickets.update(fifth.n, dependencies={first.ref: "proposed"})
+    tickets.update(fourth.n, dependencies={first.ref: "confirmed"})
+    assert (reasons()[fifth.n], tickets._runtime(tickets.load(fourth.n), {}, 0).text.startswith(f"waiting on ticket {first.n}")) == (f"the agent proposes it waits on ticket {first.n}", True), \
+        "a card says which ticket its agent proposed it waits on, and which it is held by"
+    watching = lambda **row: tickets._live_state(SimpleNamespace(**{"asking": False, "at": 5.0, "quiet_for": 0.0, "status": "working", "background_run": False, **row}), "ticket-x").text
+    assert [watching(asking=True), watching(at=0.0), watching(quiet_for=SILENT_AFTER + 120), watching(status=IDLE, quiet_for=SILENT_AFTER + 120)] == \
+        ["waiting for you", "starting", "silent for 7m", "idle for 7m with nothing running in the background"], \
+        "a ticket's agent is called waiting, starting, silent or idle by what it last did and how long ago"

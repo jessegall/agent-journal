@@ -89,6 +89,16 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
         "not while it is answering, not while it is idle, and not before the time is up"
     quiet_record.features = {**quiet_record.features, "work_tracking.auto": False}
     assert still_there(quiet_record, QUIET_FOR + 60, "busy") == "", "and never with auto off"
+    from types import SimpleNamespace
+    from features.work_tracking import auto
+    quiet_record.features = {**quiet_record.features, "work_tracking.auto": True}
+    typed = []
+    agent = SimpleNamespace(record=quiet_record, driver=SimpleNamespace(quiet_for=lambda: QUIET_FOR + 60, send=typed.append), state=lambda: "busy")
+    checking = auto.CheckIn(agent)
+    assert checking.tick() == "", "a check-in does not ask the moment the agent starts"
+    checking.asked_at -= auto.ASK_AGAIN + 1
+    assert (checking.tick(), len(typed)) == ("asked whether it is still working", 1), "after the wait it asks the agent whether it is still working"
+    assert (checking.tick(), len(typed)) == ("", 1), "and does not ask again at once"
 
     from tests.kit import tick
     stopped = fresh()
@@ -159,6 +169,8 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
     assert (code, "invalid choice: 'list'" in text) == (2, True), text
     text, code = captured(["work", "log"], record.root)
     assert (code != 0, "say what was decided or done" in text) == (True, True), text
+    text, code = captured(["--env", record.env, "--as", AGENT, "work", "log", "words with no work open"], record.root)
+    assert (code != 0, "nothing is open" in text) == (True, True), "a log entry with no work open says to start one"
     made = Works(record, actor=AGENT).create("Logging from the command line")
     for said in (["--env", record.env, "--as", AGENT, "work", "log", str(made.n), "the number first, as the nudges say"], ["--env", record.env, "--as", AGENT, "work", "log", "with the flag", "--n", str(made.n)]):
         text, code = captured(said, record.root)
@@ -170,6 +182,12 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
         assert code == 0, text
     parked = Works(record, actor=AGENT).load(made.n)
     assert (parked.parked, parked.awaiting) == ("something else goes first", ""), "park and await take the number first too, as the nudges print them"
+    text, code = captured(["--env", record.env, "--as", AGENT, "work", "log", str(made.n), "too late"], record.root)
+    assert (code != 0, "is parked" in text) == (True, True), "a log entry names the work it was meant for when that work is parked"
+    text, code = captured(["--env", record.env, "--as", AGENT, "work", "resume", str(made.n)], record.root)
+    assert (code, Works(record, actor=AGENT).load(made.n).parked) == (0, ""), text
+    text, code = captured(["--env", record.env, "--as", AGENT, "work", "resume", str(made.n)], record.root)
+    assert (code != 0, "is not parked" in text) == (True, True), "work that is already going cannot be resumed"
 
 
 def test_one_to_do_is_in_hand_until_it_is_parked_or_done():
@@ -327,3 +345,13 @@ def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkey
     driver.sent_at = 0
     driver.pump()
     assert delivered == ["a message from the user"], "the wait began while the line was queued: it is dropped, the user's line is not"
+    from migrations.m0005_todo_waits import run as waits_move
+    older = fresh()
+    todos = Todos(older, actor=AGENT)
+    first, second = todos.create("first"), todos.create("second")
+    todos.link(second.n, first.ref)
+    todos.link(second.n, "doc:1")
+    assert waits_move(older.root) == [second.ref], "a to-do that listed another to-do among its links now waits on it"
+    waiting = todos.load(second.n)
+    assert (waiting.after, waiting.refs) == ([first.ref], ["doc:1"]), "the wait moves out of the links and the other links stay"
+    assert waits_move(older.root) == [], "a wait that has moved is not moved again"

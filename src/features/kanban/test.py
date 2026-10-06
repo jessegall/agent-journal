@@ -1,3 +1,4 @@
+import pytest
 import time
 
 import features
@@ -46,24 +47,43 @@ def test_every_to_do_sits_in_one_lane_by_its_state_and_the_first_rule_that_match
     assert (cards[plain]["targets"], cards[blocked]["targets"], cards[waiting]["targets"], cards[started]["targets"], cards[done]["targets"]) == \
         (["held", "doing", "done"], ["todo", "done"], [], [], ["todo"]), "each card carries the lanes it may move to"
     assert "waits on todo" in cards[waiting]["reason"] and cards[blocked]["reason"] == "blocked: the api is down", "a held card says why"
+    helped, finished = todos.create("row with a helper").n, todos.create("row a helper finished").n
+    todos.assign(helped, "helper:3")
+    todos.assign(finished, "helper:4")
+    todos.update(finished, pending={"how": "built", "worktree": "w"})
+    from features.kanban.lanes import reason_of
+    sources = sources_of(features.FEATURES["kanban"].journal.at(record))
+    reasons = {n: reason_of(sources, todos.load(n)) for n in (helped, finished)}
+    assert (reasons[helped], reasons[finished]) == ("helper 3 has it", "done by helper 4, waits for its merge"), "a card a helper holds says which helper, and one it finished says it waits for its merge"
 
 
 def test_a_row_outside_an_active_plan_stays_in_to_do_and_the_hold_is_one_line():
     features.load()
     record = fresh()
     todos = Todos(record, actor=USER)
-    inside, outside = todos.create("in the plan").n, todos.create("not in it").n
+    inside, outside, later = todos.create("in the plan").n, todos.create("not in it").n, todos.create("in a later phase").n
     plans = Plans(record, actor=AGENT)
     plan = plans.create("Ship it", goal="shipped")
     plans.phase(plan.n, "Build", when="built")
+    plans.phase(plan.n, "Ship", when="shipped")
     plans.stage(plan.n, "todos")
     plans.place(plan.n, 1, [inside])
+    plans.place(plan.n, 2, [later])
     plans.ready(plan.n)
     plans = Plans(record, actor=USER)
     plans.approve(plan.n)
     plans.start(plan.n)
     assert (lane(record, inside), lane(record, outside)) == ("todo", "todo"), "the plan's global hold moves no card"
     assert board(record)["plan_hold"].startswith(f"Plan {plan.n} is active"), "it is said once above the lanes"
+    reasons = {card["n"]: card["reason"] for column in board(record)["lanes"] for card in column["cards"]}
+    assert reasons[later] == f"plan {plan.n} holds it until phase 2", "a row of a later phase says which plan holds it and until when"
+    assert f"plan {plan.n} holds todo {later} until its phase 2" in refused(lambda: shift(record, later, "todo")), "a card a plan holds cannot be dragged out of its lane"
+    from features.kanban.shifts import Shift
+    with pytest.raises(NotImplementedError):
+        Shift(("todo",), "held").run(None, None, "", "")
+    card_numbers = lambda **lens: sorted(card["n"] for column in board(record, **lens)["lanes"] for card in column["cards"])
+    assert (card_numbers(plan=plan.n), card_numbers(plan=plan.n + 99), card_numbers(agent="nobody")) == ([inside, later], [], []), \
+        "a board seen through a plan holds only that plan's cards, through a plan that does not exist none, and through an agent with no work none"
 
 
 def test_a_card_moves_through_the_journals_own_actions_and_refuses_in_words_that_name_a_command():
@@ -108,6 +128,20 @@ def test_a_cards_words_pass_the_formatters_like_every_other_field():
     record = fresh()
     Todos(record, actor=USER).create("[!info] tagged title")
     assert [c["title"] for lane in board(record)["lanes"] for c in lane["cards"]] == ["tagged title"], "a leftover tag is taken off the card's title"
+    from controllers.types import Docs
+    from features.format import FORMATTERS, formatted, markdown
+    doc = Docs(record, actor=USER).create("[!info] A guide", abstract="short", brief="Words")
+    Docs(record, actor=USER).section(doc.n, "Steps", "Do it")
+    assert markdown(Docs(record, actor=USER).load(doc.n), record) == "# A guide\n\n_short_\n\nWords\n\n## Steps\n\nDo it\n", \
+        "a downloaded document is its title, its line, its words and its sections, with the same tags taken off"
+    broken = (lambda text, _: 1 / 0, ())
+    FORMATTERS.add(None, broken)
+    try:
+        assert formatted("kept", record) == "kept", "a formatter that fails leaves the words as they were"
+        with pytest.raises(ZeroDivisionError):
+            formatted("kept")
+    finally:
+        FORMATTERS.remove(broken)
 
 
 def test_a_parked_to_do_is_held_not_doing():
@@ -169,3 +203,8 @@ def test_a_subagents_task_list_stays_off_the_main_list_and_each_agent_holds_its_
     assert [t["state"] for t in main.tasks("x1")] == ["doing", "waiting"], "the subagent takes its task while the main agent has work in hand"
     helper.complete(task.n, how="drawn")
     assert [t["state"] for t in main.tasks("x1")] == ["done", "waiting"], "and its inspector sees how far along it is"
+    from tests.kit import report
+    report(record, "working", "PreToolUse")
+    assert [(chip["title"], chip["status"], chip["todo"] > 0) for chip in board(record)["agents"]] == [("Main agent", "working", True)], \
+        "the board names the main agent that is working and what it holds"
+

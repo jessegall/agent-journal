@@ -251,6 +251,22 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${n}/${action}`), body);
     }
 
+    answerSuggestion(n, how) {
+        return this.act("suggestion", n, "decide", {how});
+    }
+
+    installSuggested(n) {
+        return this.post(this.here(`/suggestion/${n}/install`), {}, LONG_WAIT_MS);
+    }
+
+    reopenSuggestion(n) {
+        return this.act("suggestion", n, "reopen");
+    }
+
+    noteSuggestionWindow(n) {
+        return this.act("suggestion", n, "note_window");
+    }
+
     installPlugin(source) {
         return this.post(this.here("/plugin/install"), {source, yes: true}, LONG_WAIT_MS);
     }

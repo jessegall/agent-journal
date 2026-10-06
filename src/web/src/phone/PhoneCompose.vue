@@ -9,13 +9,14 @@ import {announce} from "./announce.js";
 
 const MOST_LINES = 5;
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
-const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused"]);
+const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused", "typing"]);
 const SHORT = 420;
 const SHORT_LINES = 2;
 const failed = inject("phoneFailed");
 const draftKey = `phone-compose:${place.value}`;
 const words = ref(remembered(draftKey, ""));
 watch(words, (value) => (value ? remember(draftKey, value) : localStorage.removeItem(draftKey)));
+watch(words, (now, before) => !before && now && emit("typing"));
 const files = ref([]);
 const picker = ref(null);
 const box = ref(null);

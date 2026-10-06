@@ -196,6 +196,16 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     assert output_cap(record.root, record.env, PROVIDERS["codex"]()) == {}, "codex has no shell prefix and caps its own output"
     record.set_setting("journal_laws", {"output_lines": 0})
     assert output_cap(record.root, record.env, PROVIDERS["claude"]()) == {}, "0 keeps every line"
+    from tests.conftest import refused
+    outputs = Outputs(record)
+    direct = tmp_path / "direct.txt"
+    direct.write_text("a\nb\nc\n")
+    assert "no such file" in refused(lambda: outputs.keep(str(tmp_path / "missing.txt"))), "an output that is not there cannot be kept"
+    assert "no such provider" in refused(lambda: outputs.keep(str(direct), provider="nobody")), "an output from an unknown provider cannot be kept"
+    number = int(outputs.keep(str(direct), "  cat   notes: x ", "claude", "session-1", 1).split()[0])
+    assert (outputs.load(number).title, outputs.load(number).data["lines"], direct.exists()) == ("cat notes x", 3, False), \
+        "a kept output is titled by its command on one line, counts its lines and moves its file into the row"
+    assert "Cut 2 of 3 lines" in Agents(record).load(agent.n).data["cards"][-1]["label"], "the agent that ran it sees how much was cut"
 
 
 def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():

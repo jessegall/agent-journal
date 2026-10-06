@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
+import SuggestionCard from "../chat/SuggestionCard.vue";
 import {allButtons} from "../domain/buttons.js";
 import PhoneActions from "./PhoneActions.vue";
 import {splitQuote} from "./quoted.js";
@@ -87,6 +88,9 @@ const more = () => held(turn.value);
     <SwitchCase :value="item.type">
         <template #question>
             <PhoneQuestion :class="{arriving}" :style="arrival" :question="item" />
+        </template>
+        <template #suggestion>
+            <SuggestionCard :class="{arriving}" :style="arrival" :suggestion="item" phone />
         </template>
         <template #thought>
             <TextDisplay :class="['turn-thought', {arriving}]" :style="arrival" :text="item.label" />

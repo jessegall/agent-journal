@@ -18,6 +18,7 @@ import zipfile
 from importlib.util import MAGIC_NUMBER
 from pathlib import Path
 from dataclasses import dataclass
+from functools import cache
 from typing import Callable
 
 
@@ -248,7 +249,7 @@ fi
 
 
 def asks() -> str:
-    return ASKS.replace("__SERVED__", "|".join(sorted(LOADED.served())))
+    return ASKS.replace("__SERVED__", "|".join(sorted(loaded().served())))
 
 SHIM = """#!/bin/sh
 dir="$(pwd)"
@@ -329,27 +330,28 @@ def old_git_hook(project: Path) -> list[str]:
 
 
 def configure(project: Path, root: Path) -> list[str]:
+    package = loaded()
     done = old_git_hook(project)
     present = []
-    for name, cls in LOADED.providers.items():
+    for name, cls in package.providers.items():
         provider = cls()
         if not provider.present(project):
             continue
-        f = provider.wire(project, LOADED.hook_command(code(root) / "hook.sh", name, root))
+        f = provider.wire(project, package.hook_command(code(root) / "hook.sh", name, root))
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         present.append(name)
     if not present:
-        return [*done, f"no agent found here: neither {' nor '.join(name.capitalize() for name in LOADED.providers)}"]
-    troubles = [f"hook check failed for {name}: {trouble}" for name in present for trouble in [LOADED.providers[name]().wiring_trouble(project)] if trouble]
+        return [*done, f"no agent found here: neither {' nor '.join(name.capitalize() for name in package.providers)}"]
+    troubles = [f"hook check failed for {name}: {trouble}" for name in present for trouble in [package.providers[name]().wiring_trouble(project)] if trouble]
     done += troubles or [f"hooks checked: {', '.join(present)}"]
-    written, linked = LOADED.publish(project, tuple(present))
-    done.append(f"{len(written)} skills in {LOADED.library}" + (f", linked from {', '.join(LOADED.linked[a] for a in present if a in LOADED.linked)}" if linked else ""))
-    record = LOADED.record(root, LOADED.default_env(root))
-    briefing = LOADED.brief(project, record)
-    named = ' and '.join(sorted(cls.briefing_file for cls in LOADED.providers.values() if cls.briefing_file))
+    written, linked = package.publish(project, tuple(present))
+    done.append(f"{len(written)} skills in {package.library}" + (f", linked from {', '.join(package.linked[a] for a in present if a in package.linked)}" if linked else ""))
+    record = package.record(root, package.default_env(root))
+    briefing = package.brief(project, record)
+    named = ' and '.join(sorted(cls.briefing_file for cls in package.providers.values() if cls.briefing_file))
     done.append(f"the journal's block in {', '.join(f.name for f in briefing.written) or named}")
     done.extend(briefing.left)
-    written = LOADED.agent_types(project, record)
+    written = package.agent_types(project, record)
     if written:
         done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
@@ -377,34 +379,51 @@ def redacted(text: str, secret: str) -> str:
     return text.replace(secret, "the token") if secret else text
 
 
-def without_prompt() -> dict:
-    return {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+@cache
+def listed_variables() -> frozenset[str]:
+    return frozenset(subprocess.run(["git", "rev-parse", "--local-env-vars"], capture_output=True, text=True, timeout=30, env={"PATH": os.environ.get("PATH", "")}).stdout.split())
+
+
+def repository_variables() -> frozenset[str]:
+    try:
+        return listed_variables()
+    except (OSError, subprocess.TimeoutExpired):
+        return frozenset()
+
+
+def git_env() -> dict:
+    """Drops the variables that point git at a repository, such as a hook's GIT_DIR, so git acts on the folder it runs in."""
+    return {**{name: value for name, value in os.environ.items() if name not in repository_variables()}, "GIT_TERMINAL_PROMPT": "0"}
 
 
 def version_key(version: str) -> tuple:
     return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
-def released(repository: str = REPOSITORY) -> str:
+def repository_of(given: str | None) -> str:
+    return given if given is not None else os.environ.get(REPOSITORY_ENV, REPOSITORY)
+
+
+def released(repository: str | None = None) -> str:
     try:
-        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=without_prompt())
+        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository_of(repository), "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=git_env())
     except (OSError, subprocess.TimeoutExpired):
         return ""
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
     return max(versions, key=version_key) if versions else ""
 
 
-def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
-    wanted = repository or os.environ.get(REPOSITORY_ENV, REPOSITORY)
+def fetch(into: Path, repository: str | None = None, ref: str = "") -> tuple[str, str]:
+    wanted = repository_of(repository)
     secret = token() if wanted.startswith("https://github.com/") else ""
     source = with_token(wanted, secret)
-    into.mkdir(parents=True, exist_ok=True)
     try:
+        into.mkdir(parents=True, exist_ok=True)
         for step in (["init", "-q"], ["fetch", "-q", "--depth", "1", source, ref or "HEAD"], ["checkout", "-q", "FETCH_HEAD"]):
-            done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120, env=without_prompt())
+            done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120, env=git_env())
             if done.returncode:
                 return "", redacted(done.stderr.strip() or f"git {step[0]} failed", secret)
-        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=into, capture_output=True, text=True, timeout=30).stdout.strip(), ""
+        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=into, capture_output=True, text=True, timeout=30, env=git_env()).stdout.strip(), ""
     except (OSError, subprocess.TimeoutExpired) as error:
         return "", str(error)
 
@@ -431,7 +450,7 @@ def half_done(root: Path) -> bool:
 
 def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
-    mark = LOADED.upgrade_mark(root)
+    mark = loaded().upgrade_mark(root)
     mark.parent.mkdir(parents=True, exist_ok=True)
     with (root / "runtime" / "upgrade.lock").open("a") as lock:
         try:
@@ -461,7 +480,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
     source, temporary, newest = PACKAGE, None, ""
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
-        newest = released(os.environ.get(REPOSITORY_ENV, REPOSITORY))
+        newest = released()
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
         _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
@@ -469,7 +488,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
             shutil.rmtree(temporary, ignore_errors=True)
             return [f"package not refreshed: {failed}"]
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
-        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=without_prompt())
+        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=git_env())
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     try:
         changed, gone = refresh(source, code(root))
@@ -520,10 +539,10 @@ def finish(project: Path, root: Path) -> list[str]:
         if not failed:
             return done + handed_over(project, root, (REPAIRED,))
     done += configure(project, root)
-    ran = LOADED.migrate(root)
+    ran = loaded().migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
-    done.append(LOADED.ship_sequences(root))
-    done.append(LOADED.ship_profiles(root))
+    done.append(loaded().ship_sequences(root))
+    done.append(loaded().ship_profiles(root))
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
@@ -566,8 +585,8 @@ def pack(root: Path) -> str:
             built.unlink(missing_ok=True)
             return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
         built.replace(target)
-    LOADED.point(root, target)
-    held = LOADED.held_builds(root)
+    loaded().point(root, target)
+    held = loaded().held_builds(root)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
         if old != target and old.name not in held:
             old.unlink(missing_ok=True)
@@ -633,7 +652,8 @@ class Package:
     upgrade_mark: Callable
 
 
-def package() -> Package:
+@cache
+def loaded() -> Package:
     sys.path.insert(0, str(PACKAGE))
     from commands.cli import served
     from engine.package import point
@@ -655,13 +675,12 @@ def package() -> Package:
                    publish=publish, upgrade_mark=upgrade_mark)
 
 
-try:
-    LOADED = package()
-except ImportError:
-    if __name__ != "__main__" or os.environ.get(HEALED):
-        raise
-    heal()
-
 if __name__ == "__main__":
+    try:
+        loaded()
+    except ImportError:
+        if os.environ.get(HEALED):
+            raise
+        heal()
     for line in main(sys.argv[1:]):
         print(line)

@@ -1,3 +1,6 @@
+import json
+import time
+
 import pytest
 
 from types import SimpleNamespace
@@ -77,8 +80,9 @@ def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, mo
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is True
 
 
-def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path):
+def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path, monkeypatch):
     import threading
+    from types import SimpleNamespace
     import urllib.error
     import urllib.request
     from http.server import ThreadingHTTPServer
@@ -123,9 +127,51 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     try:
         assert [status({}), status({"Origin": f"http://localhost:{server.server_port}"}), status({"Host": f"evil.example:{server.server_port}"}),
                 status({"Origin": "http://localhost:9999"})] == [404, 404, 403, 403], "its own host and a journal's origin by either loopback name are answered; another host or an unknown origin is refused"
+        asked = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/api/no-such-route", method="OPTIONS")
+        assert urllib.request.urlopen(asked, timeout=5).status == 204, "a browser's preflight question from its own address is answered without a body"
+        foreign = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/api/x", method="OPTIONS", headers={"Host": f"evil.example:{server.server_port}"})
+        with pytest.raises(urllib.error.HTTPError) as refused:
+            urllib.request.urlopen(foreign, timeout=5)
+        assert refused.value.code == 403, "a preflight from another host is refused"
     finally:
         server.shutdown()
         server.server_close()
+
+    from engine import project_files
+    from resources.base import Missing
+    (project / "docs").mkdir()
+    (project / "docs" / "guide.txt").write_text("one")
+    (project / "docs" / "twin.txt").write_text("a")
+    (project / "docs" / "sub").mkdir()
+    (project / "docs" / "sub" / "twin.txt").write_text("b")
+    (project / "node_modules").mkdir()
+    (project / "docs" / ".hidden").write_text("x")
+    walked, names = project_files.walk(project)
+    assert [p.name for p in project_files.project_paths(project)] == [p.name for p in walked] and "guide.txt" in names, "the project is walked once and its files are listed by name"
+    assert project_files.walked(project) == (walked, names), "a recent walk is reused"
+    project_files.WALKED[str(project)] = (time.time() - project_files.WALK_FOR - 1, walked, names)
+    project_files.walked(project)
+    assert str(project) in project_files.WALKING, "an old walk is refreshed in the background"
+    assert project_files.matching(project, "guide.txt") == ["docs/guide.txt"] and project_files.matching(project, "./sub/twin.txt") == ["docs/sub/twin.txt"], \
+        "a file is found by its name or by the end of its path"
+    assert project_files.read_source(project, "guide.txt").text == "one", "a bare file name is found anywhere in the project"
+    for asked, why in (("twin.txt", "2 files in the project are called"), ("nothing-here.txt", "no file"), ("docs", "no file")):
+        with pytest.raises(Refused, match=why):
+            project_files.read_source(project, asked)
+    assert sorted(entry["name"] for entry in project_files.list_folder(project, "docs")) == ["guide.txt", "sub", "twin.txt"], "a folder lists what may be read and no hidden file"
+    with pytest.raises(Missing):
+        project_files.list_folder(project, "nowhere")
+
+    import serve
+    stamps, clock, ended = iter(["same", "same", "edited", "edited", "edited", "edited"]), iter(range(1, 100)), []
+    serving = SimpleNamespace(shutdown=lambda: ended.append("stopped"))
+    changed = threading.Event()
+    serve.runtime.restarting(project / ".journal").parent.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(serve, "code_stamp", lambda package: next(stamps))
+    monkeypatch.setattr(serve, "time", SimpleNamespace(sleep=lambda seconds: None, monotonic=lambda: float(next(clock)), time=lambda: 0.0))
+    serve.watch_code(project / ".journal", project, serving, changed)
+    assert (changed.is_set(), ended, serve.runtime.restarting(project / ".journal").exists()) == (True, ["stopped"], True), \
+        "once the code has stopped changing for a moment the server notes a restart and stops"
 
 
 def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
@@ -219,3 +265,155 @@ def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back
     monkeypatch.setattr(DRIVERS["claude"], "binary", classmethod(lambda cls, path: "claude"))
     assert "no viewer port is free" in refused(lambda: launch(record, "claude", ["--no-interaction"]))
     assert moved(record) == [] and hooks.read_text() == before, "nothing stays set aside"
+
+
+def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_and_lists_the_journals_running(monkeypatch):
+    import socket
+    held = socket.socket()
+    held.bind(("127.0.0.1", 0))
+    held.listen()
+    assert viewer.waited(held.getsockname()[1], 0.3) is False, "a port that stays busy is given up on after the wait"
+    held.close()
+    free_port = socket.socket()
+    free_port.bind(("127.0.0.1", 0))
+    unused = free_port.getsockname()[1]
+    free_port.close()
+    assert viewer.waited(unused, 0.3) is True, "a free port is answered at once"
+
+    opened, focused = [], []
+    assert viewer.show("http://x/", "dev", opener=opened.append, focuser=lambda url: focused.append(url) or False) == "http://x/#/dev" and opened == ["http://x/#/dev"], \
+        "a page is opened when no tab has it"
+    assert viewer.show("http://x/", opener=opened.append, focuser=lambda url: True) == "http://x/" and opened == ["http://x/#/dev"], "a tab that already has it is brought forward instead"
+    assert viewer.show("", "dev", opener=opened.append, focuser=lambda url: True) == "" and opened == ["http://x/#/dev"], "nothing is opened with no address"
+
+    probed = []
+    monkeypatch.setattr(viewer, "probe", lambda: probed.append("probe"))
+    monkeypatch.setattr(viewer, "PROBED", [0.0, ["first"]])
+    assert viewer.running_journals() == ["first"] and probed == ["probe"], "the first look probes the ports"
+    viewer.PROBED[0] = time.time() - viewer.PROBE_FOR - 1
+    viewer.running_journals()
+    assert viewer.PROBED[0] > time.time() - 5, "an old list is refreshed in the background"
+
+
+def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_identity(tmp_path, monkeypatch):
+    from commands.http import dispatch
+    from controllers.types import Todos
+    from resources.base import USER
+    record = fresh()
+    ask = lambda method, path, query=None, body=None: dispatch(method, path, record.root, query or {}, body or {})
+    assert ask("GET", f"/api/{record.env}/settings").code == 200 and ask("POST", f"/api/{record.env}/settings", body={"ask_questions": {"hold": 1}}).code == 200, \
+        "the settings are read and written through the viewer"
+    assert ask("POST", "/api/identity", body={"color": "not-a-colour"}).code == 400, "an identity colour that is no colour is refused"
+    named = ask("POST", "/api/identity", body={"color": "#aa3355"}).body
+    assert named["root"] == str(record.root) and ask("GET", "/api/identity").body["root"] == str(record.root), "the identity names the root it serves"
+    assert ask("GET", "/api/agent-hooks/nobody").code == 404, "hooks of a provider that does not exist are not found"
+    wired = ask("GET", "/api/agent-hooks/claude").body
+    assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"
+    assert ask("POST", "/api/agent-hooks/claude", body={"hooks": {}}).code == 200, "the hooks can be set again from the viewer"
+    assert ask("GET", "/api/extension").code == 200 and ask("GET", "/extension.zip").code in (200, 404), "the browser extension is offered when it is in the package"
+    from surfaces import package
+    monkeypatch.setattr(package, "HERE", tmp_path / "no-extension")
+    assert (package.info(), package.archive()) == ({"available": False, "store": ""}, b""), "with no extension in the package there is none to offer, and nothing to download"
+    monkeypatch.undo()
+    assert ask("POST", f"/api/{record.env}/settings", body={"viewer": {"theme": "dark"}}).code == 200, "a viewer preference is merged into the ones kept"
+    assert ask("GET", f"/api/{record.env}/settings").body["viewer"]["theme"] == "dark", "and read back"
+    assert ask("POST", f"/api/{record.env}/settings", body={"boards": {}}).code == 200, "boards can be set from the viewer too"
+    assert ask("POST", "/api/services/sharing.server", body={"want": "sideways"}).code == 404, "a service is only asked to be up, down or restart"
+    assert [ask("POST", "/api/services/sharing.server", body={"want": want}).code for want in ("up", "down", "restart")] == [200, 200, 200], "a service is asked to run, stop and restart"
+    assert ask("GET", "/api/services/sharing.server/log").body["id"] == "sharing.server", "a service's log is read by its id"
+    assert ask("GET", "/api/journals").code == 200, "the journals this machine knows are listed"
+    assert ask("GET", f"/api/{record.env}/search", {"q": ""}).body == [], "a search for nothing finds nothing"
+    row = Todos(record, actor=USER).create("a row with a file", brief="the brief")
+    sent = b"--b\r\nContent-Disposition: form-data; name=f; filename=notes.txt\r\n\r\nhello\r\n--b\r\nContent-Disposition: form-data; name=x\r\n\r\nskipped\r\n--b--\r\n"
+    uploaded = ask("POST", f"/api/{record.env}/todo/{row.n}/upload", body={"_type": "multipart/form-data; boundary=b", "_raw": sent})
+    assert uploaded.body == {"files": ["notes.txt"]}, "a file sent from the viewer is attached to the row, and a field with no file is left out"
+    fetched = ask("GET", f"/api/{record.env}/todo/{row.n}/files/notes.txt")
+    assert (fetched.code, fetched.body) == (200, b"hello"), "an attached file comes back as it was sent"
+    assert ask("GET", f"/api/{record.env}/todo/{row.n}/files/missing.txt").code == 404, "a file that is not attached is not found"
+    assert ask("GET", f"/api/{record.env}/todo/{row.n}/markdown").body.startswith(b"#"), "a row can be read as markdown"
+    assert ask("GET", f"/api/{record.env}/todo/{row.n}/choices").code == 200, "a row's field choices are read"
+    import features
+    import commands.dispatch as dispatching
+    from commands.dispatch import dispatch, guarded, later, known_environment
+    from commands.http import Reply
+    features.load()
+    assert dispatch("POST", "/no/such/route/at/all/x/y/z", record.root, {}, {}).code == 404, "an address nothing serves is not found"
+    assert dispatch("GET", "/../../etc/passwd", record.root, {}, {}).code == 400, "a path out of the viewer's folder is refused"
+    site = tmp_path / "web"
+    site.mkdir()
+    monkeypatch.setattr(dispatching, "WEB", site)
+    assert dispatch("GET", "/anything", record.root, {}, {}).code == 404, "with no build of the viewer there is nothing to show"
+    (site / "index.html").write_text("<p>viewer</p>")
+    (site / "app.js").write_text("1")
+    assert (dispatch("GET", "/app.js", record.root, {}, {}).body, dispatch("GET", "/some/page", record.root, {}, {}).body) == (b"1", b"<p>viewer</p>"), \
+        "a file of the build is served as it is and any other page is the viewer itself"
+    ran = []
+    reply = Reply(200, {}, after=lambda: ran.append("first"))
+    later(reply, lambda: ran.append("second"))
+    reply.after()
+    assert ran == ["first", "second"], "what must follow a reply runs after what the reply already had to do"
+    assert known_environment(record.root, record.env) is True and known_environment(record.root, "never-made") is False, "an environment is known by its folder"
+    broken = Reply(200, {}, after=lambda: 1 / 0)
+    guarded(broken, record.root, record.env, "after GET /x").after()
+    assert guarded(Reply(200, {}), record.root, record.env, "x").after is None, "a reply with nothing after it is left as it is"
+
+    import commands.http as http
+    from commands.http import dispatch
+    from providers import PROVIDERS
+    called = []
+    monkeypatch.setattr(http, "check_now", lambda root: called.append("check"))
+    monkeypatch.setattr("install.upgrade", lambda project, root: called.append("upgrade") or ["upgraded"])
+    monkeypatch.setattr("engine.stop.ask", lambda root: called.append("stop"))
+    assert [ask("POST", "/api/update/check").body, ask("POST", "/api/upgrade").body, ask("POST", "/api/stop").body] == \
+        [{"checking": True}, {"lines": ["upgraded"]}, {"stopping": True}], "the viewer can ask for an update check, an upgrade and a stop"
+    assert called == ["check", "upgrade", "stop"], "each of them reaches the machine once"
+    assert "every block needs a list of hooks" in str(ask("POST", "/api/agent-hooks/claude", body={"hooks": {"PreToolUse": [{"hooks": [{"command": " "}]}]}}).body), \
+        "hooks a provider cannot take are refused in its words"
+    claude = PROVIDERS["claude"]()
+    bare = record.root.parent / "bare-project"
+    (bare / ".claude").mkdir(parents=True)
+    assert claude.wiring_trouble(bare) == "no journal hook is wired", "a project with no journal hook is told so"
+    (bare / "hook.sh").write_text("")
+    claude.set_hooks(bare, {"Stop": [{"hooks": [{"type": "command", "command": f"sh {bare}/hook.sh claude {bare}/.journal-gone"}]}]})
+    assert claude.wiring_trouble(bare).endswith("which does not exist"), "a hook that names a journal that is gone is told so"
+    (bare / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "other"}]}]}}))
+    assert [found["path"] for found in claude.hooks_elsewhere(bare)] == [".claude/settings.json"], "hooks kept in another settings file of the project are listed with where they are"
+    monkeypatch.setattr(http, "terminal_of", lambda root, session: "term-1" if session == "claude-1" else "")
+    monkeypatch.setattr(http.typist, "send", lambda root, terminal, keys: terminal == "term-1" and keys == b"hi")
+    monkeypatch.setattr(http, "relaunch", lambda root, env, session: {"relaunched": session})
+    monkeypatch.setattr(http, "set_skipped", lambda row, skip: called.append(skip))
+    assert ask("POST", f"/api/{record.env}/agent/claude-1/keys", body={"text": "hi"}).body == {"sent": True}, "keys typed in the viewer reach the agent's terminal"
+    assert ask("POST", f"/api/{record.env}/agent/nobody/keys", body={"text": "hi"}).code == 404, "an agent with no terminal is not found"
+    assert ask("POST", f"/api/{record.env}/agent/claude-1/relaunch", body={"skip": 1}).body == {"relaunched": "claude-1", "skip": True}, "a relaunch says whether prompts are skipped"
+    assert called[-1] is True, "and the choice is kept"
+    chunk = {"hook_event_name": "MessageDisplay", "session_id": "claude-1", "message_id": "m1", "delta": "hi", "final": True}
+    monkeypatch.setattr(http, "displayed", lambda root, chunk: called.append(chunk.message))
+    refused = ask("POST", "/api/hook/claude", {"root": str(record.root.parent / "elsewhere")}, chunk)
+    assert refused.code == 409, "a hook that names another journal's root is turned away"
+    reply = ask("POST", "/api/hook/claude", {"root": str(record.root)}, chunk)
+    reply.after()
+    assert called[-1] == "m1", "a chunk of the agent's words on display is mirrored into the chat after the reply"
+    elsewhere = tmp_path / "other-journal"
+    elsewhere.mkdir()
+    monkeypatch.setattr(viewer, "known", lambda: [viewer.KnownJournal(root=str(elsewhere), project="other", at=1.0), viewer.KnownJournal(root=str(tmp_path / "gone"), project="gone")])
+    listed = ask("GET", "/api/journals").body
+    assert [(j["project"], j["running"]) for j in listed if j["root"] == str(elsewhere)] == [("other", False)], "a journal that is not running is listed as stopped"
+    assert all(j["project"] != "gone" for j in listed), "one whose folder is gone is not listed"
+    monkeypatch.setattr(http, "found_files", lambda project, asked: [SimpleNamespace(path="../outside.txt", name="x"), SimpleNamespace(path="inside.txt", name="y")])
+    monkeypatch.setattr(http, "project_path", lambda project, path: (_ for _ in ()).throw(http.Refused("outside")) if path.startswith("..") else path)
+    monkeypatch.setattr(http, "asdict", lambda found: {"path": found.path})
+    assert ask("GET", f"/api/{record.env}/project-files/find", {"q": "x"}).body == [{"path": "inside.txt"}], "a found file outside the project is left out of the answer"
+    project = record.root.parent
+    for folder in ("a", "b"):
+        (project / folder).mkdir(exist_ok=True)
+        (project / folder / "twin.txt").write_text(folder)
+    assert ask("GET", f"/api/{record.env}/file", {"path": "twin.txt"}).body == {"matches": ["a/twin.txt", "b/twin.txt"]}, "a name that fits two files offers both"
+
+    class Quiet(http.Queue):
+        def get(self, block=True, timeout=None):
+            raise http.Empty
+
+    monkeypatch.setattr(http, "Queue", Quiet)
+    stream = ask("GET", f"/api/{record.env}/stream").chunks
+    assert [next(stream), next(stream)] == [b": open\n\n", b": keep\n\n"], "a stream says it is open, and keeps the connection alive while nothing happens"
+    stream.close()

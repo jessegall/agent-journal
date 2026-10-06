@@ -6,6 +6,7 @@ import SubagentMark from "./SubagentMark.vue";
 import WhisperMark from "./WhisperMark.vue";
 import MadeCard from "./MadeCard.vue";
 import SearchResults from "./SearchResults.vue";
+import SuggestionCard from "./SuggestionCard.vue";
 import TurnGroup from "./TurnGroup.vue";
 import TurnMessage from "./TurnMessage.vue";
 import TurnReceipt from "./TurnReceipt.vue";
@@ -78,6 +79,11 @@ function markClick(data) {
                 <MadeCard :made="turn.made" />
             </div>
         </template>
+        <template #suggestion>
+            <div class="thread-turn suggestion" :data-ref="turn.ref">
+                <SuggestionCard :suggestion="turn" />
+            </div>
+        </template>
         <template #receipt>
             <TurnReceipt :turn="turn" />
         </template>
@@ -98,6 +104,10 @@ function markClick(data) {
 
     gap: 3px;
     max-width: min(78%, calc(100% - var(--turn-gutter)));
+}
+
+.thread-turn.suggestion {
+    width: min(580px, calc(100% - var(--turn-gutter)));
 }
 
 .thread-turn.compacted {

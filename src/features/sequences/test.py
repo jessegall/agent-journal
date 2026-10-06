@@ -61,6 +61,10 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     collection = CONTROLLERS["collection"](record, actor=USER).create("Keep")
     assert refused(lambda: CONTROLLERS["collection"](record, actor=USER).add(collection.n, [f"sequence:{filing['n']}"])) == \
         f"sequence:{filing['n']} ships with the journal and cannot be put in a collection", "nor collected"
+    from features.sequences.shipped import retire
+    from resources.base import SYSTEM
+    retire(CONTROLLERS["sequence"](record, actor=SYSTEM), {shipped.title for shipped in shipped_sequences()} - {"Sort dumped files"})
+    assert sequences.load(filing["n"]).deleted, "a sequence the journal no longer ships is taken away on upgrade, and the ones it still ships stay"
 
 
 def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refused():
@@ -186,6 +190,21 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     assert sequences.load(outer.n).runs, "the run counts the included steps"
     sequences.follow(outer.n)
     assert sequences.next(outer.n) == f"Sequence {outer.n} is finished." and not sequences.load(outer.n).runs, "and ends after the last of them"
+    assert "steps is one step or a range" in refused(lambda: sequences.include(outer.n, base.n, steps="two")), "a range of steps is numbers"
+    sequences.steps(outer.n, '[{"title": "first", "body": "do it"}, {"title": "second"}]')
+    assert [(step["title"], step["body"]) for step in sequences.steps_of(sequences.load(outer.n))] == [("first", "do it"), ("second", "")], "steps are replaced whole from a list"
+    assert [("JSON list" in refused(lambda: sequences.steps(outer.n, text))) for text in ("{broken", '[{"body": "no title"}]', '"one"')] == [True] * 3, \
+        "steps must be a list whose every step has a title"
+    assert "share a title" in refused(lambda: sequences.steps(outer.n, '[{"title": "x"}, {"title": "x"}]')), "two steps never share a title"
+    empty = sequences.create("Empty")
+    assert "has no steps" in refused(lambda: sequences.run(empty.n)), "a sequence without steps cannot run"
+    sequences.run(outer.n)
+    assert "never taken up" in refused(lambda: sequences.next(outer.n)), "an agent takes a step up before it moves on"
+    sequences.follow(outer.n)
+    assert "names a step from" in refused(lambda: sequences.next(outer.n, through=9)), "the steps to skip over are steps still ahead"
+    assert "say why" in refused(lambda: sequences.abandon(outer.n, why=" ")), "abandoning a run says why"
+    assert "is not running about doc:3" in refused(lambda: sequences.next(outer.n, about="doc:3")), "a sequence that is not running about a row says which row"
+    assert sequences.finish(outer.n, "doc:3").n == outer.n, "finishing a run that is not there changes nothing"
 
 
 def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
@@ -352,3 +371,13 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
     asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3")
     CONTROLLERS["question"](record, actor=USER).complete(asked.n, how="the first")
     assert f"board 3 waits for the filler (question {asked.n} answered - the first) - dispatch it now" in nudges(record), "an answer to a question about the board dispatches it again"
+    from migrations.m0063_one_sequence_step_reminder import run as move_reminder
+    moved = fresh()
+    moved.set_setting("sequences", {"nudge_every": "5", "keep": 1})
+    assert move_reminder(moved.root)[0].startswith("t: the sequence step reminder runs every 5 minutes"), "an old reminder setting is moved"
+    assert moved.setting("triggers") == {"sequences.unfinished": {"unit": "minutes", "every": 5}}, "it becomes the sequence trigger's cadence"
+    assert moved.setting("sequences") == {"keep": 1}, "the old key is gone and the rest stays"
+    assert move_reminder(moved.root) == [], "once moved it is not moved again"
+    moved.set_setting("sequences", {"nudge_every": "soon"})
+    assert len(move_reminder(moved.root)) == 1 and moved.setting("triggers") == {"sequences.unfinished": {"unit": "minutes", "every": 5}}, \
+        "an unreadable old value falls back to one minute and keeps the cadence already set"

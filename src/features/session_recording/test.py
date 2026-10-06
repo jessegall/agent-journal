@@ -18,7 +18,7 @@ from tests.kit import demo_built
 from features.session_recording.demo import leaks
 from features.session_recording.scrub import Scrubber
 from resources.base import AGENT, SYSTEM, Refused
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 
 def frames(folder) -> list[dict]:
@@ -69,6 +69,32 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     recordings.stop()
     assert (tmp_path / "demo" / "transcripts" / "t-claude-1.jsonl").read_text() == "{}\n"
     assert recordings.load(row.n).completed, "the recording is closed"
+    from types import SimpleNamespace
+    from features.session_recording import controller
+    assert "full path" in refused(lambda: recordings.start("relative/demo")), "a recording goes to a folder given in full"
+    monkeypatch.setattr(controller, "entry", lambda name: ["recorder"])
+    monkeypatch.setattr(controller.subprocess, "Popen", lambda command, **kept: SimpleNamespace(pid=4243))
+    assert "recording into" in recordings.start(str(tmp_path / "next")) and (tmp_path / "next").is_dir(), "a recording starts its recorder in the folder it was given"
+    monkeypatch.setattr(controller, "alive", lambda pid: pid == 4243)
+    assert "already recording" in refused(lambda: recordings.start(str(tmp_path / "other"))), "only one recording runs at a time"
+    monkeypatch.setattr(controller.os, "kill", lambda pid, signal: (_ for _ in ()).throw(ProcessLookupError()))
+    assert "recording stopped" in recordings.stop(), "a recorder that is already gone is not an error to stop"
+    monkeypatch.setattr(controller, "alive", lambda pid: False)
+    assert "nothing is being recorded" in refused(lambda: recordings.stop()), "with nothing recording there is nothing to stop"
+    from features.session_recording import recorder as recording, scrub
+    monkeypatch.setattr(scrub, "WORDS", str(tmp_path / "no-words"))
+    assert scrub.dictionary() == frozenset(), "a machine with no word list has no dictionary to tell names from words"
+    watching = recording.Recorder(record.root, tmp_path / "watching")
+    assert watching._stored(tmp_path / "vanished.txt") == "", "a file that is gone by the time it is read is left out"
+    polls = []
+    monkeypatch.setattr(recording.Recorder, "poll", lambda self: polls.append(1))
+    monkeypatch.setattr(recording.time, "sleep", lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):
+        recording.main([str(record.root), str(tmp_path / "watching")])
+    assert polls == [1], "the recorder polls the journal, then waits, until it is stopped"
+    from features.session_recording.demo import readable
+    (tmp_path / "picture.bin").write_bytes(b"\xff\xfe\x00")
+    assert readable(tmp_path / "picture.bin") == "", "a file that is not text is read as nothing"
 
 
 REPOSITORY = Path(__file__).resolve().parents[3]
@@ -135,7 +161,7 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     assert names.text("Sir First Last; First; Last") == "Sir demo; demo; demo"
 
 
-def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path):
+def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(tmp_path, monkeypatch):
     record, folder = recorded_session(tmp_path)
     recordings = Recordings(record, actor=SYSTEM)
     recordings.scrub(str(folder))
@@ -155,6 +181,13 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     assert got["first"] == ["first row"] and got["last"] == ["renamed row", "third row"], "stepping replays the recorded moments in order"
     assert got["stepped"] == [True, True, False]
     assert "rows" in got["dashboard"]
+    import commands.demo as demoing
+    with pytest.raises(Refused, match="the server answered 404"):
+        demoing.ask(record.root, "/api/no/such/page")
+    monkeypatch.setattr(demoing, "leaks", lambda *given: [])
+    monkeypatch.setattr(demoing.Scrubber, "leaks", lambda self, text: ["/home/someone"])
+    with undoable(), pytest.raises(Refused, match="still holds the machine"):
+        demo_built(folder, tmp_path / "again.json")
 
 
 PLAY = WEB / "play.mjs"
@@ -199,3 +232,29 @@ def test_a_visitor_plays_every_shipped_lesson_to_the_end_pressing_only_what_is_o
     assert got[("bakery", "")]["moves"][:3] == ["send", "answer", "approve"], "the visitor asks for a plan, says how thorough, and approves it"
     assert got[("bakery", "")]["cards"] > 0, "the file feed shows the agent's recorded edits"
     assert "Agents" in got[("helpers", "")]["panes"], "switching to Orchestrator mode moves Home to the Orchestrator layout"
+
+
+def test_upgrades_file_old_runtime_files_under_their_session_and_remove_the_loose_ones(tmp_path):
+    from migrations.m0011_feature_state import run as remove_loose
+    from migrations.m0017_sessions_in_folders import run as into_folders
+
+    runtime = tmp_path / "runtime"
+    (tmp_path / "environments" / "main").mkdir(parents=True)
+    runtime.mkdir()
+    for name in ("seat-claude-1.json", "gate-main-claude-1.json", "screen-claude-1", "printed-claude-1", "trigger-claude-1-facts.json",
+                 "bar-old.json", "engines.lock", "kept.txt", "gate-other-claude-9.json"):
+        (runtime / name).write_text("{}")
+    (runtime / "subfolder").mkdir()
+    assert into_folders(tmp_path / "nowhere") == "no runtime folder", "a project without a runtime folder has nothing to file"
+    assert into_folders(tmp_path) == "runtime: 5 per-session files moved into sessions/<session>/, 2 left-over files removed", "per-session files move and left-overs go"
+    session = runtime / "sessions" / "claude-1"
+    assert sorted(p.name for p in session.iterdir()) == ["gate-main.json", "printed", "screen", "seat.json", "trigger-facts.json"], "each file is filed under its session with its plain name"
+    assert (runtime / "kept.txt").exists() and (runtime / "gate-other-claude-9.json").exists(), "a file that belongs to no known pattern stays"
+
+    (runtime / "touched-1.json").write_text("{}")
+    (runtime / "updates.json").write_text("{}")
+    (tmp_path / "environments" / "main" / "runtime").mkdir()
+    for name in ("files-1.json", "changes.json", "keep.json"):
+        (tmp_path / "environments" / "main" / "runtime" / name).write_text("{}")
+    assert remove_loose(tmp_path) == "feature state moved into the record: 4 old runtime files removed", "the loose feature state files are removed"
+    assert (tmp_path / "environments" / "main" / "runtime" / "keep.json").exists(), "an unrelated runtime file stays"

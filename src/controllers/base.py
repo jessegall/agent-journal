@@ -1,9 +1,8 @@
 import inspect
-from functools import cache
 import shutil
 import time
 from dataclasses import asdict
-from functools import partial
+from functools import cache, partial
 
 from engine import bus
 from engine.markers import plain
@@ -40,6 +39,7 @@ def checked_field(fields: dict, key: str, value):
     if key not in fields:
         return value
     return check(key, fields[key], normalize_options(value) if key == Options.options else value)
+
 
 @cache
 def actions(controller: type) -> tuple[str, ...]:

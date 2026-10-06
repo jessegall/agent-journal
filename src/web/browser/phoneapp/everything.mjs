@@ -25,7 +25,7 @@ await runScenarios(
             await place(page, "Suggestions");
             await page.getByRole("button", {name: "Everything you can do with Suggestion 1"}).click();
             await sheet(page)
-                .getByRole("button", {name: /^Adjust/})
+                .getByRole("button", {name: /^Change it first/})
                 .click();
             await sheet(page).getByLabel("What to do differently").fill("Only red roses");
             await sheet(page).getByRole("button", {name: "Send the answer"}).click();

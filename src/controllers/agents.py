@@ -45,6 +45,10 @@ class Agents(Controller):
             return row
         return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
+    def drop_card(self, n: int, key: str):
+        row = self.load(n)
+        return self.update(row.n, cards=[kept for kept in row.data.get("cards") or [] if kept.get("key") != key])
+
     @action
     def stop_task(self, n: int, task: str, description: str = ""):
         if not task.strip():

@@ -23,6 +23,13 @@ def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_
     auto = next(row for row in rows if row[SKILL.name] == "journal-work-tracking")
     assert (auto[SKILL.description], auto[SKILL.path]) == ("Auto mode", ".agents/skills/journal-work-tracking/SKILL.md"), \
         "the catalogue reads every SKILL.md under the library and the agent homes, with its frontmatter"
+    from features.skill_loading import catalogue as held
+    held.CATALOGUED[str(project)] = held.replace(held.CATALOGUED[str(project)], at=0.0)
+    assert catalogue(project) is held.CATALOGUED[str(project)].skills and held.CATALOGUED[str(project)].at > 0, \
+        "a catalogue that is old but whose folders did not change is kept and counted fresh again"
+    (obsolete / "SKILL.md").unlink()
+    held.CATALOGUED[str(project)] = held.replace(held.CATALOGUED[str(project)], files=[*held.CATALOGUED[str(project)].files], at=0.0, marks=())
+    assert "journal-obsolete" not in [row[SKILL.name] for row in catalogue(project)], "a skill whose file vanished while the folders were read is left out"
     listed = skills(record)
     auto = next(row for row in listed if row[SKILL.name] == "journal-work-tracking")
     assert (auto[SKILL.loaded], auto[SKILL.stale], auto[SKILL.always]) == (0, False, False), \
@@ -96,7 +103,12 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
     (project / ".claude" / "skills" / "journal" / "SKILL.md").write_text("committed\n")
     for command in (["init", "-q"], ["add", "."], ["-c", "user.email=a@b", "-c", "user.name=a", "commit", "-qm", "skills"]):
         subprocess.run(["git", *command], cwd=project, check=True, timeout=30)
+    for leftover in ("journal-memory", "journal-retired"):
+        (project / ".claude" / "skills" / leftover).mkdir()
+        (project / ".claude" / "skills" / leftover / "SKILL.md").write_text("an old copy\n")
     publish(project, ("claude",))
+    assert ((project / ".claude" / "skills" / "journal-memory").is_symlink(), (project / ".claude" / "skills" / "journal-retired").exists()) == (True, False), \
+        "a folder where a skill is linked is replaced by the link, and a journal skill that no longer exists is taken away"
     kept = project / ".claude" / "skills" / "journal"
     assert (kept.is_symlink(), "committed" in (kept / "SKILL.md").read_text(), (project / ".claude" / "skills" / "journal-todos").is_symlink()) == \
         (False, False, True), "a skill folder git tracks keeps real files, brought up to date; an untracked one is linked"
@@ -203,6 +215,14 @@ def test_a_skills_keyword_makes_the_agent_load_it():
     assert "journal-plans" in outstanding(record, agent), "and the skill is owed before the next tool call"
     require_named(record, agent, "nothing to see")
     assert outstanding(record, agent) == ["journal-plans"], "a text without a keyword asks for nothing"
+    folder = record.root.parent / ".agents" / "skills" / "journal-demo"
+    folder.mkdir(parents=True)
+    (folder / "SKILL.md").write_text('---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n')
+    page = dispatch("GET", f"/api/{record.env}/skills/journal-demo", record.root, {}, {}).body
+    assert (page["description"], "# Demo" in page["text"]) == ("A demo", True), "a skill's own page carries its description and its text"
+    assert "journal-demo" in [row[SKILL.name] for row in dispatch("GET", f"/api/{record.env}/skills", record.root, {}, {}).body], "the Skills page lists it"
+    assert "its tool calls wait until the skill is loaded" in dispatch("POST", f"/api/{record.env}/skills/journal-demo/load", record.root, {}, {}).body["notice"], \
+        "its Load button asks the agent to load it and holds its tool calls until it has"
 
 
 def test_the_todos_skill_is_loaded_at_every_start_and_cannot_be_switched_off():
@@ -262,3 +282,20 @@ def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_tea
         assert set(f.keywords) <= set(words.get(skill, [])), f"every word that loaded {f.name}'s skill loads {skill}"
         if "_" not in f.name:
             assert teaching_command(record.root.parent, f.name.removesuffix("s")) == skill, f"journal {f.name.removesuffix('s')} loads {skill}"
+    import json
+    from features.renames import rename, skills_renamed
+    root = record.root
+    home = root / "environments" / "main"
+    (root / "runtime" / "sessions" / "one").mkdir(parents=True)
+    home.mkdir(parents=True)
+    (home / "settings.json").write_text(json.dumps({"features": {"old.line": True}, "triggers": {"old": 1}, "old": {"size": 2, "mode.deep": 3}, "skills": ["old-skill", "other"]}))
+    (root / "runtime" / "sessions" / "one" / "gate-1.json").write_text(json.dumps({"old.hold": 1, "keep": 2}))
+    (root / "runtime" / "sessions" / "one" / "trigger-old.words.json").write_text("{}")
+    (home / "runtime").mkdir()
+    (home / "runtime" / "cursor-old").write_text("5")
+    assert rename(root, {"old": "new"}) == {"settings": 1, "gates": 1, "triggers": 1, "cursors": 1}, "a renamed feature is renamed in its settings, gates, triggers and cursors"
+    assert json.loads((home / "settings.json").read_text())["new"] == {"size": 2, "mode.deep": 3} and (home / "runtime" / "cursor-new").read_text() == "5", \
+        "its own settings move under its new name"
+    assert rename(root, {"old": "new"}) == {"settings": 0, "gates": 0, "triggers": 0, "cursors": 0}, "renaming twice changes nothing more"
+    assert (skills_renamed([skill_name("old"), "other"], "old", "new"), skills_renamed(["other"], "old", "new"), skills_renamed([skill_name("old")], "old", "a.b")) == \
+        (sorted([skill_name("new"), "other"]), ["other"], [skill_name("old")]), "a chosen skill follows its feature's new name, and a line of a feature has no skill of its own"
