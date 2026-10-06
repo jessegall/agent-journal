@@ -344,6 +344,46 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     page, = dispatch("GET", "/api/pages", record.root, {}, {}).body
     assert (page["plugin"], page["title"], page["state"], page["url"].endswith("/start")) == ("server", "Home", "ready", True), \
         "the viewer lists a plugin's pages with the state of the service behind each"
+    from engine.services import DOWN, service_spec, want_file
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        held_port = probe.getsockname()[1]
+    status_file(record.root, "held.web").write_text(json.dumps({"state": "ready", "port": held_port}))
+    assert allocate(record.root, "held.web", "auto", set()) == (held_port, ""), "a service that already had a free port keeps it"
+    assert allocate(record.root, "held.web", "auto", {held_port})[0] != held_port, "unless another service has taken it in the meantime"
+
+    now, started = [1000.0], []
+    nowhere = 4194999
+    keeper = Manager(record.root, clock=lambda: now[0], start=lambda spec, lifeline: started.append(spec.id) or 0, living=lambda pid: pid == nowhere)
+    spec = lambda sid, **fields: service_spec(record.root, sid, plugin="w", service=sid, run=["true"], **fields)
+    down = spec("down.web")
+    status_file(record.root, "down.web").write_text(json.dumps({"state": "ready", "keeper": nowhere}))
+    want_file(record.root, "down.web").write_text(json.dumps({"want": DOWN}))
+    assert keeper.one(down) is False and started == [], "a service the user took down is asked to stop and not started"
+    blocked = spec("blocked.web", blocked="no token set")
+    assert keeper.one(blocked) is False and status(record.root, "blocked.web").why == "no token set", "a service that cannot start says why"
+    status_file(record.root, "booting.web").write_text(json.dumps({"state": "starting", "keeper": 0, "at": now[0]}))
+    assert keeper.one(spec("booting.web")) is False and started == [], "a service that was only just started is given time to come up"
+    status_file(record.root, "never.web").write_text(json.dumps({"state": "exited"}))
+    never = spec("never.web", restart="never")
+    keeper.one(never)
+    now[0] += 5.0
+    assert keeper.one(never) is False and started == [], "a service that must never restart stays down once it has ended"
+    for number in range(5):
+        status_file(record.root, "flaky.web").write_text(json.dumps({"state": "exited", "at": now[0]}))
+        keeper.seen.clear()
+        keeper.one(spec("flaky.web"))
+        now[0] += 1.0
+    assert status(record.root, "flaky.web").state == "failed" and keeper.waiting["flaky.web"] > now[0], "a service that keeps dying is marked failed and tried again after a wait"
+    assert keeper.one(spec("flaky.web")) is False, "and is left alone until the wait is over"
+    asked = spec("asked.web", when="exit 3")
+    assert "answered 3" in keeper.unneeded(asked, now[0]) and "answered 3" in keeper.unneeded(asked, now[0] + 1.0), "a service that is not needed here says what the check answered, and the answer is kept for a while"
+    unaskable = spec("unaskable.web", when="true", cwd=str(record.root / "no-such-folder"))
+    assert "could not be asked" in keeper.unneeded(unaskable, now[0]), "a check that cannot even run is not a reason to start the service"
+    stray = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    status_file(record.root, "stray.web").write_text(json.dumps({"state": "running", "keeper": 0, "pgid": stray.pid}))
+    assert keeper.sweep() == [stray.pid] and stray.wait(timeout=5) is not None and status(record.root, "stray.web").why == "its keeper is gone", \
+        "a process group whose keeper is gone is stopped and its service marked stopped"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():
