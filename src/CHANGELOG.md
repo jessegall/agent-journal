@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.16 — a suggestion shows in the chat as a card, and opens once in a window after three hours
+Every suggestion now shows in the chat as a card, with Yes, I want this, Change it first and No, don't do this. The same card shows in its side panel, on the phone and in a window. Yes on a plugin suggestion installs the commit the suggestion showed. The card first shows where the plugin comes from and the commands it runs. The chat marks Installing, then Installed or Install failed with the reason. Your answers are marked on your side of the chat. A No can be undone for six seconds. A suggestion still unanswered after the hours set in Settings › Suggestions (three by default, 0 for never) opens once in a window, never over a draft you are writing. On the phone it opens in a sheet. Only you install a suggested plugin. Nothing to do.
+
 ## 2.253.15 — a helper dispatched into a checkout can be told something, stopped and finished
 A helper launched with --checkout bound its session to the checkout folder's name instead of the environment it was dispatched for, so helper say, stop and finish answered "not running" for a helper that was. A helper's session now binds to its own environment whatever folder it runs in. Nothing to do.
 
