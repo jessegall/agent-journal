@@ -121,7 +121,7 @@ class Todos(Prioritised, Controller):
         self._handled("start", n=n)
         row = self.load(n)
         from controllers.works import Works
-        return Works(self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
+        return Works(self.record, actor=self.actor, session=self.session, agent=self.agent, force=self.force).create(row.title, brief=row.brief, todo=row.n)
 
     @action
     def prune(self, days: int = 30):
