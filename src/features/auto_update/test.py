@@ -68,6 +68,10 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert dispatch("POST", "/api/update", record.root, {}, {}).code == 400, "the journal's own repository is never updated from a release"
     monkeypatch.setattr(updates, "journal_repository", lambda project: False)
     assert dispatch("POST", "/api/update", record.root, {}, {}).body == {"updating": True}, "the viewer's Update button starts an install"
+    from features.auto_update import routes
+    monkeypatch.setattr(routes, "upstream", lambda root: "99.0.0")
+    release = dispatch("GET", "/api/upstream", record.root, {}, {}).body
+    assert (release["latest"], release["newer"], release["changed"]) == ("99.0.0", True, []), "the viewer is told the newest release, that it is newer, and which managed files were changed"
     import install
     managed = record.root / "src" / "install.py"
     managed.parent.mkdir(parents=True, exist_ok=True)
@@ -205,6 +209,21 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     ran.clear()
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
+    import sys
+    from features.auto_update import check
+    upgrade = lambda code, script: [sys.executable, "-c", f"import sys, time\n{script}\nsys.exit({code})"]
+    monkeypatch.setattr(check, "entry", lambda name: upgrade(3, "print('could not start')\nprint('')"))
+    assert check.installed(record.root, yes=True) == "could not start", "a failed upgrade reports the last line it printed"
+    monkeypatch.setattr(check, "entry", lambda name: upgrade(3, "pass"))
+    assert check.installed(record.root) == "journal upgrade failed with exit 3", "a failed upgrade that printed nothing still names its exit"
+    monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "time.sleep(30)"))
+    monkeypatch.setattr(check, "INSTALL_WAIT", 1)
+    assert "was stopped after" in check.installed(record.root), "an upgrade that never finishes is stopped"
+    assert [check.first_refusal(record.root, "9.9.9"), check.first_refusal(record.root, "9.9.9")] == [True, False], "a refused version is told once"
+    from tests.conftest import refused
+    feature = features.FEATURES["auto_update"]
+    assert "takes ['latest', 'why']" in refused(lambda: feature.line_text("failed", latest="9.9.9")), "a line is filled with every value it names and no other"
+    assert "no line named 'nothing'" in refused(lambda: feature.line_text("nothing")), "a feature says plainly when it has no such line"
 
 
 def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tmp_path, monkeypatch):

@@ -1,5 +1,6 @@
 import json
 import time
+from pathlib import Path
 
 import features
 from controllers.types import Features, Notifications
@@ -79,6 +80,16 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
     events = [e for e in record.event_log.events() if e.type == "notification" and e.action == "updated" and e.data.get("fields")]
     assert events == [], "a repeat inside the window is stamped quietly, with no update line in the chat"
+    import cProfile
+    profile = cProfile.Profile()
+    profile.runcall(busy, 0.01)
+    reports = FEATURES["dev_faults"].reports
+    reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    kept = list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))
+    assert len(kept) == 1 and "function calls" in kept[0].read_text(), "a slow call over the budget keeps its profile in a file named for what was slow"
+    reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    reports.spent(Path("/nonexistent/journal"), "main", "command", "message all", 500.0, profile=profile)
+    assert len(list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))) == 1, "a slow call that cannot be filed because its journal is gone is dropped, not raised"
 
 
 def test_the_budget_is_tunable_per_environment():

@@ -18,7 +18,7 @@ from tests.kit import demo_built
 from features.session_recording.demo import leaks
 from features.session_recording.scrub import Scrubber
 from resources.base import AGENT, SYSTEM, Refused
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 
 def frames(folder) -> list[dict]:
@@ -69,6 +69,29 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     recordings.stop()
     assert (tmp_path / "demo" / "transcripts" / "t-claude-1.jsonl").read_text() == "{}\n"
     assert recordings.load(row.n).completed, "the recording is closed"
+    from types import SimpleNamespace
+    from features.session_recording import controller
+    assert "full path" in refused(lambda: recordings.start("relative/demo")), "a recording goes to a folder given in full"
+    monkeypatch.setattr(controller, "entry", lambda name: ["recorder"])
+    monkeypatch.setattr(controller.subprocess, "Popen", lambda command, **kept: SimpleNamespace(pid=4243))
+    assert "recording into" in recordings.start(str(tmp_path / "next")) and (tmp_path / "next").is_dir(), "a recording starts its recorder in the folder it was given"
+    monkeypatch.setattr(controller, "alive", lambda pid: pid == 4243)
+    assert "already recording" in refused(lambda: recordings.start(str(tmp_path / "other"))), "only one recording runs at a time"
+    monkeypatch.setattr(controller.os, "kill", lambda pid, signal: (_ for _ in ()).throw(ProcessLookupError()))
+    assert "recording stopped" in recordings.stop(), "a recorder that is already gone is not an error to stop"
+    monkeypatch.setattr(controller, "alive", lambda pid: False)
+    assert "nothing is being recorded" in refused(lambda: recordings.stop()), "with nothing recording there is nothing to stop"
+    from features.session_recording import recorder as recording, scrub
+    monkeypatch.setattr(scrub, "WORDS", str(tmp_path / "no-words"))
+    assert scrub.dictionary() == frozenset(), "a machine with no word list has no dictionary to tell names from words"
+    watching = recording.Recorder(record.root, tmp_path / "watching")
+    assert watching._stored(tmp_path / "vanished.txt") == "", "a file that is gone by the time it is read is left out"
+    polls = []
+    monkeypatch.setattr(recording.Recorder, "poll", lambda self: polls.append(1))
+    monkeypatch.setattr(recording.time, "sleep", lambda seconds: (_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):
+        recording.main([str(record.root), str(tmp_path / "watching")])
+    assert polls == [1], "the recorder polls the journal, then waits, until it is stopped"
 
 
 REPOSITORY = Path(__file__).resolve().parents[3]

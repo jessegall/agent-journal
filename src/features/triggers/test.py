@@ -96,6 +96,35 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
     triggers.fired(row.n)
     triggers.fired(row.n)
     assert (triggers.load(row.n).matched, bool(triggers.load(row.n).matched_at)) == (2, True), "each match is counted and dated"
+    from tests.conftest import refused
+    assert "a trigger does one of" in refused(lambda: triggers.create("odd", **{"words": ["x"], "does": "dance"})), "a trigger does one of the things a trigger can do"
+    assert "needs words to watch for" in refused(lambda: triggers.update(row.n, words=[])), "a trigger emptied of its words would watch for nothing and is refused"
+    triggers.watch_for("Release checklist", ["release"])
+    triggers.unwatch("Release checklist", "no longer shipped")
+    assert [row.title for row in triggers.rows.standing() if row.title == "Release checklist"] == [], "a sequence's own watch is taken away with it"
+
+
+def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
+    import pytest
+    from features.parts import ActionInterceptor, Canceler, Command, Handler, TextFormatter, ToolInterceptor
+    calls = (lambda: Handler().handle(None, None), lambda: TextFormatter().format(None, ""), lambda: ToolInterceptor().intercept(None, None),
+             lambda: Canceler().cancel(None, None), lambda: Command().run(None, None), lambda: ActionInterceptor().intercept(None, None))
+    for call in calls:
+        with pytest.raises(NotImplementedError):
+            call()
+
+
+def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_setting_is_refused():
+    import pytest
+    from features.nudges import Nudge, send
+    from features.settings import Settings
+    with pytest.raises(ValueError, match="needs most"):
+        Nudge("line", "behaviour", lambda context, agent: [], first=True)
+    with pytest.raises(AttributeError, match="no setting called nothing"):
+        Settings([], {}).nothing
+    from types import SimpleNamespace
+    assert send(SimpleNamespace(to_primary=lambda: None), (Nudge("line", "behaviour", lambda context, agent: [1]),)) is None, \
+        "with no agent to speak to, a nudge says nothing and asks nothing"
 
 
 def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger_may_read(monkeypatch):

@@ -98,6 +98,10 @@ def test_the_days_to_keep_is_a_setting():
     record.set_setting("runtime_cleanup", {"days": 1})
     tidy(record.root, house.values(record).days)
     assert old.parent.exists() is False, "housekeeping.days shortens the wait"
+    from features.runtime_cleanup.tidy import Tidied
+    assert (Tidied(trimmed=2, removed=1, events=3, leftovers=1).summary, Tidied().summary) == \
+        ("2 logs cut to their tail; 1 quiet session folder removed; 3 old events dropped; 1 leftover removed", "nothing to tidy"), \
+        "what housekeeping did is said in one line, and nothing done says so"
 
 
 def test_it_runs_on_its_own_on_the_engines_clock():

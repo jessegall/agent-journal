@@ -23,6 +23,13 @@ def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_
     auto = next(row for row in rows if row[SKILL.name] == "journal-work-tracking")
     assert (auto[SKILL.description], auto[SKILL.path]) == ("Auto mode", ".agents/skills/journal-work-tracking/SKILL.md"), \
         "the catalogue reads every SKILL.md under the library and the agent homes, with its frontmatter"
+    from features.skill_loading import catalogue as held
+    held.CATALOGUED[str(project)] = held.replace(held.CATALOGUED[str(project)], at=0.0)
+    assert catalogue(project) is held.CATALOGUED[str(project)].skills and held.CATALOGUED[str(project)].at > 0, \
+        "a catalogue that is old but whose folders did not change is kept and counted fresh again"
+    (obsolete / "SKILL.md").unlink()
+    held.CATALOGUED[str(project)] = held.replace(held.CATALOGUED[str(project)], files=[*held.CATALOGUED[str(project)].files], at=0.0, marks=())
+    assert "journal-obsolete" not in [row[SKILL.name] for row in catalogue(project)], "a skill whose file vanished while the folders were read is left out"
     listed = skills(record)
     auto = next(row for row in listed if row[SKILL.name] == "journal-work-tracking")
     assert (auto[SKILL.loaded], auto[SKILL.stale], auto[SKILL.always]) == (0, False, False), \
@@ -262,3 +269,20 @@ def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_tea
         assert set(f.keywords) <= set(words.get(skill, [])), f"every word that loaded {f.name}'s skill loads {skill}"
         if "_" not in f.name:
             assert teaching_command(record.root.parent, f.name.removesuffix("s")) == skill, f"journal {f.name.removesuffix('s')} loads {skill}"
+    import json
+    from features.renames import rename, skills_renamed
+    root = record.root
+    home = root / "environments" / "main"
+    (root / "runtime" / "sessions" / "one").mkdir(parents=True)
+    home.mkdir(parents=True)
+    (home / "settings.json").write_text(json.dumps({"features": {"old.line": True}, "triggers": {"old": 1}, "old": {"size": 2, "mode.deep": 3}, "skills": ["old-skill", "other"]}))
+    (root / "runtime" / "sessions" / "one" / "gate-1.json").write_text(json.dumps({"old.hold": 1, "keep": 2}))
+    (root / "runtime" / "sessions" / "one" / "trigger-old.words.json").write_text("{}")
+    (home / "runtime").mkdir()
+    (home / "runtime" / "cursor-old").write_text("5")
+    assert rename(root, {"old": "new"}) == {"settings": 1, "gates": 1, "triggers": 1, "cursors": 1}, "a renamed feature is renamed in its settings, gates, triggers and cursors"
+    assert json.loads((home / "settings.json").read_text())["new"] == {"size": 2, "mode.deep": 3} and (home / "runtime" / "cursor-new").read_text() == "5", \
+        "its own settings move under its new name"
+    assert rename(root, {"old": "new"}) == {"settings": 0, "gates": 0, "triggers": 0, "cursors": 0}, "renaming twice changes nothing more"
+    assert (skills_renamed([skill_name("old"), "other"], "old", "new"), skills_renamed(["other"], "old", "new"), skills_renamed([skill_name("old")], "old", "a.b")) == \
+        (sorted([skill_name("new"), "other"]), ["other"], [skill_name("old")]), "a chosen skill follows its feature's new name, and a line of a feature has no skill of its own"

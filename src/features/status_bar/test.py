@@ -78,6 +78,19 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
         "a run of journal commands is one message whose every column rolls on its own"
     assert coloured([shell("journal message read 601")])[0][:2] == [("journalling", "gray"), ("reading", "muted")], \
         "a journal command is rooted under journalling and what it did there is muted"
+    assert coloured([edit("a.py", changed={"added": 3, "removed": 1}), edit("a.py", NOW + 1, changed={"added": 2})]) == \
+        [[("editing", "gray"), ("a.py", "muted"), (5, "green"), (1, "red")]], "edits of one file add up what was added and removed in green and red"
+    assert coloured([edit("a.py", changed={"added": 3}), edit("b.py", NOW + 1, changed={"removed": 2})])[0][2:] == [([3, 6], "green"), ([0, 2], "red")], \
+        "edits of two files roll the running totals from one to the next"
+    from features.status_bar.shell import parsed
+    roots = lambda command: [(piece.root, piece.args) for piece in parsed(command)]
+    assert roots("timeout 10 perl -e x git status") == [("git status", ())] and roots("env FOO=1 nice -n 5 git log") == [("git log", ())] \
+        and roots("sudo -u me --preserve git pull") == [("git pull", ())], "a command is named by what a wrapper runs, however the wrapper is told to behave"
+    assert roots('echo "a\\" b" && git add x') == [("git add", ("x",))] and roots("a=1; echo $a $b") == [], \
+        "a quoted separator does not split a command, and a command that only talks or sets a name is nothing to show"
+    assert roots("x=$(git rev-parse HEAD); git show $x") == [("git rev-parse", ("HEAD",)), ("git show", ())] \
+        and roots("(git push) | tail -3") == [("git push", ())] and roots("for f in a; do npm run build; done") == [("npm run build", ())], \
+        "a command inside a capture, a group or a loop is found, and a filter after it is left out"
 
 
 def test_the_whole_bar_is_the_queue_and_nothing_else():
