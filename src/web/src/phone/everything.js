@@ -40,7 +40,7 @@ export const GROUPS = [
         line: "What the agent reads, runs and follows.",
         places: [
             ...["skill", "tool", "template", "profile"].map(kind),
-            place("organization", "Organization", "Domains, their roles and who fills them", "family"),
+            place("organization", "Organization", "Domains, their roles and who fills them", "family", "organization:"),
         ],
     },
     {
@@ -48,11 +48,11 @@ export const GROUPS = [
         head: () => "Setup",
         line: "Journals, plugins, files and settings.",
         places: [
-            place("journals", "Journals", "Every journal on this computer and what needs you in each", "chapters"),
-            place("environments", "Environments", "Switch, start an agent, make a new one", "branch"),
+            place("journals", "Journals", "Every journal on this computer and what needs you in each", "chapters", "journals:"),
+            place("environments", "Environments", "Switch, start an agent, make a new one", "branch", "environments:"),
             kind("plugin"),
             kind("share"),
-            place("files", "Project files", "Every file in the project, and what it is attached to", "folder"),
+            place("files", "Project files", "Every file in the project, and what it is attached to", "folder", "files:"),
             place("settings", "Settings", "Features, services, alerts, your title and name", "settings", "settings"),
         ],
     },

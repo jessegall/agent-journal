@@ -17,6 +17,8 @@ const props = defineProps({
     keyOf: {type: Function, default: (row) => row.n},
     wordsOf: {type: Function, default: (row) => `${row.title} ${row.n}`},
     empty: {type: Object, required: true},
+    keep: {type: Function, default: () => true},
+    order: {type: Function, default: null},
 });
 const emit = defineEmits(["back", "act"]);
 const rows = ref([]);
@@ -30,7 +32,8 @@ const end = ref(null);
 const {under, scrolled} = useScrolled();
 const shown = computed(() => {
     const asked = words.value.trim().toLowerCase();
-    return asked ? rows.value.filter((row) => props.wordsOf(row).toLowerCase().includes(asked)) : rows.value;
+    const kept = rows.value.filter((row) => props.keep(row) && (!asked || props.wordsOf(row).toLowerCase().includes(asked)));
+    return props.order ? kept.sort(props.order) : kept;
 });
 let skeletonTimer = 0;
 let watcher = null;

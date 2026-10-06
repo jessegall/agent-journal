@@ -1,6 +1,6 @@
 <script setup>
 import {agentRunningIn} from "../composables/settings.js";
-import {countsOf, envState, focusOf, isActive, STATE_WORDS} from "../domain/journals.js";
+import {countsOf, envState, focusOf, isActive, removeWords, sentence, STATE_WORDS, sweepWords} from "../domain/journals.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -54,24 +54,6 @@ const confirming = (e) => ["remove", "refused"].includes(kindOf(e));
 const stepOf = (e) => (confirming(e) ? "remove" : kindOf(e) === "sweep" ? "sweep" : "idle");
 
 const workNote = (row) => (row.work ? `· ${row.work.current ? "" : "last closed "}${row.work.title}` : "");
-
-const removeWords = (row) =>
-    [
-        row.live ? "An agent is running here." : "",
-        `Removing moves all of ${row.title} into the archive.`,
-        `Bring it back with journal environment unarchive ${row.title}.`,
-    ]
-        .filter(Boolean)
-        .join(" ");
-
-function sweepWords(reply) {
-    const found = /packs (.+) into the attic/.exec(String(reply));
-    if (!found) return String(reply);
-    if (found[1] === "nothing") return "There is nothing to archive.";
-    return `Archiving moves ${found[1]} into the archive. Facts, rules, reminders, docs and open work stay.`;
-}
-
-const sentence = (text) => String(text).charAt(0).toUpperCase() + String(text).slice(1) + ".";
 
 async function remove(row) {
     const e = row.env;

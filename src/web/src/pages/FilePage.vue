@@ -8,6 +8,7 @@ import Btn from "../kit/Btn.vue";
 import Highlight from "../resource/Highlight.vue";
 import Diff from "../kit/Diff.vue";
 import {sendMessage} from "../chat/outbox.js";
+import {aboutLines} from "../format/quote.js";
 import {href, route} from "../route.js";
 
 const file = ref(null);
@@ -49,20 +50,7 @@ function pick(text, range) {
 }
 
 async function send() {
-    const {text, first, last} = picked.value;
-    const where = first ? (first === last ? `line ${first}` : `lines ${first}-${last}`) : "a selection";
-    const source = first
-        ? file.value.text
-              .split("\n")
-              .slice(first - 1, last)
-              .join("\n")
-        : text;
-    const quoted = source
-        .split("\n")
-        .map((line) => `> ${line}`)
-        .join("\n");
-    const path = file.value.root ? `${file.value.root}/${file.value.path}` : file.value.path;
-    await sendMessage(route.value.env, {brief: `About ${path}, ${where}:\n\n${quoted}\n\n${words.value.trim()}`});
+    await sendMessage(route.value.env, {brief: aboutLines(file.value, picked.value, words.value)});
     picked.value = null;
     sent.value = true;
 }

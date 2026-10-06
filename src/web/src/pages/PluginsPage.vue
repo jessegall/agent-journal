@@ -1,4 +1,5 @@
 <script setup>
+import {pluginRequest} from "../domain/plugins.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -120,10 +121,7 @@ function readGuide() {
 }
 
 async function askAgent() {
-    const text = repository.value.trim()
-        ? `Please make a journal plugin for ${repository.value.trim()}. First check that you can reach the repository and tell me whether you can build the integration there, then build it.${wish.value.trim() ? ` It should: ${wish.value.trim()}` : ""}`
-        : `Please make a new journal plugin: ${wish.value.trim()}`;
-    await sendMessage(route.value.env, {brief: text});
+    await sendMessage(route.value.env, {brief: pluginRequest(repository.value, wish.value)});
     making.value = false;
     repository.value = "";
     wish.value = "";

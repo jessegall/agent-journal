@@ -757,6 +757,9 @@ onMounted(startTourOnce);
                             @back="back"
                             @open="open"
                             @command="command"
+                            @switching="leaving"
+                            @stayed="staying"
+                            @moved="arrived"
                         />
                     </template>
                     <template v-else>

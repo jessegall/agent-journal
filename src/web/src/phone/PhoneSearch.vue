@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {phone} from "../api/phone.js";
 import {COMMANDS, PLACES} from "./everything.js";
 import {kindTitle} from "./kinds.js";
 import BigTitle from "./kit/BigTitle.vue";
@@ -23,6 +24,8 @@ const matches = (...texts) => texts.join(" ").toLowerCase().includes(asked.value
 const places = computed(() => (asked.value ? PLACES.filter((place) => matches(place.label, place.sub)) : []));
 const commands = computed(() => (asked.value ? COMMANDS.filter((command) => matches(command.label)) : []));
 let timer = 0;
+
+const openFile = (item, file) => window.open(phone.fileUrl(item.type, item.n, file.name), "_blank");
 
 watch(asked, (now) => {
     clearTimeout(timer);
@@ -60,7 +63,20 @@ watch(asked, (now) => {
             <template v-if="items.length">
                 <CellGroup head="Items">
                     <template v-for="item in items" :key="item.ref">
-                        <Cell :label="item.title" :sub="`${kindTitle(item.type)} ${item.n}`" @pick="emit('open', item.ref)" />
+                        <Cell
+                            :label="item.title"
+                            :sub="[`${kindTitle(item.type)} ${item.n}`, item.abstract].filter(Boolean).join(' · ')"
+                            @pick="emit('open', item.ref)"
+                        />
+                        <template v-for="file in item.matches || []" :key="`${item.ref}/${file.name}`">
+                            <Cell
+                                :label="file.name"
+                                :sub="file.tags || 'Attached file'"
+                                icon="clip"
+                                :indent="1"
+                                @pick="openFile(item, file)"
+                            />
+                        </template>
                     </template>
                 </CellGroup>
             </template>

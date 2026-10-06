@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 
-const props = defineProps({text: String, fileHref: {type: Function, required: true}});
+const props = defineProps({text: String, fileHref: {type: Function, default: null}});
 
 const KINDS = [
     [(line) => line.startsWith("+") && !line.startsWith("+++"), "add"],
@@ -25,7 +25,7 @@ const lines = computed(() =>
 <template>
     <pre
         class="diff"
-    ><template v-for="l in lines" :key="l.at"><template v-if="l.path"><a :class="['line', l.kind]" :href="fileHref(l.path)" :title="`Open ${l.path}`">{{ l.line }}
+    ><template v-for="l in lines" :key="l.at"><template v-if="l.path && fileHref"><a :class="['line', l.kind]" :href="fileHref(l.path)" :title="`Open ${l.path}`">{{ l.line }}
 </a></template><template v-else><span :class="['line', l.kind]">{{ l.line }}
 </span></template></template></pre>
 </template>
