@@ -426,6 +426,30 @@ export class ApiClient {
         return this.act("sequence", n, "steps", {steps});
     }
 
+    profiles() {
+        return this.all("profile");
+    }
+
+    profileCallings() {
+        return this.command("profile", "callings");
+    }
+
+    createProfile(fields) {
+        return this.create("profile", fields);
+    }
+
+    updateProfile(n, fields) {
+        return this.act("profile", n, "update", fields);
+    }
+
+    duplicateProfile(n) {
+        return this.act("profile", n, "duplicate");
+    }
+
+    deleteProfile(n) {
+        return this.act("profile", n, "delete");
+    }
+
     pinRule(n) {
         return this.act("rule", n, "pin");
     }

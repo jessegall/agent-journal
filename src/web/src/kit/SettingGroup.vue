@@ -51,6 +51,7 @@ const helps = computed(() => Object.fromEntries(props.group.items.filter((item) 
         <template v-if="opened.has(group.key)">
             <TextDisplay class="setting-help" :text="group.help" />
         </template>
+        <slot name="before" />
         <template v-if="!bare">
             <div class="setting-card">
                 <template v-for="item in group.items" :key="item.key">
