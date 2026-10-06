@@ -124,8 +124,12 @@ class HookBinding:
     def __init__(self, root: Path, provider, pid: int):
         self.root = root
         self.provider = provider
-        self.pid = agent_pid(pid)
+        self.caller = pid
         self.sessions = SessionsSnapshot(root)
+
+    @cached_property
+    def pid(self) -> int:
+        return agent_pid(self.caller)
 
     @cached_property
     def owned(self) -> set[str]:
