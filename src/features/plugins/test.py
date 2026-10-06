@@ -12,7 +12,7 @@ import pytest
 from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
 from engine.keeper import ServiceState
-from engine.services import UP, Manager, allocate, status_file, want
+from engine.services import UP, Manager, allocate, status, status_file, want
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
@@ -233,6 +233,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
 
 
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
+    from engine.services import files_for
     record = fresh()
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)
     status_file(record.root, "gone.web").parent.mkdir(parents=True, exist_ok=True)
@@ -247,6 +248,19 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     assert other.poll() is None, "a second keeper of the same project keeps nothing while the first holds the services"
     keeping.tick()
     assert other.wait(timeout=5) is not None, "the one that holds them does"
+    keeping.owned.close()
+    started = []
+
+    def broken(root, taken):
+        raise Refused("a bad manifest")
+
+    def fine(root, taken):
+        from engine.keeper import ServiceSpec
+        return [ServiceSpec(id="fine.web", plugin="fine", service="web", run=["true"], **files_for(record.root, "fine.web"))]
+    status_file(record.root, "lost.web").write_text(json.dumps({"state": "ready", "keeper": 0}))
+    Manager(record.root, start=lambda spec, lifeline: started.append(spec.id) or 0, sources=(broken, fine)).tick()
+    assert started == ["fine.web"] and status_file(record.root, "lost.web").exists(), \
+        "a source that throws starts nothing of its own, stops nothing and never keeps the other sources' services from running"
 
 
 def test_stopping_a_service_stops_every_process_it_forked():
@@ -308,6 +322,27 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert json.loads(status_file(record.root, "real.web").read_text()).get("state") == "ready", \
         "the keeper it ships reads its spec from disk and brings a real service up, as it does for the phone's server and tunnel"
     Manager(record.root).remove("real.web")
+    from engine.keeper import ServiceSpec as Spec
+    from engine.package import entry
+    from engine.services import lock_file, spec_file
+    quiet = Spec(id="held.web", plugin="held", service="web", run=["sleep", "30"], **files_for(record.root, "held.web"))
+    spec_file(record.root, "held.web").write_text(json.dumps(__import__("dataclasses").asdict(quiet)))
+    lifeline, writer = os.pipe()
+    holding = open(lock_file(record.root, "held.web"), "a")
+    import fcntl
+    fcntl.flock(holding, fcntl.LOCK_EX)
+    threading.Timer(1.0, holding.close).start()
+    kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), str(spec_file(record.root, "held.web"))], pass_fds=(lifeline,), stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    os.close(lifeline)
+    deadline = time.time() + 15
+    while time.time() < deadline and status(record.root, "held.web").state != "starting":
+        time.sleep(0.1)
+    assert (kept.poll(), status(record.root, "held.web").state) == (None, "starting"), "a keeper that finds the lock taken waits for the old holder to let go instead of giving up"
+    os.close(writer)
+    kept.wait(timeout=15)
+    assert "session" in status(record.root, "held.web").why, "a service that stops because the agent session ended says so"
+    Manager(record.root).remove("held.web")
     with socket.socket() as busy:
         busy.bind(("127.0.0.1", 0))
         busy.listen()
@@ -361,8 +396,26 @@ def test_stopping_a_service_stops_every_process_it_forked():
         assert flaky.one(crashing) is True
         waited.append(began[-1] - seen_at)
     assert waited == [1.0, 2.0, 4.0, 8.0], "each stop doubles the wait before the next start"
-    assert stop_and_look(0.5) is False and crash_state().state == "failed" and "5 times within 60 seconds" in crash_state().why, \
-        "a fifth stop within a minute fails the service and says why, instead of starting it again forever"
+    assert stop_and_look(0.5) is False and crash_state().state == "failed" and "stopped 5 times" in crash_state().why, \
+        "a fifth stop in a row marks the service failed and says why"
+    for _ in range(3):
+        before = len(began)
+        assert stop_and_look(0.5) is False and flaky.one(crashing) is False, "a failed service still waits out its backoff"
+        now[0] += 30.0
+        assert flaky.one(crashing) is True and len(began) == before + 1, "but it is tried again once the wait, never longer than 30 seconds, is over"
+    now[0] += 1000.0
+    flaky.one(crashing)
+    assert len(flaky.crashes["crash.web"]) == 1, "a service that stayed up for a long while forgets its old stops"
+    dead = []
+    mourned = Manager(record.root, start=lambda spec, lifeline: dead.append(now[0]) or 424242, clock=lambda: now[0], living=lambda pid: False)
+    dying = ServiceSpec(id="dies.web", plugin="dies", service="web", run=["true"], **files_for(record.root, "dies.web"))
+    mourned.one(dying)
+    now[0] += 0.1
+    assert mourned.one(dying) is False, "a keeper that died before it wrote any state is a crash and waits out a backoff"
+    now[0] += 1.2
+    assert mourned.one(dying) is True and len(dead) == 2, "and is started again once the wait is over"
+    now[0] += 0.1
+    assert mourned.one(dying) is False and mourned.waiting["dies.web"] - now[0] > 1.5, "the next stop waits longer"
     never = ServiceSpec(id="once.web", plugin="once", service="web", run=["false"], restart="never", **files_for(record.root, "once.web"))
     status_file(record.root, "once.web").write_text(json.dumps({"state": "exited", "at": now[0]}))
     assert flaky.one(never) is False, "a service declared restart never stays stopped after it exits"

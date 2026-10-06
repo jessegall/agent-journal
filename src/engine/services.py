@@ -26,7 +26,8 @@ ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 KEEPER_EXIT = 3.0
 KEEPING = "services-keeper.lock"
-CRASHES, WITHIN = 5, 60.0
+CRASHES, WITHIN = 5, 300.0
+BOOTING = 10.0
 
 
 def status_file(root: Path, sid: str) -> Path:
@@ -132,9 +133,25 @@ def service_spec(root: Path, sid: str, **fields) -> ServiceSpec:
     return ServiceSpec(id=sid, **fields, **files_for(root, sid))
 
 
-def specs(root: Path, sources) -> list[ServiceSpec]:
+def ignore(where: str) -> None:
+    return None
+
+
+def gather(root: Path, sources, faulted=ignore) -> tuple[list[ServiceSpec], bool]:
     taken: set[int] = set()
-    return [spec for source in (*sources, *SOURCES.each(Record(root, env(root)))) for spec in source(root, taken)]
+    found: list[ServiceSpec] = []
+    complete = True
+    for source in (*sources, *SOURCES.each(Record(root, env(root)))):
+        try:
+            found.extend(source(root, taken))
+        except Exception:
+            complete = False
+            faulted(f"the services of {getattr(source, '__name__', source)}")
+    return found, complete
+
+
+def specs(root: Path, sources) -> list[ServiceSpec]:
+    return gather(root, sources)[0]
 
 
 def spawn(spec: ServiceSpec, lifeline: int) -> int:
@@ -153,9 +170,10 @@ def excerpt(output: str) -> str:
 
 
 class Manager:
-    def __init__(self, root: Path, lifeline: int = -1, start=spawn, clock=time.time, living=alive, sources=()):
+    def __init__(self, root: Path, lifeline: int = -1, start=spawn, clock=time.time, living=alive, sources=(), faulted=ignore):
         self.root = Path(root)
         self.sources = sources
+        self.faulted = faulted
         self.lifeline = lifeline
         self.start = start
         self.clock = clock
@@ -171,11 +189,12 @@ class Manager:
         if self.owned is None:
             return []
         started = []
-        declared = specs(self.root, self.sources)
+        declared, complete = gather(self.root, self.sources, self.faulted)
         for spec in declared:
             if self.one(spec):
                 started.append(spec.id)
-        self.retire({spec.id for spec in declared})
+        if complete:
+            self.retire({spec.id for spec in declared})
         self.sweep()
         return started
 
@@ -226,7 +245,7 @@ class Manager:
             self.needed.pop(sid, None)
             current = ServiceState(nonce=asked.nonce)
             current.write(spec.status)
-        unneeded = self.unneeded(spec, now)
+        unneeded = spec.idle or self.unneeded(spec, now)
         if unneeded:
             self.stop(sid, current)
             replace(current, state=NOT_NEEDED, why=unneeded, at=now).write(spec.status)
@@ -236,20 +255,33 @@ class Manager:
         if spec.blocked:
             replace(current, state=BLOCKED, why=spec.blocked, at=now).write(spec.status)
             return False
-        if current.state == "exited" and self.seen.get(sid) != current.at:
+        if self.booting(current, now):
+            return False
+        if self.died(current, now) and self.seen.get(sid) != current.at:
             self.seen[sid] = current.at
             self.crashed(sid, now)
-        if len(self.crashes.get(sid, [])) >= CRASHES:
-            replace(current, state=FAILED, why=f"it stopped {CRASHES} times within {WITHIN:g} seconds", at=now).write(spec.status)
-            return False
+        stops = len(self.crashes.get(sid, []))
+        if stops >= CRASHES and current.state != FAILED:
+            replace(current, state=FAILED, why=f"it stopped {stops} times within {WITHIN:g} seconds and is tried again every {self.wait_after(stops):g} seconds at most", at=now).write(spec.status)
         if self.waiting.get(sid, 0) > now:
             return False
         if spec.restart == "never" and current.state in ("exited", "stopped"):
             return False
         write_json(spec_file(self.root, sid), asdict(replace(spec, owner=os.getpid())))
         replace(current, state="starting", keeper=0, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
-        self.start(spec, self.lifeline)
+        kept = self.start(spec, self.lifeline)
+        started = status(self.root, sid)
+        if kept and started.state == "starting" and not started.keeper:
+            replace(started, keeper=kept).write(spec.status)
         return True
+
+    def booting(self, current: ServiceState, now: float) -> bool:
+        return current.state == "starting" and not current.keeper and now - current.at <= BOOTING
+
+    def died(self, current: ServiceState, now: float) -> bool:
+        if current.state == "exited":
+            return True
+        return current.state == "starting" and not self.living(current.keeper)
 
     def unneeded(self, spec: ServiceSpec, now: float) -> str:
         if not spec.when:
@@ -268,7 +300,10 @@ class Manager:
     def crashed(self, sid: str, now: float) -> None:
         seen = [at for at in self.crashes.get(sid, []) if now - at < WITHIN] + [now]
         self.crashes[sid] = seen
-        self.waiting[sid] = now + BACKOFF[min(len(seen), len(BACKOFF)) - 1]
+        self.waiting[sid] = now + self.wait_after(len(seen))
+
+    def wait_after(self, stops: int) -> float:
+        return BACKOFF[min(stops, len(BACKOFF)) - 1]
 
     def stop(self, sid: str, current: ServiceState) -> None:
         if self.living(current.keeper):

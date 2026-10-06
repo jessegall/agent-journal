@@ -26,7 +26,7 @@ from controllers.marks import action
 NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
 LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
 ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
-TUNNEL_STOPPED = "The tunnel to this journal stopped and could not start again."
+TUNNEL_STOPPED = "The tunnel to this journal keeps stopping. The journal starts it again every few seconds."
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}

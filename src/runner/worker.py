@@ -71,6 +71,13 @@ def run_checks(seat: TerminalSession, driver, kept: list) -> None:
             threw(seat.root, seat.env, f"a worker check: {type(getattr(step, '__self__', step)).__name__}")
 
 
+def run_services(seat: TerminalSession, services: Manager) -> None:
+    try:
+        services.tick()
+    except Exception:
+        threw(seat.root, seat.env, "the worker's services")
+
+
 class Confirm:
     def __init__(self, driver):
         self.driver = driver
@@ -111,7 +118,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     driver = DRIVERS[agent](Record(root, env), session)
     confirm = Confirm(driver)
     kept = checks(seat, driver)
-    services = Manager(root, lifeline, sources=(plugin_services,))
+    services = Manager(root, lifeline, sources=(plugin_services,), faulted=lambda where: threw(root, env, where))
     last_check = last_viewer = last_services = last_checks = 0.0
     watching = None
     exits: list = []
@@ -132,7 +139,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
             now = time.time()
             if keeps and now - last_services >= SERVICES_EVERY:
                 last_services = now
-                services.tick()
+                run_services(seat, services)
             if keeps and now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
                 last_viewer = now
                 watching = keep_viewer(root, cwd, watching, exits)
