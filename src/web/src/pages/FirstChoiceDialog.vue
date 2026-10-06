@@ -44,13 +44,19 @@ async function choose(row) {
             </template>
         </div>
         <template #foot>
-            <span class="first-choice-status">
-                {{ chosen ? `The agent will talk as ${chosen.title} from its next message.` : "Pick one of the four, or keep the voice you have now." }}
-            </span>
-            <Btn :busy="busy" @click="choose(butler)">Keep Butler</Btn>
-            <Btn kind="primary" :disabled="!chosen" :busy="busy" @click="choose(chosen)">
-                {{ chosen ? `Use ${chosen.title}` : "Use the one you pick" }}
-            </Btn>
+            <div class="first-choice-foot">
+                <span class="first-choice-status">
+                    {{
+                        chosen
+                            ? `The agent will talk as ${chosen.title} from its next message.`
+                            : "Pick one of the four, or keep the voice you have now."
+                    }}
+                </span>
+                <Btn :busy="busy" @click="choose(butler)">Keep Butler</Btn>
+                <Btn kind="primary" :disabled="!chosen" :busy="busy" @click="choose(chosen)">
+                    {{ chosen ? `Use ${chosen.title}` : "Use the one you pick" }}
+                </Btn>
+            </div>
         </template>
     </Dialog>
 </template>
@@ -79,6 +85,13 @@ async function choose(row) {
     gap: 10px;
 }
 
+.first-choice-foot {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+}
+
 .first-choice-status {
     flex: 1;
     color: var(--text-3);
@@ -88,6 +101,15 @@ async function choose(row) {
 @media (max-width: 600px) {
     .first-choice-cards {
         grid-template-columns: 1fr;
+    }
+
+    .first-choice-foot {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .first-choice-foot .btn {
+        width: 100%;
     }
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup>
 import SettingGroup from "../kit/SettingGroup.vue";
-import ProfilesEditor from "./ProfilesEditor.vue";
+import AgentVoice from "./AgentVoice.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
 
 defineProps({region: {type: Object, required: true}, across: Boolean, sheet: Boolean});
@@ -24,7 +24,7 @@ defineEmits(["change", "timing", "act"]);
                 @act="(row, key) => $emit('act', row, key)"
             >
                 <template v-if="group.key === 'agent'" #before>
-                    <ProfilesEditor />
+                    <AgentVoice />
                 </template>
             </SettingGroup>
         </template>

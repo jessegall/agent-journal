@@ -434,6 +434,10 @@ export class ApiClient {
         return this.command("profile", "callings");
     }
 
+    profileSamples() {
+        return this.command("profile", "samples");
+    }
+
     createProfile(fields) {
         return this.create("profile", fields);
     }

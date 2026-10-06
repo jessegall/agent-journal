@@ -30,9 +30,9 @@ def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_
     features.load()
     record = fresh()
     record.set_setting("form_of_address", PERSON)
-    assert 'Address them as "Captain Ada"' in start_block(record), "an empty choice talks as the Butler, by the title and first name you set"
+    assert 'Address me as "Captain Ada"' in start_block(record), "an empty choice talks as the Butler, by the title and first name you set"
     record.features = {**record.features, "form_of_address": False}
-    assert "HOW TO TALK TO THE USER" not in start_block(record), "switched off, the start block says nothing about it"
+    assert "HOW THE USER WANTS YOU TO TALK" not in start_block(record), "switched off, the start block says nothing about it"
 
 
 def test_the_four_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
@@ -54,7 +54,7 @@ def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():
         choose(record, number_of(record, voice.title))
         lines[voice.title] = start_block(record)
     assert all(voice.text in lines[voice.title] for voice in SHIPPED), "each shipped profile's own voice reaches the start block"
-    assert 'Address them as "Ada"' in lines["Homie"] and "Never address them by name or title" in lines["Colleague"], "a profile says what it calls you"
+    assert 'Address me as "Ada"' in lines["Homie"] and "Never address me by name or title" in lines["Colleague"], "a profile says what it calls you"
     choose(record, 999)
     assert SHIPPED[0].text in start_block(record), "a choice that names no profile talks as the Butler"
 
@@ -81,4 +81,4 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     assert copy.title == "Coach (my copy)" and not copy.system and copy.brief == SHIPPED[3].text, "a copy carries the voice and is yours to change"
     assert profiles.update(copy.n, brief="Cheer less.").brief == "Cheer less.", "a copy can be edited"
     assert refused(lambda: profiles.create("Odd", brief="x", calling="sir")), "a calling outside the three is refused"
-    assert profiles.callings()["none"] == "", "calling you nothing reads as nothing"
+    assert profiles.callings()["none"] == "" and "{you}" not in profiles.samples()[copy.n], "a copy keeps the sample with your name filled in"

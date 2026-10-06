@@ -15,6 +15,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
 import Toast from "../kit/Toast.vue";
+import AgentVoice from "./AgentVoice.vue";
 import ServicesPanel from "./ServicesPanel.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
@@ -181,7 +182,11 @@ onMounted(async () => {
             <template #group>
                 <div class="settings-phone-group">
                     <template v-if="phoneGroup">
-                        <SettingGroup sheet :group="phoneGroup" @change="save" @timing="saveTiming" @act="act" />
+                        <SettingGroup sheet :group="phoneGroup" @change="save" @timing="saveTiming" @act="act">
+                            <template v-if="phoneGroup.key === 'agent'" #before>
+                                <AgentVoice />
+                            </template>
+                        </SettingGroup>
                     </template>
                     <template v-if="tab === 'sharing'">
                         <SettingsTunnel />

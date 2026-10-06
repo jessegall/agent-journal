@@ -4,7 +4,7 @@ from controllers.base import Controller
 from controllers.marks import action
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
-from features.form_of_address.voices import SHIPPED, Calling, Voice
+from features.form_of_address.voices import SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 
 COPY = " (my copy)"
@@ -41,11 +41,21 @@ class Profiles(Controller):
     @action
     def duplicate(self, n: int):
         row = self.load(n)
-        return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=row.sample)
+        return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row))
 
     @action
     def callings(self) -> dict:
-        return {call.value: call.called(title(self.record), first_name(self.record)) for call in Calling}
+        return {call.value: self._called(call) for call in Calling}
+
+    @action
+    def samples(self) -> dict:
+        return {r.n: self._sample(r) for r in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
+
+    def _called(self, calling: Calling) -> str:
+        return calling.called(title(self.record), first_name(self.record))
+
+    def _sample(self, row) -> str:
+        return filled(row.sample, self._called(Calling(row.calling)))
 
     def _calling(self, given: str) -> str:
         if given not in {call.value for call in Calling}:
