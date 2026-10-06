@@ -11,7 +11,7 @@ VALUED = frozenset({"-m", "--message", "-b", "-B", "-F", "--onto", "-X", "--main
 FINISHING = frozenset({"--abort", "--continue", "--skip", "--quit"})
 FAILED = re.compile(r"^(?:fatal|error):|^CONFLICT|^! \[rejected\]|^Aborting|^Automatic merge failed", re.M)
 UP_TO_DATE = re.compile(r"Already up[ -]to[ -]date")
-SHELL_VARIABLE = re.compile(r"\$(?:\w+|\{\w+\})")
+SHELL_EXPANSION = re.compile(r"\$[\w{(]|`")
 SHA = re.compile(r"[0-9a-f]{7,40}")
 STASH_VERBS = frozenset({"pop", "apply", "drop"})
 STASH_PAST = {"pop": "Popped", "apply": "Applied", "drop": "Dropped"}
@@ -46,7 +46,7 @@ class GitCall:
         return bool(self.flags & set(flags))
 
     def location(self, path: str) -> str:
-        return path.rstrip("/").rsplit("/", 1)[-1] if SHELL_VARIABLE.search(path) else path
+        return path.rstrip("/").rsplit("/", 1)[-1] if SHELL_EXPANSION.search(path) else path
 
     def short(self, ref: str) -> str:
         return ref[:7] if SHA.fullmatch(ref) else ref

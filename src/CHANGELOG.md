@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.7 — no git chip shows shell syntax
+A git chip whose path holds `${NAME:?}`, any other `${...}` form, `$(...)` or backticks now shows the path by its last plain component, as `$NAME` already did. Nothing to do.
+
 ## 2.253.6 — a processed message shows only its chip, and the phone's message box rises with the keyboard
 
 **A processed message no longer shows the part record behind its chip.** After `message process` the phone showed the quoted
