@@ -58,6 +58,8 @@ class Worktrees(Controller):
         if self.rows.by_title(name, standing=True) or folder.exists() or present(project, f"refs/heads/{branch}"):
             raise Refused(f"the worktree {name} is taken: drop it, or choose another name")
         base = tip(project, working)
+        if not base:
+            raise Refused(f"{working} has no commits yet, so there is nothing to cut from: make a first commit")
         made = git(project, "worktree", "add", "-q", "-b", branch, str(folder), base)
         if made.returncode:
             raise Refused(f"the worktree {name} could not be made: {made.stderr.strip()}")

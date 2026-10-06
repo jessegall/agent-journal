@@ -154,3 +154,33 @@ def test_a_worktree_is_not_dropped_while_an_agent_runs_in_it():
     ended.wait()
     launched.write_text(json.dumps({"pid": ended.pid, "cwd": row.path}))
     assert worktrees.complete(row.n).completed, "once the agent is gone the worktree drops"
+
+
+def test_a_new_repository_a_detached_head_and_a_missing_git_identity_are_refused_in_plain_words(monkeypatch):
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    record.root.mkdir(parents=True, exist_ok=True)
+    project = record.root.resolve().parent
+    git(project, "init", "-q", "-b", "main")
+    said = refused(lambda: Worktrees(record, actor=AGENT).cut("rhea"))
+    assert "has no commits" in said and "invalid reference" not in said, said
+    from engine.worktree import branched
+    assert "could not be made from main" in branched(project, "ticket-1", "main"), "a branch off a repository with no commits is refused, not skipped"
+    repo = project_on("phone-connection")
+    git(repo.project, "checkout", "-q", "--detach")
+    assert "is on no branch" in refused(lambda: Worktrees(repo.record, actor=AGENT).cut("rhea"))
+    git(repo.project, "checkout", "-q", "phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    row = worktrees.all()[0]
+    commit(Path(row.path), "helper.txt", "from the helper\n")
+    git(repo.project, "config", "--unset", "user.email")
+    git(repo.project, "config", "--unset", "user.name")
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", "/dev/null")
+    monkeypatch.setenv("GIT_CONFIG_SYSTEM", "/dev/null")
+    monkeypatch.setenv("GIT_AUTHOR_NAME", "")
+    monkeypatch.setenv("GIT_COMMITTER_NAME", "")
+    monkeypatch.setenv("EMAIL", "")
+    said = refused(lambda: worktrees.take(row.n))
+    assert "was undone" in said and "Traceback" not in said and git(repo.project, "status", "--porcelain") == "", said

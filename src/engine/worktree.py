@@ -181,8 +181,8 @@ def contains(project: Path, commit: str, branch: str) -> bool:
 def branched(project: Path, branch: str, start: str, fresh: bool = False) -> str:
     ref = f"refs/heads/{branch}"
     if not present(project, ref):
-        git(project, "branch", branch, start)
-        return ""
+        made = git(project, "branch", branch, start)
+        return f"its branch {branch} could not be made from {start}: {made.stderr.strip()}" if made.returncode else ""
     if not fresh or tip(project, ref) == tip(project, start):
         return ""
     holder = checked_out(project, branch)
@@ -205,7 +205,8 @@ def tip(project: Path, ref: str = "HEAD") -> str:
     loose = project / ".git" / "refs" / "heads" / branch
     if ref != "HEAD" and loose.is_file():
         return loose.read_text().strip()
-    return git(project, "rev-parse", ref).stdout.strip()
+    found = git(project, "rev-parse", ref)
+    return "" if found.returncode else found.stdout.strip()
 
 
 def present(project: Path, ref: str) -> bool:
