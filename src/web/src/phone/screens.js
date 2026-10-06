@@ -7,6 +7,7 @@ import PhoneJournals from "./places/PhoneJournals.vue";
 import PhoneOrganization from "./places/PhoneOrganization.vue";
 import PhoneProjectFile from "./places/PhoneProjectFile.vue";
 import PhoneProjectFiles from "./places/PhoneProjectFiles.vue";
+import PhoneTimeline from "./PhoneTimeline.vue";
 
 import {SETTINGS_SCREENS} from "./settings/screens.js";
 
@@ -20,6 +21,7 @@ export const SCREENS = {
     files: PhoneProjectFiles,
     file: PhoneProjectFile,
     attached: PhoneAttachedFiles,
+    timeline: PhoneTimeline,
     ...SETTINGS_SCREENS,
 };
 

@@ -1,4 +1,5 @@
 import {beforeEach, expect, test, vi} from "vitest";
+import {momentDays} from "../src/domain/timeline.js";
 
 const api = {act: vi.fn(), dashboard: vi.fn(), env: () => "main"};
 vi.mock("../src/api/client.js", () => ({api, onWrite: vi.fn()}));
@@ -48,4 +49,16 @@ test("parking a plan marks it parked", async () => {
     const [first] = rows("plan");
     await parkPlan(first);
     expect(first.data.status).toBe("parked");
+});
+
+test("a plan's timeline groups its moments by day, newest first", () => {
+    const day = 86400;
+    const moments = [
+        {at: 10 * day + 60, kind: "started", todo: 1},
+        {at: 10 * day + 120, kind: "done", todo: 1},
+        {at: 12 * day + 60, kind: "started", todo: 2},
+    ];
+    const days = momentDays(moments);
+    expect(days.map((one) => one.items.map((item) => item.todo))).toEqual([[2], [1, 1]]);
+    expect(days[1].items.map((item) => item.kind)).toEqual(["done", "started"]);
 });
