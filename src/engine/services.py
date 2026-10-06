@@ -226,14 +226,15 @@ class Manager:
             self.needed.pop(sid, None)
             current = ServiceState(nonce=asked.nonce)
             current.write(spec.status)
+        unneeded = self.unneeded(spec, now)
+        if unneeded:
+            self.stop(sid, current)
+            replace(current, state=NOT_NEEDED, why=unneeded, at=now).write(spec.status)
+            return False
         if self.living(current.keeper) and current.state not in RESTING:
             return False
         if spec.blocked:
             replace(current, state=BLOCKED, why=spec.blocked, at=now).write(spec.status)
-            return False
-        unneeded = self.unneeded(spec, now)
-        if unneeded:
-            replace(current, state=NOT_NEEDED, why=unneeded, at=now).write(spec.status)
             return False
         if current.state == "exited" and self.seen.get(sid) != current.at:
             self.seen[sid] = current.at
