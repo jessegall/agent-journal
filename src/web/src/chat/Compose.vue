@@ -23,10 +23,13 @@ const props = defineProps({
     many: {type: Object, default: null},
     idle: {type: Object, default: null},
 });
-const emit = defineEmits(["unquote"]);
+const emit = defineEmits(["unquote", "typing"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const writing = computed(() => !!draft.text.trim());
-watch(writing, (is) => (store.drafting += is ? 1 : -1));
+watch(writing, (is) => {
+    store.drafting += is ? 1 : -1;
+    if (is) emit("typing");
+});
 onUnmounted(() => writing.value && (store.drafting -= 1));
 watch(
     () => ui.prefill,
