@@ -114,7 +114,7 @@ def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
     assert DRIVERS["claude"](record, "claude-777")._report().title == "claude-1", "found by its process, not by a hook after the restart"
 
 
-def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path):
+def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path, monkeypatch, capsys):
     import json
     from providers.claude_channel import contents, fresh_lines, start
     f = tmp_path / "channel.jsonl"
@@ -135,6 +135,65 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     from providers.claude_channel import READ_AT
     os.environ[READ_AT] = str(at)
     assert (start(f), READ_AT in os.environ) == (at, False), "the restarted channel reads on from where it stopped, so nothing queued meanwhile is skipped"
+    import io, json, os
+    from providers import claude_channel as channel
+    from engine.sessions import ACTIVE_ENV
+    monkeypatch.delenv(ACTIVE_ENV, raising=False)
+    monkeypatch.delenv(channel.CHECKING, raising=False)
+    root = tmp_path / ".journal"
+    requests = ["not json\n", json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize"}) + "\n",
+                json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n",
+                json.dumps({"jsonrpc": "2.0", "id": 2, "method": "ping"}) + "\n"]
+    monkeypatch.setattr(channel.sys, "stdin", io.StringIO("".join(requests)))
+    assert channel.main([str(root)]) == 0, "the channel answers its requests until its input ends"
+    out = [json.loads(l) for l in capsys.readouterr().out.splitlines()]
+    assert [o["id"] for o in out] == [1, 2], "a line that is no request and a notification get no answer"
+    assert out[0]["result"]["capabilities"] == {} and out[1]["result"] == {}, "a channel the journal did not launch offers no capability, and any call gets an empty result"
+    monkeypatch.setenv(channel.CHECKING, "1")
+    assert channel.main([]) == 0, "a channel started only to check it starts ends at once"
+    assert channel.start(tmp_path / "nothing") == 0, "a queue that does not exist yet is read from its start"
+    assert channel.fresh_lines(tmp_path / "nothing", 5) == ([], 5), "a queue that is gone has nothing new and keeps its place"
+    import os, pytest
+    from types import SimpleNamespace
+    from providers import claude_channel as channel
+    class Stop(Exception):
+        pass
+    sleeps = []
+    def sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) > 2:
+            raise Stop
+    monkeypatch.setattr(channel.time, "sleep", sleep)
+    monkeypatch.setattr(channel.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0))
+    assert channel.starts() is True, "a new build that starts is taken over to"
+    monkeypatch.setattr(channel.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=1))
+    assert channel.starts() is False, "a new build that exits with an error is not taken over to"
+    def broken(*a, **k):
+        raise OSError("no")
+    monkeypatch.setattr(channel.subprocess, "run", broken)
+    assert channel.starts() is False, "a new build that cannot be run at all is not taken over to"
+    root = tmp_path / ".journal"
+    queue = channel.queue(root, 77)
+    queue.parent.mkdir(parents=True, exist_ok=True)
+    queue.write_text("")
+    executed = []
+    monkeypatch.setattr(channel, "renewed", lambda root, began: True)
+    answers = iter([False, True])
+    monkeypatch.setattr(channel, "starts", lambda: next(answers))
+    monkeypatch.setattr(channel.os, "execv", lambda program, argv: executed.append(argv) or (_ for _ in ()).throw(Stop()))
+    with pytest.raises(Stop):
+        channel.push(root, 77)
+    assert executed and channel.READ_AT in os.environ, "a channel that finds a new build that starts restarts itself and carries its place over"
+    os.environ.pop(channel.READ_AT)
+    # exception branch
+    sleeps.clear()
+    monkeypatch.setattr(channel, "renewed", lambda root, began: False)
+    seen = []
+    monkeypatch.setattr("controllers.faults.threw", lambda root, env, what: seen.append(what))
+    monkeypatch.setattr(channel, "fresh_lines", lambda f, at: (_ for _ in ()).throw(RuntimeError("boom")))
+    with pytest.raises(Stop):
+        channel.push(root, 77)
+    assert set(seen) == {"the channel that carries lines to the agent"}, "a failure in the channel is filed under its own name"
 
 
 def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_follow_up_is_typed_as_an_instruction(monkeypatch):

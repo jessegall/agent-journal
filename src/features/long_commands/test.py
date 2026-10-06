@@ -173,3 +173,35 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
     assert lines()[3:] == ["the command you left running finished - make test"], "a command it detached is followed by its pid, and told once it is gone"
     report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
     assert len(lines()) == 4, "a provider that wakes its agent itself is left to do so"
+
+
+def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_are_read_from_where_they_stopped(tmp_path):
+    import json
+    from datetime import datetime, timezone
+    from providers.claude import Claude
+
+    now = datetime.now(timezone.utc).isoformat()
+    monitor = lambda n, stamp, **given: {"type": "assistant", "timestamp": stamp,
+                                         "message": {"content": [{"type": "tool_use", "id": f"m{n}", "name": "Monitor", "input": {"description": f"watch {n}", **given}}]}}
+    rows = [monitor(1, "2026-09-23T00:00:00Z", command="tail -f a.log", timeout_ms=1000),
+            monitor(2, "2026-09-23T00:00:00Z", command="tail -f b.log"),
+            monitor(3, now, command="tail -f c.log", timeout_ms=600000),
+            {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-09-23T00:00:30Z",
+             "content": "<tool-use-id>m2</tool-use-id><status>completed</status>"}]
+    transcript = tmp_path / "s.jsonl"
+    transcript.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    watched = {row["task"]: (row["running"], row["status"]) for row in Claude().crew(transcript)["monitor_rows"]}
+    assert watched == {"watch 1": (False, "expired"), "watch 2": (False, "completed"), "watch 3": (True, "")}, \
+        "a monitor whose time ran out has expired, one the agent was told about has ended, and one inside its time still runs"
+
+    thought = lambda text: {"type": "assistant", "timestamp": now, "message": {"id": "a1", "content": [{"type": "thinking", "thinking": text}]}}
+    said = {"type": "assistant", "timestamp": now, "message": {"id": "a2", "content": [{"type": "text", "text": "Done."},
+                                                                                             {"type": "tool_use", "id": "t9", "name": "Read", "input": {}}]}}
+    asked = {"type": "user", "timestamp": now, "message": {"content": "go on"}}
+    own = tmp_path / "thinking.jsonl"
+    own.write_text("\n".join(json.dumps(row) for row in (thought("  Weighing the two options  "), {**thought("then the second"), "message": {"id": "a1", "content": [
+        {"type": "thinking", "thinking": "then the second"}, {"type": "tool_use", "id": "t8", "name": "Read", "input": {}}]}}, said, asked)) + "\n")
+    found, offset = Claude().thoughts(own, 0)
+    assert found == [("thinking", "Weighing the two options\n\nthen the second"), ("text", "")], \
+        "what an agent weighed in one turn is kept together, and an answer in words is only marked as spoken"
+    assert Claude().thoughts(own, offset) == ([], offset), "reading on from where it stopped finds nothing twice"
