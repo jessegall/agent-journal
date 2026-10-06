@@ -147,6 +147,20 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     looked = dispatch("POST", f"/api/{broken.env}/plugins/preview", broken.root, {}, {"source": repository(tmp_path, WORKS, name="looked")})
     assert (looked.code, looked.body["name"]) == (200, "works"), "the viewer previews a plugin before installing it"
     assert [p.name for p in home(broken.root).glob(".staging-*")] == [], "and the preview takes away the copy it fetched"
+    fine = fresh("fine")
+    plugins = Plugins(fine, actor=AGENT)
+    source = repository(tmp_path, WORKS, name="upgraded")
+    assert "Nothing is installed yet" in plugins.action("install")(source), "an install shows what it would do before it does it"
+    row = plugins.action("install")(source, yes=True)
+    assert "is installed from" in refused(lambda: plugins.action("install")(source, yes=True)), "a plugin is installed once"
+    assert "is already at" in plugins.action("upgrade")(row.n), "an upgrade with nothing new says so"
+    git("commit", "-q", "--allow-empty", "-m", "two", cwd=tmp_path / "upgraded")
+    assert "Nothing has changed yet" in plugins.action("upgrade")(row.n), "an upgrade shows what it would change before it does it"
+    assert plugins.action("upgrade")(row.n, yes=True).commit != row.commit, "and moves the plugin to the new commit"
+    assert (plugins.action("disable")(row.n).enabled, plugins.action("enable")(row.n).enabled) == (False, True), "a plugin is switched off and on again"
+    assert "remove it first" in refused(lambda: plugins.action("purge")(row.n)), "what an installed plugin keeps is never purged"
+    plugins.complete(row.n, "removed")
+    assert "is gone" in plugins.action("purge")(row.n), "once removed, what it kept can be purged"
 
 
 
