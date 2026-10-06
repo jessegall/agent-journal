@@ -13,7 +13,7 @@ from engine.ports import answers, reached
 from features.sharing.controller import HEALTH, Shares
 from features.sharing.details import HOST_DOWN, RESTARTED
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import held_by_server, refused_address, tunler
+from features.sharing.tunnel import ADDRESS_REFUSED, alerts, held_by_server, refused_address, tunler_status
 from resources.base import SYSTEM, Refused
 
 MISSES_BEFORE_RESTART = 3
@@ -21,7 +21,7 @@ PATIENCE = 30.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
 RESTART_EVERY = 300.0
 READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdress"}
-ADDRESS_REFUSED, SETTINGS_UNREADABLE, HOST_IS_DOWN = "address_refused", "settings_unreadable", "host_down"
+SETTINGS_UNREADABLE, HOST_IS_DOWN, TUNLER_UNUSABLE = "settings_unreadable", "host_down", "tunler_unusable"
 MISSES, RESTARTED_AT, UNREACHABLE_SINCE = "misses", "restarted", "unreachable_since"
 HOLD_FOR = 60.0
 GIVE_UP_AFTER = 600.0
@@ -31,9 +31,13 @@ class KeepTunnelAnswering(Handler):
     def handle(self, context: Context, event: ClockTicked) -> None:
         if context.record.env != runtime.env(context.record.root):
             return
-        if not wanted(context.record.root) or not tunler():
+        if not wanted(context.record.root):
             return
-        state, shares = State(context.record.root / "runtime" / "sharing-tunnel.json"), Shares(context.record, actor=SYSTEM)
+        state, shares = alerts(context.record.root), Shares(context.record, actor=SYSTEM)
+        if unusable := shares._unusable(tunler_status()):
+            alert_once(state, TUNLER_UNUSABLE, lambda: Messages(context.record, actor=SYSTEM).create("The tunnel cannot start", brief=unusable))
+            return
+        state.set(TUNLER_UNUSABLE, 0)
         if refused_address(log_file(context.record.root, TUNNEL)):
             alert_once(state, ADDRESS_REFUSED, lambda: Messages(context.record, actor=SYSTEM).create(
                 "The tunnel address is owned by another user", buttons=[READDRESS],

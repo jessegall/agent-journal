@@ -11,7 +11,8 @@ import pytest
 
 from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
-from engine.services import UP, Manager, status_file, want
+from engine.keeper import ServiceState
+from engine.services import UP, Manager, allocate, status_file, want
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
@@ -307,7 +308,6 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert json.loads(status_file(record.root, "real.web").read_text()).get("state") == "ready", \
         "the keeper it ships reads its spec from disk and brings a real service up, as it does for the phone's server and tunnel"
     Manager(record.root).remove("real.web")
-    from engine.services import allocate
     with socket.socket() as busy:
         busy.bind(("127.0.0.1", 0))
         busy.listen()
@@ -338,6 +338,45 @@ def test_stopping_a_service_stops_every_process_it_forked():
     Manager(record.root, start=quick).one(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")))
     assert json.loads(status_file(record.root, "quick.web").read_text())["state"] == "ready", \
         "a keeper that is ready before its manager looks again keeps its ready, never overwritten with starting"
+    now = [1000.0]
+    began = []
+    flaky = Manager(record.root, start=lambda spec, lifeline: began.append(now[0]) or 0, clock=lambda: now[0], living=lambda pid: False)
+    crashing = ServiceSpec(id="crash.web", plugin="crash", service="web", run=["false"], **files_for(record.root, "crash.web"))
+
+    def crash_state():
+        return ServiceState.read(status_file(record.root, "crash.web"))
+
+    def stop_and_look(after):
+        status_file(record.root, "crash.web").write_text(json.dumps({"state": "exited", "at": now[0]}))
+        now[0] += after
+        return flaky.one(crashing)
+    flaky.one(crashing)
+    waited = []
+    for _ in range(4):
+        assert stop_and_look(0.5) is False, "a service that just stopped is not started again before its backoff is over"
+        seen_at = now[0]
+        now[0] += [1.0, 2.0, 4.0, 8.0][len(waited)] - 0.1
+        assert flaky.one(crashing) is False, "and not a moment before it is over"
+        now[0] += 0.1
+        assert flaky.one(crashing) is True
+        waited.append(began[-1] - seen_at)
+    assert waited == [1.0, 2.0, 4.0, 8.0], "each stop doubles the wait before the next start"
+    assert stop_and_look(0.5) is False and crash_state().state == "failed" and "5 times within 60 seconds" in crash_state().why, \
+        "a fifth stop within a minute fails the service and says why, instead of starting it again forever"
+    never = ServiceSpec(id="once.web", plugin="once", service="web", run=["false"], restart="never", **files_for(record.root, "once.web"))
+    status_file(record.root, "once.web").write_text(json.dumps({"state": "exited", "at": now[0]}))
+    assert flaky.one(never) is False, "a service declared restart never stays stopped after it exits"
+    from engine import services as services_module
+    with socket.socket() as taken:
+        taken.bind(("127.0.0.1", 0))
+        taken.listen()
+        busy = taken.getsockname()[1]
+        assert allocate(record.root, "pinned.web", busy, set()) == (busy, f"port {busy} is in use"), "a port a service asks for that is in use blocks it, saying which"
+        services_module.PORTS = range(busy, busy + 1)
+        try:
+            assert allocate(record.root, "none.web", None, set()) == (0, f"no port free from {busy} through {busy}"), "an exhausted port range blocks the service with its range"
+        finally:
+            services_module.PORTS = range(8440, 8500)
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():

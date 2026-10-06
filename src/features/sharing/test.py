@@ -7,6 +7,8 @@ import urllib.request
 from http.server import ThreadingHTTPServer
 
 from controllers.types import Agents, Comments, Docs, Messages
+from engine.markers import marked
+from features.collections.controller import Collections
 from runner.hooks import handle
 from engine.ran import announce
 from features.sharing.controller import Shares
@@ -145,7 +147,7 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
         "and the agent is told it came from someone the user gave the password to"
 
 
-def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
+def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path):
     record = fresh()
     share, doc = shared_with_comments(record)
     handler = type("Bound", (ShareHandler,), {"shares": Shares(record, actor=USER)})
@@ -181,6 +183,40 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header():
         opened = lambda password: visit(f"http://127.0.0.1:{server.server_port}/s/{locked.token}/", password)
         assert (opened(None), opened("daisy"), opened("tulip")) == (401, 401, 200), \
             "a page with a password asks for it, refuses a wrong one and opens for the right one"
+        base = f"http://127.0.0.1:{server.server_port}"
+        paper = tmp_path / "notes.txt"
+        paper.write_text("inside")
+        other = tmp_path / "secret.txt"
+        other.write_text("outside")
+        inside = Docs(record, actor=USER).create("Inside", brief="in")
+        outside = Docs(record, actor=USER).create("Outside", brief="out")
+        Docs(record, actor=USER).attach(inside.n, str(paper))
+        Docs(record, actor=USER).attach(outside.n, str(other))
+        Docs(record, actor=USER).section(inside.n, "Links", marked("chip", outside.ref, "the outside doc"))
+        group = Collections(record, actor=USER).create("Group")
+        Collections(record, actor=USER).add(group.n, [inside.ref])
+        fenced = Shares(record, actor=USER).create(f"collection:{group.n}")
+        asked = Shares(record, actor=AGENT).create(inside.ref)
+        stopped = Shares(record, actor=USER).create(inside.ref)
+        Shares(record, actor=USER).complete(stopped.n, "done")
+
+        def fetch(path, method="GET"):
+            try:
+                with urllib.request.urlopen(urllib.request.Request(base + path, method=method), timeout=5) as got:
+                    return got.status, got.read()
+            except urllib.error.HTTPError as error:
+                return error.code, b""
+        key = f"/s/{fenced.token}"
+        assert [fetch(f"{key}/doc/{inside.n}")[0], fetch(f"{key}/doc/{outside.n}")[0]] == [200, 404], "a link opens the rows it shares and no other row"
+        assert [fetch(f"{key}/files/doc/{inside.n}/notes.txt"), fetch(f"{key}/files/doc/{outside.n}/secret.txt")[0],
+                fetch(f"{key}/files/doc/{inside.n}/secret.txt")[0], fetch(f"{key}/files/doc/{inside.n}/..%2Fsecret.txt")[0]] == [(200, b"inside"), 404, 404, 404], \
+            "a file comes only from a row in the link's scope and only by a name that row holds"
+        sent = json.loads(fetch(f"{key}/data.json")[1])
+        assert (sorted(sent["rows"]), "the outside doc" in json.dumps(sent), "[[chip" in json.dumps(sent)) == ([f"collection:{group.n}", inside.ref], True, False), \
+            "the page data holds only the rows in scope, and a chip pointing outside the scope is plain text"
+        assert [fetch(f"/s/{'a' * len(fenced.token)}/")[0], fetch(f"/s/{asked.token}/")[0], fetch(f"/s/{stopped.token}/")[0]] == [404, 404, 410], \
+            "an unknown link and one the user has not approved open nothing, and one that ended says so"
+        assert [fetch(f"{key}/", method)[0] for method in ("PUT", "DELETE", "PATCH")] == [405, 405, 405], "a share link answers only reads and comments"
         assert (f'property="og:title" content="{doc.title}"' in html, f'content="{page}preview.png"' in html, picture[:4]) == (True, True, b"\x89PNG"), \
             "the page carries its preview for Slack and WhatsApp: the shared item's title and a picture card"
     finally:
@@ -212,7 +248,7 @@ def test_a_tunnel_that_stops_answering_is_restarted(monkeypatch):
     share, doc = shared_with_comments(record)
     Shares(record, actor=USER).update(share.n, approved=True)
     asked = []
-    monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
+    monkeypatch.setattr(watchdog, "tunler_status", lambda: {"installed": True, "logged_in": True, "account": "me", "host": "t.example"})
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     monkeypatch.setattr(Shares, "_answering", lambda self, wait=0: False)
     monkeypatch.setattr(watchdog, "serving", lambda root: True)
@@ -325,6 +361,41 @@ def test_tunler_logs_in_or_asks_for_the_master_password_to_create_the_account(tm
         raise AssertionError("only the user logs tunler in")
     except Refused:
         pass
+    from features.sharing import services as share_pages
+    from features.sharing.controller import LOGGED_OUT, NOT_INSTALLED
+    flag = tmp_path / "logged-in"
+    flag.write_text("")
+    stateful = tmp_path / "tunler-stateful"
+    stateful.write_text("#!/bin/sh\n"
+                        f'if [ "$1" = status ]; then if [ -f {flag} ]; then echo \'{{"host":"t.example","user":"newbie","logged_in":true,"auth_ok":true}}\'; else echo \'{{"logged_in":false}}\'; fi; fi\n'
+                        f'if [ "$1" = logout ]; then rm -f {flag}; fi\n'
+                        'if [ "$1" = domains ]; then printf "a.t.example\\n\\nb.t.example\\n"; fi\n'
+                        'if [ "$1" = release ]; then if [ "$2" = mine ]; then echo released; else echo "not yours" >&2; exit 1; fi; fi\n')
+    stateful.chmod(0o755)
+    monkeypatch.setattr(tunnel, "tunler", lambda: str(stateful))
+    tunnel.KEPT_STATUS.clear()
+    assert shares.tunnel()["problems"] == [], "a tunler that is installed and logged in has no problem"
+    shares.logout()
+    assert shares.tunnel()["problems"] == [LOGGED_OUT], "logging out shows at once, not when the minute's remembered answer runs out"
+    assert shares.domains() == ["a.t.example", "b.t.example"], "the domains tunler lists, blank lines dropped"
+    shares.release("mine.t.example")
+    assert "not yours" in refused_with(lambda: shares.release("theirs.t.example")), "a domain tunler refuses to release says why"
+    assert "only the user" in refused_with(lambda: Shares(record, actor=AGENT).release("mine")), "only the user releases a domain"
+    flag.write_text("")
+    garbled = tmp_path / "tunler-garbled"
+    garbled.write_text("#!/bin/sh\necho 'not json at all'\n")
+    garbled.chmod(0o755)
+    monkeypatch.setattr(tunnel, "tunler", lambda: str(garbled))
+    tunnel.KEPT_STATUS.clear()
+    assert shares.tunnel()["problems"] == [LOGGED_OUT], "a status tunler cannot be read is taken as not logged in"
+    monkeypatch.setattr(tunnel, "tunler", lambda: "")
+    tunnel.KEPT_STATUS.clear()
+    assert shares.tunnel()["problems"] == [NOT_INSTALLED], "a missing tunler is the problem named first"
+    share, _ = shared_with_comments(record)
+    shares.update(share.n, approved=True)
+    monkeypatch.setattr(share_pages, "tunler", lambda: "")
+    assert [spec.id for spec in share_pages.share_services(record.root, set())] == [share_pages.SERVER], "with no tunler only the server runs, never a tunnel"
+    tunnel.KEPT_STATUS.clear()
 
 
 def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
@@ -342,7 +413,10 @@ def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
     Shares(record, actor=USER).update(share.n, approved=True)
     before = subdomain(record.root)
     asked = []
-    monkeypatch.setattr(watchdog, "tunler", lambda: "tunler")
+    from features.sharing import controller as controller_words
+    standing = {"installed": True, "logged_in": True, "account": "me", "host": "t.example"}
+    monkeypatch.setattr(watchdog, "tunler_status", lambda: standing)
+    monkeypatch.setattr(controller_words, "tunler_status", lambda: standing)
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     log = log_file(record.root, watchdog.TUNNEL)
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -357,6 +431,33 @@ def test_an_address_owned_by_another_account_waits_for_the_user(monkeypatch):
     log.write_text("")
     tick(record)
     assert any(message.title == "The tunnel address cannot be read" for message in Messages(record).all())
+    from engine.services import Wanted
+    from features.sharing.tunnel import alerts
+    owned_alerts = lambda: len([m for m in Messages(record).all() if m.title == "The tunnel address is owned by another user"])
+    settings.write_text(json.dumps({"subdomain": before, "kept": "yes"}))
+    log.write_text(f"rejected by server: {OWNED} (403 Forbidden)\n")
+    tick(record)
+    tick(record)
+    assert owned_alerts() == 1, "a refused address is told to the user once"
+    chosen = Shares(record, actor=USER).readdress()
+    kept = json.loads(settings.read_text())
+    assert (kept["subdomain"] == chosen != before, kept["kept"], Wanted.read(record.root, watchdog.TUNNEL).nonce > 0) == (True, "yes", True), \
+        "a new address replaces only the subdomain and restarts the tunnel under a new nonce"
+    assert alerts(record.root).get("address_refused") == 0, "choosing an address arms the refusal notice again"
+    tick(record)
+    assert alerts(record.root).get("address_refused") > 0, "the new address, refused in its turn, is told to the user too"
+    assert "only the user" in refused_with(lambda: Shares(record, actor=AGENT).readdress()), "only the user chooses a new address"
+    standing = {**standing, "installed": False, "logged_in": False}
+    monkeypatch.setattr(watchdog, "tunler_status", lambda: standing)
+    log.write_text("")
+    for _ in range(3):
+        tick(record)
+    unusable = [m for m in Messages(record).all() if m.title == "The tunnel cannot start"]
+    assert [m.brief for m in unusable] == [controller_words.NOT_INSTALLED] and asked == [], \
+        "with tunler missing the user is told once, and nothing is restarted"
+    monkeypatch.setattr(watchdog, "tunler_status", lambda: {**standing, "installed": True})
+    tick(record)
+    assert len([m for m in Messages(record).all() if m.title == "The tunnel cannot start"]) == 1, "one that is installed but logged out is the same notice, not another"
 
 
 def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_path, monkeypatch):

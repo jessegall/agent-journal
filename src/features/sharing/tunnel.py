@@ -11,10 +11,12 @@ from engine.proc import ran as ran_command
 from engine.stored import write_json
 from typing import TypedDict
 from engine.given import given
+from engine.state import State
 from engine.wording import slugged
 from resources.base import Refused
 
 TUNNEL_FILE = "sharing.json"
+ADDRESS_REFUSED = "address_refused"
 OWNED = "domain is owned by another user"
 HELD = "409 Conflict"
 LAST_LINES = 4
@@ -37,6 +39,10 @@ def kept_address(root: Path) -> dict:
     if not isinstance(kept, dict):
         raise Refused(unreadable)
     return kept
+
+
+def alerts(root: Path) -> State:
+    return State(Path(root) / "runtime" / "sharing-tunnel.json")
 
 
 def subdomain(root: Path) -> str:

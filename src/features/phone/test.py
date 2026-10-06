@@ -13,12 +13,14 @@ from typing import NamedTuple
 import pytest
 
 from controllers.base import Controller
+from controllers.features import Features
 from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
+from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from features.sharing.services import wanted
 from resources.base import AGENT, SYSTEM, USER, Refused
@@ -30,6 +32,7 @@ def served():
     import features
     features.load()
     record = fresh()
+    Features(record, actor=USER).configure(SharingDetails.name, "host", "t.example")
     handler = type("Bound", (ShareHandler,), {"shares": Shares(record, actor=SYSTEM)})
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -180,7 +183,7 @@ def test_no_secret_is_kept_in_the_record(served):
     assert code not in kept and key not in kept, "only fingerprints of the code and the key are written down"
 
 
-def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
+def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypatch):
     record, _ = served
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).connect(7)
@@ -191,6 +194,12 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
     n = Phones(record, actor=USER).connect(7)["n"]
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
+    unaddressed = fresh()
+    with monkeypatch.context() as patched:
+        patched.setattr(Shares, "_address", lambda self: "")
+        with pytest.raises(Refused, match="tunnel address"):
+            Phones(unaddressed, actor=USER).connect(7)
+    assert Phones(unaddressed, actor=USER).rows.summaries() == [], "no code is made for a phone while there is no tunnel address"
 
 
 def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatch):
@@ -253,6 +262,12 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     public = push.Keys.kept(record.root).public
     assert len(pushed) == 1 and push.verified(public, f"{head}.{claims}".encode(), push.base64.urlsafe_b64decode(signature + "==")), \
         "a new question sends one signed push, and not again while it waits"
+    monkeypatch.setattr(Shares, "_address", lambda self: "")
+    Questions(record, actor=AGENT).create("Another one?")
+    Phones(record, actor=SYSTEM)._notify()
+    assert len(pushed) == 1, "with no tunnel address a push has nowhere to point, so none is sent"
+    monkeypatch.undo()
+    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
     asked = next(item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"question:{question.n}")
     assert asked["hold"] == 3, "the phone holds a picked answer as long as the desktop does, from the same setting"

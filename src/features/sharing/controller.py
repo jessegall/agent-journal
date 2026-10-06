@@ -15,7 +15,7 @@ from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
 from engine.services import FAILED, log_file, status
-from features.sharing.tunnel import TUNNEL, TunlerVersion, install, refused_address, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import ADDRESS_REFUSED, TUNNEL, TunlerVersion, TunnelStatus, alerts, install, refused_address, log_in, log_out, new_address, owned, server_name, subdomain, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -153,13 +153,16 @@ class Shares(ShareVisits, SharePages, Controller):
     @action
     def tunnel(self) -> dict:
         standing = tunler_status()
-        return {**standing, "address": self._address(), "problems": self._problems(standing["installed"], standing["logged_in"])}
+        return {**standing, "address": self._address(), "problems": self._problems(standing)}
 
-    def _problems(self, installed: bool, logged_in: bool) -> list[str]:
-        if not installed:
-            return [NOT_INSTALLED]
-        if not logged_in:
-            return [LOGGED_OUT]
+    def _unusable(self, standing: TunnelStatus) -> str:
+        if not standing["installed"]:
+            return NOT_INSTALLED
+        return "" if standing["logged_in"] else LOGGED_OUT
+
+    def _problems(self, standing: TunnelStatus) -> list[str]:
+        if unusable := self._unusable(standing):
+            return [unusable]
         if refused_address(log_file(self.record.root, TUNNEL)):
             return [ADDRESS_TAKEN]
         if status(self.record.root, TUNNEL).state == FAILED:
@@ -225,6 +228,7 @@ class Shares(ShareVisits, SharePages, Controller):
         from engine.services import UP, want
         from features.sharing.services import TUNNEL
         name = new_address(self.record.root)
+        alerts(self.record.root).set(ADDRESS_REFUSED, 0)
         want(self.record.root, TUNNEL, UP, nonce=time.time())
         return name
 
