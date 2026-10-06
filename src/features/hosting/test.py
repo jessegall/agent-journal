@@ -46,6 +46,11 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
     host(ticket.n)
     COMMANDS["ticket"]["unhost"](tickets, ticket.n)
     assert (tickets.load(ticket.n).hosted, ticket_apps(record.root, set())) == (False, []), "an app stopped by hand stops at once"
+    host(ticket.n)
+    tickets.update(ticket.n, idle_since=time.time() - 3 * 60)
+    monkeypatch.setattr(Tickets, "agent_session", lambda self, n: "claude-1")
+    sweep()
+    assert tickets.load(ticket.n).idle_since == 0.0, "an app whose ticket has an agent at work is not counted idle"
 
 
 def test_hosting_services_follow_the_feature_switch():

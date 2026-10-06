@@ -1,3 +1,4 @@
+import json
 import time
 
 import pytest
@@ -310,6 +311,13 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"
     assert ask("POST", "/api/agent-hooks/claude", body={"hooks": {}}).code == 200, "the hooks can be set again from the viewer"
     assert ask("GET", "/api/extension").code == 200 and ask("GET", "/extension.zip").code in (200, 404), "the browser extension is offered when it is in the package"
+    from surfaces import package
+    monkeypatch.setattr(package, "HERE", tmp_path / "no-extension")
+    assert (package.info(), package.archive()) == ({"available": False, "store": ""}, b""), "with no extension in the package there is none to offer, and nothing to download"
+    monkeypatch.undo()
+    assert ask("POST", f"/api/{record.env}/settings", body={"viewer": {"theme": "dark"}}).code == 200, "a viewer preference is merged into the ones kept"
+    assert ask("GET", f"/api/{record.env}/settings").body["viewer"]["theme"] == "dark", "and read back"
+    assert ask("POST", f"/api/{record.env}/settings", body={"boards": {}}).code == 200, "boards can be set from the viewer too"
     assert ask("POST", "/api/services/sharing.server", body={"want": "sideways"}).code == 404, "a service is only asked to be up, down or restart"
     assert [ask("POST", "/api/services/sharing.server", body={"want": want}).code for want in ("up", "down", "restart")] == [200, 200, 200], "a service is asked to run, stop and restart"
     assert ask("GET", "/api/services/sharing.server/log").body["id"] == "sharing.server", "a service's log is read by its id"
@@ -349,4 +357,63 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     guarded(broken, record.root, record.env, "after GET /x").after()
     assert guarded(Reply(200, {}), record.root, record.env, "x").after is None, "a reply with nothing after it is left as it is"
 
+    import commands.http as http
+    from commands.http import dispatch
+    from providers import PROVIDERS
+    called = []
+    monkeypatch.setattr(http, "check_now", lambda root: called.append("check"))
+    monkeypatch.setattr("install.upgrade", lambda project, root: called.append("upgrade") or ["upgraded"])
+    monkeypatch.setattr("engine.stop.ask", lambda root: called.append("stop"))
+    assert [ask("POST", "/api/update/check").body, ask("POST", "/api/upgrade").body, ask("POST", "/api/stop").body] == \
+        [{"checking": True}, {"lines": ["upgraded"]}, {"stopping": True}], "the viewer can ask for an update check, an upgrade and a stop"
+    assert called == ["check", "upgrade", "stop"], "each of them reaches the machine once"
+    assert "every block needs a list of hooks" in str(ask("POST", "/api/agent-hooks/claude", body={"hooks": {"PreToolUse": [{"hooks": [{"command": " "}]}]}}).body), \
+        "hooks a provider cannot take are refused in its words"
+    claude = PROVIDERS["claude"]()
+    bare = record.root.parent / "bare-project"
+    (bare / ".claude").mkdir(parents=True)
+    assert claude.wiring_trouble(bare) == "no journal hook is wired", "a project with no journal hook is told so"
+    (bare / "hook.sh").write_text("")
+    claude.set_hooks(bare, {"Stop": [{"hooks": [{"type": "command", "command": f"sh {bare}/hook.sh claude {bare}/.journal-gone"}]}]})
+    assert claude.wiring_trouble(bare).endswith("which does not exist"), "a hook that names a journal that is gone is told so"
+    (bare / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "other"}]}]}}))
+    assert [found["path"] for found in claude.hooks_elsewhere(bare)] == [".claude/settings.json"], "hooks kept in another settings file of the project are listed with where they are"
+    monkeypatch.setattr(http, "terminal_of", lambda root, session: "term-1" if session == "claude-1" else "")
+    monkeypatch.setattr(http.typist, "send", lambda root, terminal, keys: terminal == "term-1" and keys == b"hi")
+    monkeypatch.setattr(http, "relaunch", lambda root, env, session: {"relaunched": session})
+    monkeypatch.setattr(http, "set_skipped", lambda row, skip: called.append(skip))
+    assert ask("POST", f"/api/{record.env}/agent/claude-1/keys", body={"text": "hi"}).body == {"sent": True}, "keys typed in the viewer reach the agent's terminal"
+    assert ask("POST", f"/api/{record.env}/agent/nobody/keys", body={"text": "hi"}).code == 404, "an agent with no terminal is not found"
+    assert ask("POST", f"/api/{record.env}/agent/claude-1/relaunch", body={"skip": 1}).body == {"relaunched": "claude-1", "skip": True}, "a relaunch says whether prompts are skipped"
+    assert called[-1] is True, "and the choice is kept"
+    chunk = {"hook_event_name": "MessageDisplay", "session_id": "claude-1", "message_id": "m1", "delta": "hi", "final": True}
+    monkeypatch.setattr(http, "displayed", lambda root, chunk: called.append(chunk.message))
+    refused = ask("POST", "/api/hook/claude", {"root": str(record.root.parent / "elsewhere")}, chunk)
+    assert refused.code == 409, "a hook that names another journal's root is turned away"
+    reply = ask("POST", "/api/hook/claude", {"root": str(record.root)}, chunk)
+    reply.after()
+    assert called[-1] == "m1", "a chunk of the agent's words on display is mirrored into the chat after the reply"
+    elsewhere = tmp_path / "other-journal"
+    elsewhere.mkdir()
+    monkeypatch.setattr(viewer, "known", lambda: [viewer.KnownJournal(root=str(elsewhere), project="other", at=1.0), viewer.KnownJournal(root=str(tmp_path / "gone"), project="gone")])
+    listed = ask("GET", "/api/journals").body
+    assert [(j["project"], j["running"]) for j in listed if j["root"] == str(elsewhere)] == [("other", False)], "a journal that is not running is listed as stopped"
+    assert all(j["project"] != "gone" for j in listed), "one whose folder is gone is not listed"
+    monkeypatch.setattr(http, "found_files", lambda project, asked: [SimpleNamespace(path="../outside.txt", name="x"), SimpleNamespace(path="inside.txt", name="y")])
+    monkeypatch.setattr(http, "project_path", lambda project, path: (_ for _ in ()).throw(http.Refused("outside")) if path.startswith("..") else path)
+    monkeypatch.setattr(http, "asdict", lambda found: {"path": found.path})
+    assert ask("GET", f"/api/{record.env}/project-files/find", {"q": "x"}).body == [{"path": "inside.txt"}], "a found file outside the project is left out of the answer"
+    project = record.root.parent
+    for folder in ("a", "b"):
+        (project / folder).mkdir(exist_ok=True)
+        (project / folder / "twin.txt").write_text(folder)
+    assert ask("GET", f"/api/{record.env}/file", {"path": "twin.txt"}).body == {"matches": ["a/twin.txt", "b/twin.txt"]}, "a name that fits two files offers both"
 
+    class Quiet(http.Queue):
+        def get(self, block=True, timeout=None):
+            raise http.Empty
+
+    monkeypatch.setattr(http, "Queue", Quiet)
+    stream = ask("GET", f"/api/{record.env}/stream").chunks
+    assert [next(stream), next(stream)] == [b": open\n\n", b": keep\n\n"], "a stream says it is open, and keeps the connection alive while nothing happens"
+    stream.close()
