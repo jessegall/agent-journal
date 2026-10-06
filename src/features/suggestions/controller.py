@@ -6,7 +6,7 @@ from controllers.base import Controller
 from controllers.types import Plugins
 from resources import types
 from controllers.marks import action
-from resources.base import SYSTEM
+from resources.base import SYSTEM, USER
 
 YES, CHANGE, NO = "Yes, I want this", "Change it first", "No, don't do this"
 OPEN_SUGGESTIONS = 5
@@ -58,15 +58,19 @@ class Suggestions(Controller):
 
     @action
     def reopen(self, n: int, why: str = "the user took the answer back"):
-        self.update(n, decision="")
-        return super().reopen(n, why)
+        super().reopen(n, why)
+        return self.update(n, decision="", todo=0)
 
     @action(network=True)
     def install(self, n: int):
+        if self.actor != USER:
+            self._refuse("only you install a suggested plugin, by pressing Yes on it")
         s = self.load(n)
         if not s.data.get("plugin"):
             self._refuse(f"suggestion {n} is not a plugin to install")
-        return Plugins(self.record, actor=self.actor).action("install")(source=s.data["plugin"], ref=s.data.get("commit", ""), yes=True)
+        if not s.data.get("commit"):
+            self._refuse(f"suggestion {n} names no commit to install, so nothing is installed")
+        return Plugins(self.record, actor=self.actor).action("install")(source=s.data["plugin"], ref=s.data["commit"], yes=True)
 
     @action
     def note_window(self, n: int):
