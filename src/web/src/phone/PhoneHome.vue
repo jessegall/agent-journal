@@ -5,12 +5,12 @@ import {ui} from "../state/ui.js";
 import {replyQuote} from "../format/quote.js";
 import {plainText} from "../text/words.js";
 import {copyText} from "../platform/clipboard.js";
-import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {computed, inject, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
 import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
-import PhoneReader from "./PhoneReader.vue";
+import PhoneItem from "./PhoneItem.vue";
 import PhonePlaces from "./PhonePlaces.vue";
 import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
@@ -77,9 +77,12 @@ const agentOpen = ref(false);
 const atWorkOpen = ref(false);
 const planOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
-const pages = ref([]);
 const direction = ref("push");
 const screen = ref("chat");
+const stacks = reactive({chat: [], home: [], todos: [], everything: []});
+const pages = computed({get: () => stacks[screen.value], set: (list) => (stacks[screen.value] = list)});
+let arriving = "";
+let afterSwitch = () => {};
 const homeEditing = ref(false);
 const VIEWED = ["source", "attachment"];
 const about = ref("");
@@ -417,10 +420,9 @@ function open(target) {
     if (target.startsWith("tab:")) return pick(target.slice(4));
     const key = target.replace(":", "");
     if (IN_CHAT.test(target) && findTurn(key)) {
-        screen.value = "chat";
-        if (!pages.value.length) return nextTick(() => flashTo(key));
+        if (screen.value === "chat" && !pages.value.length) return nextTick(() => flashTo(key));
         flashing = key;
-        return history.go(-pages.value.length);
+        return toChat();
     }
     const next = [...pages.value, entry(target)];
     direction.value = "push";
@@ -445,15 +447,36 @@ function next() {
     pages.value = stay;
 }
 
+function flashLater() {
+    if (!flashing || pages.value.length) return;
+    const key = flashing;
+    flashing = "";
+    setTimeout(() => flashTo(key), 320);
+}
+
+function show(key) {
+    arriving = "";
+    direction.value = "tab";
+    screen.value = key;
+    stacks[key].forEach((_, i) => history.pushState(saved(stacks[key].slice(0, i + 1)), ""));
+    flashLater();
+    switched();
+}
+
+function switched() {
+    const then = afterSwitch;
+    afterSwitch = () => {};
+    then();
+}
+
 function popped(event) {
+    if (arriving) return show(arriving);
     const now = event.state?.pages || [];
     const swiped = edge.landed(now.length);
     direction.value = swiped ? "swiped" : now.length >= pages.value.length ? "push" : "pop";
     pages.value = now;
-    if (!flashing || now.length) return;
-    const key = flashing;
-    flashing = "";
-    setTimeout(() => flashTo(key), 320);
+    flashLater();
+    switched();
 }
 
 onMounted(() => {
@@ -493,8 +516,7 @@ const fade = useFades(list);
 function reply(target, start = "") {
     about.value = target;
     draft.value = start;
-    screen.value = "chat";
-    if (pages.value.length) history.go(-pages.value.length);
+    toChat();
     toBottom();
 }
 
@@ -584,18 +606,26 @@ function sent() {
     refresh();
 }
 
-function pick(key) {
-    if (pages.value.length) history.go(-pages.value.length);
-    if (key === "chat" && screen.value === "chat") toBottom();
-    screen.value = key;
+function pick(key, then = () => {}) {
+    afterSwitch = then;
+    if (key === screen.value && pages.value.length) return history.go(-pages.value.length);
+    if (key === screen.value) return (key === "chat" && toBottom(), switched());
+    if (!pages.value.length) return show(key);
+    arriving = key;
+    history.go(-pages.value.length);
+}
+
+function toChat(then = () => {}) {
+    if (screen.value !== "chat") stacks.chat = [];
+    pick("chat", then);
 }
 
 const COMMANDS = {
-    message: () => (pick("chat"), nextTick(() => compose.value?.focus())),
+    message: () => toChat(() => nextTick(() => compose.value?.focus())),
     places: () => (picking.value = true),
     agent: () => (agentOpen.value = true),
     needs: () => (listing.value = true),
-    tour: () => (pick("chat"), startTour()),
+    tour: () => toChat(startTour),
 };
 const command = (key) => COMMANDS[key]();
 
@@ -770,7 +800,7 @@ onMounted(startTourOnce);
                         />
                     </template>
                     <template v-else>
-                        <PhoneReader
+                        <PhoneItem
                             :target="page.ref"
                             :back="backLabel(i)"
                             :up-next="nextAfter(page.ref)"

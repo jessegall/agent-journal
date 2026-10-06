@@ -12,6 +12,7 @@ import {waitingActions, waitingToSend} from "./outbox.js";
 import {wanted} from "./wanted.js";
 import {useKeyboard} from "./keyboard.js";
 import {usePoll} from "../composables/poll.js";
+import {store} from "../state/store.js";
 
 const OPEN = "open=";
 const BASE = "/p";
@@ -59,6 +60,7 @@ async function load() {
     try {
         await connect();
         connection.value = await phone.state();
+        store.spec = await api.manifest();
         state.value = "connected";
     } catch (error) {
         failed(error);

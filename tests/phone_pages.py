@@ -25,7 +25,7 @@ class PhonePage(NamedTuple):
 
 @contextmanager
 def served() -> Iterator[PhonePage]:
-    """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file, a to-do in a plan, questions and a suggestion waiting for an answer, and a document on a shelf."""
+    """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file, a to-do in a plan, questions and a suggestion waiting for an answer, and a document on a shelf, and to-dos in lanes."""
     import features
     features.load()
     record = fresh()
@@ -38,7 +38,8 @@ def served() -> Iterator[PhonePage]:
     for name in (record.env, "garden"):
         Environments(record, actor=AGENT).create(name)
     (record.root.parent / "roses.txt").write_text("Red roses\nWhite roses\nYellow roses\n")
-    plants = Todos(record, actor=AGENT).create("Water the plants", brief="A to-do the phone lists")
+    todos = Todos(record, actor=AGENT)
+    plants = todos.create("Water the plants", brief="A to-do the phone lists")
     plan = Plans(record, actor=AGENT).create("Keep the garden", abstract="A plan the phone lists with its phases")
     Plans(record, actor=AGENT).phase(plan.n, "Watering", when="the plants are watered")
     Plans(record, actor=AGENT).place(plan.n, 1, [plants.n])
@@ -46,6 +47,8 @@ def served() -> Iterator[PhonePage]:
     notes = Docs(record, actor=AGENT).create("Garden notes", abstract="A document on a shelf")
     Collections(record, actor=AGENT).add(Collections(record, actor=AGENT).create("Garden").n, [notes.ref])
     Facts(record, actor=AGENT).create("The roses face south", brief="A fact the phone can close", keywords=["roses"])
+    todos.block(todos.create("Fix the gate", brief="A to-do held by a reason").n, "waits for the hinges")
+    todos.create("Paint the shed", brief="A to-do the phone moves between lanes", priority="high")
     for title, abstract, choices in (
         ("Which road?", "The phone answers it by a tap", ("Coast road", "Hill road")),
         ("Which hat?", "The phone answers it in its own words", ("Red hat", "Blue hat")),
