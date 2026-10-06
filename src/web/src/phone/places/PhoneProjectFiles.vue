@@ -19,7 +19,7 @@ const failed = ref("");
 const loaded = ref(false);
 const title = computed(() => (props.target ? props.target.split("/").at(-1) : "Project files"));
 const asked = computed(() => words.value.trim());
-const shown = computed(() => (asked.value ? found.value : files.value));
+const listed = computed(() => (asked.value ? found.value : files.value));
 const folderOf = (file) => file.path.slice(0, -file.name.length - 1);
 const subOf = (file) => (file.folder ? folderOf(file) : [folderOf(file), fileSize(file.size)].filter(Boolean).join(" · "));
 let timer = 0;
@@ -62,9 +62,9 @@ const pick = (file) => emit("open", file.folder ? `files:${file.path}` : `file:$
         <template v-if="failed">
             <EmptyList icon="warn" title="The files did not load" :reason="failed" />
         </template>
-        <template v-else-if="shown.length">
+        <template v-else-if="listed.length">
             <CellGroup :head="asked ? 'Found in the project' : target ? '' : 'Folders and files'">
-                <template v-for="file in shown" :key="file.path">
+                <template v-for="file in listed" :key="file.path">
                     <Cell :label="file.name" :sub="subOf(file)" :icon="file.folder ? 'folder' : 'file'" @pick="pick(file)" />
                 </template>
             </CellGroup>

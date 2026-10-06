@@ -44,6 +44,25 @@ await runScenarios(
             await page.getByText("Fact 1 is open again").waitFor({timeout: SHOWN});
             await page.getByRole("button", {name: "The roses face south"}).waitFor({timeout: SHOWN});
         },
+        async "a fact moves to another environment from its row"(page) {
+            await place(page, "Facts");
+            await page.getByRole("button", {name: "Everything you can do with Fact 1"}).click();
+            await sheet(page).getByRole("button", {name: "Move to another environment"}).click();
+            await sheet(page).getByLabel("Environment").fill("garden");
+            await sheet(page).getByRole("button", {name: "Move", exact: true}).click();
+            await page.getByText("Moved fact 1 to garden").waitFor({timeout: SHOWN});
+            await page.getByText("No open facts").waitFor({timeout: SHOWN});
+        },
+        async "an unread question is marked as read from its row"(page) {
+            await place(page, "Questions");
+            await page.getByRole("button", {name: "Everything you can do with Question 1"}).click();
+            await sheet(page).getByRole("button", {name: "Mark as read"}).click();
+            await page.getByText("Marked question 1 as read").waitFor({timeout: SHOWN});
+            await page.getByRole("button", {name: "Everything you can do with Question 1"}).click();
+            await sheet(page).getByRole("button", {name: "Hill road"}).waitFor({timeout: SHOWN});
+            if (await sheet(page).getByRole("button", {name: "Mark as read"}).count())
+                throw new Error("the question still offers Mark as read");
+        },
         async "documents sit on the shelf of their collection"(page) {
             await place(page, "Documents");
             await page.getByRole("tab", {name: /^Garden/}).click();

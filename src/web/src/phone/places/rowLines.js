@@ -3,7 +3,10 @@ import {PLAN_STATES, doneOf, phaseOf, rowsOf} from "../../domain/plans.js";
 import {counted} from "../../format/number.js";
 import {ago} from "../../format/time.js";
 
+const LINE_AT_MOST = 60;
 const DECISIONS = {accept: "Accepted", adjust: "Adjusted", decline: "Declined"};
+
+const shortened = (text) => (text.length > LINE_AT_MOST ? `${text.slice(0, LINE_AT_MOST - 1)}…` : text);
 
 const asked = (row) => (row.completed ? (row.data.dismissed ? "Dismissed" : `Answered: ${row.outcome}`) : "Needs your answer");
 
@@ -21,7 +24,11 @@ const BITS = {
     suggestion: (row) => [row.completed ? DECISIONS[row.data.decision] || "Answered" : "Waits for your answer"],
     ticket: (row) => [row.data.stage || ""],
     collection: (row) => [counted(row.refs.length, "item")],
-    work: (row) => [row.data.parked ? `Paused: ${row.data.parked}` : row.completed ? "" : "In hand"],
+    work: (row) => [
+        row.data.parked ? `Paused: ${row.data.parked}` : row.completed ? "" : "In hand",
+        row.sections?.length ? counted(row.sections.length, "log entry", "log entries") : "",
+        row.sections?.length ? shortened(row.sections.at(-1).body) : "",
+    ],
     check: (row) => [VERDICTS[checkState(row, Date.now() / 1000).verdict]],
     todo: (row) => [row.data.blocked ? `Blocked: ${row.data.blocked}` : ""],
 };

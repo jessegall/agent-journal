@@ -109,9 +109,9 @@ async function toggleClosed() {
 }
 
 function changed() {
-    list.value?.reload();
     count();
     if (showClosed.value) loadClosed();
+    return list.value?.reload();
 }
 
 async function make({title, abstract, brief}) {
