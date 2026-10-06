@@ -122,3 +122,20 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
     assert "is finished" in refused(lambda: helpers.say(1, "more")), "a finished helper takes no follow-up"
+
+
+def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, tmp_path):
+    features.load()
+    calls = started(monkeypatch)
+    record = fresh()
+    project = record.root.resolve().parent
+    (project / "platform" / ".git").mkdir(parents=True)
+    (project / "docs").mkdir()
+    helpers = Helpers(record, actor=AGENT)
+    helpers.dispatch("Ada", "review the queue", "claude", "sonnet", checkout="platform")
+    (cwd, _, _, args), = calls
+    assert (cwd, helpers.all()[0].checkout) == (project / "platform", str(project / "platform")), "it launches in the nested checkout, and the row names it"
+    assert str(project / "platform") in args[-1], "the kickoff names the checkout it works in"
+    assert "not a git checkout" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout="docs")), "a folder that is no checkout is refused"
+    assert "inside the project" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout=str(tmp_path))), "a checkout outside the project is refused"
+    assert "either" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout="platform", worktree=True)), "a checkout and a worktree are never both given"
