@@ -18,6 +18,7 @@ import {useTurnText} from "./turnText.js";
 import {useTurnShape} from "./turnShape.js";
 import {quoted} from "../format/quote.js";
 import {EARLIER, answered} from "../domain/replies.js";
+import {isProcessedPart} from "../format/processed.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {optimistic} from "../sync/rows.js";
 import {render} from "../text/index.js";
@@ -105,6 +106,7 @@ function worded(ref, word) {
 
 const results = computed(() => {
     const declared = props.turn.sections
+        .filter(isProcessedPart)
         .flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)})))
         .filter((b) => b.ref.type);
     const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));

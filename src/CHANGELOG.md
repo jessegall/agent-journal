@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.6 — a processed message shows only its chip, and the phone's message box rises with the keyboard
+
+**A processed message no longer shows the part record behind its chip.** After `message process` the phone showed the quoted
+words in bold and `todo:3055` under them, besides the `Filed to-do 3055` chip. A section whose body only names rows is a
+record for the chip, and phone and desktop now both leave it out of the text.
+
+**The phone's message box rises with the keyboard at once.** It follows the visual viewport on focus, resize and scroll, in
+a browser tab as well as the installed app, so tapping it no longer leaves it under the keyboard until you type.
+
 ## 2.253.5 — the chat's git chips show branches and worktrees, never redirections or shell variables
 
 **The chat's git chips no longer show redirections or shell variables.** After `git branch -D x 2>&1 | tail -1` the chip

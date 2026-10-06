@@ -3,12 +3,10 @@ import {useWindowEvent} from "../composables/windowEvent.js";
 
 const UP = 80;
 
-const standalone = () => window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
-
 function measured() {
     const view = window.visualViewport;
     const root = document.documentElement;
-    if (!view || !standalone()) return;
+    if (!view) return;
     const covered = Math.max(0, Math.round(window.innerHeight - (view.height + view.offsetTop)));
     const phone = document.querySelector(".phone");
     const short = phone ? Math.max(0, Math.round(phone.getBoundingClientRect().bottom - window.innerHeight)) : 0;
@@ -23,5 +21,6 @@ export function useKeyboard() {
     useWindowEvent("resize", measured, undefined, viewport);
     useWindowEvent("scroll", measured, undefined, viewport);
     useWindowEvent("scroll", measured, {passive: true});
+    useWindowEvent("focusin", measured, undefined, () => document);
     onMounted(measured);
 }
