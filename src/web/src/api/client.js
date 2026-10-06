@@ -466,6 +466,10 @@ export class ApiClient {
         return this.command("profile", "callings");
     }
 
+    profileWords() {
+        return this.command("profile", "words");
+    }
+
     profileSamples() {
         return this.command("profile", "samples");
     }
