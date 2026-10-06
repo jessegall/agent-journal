@@ -352,3 +352,13 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
     asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3")
     CONTROLLERS["question"](record, actor=USER).complete(asked.n, how="the first")
     assert f"board 3 waits for the filler (question {asked.n} answered - the first) - dispatch it now" in nudges(record), "an answer to a question about the board dispatches it again"
+    from migrations.m0063_one_sequence_step_reminder import run as move_reminder
+    moved = fresh()
+    moved.set_setting("sequences", {"nudge_every": "5", "keep": 1})
+    assert move_reminder(moved.root)[0].startswith("t: the sequence step reminder runs every 5 minutes"), "an old reminder setting is moved"
+    assert moved.setting("triggers") == {"sequences.unfinished": {"unit": "minutes", "every": 5}}, "it becomes the sequence trigger's cadence"
+    assert moved.setting("sequences") == {"keep": 1}, "the old key is gone and the rest stays"
+    assert move_reminder(moved.root) == [], "once moved it is not moved again"
+    moved.set_setting("sequences", {"nudge_every": "soon"})
+    assert len(move_reminder(moved.root)) == 1 and moved.setting("triggers") == {"sequences.unfinished": {"unit": "minutes", "every": 5}}, \
+        "an unreadable old value falls back to one minute and keeps the cadence already set"

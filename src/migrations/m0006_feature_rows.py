@@ -12,7 +12,7 @@ def run(root: Path) -> str:
         record = Record(root, home.name)
         rows = Features(record, actor=SYSTEM)
         for name, on in read_json(home / "settings.json", dict, {}).get("features", {}).items():
-            if "." in name or rows.named(name):
+            if "." in name or rows.rows.by_title(name):
                 continue
             rows.create(name, enabled=bool(on))
             written += 1

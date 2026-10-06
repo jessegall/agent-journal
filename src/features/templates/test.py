@@ -67,6 +67,15 @@ def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
     assert ([s["title"] for s in plan.sections], design.ref in plan.refs, plan.brief.startswith(f"Built from the functional design, doc {design.n}")) == \
         (["Must have"], True, True), "the plan carries the checklist its rows must cover, and points at the design"
 
+    from engine import runtime
+    from migrations.m0021_functional_design_is_a_doc import run
+    older = fresh()
+    runtime.env_file(older.root).parent.mkdir(parents=True, exist_ok=True)
+    runtime.env_file(older.root).write_text(older.env)
+    blank = Templates(older, actor=USER).create("Blank plan")
+    assert run(older.root).startswith("plan templates replaced by the functional design doc: 1 retired, Functional design"), "an old blank plan template is retired and the new one shipped"
+    assert Templates(older, actor=USER).load(blank.n).completed, "the retired template is closed"
+
 
 def test_a_template_asks_for_its_fields_and_fills_them_in():
     from controllers.types import Todos

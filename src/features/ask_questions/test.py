@@ -180,8 +180,19 @@ def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day
         "a question open for a day is put to the agent, to dismiss if the work settled it"
 
 
-def test_a_row_can_carry_a_field_named_context():
+def test_a_row_can_carry_a_field_named_context_and_old_answered_and_board_questions_are_tidied_by_upgrades():
+    from migrations.m0016_answered_questions_leave_the_panel import run as leave_panel
+    from migrations.m0027_board_questions_hidden import run as hide_board_questions
+
     record = fresh()
     options = [{"title": "the blue one", "description": "", "code": ""}, {"title": "the red one", "description": "", "code": ""}]
     question = Questions(record, actor=AGENT).create("Which one?", options=options, pick=1, context="42")
     assert question.data["context"] == "42", "an action interceptor does not take the row's field for its own context"
+    answered = Questions(record, actor=AGENT).create("Answered once?", options=options, pick=1)
+    Questions(record, actor=USER).complete(answered.n, how="yes")
+    Questions(record, actor=AGENT).stamp(answered.n, kept=True)
+    assert leave_panel(record.root) == "1 answered questions taken off the notifications panel", "an answered question still kept on the panel is taken off"
+    assert leave_panel(record.root) == "0 answered questions taken off the notifications panel", "one already taken off is left alone"
+    about_board = Questions(record, actor=AGENT).create("Which stage?", about="board:1")
+    assert hide_board_questions(record.root) == [about_board.ref], "a question about a board is hidden from the general list"
+    assert hide_board_questions(record.root) == [], "a hidden question is not hidden twice"
