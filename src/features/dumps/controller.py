@@ -8,10 +8,11 @@ from controllers.types import Messages
 from engine.given import given
 from features.collections.controller import Collections
 from features.dumps.resource import ENTRY, ITEM, Dump, Offer, entry
-from features.message_buttons.shaping import LABEL, one
+from features.message_buttons.shaping import one
 from resources.base import AGENT, Ref, Refused, titled
 from controllers.marks import action
 
+LABEL = 40
 LOG_KEPT = 20
 ANSWER = 600
 OFFERED = 4

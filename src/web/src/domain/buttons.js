@@ -13,6 +13,8 @@ export const unpressed = (buttons, pressed) => buttons.filter((b) => !usedAmong(
 
 export const liveButtons = (row) => unpressed(allButtons(row), pressedLabels(row));
 
+const pickOf = (row) => allButtons(row)[Number(row.data.pick) - 1] || null;
+
 export function choiceGroups(row) {
     const buttons = allButtons(row).filter((b) => b.choice);
     const pressed = pressedLabels(row);
@@ -22,6 +24,7 @@ export function choiceGroups(row) {
             choice,
             buttons: own,
             ask: own.find((b) => b.ask)?.ask || "Choose one",
+            pick: pickOf(row),
             chosen: own.find((b) => pressed.includes(b.label)) || null,
         };
     });

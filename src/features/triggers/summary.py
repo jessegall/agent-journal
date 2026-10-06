@@ -13,11 +13,11 @@ def quoted(word: str) -> str:
 
 
 def words_text(words: list) -> str:
-    shown = [quoted(word) for word in words[:3]]
+    quotes = [quoted(word) for word in words[:3]]
     more = len(words) - 3
     if more > 0:
-        return f"{', '.join(shown)} or {more} other {'phrase' if more == 1 else 'phrases'}"
-    return f"{', '.join(shown[:-1])} or {shown[-1]}" if len(shown) > 1 else shown[0]
+        return f"{', '.join(quotes)} or {more} other {'phrase' if more == 1 else 'phrases'}"
+    return f"{', '.join(quotes[:-1])} or {quotes[-1]}" if len(quotes) > 1 else quotes[0]
 
 
 def watching(words: str, where: str) -> str:
