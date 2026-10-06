@@ -102,6 +102,11 @@ def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_
     assert sessions.environment("resumed") == "feature-z", "a subagent's hook outside the worktree never moves the main conversation"
     hooked(record, "resumed", worktree_of(tmp_path, "feature-y") / "src", 5151, event="PostToolUse")
     assert sessions.environment("resumed") == "feature-z", "a tool call run from another folder never moves a running conversation out of its environment"
+    sessions.bind("claude-999991", "feature-z", pid=999991, provider="claude")
+    sessions.write("resumed", pid=999991)
+    hooked(record, "resumed", tmp_path / "feature-z" / "src", 5151, event="PostToolUse")
+    assert (sessions.read("resumed").pid, sessions.environment("claude-999991"), sessions.read("claude-999991").pid) == (5151, "", 0), \
+        "a relaunched agent's old terminal is retired, never handed the new process to hold its environment as a second live terminal"
 
 
 def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_path):
