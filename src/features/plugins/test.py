@@ -514,6 +514,44 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():
     assert "belongs to the checker plugin" in refused(lambda: CONTROLLERS["check"](record, actor=USER).delete(check.n, "tidy")), "nobody else removes it"
     Plugins(record, actor=USER).complete(plugin.n, "removed")
     assert [r.n for r in CONTROLLERS["check"](record, actor=USER).all(deleted=True, completed=True)] == [], "removing the plugin removes what it created"
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from features import FEATURES
+    from features.plugins.host import Host
+    from controllers.types import Notices, Todos
+
+    class Answering(BaseHTTPRequestHandler):
+        payloads = []
+
+        def do_POST(self):
+            Answering.payloads.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"notice": {"title": "Posted the new to-do"}}')
+
+        def log_message(self, *_):
+            pass
+    server = HTTPServer(("127.0.0.1", 0), Answering)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    installed(record, "answerer", "exit 0", on={"todo.created": {"run": "sh answer.sh"}})
+    script = folder(record.root, "answerer") / "answer.sh"
+    script.write_text("exit 1\n")
+    host, now = Host(record.root, FEATURES["plugins"].journal), time.time()
+    host.step(now)
+    open_notices = lambda: [n.title for n in Notices(record, actor=SYSTEM).all() if not n.completed]
+    for _ in range(5):
+        Todos(record, actor=SYSTEM).create("Something new")
+        host.step(now)
+    assert open_notices() == ["Plugin answerer is failing"], "a plugin that keeps failing on its events is named once"
+    Todos(record, actor=SYSTEM).create("Something newer")
+    assert host.step(now) == 0, "and is left alone for a while before the next event reaches it"
+    script.write_text("""echo '{"notice": {"title": "Seen the new to-do"}}'\n""")
+    assert host.step(now + 61) == 1 and open_notices() == ["Seen the new to-do"], "its answer is applied once it answers again, and the failing notice goes"
+    installed(record, "poster", "exit 0", on={"todo.created": {"post": f"http://127.0.0.1:{server.server_port}/event"}})
+    host.step(now + 61)
+    Todos(record, actor=SYSTEM).create("Posted one")
+    host.step(now + 61)
+    server.shutdown()
+    assert Answering.payloads[-1]["event"] == "todo.created" and "Posted the new to-do" in open_notices(), "an event can be posted to a plugin's server, and its reply is applied"
 
 
 def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_path):
