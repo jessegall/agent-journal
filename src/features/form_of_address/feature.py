@@ -1,8 +1,12 @@
 from features.base import Feature
+from features.form_of_address.controller import Profiles
 from features.form_of_address.details import VOICE_SET, FormOfAddressDetails
 from features.journal import Journal
 from features.form_of_address.address import address
 from features.session_briefing.start import ADDRESS, START_PARTS
+
+
+__all__ = ["Profiles"]
 
 
 class FormOfAddress(Feature):
