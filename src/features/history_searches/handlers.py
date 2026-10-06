@@ -1,11 +1,17 @@
 import re
+import time
 
 from controllers.types import Agents
+from engine.events.engine import AgentMessageSent, CommandRan
 from engine.journal_calls import PUNCTUATION, JournalCall, pieces
+from engine.ran import SHELL
 from engine.reach import Reach
-from features.parts import AgentContext, ToolInterceptor
+from features.parts import AgentContext, Handler, ToolInterceptor
 
 TAKES_VALUE = {"--page", "--back"}
+OPEN = "open"
+OPENING = {"show", "read"}
+FOUND_LIMIT, READ_LIMIT, KEPT_READS = 4000, 2000, 20
 REDIRECT = re.compile(r"\s\d*[<>]+&?\s*[^\s|;&]*")
 
 
@@ -61,5 +67,41 @@ class MarkHistorySearches(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         for command in call.commands:
             for found in searches(command):
-                context.journal.get(Agents).card(context.agent.row.n, label=found, icon="search", tone="note")
+                key = f"search-{time.time_ns()}"
+                context.journal.get(Agents).card(context.agent.row.n, key=key, label=found, icon="search", tone="note")
+                context.state.set(OPEN, key)
         return ""
+
+
+def opened(event: CommandRan) -> str:
+    if event.tool == "Read":
+        return f"Read {event.command.rsplit(' ', 1)[-1]}"
+    if event.tool != SHELL:
+        return ""
+    for piece in pieces(REDIRECT.sub(" ", event.command)):
+        call = journal_call(piece)
+        words = asked(call) if call else []
+        if len(words) > 2 and words[1] in OPENING:
+            return f"Opened {words[0]} {words[2]}"
+    return ""
+
+
+class KeepSearchResults(Handler):
+    def handle(self, context: AgentContext, event: CommandRan) -> None:
+        key = context.state.get(OPEN)
+        agents = context.journal.get(Agents)
+        if not key:
+            return
+        if event.tool == SHELL and searches(event.command):
+            agents.card(context.agent.row.n, key=key, found=event.output[:FOUND_LIMIT])
+            return
+        label = opened(event)
+        card = next((kept for kept in agents.load(context.agent.row.n).data.get("cards") or [] if kept.get("key") == key), None)
+        if label and card:
+            reads = [*card.get("reads", []), {"label": label, "text": event.output[:READ_LIMIT]}]
+            agents.card(context.agent.row.n, key=key, reads=reads[:KEPT_READS])
+
+
+class EndSearchReads(Handler):
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        context.state.remove(OPEN)

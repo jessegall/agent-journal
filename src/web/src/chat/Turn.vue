@@ -1,10 +1,11 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import ChatMark from "../kit/ChatMark.vue";
 import SubagentMark from "./SubagentMark.vue";
 import WhisperMark from "./WhisperMark.vue";
 import MadeCard from "./MadeCard.vue";
+import SearchResults from "./SearchResults.vue";
 import TurnGroup from "./TurnGroup.vue";
 import TurnMessage from "./TurnMessage.vue";
 import TurnReceipt from "./TurnReceipt.vue";
@@ -27,7 +28,10 @@ const skillMark = computed(() => ({
 const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation summarized", at: props.turn.created}));
 const cardMark = computed(() => ({...data.value, at: props.turn.created}));
 
+const searching = ref(false);
+
 function markClick(data) {
+    if (data.search) return {click: () => (searching.value = true)};
     if (data.page) return {click: () => (store.pluginPage = {plugin: data.name, open: data.page})};
     return data.row ? {click: () => openRef(data.row)} : {};
 }
@@ -51,6 +55,9 @@ function markClick(data) {
         <template #card>
             <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.ref">
                 <ChatMark :mark="cardMark" v-on="markClick(data)" />
+                <template v-if="searching">
+                    <SearchResults :search="data.search" @close="searching = false" />
+                </template>
             </div>
         </template>
         <template #group>
