@@ -86,6 +86,11 @@ def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_re
         pass
     todos.complete(rows[0].n, how="done again")
     assert todos.rows.pack(time.time() + 1) == 1 and todos.load(rows[0].n).completed, "packing into the same day again keeps the zip readable"
+    gone = todos.create("a row whose file went missing")
+    todos.complete(gone.n, how="done")
+    todos.rows.summaries()
+    todos.path(gone.n).unlink()
+    assert todos.rows.pack(time.time() + 1) == 0, "a row the index still lists but whose file is gone is left out of the pack, never read"
 
 
 def test_packing_refuses_a_zip_that_does_not_read_back_and_a_damaged_zip_refuses_in_words(monkeypatch):
