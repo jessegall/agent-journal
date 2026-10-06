@@ -8,6 +8,7 @@ from engine.journal_calls import pieces
 from engine.proc import git
 
 VALUED = frozenset({"-m", "--message", "-b", "-B", "-F", "--onto", "-X", "--mainline"})
+MOVES = {"branch": frozenset({"-m"})}
 FINISHING = frozenset({"--abort", "--continue", "--skip", "--quit"})
 FAILED = re.compile(r"^(?:fatal|error):|^CONFLICT|^! \[rejected\]|^Aborting|^Automatic merge failed", re.M)
 UP_TO_DATE = re.compile(r"Already up[ -]to[ -]date")
@@ -76,9 +77,10 @@ def parse(words: tuple[str, ...], output: str, folder: Path) -> GitCall | None:
     if not rest or not checkout:
         return None
     verb, args, flags, values = rest.pop(0), [], set(), {}
+    valued = VALUED - MOVES.get(verb, frozenset())
     while rest:
         word = rest.pop(0)
-        if word in VALUED and rest:
+        if word in valued and rest:
             values[word] = rest.pop(0)
         elif word.startswith("-"):
             flags.add(word)
