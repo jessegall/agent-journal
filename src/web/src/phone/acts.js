@@ -84,6 +84,17 @@ const ORDER = [
     "reopen",
 ];
 const LAST = ["abandon", "strike", "delete"];
+const CLOSES = {
+    todo: "Mark done",
+    doc: "Mark final",
+    report: "Archive",
+    message: "Mark as handled",
+    fact: "Strike it",
+    rule: "Strike it",
+    trigger: "Turn it off",
+    sequence: "Turn it off",
+    work: "End it",
+};
 const LINK_HINT = "For example: todo:12 or doc:4";
 
 const text = (name, label, more = {}) => ({name, label, required: true, ...more});
@@ -121,12 +132,19 @@ async function collections(row) {
     return got.rows.map((one) => ({value: one.n, label: one.title, check: one.refs.includes(row.ref)}));
 }
 
+const stepsText = (row) => row.sections.map((step) => [step.title, step.body].filter(Boolean).join("\n")).join("\n\n");
+const stepsOf = (text) =>
+    text
+        .split(/\n\s*\n/)
+        .map((part) => part.trim().split("\n"))
+        .filter(([title]) => title)
+        .map(([title, ...body]) => ({title: title.trim(), body: body.join("\n").trim()}));
 const refsOf = (row) => row.refs.map((ref) => ({value: ref, label: ref}));
 const filesOf = (row) => Object.keys(row.data.files || {}).map((name) => ({value: name, label: name}));
 
 const COMMON = {
     complete: {
-        label: (row) => (row.type === "todo" ? "Mark done" : row.type === "doc" ? "Mark final" : closeWord(row.type)),
+        label: (row) => CLOSES[row.type] || closeWord(row.type),
         when: standing,
         fields: [optional("how", "How did it end? You can leave this empty.", {placeholder: "Say how it ended", area: true})],
         result: (row) => (row.type === "todo" ? `Marked ${named(row)} done` : `Closed ${named(row)}`),
@@ -249,7 +267,15 @@ const OWN = {
     message: {archive: {label: "Archive", fields: [text("why", "Why archive it?")], result: () => "Archived"}, edit: {label: "Change the words", fields: [text("text", "Your message", {value: (row) => row.brief, area: true})], result: () => "Changed"}},
     question: {dismiss: {label: "Dismiss", when: standing, fields: [optional("why", "Why dismiss it?")], result: () => "Dismissed"}, complete: null},
     suggestion: {complete: null},
-    sequence: {run: {label: "Run it now", fields: [optional("about", "What is it about?")], result: () => "Started"}},
+    sequence: {
+        run: {label: "Run it now", fields: [optional("about", "What is it about?")], result: () => "Started"},
+        steps: {
+            label: "Edit the steps",
+            fields: [text("steps", "The steps: a title line, then what to do; a blank line between steps", {value: stepsText, area: true})],
+            shape: ({steps}) => ({steps: JSON.stringify(stepsOf(steps))}),
+            result: () => "Steps saved",
+        },
+    },
     check: {run: {label: "Run it now", result: () => "Running"}},
     tool: {run: {label: "Run it", fields: [optional("args", "With what?")], result: () => "Ran"}},
     profile: {duplicate: {label: "Make a copy", result: () => "Copied"}},
@@ -324,7 +350,7 @@ export const valuesOf = (fields, row) => Object.fromEntries(fields.map((field) =
 
 export async function perform(row, action, body = {}) {
     if (action.run) return action.run(row, body.value);
-    return api.act(row.type, row.n, action.word, {...(action.body || {}), ...body});
+    return api.act(row.type, row.n, action.word, {...(action.body || {}), ...(action.shape ? action.shape(body) : body)});
 }
 
 export function resultOf(action, row, value = "") {
