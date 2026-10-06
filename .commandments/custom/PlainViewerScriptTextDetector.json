@@ -19,7 +19,7 @@
                 ]
             },
             {
-                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed|ing)?|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b|\\b(in|on|for|with|to|of|by)\\s*[:.]*$)"
+                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed|ing)?|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b|^(\\S+\\s+){3,}(in|on|for|with|to|of|by)\\s*[:.]*$)"
             }
         ],
         "reject": [
