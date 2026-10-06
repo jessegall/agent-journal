@@ -1,9 +1,13 @@
 from features.base import FeatureDetails
 from features.settings import Setting
+from features.groups import Group
 
 
 class KanbanDetails(FeatureDetails):
+    explains = 'The viewer places your to-dos in columns by their state. You can move a card to change its state.'
     name = "kanban"
+    group = Group.BOARDS
+    label = "Show to-dos as a kanban board"
     skill_of = "todos"
     when = "to-dos are moved between lanes or the board is read"
 
@@ -26,8 +30,7 @@ class KanbanDetails(FeatureDetails):
         Setting(
             name="done_days",
             default=7,
-            title="Show done cards for",
-            abstract="A done card stays on the board this many days after it closed",
+            title="Keep closed cards on the board for",
             unit="days",
         ),
     ]

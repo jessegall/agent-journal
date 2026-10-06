@@ -4,7 +4,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CopyButton from "../kit/CopyButton.vue";
 import Icon from "../kit/Icon.vue";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import {peek} from "../route.js";
 import {useOutside} from "../composables/outside.js";
 import {
@@ -19,10 +19,10 @@ import {
     viewsOf,
     waitingShares,
 } from "../composables/shares.js";
-import TunnelProblem from "../resource/TunnelProblem.vue";
+import {TUNNEL_SERVICE, tunnelState} from "../domain/tunnelState.js";
+import TunnelProblem from "../pages/TunnelProblem.vue";
 
 const SERVICES_EVERY = 5000;
-const TUNNEL = "sharing.tunnel";
 const drop = ref(false);
 const wrap = ref(null);
 const services = ref([]);
@@ -37,16 +37,8 @@ usePoll(
 );
 watch(drop, (open) => open && checkTunnel());
 
-const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL));
-const state = computed(() => {
-    if (tunnelStatus.value && tunnelStatus.value.problems.length) return {key: "down", word: "Not connected"};
-    if (!openShares.value.length && !waitingShares.value.length) return {key: "idle", word: "Nothing shared"};
-    if (!openShares.value.length) return {key: "waiting", word: "Waiting for you"};
-    if (!tunnel.value) return {key: "starting", word: "Starting"};
-    if (tunnel.value.state === "ready") return {key: "up", word: "Open"};
-    if (tunnel.value.state === "starting") return {key: "starting", word: "Starting"};
-    return {key: "down", word: tunnel.value.why || "Not running"};
-});
+const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL_SERVICE));
+const state = computed(() => tunnelState(tunnelStatus.value, openShares.value, waitingShares.value, tunnel.value));
 const address = computed(() => tunnelStatus.value?.address || openShares.value[0]?.abstract.replace(/^https:\/\/([^/]+).*$/, "$1") || "");
 
 const inspect = () => window.open(tunnel.value.url, "_blank", "noopener");
@@ -112,12 +104,12 @@ async function stop(shares) {
                 </template>
                 <template v-if="tunnelStatus && tunnelStatus.problems.length">
                     <div class="tunnel-problem-wrap">
-                        <TunnelProblem :status="tunnelStatus" />
+                        <TunnelProblem :status="tunnelStatus" @ready="checkTunnel" />
                     </div>
                 </template>
                 <template v-if="waitingShares.length">
                     <div class="tunnel-shares">
-                        <span class="tunnel-group">Waiting for you</span>
+                        <span class="tunnel-group">Needs you</span>
                         <template v-for="share in waitingShares" :key="share.n">
                             <div class="tunnel-share waiting">
                                 <div class="tunnel-share-head">
@@ -151,7 +143,7 @@ async function stop(shares) {
                                 <CopyButton
                                     :text="`Here's the link to ${itemOf(share).title}: ${share.abstract}`"
                                     icon="chat"
-                                    hint="Copy it with a line saying what it is"
+                                    hint="Copy the link with a short description"
                                 />
                                 <Btn small kind="danger" :busy="stopping === share.n" @click="stop([share])">Stop sharing</Btn>
                             </div>
@@ -174,7 +166,7 @@ async function stop(shares) {
                     <p class="tunnel-empty">Nothing is shared right now. Share a document, report, collection or plan from its page.</p>
                 </template>
                 <div class="tunnel-foot">
-                    <span class="meta">The tunnel closes by itself when the last link ends.</span>
+                    <span class="meta">The connection closes by itself when the last link ends.</span>
                     <template v-if="tunnel && tunnel.url">
                         <Btn small title="See every request that came through the tunnel" @click="inspect">Request inspector</Btn>
                     </template>

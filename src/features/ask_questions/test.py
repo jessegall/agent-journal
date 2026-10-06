@@ -73,19 +73,24 @@ def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal
     from runner.hooks import handle
     from providers import PROVIDERS
     record = fresh()
-    asked = {"questions": [{"question": "Which store: files or SQLite?", "options": [{"label": "Files", "description": "as today"}, {"label": "SQLite"}]}]}
+    unpicked = {"questions": [{"question": "Which store: files or SQLite?", "options": [{"label": "Files", "description": "as today"}, {"label": "SQLite"}]}]}
+    refused = handle(PROVIDERS["claude"](), record.root, record.env,
+                     {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "AskUserQuestion", "tool_input": unpicked})
+    assert (Questions(record, actor=AGENT).all(), "names no pick" in refused.get("reason", "")) == ([], True), \
+        "a question with no option marked (Recommended) is turned back unasked, to name the agent's pick"
+    asked = {"questions": [{"question": "Which store: files or SQLite?", "options": [{"label": "Files (Recommended)", "description": "as today"}, {"label": "SQLite"}]}]}
     result = handle(PROVIDERS["claude"](), record.root, record.env,
                     {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "AskUserQuestion", "tool_input": asked})
     question = Questions(record, actor=AGENT).all()[-1]
-    assert (question.title, [o["title"] for o in question.data["options"]], question.seen[:1]) == \
-        ("Which store - files or SQLite?", ["Files", "SQLite"], [AGENT]), "the question and its options are filed as the agent's"
+    assert (question.title, [o["title"] for o in question.data["options"]], question.data["pick"], question.seen[:1]) == \
+        ("Which store - files or SQLite?", ["Files", "SQLite"], 1, [AGENT]), "the question, its options and the recommended one as the agent's pick"
     assert result.get("decision") == "block" and f"question {question.n}" in result.get("reason", ""), "the call is refused with the number"
     passed = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "agent_id": "sub-1",
                                                                      "tool_name": "AskUserQuestion", "tool_input": {"questions": [{"question": "Keep the old parser?", "options": [{"label": "Yes"}, {"label": "No"}]}]}})
     assert (passed.get("decision"), Questions(record, actor=AGENT).all()[-1].title) == (None, "Which store - files or SQLite?"), \
         "a subagent gets no journal guard: its question tool is left to it"
     handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-1", "tool_name": "request_user_input_async",
-                                                           "tool_input": {"questions": [{"title": "Which port?", "options": ["8080", "9090"]}]}})
+                                                           "tool_input": {"questions": [{"title": "Which port?", "options": ["8080 (Recommended)", "9090"]}]}})
     question = Questions(record, actor=AGENT).all()[-1]
     assert (question.title, [o["title"] for o in question.data["options"]]) == ("Which port?", ["8080", "9090"]), "Codex's async question with plain options is filed too"
 
@@ -108,7 +113,7 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
 def test_a_question_keeps_who_answered_and_the_agent_must_say_why():
     from tests.conftest import refused
     record = fresh()
-    ours = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "Finish plan 1, keep to-do 20", "description": "", "code": ""}, {"title": "blue", "description": "", "code": ""}])
+    ours = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "Finish plan 1, keep to-do 20", "description": "", "code": ""}, {"title": "blue", "description": "", "code": ""}], pick=2)
     assert "say why" in refused(lambda: Questions(record, actor=AGENT).complete(ours.n, how="blue")), "the agent may not answer silently"
     answered = Questions(record, actor=AGENT).complete(ours.n, how="blue", reason="the user said blue earlier")
     assert (answered.data["answered_by"], answered.data["reason"], answered.data["chosen"]) == (AGENT, "the user said blue earlier", 2), \
@@ -129,8 +134,10 @@ def test_a_question_that_lists_its_options_again_in_its_text_is_refused():
         asked.create("Release now or later", brief="Two ways:\nA: release it now\nB: fix the fault first", options=options)
     with pytest.raises(Refused):
         asked.create("Release now or later", brief="The fault is open.\n- Release now: push and tag\n- Fix first: work the fault", options=options)
-    assert asked.create("Release now or later", brief="The dashboard fault is still open; Release now ships it anyway.", options=options).n, \
-        "a question whose text gives the context and leaves the options to their buttons is asked"
+    with pytest.raises(Refused):
+        asked.create("Release now or later", brief="The dashboard fault is still open; Release now ships it anyway.", options=options)
+    assert asked.create("Release now or later", brief="The dashboard fault is still open; Release now ships it anyway.", options=options, pick=2).n, \
+        "a question whose text gives the context, leaves the options to their buttons and names the agent's pick is asked"
 
 
 def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
@@ -170,3 +177,10 @@ def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day
     tick(record)
     assert [n for n in nudges(record) if "waited a day" in n] == [f"question {other.n}, Which font for the menu?, has waited a day for an answer"], \
         "a question open for a day is put to the agent, to dismiss if the work settled it"
+
+
+def test_a_row_can_carry_a_field_named_context():
+    record = fresh()
+    options = [{"title": "the blue one", "description": "", "code": ""}, {"title": "the red one", "description": "", "code": ""}]
+    question = Questions(record, actor=AGENT).create("Which one?", options=options, pick=1, context="42")
+    assert question.data["context"] == "42", "an action interceptor does not take the row's field for its own context"

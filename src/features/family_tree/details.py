@@ -1,8 +1,12 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class FamilyTreeDetails(FeatureDetails):
+    explains = 'The viewer shows which agent started each other agent. You can follow their work from the family tree.'
     name = "family_tree"
+    group = Group.VIEWER
+    label = "Show the agent family tree"
     has_skill = False
 
     title = "Agent family tree"

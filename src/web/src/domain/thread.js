@@ -1,6 +1,6 @@
-import {meta} from "../state/store.js";
-import {words} from "../text/words.js";
-import {shownIn} from "./chatShown.js";
+import {meta} from "./spec.js";
+import {withoutChips} from "../text/words.js";
+import {visibleIn} from "./chatVisibility.js";
 
 const PROMISED_WITHIN = 5;
 
@@ -66,7 +66,7 @@ const sessions = (agents) => agents.filter((a) => !a.data.parent);
 const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads || []).map((load) => mark("skill", a, load.at, load.skill)));
 
 const compactions = (agents) =>
-    sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Context compacted")));
+    sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Conversation summarized")));
 
 const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
 
@@ -92,6 +92,7 @@ const cards = (agents) =>
                 started: c.started,
                 depth: c.depth || 0,
                 ended: c.ended,
+                search: c.found === undefined ? null : {label: c.label, found: c.found, reads: c.reads || []},
             })
         )
     );
@@ -129,7 +130,7 @@ const madeByAgent = (docs, env) =>
 const promisedFor = (p, m) =>
     p.data.idempotency && m.data?.idempotency
         ? p.data.idempotency === m.data.idempotency
-        : words(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
+        : withoutChips(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 
@@ -154,7 +155,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
         .filter((t) => t.created >= floor)
-        .filter(shownIn(hidden))
+        .filter(visibleIn(hidden))
         .sort((a, b) => a.created - b.created);
     return {turns: grouped(mergedReplies(turns)), keys};
 }

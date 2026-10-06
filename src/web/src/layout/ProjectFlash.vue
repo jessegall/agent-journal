@@ -1,15 +1,15 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
-import {ink, project, tint} from "../identity.js";
-import {away, flash} from "../platform/visibility.js";
+import {ink, project, tint} from "../state/identity.js";
+import {ui} from "../state/ui.js";
 import {route} from "../route.js";
 
-const SHOWN_FOR = 2000;
+const MARKED_FOR = 2000;
 const showing = ref(false);
 let timer = 0;
 
 watch(
-    [() => flash.at, () => away.hidden],
+    [() => ui.flash.at, () => ui.away.hidden],
     () => {
         showing.value = true;
         if (document.visibilityState !== "visible") {
@@ -18,14 +18,14 @@ watch(
             return;
         }
         clearTimeout(timer);
-        timer = setTimeout(() => ((showing.value = false), (timer = 0)), SHOWN_FOR);
+        timer = setTimeout(() => ((showing.value = false), (timer = 0)), MARKED_FOR);
     },
     {immediate: true}
 );
 watch(
     () => route.value.env,
     (now, before) => {
-        if (before && now !== before) flash.at = Date.now();
+        if (before && now !== before) ui.flash.at = Date.now();
     }
 );
 onUnmounted(() => clearTimeout(timer));
@@ -33,10 +33,10 @@ onUnmounted(() => clearTimeout(timer));
 
 <template>
     <Transition name="veil">
-        <div v-if="showing" :class="['flash-veil', {fading: !away.hidden}]" aria-hidden="true" />
+        <div v-if="showing" :class="['flash-veil', {fading: !ui.away.hidden}]" aria-hidden="true" />
     </Transition>
     <Transition name="flash">
-        <div v-if="showing" :class="['project-flash', {fading: !away.hidden}]" :style="{'--tint': tint}" aria-hidden="true">
+        <div v-if="showing" :class="['project-flash', {fading: !ui.away.hidden}]" :style="{'--tint': tint}" aria-hidden="true">
             <span class="badge" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
             <span class="name">{{ project }} · {{ route.env }}</span>
         </div>

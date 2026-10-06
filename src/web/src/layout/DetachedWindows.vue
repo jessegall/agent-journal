@@ -1,12 +1,12 @@
 <script setup>
-import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
+import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import {computed, ref} from "vue";
 import FloatWindow from "../kit/FloatWindow.vue";
 import Toast from "../kit/Toast.vue";
 import HomeView from "../pages/HomeView.vue";
 import PinsToggle from "../chat/PinsToggle.vue";
 import {open} from "../domain/records.js";
-import PaneMenu from "../pages/PaneMenu.vue";
+import PaneMenu from "../panes/PaneMenu.vue";
 import {useHomeViews} from "../composables/homeViews.js";
 import {useDetached} from "../composables/detached.js";
 import {route} from "../route.js";

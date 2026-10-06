@@ -1,8 +1,12 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
-class ButtonsDetails(FeatureDetails):
+class MessageButtonsDetails(FeatureDetails):
+    explains = 'The agent can attach action buttons to its messages. You can press one to send the stated choice.'
     name = "message_buttons"
+    group = Group.CHAT
+    label = "Show buttons on the agent's messages"
     skill_of = "messages"
     when = "a message you write should offer the user buttons"
 
@@ -23,7 +27,10 @@ class ButtonsDetails(FeatureDetails):
         A button goes once it is pressed, and the message says which one; "again": true keeps it
         there to be pressed as often as the user likes. Buttons that are one decision, such as Accept
         option A and Accept option B, share a "choice" name: pressing one takes away every other
-        button of that choice.
+        button of that choice. The first button of a choice may carry "ask": the question the
+        choice answers, shown above its buttons; without it the card says "Choose one".
+        --set pick=<its number> on the row names the button you would pick, counting the buttons from 1;
+        the card marks it as the agent's pick.
 
         A document or a report you write can carry buttons too, with --set buttons when you create it.
         A button with "say" instead of a command sends that text to you as the user's message about

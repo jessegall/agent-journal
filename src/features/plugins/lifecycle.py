@@ -1,18 +1,21 @@
+import json
 import shutil
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 from engine.services import UP, want
 from engine.version import version
-from features.plugins.declared import Manifest, declared, settings_of
+from engine.wording import fill
+from features.plugins.answer import apply
+from features.plugins.declared import Manifest, called, settings_with
+from features.plugins.environment import environment
 from features.plugins.manifest import MANIFEST, read
+from features.plugins.paths import data, folder, home, log, logged
+from features.plugins.run import SECONDS, call
+from features.plugins.setup import checked, prepared
 from features.plugins.skills import published
-from features.plugins.source import folder, home, said_version
-from dataclasses import replace
-
-
-def called(row) -> str:
-    return declared(row).name
+from features.plugins.staging import Staged, said_version, staged
 
 
 def runs(manifest: Manifest) -> list[str]:
@@ -47,6 +50,15 @@ def drop(staging: Path, linked: bool) -> None:
         shutil.rmtree(staging, ignore_errors=True)
 
 
+@contextmanager
+def fetched(root: Path, source: str, revision: str):
+    stage = staged(root, source, revision, version())
+    try:
+        yield stage
+    finally:
+        drop(stage.where, stage.linked)
+
+
 def restarted(root: Path, manifest: Manifest) -> None:
     for service in manifest.services:
         want(root, f"{manifest.name}.{service.name}", UP, nonce=time.time())
@@ -65,8 +77,31 @@ def place(plugins, where: Path, linked: bool, manifest: Manifest, source: str, r
     published(plugins.record.root, name, manifest)
     held = ports if ports else {}
     if row:
-        return plugins.update(row.n, abstract=manifest.description, settings=replace(settings_of(row), ports=held).to_json(), **kept)
+        return plugins.update(row.n, abstract=manifest.description, settings=settings_with(row, ports=held), **kept)
     return plugins.create(manifest.heading, abstract=manifest.description, enabled=True, settings={"ports": held}, token=secret, **kept)
+
+
+def welcomed(journal, plugins, manifest: Manifest, env: dict) -> None:
+    step = manifest.installed
+    if not step:
+        return
+    root, name = plugins.record.root, manifest.name
+    ok, reply = call(fill(step, env), folder(root, name), env, {"event": "plugin.installed"}, SECONDS)
+    logged(root, name, f"installed {json.dumps(reply, ensure_ascii=False) if ok else reply}")
+    if ok and isinstance(reply, dict):
+        apply(plugins.record, journal, name, "", reply)
+
+
+def install_staged(journal, plugins, stage: Staged, source: str, ref: str, secret: str, ports: dict, chosen: dict | None = None, row=None):
+    root, manifest = plugins.record.root, stage.manifest
+    env = environment(root, manifest.name, manifest, secret, ports, chosen)
+    checked(manifest, stage.where, env)
+    data(root, manifest.name).mkdir(parents=True, exist_ok=True)
+    prepared(manifest, stage.where, env, log(root, manifest.name))
+    made = place(plugins, stage.where, stage.linked, manifest, source, ref, stage.commit, secret, row=row, ports=ports)
+    welcomed(journal, plugins, manifest, env)
+    restarted(root, manifest)
+    return made
 
 
 def reread(plugins, row):

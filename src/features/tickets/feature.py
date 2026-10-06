@@ -4,22 +4,22 @@ from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
 from features.tickets.details import TicketsDetails
 from features.nudges import Nudge
-from features.tickets.controller import DRAFTS, WAITS
+from features.tickets.orchestration import DRAFTS, WAITS
 from features.tickets.handlers import (
     FinishTheBoardWithItsLastTicket,
     HoldTicketKnowledge,
-    LookAfterTicketBranches,
+    LookAfterTickets,
     WakeTheTicketAgent,
     boards_to_check,
     decisions,
     ticket_calls,
 )
-from features.tickets.limits import DraftsCarryOneLine, FillerKeepsToTheBoard, PanelRepliesStayShort
-from features.boards.controller import CARD_ROWS
-from features.plans.progress import PHASE_ROWS
+from features.tickets.limits import DraftsCarryOneLine
+from features.boards.controller import CARD_STORE
+from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from features.plans.resource import PHASE
-from features.plans.worker import PHASE_STARTS
-from features.tickets.phases import start_phase_tickets
+from features.tickets.phases import start_tickets_of_phase
+from features.tickets.worker import start_worker
 
 __all__ = ["Tickets"]
 
@@ -35,18 +35,14 @@ class TicketsFeature(Feature):
     )
 
     def register(self, journal: Journal) -> None:
-        PHASE_ROWS[PHASE.tickets] = Tickets
-        CARD_ROWS[:] = [Tickets]
-        if start_phase_tickets not in PHASE_STARTS:
-            PHASE_STARTS.append(start_phase_tickets)
+        PHASE_ROWS.add(None, Tickets, key=PHASE.tickets)
+        CARD_STORE.add(None, Tickets)
+        PHASE_STARTS.add(self, start_tickets_of_phase)
+        PLAN_STARTS.add(self, start_worker)
         journal.commands.add("ticket", ShowTicketTodos())
-        journal.events.handler(LookAfterTicketBranches())
+        journal.events.handler(LookAfterTickets())
         journal.events.handler(WakeTheTicketAgent())
         journal.events.handler(FinishTheBoardWithItsLastTicket())
         journal.events.handler(HoldTicketKnowledge())
         journal.commands.intercept("create", DraftsCarryOneLine())
         journal.commands.intercept("update", DraftsCarryOneLine())
-        journal.commands.intercept("create", PanelRepliesStayShort())
-        journal.commands.intercept("create", FillerKeepsToTheBoard())
-        journal.commands.intercept("update", FillerKeepsToTheBoard())
-        journal.commands.intercept("complete", FillerKeepsToTheBoard())

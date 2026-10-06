@@ -1,18 +1,21 @@
 <script setup>
 import CloseButton from "./CloseButton.vue";
 import {onUnmounted, ref, watch} from "vue";
-import {closing} from "./closing.js";
+import {closing} from "../composables/closing.js";
 
 const props = defineProps({
     title: {type: String, default: ""},
     follow: {type: Boolean, default: false},
-    fixed: {type: Boolean, default: false},
+    fits: Boolean,
     small: Boolean,
     tall: Boolean,
+    large: Boolean,
+    bare: Boolean,
+    open: {type: Boolean, default: null},
     closable: {type: Boolean, default: true},
 });
 const emit = defineEmits(["close", "dismiss"]);
-const {shown, close, closed} = closing(emit, props);
+const {visible, close, closed} = closing(emit, props);
 const body = ref(null);
 const toBottom = () => body.value && (body.value.scrollTop = body.value.scrollHeight);
 const watcher = new MutationObserver(toBottom);
@@ -29,15 +32,17 @@ onUnmounted(() => watcher.disconnect());
 
 <template>
     <Transition name="dialog" appear @after-leave="closed">
-        <div v-if="shown" class="dialog" @click.self="closable && close()">
-            <section :class="['dialog-panel', {fixed, small, tall}]">
-                <header class="dialog-head">
-                    <h3>{{ title }}</h3>
-                    <template v-if="closable">
-                        <CloseButton @click="close" />
-                    </template>
-                </header>
-                <div ref="body" class="dialog-body">
+        <div v-if="visible" :class="['dialog', {large}]" @click.self="closable && close()">
+            <section :class="['dialog-panel', {fixed: !fits, small, tall, large}]" role="dialog" :aria-label="title">
+                <template v-if="!bare">
+                    <header class="dialog-head">
+                        <h3>{{ title }}</h3>
+                        <template v-if="closable">
+                            <CloseButton @click="close" />
+                        </template>
+                    </header>
+                </template>
+                <div ref="body" :class="['dialog-body', {bare}]">
                     <slot />
                 </div>
                 <template v-if="$slots.foot">
@@ -79,6 +84,38 @@ onUnmounted(() => watcher.disconnect());
 
 .dialog-panel.small {
     width: min(440px, 100%);
+}
+
+.dialog.large {
+    padding: 22px 28px;
+}
+
+.dialog-panel.large {
+    width: 100%;
+    max-height: 100%;
+}
+
+.dialog-panel.fixed.large {
+    height: 100%;
+}
+
+.dialog-body.bare {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .dialog.large {
+        padding: 0;
+    }
+
+    .dialog-panel.large {
+        border: 0;
+        border-radius: 0;
+    }
 }
 
 .dialog-panel.fixed.small {

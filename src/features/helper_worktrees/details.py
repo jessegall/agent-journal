@@ -1,17 +1,21 @@
 from engine.reach import Reach
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class HelperWorktreesDetails(FeatureDetails):
+    explains = 'The journal gives each helper a separate working copy of the project. You can inspect and take its work when it finishes.'
     name = "helper_worktrees"
+    group = Group.SESSIONS
+    label = "Give each helper its own worktree"
     skill_of = "todos"
     when = "a helper is given a worktree of its own, or its work is taken back"
 
     title = "Helper worktrees"
 
     abstract = """
-        Helpers work in worktrees cut from the tip of the working branch, and their commits come
-        back by cherry-pick once they have rebased
+        Each helper works in its own git worktree, made from the latest commit of the working
+        branch. Its commits are copied back once it has rebased.
     """
 
     help = """

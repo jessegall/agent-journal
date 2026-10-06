@@ -6,12 +6,16 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
-from providers.base import JOURNAL, MARK, Asking
+from providers.base import JOURNAL, MARK
+from providers.payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted
 from engine import runtime
+from engine.sessions import Sessions
+from supervisor import PRINTED, SCREEN, TYPED
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
+from providers.catalogue import workspace_folders
 
 ENTER_AFTER = 0.3
 AGENT_COMMAND = "/"
@@ -28,6 +32,14 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 BETWEEN, FLOOD = 5.0, 20
 REPORT_FOR = 0.5
+
+
+def plain(raw: bytes) -> bytes:
+    return ANSI.sub(b"", raw)
+
+
+def squeezed(raw: bytes) -> bytes:
+    return b"".join(plain(raw).split())
 
 
 def joined(text: str) -> str:
@@ -77,11 +89,12 @@ class Driver(ABC):
         self.groups: dict[tuple, dict] = {}
         self.sent_at = 0.0
         self.reported = (float("-inf"), None)
-        self.printed = runtime.session_file(record.root, session, "printed")
-        self.typed = runtime.session_file(record.root, session, "typed")
+        self.printed = runtime.session_file(record.root, session, PRINTED)
+        self.typed = runtime.session_file(record.root, session, TYPED)
 
+    @classmethod
     @abstractmethod
-    def command(self, args: list[str], cwd: Path | None = None) -> list[str]: ...
+    def command(cls, args: list[str], cwd: Path | None = None) -> list[str]: ...
 
     @classmethod
     def binary(cls, path: str) -> str:
@@ -153,7 +166,7 @@ class Driver(ABC):
         anchor = main_checkout(project)
         made = linked(anchor).get(name)
         if spread(anchor):
-            made = workspace(anchor, anchor.joinpath(*cls.WORKTREES, name))
+            made = workspace(anchor, anchor.joinpath(*cls.WORKTREES, name), workspace_folders())
         elif not made or made.resolve() == anchor.joinpath(*cls.WORKTREES, name).resolve():
             made = opened(anchor, anchor.joinpath(*cls.WORKTREES, name), cls.branch(name))
         cls.trusted(made)
@@ -274,6 +287,14 @@ class Driver(ABC):
                 return False
         return True
 
+    def press_raw(self, keys: bytes) -> None:
+        text = keys.rstrip(b"\r")
+        if text:
+            self._wrote(text)
+            time.sleep(ENTER_AFTER)
+        if len(text) < len(keys):
+            self._wrote(keys[len(text):])
+
     def _entered(self) -> bool:
         time.sleep(ENTER_AFTER)
         return self._wrote(b"\r")
@@ -329,7 +350,7 @@ class Driver(ABC):
         return self._wrote(self.SEND_NOW)
 
     def _screen_file(self) -> Path:
-        return runtime.session_file(self.record.root, self.session, "screen")
+        return runtime.session_file(self.record.root, self.session, SCREEN)
 
     def _shown_size(self) -> int:
         screen = self._screen_file()
@@ -339,7 +360,7 @@ class Driver(ABC):
         try:
             with self._screen_file().open("rb") as shown:
                 shown.seek(max(since, self._shown_size() - SCREEN_TAIL))
-                return b"".join(ANSI.sub(b"", shown.read()).split())
+                return squeezed(shown.read())
         except OSError:
             return b""
 
@@ -408,17 +429,16 @@ class Driver(ABC):
         return last.title if last and last.title else ""
 
     def _report(self):
-        from controllers.types import Agents
-        from resources.base import SYSTEM
-        rows = [r for r in Agents(self.record, actor=SYSTEM)._viewed()
+        rows = [r for r in Agents(self.record, actor=SYSTEM).rows.viewed()
                 if r.event and (r.title == self.session or self.owns(r) or (r.provider == self.name and float(r.at) >= self.born - 1))]
         return max(rows, key=lambda r: float(r.at)).fork() if rows else None
 
+    def pid(self) -> int:
+        return Sessions(self.record.root).read(self.session).pid
+
     def owns(self, row) -> bool:
-        from engine.sessions import Sessions
-        sessions = Sessions(self.record.root)
-        mine = sessions.read(self.session).pid
-        return bool(mine) and sessions.read(row.title).pid == mine
+        mine = self.pid()
+        return bool(mine) and Sessions(self.record.root).read(row.title).pid == mine
 
     def quiet_for(self) -> float:
         try:
@@ -433,7 +453,7 @@ class Driver(ABC):
             return b""
 
     def last_printed(self, size: int = 400) -> str:
-        return ANSI.sub(b"", self.printed_tail(size)).decode(errors="replace")
+        return plain(self.printed_tail(size)).decode(errors="replace")
 
     def screen(self, size: int) -> str:
-        return ANSI.sub(b"", self.SUGGESTED.sub(SUGGESTION, self.printed_tail(size))).decode(errors="replace")
+        return plain(self.SUGGESTED.sub(SUGGESTION, self.printed_tail(size))).decode(errors="replace")

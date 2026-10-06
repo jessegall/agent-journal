@@ -6,8 +6,8 @@ import EmptyState from "../kit/EmptyState.vue";
 import GraphNode from "../kit/GraphNode.vue";
 import Spinner from "../kit/Spinner.vue";
 import {api} from "../api/client.js";
-import {usePoll} from "../poll.js";
-import {follow} from "../composables/pointer.js";
+import {usePoll} from "../composables/poll.js";
+import {follow} from "../platform/pointer.js";
 import {peekThere} from "../route.js";
 import {SIZES, edgeLabel, edgePath, familyCounts, familyTree, live, nodeLook} from "../domain/family.js";
 
@@ -55,7 +55,7 @@ function openNode(node) {
 function hint(node) {
     if (node.fold) return node.fold.open ? "Fold these back into one" : `Show ${node.fold.count} more: finished ones and quieter sessions`;
     const m = node.member;
-    const said = [m.label, m.detail, m.status, m.loops ? `${m.loops} scheduled loop${m.loops === 1 ? "" : "s"}` : ""].filter(Boolean);
+    const said = [m.label, m.detail, m.status, m.loops ? `${m.loops} repeating prompt${m.loops === 1 ? "" : "s"}` : ""].filter(Boolean);
     return said.join(" · ");
 }
 
@@ -97,7 +97,7 @@ watch(tree, async (drawn) => {
         </template>
         <template v-else-if="!tree.nodes.length">
             <EmptyState title="No agents yet">
-                Agents appear here once one runs, with the agents they start and the subagents they dispatch.
+                Agents appear here once one runs, with the agents they start and the subagents they start.
             </EmptyState>
         </template>
         <template v-else>
@@ -111,8 +111,8 @@ watch(tree, async (drawn) => {
                 </span>
                 <span class="family-key">
                     <span class="key key-started">started</span>
-                    <span class="key key-dispatched">dispatched</span>
-                    <span class="key key-talk">messaged</span>
+                    <span class="key key-dispatched">started a subagent</span>
+                    <span class="key key-talk">sent a message</span>
                 </span>
                 <template v-if="folds.length">
                     <Btn small @click="toggleAll">{{ allOpen ? "Fold them" : "Show all" }}</Btn>

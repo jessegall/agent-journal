@@ -1,26 +1,28 @@
 <script setup>
+import {meta, types} from "../domain/spec.js";
+import {sharingOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
-import RailWaiting from "../pages/RailWaiting.vue";
+import RailWaiting from "../rail/RailWaiting.vue";
 import PhoneDialog from "./PhoneDialog.vue";
 import ShareTunnel from "./ShareTunnel.vue";
-import {route} from "../route.js";
+import {href, route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {unreadByUser} from "../domain/records.js";
 import {connectedPhones} from "../composables/phones.js";
-import {meta, sharingOn, store, types} from "../state/store.js";
 import {useOutside} from "../composables/outside.js";
-import {activityShown, toggleActivity} from "../actions/panels.js";
+import {activityVisible, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
-import {project, tint} from "../identity.js";
+import {project, tint} from "../state/identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
 import {useFloatingChat, useFloatingFamily} from "../composables/floatingChat.js";
 
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
-const phoneShown = ref(false);
+const phoneOpen = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const full = computed(() => route.value.page === "kanban");
@@ -29,8 +31,8 @@ const owner = computed(() => (place.value && place.value.data.owner) || "");
 const from = computed(() => (place.value && place.value.data.launched_from) || "");
 const envLink = computed(() =>
     owner.value && from.value
-        ? `#/${from.value}${owner.value.startsWith("ticket:") ? "/kanban" : ""}?open=${owner.value}`
-        : `#/${route.value.env}`
+        ? href.opened(from.value, owner.value.startsWith("ticket:") ? "kanban" : "", owner.value)
+        : href.page(route.value.env)
 );
 const {floatingChat, toggleChat} = useFloatingChat();
 const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
@@ -45,9 +47,13 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 </button>
             </template>
             <template v-if="full">
-                <a class="icon-btn back" :href="`#/${route.env}`" title="Back to Home"><Icon name="back" /></a>
+                <a class="icon-btn back" :href="href.page(route.env)" title="Back to Home"><Icon name="back" /></a>
             </template>
-            <a class="crumb-link crumb-project" :href="demo ? `#/${route.env}` : `#/${route.env}/hub`" :title="demo ? '' : 'The journals running on this machine'">
+            <a
+                class="crumb-link crumb-project"
+                :href="href.page(route.env, demo ? '' : 'hub')"
+                :title="demo ? '' : 'The journals running on this machine'"
+            >
                 <span class="crumb-tint" :style="{background: tint}" />
                 <span class="crumb-name">{{ project }}</span>
             </a>
@@ -74,7 +80,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 type="button"
                 :class="['icon-btn', {on: floatingFamily}]"
                 :title="
-                    floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, dispatched and messaged whom'
+                    floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, sent out or messaged which agent'
                 "
                 @click="toggleFamily"
             >
@@ -84,20 +90,20 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <ShareTunnel />
                 <button
                     type="button"
-                    :class="['icon-btn', {on: phoneShown}]"
+                    :class="['icon-btn', {on: phoneOpen}]"
                     :title="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
-                    @click="phoneShown = true"
+                    @click="phoneOpen = true"
                 >
                     <Icon name="phone" />
                     <template v-if="connectedPhones.length">
                         <span class="phone-dot" />
                     </template>
                 </button>
-                <template v-if="phoneShown">
-                    <PhoneDialog @close="phoneShown = false" />
+                <template v-if="phoneOpen">
+                    <PhoneDialog @close="phoneOpen = false" />
                 </template>
             </template>
-            <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
+            <a class="icon-btn" :href="href.page(route.env, 'search')" title="Search"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
                 <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
                     <Icon name="bell" />
@@ -115,8 +121,8 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             <template v-if="!full">
                 <button
                     type="button"
-                    :class="['icon-btn', {on: activityShown()}]"
-                    :title="activityShown() ? 'Hide Activity' : 'Show Activity'"
+                    :class="['icon-btn', {on: activityVisible()}]"
+                    :title="activityVisible() ? 'Hide activity' : 'Show activity'"
                     @click="toggleActivity"
                 >
                     <Icon name="activity" />

@@ -1,14 +1,11 @@
-import re
-import time
 
 from features import trigger
+from engine.journal_calls import calls
 from features.parts import AgentContext, ToolInterceptor
-from features.recital import mentioned
-from features.skill_loading.catalogue import keywords, loaded_at, loaded_before_compaction, teaching_command
+from features.skill_loading.catalogue import loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require
 from engine.reach import Reach
 
-NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 
 class RequireCommandSkill(ToolInterceptor):
@@ -16,8 +13,8 @@ class RequireCommandSkill(ToolInterceptor):
     refuses = False
 
     def intercept(self, context: AgentContext, call) -> str:
-        found = next((match for match in map(NOUN.search, call.commands) if match), None)
-        skill = teaching_command(context.record.root.parent, found.group(1)) if found else ""
+        found = next((made for command in call.commands for made in calls(command) if made.noun), None)
+        skill = teaching_command(context.record.root.parent, found.noun) if found else ""
         if not skill:
             return ""
         row = context.agent.row
@@ -26,13 +23,6 @@ class RequireCommandSkill(ToolInterceptor):
         if (not at or at < since) and skill not in loaded_before_compaction(row):
             require(context.record, row.title, {skill: since})
         return ""
-
-
-def require_named(record, row, text: str) -> None:
-    loaded = {**loaded_before_compaction(row), **loaded_at(row)}
-    named = {name: time.time() for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}
-    if named:
-        require(record, row.title, named)
 
 
 class RefuseUntilLoaded(ToolInterceptor):
@@ -44,5 +34,4 @@ class RefuseUntilLoaded(ToolInterceptor):
         missing = outstanding(context.record, context.agent.row)
         if not missing:
             return ""
-        title, brief = context.feature.line("required", {"skills": ", ".join(missing), "loads": ", ".join(context.provider.skill_load(name) for name in missing)})
-        return f"{title} - {brief}"
+        return context.feature.line_text("required", skills=", ".join(missing), loads=", ".join(context.provider.skill_load(name) for name in missing))

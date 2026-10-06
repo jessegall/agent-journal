@@ -1,12 +1,11 @@
 <script setup>
+import {ui} from "../state/ui.js";
+import {keepRecordedWords} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
-import {prefill} from "../state/prefill.js";
 
-const REPLAY = __DEMO__;
-const hinted = () => window.dispatchEvent(new CustomEvent("replay-hint"));
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
@@ -30,7 +29,7 @@ const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
 watch(
-    prefill,
+    () => ui.prefill,
     (text, was) => {
         if (text || was) draft.text = text;
     },
@@ -45,9 +44,9 @@ const measures = ref(null);
 const widths = reactive({idle: 0, submit: 0});
 
 function measure() {
-    const shown = measures.value ? [...measures.value.children] : [];
-    widths.idle = shown[0]?.offsetWidth || 0;
-    widths.submit = shown[shown.length - 1]?.offsetWidth || 0;
+    const children = measures.value ? [...measures.value.children] : [];
+    widths.idle = children[0]?.offsetWidth || 0;
+    widths.submit = children[children.length - 1]?.offsetWidth || 0;
 }
 
 onMounted(() => nextTick(measure));
@@ -134,7 +133,6 @@ function unpick(i) {
 
 async function go() {
     if (draft.sending || !draft.text.trim()) return;
-    if (REPLAY && draft.text.trim() !== prefill.value.trim()) return hinted();
     const text = draft.text.trim();
     const files = draft.files;
     draft.sending = true;
@@ -209,6 +207,7 @@ async function use(tool) {
                 @keydown.esc="escaped"
                 @keydown.meta.enter.prevent="go"
                 @keydown.ctrl.enter.prevent="go"
+                @beforeinput="keepRecordedWords"
                 @paste="pasted"
             />
             <div class="compose-foot">

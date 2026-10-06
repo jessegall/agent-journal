@@ -1,12 +1,13 @@
 <script setup>
+import {MENUED, closeWord, meta, word} from "../domain/spec.js";
 import TextInput from "../kit/TextInput.vue";
 import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
+import AddToCollection from "./AddToCollection.vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import {meta, word} from "../state/store.js";
-import {linkedTo, open} from "../domain/records.js";
+import {linkedTo} from "../domain/records.js";
 import {peek} from "../route.js";
 
 const props = defineProps({resource: Object});
@@ -15,22 +16,6 @@ const error = ref("");
 const prompt = ref("");
 const text = ref("");
 const collecting = ref(false);
-const collections = computed(() => open("collection").map((c) => c.title));
-
-async function addToCollection() {
-    const name = text.value.trim();
-    if (!name) return;
-    error.value = "";
-    try {
-        const found =
-            open("collection").find((c) => c.title.toLowerCase() === name.toLowerCase()) || (await api.create("collection", {title: name}));
-        await api.act("collection", found.n, "add", {refs: [props.resource.ref]});
-        collecting.value = false;
-        text.value = "";
-    } catch (e) {
-        error.value = e.message;
-    }
-}
 
 const MUST_HAVE = "must have";
 const plannable = computed(
@@ -44,7 +29,7 @@ const plannable = computed(
 async function makePlan() {
     error.value = "";
     try {
-        const plan = await api.command("plan", "from_doc", {doc: props.resource.n});
+        const plan = await api.planFromDoc(props.resource.n);
         peek("plan", plan.n);
     } catch (e) {
         error.value = e.message;
@@ -53,7 +38,7 @@ async function makePlan() {
 
 const locked = computed(() => (props.resource.data.locked === true && props.resource.data.plugin) || "");
 const offered = computed(() =>
-    props.resource.data.system || locked.value
+    props.resource.data.system || locked.value || MENUED.includes(props.resource.type)
         ? []
         : props.resource.completed
           ? ["delete"]
@@ -83,41 +68,27 @@ async function run(method) {
 <template>
     <div class="actions">
         <template v-if="locked">
-            <Chip :title="`Made by the ${locked} plugin: it goes when the plugin is removed, and nothing else can remove or close it`">
+            <Chip
+                :title="`Made by the ${locked} plugin. It is deleted when the plugin is removed and cannot be closed or removed otherwise.`"
+            >
                 <Icon name="lock" :size="11" />
                 Locked · {{ locked }}
             </Chip>
         </template>
         <template v-if="collecting">
-            <TextInput
-                :value="text"
-                class="grow"
-                list="open-collections"
-                placeholder="A collection, or a new name"
-                autofocus
-                @keydown.enter="addToCollection"
-                @input="text = $event.target.value"
-                @keydown.esc="collecting = false"
-            />
-            <datalist id="open-collections">
-                <template v-for="c in collections" :key="c">
-                    <option :value="c" />
-                </template>
-            </datalist>
-            <Btn small @click="addToCollection">Add to collection</Btn>
-            <Btn small @click="collecting = false">Cancel</Btn>
+            <AddToCollection :resource="resource" @done="collecting = false" />
         </template>
         <template v-else-if="prompt">
             <TextInput
                 :value="text"
                 class="grow"
-                :placeholder="meta(resource.type).labels.outcome || 'A word on how'"
+                :placeholder="meta(resource.type).labels.outcome || 'Say how it ended'"
                 autofocus
                 @keydown.enter="run(prompt)"
                 @input="text = $event.target.value"
                 @keydown.esc="prompt = ''"
             />
-            <Btn small @click="run(prompt)">{{ word(resource.type, prompt) }}</Btn>
+            <Btn small @click="run(prompt)">{{ closeWord(resource.type) }}</Btn>
             <Btn small @click="prompt = ''">Cancel</Btn>
         </template>
         <template v-else>
@@ -126,22 +97,27 @@ async function run(method) {
                     Make the plan
                 </Btn>
             </template>
-            <template v-if="!resource.completed && !resource.data.system">
+            <template v-if="!resource.completed && !resource.data.system && resource.type !== 'trigger'">
                 <Btn small @click="emit('edit')">
                     <Icon name="pencil" :size="12" />
                     Edit
                 </Btn>
             </template>
-            <template v-if="resource.type !== 'collection' && !resource.data.system">
+            <template v-if="resource.type !== 'collection' && !resource.data.system && !MENUED.includes(resource.type)">
                 <Btn small @click="collecting = true">
                     <Icon name="folder" :size="12" />
                     Add to collection
                 </Btn>
             </template>
             <template v-for="m in offered" :key="m">
-                <Btn :kind="m === 'complete' ? 'ghost' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
+                <Btn
+                    :class="{'delete-action': m === 'delete'}"
+                    :kind="m === 'complete' ? 'ghost' : 'danger'"
+                    small
+                    @click="m === 'complete' ? (prompt = m) : run(m)"
+                >
                     <Icon :name="m === 'complete' ? 'check' : 'close'" :size="12" />
-                    {{ word(resource.type, m).replace(/^\w/, (c) => c.toUpperCase()) }}
+                    {{ m === "complete" ? closeWord(resource.type) : "Delete" }}
                 </Btn>
             </template>
         </template>
@@ -165,5 +141,8 @@ async function run(method) {
 .error {
     color: var(--danger);
     font-size: 12px;
+}
+.delete-action {
+    margin-left: 14px;
 }
 </style>

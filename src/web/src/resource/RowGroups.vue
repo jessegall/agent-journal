@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {go, route} from "../route.js";
+import ResourceEnd from "./ResourceEnd.vue";
 import ResourceRow from "./ResourceRow.vue";
 defineProps({groups: Array, type: String});
 const settled = ref(false);
@@ -9,22 +10,33 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 
 <template>
     <TransitionGroup :name="settled ? 'group' : ''">
-        <div v-for="g in groups" :key="g.key" class="group">
-            <div class="ghead">
-                <span class="gtitle">{{ g.title }}</span>
-                <span class="gcount">{{ g.list.length }}</span>
+        <template v-for="g in groups" :key="g.key">
+            <div class="group">
+                <div class="ghead">
+                    <span class="gtitle">{{ g.title }}</span>
+                    <template v-if="g.count !== null">
+                        <span class="gcount">{{ g.count === undefined ? g.list.length : g.count }}</span>
+                    </template>
+                </div>
+                <template v-if="g.why">
+                    <p class="group-why">{{ g.why }}</p>
+                </template>
+                <TransitionGroup tag="div" class="rows" :name="settled ? 'row' : ''">
+                    <template v-for="(r, i) in g.list" :key="r.n">
+                        <div class="row-wrap" :style="{'--i': i}">
+                            <slot name="row" :resource="r">
+                                <ResourceRow
+                                    :resource="r"
+                                    :selected="r.n === route.n && (g.env || route.env) === route.env"
+                                    @click="go(g.env || route.env, type, r.n)"
+                                />
+                                <ResourceEnd :resource="r" />
+                            </slot>
+                        </div>
+                    </template>
+                </TransitionGroup>
             </div>
-            <TransitionGroup tag="div" class="rows" :name="settled ? 'row' : ''">
-                <ResourceRow
-                    v-for="(r, i) in g.list"
-                    :key="r.n"
-                    :resource="r"
-                    :selected="r.n === route.n && (g.env || route.env) === route.env"
-                    :style="{'--i': i}"
-                    @click="go(g.env || route.env, type, r.n)"
-                />
-            </TransitionGroup>
-        </div>
+        </template>
     </TransitionGroup>
 </template>
 
@@ -35,6 +47,20 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 
 .rows {
     position: relative;
+}
+
+.row-wrap {
+    position: relative;
+}
+
+.row-wrap :deep(.resource-end) {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+}
+
+.row-wrap :deep(.row) {
+    padding-right: 170px;
 }
 
 @keyframes row-arrived {
@@ -109,5 +135,10 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 }
 .gcount {
     color: var(--text-3);
+}
+.group-why {
+    margin: 0 22px 8px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 </style>

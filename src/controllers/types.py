@@ -30,10 +30,11 @@ register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questio
 
 
 WARM_PAUSE = 0.02
+environment_records = Record.every
 
 
 def warm_record(record: Record, pause: float = 0.0) -> None:
-    record.recent_events()
+    record.event_log.recent()
     for controller in CONTROLLERS.values():
         try:
             controller(record, actor=SYSTEM)._warm()
@@ -42,12 +43,8 @@ def warm_record(record: Record, pause: float = 0.0) -> None:
         time.sleep(pause)
 
 
-def environment_records(root: Path) -> list[Record]:
-    return [Record(Path(root), home.name) for home in sorted((Path(root) / "environments").glob("*/"))]
-
-
 def warm(root: Path) -> None:
     from engine.sessions import Sessions
     sessions = Sessions(root)
-    for record in sorted(environment_records(root), key=lambda record: not sessions.holder(record.env)):
+    for record in sorted(Record.every(root), key=lambda record: not sessions.holder(record.env)):
         warm_record(record, WARM_PAUSE)

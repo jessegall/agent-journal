@@ -1,7 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
-import PhoneChevron from "./PhoneChevron.vue";
 
 const props = defineProps({notices: {type: Array, required: true}});
 const emit = defineEmits(["open", "close"]);
@@ -9,7 +8,7 @@ const ALL_UP_TO = 2;
 const opened = ref(false);
 const newestFirst = computed(() => [...props.notices].sort((a, b) => (b.created || 0) - (a.created || 0)));
 const folded = computed(() => props.notices.length > ALL_UP_TO && !opened.value);
-const shown = computed(() => (folded.value ? newestFirst.value.slice(0, 1) : newestFirst.value));
+const listed = computed(() => (folded.value ? newestFirst.value.slice(0, 1) : newestFirst.value));
 const TONES = ["good", "warn", "danger"];
 const TONE_WORDS = {good: "Done: ", warn: "Warning: ", danger: "Problem: ", plain: ""};
 const tone = (notice) => (TONES.includes(notice.data?.tone) ? notice.data.tone : "plain");
@@ -19,7 +18,7 @@ const said = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${notice.dat
 <template>
     <template v-if="notices.length">
         <div class="notices" role="region" aria-label="Pinned notices">
-            <template v-for="notice in shown" :key="notice.n">
+            <template v-for="notice in listed" :key="notice.n">
                 <div :class="['notice', tone(notice)]">
                     <button type="button" class="notice-open" :aria-label="said(notice)" @click="emit('open', notice)">
                         <span class="notice-mark" aria-hidden="true" />
@@ -36,7 +35,7 @@ const said = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${notice.dat
             <template v-if="notices.length > ALL_UP_TO">
                 <button type="button" class="notices-fold" :aria-expanded="opened" @click="opened = !opened">
                     <span class="notices-count">{{ opened ? "Show fewer" : `+${notices.length - 1} more` }}</span>
-                    <PhoneChevron :facing="opened ? 'down' : 'up'" :size="14" />
+                    <Icon name="chevronRight" bold :facing="opened ? 'down' : 'up'" :size="14" />
                 </button>
             </template>
         </div>

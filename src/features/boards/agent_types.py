@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine.record import Record
-from features.sequences.exploration import FILLER
+from features.boards.exploration import FILLER
 
 
 @dataclass(frozen=True)
@@ -15,8 +15,8 @@ class AgentType:
 
     @property
     def instructions(self) -> str:
-        from features.sequences.shipped import SHIPPED
-        followed = [sequence for sequence in SHIPPED if sequence.dispatch == self.name]
+        from features.boards.shipped import SEQUENCES
+        followed = [sequence for sequence in SEQUENCES if sequence.dispatch == self.name]
         return "\n\n".join([self.prompt, *(sequence.written_out() for sequence in followed)])
 
 

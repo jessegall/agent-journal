@@ -1,16 +1,17 @@
 <script setup>
+import {useWindowEvent} from "./composables/windowEvent.js";
 import {chatOnly, narrow, soloView} from "./platform/view.js";
 import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
-import {activityShown, closeOverlays} from "./actions/panels.js";
+import {activityVisible, closeOverlays} from "./actions/panels.js";
 
 import {computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
-import {project} from "./identity.js";
-import {away} from "./platform/visibility.js";
+import {project} from "./state/identity.js";
+import {ui} from "./state/ui.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";
-import {polled} from "./sync/polled.js";
+import {usePolled, windowPolls} from "./sync/polled.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";
@@ -42,16 +43,15 @@ import AwayCard from "./layout/AwayCard.vue";
 import SkillPanel from "./layout/SkillPanel.vue";
 import PluginPagePanel from "./layout/PluginPagePanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
+import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
+import {firstChoice, loadProfiles, unchosen} from "./composables/profiles.js";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
-import {usePoll} from "./poll.js";
-import {useJournalPoll} from "./sync/hub.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 
 const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
-usePoll(...polled.events);
-useJournalPoll();
+windowPolls().forEach(usePolled);
 const bootError = ref("");
 let bootTimer = 0;
 function startBoot() {
@@ -88,6 +88,19 @@ const page = computed(() =>
             : "home"
 );
 const full = computed(() => page.value === "kanban");
+let miniBefore = store.sideMini;
+watch(
+    full,
+    (now) => {
+        if (now) {
+            miniBefore = store.sideMini;
+            store.sideMini = true;
+            return;
+        }
+        store.sideMini = miniBefore;
+    },
+    {immediate: true}
+);
 followFullscreen();
 const opened = computed(() =>
     route.value.stack.length
@@ -159,19 +172,13 @@ function onWide(e) {
         store.wide = !store.wide;
     }
 }
-window.addEventListener("pointerdown", sawPointer, true);
-window.addEventListener("keydown", sawKeyMove, true);
-window.addEventListener("keydown", onSpace);
-window.addEventListener("keydown", onWide);
-window.addEventListener("keydown", onOpenFile);
-onUnmounted(() => {
-    window.removeEventListener("pointerdown", sawPointer, true);
-    window.removeEventListener("keydown", sawKeyMove, true);
-    window.removeEventListener("keydown", onSpace);
-    window.removeEventListener("keydown", onWide);
-    window.removeEventListener("keydown", onOpenFile);
-});
+useWindowEvent("pointerdown", sawPointer, true);
+useWindowEvent("keydown", sawKeyMove, true);
+useWindowEvent("keydown", onSpace);
+useWindowEvent("keydown", onWide);
+useWindowEvent("keydown", onOpenFile);
 
+watch(unchosen, (empty) => empty && loadProfiles(), {immediate: true});
 onMounted(startBoot);
 onUnmounted(() => clearTimeout(bootTimer));
 watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);
@@ -238,7 +245,7 @@ watch(
                     </Transition>
                 </div>
                 <Transition name="column">
-                    <Activity v-if="activityShown() && !drawnWide && !full" />
+                    <Activity v-if="activityVisible() && !drawnWide && !full" />
                 </Transition>
                 <template v-if="narrow && (store.sideOpen || store.activityOpen)">
                     <div class="narrow-scrim" @click="closeOverlays" />
@@ -258,7 +265,7 @@ watch(
                 <Transition name="quick">
                     <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>
-                <template v-if="away.open">
+                <template v-if="ui.away.open">
                     <AwayCard />
                 </template>
                 <template v-if="store.skill">
@@ -268,6 +275,9 @@ watch(
                     <PluginPagePanel />
                 </template>
                 <ProjectFlash />
+                <template v-if="firstChoice">
+                    <FirstChoiceDialog />
+                </template>
                 <DetachedWindows />
             </div>
         </div>
@@ -317,10 +327,6 @@ watch(
 
 .app.wide.mini .rail {
     margin-left: -56px;
-}
-
-.app.full .rail {
-    display: none;
 }
 
 .app.wide .bar {

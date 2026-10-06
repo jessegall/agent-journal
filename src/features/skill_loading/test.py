@@ -148,7 +148,9 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     folder = record.root.parent / ".agents" / "skills" / "journal-work-tracking"
     folder.mkdir(parents=True)
     (folder / "SKILL.md").write_text('---\nname: journal-work-tracking\ndescription: "Auto mode"\n---\n\n# Auto\n')
-    record.skills = ["journal-work-tracking"]
+    from commands.http import dispatch
+    switched = dispatch("POST", f"/api/{record.env}/skills/journal-work-tracking/always", record.root, {}, {"on": True})
+    assert (switched.code, switched.body["skills"]) == (200, ["journal-work-tracking"]), "the Skills page switches a skill to load at every start"
     codex, hook = PROVIDERS["codex"](), {"session_id": "codex-1"}
     from features.skill_loading.required import require, required
     require(record, "codex-1", {"journal-obsolete": 1.0})
@@ -184,16 +186,19 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
 
 
 def test_a_skills_keyword_makes_the_agent_load_it():
-    from features.skill_loading.catalogue import keywords, set_keywords
-    from features.skill_loading.interceptors import require_named
+    from features.skill_loading.catalogue import keywords
+    from features.skill_loading.required import require_named
     from features.skill_loading.required import outstanding
     record = fresh()
     report(record, "working", "PreToolUse")
     agent = Agents(record, actor="system").by_session("claude-1")
     from skills import render
     assert "keywords: dumps, dump" in render()["journal-dumps/SKILL.md"], "a shipped skill carries its own keywords"
-    set_keywords(record, "journal-plans", ["roadmap"])
-    assert keywords(record)["journal-plans"] == ["roadmap"], "words set on the Skills page are kept"
+    from commands.http import dispatch
+    typed = lambda words: dispatch("POST", f"/api/{record.env}/skills/journal-plans/keywords", record.root, {}, {"keywords": words}).body["keywords"]
+    assert typed(" roadmap, ,") == typed(["roadmap", " "]) == ["roadmap"], "words typed on the Skills page are kept, from a comma list or a list"
+    assert keywords(record)["journal-plans"] == ["roadmap"], "and read back as the skill's keywords"
+    assert dispatch("GET", f"/api/{record.env}/skills/no-such-skill", record.root, {}, {}).code == 404, "an unknown skill is not found"
     require_named(record, agent, "here is the roadmap")
     assert "journal-plans" in outstanding(record, agent), "and the skill is owed before the next tool call"
     require_named(record, agent, "nothing to see")

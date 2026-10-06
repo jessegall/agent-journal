@@ -1,16 +1,21 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.triggers.resource import DOES
+from features.groups import Group
 
 
 class TriggersDetails(FeatureDetails):
+    explains = 'The journal watches for words you choose and starts the matching action. You can edit or test each trigger.'
     name = "triggers"
+    group = Group.RECORDS
+    label = "Triggers"
+    hint = "Words you choose, and what happens when they come up"
     when = "the user wants words watched for, or a trigger fires"
 
     title = "Triggers"
 
     speaks_while_waiting = True
 
-    abstract = "Words the user watches for, and what the journal does when they come up"
+    abstract = "Words you choose, and what the journal does when they come up."
 
     help = f"""
         journal trigger create "<what it is for>" --set words="git push,force" --set
@@ -27,8 +32,7 @@ class TriggersDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="watching",
-            title="Fire a trigger when one of its words comes up",
-            abstract="In what the agent writes or runs, and in what the user writes to it",
+            title="Run a trigger when its word appears",
         ),
     ]
 

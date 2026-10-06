@@ -1,3 +1,4 @@
+import pytest
 
 from types import SimpleNamespace
 from engine.focus import SCRIPT, existing_tab
@@ -35,11 +36,11 @@ def test_other_systems_and_a_missing_tab_leave_opening_to_the_normal_path():
         "a missing macOS tab leaves opening to the normal browser path"
 
 
-def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
+def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does(monkeypatch):
     visible = []
     up = {"url": "http://127.0.0.1:8422/"}
-    viewer.running = lambda root: up["url"]
-    viewer.show = lambda url, env="": visible.append(f"{url}#/{env}")
+    monkeypatch.setattr(viewer, "running", lambda root: up["url"])
+    monkeypatch.setattr(viewer, "show", lambda url, env="": visible.append(f"{url}#/{env}"))
 
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
@@ -82,7 +83,7 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     import urllib.request
     from http.server import ThreadingHTTPServer
     import pytest
-    from commands.dispatch import Request
+    from features.routing import Request
     from commands.http import get_file_diff, get_file_text, get_project_files
     from engine.project_files import read_source, walk
     from resources.base import Refused
@@ -100,7 +101,9 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     assert (read_source(project, "tokens.css").text, sorted(path.name for path in walk(project)[0])) == ("tokens", ["tokens.css", "visible.txt"]), \
         "visible files are read and listed, a word like tokens in a name included"
     (project / "api_token.json").write_text("secret")
-    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt", "api_token.json"):
+    (project / "credentials").mkdir()
+    (project / "credentials" / "prod.json").write_text("secret")
+    for asked in (".env", ".private/note.txt", str(other / "note.txt"), "linked.txt", "api_token.json", "credentials/prod.json"):
         with pytest.raises(Refused):
             read_source(project, asked)
     for handler, query in ((get_file_text, {"path": ".env"}), (get_file_diff, {"path": ".env"}), (get_project_files, {"folder": ".journal"}), (get_file_text, {"path": str(other / "note.txt")})):
@@ -125,9 +128,41 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
         server.server_close()
 
 
+def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
+    import subprocess
+    import pytest
+    from features.routing import Request
+    from commands.http import get_commit, get_file_diff
+    from resources.base import Refused
+    project = tmp_path / "project"
+    (project / ".journal").mkdir(parents=True)
+    (project / "credentials").mkdir()
+    (project / ".env").write_text("hidden secret")
+    (project / "credentials" / "prod.json").write_text("folder secret")
+    (project / "star*.txt").write_text("visible star")
+    (project / "star-other.txt").write_text("other visible")
+    def run(*args):
+        return subprocess.run(["git", *args], cwd=project, check=True, capture_output=True, text=True).stdout.strip()
+    run("init", "-q")
+    run("add", ".env", "credentials/prod.json", "star*.txt", "star-other.txt")
+    run("-c", "user.name=Example", "-c", "user.email=example@example.com", "commit", "-qm", "seed")
+    sha = run("rev-parse", "HEAD")
+    body = get_commit(Request(project / ".journal", {"env": "main", "sha": sha}, {}, {})).body
+    assert "visible star" in body["diff"] and "hidden secret" not in body["diff"] and "folder secret" not in body["diff"]
+    assert ".env" not in body["stat"] and "credentials/prod.json" not in body["stat"]
+    (project / "star*.txt").write_text("changed star")
+    (project / "star-other.txt").write_text("changed other")
+    diff = get_file_diff(Request(project / ".journal", {"env": "main"}, {"path": "star*.txt"}, {})).body["diff"]
+    assert "changed star" in diff and "changed other" not in diff
+    for path in (".", "credentials", ".env", "credentials/prod.json"):
+        with pytest.raises(Refused):
+            get_file_diff(Request(project / ".journal", {"env": "main"}, {"path": path}, {}))
+
+
 def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     import pytest
-    from commands.dispatch import Request, static
+    from commands.dispatch import static
+    from features.routing import Request
     from controllers.types import Environments, Todos
     from engine.record import Record
     from migrations import applied
@@ -158,3 +193,29 @@ def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     (tmp_path / "migrations.json").write_text("not json")
     with pytest.raises(Refused):
         applied(tmp_path)
+
+
+def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back(tmp_path, monkeypatch):
+    import json
+    from commands.launch import launch
+    from providers import DRIVERS
+    from features.clean_slate.slate import moved
+    from tests.conftest import refused
+    import commands.launch
+    import commands.launch_update
+    monkeypatch.setattr(commands.launch, "started", lambda *a, **k: pytest.fail("the launch went on to start the agent"))
+    monkeypatch.setattr(commands.launch_update, "latest_first", lambda record: "")
+    monkeypatch.setattr(viewer, "PORTS", [59990, 59991])
+    monkeypatch.setattr(viewer, "free", lambda port: False)
+    assert "no viewer port is free" in refused(lambda: viewer.available(fresh().root)), "a plain line, not a traceback"
+    record = fresh()
+    project = record.root.parent
+    (project / ".claude").mkdir()
+    hooks = project / ".claude" / "settings.local.json"
+    hooks.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
+    before = hooks.read_text()
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.chdir(project)
+    monkeypatch.setattr(DRIVERS["claude"], "binary", classmethod(lambda cls, path: "claude"))
+    assert "no viewer port is free" in refused(lambda: launch(record, "claude", ["--no-interaction"]))
+    assert moved(record) == [] and hooks.read_text() == before, "nothing stays set aside"

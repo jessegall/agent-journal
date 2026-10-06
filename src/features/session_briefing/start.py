@@ -1,10 +1,11 @@
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Works
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
+from engine.extension import Extension
 
 
 def standing(record, type_: str) -> list:
-    return CONTROLLERS[type_](record, actor=SYSTEM)._standing()
+    return CONTROLLERS[type_](record, actor=SYSTEM).rows.standing()
 
 
 def counts(record) -> dict[str, int]:
@@ -12,7 +13,7 @@ def counts(record) -> dict[str, int]:
 
 
 def open_work(record) -> list:
-    return standing(record, "work")
+    return Works(record, actor=SYSTEM).rows.standing()
 
 
 def lines(rows: list, how=lambda r: r.title) -> str:
@@ -27,15 +28,7 @@ def status(record) -> str:
 
 
 def handed(record, type_: str) -> list:
-    return [r for r in standing(record, type_) if r.data.get("status", "active") in ("active", "waiting") and not r.data.get(WHOM)]
-
-
-def describe(r) -> str:
-    if r.type == "plan":
-        i = r.current
-        phase = r.phases[i - 1]["title"] if 0 < i <= len(r.phases) else ""
-        return f"{r.title} is {r.status} — phase {i}, {phase}"
-    return f"{r.title}  ({r.abstract})" if r.abstract else r.title
+    return [r for r in standing(record, type_) if (type_ == "doc" or r.data.get("status", "active") in ("active", "waiting")) and not r.data.get(WHOM)]
 
 
 QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's work. Never mention the journal's notifications, "
@@ -43,19 +36,19 @@ QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's wo
          "A line that starts with [journal] is the journal speaking, not the user: act on it, and never answer it in the chat.")
 
 
-START_PARTS: dict = {}
+START_PARTS = Extension()
 ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
 
 
 def start_block(record) -> str:
     parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", QUIET,
-             *(START_PARTS[place](record) for place in sorted(START_PARTS))]
+             *(part(record) for _, part in sorted(START_PARTS.keyed(record).items()))]
     for type_ in reversed(priority()):
         kind = TYPES[type_]
         rows = handed(record, type_) if kind.start_heading else []
         if not rows:
             continue
-        parts.append(f"{len(rows)} {kind.start_heading}." if kind.start_as_count else f"{kind.start_heading} ({len(rows)}):\n{lines(rows, describe)}")
+        parts.append(f"{len(rows)} {kind.start_heading}." if kind.start_as_count else f"{kind.start_heading} ({len(rows)}):\n{lines(rows, lambda r: r.start_line())}")
     return "\n\n".join(p for p in parts if p) + "\n"
 
 

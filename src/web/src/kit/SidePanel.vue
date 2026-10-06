@@ -1,7 +1,7 @@
 <script setup>
 import CloseButton from "./CloseButton.vue";
 import TextDisplay from "./TextDisplay.vue";
-import {closing} from "./closing.js";
+import {closing} from "../composables/closing.js";
 
 const props = defineProps({
     title: {type: String, default: ""},
@@ -10,14 +10,15 @@ const props = defineProps({
     open: {type: Boolean, default: null},
     depth: {type: Number, default: 0},
     over: {type: Boolean, default: false},
+    closeLabel: {type: String, default: "Close the panel"},
 });
 const emit = defineEmits(["close", "dismiss"]);
-const {shown, close, closed} = closing(emit, props);
+const {visible, close, closed} = closing(emit, props);
 </script>
 
 <template>
     <Transition name="side" appear @after-leave="closed">
-        <div v-if="shown" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
+        <div v-if="visible" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
             <aside :class="['panel', width]" role="dialog" :aria-label="title">
                 <template v-if="title">
                     <header class="head">
@@ -28,11 +29,16 @@ const {shown, close, closed} = closing(emit, props);
                             </template>
                         </div>
                         <slot name="actions" />
-                        <CloseButton @click="close" />
+                        <CloseButton :title="closeLabel" @click="close" />
                     </header>
                     <div class="body">
                         <slot />
                     </div>
+                    <template v-if="$slots.foot">
+                        <footer class="foot">
+                            <slot name="foot" />
+                        </footer>
+                    </template>
                 </template>
                 <template v-else>
                     <slot />
@@ -145,6 +151,14 @@ h2 {
     color: var(--text-2);
     font-size: 12.5px;
     line-height: 1.45;
+}
+
+.foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
 }
 
 .body {

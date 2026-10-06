@@ -1,5 +1,7 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {useFileHandIn} from "../composables/fileHandIn.js";
+import {useWindowEvent} from "../composables/windowEvent.js";
+import {computed, nextTick, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import FocusStage from "../kit/FocusStage.vue";
@@ -64,7 +66,7 @@ function clear() {
 async function build() {
     const made = await api.create("board", {title: name.value.trim() || stem(document.value), stages: []});
     await api.upload("board", made.n, document.value);
-    await api.act("board", made.n, "build", {name: name.value.trim(), steer: steer.value.trim()});
+    await api.buildBoard(made.n, name.value.trim(), steer.value.trim());
     return made;
 }
 
@@ -96,33 +98,15 @@ function onKey(e) {
     pick(shortcut - 1);
 }
 
-function dropped(e) {
-    const file = e.dataTransfer && e.dataTransfer.files[0];
-    if (!props.open || !file) return;
-    e.preventDefault();
-    take(file);
-}
-
-function pasted(e) {
-    if (!props.open || !e.clipboardData) return;
-    const file = e.clipboardData.files[0];
-    const text = e.clipboardData.getData("text");
-    if (!file && (e.target.closest("input,textarea,[contenteditable]") || !text.trim())) return;
-    e.preventDefault();
-    take(file || new File([text], "Pasted document.md", {type: "text/markdown"}));
-}
-
-const hovering = (e) => props.open && e.preventDefault();
-const LISTENERS = {keydown: onKey, dragover: hovering, drop: dropped, paste: pasted};
-onMounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener)));
-onUnmounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.removeEventListener(event, listener)));
+useWindowEvent("keydown", onKey);
+useFileHandIn({active: () => props.open, take, pastedText: true});
 </script>
 
 <template>
     <FocusStage :open="open" page leave="Back to the board" @close="emit('close')">
         <div class="new-board-head">
             <h1 class="new-board-title">New board</h1>
-            <p class="new-board-lead">Pick a set of stages, or hand me a document and I set the board up from it.</p>
+            <p class="new-board-lead">Pick a set of stages, or give the agent a document and it sets the board up from it.</p>
         </div>
         <div :class="['new-board-presets', {dim: fromDocument}]">
             <template v-for="(p, i) in PRESETS" :key="p.key">
@@ -147,7 +131,7 @@ onUnmounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => windo
                 large
                 :value="name"
                 :placeholder="
-                    fromDocument ? 'I name it from the document, or type your own' : preset ? preset.suggest : 'What the board is for'
+                    fromDocument ? 'The agent names it from the document, or type your own' : preset ? preset.suggest : 'What the board is for'
                 "
                 @input="named"
                 @keydown.enter.prevent="create"
@@ -161,7 +145,7 @@ onUnmounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => windo
                 <span class="new-board-warning">{{ warning }}</span>
             </template>
             <template v-else-if="fromDocument">
-                The board opens straight away and fills while you watch. You can leave; I carry on.
+                The board opens straight away and fills while you watch. You can leave. The agent keeps working.
             </template>
             <template v-else>
                 {{ hint }}

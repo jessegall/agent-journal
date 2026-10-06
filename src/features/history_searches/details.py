@@ -1,11 +1,15 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class HistorySearchesDetails(FeatureDetails):
+    explains = 'The chat marks when the agent searches past journal work. You can see what it looked for.'
     name = "history_searches"
+    group = Group.CHAT
+    label = "Show history searches"
     has_skill = False
 
-    title = "History searches in the chat"
+    title = "History searches"
 
     abstract = "Whenever the agent searches the journal's history, the chat shows a mark saying what it looked for"
 

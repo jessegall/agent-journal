@@ -1,18 +1,23 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import NOTICES, Trigger
+from features.groups import Group
 
-SHOP, REMIND = "shop", "remind"
+SHOP, REMIND, THIRD_PERSON = "shop", "remind", "third person"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
+    explains = "The agent keeps its chat replies about your work. You can still inspect the journal's activity in the viewer."
     name = "chat_etiquette"
+    group = Group.AGENT
+    label = "Keep journal talk out of the chat"
+    position = 3
     when = "you write anything the user will read in the chat"
 
-    title = "Chat etiquette"
+    title = "Keep journal talk out of the chat"
 
     speaks_while_waiting = True
 
-    abstract = "How the agent talks in the chat: about the work, never about the journal's own workings"
+    abstract = "In the chat the agent talks about the work, not about the journal's own commands and reminders."
 
     help = """
         The user sees every reply, reaction, pill, question, to-do and whether a message is read
@@ -24,6 +29,8 @@ class ChatEtiquetteDetails(FeatureDetails):
         never answered or mentioned: no "you reacted". The state of the record is not news
         either: no "nothing is open on my side", "nothing else is waiting". Say what the work
         is and what it came to, in plain words, and name every row with its type, such as to-do 12.
+        Speak to the user, never about them: "you asked", not "the user asks" or their name with
+        "asks" or "wants", unless you are writing for someone else, as in a brief or a report.
 
         Filing a to-do from a message does not answer it. When the message asks you something or
         proposes a way to do it ("maybe do it this way"), reply as well: say whether you agree and
@@ -53,8 +60,7 @@ class ChatEtiquetteDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name=REMIND,
-            title="Remind the agent of chat etiquette every few journal lines",
-            abstract="A line from the journal is acted on or noted, never answered or mentioned in the chat",
+            title="Remind the agent to keep journal talk out of the chat",
             trigger=Trigger(every=20, unit=NOTICES),
         ),
     ]
@@ -67,6 +73,11 @@ class ChatEtiquetteDetails(FeatureDetails):
                 a turn that only handles a journal line needs no words: act on it, or say once in the chat what you
                 wait on, then carry on; what the user needs to know still goes to the chat
             """,
+        ),
+        Line(
+            name=THIRD_PERSON,
+            title='your chat spoke about the user instead of to them - "{{words}}"',
+            brief="you are talking to them: say \"you asked\" or \"you want\", and keep their name for addressing them",
         ),
         Line(
             name=SHOP,

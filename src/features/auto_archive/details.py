@@ -1,12 +1,16 @@
 from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails
+from features.groups import Group
 
 
-class RetentionDetails(FeatureDetails):
+class AutoArchiveDetails(FeatureDetails):
+    explains = 'The journal moves older closed items into an archive. You can still read and search them.'
     name = "auto_archive"
+    group = Group.ARCHIVE
+    label = "Archive closed items"
     has_skill = False
 
-    title = "Auto-archive"
+    title = "Archive automatically"
 
     aliases = ("retention",)
 
@@ -15,6 +19,6 @@ class RetentionDetails(FeatureDetails):
         keeps are removed, once an hour
     """
 
-    help = "keep.report and keep.todo are days per environment; 0 keeps everything listed. Closed rows are zipped after keep.pack days (3), one zip per day of their last change, and are still read, listed and searched from it; 0 never zips. A type that declares how many rows it keeps (nudges 100, seen notifications 100, closed notices 100, answered browser asks 50) is pruned to that count, oldest first."
+    help = "Closed items are compressed after 3 days but can still be read and searched. Reports and to-dos leave the main list after their keep days. The journal keeps only its newest routine notices and browser answers."
 
     trigger = Trigger(every=60, unit=MINUTES)

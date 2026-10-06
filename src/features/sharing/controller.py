@@ -1,107 +1,66 @@
-import hashlib
-import hmac
 import json
 import re
-import secrets
 import time
-import urllib.error
-import urllib.request
 import uuid
-from dataclasses import asdict, dataclass
-from pathlib import Path
+from enum import StrEnum
+from typing import TypedDict
 
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
+from controllers.features import Features
 from controllers.messages import Messages
+from engine.keeper import READY, STARTING
+from engine.ports import REACH_SECONDS, answers, reached, vouched
 from engine.record import Record
-from engine.stored import read_json
-from features import FEATURES
-from features.shaping import shaping
-from controllers.described import described_types
-from engine.markers import MARKER
-from features.format import SHARED, formatted
+from features.sharing.details import ALLOWED, SharingDetails
+from features.sharing.page_data import SharePages
+from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
-from engine.services import FAILED, UP, log_file, status, want
-from features.sharing.tunnel import TUNNEL, TUNNEL_FILE, TunlerVersion, addressed, install, log_in, log_out, moved, owned, refused_address, server_name, subdomain, tunler_status, unclaim, updated, versions
-from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, unindex_comment, visitor_name, visitor_text
+from engine.services import DOWN, FAILED, UP, log_file, status, want
+from features.sharing.address import Claim, relied_on, this_machine
+from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
+from features.sharing.visiting import ShareVisits, sharing_feature
+from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
-from features.nudges import DAY
+from features.trigger import DAY
+from controllers.marks import action
+
+NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
+LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
+OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler to go on."
+REJECTED = "tunler is logged in as {account}, but {host} does not accept that login. The server may be down, or the account was deleted after 30 days without use, together with its addresses. Log in again to make a new one."
+ELSEWHERE = "This project's tunnel address {old} belongs to another machine, so this machine now uses {new}. A phone paired on this machine has to be paired again, and share links made here have to be sent again."
+ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
+TUNNEL_STOPPED = "The tunnel to this journal keeps stopping. The journal starts it again every few seconds."
+HOST_MISMATCH = "This journal uses the tunler server {saved}, but tunler is logged in to {host}. Log in to {saved} again, so the phone and share links reach this journal."
+OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new address instead: the old one is released once the new one is in use."
+
+class Cause(StrEnum):
+    HOST = "host"
+    STOPPED = "stopped"
+    OLD = "old"
+    WAITING = "waiting"
+    OPEN = "open"
+
+
+class TunnelCause(TypedDict):
+    cause: Cause
+    text: str
+    lines: list[str]
+
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
 NEVER = ("", "0", "never")
-HASH_ROUNDS = 200_000
-REACH_SECONDS = 3
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
-UNLOCKED: dict[int, str] = {}
 LAYOUT_FILE = "layout.json"
 HEALTH = "health"
-SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
+HEALTH_MARKER = "journal-share-server"
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
-NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
-LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
-ADDRESS_TAKEN = "This journal's address belongs to another tunler account, so the tunnel cannot open on it."
-TUNNEL_STOPPED = "The tunnel to this journal stopped and could not start again."
-
-
-def member_refs(row) -> list[str]:
-    if row.type == "plan":
-        return [f"todo:{n}" for phase in row.data.get("phases") or [] for n in phase.get("todos", [])]
-    return list(row.refs) if row.type == "collection" else []
-
-
-def hashed(password: str) -> str:
-    salt = secrets.token_hex(16)
-    return f"{salt}${hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex()}"
-
-
-def matches(password: str, kept: str) -> bool:
-    salt, _, digest = kept.partition("$")
-    return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex(), digest)
-
-
-@dataclass(frozen=True)
-class SharedComment:
-    n: int
-    about: str
-    name: str
-    text: str
-    created: float
-    replies: tuple = ()
-    options: tuple = ()
-    answer: str = ""
-    handled: str | None = None
-
-    @classmethod
-    def of(cls, comment, about: str, record, replies: tuple = ()) -> "SharedComment":
-        name = "Agent" if comment.seen[:1] == [AGENT] else comment.data["visitor"]
-        return cls(comment.n, about, name, comment.brief, comment.created, replies, tuple(comment.data.get("options", ())), comment.data.get("answer", ""),
-                   formatted(comment.outcome, record, SHARED) if comment.completed else None)
-
-
-def scoped(text: str, scope: set[str]) -> str:
-    return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text)
-
-
-def status_of(url: str, wait: float = REACH_SECONDS) -> int:
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, method="HEAD"), timeout=wait) as answer:
-            return answer.status
-    except urllib.error.HTTPError as error:
-        return error.code
-    except (OSError, ValueError):
-        return 0
-
-
-def answers(url: str, wait: float = REACH_SECONDS) -> bool:
-    return 0 < status_of(url, wait) < 500
-
-
-def reached(url: str, wait: float = REACH_SECONDS) -> bool:
-    return status_of(url, wait) > 0
+USER_SHARE_FIELDS = {"approved", "target", "password", "comments", "expires"}
 
 
 def until(expires: str) -> float:
@@ -113,10 +72,13 @@ def until(expires: str) -> float:
     return time.time() + int(given[:-1]) * SPANS[given[-1]]
 
 
-class Shares(Controller):
+class Shares(ShareVisits, SharePages, Controller):
     resource = Share
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str = "", **data):
+        if self.actor != USER and (USER_SHARE_FIELDS.intersection(data) or expires != "7d" or password):
+            raise Refused("only the user may set a share's approval, target, password, comments or expiry")
         if not SHAREABLE.match(title.strip()):
             return super().create(title, abstract, brief, **data)
         target = self._target(title)
@@ -128,6 +90,13 @@ class Shares(Controller):
             self._ask_to_open(made, target)
         return made
 
+    @action
+    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
+        if self.actor != USER and USER_SHARE_FIELDS.intersection(data):
+            raise Refused("only the user may change a share's approval, target, password, comments or expiry")
+        return super().update(n, title, abstract, brief, outcome, **data)
+
+    @action
     def share_layout(self, name: str, layout: str, expires: str = "7d", once: bool = False):
         if self.actor != USER:
             raise Refused("only the user shares a layout, from its menu in the viewer")
@@ -144,11 +113,13 @@ class Shares(Controller):
         if share.once:
             self.complete(share.n, "opened once")
 
+    @action
     def approve(self, n: int):
         if self.actor != USER:
             raise Refused("only the user opens a share: it waits for their Accept in the chat")
         return self.update(int(n), approved=True)
 
+    @action
     def ask(self, n: int, question: str, options: str):
         from controllers.types import Comments
         chosen = [option.strip() for option in options.split("|") if option.strip()]
@@ -157,70 +128,20 @@ class Shares(Controller):
         comments = Comments(self.record, actor=self.actor)
         return comments.create(titled(question), brief=question, about=comments.load(n).ref, options=chosen)
 
-    def _visitor_answer(self, share, n: int, name: str, choice: str):
-        from controllers.types import Comments, Nudges
-        asked = next((comment for c in self._shared_comments(share, self._scope(share)) for comment in (c, *c.replies) if comment.n == n), None)
-        if asked is None or not asked.options:
-            raise Refused("that question is not on this link")
-        if asked.answer:
-            raise Refused("that question is answered")
-        if choice not in asked.options:
-            raise Refused("pick one of the question's options")
-        name = visitor_name(name)
-        record = self._home(share)
-        comments = Comments(record, actor=SYSTEM)
-        made = comments.update(n, answer=choice, answered_by=name)
-        if share.password:
-            Nudges(record, actor=SYSTEM)._to_primary(titled(f"{name} answered your question in comment {n}: {choice}"),
-                                                     "they picked it on the shared page; carry on with that answer")
-        else:
-            index_comment(record, made, comments.path(n))
-            Messages(record, actor=AGENT).create(
-                titled(f"{name} answered your question in comment {n} through a shared link"),
-                brief=f"{choice}\n\nThe link has no password, so the agent does not act on this unless you let it.",
-                buttons=[{"label": "Let the agent act on it", "type": "share", "n": n, "action": "allow"}],
-            )
-        return made
-
+    @action
     def agree(self, n: int, words: str) -> str:
         if " ".join(str(words).split()) != AGREEMENT:
             raise Refused(f'the words must be exactly: "{AGREEMENT}"')
         from controllers.types import Agents
         agents = Agents(self.record, actor=SYSTEM)
-        row = agents.by_session(self.session)
-        agents.update(row.n, **{UNAGREED: [held for held in row.data.get(UNAGREED, []) if held != int(n)]})
+        unhold(agents, agents.by_session(self.session), n)
         return f"agreed on comment {int(n)}: tell the user about it if they should know, and act only on their own word"
 
-    def _visitor_comment(self, share, ref: str, name: str, text: str):
-        if not share.comments:
-            raise Refused("this link does not take comments")
-        if ref not in self._scope(share):
-            raise Refused("that is not part of this link")
-        name, text = visitor_name(name), visitor_text(text)
-        count_sent(share.token)
-        from controllers.types import Comments
-        record = self._home(share)
-        comments = Comments(record, actor=SYSTEM)
-        made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n, trusted=bool(share.password))
-        if not made.data["trusted"]:
-            index_comment(record, made, comments.path(made.n))
-            self._show_visitor_comment(record, made, ref)
-        kind, _, n = ref.partition(":")
-        about = CONTROLLERS[kind](record, actor=SYSTEM)
-        about.save(about.load(n), "commented", comment=made.n)
-        return made
-
-    def _show_visitor_comment(self, record, comment, ref: str) -> None:
-        Messages(record, actor=AGENT).create(
-            titled(f"{comment.data['visitor']} commented on {ref.replace(':', ' ')} through a shared link"),
-            brief=f"{comment.brief}\n\nThe link has no password, so the agent does not act on this unless you let it.",
-            buttons=[{"label": "Let the agent act on it", "type": "share", "n": comment.n, "action": "allow"}],
-        )
-
+    @action
     def allow(self, n: int):
         if self.actor != USER:
             raise Refused("only the user lets the agent act on a visitor's comment: it waits for their button in the chat")
-        from controllers.types import Agents, Comments, Nudges
+        from controllers.types import Agents, Comments
         comments = Comments(self.record, actor=SYSTEM)
         comment = comments.load(int(n))
         visitor = comment.data.get("visitor") or comment.data.get("answered_by")
@@ -230,28 +151,9 @@ class Shares(Controller):
         agents = Agents(self.record, actor=SYSTEM)
         agent = agents.primary()
         if agent:
-            agents.update(agent.n, **{UNAGREED: [held for held in agent.data.get(UNAGREED, []) if held != comment.n]})
-        Nudges(self.record, actor=SYSTEM)._to_primary(titled(f"the user let you act on comment {comment.n} from {visitor}"),
-                                                       f"read it with journal comment show {comment.n} and act on it as the user's own request")
+            unhold(agents, agent, comment.n)
+        sharing_feature().to_primary(self.record, ALLOWED, n=comment.n, visitor=visitor)
         return comments.update(comment.n, allowed=True)
-
-    def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
-        from controllers.types import Comments
-        comments = Comments(self._home(share), actor=SYSTEM)
-        rows = [row for row in comments.summaries() if not row["deleted"]]
-
-        def about(refs: set[str]) -> list:
-            return [comments.load(row["n"]) for row in rows if refs.intersection(row["refs"])]
-
-        visitors = [c for c in about(scope) if c.data.get("share") == share.n]
-        asked = {c.ref for c in visitors}
-        agents = [c for c in about(scope | asked) if share.agent_replies and c.seen[:1] == [AGENT]]
-        top = sorted([*visitors, *(c for c in agents if scope.intersection(c.refs))], key=lambda c: c.created)
-        threads = []
-        for c in top:
-            on = next(ref for ref in c.refs if ref in scope)
-            threads.append(SharedComment.of(c, on, comments.record, tuple(SharedComment.of(r, on, comments.record) for r in agents if c.ref in r.refs)))
-        return threads
 
     def _ask_to_open(self, share, target) -> None:
         opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
@@ -263,6 +165,7 @@ class Shares(Controller):
                      {"label": "Deny", "type": "share", "n": share.n, "action": "stop"}],
         )
 
+    @action
     def opens(self, ref: str) -> list[str]:
         target = self._target(ref)
         lines = [f"{target.title} ({target.type} {target.n})"]
@@ -271,15 +174,54 @@ class Shares(Controller):
         lines += [f"{m.title} ({m.type} {m.n})" for m in self._loaded_members(self.record, target)]
         return lines
 
+    @action
     def tunnel(self) -> dict:
-        standing = tunler_status()
-        return {**standing, "address": self._address(), "problems": self._problems(standing["installed"], standing["logged_in"])}
+        standing = {**tunler_status(), "server": self._host() or DEFAULT_SERVER}
+        try:
+            return {**standing, "address": self._address(), "problems": self._problems(standing)}
+        except Refused as unreadable:
+            return {**standing, "address": "", "problems": [str(unreadable)]}
 
-    def _problems(self, installed: bool, logged_in: bool) -> list[str]:
-        if not installed:
-            return [NOT_INSTALLED]
-        if not logged_in:
-            return [LOGGED_OUT]
+    @action
+    def tunnel_cause(self) -> TunnelCause:
+        root, host = self.record.root, self._host()
+        if host and not reached(f"https://{host}/", REACH_SECONDS):
+            return TunnelCause(cause=Cause.HOST, text=f"The tunler server {host} does not answer, so the tunnel cannot open. Check the server in Settings, or try again once it is back.", lines=[])
+        if status(root, TUNNEL).state not in (STARTING, READY):
+            return TunnelCause(cause=Cause.STOPPED, text="The tunnel is not running. The last lines it wrote:", lines=last_lines(log_file(root, TUNNEL)))
+        version = versions(host)
+        if version["update_available"]:
+            return TunnelCause(cause=Cause.OLD, text=f"tunler {version['current']} is older than {version['latest']} on the server. Updating it may fix the connection.", lines=[])
+        if self._answering():
+            return TunnelCause(cause=Cause.OPEN, text=f"The tunnel is open: {self._address()} answers.", lines=[])
+        return TunnelCause(cause=Cause.WAITING, text=f"The tunnel is running, but {self._address()} does not answer yet.", lines=[])
+
+    @action
+    def restart_tunnel(self) -> dict:
+        self._user_only("restart the tunnel")
+        KEPT_STATUS.clear()
+        want(self.record.root, TUNNEL, UP, nonce=time.time())
+        return self.tunnel()
+
+    @action
+    def check_tunnel(self) -> dict:
+        KEPT_STATUS.clear()
+        return self.tunnel()
+
+    def _unusable(self, standing: TunnelStatus) -> str:
+        if not standing["installed"]:
+            return NOT_INSTALLED
+        if standing["outdated"]:
+            return OUTDATED
+        if standing["rejected"]:
+            return REJECTED.format(account=standing["account"], host=standing["host"])
+        return "" if standing["logged_in"] or standing["unreadable"] else LOGGED_OUT
+
+    def _problems(self, standing: TunnelStatus) -> list[str]:
+        if unusable := self._unusable(standing):
+            return [unusable]
+        if standing["host"] and self._host() != standing["host"]:
+            return [HOST_MISMATCH.format(saved=self._host(), host=standing["host"])]
         if refused_address(log_file(self.record.root, TUNNEL)):
             return [ADDRESS_TAKEN]
         if status(self.record.root, TUNNEL).state == FAILED:
@@ -288,77 +230,122 @@ class Shares(Controller):
 
     def _address(self) -> str:
         host = self._host()
-        return f"{subdomain(self.record.root)}.{host}" if host else ""
+        return f"{self._subdomain()}.{host}" if host else ""
 
+    def _subdomain(self) -> str:
+        root, claim = self.record.root, self._claim()
+        kept = kept_address(root)
+        name, kept_claim = kept.get("subdomain", ""), Claim.kept(kept)
+        if name and kept_claim != claim:
+            KEPT_STATUS.clear()
+            claim = self._claim()
+        if not name:
+            return addressed(root, {**kept, **claim.fields()})
+        if kept_claim == claim or not claim.account:
+            return name
+        elsewhere, relied = kept_claim.is_elsewhere(claim), relied_on(self.record)
+        if not elsewhere and (relied or f"{name}.{claim.host}" in owned()):
+            keep_address(root, {**kept, **claim.fields()})
+            return name
+        fresh = addressed(root, {**kept, **claim.fields()})
+        if elsewhere and relied:
+            Messages(self.record, actor=SYSTEM).create("This machine has a tunnel address of its own", brief=ELSEWHERE.format(old=name, new=fresh))
+        return fresh
+
+    def _claim(self) -> Claim:
+        return Claim(this_machine(), tunler_status()["account"], self._host())
+
+    @action
     def login(self, username: str, password: str, endpoint: str | None = None, master_password: str | None = None) -> dict:
         self._user_only("log tunler in")
         host = endpoint.strip() if endpoint else self._host()
         made = log_in(host, username.strip(), password, master_password or None)
         if made["connected"]:
-            self._keep_host(host)
+            Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", host)
+            self._reconnect()
         return {**made, **self.tunnel()}
 
+    def _reconnect(self) -> None:
+        state = alerts(self.record.root)
+        for key in (ADDRESS_REFUSED, READDRESSED, SIGNED_OUT):
+            state.set(key, 0)
+        self._subdomain()
+        want(self.record.root, TUNNEL, UP, nonce=time.time())
+
+    @action
     def logout(self) -> dict:
         self._user_only("log tunler out")
         failed = log_out()
         if failed:
             raise Refused(failed)
+        alerts(self.record.root).set(SIGNED_OUT, time.time())
+        want(self.record.root, TUNNEL, DOWN)
         return self.tunnel()
 
+    @action
     def version(self) -> TunlerVersion:
         return versions(self._host())
 
+    @action
     def install_tunler(self, host: str) -> str:
         self._user_only("install tunler")
         server = server_name(host)
         outcome = install(server)
-        self._keep_host(server)
+        Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", server)
         return outcome
 
-    def _keep_host(self, host: str) -> None:
-        sharing = FEATURES["sharing"]
-        self.record.set_setting(sharing.name, {**self.record.setting(sharing.name, {}), "host": host})
-
+    @action
     def update_tunler(self) -> str:
         self._user_only("update tunler")
         return updated()
 
     def _host(self) -> str:
-        return FEATURES["sharing"].setting(self.record, "host", "") or tunler_status()["host"]
+        return SharingDetails.values(self.record).host or tunler_status()["host"]
 
+    @action
     def domains(self) -> list[str]:
         return owned()
 
+    @action
     def release(self, domain: str) -> list[str]:
         self._user_only("release a tunler domain")
+        if domain == self._address():
+            raise Refused(OWN_ADDRESS.format(domain=domain))
         failed = unclaim(domain, self._host())
         if failed:
             raise Refused(failed)
         return owned()
 
+    @action
     def readdress(self) -> str:
         self._user_only("choose a new tunnel address")
         return self._readdress()
 
     def _readdress(self) -> str:
-        kept = read_json(self.record.root / TUNNEL_FILE, dict, {})
-        name = addressed(self.record.root, {key: value for key, value in kept.items() if key != "subdomain"})
-        moved(log_file(self.record.root, TUNNEL), name)
-        want(self.record.root, TUNNEL, UP, nonce=time.time())
+        root, host = self.record.root, self._host()
+        old = readable_address(root).get("subdomain", "")
+        name = new_address(root, self._claim().fields())
+        moved(log_file(root, TUNNEL), name)
+        alerts(root).set(ADDRESS_REFUSED, 0)
+        want(root, TUNNEL, UP, nonce=time.time())
+        if old and f"{old}.{host}" in owned():
+            unclaim(old, host)
         return name
 
     def _user_only(self, what: str) -> None:
         if self.actor != USER:
             raise Refused(f"only the user may {what}, from the viewer")
 
+    @action
     def reachable(self, n: int) -> dict:
         return {"reachable": answers(self.load(n).abstract)}
 
+    @action
     def answering(self) -> dict:
         return {"reachable": self._answering()}
 
     def _answering(self, wait: float = REACH_SECONDS) -> bool:
-        return answers(f"https://{self._address()}/{HEALTH}", wait)
+        return vouched(f"https://{self._address()}/{HEALTH}", HEALTH_MARKER, wait)
 
     def _link(self, token: str) -> str:
         return f"https://{self._address()}/s/{token}"
@@ -375,87 +362,11 @@ class Shares(Controller):
     def _by_token(self, token: str):
         if not TOKEN.match(token):
             return None
-        found = next((row["n"] for row in self.summaries() if row.get("token") == token), None)
+        found = next((row["n"] for row in self.rows.summaries() if row.get("token") == token), None)
         return self.load(found) if found else None
 
     def _home(self, share) -> Record:
         return Record(self.record.root, share.data.get("environment") or self.record.env)
-
-    def _shared_row(self, share, ref: str):
-        kind, _, n = ref.partition(":")
-        return CONTROLLERS[kind](self._home(share), actor=SYSTEM).load(n)
-
-    def _loaded_members(self, record: Record, row) -> list:
-        members = []
-        for ref in member_refs(row):
-            kind, _, n = ref.partition(":")
-            if kind not in CONTROLLERS or not n.isdigit():
-                continue
-            try:
-                row = CONTROLLERS[kind](record, actor=SYSTEM).load(n)
-            except Refused:
-                continue
-            if not row.deleted and not row.data.get("system"):
-                members.append(row)
-        return members
-
-    def _members(self, share, collection) -> list:
-        return self._loaded_members(self._home(share), collection)
-
-    def _scope(self, share) -> set[str]:
-        target = self._shared_row(share, share.target)
-        if target.deleted:
-            return set()
-        return {share.target, *(f"{m.type}:{m.n}" for m in self._members(share, target))}
-
-    def _shared_file(self, share, ref: str, name: str) -> Path | None:
-        row = self._shared_row(share, ref)
-        if name not in row.files:
-            return None
-        folder = self._home(share).folder(row.type, row.scope).joinpath(f"{row.n:03d}").resolve()
-        found = folder.joinpath(name).resolve()
-        return found if found.parent == folder and found.is_file() else None
-
-    def _unlocked(self, share, password: str) -> bool:
-        if not share.password:
-            return True
-        known = UNLOCKED.get(share.n)
-        if known and hmac.compare_digest(known, password):
-            return True
-        if not matches(password, share.password):
-            return False
-        UNLOCKED[share.n] = password
-        return True
-
-    def _shared_data(self, share) -> dict:
-        scope = self._scope(share)
-        record = self._home(share)
-        rows = {}
-        for ref in scope:
-            row = self._shared_row(share, ref)
-            shaped = shaping(row, record, SHARED)
-            rows[ref] = {
-                "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
-                "title": row.title, "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
-                "sections": [{"title": s.get("title", ""), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
-                "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
-                "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope],
-                "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},
-            }
-        described = described_types()
-        kinds = {ref.partition(":")[0] for ref in rows}
-        return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
-                "comments": [asdict(c) for c in self._shared_comments(share, scope)] if share.comments else [],
-                "timeline": self._timeline(share, scope),
-                "types": {kind: described[kind] for kind in kinds if kind in described}}
-
-    def _timeline(self, share, scope: set[str]) -> list[dict]:
-        kind, _, n = share.target.partition(":")
-        if kind != "plan":
-            return []
-        record = self._home(share)
-        return [{**moment, "text": scoped(formatted(moment["text"], record, SHARED), scope)}
-                for moment in CONTROLLERS["plan"](record, actor=SYSTEM).timeline(int(n)) if f"todo:{moment['todo']}" in scope]
 
     def _count_view(self, n: int) -> None:
         count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))

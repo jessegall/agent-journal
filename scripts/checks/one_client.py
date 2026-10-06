@@ -6,7 +6,7 @@ HERE = Path(__file__).resolve().parents[2] / "src"
 SOURCE = HERE / "web" / "src"
 CLIENT = SOURCE / "api"
 ROUTER = SOURCE / "route.js"
-ENDPOINTS = re.compile(r"""\bfetch\(|new EventSource\(|https?://(?:127\.0\.0\.1|localhost)|["'`]/api\b|["'`]/\$\{|["'`]/(?:journals|services|plugins|pages|manifest|identity|agents|agent-hooks|agent-controls|upstream|upgrade|stop|extension|summary)\b""")
+ENDPOINTS = re.compile(r"""\bfetch\(|new EventSource\(|https?://(?:127\.0\.0\.1|localhost)|["'`]/api\b|["'`]/\$\{|["'`]/(?:journals|services|plugins|pages|manifest|identity|agents|agent-hooks|agent-controls|upstream|upgrade|stop|extension|summary)\b|["'`]\./(?:file|files|export|attach)/""")
 
 
 def problems() -> list[str]:

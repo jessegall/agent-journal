@@ -1,27 +1,23 @@
 import inspect
 import re
-import os
 import shutil
 from pathlib import Path
 
 import features
-from controllers.base import actions
-from controllers.base import COMMANDS
+from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
-from providers import PROVIDERS
 from providers.base import LIBRARY
 from engine.package import data
 from engine.reach import Reach
 from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name
+from engine.frontmatter import FRONTMATTER, frontmatter
 
 HERE = data()
 
 
 def signature(controller: type, name: str) -> str:
-    fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
-    params = list(inspect.signature(fn).parameters.values())[1:]
     words = []
-    for p in params:
+    for p in word_parameters(controller, name):
         if p.kind is inspect.Parameter.VAR_KEYWORD:
             words.append("[--set key=value…]")
         elif p.default is inspect.Parameter.empty:
@@ -35,7 +31,7 @@ NOUNS = "references/nouns.md"
 
 
 def reference() -> str:
-    named = {type_: {*actions(controller), *COMMANDS.get(type_, {})} for type_, controller in CONTROLLERS.items()}
+    named = {type_: word_names(controller) for type_, controller in CONTROLLERS.items()}
     shared = set.intersection(*named.values())
     out = ["## Reference: every noun and its own words", "",
            f"Every noun takes these words: {', '.join(sorted(shared))}. A noun that renames one says so below. "
@@ -92,6 +88,10 @@ def nouns(names) -> list[str]:
     return [name for name in names if "_" not in name]
 
 
+def sentence(text: str) -> str:
+    return text if text.endswith((".", "!", "?")) else f"{text}."
+
+
 def reaching(f) -> str:
     told = [*(f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN),
             *(f"the guard {guard.name}" for guard in f.journal.agent.guards if guard.reach != Reach.MAIN)]
@@ -99,7 +99,7 @@ def reaching(f) -> str:
 
 
 def folded_parts(folded: list) -> str:
-    return "".join(f"\n## {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n" for f in folded)
+    return "".join(f"\n## {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n" for f in folded)
 
 
 def moments(whens: list[str]) -> str:
@@ -115,16 +115,16 @@ def feature_skill(f) -> str:
     folded = folded_into(f.name)
     subject_text = subject(f.name)
     when = moments([f.when, *(g.when for g in folded)])
-    loaded = f"Load it when {when}. {f.abstract}." if when else f"{f.abstract}. It runs by itself; load it to read how it works."
+    loaded = f"Load it when {when}. {sentence(f.abstract)}" if when else f"{sentence(f.abstract)} It runs by itself; load it to read how it works."
     return (head(f.name, loaded, [*f.keywords, *(w for g in folded for w in g.keywords)], nouns([f.name, *(g.name for g in folded)]))
-            + f"\n# {f.title}\n\n{f.abstract}.\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
+            + f"\n# {f.title}\n\n{sentence(f.abstract)}\n\n{f.help}\n\n{reaching(f)}\n{chr(10) + subject_text + chr(10) if subject_text else ''}{folded_parts(folded)}")
 
 
 def subject_skill(source: Path) -> str:
     folded = folded_into(source.stem)
     text = source.read_text()
-    front = re.match(r"\A---\n(.*?)\n---\n", text, re.S)
-    fields = dict(re.findall(r"^(\w+):\s*(.*)$", front.group(1), re.M))
+    front = FRONTMATTER.match(text)
+    fields = frontmatter(text)
     when = moments([g.when for g in folded])
     description = f"{fields.get('description', '')} Load it when {when}." if when else fields.get("description", "")
     keywords = [*(w.strip() for w in fields.get("keywords", "").split(",") if w.strip()), *(w for g in folded for w in g.keywords)]

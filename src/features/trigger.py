@@ -6,11 +6,14 @@ from engine.fields import Loaded
 from resources.base import names
 from engine.stored import read_json, write_json
 from engine import runtime
+from engine.memo import Memo
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES = "percent", "uses", "minutes", "idle", "worked", "start", "notices"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START, NOTICES)
-HELD: dict[str, tuple[int, "Mark"]] = {}
+HELD = Memo()
 TRIGGER = names("unit", "on", "every", "at")
+MINUTE = 60.0
+DAY = 24 * 60 * MINUTE
 
 
 @dataclass(frozen=True)
@@ -23,10 +26,9 @@ class Trigger(Loaded):
     def __bool__(self) -> bool:
         return bool(self.unit or self.on)
 
-    def spec(self) -> dict:
+    def described(self) -> dict:
         return {key: list(value) if key == TRIGGER.at else value for key, value in
                 ((TRIGGER.unit, self.unit), (TRIGGER.every, self.every), (TRIGGER.at, self.at), (TRIGGER.on, self.on)) if value}
-
 
 
 @dataclass(frozen=True)
@@ -47,9 +49,9 @@ class Mark(Loaded):
 NEVER = Trigger()
 
 
-def spec(record, name: str, default: Trigger) -> Trigger:
-    saved = record.triggers.get(name)
-    return Trigger.from_json(saved) if isinstance(saved, dict) else default
+def saved(record, name: str, default: Trigger) -> Trigger:
+    kept = record.triggers.get(name)
+    return Trigger.from_json(kept) if isinstance(kept, dict) else default
 
 
 def _file(record, session: str, name: str):
@@ -59,10 +61,11 @@ def _file(record, session: str, name: str):
 def last(record, session: str, name: str) -> Mark:
     f = str(_file(record, session, name))
     stamp = stamped(f)
-    held = HELD.get(f)
-    if not held or held[0] != stamp:
-        held = HELD[f] = (stamp, read_json(f, Mark.from_json, Mark.from_json({})))
-    return held[1]
+    return HELD.get(f, stamp, lambda: read_json(f, Mark.from_json, Mark.from_json({})))
+
+
+def held(f: str, mark: Mark) -> None:
+    HELD.put(f, stamped(f), mark)
 
 
 def stamped(f: str) -> int:
@@ -72,22 +75,21 @@ def stamped(f: str) -> int:
         return 0
 
 
-def due(record, agent, name: str, default: Trigger) -> bool:
-    s = spec(record, name, default)
-    if not s:
+def due(record, agent, name: str, cadence: Trigger) -> bool:
+    if not cadence:
         return False
     was = last(record, agent.title, name)
     observe(record, agent, name, was)
-    unit, every = s.unit if s.unit else s.on, float(s.every) if s.every else 1.0
+    unit, every = cadence.unit if cadence.unit else cadence.on, float(cadence.every) if cadence.every else 1.0
     context, uses, status, event = was.context, was.uses, was.status, was.event
-    if unit == PERCENT and s.at:
-        return any(context < mark <= float(agent.context) for mark in s.at)
+    if unit == PERCENT and cadence.at:
+        return any(context < mark <= float(agent.context) for mark in cadence.at)
     if unit == PERCENT:
         return int(float(agent.context) // every) > int(context // every)
     if unit == USES:
         return int(agent.uses) - uses >= every
     if unit == MINUTES:
-        return time.time() - was.at >= every * 60
+        return time.time() - was.at >= every * MINUTE
     if unit == IDLE:
         return agent.status == IDLE and status != IDLE
     if unit == WORKED:
@@ -99,9 +101,9 @@ def due(record, agent, name: str, default: Trigger) -> bool:
     return False
 
 
-def claimed(record, agent, name: str, spec: Trigger) -> bool:
-    first = spec.unit == USES and not last(record, agent.title, name).at
-    if not first and not due(record, agent, name, spec):
+def claimed(record, agent, name: str, cadence: Trigger) -> bool:
+    first = cadence.unit == USES and not last(record, agent.title, name).at
+    if not first and not due(record, agent, name, cadence):
         return False
     fired(record, agent, name)
     return True
@@ -111,15 +113,14 @@ def write(record, agent, name: str, **fields) -> None:
     was = last(record, agent.title, name)
     now = replace(was, **fields)
     if now != was:
-        f = _file(record, agent.title, name)
+        f = str(_file(record, agent.title, name))
         write_json(f, asdict(now))
-        HELD[str(f)] = (stamped(str(f)), now)
+        held(f, now)
 
 
 def observe(record, agent, name: str, was: Mark) -> None:
     if (was.status, was.event) != (agent.status, agent.event):
-        f = str(_file(record, agent.title, name))
-        HELD[f] = (stamped(f), replace(was, status=agent.status, event=agent.event))
+        held(str(_file(record, agent.title, name)), replace(was, status=agent.status, event=agent.event))
 
 
 def fired(record, agent, name: str) -> None:

@@ -1,18 +1,21 @@
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import CONTROLLERS, Controller
+from controllers.base import Controller, row_of
 from features.collections.resource import Collection
-from resources.base import SYSTEM, Refused
+from resources.base import Refused
+from controllers.marks import action
 
 
 class Collections(Controller):
     resource = Collection
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        if any(row["title"].lower() == title.strip().lower() for row in self.summaries() if not row["deleted"] and not row["completed"]):
+        if any(row["title"].lower() == title.strip().lower() for row in self.rows.summaries() if not row["deleted"] and not row["completed"]):
             raise Refused(f"a collection called {title.strip()!r} is already open")
         return super().create(title, abstract, brief, **data)
 
+    @action
     def add(self, n: int, refs: list[str]):
         collection = self.load(n)
         for ref in refs:
@@ -20,9 +23,11 @@ class Collections(Controller):
             collection = self.link(collection.n, ref)
         return collection
 
+    @action
     def remove(self, n: int, ref: str):
         return self.unlink(int(n), ref)
 
+    @action
     def members(self, n: int) -> list[str]:
         found = []
         collection = self.load(n)
@@ -38,10 +43,7 @@ class Collections(Controller):
         return found
 
     def _member(self, ref: str):
-        kind, _, number = ref.partition(":")
-        if kind not in CONTROLLERS or not number.isdigit():
-            raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
-        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(number)
+        row = row_of(self.record, ref)
         if row.data.get("system"):
             raise Refused(f"{ref} ships with the journal and cannot be put in a collection")
         return row

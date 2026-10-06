@@ -6,6 +6,8 @@ from engine.fields import Loaded
 from resources.base import PROJECT, SIDEBAR, USER, Resource, ResourceDetails
 from resources.shapes import NUMBER, TEXT, Field, Shape
 
+TIMEOUT = 600
+
 
 @dataclass(frozen=True)
 class Finding(Loaded):
@@ -53,6 +55,7 @@ class Check(Shape, Resource):
         Field(TEXT, name="touched"),
         Field(TEXT, name="then"),
         Field(NUMBER, default=0, name="every"),
+        Field(NUMBER, default=TIMEOUT, name="timeout"),
         Field(TEXT, name="failure"),
         Field(default=dict, name="last"),
         Field(default=dict, name="running"),
@@ -69,3 +72,6 @@ class Check(Shape, Resource):
     @property
     def last_run(self) -> CheckRun:
         return CheckRun.from_json(self.last)
+
+    def failure_title(self, headline: str) -> str:
+        return (self.failure.replace("{summary}", headline) if self.failure else f"check {self.n} failed - {headline}")[:80]

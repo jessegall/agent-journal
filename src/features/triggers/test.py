@@ -33,6 +33,12 @@ def test_a_trigger_denies_a_command_and_nudges_on_a_word():
     cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
     assert cards == [("Trigger no force pushes denied the call", "danger"), ("Trigger mind the migrations nudged the agent", "note")], \
         "each firing is marked in the chat with what it did, a deny in the danger tone"
+    Triggers(record, actor="user").create("bump the version", text="update VERSION and the changelog before tagging",
+                                          **{"words": ["tag"], "does": "instruct", "words_in": "commands"})
+    assert fired(record, "git tag v2.252.0") == "", "an instruction lets the call through"
+    assert [n for n in nudges(record) if "bump the version" in n], "and puts its instruction in front of the agent"
+    assert Agents(record, actor="system").by_session("claude-1").data["cards"][-1]["label"] == "Trigger bump the version instructed the agent", \
+        "its mark says it instructed the agent"
 
 
 def test_a_trigger_fires_on_what_the_user_writes():
@@ -50,20 +56,43 @@ def test_a_trigger_message_does_not_fire_the_trigger_again():
     report(record, "working", "PreToolUse")
     Triggers(record, actor="user").create("release reminder", brief="release checklist", **{"words": ["release"], "does": "message"})
     Messages(record, actor="user").create("release time")
-    messages = Messages(record, actor="system")._every()
+    messages = Messages(record, actor="system").rows.every()
     assert len(messages) == 2
     assert messages[-1].data["trigger"] == 1
 
 
 def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
-    from runner.hooks import displayed
+    from providers.payload import Chunk
+    from runner.chat_mirror import displayed
     from engine.sessions import Sessions
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse", provider="claude")
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     Triggers(record, actor="user").create("no greeting", text="the test word is denied", **{"words": ["hello"], "does": "deny", "words_in": "text"})
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "Hello! Ready."})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "Hello! Ready."}))
     cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
     assert (cards, [n for n in nudges(record) if "no greeting" in n] != []) == ([("Trigger no greeting caught a denied word in the agent's message", "danger")], True), \
         "a denied word in the agent's own chat is marked and the agent is told"
+
+
+def test_deleting_a_trigger_sets_the_sequences_it_starts_back_to_by_hand():
+    from features.sequences.controller import Sequences
+    record = fresh()
+    triggers = Triggers(record, actor="system")
+    sequences = Sequences(record, actor="system")
+    trigger = triggers.create("release", **{"words": ["release"], "does": "start"})
+    made = sequences.create("Release checklist", starts_on=f"trigger:{trigger.n}")
+    triggers.delete(trigger.n)
+    assert sequences.load(made.n).data["starts_on"] == "", "a sequence never points at a trigger that is gone"
+
+
+def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its_matches():
+    record = fresh()
+    triggers = Triggers(record, actor="system")
+    row = triggers.create("no force push", **{"words": ["push --force"], "does": "deny", "words_in": "commands", "text": "Never force-push."})
+    assert triggers.load(row.n).brief == "When the agent runs a command with “push --force”, block it and tell the agent “Never force-push.”", \
+        "the brief is the sentence the viewer shows"
+    triggers.fired(row.n)
+    triggers.fired(row.n)
+    assert (triggers.load(row.n).matched, bool(triggers.load(row.n).matched_at)) == (2, True), "each match is counted and dated"

@@ -67,7 +67,7 @@ export function useRevisions(resource) {
               }
             : {}
     );
-    const status = computed(() => (latest.value && open.value ? `Open for edits, kept by itself in ${minutesLeft.value} min` : ""));
+    const status = computed(() => (latest.value && open.value ? `Open for edits, it is saved as a revision in ${minutesLeft.value} min` : ""));
     const note = computed(() =>
         [
             status.value,
@@ -80,18 +80,18 @@ export function useRevisions(resource) {
     );
     const count = computed(() => numbers.value.length);
     const hidden = computed(() => Math.max(0, Math.min(at.value - WINDOW + 2, count.value - WINDOW)));
-    const shown = computed(() => Array.from({length: Math.min(WINDOW, count.value)}, (_, k) => hidden.value + k));
+    const indexes = computed(() => Array.from({length: Math.min(WINDOW, count.value)}, (_, k) => hidden.value + k));
 
     const go = (i) => (at.value = Math.max(0, Math.min(count.value - 1, i)));
 
     async function keep() {
         error.value = "";
         try {
-            await api.act("doc", resource().n, "keep");
+            await api.keepDoc(resource().n);
         } catch (e) {
             error.value = e.message;
         }
     }
 
-    return reactive({count, hidden, shown, at, changes, error, open, latest, comparing, page, parts, topChanged, status, note, go, keep});
+    return reactive({count, hidden, indexes, at, changes, error, open, latest, comparing, page, parts, topChanged, status, note, go, keep});
 }

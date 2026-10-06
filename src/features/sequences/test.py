@@ -6,21 +6,21 @@ from tests.kit import Nudges, nudges, report
 
 
 def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
-    from features.sequences.shipped import SHIPPED, ship
+    from features.sequences.shipped import ship, shipped_sequences
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
-    assert (ship(record), ship(record)) == ([shipped.title for shipped in SHIPPED], []), "shipped once, never twice"
+    assert (ship(record), ship(record)) == ([shipped.title for shipped in shipped_sequences()], []), "shipped once, never twice"
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    filing = next(r for r in sequences.summaries() if r["title"] == "Filing a dump")
+    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Sort dumped files")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     steps = lambda: [n for n in nudges(record) if n.startswith(f"sequence {filing['n']}")]
-    assert steps() == [f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything"], "a dump starts the sequence about it"
+    assert steps() == [f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file"], "a dump starts the sequence about it"
     handed = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {filing['n']}"))
     assert f"journal dump items {dump.n}" in handed and "<dump n>" not in handed, "the step names the dump it is about"
     sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
-    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 2 of 3 - File by subject", "done hands the next step"
+    assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 2 of 3 - File each subject", "done hands the next step"
     sequences.follow(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
     sequences.follow(filing["n"], about=dump.ref)
@@ -29,24 +29,24 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     cards = CONTROLLERS["agent"](record).primary().data["cards"]
     marks = [(c["label"], c["color"]) for c in cards]
     assert [label for label, _ in marks] == ["Sequence started", "Sequence moved on", "Sequence moved on", "Sequence finished"] \
-        and {c for _, c in marks} == {"#a78bfa"} and all(c["detail"].startswith("Filing a dump") for c in cards), \
+        and {c for _, c in marks} == {"#a78bfa"} and all(c["detail"].startswith("Sort dumped files") for c in cards), \
         f"the chat shows a violet mark for a shipped sequence as it starts, moves on and finishes, its name under it: {marks}"
     first = CONTROLLERS["dump"](record, actor=USER).create("Planning", brief="notes")
     second = CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
-    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 5, \
+    assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file" and len(steps()) == 5, \
         "a run started while another runs is handed at once, like a call"
     for _ in range(3):
         sequences.follow(filing["n"], about=second.ref)
         sequences.next(filing["n"], about=second.ref)
-    assert len(steps()) == 8 and steps()[-1].endswith("step 1 of 3 - Read everything"), "when the inner run ends, the one it interrupted is handed its step again"
+    assert len(steps()) == 8 and steps()[-1].endswith("step 1 of 3 - Read each file"), "when the inner run ends, the one it interrupted is handed its step again"
     report(record, "idle", "Stop")
-    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Filing a dump, is still at step 1 of 3 - carry on with it"], \
+    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Sort dumped files, is still at step 1 of 3 - carry on with it"], \
         "stopping with a run unfinished earns a reminder"
     review = next(key for key in sequences.load(filing["n"]).runs).split("|", 1)[1]
     assert "never taken up" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
         "a step never taken up cannot be given up"
     sequences.follow(filing["n"], about=review)
-    assert "skips Read everything; File by subject" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
+    assert "skips Read each file; File each subject" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
         "abandoning names the steps it would skip"
     sequences.abandon(filing["n"], about=review, why="the dump was a duplicate", sure=True)
     assert (sequences.load(filing["n"]).runs, sequences.load(filing["n"]).data["abandoned"][-1]["why"]) == ({}, "the dump was a duplicate"), \
@@ -107,7 +107,7 @@ def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
     agents.by_session("holder")
     agents.by_session("newer")
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    filing = next(r for r in sequences.summaries() if r["title"] == "Filing a dump")
+    filing = next(r for r in sequences.rows.summaries() if r["title"] == "Sort dumped files")
     CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing['n']}")]
     assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
@@ -126,7 +126,7 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     sequences.run(made.n)
     key = next(iter(sequences.load(made.n).runs))
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 600}})
-    late = lambda: [n for n in nudges(record) if "how is it going" in n]
+    late = lambda: [n for n in nudges(record) if "is still at step" in n]
     tick(record)
     assert len(late()) == 1, "a step handed ten minutes ago is called late"
     sequences.follow(made.n)
@@ -153,28 +153,28 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     report(record, "working", "PreToolUse")
     ship(record)
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    titled = lambda title: sequences.load(next(r["n"] for r in sequences.summaries() if r["title"] == title))
-    closing = [s["title"] for s in sequences._steps(titled("Finishing what you wrote"))]
-    assert [s["title"] for s in sequences._steps(titled("Writing a report"))] == ["Lay out the parts", "Write each part", *closing], \
+    titled = lambda title: sequences.load(next(r["n"] for r in sequences.rows.summaries() if r["title"] == title))
+    closing = [s["title"] for s in sequences.steps_of(titled("Filing and sharing a document or report"))]
+    assert [s["title"] for s in sequences.steps_of(titled("Writing a report"))] == ["Add the report’s section headings", "Write the report’s sections", *closing], \
         "a shipped sequence reuses the closing steps it shares"
     written = record.root / "written.md"
     written.write_text("# Routes\nHow routes are planned.\n\n## Stops\nEvery stop has a window.\n\n## Drivers\nOne van each.\n")
     filed = CONTROLLERS["doc"](record, actor=AGENT).file("Route planning", str(written))
     assert (filed.brief, [s["title"] for s in filed.sections]) == ("How routes are planned.", ["Stops", "Drivers"]), "a written text is filed whole, a chapter per heading"
     about = sequences._key(f"doc:{filed.n}")
-    assert about in titled("Filing a written document").runs and about not in titled("Writing a document").runs, \
+    assert about in titled("Filing a document that is already written").runs and about not in titled("Writing a document").runs, \
         "a document filed whole goes straight to the closing steps"
-    sequences.follow(titled("Filing a written document").n, f"doc:{filed.n}")
-    sequences.abandon(titled("Filing a written document").n, f"doc:{filed.n}", "checked", sure=True)
+    sequences.follow(titled("Filing a document that is already written").n, f"doc:{filed.n}")
+    sequences.abandon(titled("Filing a document that is already written").n, f"doc:{filed.n}", "checked", sure=True)
     plain = sequences._key(f"doc:{CONTROLLERS['doc'](record, actor=AGENT).create('Depot hours').n}")
-    assert plain in titled("Writing a document").runs and plain not in titled("Filing a written document").runs, "a document begun empty is written chapter by chapter"
+    assert plain in titled("Writing a document").runs and plain not in titled("Filing a document that is already written").runs, "a document begun empty is written chapter by chapter"
     base = sequences.create("Base")
     for step in ("one", "two", "three"):
         sequences.section(base.n, step, f"do {step}")
     outer = sequences.create("Outer")
     sequences.section(outer.n, "start", "begin")
     sequences.include(outer.n, base.n, steps="2-3")
-    assert [s["title"] for s in sequences._steps(sequences.load(outer.n))] == ["start", "two", "three"], "a range includes those steps"
+    assert [s["title"] for s in sequences.steps_of(sequences.load(outer.n))] == ["start", "two", "three"], "a range includes those steps"
     assert "never end" in refused(lambda: sequences.include(base.n, outer.n)), "including back would loop"
     sequences.run(outer.n)
     sequences.follow(outer.n)
@@ -240,17 +240,28 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     sequences.section(made.n, "First", "do the first")
     sequences.section(made.n, "Second", "do the second")
     sequences.run(made.n)
-    call = lambda command: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
-    refused = lambda command: str(handle(claude, record.root, record.env, call(command)).get("reason", ""))
-    assert "take it up with journal sequence follow" in refused("journal todo create 'other work'"), "a journal write waits for the step"
-    assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal todo create 'other work'"), \
+    uses = iter(range(100))
+    call = lambda command, use: {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PreToolUse", "tool_use_id": use}
+    refused = lambda command, use=None: str(handle(claude, record.root, record.env, call(command, use or f"use-{next(uses)}")).get("reason", ""))
+    assert "take it up with journal sequence follow" in refused("journal work start 'other work'"), "a journal write waits for the step"
+    assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal work start 'other work'"), \
         "a write on a later line of the same command waits too, whatever else the command does"
     assert "take it up" not in refused(f"journal sequence follow {made.n}; journal plan progress 3; journal todo all"), \
         "reading the journal is never held, so the step can be taken up alongside a read"
-    assert "take it up" not in refused(f"journal sequence follow {made.n}") and "take it up" not in refused("journal message reply 3 'on it'"), \
-        "taking the step up and answering the user are never held"
+    assert not any("take it up" in refused(line) for line in (f"journal sequence follow {made.n}", "journal message reply 3 'on it'", "journal todo create 'other work'")), \
+        "taking the step up, answering the user and filing a to-do are never held"
+    assert all("take it up" in refused(line) for line in ("journal message reply 3 a#; journal work start 'other work'", "journal --env other todo create other",
+                                                          "journal todo create other --session other", "journal --en other todo create other",
+                                                          "journal --ro /tmp/other todo create other", "journal --plugin x todo create other")), \
+        "a '#' inside a word hides nothing, and a line naming its own environment, root, session or plugin, even abbreviated, is held"
+    assert "ran" not in refused("/tmp/journal message reply 3 x; journal work start 'other work'"), "only the bare journal command runs, never another program by that name"
+    mixed = lambda: refused("journal todo create filed; journal work start 'other work'", "use-mixed")
+    first, again = mixed(), mixed()
+    assert "take it up" in first and "ran, so do not run them again: journal todo create filed" in first and "did not run either: journal work start 'other work'" in first, first
+    assert [row.title for row in CONTROLLERS["todo"](record, actor=AGENT).all()].count("filed") == 1 and "do not run them again" in again, \
+        "the filing command of a refused line runs once, however often the same tool call's hook arrives"
     sequences.follow(made.n)
-    assert "take it up" not in refused("journal todo create 'other work'"), "once taken up, journal commands go through"
+    assert "take it up" not in refused("journal work start 'other work'"), "once taken up, journal commands go through"
 
 
 def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked():
@@ -265,7 +276,7 @@ def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked()
     sequences.section(made.n, "Second", "do the second")
     sequences.run(made.n)
     key = next(iter(sequences.load(made.n).runs))
-    late = lambda: [n for n in nudges(record) if "how is it going" in n]
+    late = lambda: [n for n in nudges(record) if "is still at step" in n]
     CONTROLLERS["question"](record, actor=AGENT).create("Which colour for the button?")
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 90}})
     tick(record)
@@ -300,7 +311,44 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
     first, second = messages.create("give me the tldr"), messages.create("tldr again please")
     runs = sequences.load(update.n).runs
     assert sorted(key.split("|", 1)[1] for key in runs) == [first.ref, second.ref], "each message that fires the trigger gets a run of its own"
-    assert sequences._in_hand()[1].endswith(second.ref), "the newest run is the one in hand"
+    assert sequences.in_hand()[1].endswith(second.ref), "the newest run is the one in hand"
     CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(update.n, about=second.ref, why="asked twice")
-    assert sequences._in_hand()[1].endswith(first.ref) and "followed" not in sequences._in_hand()[2], \
+    assert sequences.in_hand()[1].endswith(first.ref) and "followed" not in sequences.in_hand()[2], \
         "when the inner run ends, the one it interrupted is handed again, to be taken up anew"
+
+    todos = CONTROLLERS["todo"]
+    watching = sequences.create("Watching todos", starts_on="todo.created", started_by="user", unless={"assigned": "bot"})
+    sequences.section(watching.n, "Look at <ref>", "journal todo show <todo n> then <ref n> as <type>, <this sequence>")
+    started = lambda: sorted(sequences.load(watching.n).runs)
+    todos(record, actor=AGENT).create("by the agent")
+    assert started() == [], "a sequence for what the user made does not start on a row the agent made"
+    todos(record, actor=USER).create("assigned to a bot", assigned="bot")
+    assert started() == [], "a row matching its unless is left alone"
+    own = todos(record, actor=USER).create("by the user")
+    assert [key.split("|", 1)[1] for key in started()] == [own.ref], "a row of the user's that matches no unless starts it, about that row"
+    step = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {watching.n}"))
+    assert f"journal todo show {own.n} then {own.n} as todo, {watching.n}" in step, "the step fills in the row it is about"
+    todos(record, actor=SYSTEM).delete(own.n)
+    assert started() == [], "a run ends with the row it is about"
+
+    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(update.n, about=first.ref, why="done")
+    idle = sequences.create("Only when idle", starts_on="todo.created", only_when_idle=True)
+    sequences.section(idle.n, "Idle step", "do it")
+    busy = sequences.create("Busy", brief="in hand")
+    sequences.section(busy.n, "Hold", "hold")
+    sequences.run(busy.n)
+    todos(record, actor=AGENT).create("while busy")
+    assert sequences.load(idle.n).runs == {}, "a sequence that starts only when idle waits while another is in hand"
+    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(busy.n, why="done")
+    todos(record, actor=AGENT).create("when idle")
+    assert len(sequences.load(idle.n).runs) == 1, "and starts once nothing is in hand"
+
+    from engine.sessions import Sessions
+    dispatching = sequences.create("Dispatching", dispatch="filler")
+    sequences.section(dispatching.n, "Fill <board n>", "fill it")
+    sequences.run(dispatching.n, about="board:3")
+    assert ("board 3 waits for the filler (a new request) - dispatch it now" in nudges(record), Sessions(record.root).granted("claude-1", record.env)) == (True, True), \
+        "a sequence that dispatches tells the working agent to dispatch, about the board, and lends it the environment"
+    asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3")
+    CONTROLLERS["question"](record, actor=USER).complete(asked.n, how="the first")
+    assert f"board 3 waits for the filler (question {asked.n} answered - the first) - dispatch it now" in nudges(record), "an answer to a question about the board dispatches it again"

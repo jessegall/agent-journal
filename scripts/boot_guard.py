@@ -57,7 +57,7 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
     assert not left, f"journal {name} left processes running after the session ended:\n" + "\n".join(left)
 
 
-def lingering(place: Path, within: float = 3.0) -> list[str]:
+def lingering(place: Path, within: float = 10.0) -> list[str]:
     began = time.time()
     while True:
         found = subprocess.run(["pgrep", "-fl", str(place).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.splitlines()

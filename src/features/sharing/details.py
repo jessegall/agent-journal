@@ -1,9 +1,14 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
+from features.groups import Group
 
+
+ANSWERED, ALLOWED, HOST_DOWN, RESTARTED = "answered", "allowed", "host down", "restarted"
 
 class SharingDetails(FeatureDetails):
+    explains = 'The journal can make a private link to a document, report, collection, or plan. You can send that link to someone outside the journal.'
     name = "sharing"
+    group = Group.SHARING
     when = "the user wants to show a document, a report, a collection or a plan to someone outside the journal"
 
     title = "Sharing"
@@ -58,6 +63,29 @@ class SharingDetails(FeatureDetails):
             title="You read a visitor's comment {{comments}}",
             brief='nothing else runs until you agree, for each: journal share agree <n> "{{words}}" - then act only on the user\'s own word',
         ),
+        Line(
+            name=ANSWERED,
+            while_waiting=True,
+            title="{{name}} answered your question in comment {{n}}: {{choice}}",
+            brief="they picked it on the shared page; carry on with that answer",
+        ),
+        Line(
+            name=ALLOWED,
+            while_waiting=True,
+            title="the user let you act on comment {{n}} from {{visitor}}",
+            brief="read it with journal comment show {{n}} and act on it as the user's own request",
+        ),
+        Line(
+            name=HOST_DOWN,
+            while_waiting=True,
+            title="the tunnel server {{host}} answers for no address",
+            brief="the phone's address and share links are down until it is back; restarting here would not help, so nothing is restarted. Tell the user once.",
+        ),
+        Line(
+            name=RESTARTED,
+            while_waiting=True,
+            title="the phone's address did not answer {{misses}} times, so its {{part}} was restarted",
+        ),
     ]
 
     settings = [
@@ -65,6 +93,6 @@ class SharingDetails(FeatureDetails):
             name="host",
             default="",
             title="Tunler server",
-            abstract="The tunler server shares go out through, and tunler is installed from; the same one tunler login uses on this machine",
+            hidden=True,
         ),
     ]

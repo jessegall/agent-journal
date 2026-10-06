@@ -1,16 +1,20 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.groups import Group
 
 
-class FaultsDetails(FeatureDetails):
+class DevFaultsDetails(FeatureDetails):
+    explains = 'The journal records developer errors and tells the agent what failed. You can inspect the error report.'
     name = "dev_faults"
+    group = Group.DEVELOPER
+    label = "Report developer errors"
     has_skill = False
 
-    title = "Developer fault reports"
+    title = "Developer error reports"
 
 
     abstract = """
-        While developing, what would otherwise pass in silence is reported: anything local that
-        runs past its budget, and any error the viewer throws
+        While you work on the journal, it reports what would otherwise go unnoticed: anything slower
+        than its time limit, and errors the viewer throws.
     """
 
     help = """
@@ -31,18 +35,16 @@ class FaultsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="budget",
-            title="Report anything slower than its budget",
-            abstract="Fifty milliseconds for a request, a hook or a command",
+            title="Report anything slower than its time limit",
         ),
         Behaviour(
             name="console",
-            title="Report what the viewer throws",
-            abstract="An error in the client's console is filed and said to the agent",
+            title="Report errors the viewer throws",
         ),
         Behaviour(
             name="log",
-            title="Keep a diagnostic log",
-            abstract="Slow requests and errors are written to .journal/runtime/diagnostics.log while this is on",
+            title="Write a diagnostic log",
+            abstract=".journal/runtime/diagnostics.log",
             default=False,
         ),
     ]

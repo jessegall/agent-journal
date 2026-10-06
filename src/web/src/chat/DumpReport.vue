@@ -30,7 +30,7 @@ const emit = defineEmits(["take", "leave"]);
             <p class="dump-report-note">Writing a summary of what was filed…</p>
         </template>
         <template v-else>
-            <p class="dump-report-note">Nothing was planned or started. Ask about any of it on the left.</p>
+            <p class="dump-report-note">Nothing was planned or started. Ask about any of it in the files on the left.</p>
         </template>
         <template v-for="s in suggestions" :key="s.pick">
             <div :class="['dump-report-sugg', s.state]">
@@ -47,7 +47,7 @@ const emit = defineEmits(["take", "leave"]);
                     </template>
                     <template #default>
                         <span class="dump-report-btns">
-                            <Btn kind="primary" small :busy="s.busy" @click="emit('take', s.pick)">{{ s.ask ? s.label : "Do it" }}</Btn>
+                            <Btn kind="primary" small :busy="s.busy" @click="emit('take', s.pick)">{{ s.ask ? s.label : "Yes, do it" }}</Btn>
                             <Btn small @click="emit('leave', s.pick)">Not now</Btn>
                         </span>
                     </template>

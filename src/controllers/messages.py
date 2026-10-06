@@ -1,7 +1,8 @@
 from controllers.base import Controller, CONTROLLERS
 from resources import types
-from resources.base import AGENT, Refused, titled
+from resources.base import AGENT, USER, Refused, titled
 from controllers.comments import Comments
+from controllers.marks import action
 
 
 def only_emoji(text: str) -> bool:
@@ -12,21 +13,33 @@ def only_emoji(text: str) -> bool:
 class Messages(Controller):
     resource = types.Message
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         with self.record.locked():
             key = data.get(types.Message.idempotency, "")
             if key:
-                existing = next((row["n"] for row in self.summaries() if row.get(types.Message.idempotency) == key), None)
+                existing = next((row["n"] for row in self.rows.summaries() if row.get(types.Message.idempotency) == key), None)
                 if existing:
                     return self.load(existing)
             return super().create(title, abstract, brief, **data)
 
+    @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
 
-    def waiting(self) -> list:
-        return [m for m in self._standing() if m.seen[:1] != [AGENT]]
+    def _imported(self, turns: list[tuple[str, str, float]], outcome: str) -> None:
+        with self.record.locked():
+            n = (self.rows.numbers() or [0])[-1]
+            for actor, text, at in turns:
+                n += 1
+                self.rows.write_file(self.resource(n=n, title=titled(text.strip().splitlines()[0]), brief=text, seen=[actor, USER if actor == AGENT else AGENT],
+                                               created=at, updated=at, completed=at, outcome=outcome))
 
+    @action
+    def waiting(self) -> list:
+        return [m for m in self.rows.standing() if m.author != AGENT]
+
+    @action
     def file(self, n: int, name: str, into: str = "keep"):
         r = self.load(n)
         if name not in r.files:
@@ -40,9 +53,11 @@ class Messages(Controller):
         r.files[name] = f"filed into {kind} {num}"
         return self.save(r, "updated", filed=name, into=into)
 
+    @action
     def archive(self, n: int, why: str):
         return self.delete(n, why)
 
+    @action
     def process(self, n: int, part: str, result: str):
         r = self.load(n)
         if part not in r.title and part not in r.brief:
@@ -52,6 +67,7 @@ class Messages(Controller):
                 self.link(n, f"{kind}:{int(num)}")
         return self.section(n, part, result)
 
+    @action
     def reply(self, n: str, text: str, file: str = ""):
         numbers = [int(part) for part in str(n).replace(",", " ").split()]
         if not numbers:
@@ -63,7 +79,7 @@ class Messages(Controller):
         made = self.comment(numbers[0], f"{quoted}\n\n{text}" if quoted and not text.startswith(">") else text)
         for number in numbers[1:]:
             Comments(self.record, actor=self.actor).link(made.n, f"message:{number}")
-            self.save(self.load(number), "commented", comment=made.n)
+            self._mark_commented(number, made)
         if file:
             Comments(self.record, actor=self.actor).attach(made.n, file)
         return made
@@ -75,11 +91,13 @@ class Messages(Controller):
         body = "\n".join(lines).strip()
         return f"> {body.replace(chr(10), chr(10) + '> ')}" if body else ""
 
+    @action
     def edit(self, n: int, text: str):
         r = self.load(n)
         if AGENT in r.seen and self.actor != AGENT:
             self._refuse(f"message {n} has been read: leave a new one")
         return self.update(n, brief=text)
 
+    @action
     def declare(self, n: int, kind: str):
         return self.update(n, kind=kind)

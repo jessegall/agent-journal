@@ -1,5 +1,11 @@
 <script setup>
-import {DEFAULT_HIDDEN} from "../domain/chatShown.js";
+import {openQuestion, questionView, updateView} from "../state/overlays.js";
+import {agent} from "../composables/leadAgent.js";
+import {feedOn} from "../composables/settings.js";
+import {store} from "../state/store.js";
+import {cardPlan} from "../domain/plans.js";
+import {waitsFor} from "../domain/agentState.js";
+import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
@@ -12,10 +18,6 @@ import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
-import {agent, feedOn, store} from "../state/store.js";
-import {cardPlan, waitsFor} from "../layout/statusline.js";
-import {polled} from "../sync/polled.js";
-import {earlier, paging} from "../sync/rows.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
@@ -23,19 +25,14 @@ import UpdateOverlay from "./UpdateOverlay.vue";
 import ReportDock from "./ReportDock.vue";
 import DumpDock from "./DumpDock.vue";
 import {dockedDump, dockedReport} from "../domain/docks.js";
-import {updateView} from "./updateView.js";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {openQuestion, questionView} from "./questionView.js";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
-import {usePoll} from "../poll.js";
 import {tellExtension} from "../platform/extension.js";
-import {flash} from "../platform/visibility.js";
-
-usePoll(...polled.agents);
+import {ui} from "../state/ui.js";
 
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
@@ -59,6 +56,11 @@ const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
 const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(owner.value));
 const feedKey = computed(() => (owner.value ? `${owner.value.n}:${owner.value.data.transcript}` : ""));
 const quote = ref({text: "", ref: ""});
+watch(
+    () => store.quoting,
+    (asked) => asked && ((quote.value = asked), (store.quoting = null)),
+    {immediate: true}
+);
 const editing = ref(null);
 const pageTools = chatOnly
     ? [
@@ -71,7 +73,7 @@ const dumpFiling = computed(() => dumps.value.filter((d) => !d.completed).sort((
 
 function openDump(n = 0) {
     store.pane = "chat";
-    store.dumpShown = n;
+    store.dumpSelected = n;
     store.dumping = true;
 }
 
@@ -79,14 +81,14 @@ const composeTools = pageTools;
 const dumpIdle = computed(() => ({
     icon: "inbox",
     label: dumpFiling.value ? `Dump ${dumpFiling.value.n} · filing` : "Dump files",
-    title: "Throw in a pile of files and notes: the agent sorts them by subject and files them into a collection",
+    title: "Add many files and notes at once. The agent sorts them by subject and files them into a collection",
     go: () => openDump(dumpFiling.value?.n || 0),
 }));
 const dumpOffer = {
     icon: "inbox",
-    title: (n) => `${n} files. Dump them instead?`,
-    text: "The dump reads them together and files each subject as its own document with a proper name, in a new collection you can remove in one step.",
-    action: "Dump them",
+    title: (n) => `${n} files. Send as a dump instead?`,
+    text: "The agent reads them together and files each subject as its own document with a proper name, in a new collection you can remove in one step.",
+    action: "Send as a dump",
     take: (files) => {
         store.dumpFiles = files;
         openDump(0);
@@ -125,7 +127,7 @@ const PLAN_SETTLE = 180;
 const PLAN_MOVE = 500;
 const NEWEST_AFTER = 1000;
 const NEWEST_AFTER_BOTTOM = 2000;
-const newestShown = ref(false);
+const newestVisible = ref(false);
 let newestTimer = 0;
 let leftBottomAt = 0;
 const short = ref(false);
@@ -154,10 +156,10 @@ let prepending = false;
 
 async function older() {
     const s = scroller.value;
-    if (!here || !ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
+    if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
     prepending = true;
     try {
-        await keepingPlace(scroller, () => earlier("message", "comment"));
+        await keepingPlace(scroller, () => scope.earlier("message", "comment"));
     } finally {
         prepending = false;
     }
@@ -205,12 +207,12 @@ const thread = computed(() => {
         },
         pending.value,
         scope.env || route.value.env,
-        here && !!paging.more.message,
+        here && !!store.paging.more.message,
         props.hidden
     );
-    made.keys.forEach((placeholder, ref) => link(ref, placeholder));
     return made;
 });
+watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
 watch(turns, keep);
 
@@ -229,7 +231,7 @@ function toBottom(smooth = false) {
 }
 
 watch(
-    () => flash.at,
+    () => ui.flash.at,
     () => nextTick(() => toBottom(settledOnce.value))
 );
 
@@ -310,12 +312,12 @@ watch(planOpen, (open) => open && holdBottom());
 watch(away, (now) => {
     clearTimeout(newestTimer);
     if (!now) {
-        newestShown.value = false;
+        newestVisible.value = false;
         leftBottomAt = Date.now();
         return;
     }
     const wait = Date.now() - leftBottomAt < NEWEST_AFTER_BOTTOM ? NEWEST_AFTER_BOTTOM : NEWEST_AFTER;
-    newestTimer = setTimeout(() => (newestShown.value = away.value), wait);
+    newestTimer = setTimeout(() => (newestVisible.value = away.value), wait);
 });
 
 function holdBottom() {
@@ -344,12 +346,13 @@ function watchScroll() {
 
 async function post(text, files) {
     if (editing.value) {
-        await scope.api.act("message", editing.value.n, "edit", {text: withQuote(editing.value.quote, text)});
+        await scope.api.editMessage(editing.value.n, withQuote(editing.value.quote, text));
         editing.value = null;
         return;
     }
-    const body = withQuote(quote.value.text, text);
-    const about = quote.value.ref || undefined;
+    const replying = quote.value;
+    const body = withQuote(replying.text, text);
+    const about = replying.ref || undefined;
     quote.value = {text: "", ref: ""};
     const id = token();
     const placeholder = await promised(body, files, id);
@@ -359,6 +362,7 @@ async function post(text, files) {
         await sendMessage(scope.env || route.value.env, {brief: body, about}, files, id);
     } catch (e) {
         drop(placeholder);
+        if (!quote.value.ref && !quote.value.text) quote.value = replying;
         throw e;
     }
     await nextTick();
@@ -428,19 +432,19 @@ watch(
         <template v-if="questionView.n && questionView.owner === threadRoot">
             <QuestionOverlay :key="questionView.n" />
         </template>
-        <template v-if="updateView.n && threadRoot?.contains(updateView.from)">
+        <template v-if="updateView.n && threadRoot?.contains(updateView.owner)">
             <UpdateOverlay :key="updateView.n" />
         </template>
         <template v-if="chatOpen">
             <div :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
-                        v-if="away && newestShown"
+                        v-if="away && newestVisible"
                         type="button"
                         :class="['thread-down', {'over-docks': dockCount}]"
                         :style="{'--docks': dockCount}"
                         :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
-                        @click="toBottom"
+                        @click="toBottom()"
                     >
                         <Icon name="down" />
                         {{ missed ? `${missed} new` : "Newest" }}

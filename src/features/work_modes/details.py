@@ -1,10 +1,24 @@
 from features.base import FeatureDetails, Line
 from features.settings import Setting
-from features.work_modes.modes import BUILDER, NAME
+from features.groups import Group
+
+NAME = "work_modes"
+BUILDER, ORCHESTRATOR, SOLO = "builder", "orchestrator", "solo"
+MODES = {
+    BUILDER: "you do the work yourself and send helpers or subagents when a job is better done beside you",
+    ORCHESTRATOR: "you plan, send helpers and subagents to do the work, review what they bring back and merge it; "
+                  "you write code yourself only for reviews and small fixes",
+    SOLO: "you do all the work yourself: no subagents and no helpers",
+}
+MODE_SET = "mode set"
 
 
 class WorkModesDetails(FeatureDetails):
+    explains = 'You choose whether the agent builds the work, coordinates helpers, or works alone. The journal tells it when that choice changes.'
     name = NAME
+    group = Group.AGENT
+    label = "Work modes"
+    position = 2
     has_skill = False
 
     title = "Work modes"
@@ -27,17 +41,24 @@ class WorkModesDetails(FeatureDetails):
         Setting(
             name="mode",
             default=BUILDER,
-            title="How the agent works: builder, orchestrator or solo",
+            title="Mode",
+            choices=tuple(MODES),
         ),
         Setting(
             name="drift_after",
             default=8,
-            title="In orchestrator mode, remind the agent after this many of its own file edits",
+            title="Remind a coordinating agent after this many of its own edits",
             unit="edits",
         ),
     ]
 
     lines = [
+        Line(
+            name=MODE_SET,
+            while_waiting=True,
+            title="the user set the work mode to {{mode}}",
+            brief="From now on {{meaning}}.",
+        ),
         Line(
             name="drifted",
             title="You are the orchestrator here and have made {{edits}} edits yourself: send a helper for the rest, and keep your own edits to reviews and small fixes.",

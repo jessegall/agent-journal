@@ -1,9 +1,13 @@
 from features.base import Behaviour, FeatureDetails, Line, Setting
 from features.trigger import MINUTES, Trigger
+from features.groups import Group
 
 
 class TicketsDetails(FeatureDetails):
+    explains = 'A ticket gives one piece of board work its own environment and agent. You can review its plan and result.'
     name = "tickets"
+    group = Group.TICKETS
+    trigger_label = "Check the tickets"
     when = "work is put on a board, arrives from an outside source, or a ticket is started"
 
     title = "Tickets"
@@ -44,19 +48,6 @@ class TicketsDetails(FeatureDetails):
 
     lines = [
         Line(
-            name="plan_checkpoint",
-            reply_kept=True,
-            while_waiting=True,
-            title="the plan of ticket {{ticket}}, {{title}}, stopped at a checkpoint",
-            brief="read where it stands with journal --env {{env}} plan progress {{plan}}; when the phase before it is done as it should be, "
-                  "let it go on with journal ticket continue_plan {{ticket}}, otherwise tell its agent what to fix first",
-        ),
-        Line(
-            name="ticket_attention",
-            title="ticket {{ticket}}, {{title}}, needs a look - {{reason}}",
-            brief="journal ticket screen {{ticket}} shows what its terminal says; unstick it with journal ticket tell {{ticket}} \"<what to do>\", or restart it with journal ticket stop {{ticket}} then journal ticket start {{ticket}}",
-        ),
-        Line(
             name="ticket_restarted",
             title="ticket {{ticket}}, {{title}}, had lost its agent and was started again",
             brief="it carries on in its conversation; if it stops again you are told instead",
@@ -88,12 +79,6 @@ class TicketsDetails(FeatureDetails):
             brief="read the rest in its chat (journal ticket screen {{ticket}}) and carry on",
         ),
         Line(
-            name="ticket_plan_done",
-            while_waiting=True,
-            title="ticket {{ticket}}, {{title}}, finished its plan with a clean worktree, {{ahead}} commits ahead",
-            brief="review what it did against its card, then merge it with journal ticket merge {{ticket}}",
-        ),
-        Line(
             name="orchestrator_accepts_waits",
             reply_kept=True,
             while_waiting=True,
@@ -109,33 +94,27 @@ class TicketsDetails(FeatureDetails):
             brief="when it is work the board should do, confirm it with journal ticket confirm {{ticket}} --why \"<reason>\"; otherwise "
                   "leave it for the user",
         ),
-        Line(
-            name="plan_waits",
-            while_waiting=True,
-            title="the plan of ticket {{ticket}}, {{title}}, waits for your approval",
-            brief="{{review}} When it does the ticket and nothing more, approve it with journal ticket approve_plan {{ticket}}; "
-                  "otherwise say what must change with journal ticket tell {{ticket}} \"<the change>\"",
-        ),
     ]
 
     behaviours = [
-        Behaviour(name="asks", title="Remind the orchestrator of a ticket agent's open question", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="awaits", title="Remind the orchestrator of a ticket agent waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="decisions", title="Remind the orchestrator of waits and drafts it may decide", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="board check", title="Ask an idle orchestrator to check on its boards", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="asks", title="Remind the board's agent of a ticket's open question", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="awaits", title="Remind the board's agent of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="decisions", title="Remind the board's agent of decisions it can make itself", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="board check", title="Ask an idle board agent to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
     ]
 
     settings = [
         Setting(
             name="remind_every",
             default=5,
-            title="Tell the orchestrator again that a ticket's plan is done every",
+            title="Remind the board's agent that a ticket's plan is done, every",
             unit="minutes",
         ),
         Setting(
             name="running",
             default=3,
-            title="Tickets whose agents run at once, 0 for no limit",
+            title="Tickets running at once",
+            abstract="0 means no limit",
             unit="tickets",
         ),
     ]

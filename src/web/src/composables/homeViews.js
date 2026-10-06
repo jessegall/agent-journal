@@ -1,17 +1,18 @@
+import {feedOn} from "./settings.js";
+import {meta, types} from "../domain/spec.js";
 import {computed} from "vue";
 import {open, unreadByUser} from "../domain/records.js";
 import {VIEWS} from "../domain/panes.js";
-import {feedOn, meta, types} from "../state/store.js";
 
 const OWN_TABS = ["question", "suggestion"];
 
 export function useHomeViews() {
     const views = computed(() => ({
         chat: {title: "Chat", icon: "chat", all: {page: "message", label: "View all messages"}},
-        feed: {title: "File feed", icon: "edits", canFlush: true},
+        feed: {title: "File edits", icon: "edits", canFlush: true},
         terminal: {title: "Terminal", icon: "terminal"},
         family: {title: "Agent family tree", icon: "family"},
-        agents: {title: "Agents at work", icon: "agents"},
+        agents: {title: "Agents", icon: "agents"},
         waiting: {
             title: "Notifications",
             icon: "bell",

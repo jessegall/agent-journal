@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Agents
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceCreated
 from features.memory_checkpoints.reread import owed
@@ -31,7 +31,7 @@ class MarkWhatWasKept(Handler):
     def handle(self, context: Context, event: ResourceCreated) -> None:
         if event.type not in MARKED or event.actor != AGENT:
             return
-        agents = context.journal.acting(SYSTEM).agents
+        agents = context.journal.acting(SYSTEM).get(Agents)
         row, kept = agents.primary(), CONTROLLERS[event.type](context.record, actor=SYSTEM).load(event.n)
         if row:
             agents.card(row.n, label=MARKED[event.type], icon=TYPES[event.type].icon, detail=kept.title, ref=kept.ref)

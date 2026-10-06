@@ -1,6 +1,6 @@
 <script setup>
 import HandledNote from "../kit/HandledNote.vue";
-import CommentByline from "./CommentByline.vue";
+import Byline from "../kit/Byline.vue";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import {useScope} from "../composables/scope.js";
 import Btn from "../kit/Btn.vue";
@@ -10,7 +10,7 @@ import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
-import {markPassage, passageIn} from "../composables/passage.js";
+import {markPassage, passageIn} from "../platform/passage.js";
 import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
 
@@ -59,8 +59,8 @@ watch([() => props.focus, thread], focusComment, {immediate: true, flush: "post"
 
 const page = () => list.value?.closest(".document")?.querySelector(".document-body");
 const HOVERED = "comment-passage";
-const SHOWN = "comment-passage-shown";
-const SHOWN_FOR = 2400;
+const MARKED = "comment-passage-marked";
+const MARKED_FOR = 2400;
 
 function hover(c) {
     markPassage(HOVERED, c && c.quote ? passageIn(page(), c.quote) : null);
@@ -73,8 +73,8 @@ async function show(c) {
     at.closest(".folded-body")?.dispatchEvent(new Event("reveal"));
     await nextTick();
     at.scrollIntoView({behavior: "smooth", block: "center"});
-    markPassage(SHOWN, range);
-    setTimeout(() => markPassage(SHOWN, null), SHOWN_FOR);
+    markPassage(MARKED, range);
+    setTimeout(() => markPassage(MARKED, null), MARKED_FOR);
 }
 
 const editing = reactive({n: 0, text: "", error: ""});
@@ -86,7 +86,7 @@ function edit(c) {
 async function save() {
     editing.error = "";
     try {
-        await scope.api.act("comment", editing.n, "update", {brief: editing.text.trim()});
+        await scope.api.updateComment(editing.n, editing.text.trim());
         editing.n = 0;
     } catch (e) {
         editing.error = e.message;
@@ -94,7 +94,7 @@ async function save() {
 }
 
 async function remove(c) {
-    await scope.api.act("comment", c.n, "delete", {why: "deleted from the viewer"});
+    await scope.api.deleteComment(c.n);
 }
 
 const replying = reactive({n: 0, text: ""});
@@ -171,7 +171,7 @@ async function send(text) {
                         @mouseenter="hover(c)"
                         @mouseleave="hover(null)"
                     >
-                        <CommentByline :side="c.seen[0]" :name="who(c)" :when="age(c.created)">
+                        <Byline :side="c.seen[0]" :name="who(c)" :when="age(c.created)">
                             <template v-if="!c.pending">
                                 <span class="tools">
                                     <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
@@ -182,7 +182,7 @@ async function send(text) {
                                     </button>
                                 </span>
                             </template>
-                        </CommentByline>
+                        </Byline>
                         <template v-if="c.quote">
                             <button type="button" class="comment-quote" title="Show this passage in the document" @click="show(c)">
                                 {{ plain(c.quote) }}
@@ -218,7 +218,7 @@ async function send(text) {
                             <div class="answers">
                                 <template v-for="a in answersTo(c)" :key="keyOf(a)">
                                     <div :class="['answer', {failed: a.failed}]" :data-comment="a.pending ? a.ref : a.n">
-                                        <CommentByline :side="a.seen[0]" :name="who(a)" :when="age(a.created)" small />
+                                        <Byline :side="a.seen[0]" :name="who(a)" :when="age(a.created)" small />
                                         <TextDisplay class="said" :text="a.brief" />
                                         <template v-if="a.failed">
                                             <p class="unsaved">
@@ -546,7 +546,7 @@ textarea:focus {
     background-color: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
-::highlight(comment-passage-shown) {
+::highlight(comment-passage-marked) {
     background-color: color-mix(in srgb, var(--accent) 42%, transparent);
     color: var(--text);
 }

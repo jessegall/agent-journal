@@ -9,12 +9,14 @@
 set -e
 command -v git >/dev/null 2>&1 || { echo "git is required"; exit 1; }
 command -v python3 >/dev/null 2>&1 || { echo "python3 is required"; exit 1; }
+python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || { echo "Python 3.10 or newer is needed, and python3 here is $(python3 -V 2>&1)"; exit 1; }
 REPO="${AGENT_JOURNAL_REPO:-https://github.com/jessegall/agent-journal}"
 TMP="$(mktemp -d)"
 git clone --quiet --depth 1 "$REPO" "$TMP/pkg"
 PKG="$TMP/pkg"
 [ -f "$PKG/src/install.py" ] && PKG="$PKG/src"
 mkdir -p .journal/src
+[ ! -f "$TMP/pkg/VERSION" ] || cp "$TMP/pkg/VERSION" .journal/src/VERSION
 for f in "$PKG"/* "$TMP"/pkg/.gitignore; do
   case "$(basename "$f")" in
     install.sh|tests|__pycache__|.gitignore|README.md|CHANGELOG.md|CLAUDE.md) ;;

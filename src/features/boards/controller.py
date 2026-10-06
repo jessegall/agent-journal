@@ -2,27 +2,18 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller, internal
-from controllers.types import Messages, Questions
-from engine.worktree import current_branch
+from controllers.base import Controller
+from features.boards.building import BuildingBoards
+from features.boards.requests import DraftingBoards, numbers_in
 from features.boards.resource import DONE, MEANINGS, Board
-from features.work_modes.modes import ORCHESTRATOR, pick
-from resources.base import COMMISSIONED, PAUSED, REQUESTED, RESUMED, REVISED, Refused, Resource, STARTED, SYSTEM, titled
+from features.boards.running import RunningBoards
+from resources.base import FINISHED, Ref, Refused, Resource, SYSTEM
+from controllers.marks import action
+from engine.extension import Extension
 
-
-READING = 120
-FEWEST = 6
-STALLED = "stalled"
 STAGES = ("To do", "Doing", "Review", "Done")
-START_OVER = "Start over"
-CANCEL_HOLDS = 600
 BUILD_LOG = 40
-PANEL_REPLY = 200
-SECTION_STATES = ("now", "read", "out", "asked")
-EXPLORING, DRAFTING_PHASE, LOST, WAITING = "exploring", "drafting", "lost", "waiting"
-IDEAS, IDEA = 5, 60
-KNOWS_AT, READY_AT, MOST_TURNS = 4, 5, 5
-
+CARD_STORE = Extension()
 
 
 def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
@@ -32,17 +23,14 @@ def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
     return kept
 
 
-CARD_ROWS: list = []
-
-
-class Boards(Controller):
+class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
     resource = Board
 
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         opening = {} if "stages" in data else {"stages": list(STAGES), "meanings": {STAGES[-1]: DONE}}
         return super().create(title, abstract, brief, **{**opening, **data})
 
-    @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
         stages = [str(stage) for stage in r.stages]
         if len(set(stages)) != len(stages):
@@ -52,332 +40,57 @@ class Boards(Controller):
             raise Refused(f"a stage of this board is marked {', '.join(MEANINGS)}; not {unknown}")
         return super().save(r, action, **event)
 
+    @action
     def stage(self, n: int, name: str, meaning: str = ""):
         board = self.load(n)
         return self.update(board.n, stages=[*board.stages, name.strip()], meanings=with_meaning(board.meanings, name.strip(), meaning))
 
-    def ask(self, n: int, question: str, abstract: str = "", **data):
+    @action
+    def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(n)
-        asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        return asking.create(question, abstract, about=board.ref, hidden=True, **data)
+        return self.update(board.n, meanings=with_meaning(board.meanings, stage, meaning))
 
-    def cancel(self, n: int):
-        board = self.load(n)
-        asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        for open_question in asking.about(board.ref):
-            if not open_question.completed:
-                asking.complete(open_question.n, how=START_OVER, reason="The request on the board was cancelled")
-        self._stop_drafting(board)
-        return self.update(board.n, drafting={"cancelled": time.time()} if board.drafting.get("since") else {})
+    def paused(self) -> set[int]:
+        return {board.n for board in self.rows.standing() if board.paused}
 
-    @internal
-    def cancelled_lately(self, n: int) -> bool:
-        return time.time() - self.load(n).drafting.get("cancelled", 0) < CANCEL_HOLDS
+    def of_message(self, message) -> int:
+        return next((ref.n for ref in map(Ref.parse, message.refs) if ref.type == Board.type), 0)
 
-    def _stop_drafting(self, board) -> None:
-        from features.sequences.controller import Sequences
-        sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        for about in board.asked:
-            sequences.give_up(about, why="The request on the board was cancelled")
-        tickets = self._cards(self.actor)
-        for left in self._drafts(board) if board.drafting.get("since") else []:
-            tickets.delete(left.n, why="The request on the board was cancelled")
+    def finish(self, n: int) -> None:
+        self.update(n, finished=time.time())
+        self.record.emit("board", n, FINISHED, SYSTEM)
 
-    def request(self, n: int, text: str, idempotency: str = ""):
-        return self._opened(self.load(n), REQUESTED, text, idempotency)
-
-    def hand(self, n: int, document: str, text: str = "", idempotency: str = ""):
-        board = self.load(n)
-        if document not in board.files:
-            raise Refused(f"board {board.n} holds no file {document!r}; attach it first")
-        return self._opened(board, COMMISSIONED, text.strip() or f"Draft tickets from {document}", idempotency, document=document)
-
-    def outline(self, n: int, sections: str):
-        board = self._drafting(n)
-        titles = [title.strip() for title in sections.split("|") if title.strip()]
-        if not titles:
-            raise Refused("name the document's sections in order, split by |, like Background|Who can invite|Roles")
-        return self._update_drafting(board, outline=[{"title": title, "state": "", "drafts": 0} for title in titles])
-
-    def progress(self, n: int, section: str, state: str, drafts: str = ""):
-        board = self._drafting(n)
-        if state not in SECTION_STATES:
-            raise Refused(f"a section is marked {', '.join(SECTION_STATES)}; not {state!r}")
-        outline = board.drafting.get("outline") or []
-        if section not in [part["title"] for part in outline]:
-            raise Refused(f"the outline has no section {section!r}; it has {', '.join(part['title'] for part in outline)}")
-        marked = [{**part, "state": state, "drafts": int(drafts or part["drafts"])} if part["title"] == section else part for part in outline]
-        return self._update_drafting(board, outline=marked)
-
-    def start(self, n: int):
-        board = self.load(n)
-        if not board.branch and current_branch(self.record.root.parent):
-            board = self.update(board.n, branch=current_branch(self.record.root.parent))
-        board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env, orchestrator_approves_plans=True,
-                            orchestrator_accepts_waits=True, orchestrator_confirms_drafts=True)
-        pick(self.record, ORCHESTRATOR, self.actor)
-        self._set_orchestrating(True)
-        self.record.emit("board", board.n, STARTED, self.actor)
-        return board
-
-    def orchestrate(self, mode: str):
-        if mode not in ("on", "off"):
-            raise Refused(f"orchestrating is on or off; not {mode!r}")
-        self._set_orchestrating(mode == "on")
-        if mode == "off":
-            from features.sequences.controller import Sequences
-            from features.sequences.orchestration import ORCHESTRATING_MOMENTS, ORCHESTRATION
-            sequences = Sequences(self.record, actor=SYSTEM)
-            for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
-                sequence = sequences._titled(shipped.title)
-                for key in [key for key in (sequence.runs if sequence else {}) if key.startswith(f"{self.record.env}|")]:
-                    sequences._finish(sequence.n, key.split("|", 1)[1])
-        return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
-
-    def _cards(self, actor: str):
-        return CARD_ROWS[0](self.record, actor=actor, session=self.session, agent=self.agent)
-
-    def _update_drafting(self, board, **changes):
-        return self._replace_drafting(board, {**board.drafting, **changes})
-
-    def _replace_drafting(self, board, drafting: dict):
-        return self.update(board.n, drafting=drafting)
-
-    def _update_building(self, board, **changes):
-        return self._replace_building(board, {**board.building, **changes})
-
-    def _replace_building(self, board, building: dict):
-        return self.update(board.n, building=building)
-
-    def _set_orchestrating(self, on: bool) -> None:
-        from features.session_briefing.block import rebuild
-        self.record.set_setting("boards", {**self.record.setting("boards", {}), "orchestrating": on})
-        rebuild(self.record)
-
-    def pause(self, n: int):
-        board = self.load(n)
-        if not board.started or board.paused:
-            raise Refused(f"board {board.n} is not running, so there is nothing to pause")
-        board = self.update(board.n, paused=time.time())
-        self.record.emit("board", board.n, PAUSED, self.actor)
-        return board
-
-    def resume(self, n: int):
-        board = self.load(n)
-        if not board.paused:
-            raise Refused(f"board {board.n} is not paused")
-        board = self.update(board.n, paused=0.0)
-        self.record.emit("board", board.n, RESUMED, self.actor)
-        return board
-
-    def group(self, n: int, name: str, tickets: str):
-        board = self.load(n)
-        if not board.drafting.get("since"):
-            return board
-        groups = {**(board.drafting.get("groups") or {}), name.strip(): self._drafted(board, tickets)}
-        return self._update_drafting(board, groups=groups)
-
-    def pick(self, n: int, tickets: str):
-        board = self._drafting(n)
-        return self._update_drafting(board, picks={"tickets": self._drafted(board, tickets), "at": time.time()})
-
-    def _drafted(self, board, tickets: str) -> list[int]:
-        numbers = [int(t.lstrip("#")) for t in tickets.replace(",", " ").split() if t.lstrip("#").isdigit()]
-        drafts = {t.n for t in self._cards(self.actor)._standing() if t.draft and int(t.board) == board.n}
-        stray = [n for n in numbers if n not in drafts]
-        if not numbers or stray:
-            raise Refused(f"name drafts on board {board.n}, like \"12, 13\"; not {stray or tickets!r}")
-        return numbers
-
-    def say(self, n: int, line: str):
-        board = self._drafting(n)
-        asked = board.asked
-        if not asked:
-            raise Refused(f"nothing was asked on board {board.n} to answer")
-        drafted = len(self._drafts(board))
-        if board.drafting.get("phase") == DRAFTING_PHASE and drafted < board.expected:
-            raise Refused(f"you guessed {board.expected} cards and drafted {drafted}: draft the rest before you say you are done")
-        return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).comment(int(asked[-1].split(":")[1]), line.strip())
-
+    @action
     def added(self, n: int, tickets: str):
         board = self.load(n)
-        numbers = [int(t) for t in str(tickets).replace(",", " ").split() if t.isdigit()]
+        numbers = numbers_in(tickets)
         if not numbers:
             raise Refused("name the tickets that were added, like \"12, 13\"")
         return self.update(board.n, added={"tickets": numbers, "at": time.time()})
 
-    def _drafts(self, board) -> list:
-        since = board.drafting.get("since", 0)
-        return [t for t in self._cards(SYSTEM)._standing() if t.draft and int(t.board) == board.n and t.created >= since]
-
-    def _drafting(self, n: int):
-        board = self.load(n)
-        if not board.drafting.get("since"):
-            raise Refused(f"nothing is being drafted on board {board.n}")
-        return board
-
-    def _opened(self, board, moment: str, text: str, idempotency: str, **data):
-        self.cancel(board.n)
-        made = self._filed(board, text, idempotency, **data)
-        self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency, "asked": [made.ref],
-                                                  "phase": EXPLORING, "score": 0, "turns": 0})
-        self.record.emit("message", made.n, moment, self.actor)
-        return made
-
-    def score(self, n: int, score: str, reading: str = "", goal: str = "", done: str = ""):
-        from features.sequences.controller import Sequences
-        from features.sequences.drafting import DRAFTING
-        from features.sequences.exploration import EXPLORATION
-        board = self._drafting(n)
-        if not str(score).isdigit() or not 1 <= int(score) <= 5:
-            raise Refused(f"the score is how well you understand what they want, a whole number from 1 to 5; not {score!r}")
-        if board.drafting.get("phase", EXPLORING) != EXPLORING:
-            raise Refused(f"board {board.n} is past exploring: the request is {board.drafting.get('phase')}")
-        about, turns, rated = board.drafting["asked"][0], int(board.drafting.get("turns", 0)) + 1, int(score)
-        sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        exploring = sequences._titled(EXPLORATION.title)
-        handed = 0
-        if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
-            sequences._finish(exploring.n, about)
-            handed = sequences.run(sequences._titled(DRAFTING.title).n, about=about).n
-            phase = DRAFTING_PHASE
-        elif turns >= MOST_TURNS:
-            sequences._finish(exploring.n, about)
-            phase, rated = LOST, 0
-        else:
-            sequences._jump(exploring.n, about, rated + 1)
-            handed, phase = exploring.n, EXPLORING
-        read = reading.strip()[:READING] or board.drafting.get("reading", "")
-        board = self._goal_set(board, goal, done)
-        board = self._update_drafting(board, phase=phase, score=rated, turns=turns, reading=read)
-        return sequences.follow(handed, about=about) if handed else board
-
-    def ideas(self, n: int, ideas: list[str]):
-        kept = [" ".join(str(idea).split()) for idea in ideas if str(idea).strip()]
-        if not 2 <= len(kept) <= IDEAS:
-            raise Refused(f"write 2 to {IDEAS} short ideas, each one thing the user might ask for on this board")
-        if any(len(idea) > IDEA for idea in kept):
-            raise Refused(f"each idea fits one chip: at most {IDEA} characters")
-        return self.update(int(n), ideas=kept, ideas_at=time.time())
-
-    def wait(self, n: int):
-        board = self._drafting(n)
-        if board.drafting.get("phase") != DRAFTING_PHASE:
-            raise Refused(f"board {board.n} is not drafting, so there is nothing to wait for: it is {board.drafting.get('phase', EXPLORING)}")
-        return self._update_drafting(board, phase=WAITING)
-
-    def stall(self, n: int, why: str):
-        board = self._drafting(n)
-        if not why.strip():
-            raise Refused("say why filling the board cannot go on: journal board stall <n> \"<why>\"")
-        return self._update_drafting(board, phase=STALLED, stalled=why.strip(),
-                                              stalled_from=board.drafting.get("stalled_from") or board.drafting.get("phase", EXPLORING))
-
-    def retry(self, n: int):
-        board = self._drafting(n)
-        if board.drafting.get("phase") != STALLED:
-            raise Refused(f"board {board.n} is not stalled: nothing to retry")
-        from features.sequences.controller import Sequences
-        asked = board.asked
-        sequences = Sequences(self.record, actor=SYSTEM)
-        for row in sequences.summaries():
-            if row["completed"] or row["deleted"]:
-                continue
-            sequence = sequences.load(row["n"])
-            if not sequence.dispatch:
-                continue
-            for key, run in sequence.runs.items():
-                if key.split("|", 1)[1] not in asked:
-                    continue
-                handed = {k: v for k, v in run.items() if k != "agent"}
-                sequences.update_run(sequence, key, {**handed, "retried": time.time()})
-        restored = {k: v for k, v in board.drafting.items() if k not in ("stalled", "stalled_from")}
-        return self._replace_drafting(board, {**restored, "phase": board.drafting.get("stalled_from") or EXPLORING})
-
-    def _goal_set(self, board, goal: str, done: str):
-        clauses = [clause.strip() for clause in done.split("|") if clause.strip()]
-        if not goal.strip() and not clauses:
-            return board
-        kept = list(board.done_when) if board.started else []
-        return self.update(board.n, goal=goal.strip() or board.goal, done_when=kept + [c for c in clauses if c not in kept])
-
-    def expect(self, n: int, count: str, fewer: str = ""):
-        if not str(count).isdigit():
-            raise Refused(f"the count is how many tickets you will draft, a whole number like 3; not {count!r}")
-        if int(count) < FEWEST and not fewer.strip():
-            raise Refused(f"a board is filled with at least {FEWEST} cards, preferably 8; for fewer, say why with --fewer \"<why>\"")
-        board = self.load(n)
-        shown = board.expected
-        if int(count) < shown and board.drafting.get("phase") == DRAFTING_PHASE:
-            raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")
-        return self.update(int(n), expected=int(count))
-
-    def revise(self, n: int, text: str, idempotency: str = ""):
-        board = self.load(n)
-        made = self.follow_up(board.n, text, idempotency)
-        self.record.emit("message", made.n, REVISED, self.actor)
-        return made
-
-    def follow_up(self, n: int, text: str, idempotency: str = ""):
-        board = self.load(n)
-        made = self._filed(board, text, idempotency)
-        if board.drafting.get("since"):
-            was = board.drafting.get("phase", EXPLORING)
-            self._update_drafting(board, asked=[*board.asked, made.ref], phase=DRAFTING_PHASE if was == WAITING else was)
-        return made
-
-    def _filed(self, board, text: str, idempotency: str, **data):
-        return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(text), brief=text.strip(), about=board.ref, window=board.ref, new_work=True, idempotency=idempotency,
-            reply_with=f'journal board say {board.n} "<one line, at most {PANEL_REPLY} characters>"', **data)
-
-    def build(self, n: int, name: str = "", steer: str = ""):
-        board = self.load(n)
-        if not board.files:
-            raise Refused(f"board {board.n} holds no document to build from; attach one first")
-        if name.strip():
-            self._retitle(board.n, name)
-        self._replace_building(board, {"since": time.time(), "document": next(iter(board.files)), "steer": steer.strip(),
-                                       "name_it": not name.strip(), "log": []})
-        self.record.emit("board", board.n, COMMISSIONED, self.actor)
-        return self.load(board.n)
-
+    @action
     def log(self, n: int, line: str):
         board = self.load(n)
         entry = {"at": time.time(), "text": line.strip()}
-        if self._building(board) or not board.drafting.get("since"):
+        if board.being_built or not board.drafting_since:
             board = self._being_built(n)
-            return self._update_building(board, log=[*board.building["log"], entry][-BUILD_LOG:])
-        return self._update_drafting(board, log=[*(board.drafting.get("log") or []), entry][-BUILD_LOG:])
+            return self._merged(board, "building", log=[*board.building["log"], entry][-BUILD_LOG:])
+        return self._merged(board, "drafting", log=[*(board.drafting.get("log") or []), entry][-BUILD_LOG:])
 
-    def built(self, n: int, summary: str):
-        board = self._being_built(n)
-        return self._update_building(board, done=time.time(), summary=summary.strip())
+    def _cards(self, actor: str):
+        store = next(iter(CARD_STORE.each()), None)
+        if store is None:
+            raise Refused("boards keep their cards as tickets, and the tickets feature is not loaded")
+        return store(self.record, actor=actor, session=self.session, agent=self.agent)
 
-    def keep(self, n: int):
-        return self._replace_building(self.load(n), {})
+    def _merged(self, board, field: str, **changes):
+        return self.update(board.n, **{field: {**getattr(board, field), **changes}})
 
-    def discard(self, n: int, why: str = "The user removed the board built from a document"):
-        from features.sequences.controller import Sequences
-        board = self.load(n)
-        Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent).give_up(board.ref, why=why)
-        tickets = self._cards(self.actor)
-        for ticket in [t for t in tickets._standing() if int(t.board) == board.n]:
-            tickets.delete(ticket.n, why=why)
-        return self.delete(board.n, why=why)
-
-    def _building(self, board) -> bool:
-        return bool(board.building.get("since")) and not board.building.get("done")
-
-    def _being_built(self, n: int):
-        board = self.load(n)
-        if not self._building(board):
-            raise Refused(f"board {board.n} is not being built from a document")
-        return board
-
-    def meaning(self, n: int, stage: str, meaning: str = ""):
-        board = self.load(n)
-        return self.update(board.n, meanings=with_meaning(board.meanings, stage, meaning))
+    def _uncovered(self, board) -> list[str]:
+        tickets = self._cards(SYSTEM)
+        present = {row["n"] for row in tickets.rows.summaries() if not row["deleted"]}
+        kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers if str(number).isdigit()}
+        return [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]
 
 
 resources_module.register(Board)

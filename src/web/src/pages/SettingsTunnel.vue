@@ -1,10 +1,11 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {store} from "../state/store.js";
 import Btn from "../kit/Btn.vue";
 import ListBox from "../kit/ListBox.vue";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
-import TunnelLogin from "../resource/TunnelLogin.vue";
+import TunnelLogin from "./TunnelLogin.vue";
 import TunnelDomain from "./TunnelDomain.vue";
 import TunlerVersion from "./TunlerVersion.vue";
 
@@ -22,7 +23,7 @@ async function logOut() {
     leaving.value = true;
     failure.value = "";
     try {
-        tunnelStatus.value = await api.tunnelLogout();
+        store.tunnel = await api.tunnelLogout();
         domains.value = [];
     } catch (e) {
         failure.value = e.message;
@@ -41,7 +42,7 @@ onMounted(load);
 
 <template>
     <div class="tunnel-settings">
-        <ListBox title="tunler">
+        <ListBox title="Connection">
             <div class="tunnel-state">
                 <template v-if="!tunnelStatus">
                     <p class="tunnel-line">Checking…</p>
@@ -51,7 +52,15 @@ onMounted(load);
                 </template>
                 <template v-else-if="tunnelStatus.logged_in && !switching">
                     <p class="tunnel-line">
-                        Connected as <b>{{ tunnelStatus.account }}</b> on <b>{{ tunnelStatus.host }}</b>. Every journal on this machine uses this login.
+                        Connected as
+                        <b>{{ tunnelStatus.account }}</b>
+                        on
+                        <b>{{ tunnelStatus.host }}</b>
+                        . Every journal on this machine uses this login.
+                    </p>
+                    <p class="tunnel-line">
+                        tunler is installed at
+                        <code>{{ tunnelStatus.command }}</code>
                     </p>
                     <div class="tunnel-actions">
                         <Btn small @click="switching = true">Use another account</Btn>
@@ -62,11 +71,11 @@ onMounted(load);
                     <p class="tunnel-line">
                         {{
                             switching
-                                ? "Log in with another account; it replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so a journal on the other account's address stops answering until you switch back, which needs that account's password."
+                                ? "Logging in with another account replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so those addresses stop answering until you switch back with that account's password."
                                 : "Not connected. Connect once, and every journal on this machine uses it."
                         }}
                     </p>
-                    <TunnelLogin :host="tunnelStatus.host" @ready="ready" />
+                    <TunnelLogin :host="tunnelStatus.host || tunnelStatus.server" @ready="ready" />
                     <template v-if="switching">
                         <Btn small @click="switching = false">Keep the current account</Btn>
                     </template>
@@ -78,9 +87,9 @@ onMounted(load);
             <TunlerVersion />
         </ListBox>
         <template v-if="domains.length">
-            <ListBox title="Domains this account owns" :count="domains.length">
+            <ListBox title="Domains" :count="domains.length">
                 <template v-for="domain in domains" :key="domain">
-                    <TunnelDomain :domain="domain" @released="(left) => (domains = left)" />
+                    <TunnelDomain :domain="domain" :own="domain === tunnelStatus?.address" @released="(left) => (domains = left)" />
                 </template>
             </ListBox>
         </template>

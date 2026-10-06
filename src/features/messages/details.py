@@ -1,19 +1,22 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.trigger import IDLE, Trigger, USES
+from features.groups import Group
 
 
 class MessagesDetails(FeatureDetails):
+    explains = 'You can leave the agent a message in the viewer. The agent reads and answers it in the chat.'
     name = "messages"
+    group = Group.MESSAGES
     when = "the user has left a message, or before replying, reacting or filing what a message asks for"
 
-    title = "Messaging"
+    title = "Messages"
 
     speaks_while_waiting = True
 
     abstract = """
-        A message the user leaves you is shown to you until you read it, answered before you go on
-        working, and closed once you have dealt with it
+        The agent is reminded of your messages until it reads them, answers each one before it goes
+        on, and closes it once it is handled.
     """
 
     help = """
@@ -23,8 +26,8 @@ class MessagesDetails(FeatureDetails):
         Each new message is named to you as it arrives. The inbox reminder follows only while more than five wait unread, or once
         you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have not answered is mentioned again once it has waited ten tool uses, or
         once you are idle, a few times, without holding your writes.
-        A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it,
-        and every row you file while a message is in your hands is linked to it.
+        A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it.
+        A row you file from a message is linked to it by journal message process, or by naming it in your reply while it is new.
     """
 
     aliases = (("inbox", "unread"), ("handled", "closing"), ("status", "answering"))
@@ -32,36 +35,27 @@ class MessagesDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="unread",
-            title="Name the unread messages",
-            abstract="Said while more than five wait unread or the agent is idle, then every third use",
+            title="Remind the agent of unread messages",
             trigger=Trigger(every=3, unit=USES),
         ),
         Behaviour(
             name="answering",
-            title="Answer a message before writing",
-            abstract="Said once a message has waited ten tool uses unanswered, or once the agent is idle",
+            title="Make the agent answer a message before it changes files",
             trigger=Trigger(every=10, unit=USES),
         ),
         Behaviour(
             name="closing",
-            title="Close a message once it is dealt with",
-            abstract="A reply, a reaction, every part processed, or the user reading what the agent wrote",
-        ),
-        Behaviour(
-            name="linking",
-            title="Link what is filed to the message in hand",
-            abstract="A row the agent creates while a message is open cites that message",
+            title="Close a message once it is answered",
         ),
         Behaviour(
             name="paragraphs",
-            title="Keep the paragraphs of a message apart",
-            abstract="A message of several sentences run together earns you one reminder, at the end of the turn",
+            title="Remind the agent to keep paragraphs apart",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="numbers",
-            title="Name what a number in a message is",
-            abstract="A message that names a row by a bare number, like 'answered 1712', earns you a reminder to add the type, so the chat links it; quoted text and code are left alone",
+            title="Remind the agent to say what a number is",
+            abstract="answered 1712 becomes answered message 1712",
         ),
     ]
 
@@ -69,12 +63,15 @@ class MessagesDetails(FeatureDetails):
         Setting(
             name="unread.patience",
             default=5,
-            title="Hold writes after the unread messages are named this often",
+            title="Block file changes after this many reminders",
+            unit="times",
+            under="unread",
         ),
         Setting(
             name="answering.patience",
             default=3,
-            title="Stop naming an unanswered message after",
+            title="Stop reminding after",
+            under="answering",
             unit="times",
         ),
     ]

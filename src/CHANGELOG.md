@@ -4,6 +4,73 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.252.0 — the overnight refactor lands, and the phone tunnel keeps itself up
+
+**This release brings the overnight refactor into main**: everything listed under 2.251.0 and 2.250.0 below, released
+together with the work of the last day.
+
+**The phone tunnel works out of the box and repairs itself.** A failed tunnel is retried forever with a capped backoff,
+and one bad service never stops the others. The tunnel is watched by the share server, which asks the address for its
+own marker, so a tunler page answering for an empty address no longer counts as healthy. It restarts within seconds
+after sleep or a network change, and a journal upgrade no longer restarts it. A wedged worker hands the services to
+another after 30 seconds. The address is checked once for each machine and tunler account: one this account owns or a
+phone relies on is kept, anything else is replaced without a word, and a copy on another machine gets an address of its
+own. Logging in settles the address and starts the tunnel, logging out stops it, and a login the server no longer
+accepts says so. `sharing.json` is kept with a backup and repaired from it. tunler is found in the usual install folders,
+an install is checked before it replaces a working one, and an old tunler, a binary macOS stops or missing certificates
+are named with their fix. The phone dialog says Connected the moment a phone pairs; when it cannot connect, it names one
+cause, with Restart the tunnel and Update tunler.
+
+**Settings has a Services tab** listing what the journal keeps running, and every place in the viewer is named in plain
+dashboard words: Agent, Memory, Chat, Sessions, Rules, Results, Inbox, Needs you.
+
+**The agent keeps going.** Once only blocked rows are left in a plan's phase, the rows of every later phase are offered,
+and a choice you delegated is decided rather than asked. A failing check reaches the agent even while it waits on
+something else, and is told again only when what it reports changes. A to-do named in the agent's reply to your message
+is linked to that message, and one filed but left unlinked is pointed out.
+
+**Also in this release**: Codex gets Enter-always-sends, its own subagents and the hooks question; a Codex model that
+lists no effort no longer fails; `journal sequence next` names the step that follows; a GitHub issue counts as answered
+only when its last comment is the maintainer's; a shell command with a quoted command substitution no longer raises in
+the hooks.
+
+## 2.251.0 — one job per module
+
+**The codebase is refactored so each module does one job, and each kind of operation has one funnel.** The CLI and HTTP
+run an action the same way, and an HTTP action is now all-or-nothing. A method is an action only when it is marked
+`@action`. Routes resolve the same way whatever order they were registered in, and each feature's routes live in that
+feature. Row storage is a part of each controller, not its parent class, and a reader shares the stored row while a
+writer works on a copy. A feature that is switched off leaves nothing behind. The hook path holds no logic; a hook
+reaches only the handlers that care about it, which makes tool hooks about a fifth faster. A busy dashboard is about
+twice as fast.
+
+**The Settings page is redesigned**: one scrolling page of plain-named groups with a list on the left, one control per
+setting, timing shown as a chip, and search with a Changed and Off filter. The lines a feature says to the agent are
+no longer listed there. **Triggers and suggestions sit in the sidebar**, question cards span the full bubble, and danger
+buttons are red before you hover them.
+
+**The viewer is gentler on a slow server**: it backs off when the server is slow or down, fetches other journals'
+summaries only while they are on screen, keeps a shared poll running for its other users, and fetches less on each poll.
+
+**Fixed**: one agent keeps the project's services, however many agents run, and a running service keeps its port, so the phone tunnel is never started twice or pointed at a stale port; the phone tunnel no longer restarts itself into a lockout; a hold never drops a reply, a reaction or a new
+to-do written on the same line, and nothing else gets through on such a line; reading a file whole is refused only past
+600 lines; a check that runs out of time says so; dropping a worktree no longer kills the helper inside it; a ticket
+from an outside source no longer breaks its panel.
+
+## 2.250.0 — round nine
+
+**The API runs only an action a type really has**: a name starting with an underscore, or any other method that is
+not a registered action, is refused, so no request can reach a controller's internals. **An agent can no longer act
+as the user**: a command that claims the user's name is refused, and only the user opens or changes a share.
+**Hidden and secret files stay hidden everywhere**: the diff, commit and edit-feed views no longer show `.env`, keys
+or anything in a secrets folder, and a plugin log name cannot leave its folder. **Every line of a visitor's comment is
+held** until you let the agent act on it.
+
+Also fixed: unarchiving an environment, leaving another environment, detaching a file from a protected row, a viewer
+or service mistaken for one that is long gone, Codex subagents and exec cells in the agent's facts, a busy button
+pressed twice, rows lost while older ones load, the phone feed frozen by one failing message, an ended share link that
+kept polling, a chat send that lost its quote, and section and shared titles that skipped the formatters.
+
 ## 2.249.9 — a refused tunnel address is replaced by itself, and the phone dialog says why it cannot connect
 
 **A tunnel address owned by another tunler account is replaced without anyone pressing anything.** When the address

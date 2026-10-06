@@ -5,7 +5,8 @@ from pathlib import Path
 from resources.base import Refused, Resource
 from resources.pictures import dimensions
 from engine.paths import contained
-from engine.stored import undoable
+from engine.transaction import undoable
+from controllers.marks import action
 
 REVISIONS = "revisions"
 
@@ -13,12 +14,14 @@ REVISIONS = "revisions"
 
 
 class Files:
+    @action
     def folder(self, n: int) -> Path:
         self.load(n)
-        f = self.record.folder(self.type, self.resource.scope) / f"{n:03d}"
+        f = self.rows.row_folder(n)
         f.mkdir(exist_ok=True)
         return f
 
+    @action
     def attach(self, n: int, path: str, description: str = "") -> Resource:
         source = Path(path)
         if not source.exists():
@@ -54,6 +57,7 @@ class Files:
                         raise
                     return saved
 
+    @action
     def tag(self, n: int, name: str, tags: str) -> Resource:
         r = self.load(n)
         if name not in r.files:
@@ -61,28 +65,34 @@ class Files:
         r.files[name] = tags.strip()
         return self.save(r, "updated", file=name, tags=tags.strip())
 
+    @action
     def files(self, n: int) -> list[str]:
         return sorted(p.name for p in self.folder(n).iterdir() if p.name not in self._kept_beside())
 
     def _kept_beside(self) -> set[str]:
         return {f"{self.type}.md", REVISIONS} if self.resource.own_folder else set()
 
+    @action
     def paths(self, n: int) -> list[str]:
         folder = self.folder(n)
         return [str(contained(folder, name).resolve()) for name in self.files(n)]
 
+    @action
     def detach(self, n: int, name: str, why: str = "") -> Resource:
-        r = self.load(n)
-        if name not in r.files:
-            raise Refused(f"{self.type} {n} has no file {name}")
-        target = contained(self.folder(n), name)
-        struck = self.folder(n) / "struck"
-        struck.mkdir(exist_ok=True)
-        shutil.move(str(target), str(contained(struck, name)))
-        r.files.pop(name)
-        r.pictures.pop(name, None)
-        return self.save(r, "updated", detached=name, why=why)
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            if name not in r.files:
+                raise Refused(f"{self.type} {n} has no file {name}")
+            target = contained(self.folder(n), name)
+            struck = contained(self.folder(n) / "struck", name)
+            r.files.pop(name)
+            r.pictures.pop(name, None)
+            saved = self.save(r, "updated", detached=name, why=why)
+            struck.parent.mkdir(exist_ok=True)
+            shutil.move(str(target), str(struck))
+            return saved
 
+    @action
     def index(self, n: int) -> Resource:
         r = self.load(n)
         known = r.files
@@ -92,4 +102,4 @@ class Files:
         return self.save(r, "updated", indexed=sorted(known))
 
     def _attached(self) -> list[Resource]:
-        return [self.load(row["n"]) for row in self.summaries() if row.get("files") and not row["deleted"]]
+        return [self.load(row["n"]) for row in self.rows.summaries() if row.get("files") and not row["deleted"]]

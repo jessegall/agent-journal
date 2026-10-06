@@ -1,6 +1,6 @@
 <script setup>
 import {clock} from "../format/time.js";
-import PhoneTicks from "./PhoneTicks.vue";
+import ReadTicks from "../kit/ReadTicks.vue";
 
 defineProps({item: {type: Object, required: true}, elsewhere: {type: Boolean, default: false}});
 </script>
@@ -9,7 +9,7 @@ defineProps({item: {type: Object, required: true}, elsewhere: {type: Boolean, de
     <span class="turn-meta">
         <template v-if="elsewhere">from desktop ·</template>
         {{ clock(item.created) }}
-        <PhoneTicks :message="item" />
+        <ReadTicks :message="item" tone="bubble" />
     </span>
 </template>
 

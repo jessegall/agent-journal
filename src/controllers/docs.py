@@ -3,7 +3,8 @@ from pathlib import Path
 
 from controllers.base import Controller
 from resources import types
-from resources.base import Refused
+from resources.base import SECTION, Refused
+from controllers.marks import action
 
 
 @dataclass(frozen=True)
@@ -25,37 +26,56 @@ class Written:
 class Docs(Controller):
     resource = types.Doc
 
+    @action
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        buttons = data.get("buttons") or []
+        pending = any(button.get("choice") for button in buttons)
+        data.setdefault("status", "draft" if pending else "final")
+        return super().create(title, abstract, brief, **data)
+
+    @action
     def hide(self, n: int):
         return self.update(int(n), hidden=True)
 
+    @action
     def unhide(self, n: int):
         return self.update(int(n), hidden=False)
 
-    def _standing(self):
-        return [r for r in super()._standing() if not r.data.get("hidden")]
+    def _visible(self, row) -> bool:
+        return not row.hidden
 
+    @action
     def search(self, term: str):
-        return [r for r in super().search(term) if not r.data.get("hidden")]
+        return [r for r in super().search(term) if not r.hidden]
 
+    @action
     def file(self, title: str, path: str):
         source = Path(path).expanduser()
         if not source.is_file():
             raise Refused(f"no such file: {path}; write the finished text to a file, then journal doc file \"{title}\" <file>")
         written = Written.read(source.read_text(errors="replace"))
-        doc = self.create(title, brief=written.brief, written=True)
-        for chapter, body in written.chapters:
-            self.section(doc.n, chapter, body)
-        return self.load(doc.n)
+        return self._created_with_sections(title, "", written.brief, list(written.chapters), written=True)
 
+    @action
+    def cut(self, n: int, title: str):
+        with self.record.locked(self.resource.scope):
+            doc = self.load(n)
+            if not any(s[SECTION.title] == title for s in doc.sections):
+                raise Refused(f"doc {doc.n} has no part named {title!r}")
+            doc.sections = [s for s in doc.sections if s[SECTION.title] != title]
+            return self.save(doc, "updated", section=title)
+
+    @action
     def draft(self, n: int):
-        return self.update(n, status="draft")
+        return self.update(n, status="writing")
 
+    @action
     def complete(self, n: int, how: str = "", **data):
         self.update(n, status="final")
         return super().complete(n, how or "final", **data)
 
+    @action
     def supersede(self, n: int, by: int):
-        newer = self.load(by)
-        self.complete(n, how=f"superseded by doc {newer.n}")
+        newer = self._supersede(n, self.load(by).n)
         self.link(n, newer.ref)
-        return self.link(newer.n, self.load(n).ref)
+        return newer

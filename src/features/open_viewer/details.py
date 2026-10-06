@@ -1,18 +1,20 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
-class TabFocusDetails(FeatureDetails):
+class OpenViewerDetails(FeatureDetails):
+    explains = 'The viewer opens when the agent starts, or its existing tab comes forward. You can turn this off in Settings.'
     name = "open_viewer"
+    group = Group.VIEWER
+    label = "Open the viewer at launch"
+    hint = "Or bring its open tab to the front"
     has_skill = False
 
-    title = "Open the viewer at start"
+    title = "Open the viewer at launch"
 
     aliases = ("tabfocus",)
 
-    abstract = """
-        A journal launch shows its viewer tab once the agent's session has started, focusing an
-        existing tab instead of opening another
-    """
+    abstract = "When the agent starts, the viewer opens in your browser, or its open tab comes to the front."
 
     help = """
         Always on: the tab opens when the session starts, after any startup or resume menu is

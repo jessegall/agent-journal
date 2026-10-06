@@ -1,23 +1,24 @@
 <script setup>
 import {onUnmounted, watch} from "vue";
-import {useAnchoredAction} from "../actions/anchored.js";
+import {useAnchoredAction} from "../composables/anchored.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import AgentStopConfirm from "./AgentStopConfirm.vue";
-import {stopsOpen} from "./agentStop.js";
+import {ui} from "../state/ui.js";
 
 const props = defineProps({
     environment: {type: String, required: true},
     work: {type: String, default: ""},
     stop: {type: Function, required: true},
     quiet: {type: Boolean, default: false},
+    label: {type: String, default: "Stop"},
 });
 const emit = defineEmits(["stopped"]);
 const {anchor, error, busy, toggle, run} = useAnchoredAction();
 
-watch(anchor, (now, before) => Boolean(now) !== Boolean(before) && (stopsOpen.value += now ? 1 : -1));
-onUnmounted(() => anchor.value && (stopsOpen.value -= 1));
+watch(anchor, (now, before) => Boolean(now) !== Boolean(before) && (ui.stopsOpen += now ? 1 : -1));
+onUnmounted(() => anchor.value && (ui.stopsOpen -= 1));
 
 async function stopped() {
     if (await run(props.stop)) emit("stopped");
@@ -34,8 +35,10 @@ async function stopped() {
             :aria-expanded="Boolean(anchor)"
             @click.stop="toggle"
         >
-            <Icon name="stop" />
-            <template v-if="quiet">Stop</template>
+            <template v-if="quiet">{{ label }}</template>
+            <template v-else>
+                <Icon name="stop" />
+            </template>
         </Btn>
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="280" :max-width="340" @click.stop @close="anchor = null">

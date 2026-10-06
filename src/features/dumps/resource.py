@@ -1,10 +1,51 @@
+import time
+from dataclasses import dataclass, replace
 from typing import ClassVar
 
+from features.message_buttons.shaping import Button, whole
 from resources.base import DOCUMENT, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape, names
 
 ITEM = names("insight", "outcome", "refs", "failed", "added")
 ENTRY = names("at", "text", "on", "making", "detail")
+TEXT = "text"
+
+
+def entry(text: str, on: str = "", making: str = "", detail: str = "", **extra) -> dict:
+    return {ENTRY.at: time.time(), ENTRY.text: text.strip(), ENTRY.on: on.strip(), ENTRY.making: making.strip(), ENTRY.detail: detail.strip(), **extra}
+
+
+@dataclass(frozen=True)
+class Offer(Button):
+    ask: str = ""
+
+    @classmethod
+    def from_payload(cls, raw: dict) -> "Offer":
+        offer = cls.from_json(raw)
+        return replace(offer, label=offer.label.strip(), ask=offer.ask.strip(), n=whole(offer.n))
+
+
+@dataclass(frozen=True)
+class DumpItem:
+    insight: str = ""
+    outcome: str = ""
+    failed: str = ""
+
+    @classmethod
+    def of(cls, raw: dict) -> "DumpItem":
+        return cls(raw.get(ITEM.insight, ""), raw.get(ITEM.outcome, ""), raw.get(ITEM.failed, ""))
+
+    @property
+    def settled(self) -> bool:
+        return bool(self.outcome or self.failed)
+
+    @property
+    def standing(self) -> str:
+        if self.failed:
+            return f"failed - {self.failed}"
+        if self.outcome:
+            return f"filed - {self.outcome}"
+        return f"noted - {self.insight}" if self.insight else "not read yet"
 
 
 class Dump(Shape, Resource):
@@ -26,7 +67,7 @@ class Dump(Shape, Resource):
     )
     listed_open = True
     type = "dump"
-    event_labels = {"created": "Dumped", "completed": "Dump filed"}
+    event_labels = {"created": "Dumped", "completed": "Dump closed"}
     status_labels = {"note": "reading a dump", "filed": "filing a dump"}
     needs_attention = True
     read_whole = True
@@ -35,3 +76,10 @@ class Dump(Shape, Resource):
     command_names = {"complete": "close"}
     labels = {"brief": "What you dumped", "outcome": "Filed"}
     view = DOCUMENT
+
+    @property
+    def item_names(self) -> list[str]:
+        return ((self.data.get("parts") or [TEXT]) if self.brief.strip() else []) + sorted(self.files)
+
+    def item(self, name: str) -> DumpItem:
+        return DumpItem.of((self.data.get("items") or {}).get(name) or {})

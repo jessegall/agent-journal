@@ -2,6 +2,7 @@ import time
 import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from engine import runtime
 from engine.stored import read_json, write_json
 from engine.fields import Loaded
 
@@ -47,7 +48,7 @@ def waiting_commands(row) -> list[QueuedCommand]:
 
 def queue(root: Path, session: str, keys: tuple, label: str, action: str = "", provider: str = "", value: str = "") -> Input:
     queued = Input(session, tuple(keys), label, time.time(), action, provider, value)
-    folder = Path(root) / "runtime" / "inputs"
+    folder = runtime.inputs(root)
     folder.mkdir(parents=True, exist_ok=True)
     if queued.lasting:
         for path in folder.glob("*.json"):
@@ -60,7 +61,7 @@ def queue(root: Path, session: str, keys: tuple, label: str, action: str = "", p
 
 
 def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) -> Input | None:
-    folder = Path(root) / "runtime" / "inputs"
+    folder = runtime.inputs(root)
     for path in sorted(folder.glob("*.json")):
         queued = read_json(path, Input.from_json, None)
         if queued is None:

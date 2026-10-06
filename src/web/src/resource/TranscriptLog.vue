@@ -34,7 +34,7 @@ defineExpose({scroller});
         <div ref="topMark" class="edge">
             {{
                 paging
-                    ? "Loading earlier rows…"
+                    ? "Loading earlier entries…"
                     : atStart
                       ? "Start of the transcript."
                       : turns.length
@@ -52,7 +52,7 @@ defineExpose({scroller});
             <p class="none">Loading…</p>
         </template>
         <template v-else-if="!turns.length && !error">
-            <p class="none">Nothing printed yet, or no transcript on this row.</p>
+            <p class="none">Nothing printed yet, or no transcript for this session.</p>
         </template>
         <template v-for="t in entries" :key="t.line">
             <div :class="['turn', t.kind, {folded: folded.has(t.line)}]">
@@ -122,7 +122,7 @@ defineExpose({scroller});
 }
 
 .turn {
-    padding: 8px 2px;
+    padding: 8px 16px;
     border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
@@ -135,7 +135,7 @@ defineExpose({scroller});
 }
 
 .turn.whisper {
-    padding-left: 10px;
+    padding-left: 14px;
     border-left: 2px solid var(--accent-dim);
 }
 

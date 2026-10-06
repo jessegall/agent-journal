@@ -1,4 +1,5 @@
 <script setup>
+import {clamp} from "../format/number.js";
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {useOutside} from "../composables/outside.js";
 
@@ -10,10 +11,17 @@ const props = defineProps({
     maxWidth: {type: Number, default: 0},
     maxHeight: {type: Number, default: 0},
     gap: {type: Number, default: 4},
+    height: {type: Number, default: 0},
+    plain: Boolean,
 });
 const panel = ref(null);
 const px = (value) => (value ? `${value}px` : undefined);
-const size = computed(() => ({minWidth: px(props.minWidth), maxWidth: px(props.maxWidth), maxHeight: px(props.maxHeight)}));
+const size = computed(() => ({
+    minWidth: px(props.minWidth),
+    maxWidth: px(props.maxWidth),
+    maxHeight: px(props.maxHeight),
+    height: px(props.height),
+}));
 const EDGE = 8;
 const drawn = ref({w: 0, h: 0});
 const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
@@ -27,7 +35,6 @@ const windowOf = (anchor) => {
     const win = anchor.closest(".pane, .float-window");
     return win ? onScreen(win.getBoundingClientRect()) : viewport();
 };
-const clampTo = (value, low, high) => Math.max(low, Math.min(high, value));
 const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : room)}px`;
 
 function room(bounds, edge) {
@@ -52,7 +59,7 @@ const place = computed(() => {
     const space = room(bounds, edge);
     const {w, h} = drawn.value;
     const leftward = props.align === "auto" ? edge.left + edge.right > bounds.left + bounds.right : props.align === "right";
-    const x = clampTo(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
+    const x = clamp(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
     const up = h > space.below && space.above > space.below;
     const vertical = up
         ? {bottom: `${window.innerHeight - edge.top + props.gap}px`, maxHeight: within(props.maxHeight, space.above)}
@@ -89,7 +96,7 @@ function follow() {
 onMounted(() => {
     measure();
     if (panel.value) watcher.observe(panel.value);
-    if (items()[0]) items()[0].focus();
+    if (!props.plain && items()[0]) items()[0].focus();
     follow();
 });
 onUnmounted(() => {
@@ -108,7 +115,7 @@ defineExpose({element: panel});
 <style scoped>
 .menu-panel {
     position: absolute;
-    z-index: 40;
+    z-index: 90;
     display: flex;
     flex-direction: column;
     gap: 2px;

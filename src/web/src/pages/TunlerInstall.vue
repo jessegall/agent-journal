@@ -4,11 +4,12 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import FormField from "../kit/FormField.vue";
 import TextInput from "../kit/TextInput.vue";
+import {tunnelStatus} from "../composables/shares.js";
 
 const REPOSITORY = "https://github.com/jessegall/tunler";
 
 const emit = defineEmits(["installed"]);
-const server = ref("");
+const server = ref(tunnelStatus.value?.server || "");
 const busy = ref(false);
 const failure = ref("");
 
@@ -27,8 +28,8 @@ async function install() {
 
 <template>
     <form class="tunler-install" @submit.prevent="install">
-        <FormField label="Server" hint="the tunler server to install from and connect to">
-            <TextInput :value="server" placeholder="tunler.example.com" @input="server = $event.target.value" />
+        <FormField label="Tunler server address" for="tunler-install-server" help="The address of the tunler server.">
+            <TextInput id="tunler-install-server" :value="server" placeholder="tunler.example.com" @input="server = $event.target.value" />
         </FormField>
         <template v-if="failure">
             <p class="tunler-install-failure">{{ failure }}</p>

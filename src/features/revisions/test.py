@@ -34,6 +34,32 @@ def test_edits_change_the_open_revision_and_a_kept_one_never_changes():
     assert "has revisions 1 to 3" in refused(lambda: mine.action("revision")(doc.n, 4)), "a revision out of range is refused"
 
 
+def test_documents_start_final_except_when_they_wait_for_an_answer():
+    record = fresh()
+    docs = Docs(record, actor=AGENT)
+    finished = docs.create("Finished guide")
+    waiting = docs.create("Choose the design", buttons=[{"label": "Approve", "say": "Approved", "choice": "approval"}])
+    assert (finished.status, waiting.status) == ("final", "draft")
+    docs.update(waiting.n, pressed=["Approve"])
+    assert docs.load(waiting.n).data["pressed"] == ["Approve"]
+    docs.draft(finished.n)
+    assert docs.load(finished.n).status == "writing", "the draft command marks a document that is still being written"
+
+
+def test_old_documents_that_ask_nothing_are_made_final_by_migration():
+    from migrations.m0066_finished_docs_are_final import run
+
+    record = fresh()
+    docs = Docs(record, actor=AGENT)
+    plain = docs.create("Finished old draft", status="draft")
+    waiting = docs.create("Waiting old draft", status="", buttons=[{"label": "Yes", "choice": "answer", "say": "Yes"}])
+    writing = docs.create("Being written", status="writing", open_until=time.time() + 300)
+    own = docs.create("Answered in words", status="draft", buttons=[{"label": "Yes", "choice": "answer", "say": "Yes"}], answered_own="Something else")
+    chosen = docs.create("Chosen answer", status="draft", buttons=[{"label": "Yes", "choice": "answer", "say": "Yes"}, {"label": "No", "choice": "answer", "say": "No"}], pressed=["Yes"])
+    run(record.root)
+    assert (docs.load(plain.n).status, docs.load(waiting.n).status, docs.load(writing.n).status, docs.load(own.n).status, docs.load(chosen.n).status) == ("final", "draft", "writing", "final", "final")
+
+
 def test_moving_a_real_record_into_doc_folders_keeps_every_doc_file_and_revision(tmp_path):
     import shutil
     from pathlib import Path
@@ -58,5 +84,5 @@ def test_moving_a_real_record_into_doc_folders_keeps_every_doc_file_and_revision
         except (ValueError, TypeError):
             return False
     docs_ = Docs(Record(tmp_path, "main"), actor=USER)
-    assert sorted(f"{n:03d}" for n in docs_.numbers() if readable(docs_._text(n))) == sorted(n for n, text in before.items() if readable(text)), \
+    assert sorted(f"{n:03d}" for n in docs_.rows.numbers() if readable(docs_.rows.text(n))) == sorted(n for n, text in before.items() if readable(text)), \
         "the store reads every moved doc back by its number, as readable as it was"

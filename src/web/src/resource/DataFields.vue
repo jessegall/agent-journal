@@ -1,7 +1,7 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {meta} from "../state/store.js";
 import ChoiceList from "../kit/ChoiceList.vue";
 import DropList from "../kit/DropList.vue";
 import LineList from "../kit/LineList.vue";
@@ -33,7 +33,7 @@ const shapeOf = (name) =>
             ? "choice"
             : kind.value.fields[name];
 
-const shown = computed(() =>
+const visibleFields = computed(() =>
     kind.value.shown_fields.map((name) => ({
         name,
         label: kind.value.labels[name] || name,
@@ -46,8 +46,7 @@ const save = (name, value) => api.act(props.resource.type, props.resource.n, "se
 const lines = (value) => (Array.isArray(value) ? value.join("\n") : String(value || ""));
 const choices = (field) =>
     kind.value.choices[field.name].map((option) => ({value: option, label: option, current: field.value === option}));
-const pickedLabel = (field) =>
-    (picks.value[field.name] || []).find((item) => item.key === String(field.value ?? ""))?.label || "Choose…";
+const pickedLabel = (field) => (picks.value[field.name] || []).find((item) => item.key === String(field.value ?? ""))?.label || "Choose…";
 const fixedText = (field) => (field.value ? (field.name === "plan" ? `plan ${field.value}` : String(field.value)) : "—");
 
 function pick(field, item) {
@@ -58,7 +57,7 @@ function pick(field, item) {
 
 <template>
     <section class="data-fields">
-        <template v-for="field in shown" :key="field.name">
+        <template v-for="field in visibleFields" :key="field.name">
             <div :class="['data-field', field.shape]">
                 <span class="data-label">{{ field.label }}</span>
                 <SwitchCase :value="field.shape">

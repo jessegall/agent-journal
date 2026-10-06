@@ -1,10 +1,10 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
+import {isActive, journalState, silentIn, STATE_WORDS} from "../domain/journals.js";
+import {useHub} from "../composables/hub.js";
+import {SILENT, stateOf} from "../domain/agentState.js";
 import {computed} from "vue";
 import {api} from "../api/client.js";
-import {STATE_WORDS, isActive, journalState, silentIn, useHub} from "../sync/hub.js";
-import {SILENT} from "../domain/agentStates.js";
-import {stateOf} from "./statusline.js";
-import {agent} from "../state/store.js";
 import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 

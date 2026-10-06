@@ -18,19 +18,19 @@ const now = useNow();
 const minutes = computed(() => Number(((store.settings && store.settings.agent_sessions) || {}).recent ?? 60));
 const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= minutes.value * 60));
 const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
-const dropped = computed(() => props.rows.length - recent.value.length);
+const hidden = computed(() => Math.max(0, props.total - listed.value.length));
 const running = computed(() => props.rows.filter((r) => r.running).length);
 const summary = computed(
     () =>
         `${running.value} running, ${props.total} ${props.started} in this session` +
-        (dropped.value ? `, ${dropped.value} older than ${minutes.value} minutes not shown.` : ".")
+        (hidden.value ? `, ${hidden.value} earlier not shown.` : ".")
 );
 
 const asked = ref(new Set());
 
 async function stop(row) {
     asked.value = new Set([...asked.value, row.task_id]);
-    await api.act("agent", props.agent, "stop_task", {task: row.task_id, description: row.task || row.command || row.task_id});
+    await api.stopTask(props.agent, row.task_id, row.task || row.command || row.task_id);
 }
 
 function lasted(row) {

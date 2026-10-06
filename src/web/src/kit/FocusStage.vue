@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, onUnmounted} from "vue";
+import {useEscape} from "../composables/windowEvent.js";
 
 const props = defineProps({
     open: Boolean,
@@ -12,9 +12,10 @@ const props = defineProps({
     brisk: Boolean,
 });
 const emit = defineEmits(["close"]);
-const onKey = (e) => props.open && e.key === "Escape" && emit("close");
-onMounted(() => props.escapes && window.addEventListener("keydown", onKey));
-onUnmounted(() => window.removeEventListener("keydown", onKey));
+useEscape(
+    () => emit("close"),
+    () => props.escapes && props.open
+);
 </script>
 
 <template>

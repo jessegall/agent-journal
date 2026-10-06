@@ -56,7 +56,8 @@ def test_notes_items_and_drops_change_only_an_update():
 
 
 def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_not():
-    from runner.hooks import displayed
+    from providers.payload import Chunk
+    from runner.chat_mirror import displayed
     from engine.sessions import Sessions
     from features.sequences.controller import Sequences
     from features.sequences.shipped import ship
@@ -67,13 +68,13 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     ship(record)
     sequences = Sequences(record, actor=SYSTEM)
-    writing = next(s for s in sequences.summaries() if s["title"] == "Writing an update")
-    trigger = next(t for t in Triggers(record, actor=SYSTEM)._every() if t.title == "Writing an update")
+    writing = next(s for s in sequences.rows.summaries() if s["title"] == "Writing an update")
+    trigger = next(t for t in Triggers(record, actor=SYSTEM).rows.every() if t.title == "Writing an update")
     assert (trigger.words_in, sequences.load(writing["n"]).starts_on) == ("user", f"trigger:{trigger.n}"), \
         "the sequence starts on its own trigger, which watches only what the user writes"
 
-    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True,
-                            "delta": "TL;DR: the tests pass."})
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True,
+                            "delta": "TL;DR: the tests pass."}))
     assert sequences.load(writing["n"]).runs == {}, "the agent saying it starts nothing"
     Messages(record, actor=USER).create("tldr?")
     assert len(sequences.load(writing["n"]).runs) == 1, "the user asking starts writing an update"
@@ -82,17 +83,27 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
 def test_a_commit_reminds_the_agent_it_may_write_an_update_at_most_hourly():
     features.load()
     record = fresh()
-    record.set_cursor_text("close_from_commits", "aaa")
+    record.event_log.set_cursor_text("close_from_commits", "aaa")
     report(record, "idle", "Stop")
     offers = lambda: [n for n in nudges(record) if n.startswith("you committed work")]
     assert offers() == [], "the first commit seen only sets the mark"
-    record.set_cursor_text("close_from_commits", "bbb")
-    record.set_cursor_text("update-offered", "aaa 0")
+    record.event_log.set_cursor_text("close_from_commits", "bbb")
+    record.event_log.set_cursor_text("update-offered", "aaa 0")
     report(record, "idle", "Stop")
     assert len(offers()) == 1, "a new commit reminds the agent once"
-    record.set_cursor_text("close_from_commits", "ccc")
+    record.event_log.set_cursor_text("close_from_commits", "ccc")
     report(record, "idle", "Stop")
     assert len(offers()) == 1, "another commit within the hour says nothing more"
+    waiting = recap(record, "What happened")
+    record.event_log.set_cursor_text("update-offered", "ccc 0")
+    record.event_log.set_cursor_text("close_from_commits", "ddd")
+    report(record, "idle", "Stop")
+    assert len(offers()) == 1, "no offer while an update the user has not read waits, even long after the last one"
+    assert record.event_log.cursor_text("update-offered") == "ddd 0", "the unread update held the offer back and kept the old mark"
+    Reports(record, actor=USER).read(waiting.n)
+    record.event_log.set_cursor_text("close_from_commits", "eee")
+    report(record, "idle", "Stop")
+    assert record.event_log.cursor_text("update-offered") != "ddd 0", "once it is read, the next commit after the hour offers again and restarts the hour"
 
 
 def test_an_update_report_never_starts_the_sequence_for_research_reports():
@@ -103,7 +114,7 @@ def test_an_update_report_never_starts_the_sequence_for_research_reports():
     record = fresh()
     report(record, "idle", "Stop")
     ship(record)
-    writing = Sequences(record, actor=SYSTEM)._titled("Writing a report")
+    writing = Sequences(record, actor=SYSTEM).rows.by_title("Writing a report")
     Reports(record, actor=AGENT).action("recap")("Two fixes landed.")
     assert not Sequences(record, actor=SYSTEM).load(writing.n).runs, "an update is written by recap, not part by part"
     Reports(record, actor=AGENT).create("What the review found", brief="the answer")

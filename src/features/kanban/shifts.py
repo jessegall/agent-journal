@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from features.kanban.lanes import ASKED, DOING, DONE, HELD, LANES, TODO, Sources, lane_of
-from resources.base import Refused
+from resources.base import Ref, Refused
 
 WHY, HOW = "why", "how"
 
@@ -28,8 +28,8 @@ class Unblock(Shift):
     def refusal(self, sources: Sources, todo) -> str:
         waits = sources.todos.waits(todo)
         if waits:
-            other = waits[0].split(":")[1]
-            return f"todo {todo.n} waits on {waits[0].replace(':', ' ')}: journal todo after {todo.n} {other} --off drops the wait"
+            other = Ref.parse(waits[0])
+            return f"todo {todo.n} waits on {other.spoken}: journal todo after {todo.n} {other.n} --off drops the wait"
         placement = sources.holding(todo)
         if placement:
             return f"plan {placement.n} holds todo {todo.n} until its phase {placement.phase}"
@@ -42,7 +42,7 @@ class Unblock(Shift):
 class Close(Shift):
     def refusal(self, sources: Sources, todo) -> str:
         waits = sources.todos.waits(todo)
-        return f"todo {todo.n} waits on {', '.join(w.replace(':', ' ') for w in waits)}: close that first" if waits else ""
+        return f"todo {todo.n} waits on {', '.join(Ref.parse(w).spoken for w in waits)}: close that first" if waits else ""
 
     def run(self, todos, todo, why: str, how: str):
         return todos.complete(todo.n, how or "closed on the board")

@@ -1,4 +1,7 @@
 <script setup>
+import {stopAgentNamed} from "../actions/agents.js";
+import {planButton} from "../domain/plans.js";
+import {agentLine, countsOf, envState, focusOf, idleNote, isActive, planMeter, STATE_WORDS} from "../domain/journals.js";
 import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -7,8 +10,6 @@ import Meter from "../kit/Meter.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import Switch from "../kit/Switch.vue";
 import AgentStopButton from "../chat/AgentStopButton.vue";
-import {planButton} from "./statusline.js";
-import {STATE_WORDS, agentLine, countsOf, envState, focusOf, idleNote, planMeter} from "../sync/hub.js";
 import {useNow} from "../composables/now.js";
 
 const props = defineProps({env: {type: Object, required: true}, server: {type: Object, required: true}});
@@ -21,7 +22,12 @@ const now = useNow(30000);
 <template>
     <div :class="['jt-env', envState(env)]">
         <div class="jt-env-line">
-            <StatusLabel :class="['jt-env-state', {silent: env.silent}]" :state="envState(env)" :note="idleNote(env, now)">
+            <StatusLabel
+                :class="['jt-env-state', {silent: env.silent}]"
+                :state="envState(env)"
+                :lit="isActive(envState(env))"
+                :note="idleNote(env, now)"
+            >
                 {{ STATE_WORDS[envState(env)] }}
             </StatusLabel>
             <a class="jt-env-name" :href="server.page(env.name)">{{ env.name }}</a>
@@ -33,8 +39,8 @@ const now = useNow(30000);
             </span>
             <span class="jt-env-agent">{{ agentLine(env) }}</span>
             <template v-if="env.owner">
-                <Chip :title="`The journal steers this agent for ${env.owner.replace(':', ' ')}; it needs no auto mode`">
-                    Steered by {{ env.owner.replace(":", " ") }}
+                <Chip :title="`The journal runs this agent for ${env.owner.replace(':', ' ')}, so auto mode is not needed`">
+                    Controlled by {{ env.owner.replace(":", " ") }}
                 </Chip>
             </template>
             <template v-else>
@@ -54,7 +60,7 @@ const now = useNow(30000);
                     quiet
                     :environment="env.name"
                     :work="envState(env) === 'working' && env.work ? env.work.title : ''"
-                    :stop="() => server.in(env.name).stopAgentNamed(env.name)"
+                    :stop="() => stopAgentNamed(server.in(env.name), env.name)"
                     @stopped="emit('changed')"
                 />
             </template>

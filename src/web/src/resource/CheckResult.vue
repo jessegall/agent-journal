@@ -10,6 +10,7 @@ import {checkState, seconds, VERDICTS} from "../domain/checks.js";
 import CheckProgress from "./CheckProgress.vue";
 import CheckRuns from "./CheckRuns.vue";
 import CheckFindings from "./CheckFindings.vue";
+import UnitTextInput from "../kit/UnitTextInput.vue";
 
 const props = defineProps({resource: Object});
 const now = useNow();
@@ -37,10 +38,9 @@ watch(
     }
 );
 
-
 async function save(key, value) {
     if (String(value) === String(props.resource.data[key] ?? "")) return;
-    await api.act("check", props.resource.n, "set", {key, value: String(value)});
+    await api.setCheck(props.resource.n, key, value);
 }
 </script>
 
@@ -56,7 +56,7 @@ async function save(key, value) {
                         {{ last.ok ? "passed" : `failed with exit ${last.code}` }} {{ age(last.at) }} in
                         {{ seconds(last.took) }}
                     </template>
-                    <template v-else>press Run to see where it stands</template>
+                    <template v-else>press Run to check now</template>
                 </span>
             </div>
             <span class="grow" />
@@ -78,7 +78,7 @@ async function save(key, value) {
         <h3>Configuration</h3>
         <label class="field">
             <span class="label">Command</span>
-            <span class="help">Run from the project root; exit 0 passes, anything else fails</span>
+            <span class="help">Run from the project root; Exit code 0 means pass; anything else means fail.</span>
             <textarea v-model="command" class="command" rows="2" spellcheck="false" @change="save('command', command)" />
         </label>
         <label class="field inline">
@@ -86,8 +86,17 @@ async function save(key, value) {
                 <span class="label">Runs by itself every</span>
                 <span class="help">0 runs it only by hand or from its button</span>
             </span>
-            <input v-model.number="every" class="every" type="number" min="0" @change="save('every', every)" />
-            <span class="unit">minutes</span>
+            <UnitTextInput
+                class="every"
+                type="number"
+                min="0"
+                unit="minutes"
+                :value="every"
+                @change="
+                    every = Number($event.target.value);
+                    save('every', every);
+                "
+            />
         </label>
     </section>
     <template v-if="state.verdict !== 'running' && last.report">
@@ -195,7 +204,6 @@ async function save(key, value) {
 }
 
 .help,
-.unit,
 .lead {
     color: var(--text-3);
     font-size: 12px;
@@ -205,8 +213,7 @@ async function save(key, value) {
     margin: 0 0 8px;
 }
 
-.command,
-.every {
+.command {
     padding: 7px 9px;
     border: 1px solid var(--border-2);
     border-radius: 6px;
@@ -221,12 +228,10 @@ async function save(key, value) {
 }
 
 .every {
-    width: 72px;
-    text-align: right;
+    width: 160px;
 }
 
-.command:focus,
-.every:focus {
+.command:focus {
     border-color: var(--accent);
     outline: none;
 }

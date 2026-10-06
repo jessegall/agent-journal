@@ -1,3 +1,4 @@
+import hashlib
 import importlib
 import importlib.util
 from functools import cache
@@ -5,12 +6,14 @@ from pathlib import Path
 
 from engine import bus
 from engine.package import modules
+from engine.stored import write_text
 
 FEATURES: dict[str, object] = {}
 SWITCHED: list = []
 RENAMED: set[str] = set()
 SEATED: dict[str, int] = {}
 CHANGE_SWITCHES = ("feature", "plugin")
+SEATED_STAMP = "features-seated"
 
 
 @cache
@@ -19,40 +22,76 @@ def names() -> list[str]:
 
 
 def load(root: Path | None = None) -> list[str]:
-    from features.base import REGISTRY
-    from features.renames import rename
+    discover()
+    if root:
+        rename_aliases(root)
+    wire()
+    subscribe()
+    if root:
+        sync_rows(root)
+    return sorted(FEATURES)
+
+
+def discover() -> None:
     for name in names():
         importlib.import_module(f"features.{name}.feature")
-    if root and str(root) not in RENAMED:
-        RENAMED.add(str(root))
-        for name, cls in REGISTRY.items():
-            for alias in cls.aliases:
-                old, key = alias if isinstance(alias, tuple) else (alias, "")
-                rename(root, old, f"{name}.{key}" if key else name)
-    from features.base import environments_changed, rebooted
+
+
+def rename_aliases(root: Path) -> None:
+    from features.base import REGISTRY
+    from features.renames import rename
+    if str(root) in RENAMED:
+        return
+    RENAMED.add(str(root))
+    rename(root, {was: now for cls in REGISTRY.values() for was, now in cls.renamed_from().items()})
+
+
+def wire() -> None:
+    from features.base import REGISTRY
     for name, cls in REGISTRY.items():
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
         FEATURES[name].wire()
+
+
+def subscribe() -> None:
+    from features.switches import environments_changed, rebooted
     if not SWITCHED:
         SWITCHED.extend([*(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
-    from features.base import generation
-    if root and SEATED.get(str(root)) != generation():
+
+
+def sync_rows(root: Path) -> None:
+    from features.switches import generation
+    if SEATED.get(str(root)) == generation():
+        return
+    stamp, kept = seating(root), Path(root) / SEATED_STAMP
+    if not kept.is_file() or kept.read_text() != stamp:
         seat(root)
-        SEATED[str(root)] = generation()
-    return sorted(FEATURES)
+        write_text(kept, stamp)
+    SEATED[str(root)] = generation()
+
+
+def seating(root: Path) -> str:
+    from engine.paths import environments
+    homes = sorted(p.name for p in environments(root).glob("*") if p.is_dir())
+    return hashlib.sha256("\n".join([*sorted(FEATURES), "", *homes]).encode()).hexdigest()
+
+
+def running(feature: type):
+    return FEATURES.get(feature.name)
 
 
 def seat(root: Path) -> None:
     from controllers.types import Features
+    from engine.paths import environments
     from engine.record import Record
-    from features.base import booted
+    from features.switches import booted
     from resources.base import SYSTEM
-    for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
+    for home in sorted(p for p in environments(root).glob("*") if p.is_dir()):
         record = Record(root, home.name)
         rows = Features(record, actor=SYSTEM)
-        known = {r.title: r for r in rows._every()}
+        known = {r.title: r for r in rows.rows.every()}
         for name, feature in FEATURES.items():
             if name not in known:
                 rows.create(name, enabled=feature.default_for(root))
@@ -66,19 +105,14 @@ def seat(root: Path) -> None:
 
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
-    from features.base import clear_global_entries, rebooted
-    from engine.gates import AFTERWARDS, CANCELERS, POLICIES
-    from features.format import FORMATTERS
-    from engine.wording import APPENDS
+    from features.switches import rebooted
+    from engine.extension import clear_all
+    from engine.memo import forget_all
     COMMANDS.clear()
     HANDLERS.clear()
-    FORMATTERS.clear()
     bus.clear()
-    POLICIES.clear()
-    AFTERWARDS.clear()
-    CANCELERS.clear()
-    APPENDS.clear()
-    clear_global_entries()
+    clear_all()
+    forget_all()
     FEATURES.clear()
     SWITCHED.clear()
     SEATED.clear()
@@ -90,7 +124,7 @@ def describe() -> dict:
 
 
 def passed(event, record) -> None:
-    from features.base import rebooted
+    from features.switches import rebooted
     if event.data.get("setting"):
         record.reread_settings()
     elif event.type in CHANGE_SWITCHES:

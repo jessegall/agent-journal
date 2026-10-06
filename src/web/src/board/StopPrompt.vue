@@ -7,7 +7,7 @@ const emit = defineEmits(["stop", "keep", "close"]);
 </script>
 
 <template>
-    <Dialog :title="`Stop #${move.card.n}'s agent?`" @close="emit('close')">
+    <Dialog :title="`Stop #${move.card.n}'s agent?`" fits @close="emit('close')">
         <p class="text">It is working on {{ move.card.title }}. Its branch and its changes stay either way.</p>
         <div class="actions">
             <Btn small @click="emit('close')">Cancel</Btn>

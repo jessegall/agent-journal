@@ -1,15 +1,19 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.groups import Group
 
 
-class AttachmentsDetails(FeatureDetails):
+class AttachmentDescriptionsDetails(FeatureDetails):
+    explains = 'The journal reads attached files and gives the agent a short description. You can open the files yourself at any time.'
     name = "attachment_descriptions"
+    group = Group.RECORDS
+    label = "Read attachments for the agent"
     has_skill = False
 
-    title = "Describing attachments"
+    title = "Read attachments"
 
     abstract = """
-        An attached file is read for the agent — a video sampled into frames — and each image or
-        video is described in a few searchable words
+        Files you attach are read for the agent, and videos are turned into still frames. Each image
+        and video gets a short description you can search.
     """
 
     help = """
@@ -26,12 +30,11 @@ class AttachmentsDetails(FeatureDetails):
         Behaviour(
             name="tagging",
             title="Ask for a description of each image and video",
-            abstract="The agent is told when a media file has no tags yet",
         ),
         Behaviour(
             name="frames",
-            title="Sample a video into frames",
-            abstract="Needs ffmpeg and ffprobe on the machine",
+            title="Turn videos into still frames",
+            abstract="Needs ffmpeg",
         ),
     ]
 

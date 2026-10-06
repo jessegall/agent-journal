@@ -1,4 +1,5 @@
-import {meta, types, word} from "../state/store.js";
+import {meta, types} from "./spec.js";
+import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
 const ENDED = ["done", "abandoned"];
@@ -6,11 +7,11 @@ const UNSTARTED = ["building", "ready", "approved"];
 
 export const GROUPS = {
     started: "In progress",
-    parked: "Parked",
+    parked: "Paused",
     blocked: "Blocked",
     planned: "Planned",
     waiting: "Waiting on others",
-    asked: "Waiting on you",
+    asked: "Needs you",
     open: "Open",
 };
 
@@ -81,14 +82,12 @@ export const state = (r) =>
                   ? "started"
                   : "open";
 
-export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notified.includes("user");
-
 export function happened(r) {
     const kind = meta(r.type);
     const action = r.completed ? "completed" : "created";
     const label = (kind.event_labels || {})[action];
     if (label) return label;
-    return r.completed ? `${kind.title} ${word(r.type, "complete")}` : `${kind.title} created`;
+    return r.completed ? `${kind.title} closed` : `${kind.title} created`;
 }
 
 export function missed(since) {
@@ -96,3 +95,5 @@ export function missed(since) {
         .filter((n) => !n.deleted && !n.completed && n.created * 1000 >= since && !n.seen.includes("user"))
         .sort((a, b) => b.created - a.created);
 }
+
+export const recordCount = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;

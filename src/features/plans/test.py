@@ -7,14 +7,13 @@ import features
 
 from features.plans.controller import Plans  # noqa: E402
 from features.boards.controller import Boards
-from features.plans.progress import catch_up
 from tests.kit import Tickets
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from features.work_tracking.next import ready
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
-from tests.kit import idle
+from tests.kit import idle, tick
 
 
 @dataclass(frozen=True)
@@ -72,6 +71,14 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert refused(lambda: by_agent.approve(plan.n)) == "only the user can approve a plan: they do it in the viewer", "not the agent"
     assert refused(lambda: by_agent.start(plan.n)) == f"plan {plan.n} waits for the user to approve it", "nor start one not approved"
     assert ready(record) == [], "a plan not yet started holds its rows: next skips them"
+    by_agent.review(plan.n)
+    assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is under review: its reviewers' report comes first", \
+        "a plan under review cannot be approved"
+    from controllers.types import Reports
+    review = Reports(record, actor=AGENT).create("what the reviewers found")
+    Reports(record, actor=AGENT).link(review.n, plan.ref)
+    assert by_agent.load(plan.n).data["status"] == "building", "linking the reviewers' report hands it back for revising"
+    by_agent.ready(plan.n)
     by_user.approve(plan.n)
     by_agent.start(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
@@ -82,8 +89,8 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     todos.complete(1, "done")
     assert by_agent.load(plan.n).data["current"] == 1, "one row done: the phase is not complete"
     Todos(record, actor=AGENT).complete(2, "done")
-    assert (by_agent.load(plan.n).data["current"], [e for e in record.events() if e.type == "plan"][-1].actor,
-            [e for e in record.events() if e.type == "plan"][-1].data) == \
+    assert (by_agent.load(plan.n).data["current"], [e for e in record.event_log.events() if e.type == "plan"][-1].actor,
+            [e for e in record.event_log.events() if e.type == "plan"][-1].data) == \
         (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False, "cause": AGENT}), \
         "every row done: the next phase is current, by the feature, as SYSTEM, caused by the agent"
     assert ready(record)[0].n == 3, "next offers the new phase's row"
@@ -121,7 +128,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     Plans(auto, actor=USER).approve(run.n)
     Plans(auto, actor=USER).start(run.n)
     auto_todos.complete(a, "done")
-    assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.events() if e.type == "plan"][-1].data["passed"]) == \
+    assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.event_log.events() if e.type == "plan"][-1].data["passed"]) == \
         ("active", 2, True), "with auto on, a checkpoint phase complete moves straight on, and the event says it was passed"
     auto.features = {"work_tracking.auto": False}
     quick.phase(run.n, "Late gate", checkpoint=True)
@@ -135,8 +142,9 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto.features = {"work_tracking.auto": True}
     Agents(auto, actor=AGENT).by_session("claude-1")
     idle(auto)
+    tick(auto)
     assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"]) == ("active", 4), \
-        "auto switched on while a plan waits: the next agent activity continues it"
+        "auto switched on while a plan waits: the engine's next clock tick continues it"
     from controllers.types import Environments
     Environments(auto, actor=USER).create("ticket-8", owner="ticket:8")
     steered = Record(auto.root, "ticket-8")
@@ -154,6 +162,22 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     steered_todos.complete(e, "done")
     assert gated.load(held.n).data["status"] == "waiting", \
         "a ticket's environment is always in auto, yet its plan's checkpoint waits for the orchestrator or the user"
+    from features.work_tracking.next import ready
+    stuck, soon, later = (auto_todos.create(title).n for title in ("waits on the production rollout", "next phase work", "independent work two phases on"))
+    blocked_first = quick.create("Blocked first", goal="keeps moving")
+    quick.phase(blocked_first.n, "Fix first")
+    quick.phase(blocked_first.n, "Then")
+    quick.phase(blocked_first.n, "Last")
+    quick.place(blocked_first.n, 1, [stuck])
+    quick.place(blocked_first.n, 2, [soon])
+    quick.place(blocked_first.n, 3, [later])
+    quick.ready(blocked_first.n)
+    Plans(auto, actor=USER).approve(blocked_first.n)
+    Plans(auto, actor=USER).start(blocked_first.n)
+    assert {soon, later}.isdisjoint(r.n for r in ready(auto)), "while its phase has work to do, the later phases' rows wait"
+    auto_todos.block(stuck, "waits on the production rollout")
+    assert {soon, later} <= {r.n for r in ready(auto)} and quick.load(blocked_first.n).data["current"] == 1, \
+        "once only blocked rows are left in a phase, every later phase's rows are offered, and the phase stays open until its row closes"
 
 
 def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):
@@ -287,6 +311,11 @@ def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_onc
     by_agent.place(building.n, 1, [kept, dropped])
     todos.strike(dropped, "no longer part of it")
     assert by_agent.load(building.n).phases[0]["todos"] == [kept], "a row struck before approval leaves the plan"
+    todos.complete(kept, "done early")
+    by_agent.ready(building.n)
+    todos.reopen(kept, "half of it is still to do")
+    assert (by_agent.load(building.n).data["status"], by_agent.load(building.n).data["current"]) == ("ready", 1), \
+        "a row reopened before approval leaves the plan waiting for the user's go"
     approved = by_agent.create("approved", goal="rows stay on the record")
     by_agent.phase(approved.n, "only phase", when="its rows close")
     row = todos.create("struck after approval").n
@@ -302,7 +331,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     record = fresh()
     started = []
     monkeypatch.setattr(Tickets, "start", lambda self, n, agent=None: started.append(n))
-    monkeypatch.setattr("features.plans.worker.start_agent_in", lambda record, name, worktree, abstract, owner, prompt: started.append(name))
+    monkeypatch.setattr("features.tickets.worker.start_agent_in", lambda record, name, worktree, abstract, owner, prompt: started.append(name))
     board = Boards(record, actor=USER).create("Product")
     tickets = Tickets(record, actor=USER)
     first, second = (tickets.create(title, board=board.n) for title in ("Search", "Share"))
@@ -318,7 +347,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 1 and f"ticket:{first.n}" in plans.load(plan.n).refs, "a phase holds tickets and the plan links them"
     assert started == [f"plan-{plan.n}", first.n], "starting the plan starts its worker agent and the first phase's tickets"
     tickets.complete(first.n, how="merged", yes=True)
-    catch_up(record)
+    Plans(record, actor=SYSTEM)._catch_up()
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"
@@ -334,7 +363,7 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
         Environments(record, actor=SYSTEM).create(name, owner=owner)
         launched.append(prompt)
 
-    monkeypatch.setattr("features.plans.worker.start_agent_in", start_agent_in)
+    monkeypatch.setattr("features.tickets.worker.start_agent_in", start_agent_in)
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: handed.append(n))
     monkeypatch.setattr("agents.terminal.detached", lambda *args, **kwargs: launched.append("a ticket agent"))
     board = Boards(record, actor=USER).create("Product")

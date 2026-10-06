@@ -2,7 +2,7 @@ import time
 
 import features
 from controllers.base import COMMANDS
-from features.hosting.apps import ticket_apps
+from features.hosting.services import ticket_apps
 from engine.services import specs
 from features.tickets.controller import Tickets
 from resources.base import USER
@@ -37,7 +37,7 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
 def test_hosting_services_follow_the_feature_switch():
     from controllers.types import Features
     from engine.runtime import set_env
-    from features.base import booted
+    from features.switches import booted
 
     features.load()
     record = fresh()

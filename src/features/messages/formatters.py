@@ -2,7 +2,7 @@ import re
 
 from features.parts import Context, TextFormatter
 from resources.types import TYPES
-from features.command_line import command_line
+from engine.command_line import command_line
 
 CODE = re.compile(r"(?<![`\w./-])(?:journal\s+([a-z_]+)(?:\s+([a-z_]+))?|--[a-z][a-z-]*)(?![`\w])")
 

@@ -1,10 +1,14 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.trigger import Trigger, USES
+from features.groups import Group
 
 
-class SkillsDetails(FeatureDetails):
+class SkillLoadingDetails(FeatureDetails):
+    explains = 'The journal reminds the agent to load the guidance it needs after a fresh start. You can see which skills it loaded.'
     name = "skill_loading"
+    group = Group.SKILLS
+    trigger_label = "Remind the agent to load the journal skill"
     has_skill = False
 
     title = "Skill loading"
@@ -12,7 +16,7 @@ class SkillsDetails(FeatureDetails):
     aliases = ("skills",)
 
 
-    abstract = "An agent working on with no journal skill is told once per context window to load one"
+    abstract = "Tells the agent to load the journal skill when it has not, once each time its context starts fresh."
 
     help = """
         A session start or compaction opens a fresh window; triggers.skills sets how long the
@@ -24,28 +28,23 @@ class SkillsDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="reload",
-            title="Hold writes after a compaction until the journal skill is loaded again",
-            abstract="A fresh window starts without the skill; the first write waits for Skill: journal",
+            title="After the conversation is summarized, block file changes until the journal skill is loaded",
         ),
         Behaviour(
             name="chat",
-            title="Show each skill the agent loads as a line in the chat",
-            abstract="Loaded skill and its name, in faint green, where it happened in the conversation",
+            title="Show each loaded skill in the chat",
         ),
         Behaviour(
             name="always",
-            title="Hold tool calls at a session start until every always-on skill is loaded",
-            abstract="The skills switched to every start on the Skills page, and after a compaction the ones used shortly before it",
+            title="At a session start, block tool calls until the session-start skills are loaded",
         ),
         Behaviour(
             name="keywords",
-            title="Load a skill when one of its keywords comes up",
-            abstract="A skill's keywords, from its frontmatter or the Skills page, in what the user writes",
+            title="Load a skill when one of its words appears",
         ),
         Behaviour(
             name="stale",
-            title="Hold tool calls when an every-start skill changed since it was loaded",
-            abstract="The every-start skills are loaded again before the next call; the rest are only named once",
+            title="When a session-start skill changes, block tool calls until it is reloaded",
         ),
     ]
 
@@ -53,22 +52,20 @@ class SkillsDetails(FeatureDetails):
         Setting(
             name="most_refusals",
             default=5,
-            title="Refuse tool calls for a missing skill at most",
-            abstract="After this many refusals in a row the calls go through for a while, so an agent is never stuck",
+            title="Block tool calls at most",
+            abstract="After that, tool calls are allowed for a while",
             unit="times",
         ),
         Setting(
             name="steps_aside",
             default=10,
             title="Then let tool calls through for",
-            abstract="After these, the missing skill is asked for again",
-            unit="tool uses",
+            unit="tool calls",
         ),
         Setting(
             name="recent",
             default=5,
-            title="After a compaction, also reload the skills last used, this many",
-            abstract="Besides the every-start skills, the ones loaded most recently before the context was compacted; other skills are asked for again only if they were never loaded",
+            title="After the conversation is summarized, also reload this many recently used skills",
             unit="skills",
         ),
     ]

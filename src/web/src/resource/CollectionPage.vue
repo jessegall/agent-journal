@@ -1,10 +1,10 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import EmptyState from "../kit/EmptyState.vue";
 import {computed, inject, reactive, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
-import {meta} from "../state/store.js";
 import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
 import ResourceBody from "./ResourceBody.vue";
@@ -77,8 +77,7 @@ function hidePreview(r) {
             <section class="cards" aria-label="In this collection">
                 <template v-if="!members.length">
                     <EmptyState class="empty">
-                        Nothing in this collection yet. Add a row from its actions, or with journal collection add
-                        {{ resource.n }} &lt;ref&gt;.
+                        Nothing in this collection yet. Add an item to this collection.
                     </EmptyState>
                 </template>
                 <template v-for="r in cards" :key="r.ref">

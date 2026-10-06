@@ -10,7 +10,7 @@ from engine.wording import counted
 
 
 def settled(record: Record, event: Event) -> bool:
-    rows = spoken_data(record, event).get("rows") or []
+    rows = event_data(record, event).get("rows") or []
     return bool(rows) and all(finished(record, ref) for ref in rows)
 
 
@@ -22,7 +22,7 @@ def finished(record: Record, ref: str) -> bool:
         return False
 
 
-def spoken_data(record: Record, event: Event) -> dict:
+def event_data(record: Record, event: Event) -> dict:
     if not TYPES[event.type].typed_as_title:
         return {}
     try:
@@ -54,13 +54,13 @@ class Actor(ABC):
     def notify(self, event: Event) -> None: ...
 
     def cursor(self) -> int:
-        return self.record.cursor(self.name)
+        return self.record.event_log.cursor(self.name)
 
     def delivered_until(self) -> int:
         return self.cursor()
 
     def notified(self, event: Event) -> None:
-        self.record.set_cursor(self.name, event.id)
+        self.record.event_log.set_cursor(self.name, event.id)
 
 
 class User(Actor):
@@ -87,16 +87,23 @@ class Agent(Actor):
         super().__init__(record)
         self.driver = driver
         self.pending: list[Event] = []
+        self.scanned = self.cursor()
 
     def notify(self, event: Event) -> None:
         self.pending.append(event)
+        self.scanned = max(self.scanned, event.id)
 
     def delivered_until(self) -> int:
-        return self.pending[-1].id if self.pending else self.cursor()
+        return self.scanned
+
+    def notified(self, event: Event) -> None:
+        self.scanned = max(self.scanned, event.id)
+        if not self.pending:
+            self.record.event_log.set_cursor(self.name, self.scanned)
 
     def delivered(self, done: list[Event]) -> None:
         reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)
-        row = agents._titled(reported.title) if reported is not None else None
+        row = agents.rows.by_title(reported.title) if reported is not None else None
         if row is None:
             return
         earlier = [] if row.status in (IDLE, STOPPED) else list(row.delivered)
@@ -106,17 +113,18 @@ class Agent(Actor):
         if not self.pending or not self.driver.ready():
             return ""
         for e in [e for e in self.pending if settled(self.record, e)]:
-            self.notified(e)
             self.pending.remove(e)
-        yielding = [e for e in self.pending if spoken_data(self.record, e).get("yields")]
+            self.notified(e)
+        yielding = [e for e in self.pending if event_data(self.record, e).get("yields")]
         line, groups = render([e for e in self.pending if e not in yielding], self.record)
         sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
         done = list(self.pending) if sent else []
         for e in done:
             if TYPES[e.type].stamped_when_notified:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
-            self.notified(e)
         self.pending = [e for e in self.pending if e not in done]
+        for e in done:
+            self.notified(e)
         if not sent:
             return ""
         self.delivered(done)
@@ -139,7 +147,7 @@ class Agent(Actor):
         return self.active()
 
     def active(self) -> str:
-        return WORKING if Works(self.record, actor=SYSTEM)._standing() else BUSY
+        return WORKING if Works(self.record, actor=SYSTEM).rows.standing() else BUSY
 
     def mark(self, status: str, event: str, **more) -> None:
         agents = Agents(self.record, actor=SYSTEM)

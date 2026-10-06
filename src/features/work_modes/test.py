@@ -1,7 +1,8 @@
 import features
 from controllers.types import Agents, Nudges, Works
 from features.session_briefing.start import start_block
-from features.work_modes.modes import NAME, mode_of, pick
+from features.work_modes.details import NAME
+from features.work_modes.modes import mode_of, pick
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from runner.hooks import handle
@@ -25,10 +26,13 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     Agents(record, actor=SYSTEM).create("claude-1")
     assert mode_of(record) == "builder" and "WORK MODE" not in start_block(record), "builder is the default, and a start says nothing of it"
     assert "one of builder, orchestrator, solo" in refused(lambda: pick(record, "lazy", USER)), "only the three modes are taken"
-    pick(record, "orchestrator", USER)
+    from commands.http import dispatch
+    assert dispatch("POST", f"/api/{record.env}/mode", record.root, {}, {"mode": "lazy"}).code == 400, "the viewer's switch refuses another mode in words"
+    assert dispatch("POST", f"/api/{record.env}/mode", record.root, {}, {"mode": "orchestrator"}).body == {"mode": "orchestrator"}, \
+        "the viewer's mode switch picks the mode"
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
     assert len(told(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
-    assert NAME in [e.data.get("setting") for e in record.events()], "the viewer hears the change and follows it"
+    assert NAME in [e.data.get("setting") for e in record.event_log.events()], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
     assert len(told(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
 

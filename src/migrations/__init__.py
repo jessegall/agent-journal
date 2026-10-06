@@ -6,7 +6,8 @@ import shutil
 import time
 from pathlib import Path
 from engine.package import modules
-from engine.stored import hold_record_writes, write_text
+from engine.locks import hold_record_writes
+from engine.stored import write_text
 from engine.fields import Loaded
 from dataclasses import dataclass
 from resources.base import Refused
@@ -84,21 +85,27 @@ def run(root: Path) -> list[str]:
     import features
     features.load()
     root = Path(root)
+    if not pending(applied(root)):
+        return []
     with hold_record_writes(root):
         return run_locked(root)
 
 
+def pending(done: dict) -> list[str]:
+    return [name for name in names() if name not in done]
+
+
 def run_locked(root: Path) -> list[str]:
     done = applied(root)
-    pending = [name for name in names() if name not in done]
-    if not pending:
+    if not pending(done):
         return []
     backup = backed_up(root) if root.is_dir() and any((root / name).exists() for name in RECORD) else None
     ran = []
+    steps = {name: importlib.import_module(f"migrations.{name}").run for name in pending(done)}
+    last = {step: name for name, step in steps.items()}
     try:
-        for name in pending:
-            module = importlib.import_module(f"migrations.{name}")
-            result = module.run(root)
+        for name, step in steps.items():
+            result = step(root) if last[step] == name else "runs once, at its last place in this batch"
             done[name] = {"at": time.time(), "result": result}
             root.mkdir(parents=True, exist_ok=True)
             write_text(ledger(root), json.dumps(done, indent=2))

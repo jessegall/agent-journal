@@ -1,5 +1,3 @@
-import os
-
 from controllers.types import Agents, Notices
 from tests.kit import handle
 from providers import DRIVERS, PROVIDERS
@@ -13,7 +11,7 @@ def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answer
     hook = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "git push"}}
 
     def waiting():
-        return [n.title for n in Notices(record, actor=SYSTEM)._standing() if n.data.get("action") == "permission"]
+        return [n.title for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
 
     handle(provider, record.root, record.env, {**hook, "hook_event_name": "PreToolUse"})
     assert waiting() == [], "a tool use alone asks for nothing"
@@ -29,7 +27,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
         ["--dangerously-skip-permissions", "--model", "opus", "--resume", "abc"], "skip on, resumed in place of continue"
     assert claude.skipping(["--dangerously-skip-permissions", "x"], False) == ["x"], "skip off drops the flag"
-    from features.permission_prompts.feature import launch_args
+    from features.permission_prompts.skipping import launch_args
     typed = fresh()
     typed.set_setting("permission_prompts", {"skip": False})
     assert (launch_args(typed, "claude", ["--dangerously-skip-permissions"]), typed.setting("permission_prompts", {}).get("skip")) == \
@@ -91,7 +89,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
 
 def test_every_flag_typed_at_launch_reaches_the_agent_whatever_the_switch_says():
     from providers import DRIVERS
-    from features.permission_prompts.feature import launch_args
+    from features.permission_prompts.skipping import launch_args
     for name, driver in DRIVERS.items():
         typed = ["--model", "opus", "--some-flag", "value", *driver.SKIP_ARGS]
         for skip in (True, False):
@@ -112,28 +110,6 @@ def test_the_start_asks_about_permission_prompts_only_when_the_flag_is_not_typed
     assert record.setting("permission_prompts", {}).get("skip") is False, "No keeps the prompts, and is remembered"
 
 
-def test_the_start_offers_to_carry_on_the_environments_last_session():
-    from tests.kit import asked_resume
-    from engine.sessions import Sessions
-    record = fresh()
-    assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == [], "nothing to carry on, nothing asked"
-    Sessions(record.root).bind("old-thread", record.env, pid=999999, provider="codex")
-    Sessions(record.root).bind("5e3c0a1f-conversation", record.env, pid=999999, provider="claude")
-    assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == ["resume", "old-thread"], "yes resumes that environment's own session"
-    assert asked_resume(record, "claude", ["--model", "opus"], ask=lambda _: "2", answering=True) == ["--model", "opus"], "no starts a new one"
-    assert asked_resume(record, "claude", ["-c"], ask=lambda _: "1", answering=True) == ["-c"], "a typed continue is the answer already"
-    from tests.kit import defaults
-    assert asked_resume(record, "codex", [], ask=defaults, answering=True) == ["resume", "old-thread"], "--no-interaction takes the default without asking"
-    Sessions(record.root).bind("claude-4242", record.env, pid=999999, provider="claude")
-    assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == ["--resume", "5e3c0a1f-conversation"], "a supervisor's name is no conversation"
-    from tests.kit import answer
-    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": "5e3c0a1f-conversation", "cwd": str(record.root.parent)}, os.getpid())
-    assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == [], "a conversation restarted under a new process is still running"
-    Sessions(record.root).bind("7a1d-in-the-worktree", "0922-disposal-date", pid=999999, provider="claude")
-    assert asked_resume(record, "claude", ["--worktree", "0922-disposal-date"], ask=lambda _: "1", answering=True) == [
-        "--worktree", "0922-disposal-date", "--resume", "7a1d-in-the-worktree"], "a named worktree carries on its own last conversation"
-
-
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):
     from providers import PROVIDERS
     from providers.base import HookCommand
@@ -149,7 +125,7 @@ def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_pa
 
 
 def test_auto_mode_launches_each_agent_in_its_own_approval_mode():
-    from features.permission_prompts.feature import launch_args
+    from features.permission_prompts.skipping import launch_args
     record = fresh()
     record.features = {**record.features, "work_tracking.auto": True}
     record.set_setting("permission_prompts", {"skip": False})

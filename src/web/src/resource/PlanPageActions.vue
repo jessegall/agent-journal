@@ -28,12 +28,12 @@ const ENDED = ["done", "abandoned"];
         </template>
         <template v-if="!ENDED.includes(status)">
             <Btn title="Ask the agent to have other agents critique this plan" @click="critiquing = true">Ask for a critique</Btn>
-            <Btn kind="danger" @click="emit('run', 'abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
+            <Btn kind="danger" @click="emit('run', 'abandon', {why: 'stopped from the viewer'})">Close without finishing</Btn>
         </template>
         <template v-if="holdsTickets && !ENDED.includes(status)">
             <Switch
                 :on="shared"
-                word="One worktree for the whole plan"
+                word="One worktree (a separate working copy of the project) for the whole plan"
                 title="Every ticket of this plan is done by the plan's own agent in one worktree, one after another, instead of one worktree per ticket"
                 @change="emit('run', 'update', {worktree: shared ? 'each' : 'shared'})"
             />

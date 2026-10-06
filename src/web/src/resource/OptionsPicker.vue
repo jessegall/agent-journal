@@ -1,10 +1,11 @@
 <script setup>
+import {store} from "../state/store.js";
+import {word} from "../domain/spec.js";
 import TextInput from "../kit/TextInput.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
-import {word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
 import {answer, answered, dismiss} from "../chat/answers.js";
 import {route} from "../route.js";
@@ -17,7 +18,7 @@ const own = ref("");
 const changing = ref(false);
 const elaborated = ref(false);
 const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
-const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and I will choose.";
+const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and you choose.";
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
 const options = computed(() =>
     (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {
@@ -58,6 +59,8 @@ async function elaborate() {
         elaborated.value = false;
     }
 }
+
+const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
 </script>
 
 <template>
@@ -74,8 +77,8 @@ async function elaborate() {
             :steady="steady"
             :multiple="multiple"
             :chosen-many="chosenMany"
-            @pick="(i) => submit(options[i].title)"
-            @picks="(all) => submit(all.map((i) => options[i].title).join(MANY))"
+            :hold-seconds="holdSeconds"
+            :send="(choice) => submit([choice].flat().join(MANY))"
         />
         <template v-if="question.unsaved">
             <p class="unsaved">
@@ -86,7 +89,7 @@ async function elaborate() {
         <template v-if="settled && !steady">
             <template v-if="dismissed">
                 <div class="own-words">
-                    <span>Dismissed</span>
+                    <span>Closed</span>
                     <template v-if="given.reason">
                         <TextDisplay inline class="own-words-text" :text="given.reason" />
                     </template>
@@ -112,10 +115,10 @@ async function elaborate() {
                         <template v-if="resource.type === 'question' && !resource.data.hidden">
                             <Btn
                                 small
-                                title="Close this question without answering it; anything typed here goes with it as the reason"
+                                title="Close the question without answering. Anything you typed is sent as the reason."
                                 @click="dismiss(resource, own)"
                             >
-                                Dismiss
+                                Close
                             </Btn>
                         </template>
                         <Btn kind="primary" small @click="submit(own)">{{ capitalised(word(resource.type, "complete")) }}</Btn>

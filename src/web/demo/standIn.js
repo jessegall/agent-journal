@@ -6,6 +6,8 @@ const LATER = "The replay is not there yet";
 const MOVES = {approve: "approve", answer: "answer"};
 const PAGE = 25;
 
+export const STAND_IN = Symbol("demo stand-in");
+
 const asked = (url) => new URL(url, location.origin);
 const lately = (value) => typeof value === "number" && value > 1.6e9 && value < 2.2e9;
 const stripped = ({by, ...row}) => row;
@@ -16,20 +18,6 @@ export class StandIn {
         this.demo = demo;
         this.moments = demo.moments;
         this.state = readState() || this.fresh(0);
-        this.followed(this.state.branch);
-    }
-
-    followed(branch) {
-        const grown = branch && this.demo.branches[branch];
-        this.moments = grown ? [...this.demo.moments, ...grown] : this.demo.moments;
-        return Boolean(grown);
-    }
-
-    branched(label) {
-        if (!this.followed(label)) return false;
-        this.state.branch = label;
-        this.save();
-        return true;
     }
 
     walled(recorded) {
@@ -47,8 +35,8 @@ export class StandIn {
         const clock = this.state.clock;
         const after = clock.findIndex(([, at]) => at >= wall);
         if (after === 0 || after === -1) {
-            const [at, shown] = clock[after === 0 ? 0 : clock.length - 1];
-            return at + (wall - shown);
+            const [at, stamp] = clock[after === 0 ? 0 : clock.length - 1];
+            return at + (wall - stamp);
         }
         const [[from, fromWall], [to, toWall]] = [clock[after - 1], clock[after]];
         return from + ((wall - fromWall) * (to - from)) / (toWall - fromWall || 1);
@@ -61,10 +49,9 @@ export class StandIn {
     fresh(at) {
         const {rows, events, settings} = structuredClone(this.moments[at]);
         const sent = this.state ? this.state.sent : {};
-        const branch = this.state ? this.state.branch : null;
         const viewer = this.state ? this.state.settings.viewer : settings.viewer;
         const clock = [...(this.state ? this.state.clock : []), [this.moments[at].at, Date.now() / 1000]];
-        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, clock, sent, branch}));
+        return this.stamped(this.unbranded({at, rows, events, settings: {...settings, viewer}, clock, sent}));
     }
 
     unbranded(state) {
@@ -227,7 +214,8 @@ export class StandIn {
     write(parts, body) {
         const [, second, third, fourth] = parts;
         if (second === "settings") return this.change(() => this.saved(body));
-        if (second === "mode") return this.change(() => (this.state.settings.work_modes = {...this.state.settings.work_modes, mode: body.mode}));
+        if (second === "mode")
+            return this.change(() => (this.state.settings.work_modes = {...this.state.settings.work_modes, mode: body.mode}));
         if (parts.length === 1 || !this.moment.manifest.types[second]) return undefined;
         if (!third) return this.create(second, body);
         if (third === "linked_to") return [];
@@ -294,7 +282,7 @@ export class StandIn {
     }
 
     moved(row, action, body) {
-        if (!this.player.moved(action, row.n, body.how)) return {demo: true, notice: LATER};
+        if (!this.player.moved(action, row.n, body.how ?? body.text)) return {demo: true, notice: LATER};
         return stripped(this.held(row.type).find((r) => r.n === row.n) || row);
     }
 

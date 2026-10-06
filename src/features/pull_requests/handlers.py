@@ -1,7 +1,8 @@
 from engine.events.agents import ToolFinished
 from features.parts import AgentContext, Handler
 from features.pull_requests.details import OPEN
-from features.status_bar.runs import command_runs
+from engine.command_runs import command_runs
+from controllers.types import Notices
 
 OPENED = "create"
 
@@ -15,6 +16,6 @@ class PinPullRequests(Handler):
         if pull.pull == OPENED and pull.url:
             context.journal.notice(OPEN, number=pull.number, link=pull.url, label="Open the pull request", pull=pull.number, tone="note")
             return
-        for notice in context.journal.notices._standing():
+        for notice in context.journal.get(Notices).rows.standing():
             if notice.data.get("pull") and (not pull.number or notice.data.get("pull") == pull.number):
                 context.journal.clear(notice, f"pull request {pull.pull}d")

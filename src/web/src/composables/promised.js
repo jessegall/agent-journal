@@ -40,11 +40,11 @@ export function usePromised(released = () => {}) {
     }
 
     function keep(listed) {
-        const shown = new Set(listed.map((row) => row.ref));
-        const replaced = pending.value.filter((p) => !shown.has(p.ref));
+        const listedRefs = new Set(listed.map((row) => row.ref));
+        const replaced = pending.value.filter((p) => !listedRefs.has(p.ref));
         if (!replaced.length) return;
         replaced.forEach(released);
-        pending.value = pending.value.filter((p) => shown.has(p.ref));
+        pending.value = pending.value.filter((p) => listedRefs.has(p.ref));
     }
 
     const link = (real, placeholder) => linked.set(real, placeholder);

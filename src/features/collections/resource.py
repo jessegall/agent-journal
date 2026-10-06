@@ -24,3 +24,6 @@ class Collection(Shape, Resource):
     listed_as_cards = True
     command_names = {"complete": "close"}
     labels = {"abstract": "What belongs in it"}
+
+    def member_refs(self) -> list[str]:
+        return list(self.refs)

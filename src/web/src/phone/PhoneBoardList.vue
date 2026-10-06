@@ -1,12 +1,12 @@
 <script setup>
+import PhoneNavRow from "./PhoneNavRow.vue";
 import {ago} from "../format/time.js";
-import PhoneChevron from "./PhoneChevron.vue";
 import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
 
 defineProps({
     loaded: {type: Boolean, required: true},
     rows: {type: Array, required: true},
-    shown: {type: Array, required: true},
+    visibleRows: {type: Array, required: true},
     total: {type: Number, required: true},
     fresh: {type: Array, default: () => []},
     mark: {type: String, default: "New"},
@@ -21,20 +21,19 @@ const emit = defineEmits(["open", "more"]);
         </template>
         <template v-else-if="rows.length">
             <ul class="board-rows">
-                <template v-for="row in shown" :key="row.ref">
+                <template v-for="row in visibleRows" :key="row.ref">
                     <li>
-                        <button type="button" class="board-row" @click="emit('open', row.ref)">
+                        <PhoneNavRow class="board-row" @click="emit('open', row.ref)">
                             <span class="board-title">{{ row.title }}</span>
                             <template v-if="fresh.includes(row.ref)">
                                 <span class="board-new">{{ mark }}</span>
                             </template>
                             <span class="board-age">{{ ago(row.updated) }}</span>
-                            <PhoneChevron class="board-chevron" />
-                        </button>
+                        </PhoneNavRow>
                     </li>
                 </template>
             </ul>
-            <template v-if="rows.length > shown.length">
+            <template v-if="rows.length > visibleRows.length">
                 <button type="button" class="board-more" @click="emit('more')">
                     {{ total > rows.length ? `Show ${rows.length} of ${total}` : `Show all ${rows.length}` }}
                 </button>
@@ -64,24 +63,20 @@ const emit = defineEmits(["open", "more"]);
     list-style: none;
 }
 
-.board-rows li + li .board-row {
+.board-rows li + li .board-row :deep(.nav-row-chevron) {
+    color: var(--text-4);
+}
+
+.board-row {
     box-shadow:
         inset 16px 1px 0 var(--raised),
         inset 0 1px 0 var(--line);
 }
 
 .board-row {
-    display: flex;
-    align-items: center;
     gap: 8px;
-    width: 100%;
     min-height: 44px;
     padding: 11px 16px;
-    border: 0;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    text-align: left;
 }
 
 .board-row:active:not(:disabled),
@@ -113,11 +108,6 @@ const emit = defineEmits(["open", "more"]);
     flex: none;
     color: var(--text-3);
     font-size: 0.882rem;
-}
-
-.board-chevron {
-    flex: none;
-    color: var(--text-4);
 }
 
 .board-empty {

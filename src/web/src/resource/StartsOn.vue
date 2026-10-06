@@ -1,53 +1,74 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, ref} from "vue";
 import {api} from "../api/client.js";
+import {momentsOf} from "../domain/moments.js";
+import {open} from "../domain/records.js";
+import {types} from "../domain/spec.js";
+import {doesOf, startWords, startsOnTrigger, wordsText} from "../domain/triggerWords.js";
+import {peek} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
-import {meta, types} from "../state/store.js";
+import FormField from "../kit/FormField.vue";
+import NewResource from "./NewResource.vue";
+import Segmented from "../kit/Segmented.vue";
 
 const props = defineProps({resource: Object, bare: Boolean});
 const BY_HAND = "";
-const MOMENTS = {created: "is created", completed: "is finished"};
-const TRIGGERED = /^trigger:(\d+)$/;
-const changing = ref(false);
-const triggers = ref([]);
+const MODES = [
+    {key: "hand", label: "Only when you or the agent start it"},
+    {key: "event", label: "When something happens"},
+    {key: "trigger", label: "When a trigger matches"},
+];
+const making = ref(false);
+const error = ref("");
 
-const moment = computed(() => props.resource.data.starts_on || BY_HAND);
-const fired = computed(() => TRIGGERED.exec(moment.value));
-const chosenType = computed(() => (fired.value ? "" : moment.value.split(".")[0]));
-const chosenAction = computed(() => moment.value.split(".")[1] || "created");
-const trigger = ref(null);
-watch(
-    () => fired.value && fired.value[1],
-    async (n) => (trigger.value = n ? await api.show("trigger", Number(n)).catch(() => null) : null),
-    {immediate: true}
+const start = computed(() => props.resource.data.starts_on || BY_HAND);
+const editable = computed(() => !props.resource.data.system && !props.resource.completed);
+const stored = computed(() => (!start.value ? "hand" : startsOnTrigger(props.resource) ? "trigger" : "event"));
+const chosen = ref("");
+const mode = computed(() => chosen.value || stored.value);
+const kind = computed(() => start.value.split(".")[0]);
+const moment = computed(() => start.value.split(".")[1] || "");
+const kinds = computed(() =>
+    types.value.filter(
+        (t) => (t.in_sidebar || t.needs_attention || t.name === "board") && t.moments?.length && !["sequence", "trigger"].includes(t.name)
+    )
 );
-const heard = computed(() => (trigger.value ? trigger.value.data.words.map((w) => `“${w}”`).join(", ") : ""));
-const sentence = computed(() => {
-    if (moment.value === BY_HAND) return "Runs only when you or the agent start it.";
-    if (fired.value && heard.value) return `Starts by itself when you write ${heard.value} (trigger ${fired.value[1]}).`;
-    if (fired.value) return `Starts by itself when trigger ${fired.value[1]} fires.`;
-    return `Starts by itself when a ${(meta(chosenType.value).title || chosenType.value).toLowerCase()} ${MOMENTS[chosenAction.value]}.`;
+const triggers = computed(() => open("trigger"));
+const current = computed(() => triggers.value.find((t) => start.value === `trigger:${t.n}`));
+const sentence = computed(() =>
+    start.value
+        ? `Starts by itself ${startWords(props.resource).replace(/^When/, "when")}.`
+        : "It starts only when you or the agent start it."
+);
+
+async function save(value) {
+    error.value = "";
+    try {
+        await api.setStartsOn(props.resource.n, value);
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+
+function pickMode(key) {
+    chosen.value = key === stored.value ? "" : key;
+    if (key === "hand") save(BY_HAND);
+    if (key === "event" && stored.value !== "event") save(`${kinds.value[0].name}.created`);
+}
+
+const asTrigger = (t) => ({
+    value: `trigger:${t.n}`,
+    label: t.title,
+    hint: wordsText(t.data.words),
+    unavailable: t.data.does === "start" ? "" : `${doesOf(t.data.does).short} Set it to Start a sequence first.`,
+    current: start.value === `trigger:${t.n}`,
 });
-const kinds = computed(() => [
-    {value: BY_HAND, label: "Nothing, only by hand", current: moment.value === BY_HAND},
-    ...types.value
-        .filter((t) => (t.in_sidebar || t.needs_attention) && !["sequence", "trigger"].includes(t.name))
-        .map((t) => ({value: t.name, label: t.title, current: chosenType.value === t.name})),
-]);
-const firing = computed(() =>
-    triggers.value.map((t) => ({value: `trigger:${t.n}`, label: `${t.title} (trigger ${t.n})`, current: moment.value === `trigger:${t.n}`}))
+const kindChoices = computed(() => kinds.value.map((t) => ({value: t.name, label: t.title, current: kind.value === t.name})));
+const momentChoices = computed(() =>
+    momentsOf(kind.value).map((m) => ({value: m.value, label: m.label, current: moment.value === m.value}))
 );
-
-async function change() {
-    changing.value = !changing.value;
-    if (changing.value) triggers.value = (await api.all("trigger")).filter((t) => !t.completed && !t.deleted);
-}
-const actions = computed(() => Object.entries(MOMENTS).map(([value, label]) => ({value, label, current: chosenAction.value === value})));
-
-function save(value) {
-    return api.act("sequence", props.resource.n, "set", {key: "starts_on", value});
-}
+const others = computed(() => triggers.value.filter((t) => t.n !== current.value?.n).map(asTrigger));
 </script>
 
 <template>
@@ -55,23 +76,42 @@ function save(value) {
         <template v-if="!bare">
             <h3>When it starts</h3>
         </template>
-        <div class="starts-line">
-            <span>{{ sentence }}</span>
-            <template v-if="!resource.data.system">
-                <Btn small @click="change">{{ changing ? "Done" : "Change" }}</Btn>
+        <p class="sentence">{{ sentence }}</p>
+        <template v-if="editable">
+            <FormField label="How this sequence starts">
+                <Segmented fill wrap :options="MODES" :value="mode" @pick="pickMode" />
+            </FormField>
+            <template v-if="mode === 'event'">
+                <FormField label="Item that starts this sequence">
+                    <ChoiceList :choices="kindChoices" @pick="(type) => save(`${type}.created`)" />
+                </FormField>
+                <FormField label="Change that starts this sequence">
+                    <ChoiceList :choices="momentChoices" @pick="(value) => save(`${kind}.${value}`)" />
+                </FormField>
             </template>
-        </div>
-        <template v-if="changing">
-            <span class="starts-label">What starts it</span>
-            <ChoiceList :choices="kinds" @pick="(type) => save(type === BY_HAND ? BY_HAND : `${type}.${chosenAction}`)" />
-            <template v-if="firing.length">
-                <span class="starts-label">Or when a trigger fires</span>
-                <ChoiceList :choices="firing" @pick="save" />
+            <template v-if="mode === 'trigger'">
+                <template v-if="current">
+                    <FormField label="Trigger that starts this sequence">
+                        <div class="card">
+                            <span class="card-text">
+                                <span class="card-title">{{ current.title }}</span>
+                                <span class="card-note">Trigger {{ current.n }} · {{ wordsText(current.data.words) }}</span>
+                            </span>
+                            <Btn small @click="peek('trigger', current.n)">Open trigger</Btn>
+                        </div>
+                    </FormField>
+                </template>
+                <FormField :label="current ? 'Or pick another trigger' : 'Pick a trigger'">
+                    <ChoiceList stacked :choices="others" @pick="save" />
+                </FormField>
+                <Btn small @click="making = true">Make a new trigger for this sequence</Btn>
             </template>
-            <template v-if="moment !== BY_HAND && !fired">
-                <span class="starts-label">When that kind of row</span>
-                <ChoiceList :choices="actions" @pick="(action) => save(`${chosenType}.${action}`)" />
-            </template>
+        </template>
+        <template v-if="error">
+            <p class="error">{{ error }}</p>
+        </template>
+        <template v-if="making">
+            <NewResource type="trigger" :sequence="resource.n" @made="making = false" @close="making = false" />
         </template>
     </section>
 </template>
@@ -80,7 +120,7 @@ function save(value) {
 .starts {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     margin-top: 20px;
 }
 
@@ -97,16 +137,41 @@ h3 {
     margin-top: 0;
 }
 
-.starts-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.sentence {
+    margin: 0;
     color: var(--text-2);
 }
 
-.starts-label {
-    margin-top: 4px;
+.card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--raised);
+}
+
+.card-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.card-title {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.card-note {
     color: var(--text-3);
+    font-size: 12px;
+}
+
+.error {
+    margin: 0;
+    color: var(--danger);
     font-size: 12px;
 }
 </style>

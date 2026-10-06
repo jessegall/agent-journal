@@ -5,7 +5,7 @@ from pathlib import Path
 import features
 from runner.hooks import handle
 from features.session_briefing.start import start_block
-from features.journal_laws.policy import BEGIN, brief
+from features.journal_laws.briefing import BEGIN, brief
 from providers import PROVIDERS
 from tests.conftest import fresh
 from tests.kit import nudges, report
@@ -60,7 +60,7 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     Rules(record, actor=USER).inject(Rules(record, actor=USER).create("never deploy on Fridays", keywords="deploy").n)
     started()
     assert len(checking().runs) == 1, "a rule injected into the block is checked at the next start"
-    from features.journal_laws.policy import instructions_hash
+    from features.journal_laws.briefing import instructions_hash
     seen = instructions_hash(project, record)
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text().replace("cannot be switched off", "ship with every journal"))
     assert instructions_hash(project, record) == seen, "the block's own wording changing starts no check; its laws and injected rules do"
@@ -114,7 +114,7 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
 def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it():
     from controllers.types import Plugins
     from features import load
-    from features.plugins.source import folder, home
+    from features.plugins.paths import folder, home
     from resources.base import SYSTEM
     load()
     record = fresh()
@@ -134,15 +134,15 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     load()
     record = fresh()
     project = record.root.parent
-    (project / "long.py").write_text("x = 1\n" * 400)
+    (project / "long.py").write_text("x = 1\n" * 800)
     (project / "short.py").write_text("x = 1\n" * 20)
     hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-read", "tool_name": tool,
                                                                                         "cwd": str(project), "tool_input": given})
     whole = hook("Read", {"file_path": str(project / "long.py")})
-    assert whole.get("decision") == "block" and "has 400 lines" in whole.get("reason", "") and "read a range (offset 1, limit 120)" in whole.get("reason", "") and whole["hookSpecificOutput"]["permissionDecision"] == "deny", whole
+    assert whole.get("decision") == "block" and "has 800 lines" in whole.get("reason", "") and "read a range (offset 1, limit 120)" in whole.get("reason", "") and whole["hookSpecificOutput"]["permissionDecision"] == "deny", whole
     from controllers.types import Agents
     card = Agents(record).by_session("claude-read").data["cards"][-1]
-    assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("400 lines"), card
+    assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("800 lines"), card
     assert hook("Read", {"file_path": str(project / "long.py"), "offset": 1, "limit": 50}).get("decision") != "block", "a range passes"
     assert hook("Read", {"file_path": str(project / "short.py")}).get("decision") != "block", "a short file passes whole"
     (project / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n\0\0\0\r" + b"\n" * 900)
@@ -152,7 +152,7 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
     dropped = record.folder("dump") / "001" / "proposal.md"
     dropped.parent.mkdir(parents=True)
-    dropped.write_text("x = 1\n" * 400)
+    dropped.write_text("x = 1\n" * 800)
     assert hook("Read", {"file_path": str(dropped)}).get("decision") != "block", "a file dropped in a dump is read whole"
 
 
@@ -186,9 +186,9 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     card = Agents(record).load(agent.n).data["cards"][-1]
     assert card["label"] == "Cut 994 of 1,000 lines from a long output, kept whole as output 1" and card["command"] == row.title, card
     short = subprocess.run([str(src / "output_cap.sh"), wrapped.replace("seq 1 1000", "seq 1 5")], capture_output=True, text=True, env=env, timeout=20)
-    assert short.stdout.split() == ["1", "2", "3", "4", "5"] and Outputs(record).numbers() == [1], "short output passes whole and keeps no row"
+    assert short.stdout.split() == ["1", "2", "3", "4", "5"] and Outputs(record).rows.numbers() == [1], "short output passes whole and keeps no row"
     server = subprocess.run([str(src / "output_cap.sh"), "seq 1 1000"], capture_output=True, text=True, env=env, timeout=20)
-    assert len(server.stdout.splitlines()) == 1000 and Outputs(record).numbers() == [1], "an MCP server Claude starts through the prefix is never capped"
+    assert len(server.stdout.splitlines()) == 1000 and Outputs(record).rows.numbers() == [1], "an MCP server Claude starts through the prefix is never capped"
     Outputs(record).force_delete(1)
     assert not kept.exists(), "a pruned output takes its file with it"
     launched = output_cap(record.root, record.env, PROVIDERS["claude"]())
@@ -203,7 +203,7 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
     load()
     record = fresh()
     project = record.root.parent
-    (project / "long.py").write_text("x = 1\n" * 400)
+    (project / "long.py").write_text("x = 1\n" * 800)
     hook = lambda tool, given: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-read", "tool_name": tool,
                                                                                        "cwd": str(project), "tool_input": given})
     for tool, given in (("exec", {"input": "cat long.py"}), ("exec_command", {"cmd": "cat long.py"}), ("shell", {"command": ["cat", "long.py"]})):
@@ -213,7 +213,7 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
 
 
 def test_the_naming_law_follows_the_chosen_style():
-    from features.journal_laws.policy import carry, laws
+    from features.journal_laws.laws import carry, laws
     record = fresh()
     assert "a human name, a little quirky" in carry(record) and "Dr. Einstein" in dict((law.name, law.reason) for law in laws(record))["L5"], \
         "by default subagents are named after famous people with a twist"
@@ -226,18 +226,18 @@ def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band
     record = fresh()
     agents_md = record.root.parent / "AGENTS.md"
     agents_md.write_text("x" * 200_000)
-    report(record, "working", "PostToolUse", provider="claude")
+    report(record, "working", "PreToolUse", provider="claude")
     assert not [n for n in nudges(record) if n.startswith("AGENTS.md is")], "a Claude agent is not told about Codex's file"
-    report(record, "working", "PostToolUse", provider="codex")
-    report(record, "working", "PostToolUse", provider="codex")
+    report(record, "working", "PreToolUse", provider="codex")
+    report(record, "working", "PreToolUse", provider="codex")
     assert [n for n in nudges(record) if n.startswith("AGENTS.md is")] == [f"AGENTS.md is 200,000 bytes and Codex reads only its first {PROVIDERS['codex'].briefing_limit():,}"], \
         "the file past Codex's limit is told once"
     agents_md.write_text("x" * 210_000)
-    report(record, "working", "PostToolUse", provider="codex")
+    report(record, "working", "PreToolUse", provider="codex")
     assert len([n for n in nudges(record) if n.startswith("AGENTS.md is")]) == 2, "growing by another band tells it again"
     agents_md.write_text("x" * 100)
     (record.root.parent / "app").mkdir()
     (record.root.parent / "app" / "AGENTS.md").write_text("y" * 200_000)
-    report(record, "working", "PostToolUse", cwd=str(record.root.parent / "app"), provider="codex")
+    report(record, "working", "PreToolUse", cwd=str(record.root.parent / "app"), provider="codex")
     assert any(n.startswith("AGENTS.md with app/AGENTS.md is 200,100 bytes") for n in nudges(record)), \
         "every AGENTS.md Codex reads on the way to its working folder counts against the one budget"

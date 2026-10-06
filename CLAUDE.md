@@ -30,6 +30,10 @@ A subagent that drew a design, wrote the code or ran the research keeps what it 
 
 A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as "Dr. Einstein: profile the slow hooks" or "Coco Rams: draw the plan card". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.
 
+## Rules
+
+- Every viewer heading and label says plainly what it is about
+
 <!-- END: agent-journal, form 2 -->
 
 ## Dispatching subagents
@@ -52,3 +56,22 @@ A skill is read by the agent, so it exists only when it tells the agent what to 
 The default commands carry no hand-written tests. `tests/test_every_action.py` loops over every registered resource type and every action on its controller, and `tests/test_the_gate.py` loops over every provider; between them they cover create, read, update, complete and the rest for every type.
 
 A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
+
+<!-- BEGIN: code-commandments skills (auto-generated, run `composer update`) -->
+@AGENTS.md
+
+## Working here as Claude Code
+
+The briefing above is the canon, shared with every agent. These are the parts of it
+that have a specific name in this harness:
+
+- **Load a skill with the Skill tool**, by the exact id in the briefing's bullets —
+  e.g. `commandments-backend-absence`. The published skills are linked into
+  `.claude/skills/`, so they also autocomplete as `/`-commands.
+
+**The disciplines here are ENFORCED, not just written down.** Hooks are wired into
+`.claude/settings.json`: the cardinal rule resurfaces as you work, `judge` is nudged
+before risky commands and on stop. That is a property of this agent alone — under an
+agent with no hook protocol the same disciplines are documents you are asked to follow,
+and nothing checks that you did.
+<!-- END: code-commandments skills -->

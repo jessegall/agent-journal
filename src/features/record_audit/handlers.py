@@ -1,4 +1,5 @@
 from engine.events.engine import ClockTicked
+from engine.wording import plural
 from features.record_audit.audit import evidence
 from features.parts import WHOLE_FEATURE, AgentContext, Handler
 
@@ -9,5 +10,5 @@ class SayEvidence(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         found = evidence(context.record)
         if found:
-            context.agent.say("evidence", count=context.feature.plural(len(found), "thing"),
-                              found="; ".join(f"{f['ref']} {f['evidence']} — {f['retire']}" for f in found))
+            context.agent.say("evidence", count=plural(len(found), "thing"),
+                              found="; ".join(f"{f.ref} {f.evidence} — {f.retire}" for f in found))

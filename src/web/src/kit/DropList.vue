@@ -11,6 +11,8 @@ const props = defineProps({
     picked: {type: String, default: ""},
     empty: {type: String, default: "Nothing here"},
     wide: Boolean,
+    bare: Boolean,
+    menuWidth: {type: Number, default: 260},
 });
 const emit = defineEmits(["pick"]);
 const open = ref(false);
@@ -36,7 +38,7 @@ onUnmounted(() => document.removeEventListener("click", away, true));
 </script>
 
 <template>
-    <div ref="root" :class="['drop', {wide}]">
+    <div ref="root" :class="['drop', {wide, bare}]">
         <button type="button" :class="['drop-head', {on: open}]" :aria-expanded="open" @click="toggle">
             <template v-if="icon">
                 <Icon :name="icon" :size="12" />
@@ -45,7 +47,7 @@ onUnmounted(() => document.removeEventListener("click", away, true));
             <Icon name="chevron" :size="11" />
         </button>
         <template v-if="open">
-            <MenuPanel :min-width="260" :max-height="320">
+            <MenuPanel :min-width="menuWidth" :max-height="320">
                 <template v-for="item in items" :key="item.key">
                     <MenuItem :on="item.key === picked" @click="choose(item)">
                         <template v-if="item.running !== undefined">
@@ -76,6 +78,24 @@ onUnmounted(() => document.removeEventListener("click", away, true));
 
 .drop.wide {
     display: flex;
+}
+
+.drop.bare,
+.bare .drop-head {
+    height: 100%;
+}
+
+.bare .drop-head {
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--text-3);
+    padding: 0 10px;
+}
+
+.bare .drop-head:hover,
+.bare .drop-head.on {
+    color: var(--text);
 }
 
 .wide .drop-head {

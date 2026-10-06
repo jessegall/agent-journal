@@ -1,5 +1,5 @@
 export const SCHEMES = [
-    {key: "journal", name: "Journal", text: "The viewer's own colours", colors: {}},
+    {key: "journal", name: "Journal", text: "The default colors", colors: {}},
     {
         key: "github",
         name: "GitHub",
@@ -31,7 +31,7 @@ export const SCHEMES = [
     {
         key: "contrast",
         name: "High contrast",
-        text: "Black ground, bright text and strong colours",
+        text: "Black ground, bright text and strong colors",
         colors: {
             "--bg": "#000000",
             "--bg-2": "#000000",
@@ -59,7 +59,7 @@ export const SCHEMES = [
     {
         key: "soft",
         name: "Soft",
-        text: "Muted colours with gentle contrast, easy on the eyes",
+        text: "Softer colors with lower contrast",
         colors: {
             "--bg": "#1a1b1e",
             "--bg-2": "#16171a",

@@ -1,6 +1,6 @@
 <script setup>
-import PhoneChevron from "./PhoneChevron.vue";
-import {SILENT, SILENT_WORD} from "../domain/agentStates.js";
+import PhoneNavRow from "./PhoneNavRow.vue";
+import {SILENT, SILENT_WORD} from "../domain/agentState.js";
 
 defineProps({places: {type: Array, required: true}, here: {type: Function, required: true}});
 const silent = (place, name) => place.details?.[name]?.agent === SILENT;
@@ -21,7 +21,12 @@ const emit = defineEmits(["pick"]);
                 <ul class="place-rows">
                     <template v-for="name in place.environments" :key="name">
                         <li>
-                            <button type="button" class="place-row" :data-place="`${place.root}:${name}`" :aria-current="here(place, name) ? 'true' : undefined" @click="emit('pick', place, name)">
+                            <PhoneNavRow
+                                class="place-row"
+                                :data-place="`${place.root}:${name}`"
+                                :aria-current="here(place, name) ? 'true' : undefined"
+                                @click="emit('pick', place, name)"
+                            >
                                 <span :class="['place-state', {working: place.working.includes(name), silent: silent(place, name)}]" />
                                 <span class="place-env">{{ name }}</span>
                                 <template v-if="silent(place, name)">
@@ -30,8 +35,7 @@ const emit = defineEmits(["pick"]);
                                 <template v-if="here(place, name)">
                                     <span class="place-here">Current</span>
                                 </template>
-                                <PhoneChevron class="place-chevron" />
-                            </button>
+                            </PhoneNavRow>
                         </li>
                     </template>
                 </ul>
@@ -87,18 +91,9 @@ const emit = defineEmits(["pick"]);
 }
 
 .place-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
     min-height: 48px;
     padding: 10px 16px;
-    border: 0;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
     font-size: 1rem;
-    text-align: left;
 }
 
 .place-state {
@@ -135,10 +130,5 @@ const emit = defineEmits(["pick"]);
 .place-here {
     color: var(--accent-text);
     font-size: 0.824rem;
-}
-
-.place-chevron {
-    flex: none;
-    color: var(--text-3);
 }
 </style>

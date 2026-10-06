@@ -15,10 +15,14 @@ import pytest  # noqa: E402
 
 from engine.record import Record  # noqa: E402
 from engine.runtime import TESTS_RUNNING  # noqa: E402
+from engine import locks  # noqa: E402
+from controllers import stored  # noqa: E402
 
 
 def fresh(env: str = "t") -> Record:
-    return Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", env)
+    record = Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", env)
+    record.home.mkdir(parents=True)
+    return record
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
@@ -75,11 +79,50 @@ def free_port():
 
 
 @pytest.fixture(autouse=True)
-def viewer_ports(monkeypatch):
+def closed_handles():
+    yield
+    locks.close_all()
+    stored.close_all()
+
+
+@pytest.fixture(autouse=True)
+def ports_of_its_own(monkeypatch):
+    import engine.services as services
     import engine.viewer as viewer
-    ours = isolation.band()
+    ours, served = isolation.band(), isolation.band()
     monkeypatch.setattr(viewer, "PORTS", ours)
+    monkeypatch.setattr(services, "PORTS", served)
     monkeypatch.setenv("JOURNAL_VIEWER_PORTS", ",".join(map(str, ours)))
     yield
-    for port in ours:
+    for port in [*ours, *served]:
         isolation.release(port)
+
+
+@pytest.fixture(autouse=True)
+def outside_the_callers_session(monkeypatch):
+    for name in ("JOURNAL_ENV", "JOURNAL_SESSION", "JOURNAL_AGENT", "JOURNAL_ACTOR"):
+        monkeypatch.delenv(name, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def forgotten_memos():
+    from engine.memo import forget_all
+    forget_all()
+    yield
+
+
+_VIEWER_FUNCTIONS = {}
+
+
+@pytest.fixture(autouse=True)
+def viewer_functions_restored(request, monkeypatch):
+    import engine.viewer as viewer
+    names = ("running", "start", "launch", "show", "identity", "answers", "elsewhere", "available", "free")
+    if not _VIEWER_FUNCTIONS:
+        _VIEWER_FUNCTIONS.update({name: getattr(viewer, name) for name in names})
+    yield
+    monkeypatch.undo()
+    changed = [name for name in names if getattr(viewer, name) is not _VIEWER_FUNCTIONS[name]]
+    for name in changed:
+        setattr(viewer, name, _VIEWER_FUNCTIONS[name])
+    assert not changed, f"{request.node.nodeid} left engine.viewer.{', '.join(changed)} replaced for every later test"

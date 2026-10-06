@@ -29,7 +29,7 @@ def test_reports_and_todos_past_their_keep_days_are_archived_open_ones_never():
     assert (bool(reports.load(old_report.n).completed), reports.load(old_report.n).outcome) == (True, "aged out after 14 days"), \
         "a report past its keep days is archived, saying so"
     assert reports.load(fresh_report.n).completed == 0.0, "a fresh report stays"
-    assert ([t.n for t in todos.all()], [e.data["why"] for e in record.events() if e.type == "todo" and e.action == "deleted"]) == \
+    assert ([t.n for t in todos.all()], [e.data["why"] for e in record.event_log.events() if e.type == "todo" and e.action == "deleted"]) == \
         ([open_row.n], ["archived 7 days after it was closed"]), "a to-do closed past its keep days is archived, an open one never"
 
 
@@ -70,13 +70,13 @@ def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_re
     for r in rows[:2]:
         todos.complete(r.n, how="done")
     folder = todos.path(rows[0].n).parent
-    assert todos._pack(time.time() + 1) == 2, "only the closed rows are packed"
+    assert todos.rows.pack(time.time() + 1) == 2, "only the closed rows are packed"
     assert (todos.path(rows[0].n).exists(), any((folder / "packed").glob("????-??-??.zip"))) == (False, True), "their files are gone into the day's zip"
     assert [r.title for r in (todos.load(rows[0].n), todos.load(rows[1].n))] == ["row 0", "row 1"], "a packed row reads straight from the zip"
-    assert [row["n"] for row in todos.summaries()] == [r.n for r in rows], "and is still listed"
+    assert [row["n"] for row in todos.rows.summaries()] == [r.n for r in rows], "and is still listed"
     assert todos.create("next").n == rows[2].n + 1, "a new row never takes a packed row's number"
     todos.reopen(rows[0].n, "again")
-    assert (todos.path(rows[0].n).exists(), todos.load(rows[0].n).completed, [row["n"] for row in todos.summaries()].count(rows[0].n)) == (True, 0.0, 1), \
+    assert (todos.path(rows[0].n).exists(), todos.load(rows[0].n).completed, [row["n"] for row in todos.rows.summaries()].count(rows[0].n)) == (True, 0.0, 1), \
         "a packed row that changes is loose again, listed once"
     todos.force_delete(rows[1].n)
     try:
@@ -85,4 +85,35 @@ def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_re
     except Refused:
         pass
     todos.complete(rows[0].n, how="done again")
-    assert todos._pack(time.time() + 1) == 1 and todos.load(rows[0].n).completed, "packing into the same day again keeps the zip readable"
+    assert todos.rows.pack(time.time() + 1) == 1 and todos.load(rows[0].n).completed, "packing into the same day again keeps the zip readable"
+    gone = todos.create("a row whose file went missing")
+    todos.complete(gone.n, how="done")
+    todos.rows.summaries()
+    todos.path(gone.n).unlink()
+    assert todos.rows.pack(time.time() + 1) == 0, "a row the index still lists but whose file is gone is left out of the pack, never read"
+
+
+def test_packing_refuses_a_zip_that_does_not_read_back_and_a_damaged_zip_refuses_in_words(monkeypatch):
+    import zipfile
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    row = todos.create("a row to pack")
+    todos.complete(row.n, how="done")
+    folder = todos.path(row.n).parent
+    with monkeypatch.context() as bad:
+        bad.setattr(zipfile.ZipFile, "read", lambda self, name: b"not what was written")
+        try:
+            todos.rows.pack(time.time() + 1)
+            raise AssertionError("a zip that reads back wrong is refused")
+        except OSError as error:
+            assert "did not read back" in str(error), "the refusal says the zip did not read back as written"
+    assert (todos.path(row.n).is_file(), list((folder / "packed").glob("*.zip")), todos.load(row.n).title) == (True, [], "a row to pack"), \
+        "a wrong read-back keeps the loose file and leaves no zip"
+    assert todos.rows.pack(time.time() + 1) == 1, "the row packs on the next try"
+    (archive,) = (folder / "packed").glob("*.zip")
+    archive.write_bytes(b"this is not a zip")
+    try:
+        todos.load(row.n)
+        raise AssertionError("a damaged zip is refused")
+    except (Refused, zipfile.BadZipFile) as error:
+        assert isinstance(error, Refused) and "missing from" in str(error), "a damaged zip refuses in words on load, naming the zip"

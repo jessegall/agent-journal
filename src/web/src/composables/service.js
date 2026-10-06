@@ -1,6 +1,8 @@
 import {ref} from "vue";
 import {api} from "../api/client.js";
-import {usePoll} from "../poll.js";
+import {store} from "../state/store.js";
+import {rows} from "../sync/rows.js";
+import {usePoll} from "./poll.js";
 
 const LOG_EVERY = 2000;
 
@@ -44,3 +46,9 @@ export function useServiceLog() {
 
     return {reading, log, read};
 }
+
+export const ownerFeature = (name) => (store.spec && store.spec.features ? store.spec.features[name] : null);
+
+const installedAs = (name) => rows("plugin").find((p) => !p.completed && !p.deleted && (p.data.manifest || {}).name === name);
+
+export const ownerTitle = (name) => (ownerFeature(name) || installedAs(name) || {}).title || name;

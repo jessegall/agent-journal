@@ -1,7 +1,8 @@
 import time
 
 from controllers.types import Agents, Messages
-from features.skill_loading.catalogue import available, loaded_at
+from features.recital import mentioned
+from features.skill_loading.catalogue import available, keywords, loaded_at, loaded_before_compaction
 from resources.base import SYSTEM, USER
 
 
@@ -44,3 +45,10 @@ def load_now(record, name: str) -> str:
     require_primary(record, [name], time.time())
     Messages(record, actor=USER).create(f"Please load the {name} skill now", brief=f"Skill: {name} — every tool call waits until it is loaded.")
     return "the agent is asked, and its tool calls wait until the skill is loaded"
+
+
+def require_named(record, row, text: str) -> None:
+    loaded = {**loaded_before_compaction(row), **loaded_at(row)}
+    named = {name: time.time() for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}
+    if named:
+        require(record, row.title, named)

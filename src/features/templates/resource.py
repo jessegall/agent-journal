@@ -33,7 +33,7 @@ class Template(Shape, Resource):
               "an empty list means any type. journal template create \"<name>\" --brief \"<instructions>\" --set applies_to=plan writes one."),
     )
     type = "template"
-    event_labels = {"created": "Template written", "updated": "Template revised", "completed": "Template retired"}
+    event_labels = {"created": "Template written", "updated": "Template revised", "completed": "Template closed"}
     labels = {"brief": "Instructions"}
     icon = "docs"
     command_names = {"complete": "retire"}

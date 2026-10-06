@@ -1,6 +1,6 @@
+import {word} from "../domain/spec.js";
 import {api} from "../api/client.js";
 import {usePromised} from "../composables/promised.js";
-import {word} from "../state/store.js";
 
 const {pending, promise, change, drop} = usePromised();
 const givenFor = (question) => pending.value.find((p) => p.about === question.ref);

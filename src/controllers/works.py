@@ -1,16 +1,25 @@
 from controllers.base import Controller
 from resources import types
 from controllers.todos import Todos
+from controllers.marks import action
 
 
 class Works(Controller):
     resource = types.Work
 
+    @action
     def active(self):
-        return next((w for w in self._standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
+        return next((w for w in self.rows.standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
 
+    def _for_todo(self, n: int) -> list:
+        return [w for w in self.rows.standing() if int(w.todo) == int(n)]
+
+    def _unparked(self) -> list:
+        return [w for w in self.rows.standing() if not w.parked]
+
+    @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        self._gate(int(self.resource(data=self._shaped(data)).todo))
+        self._gate(int(self._given(data).todo))
         return super().create(title, abstract, brief, **data)
 
     def _gate(self, todo: int = 0) -> None:

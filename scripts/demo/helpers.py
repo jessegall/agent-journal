@@ -1,4 +1,4 @@
-from scripts.demo.session import Fork, Phase, Session
+from scripts.demo.session import Phase, Session
 
 NAME = "pebble-pantry"
 FIRST_COMMIT = "Pebble Pantry scales recipes"
@@ -52,7 +52,7 @@ JOKE = README + "It scales everything, even the dog's portion. Results may vary 
 USAGE = README + "```\npython3 -m pantry recipes/pancakes.json --guests 5\n```\n\nEggs come out whole; cups round to the nearest quarter.\n"
 
 
-def trunk(s: Session) -> Fork:
+def lesson(s: Session) -> None:
     s.started()
     s.stop()
     asked = s.user("Pebble Pantry scales recipes badly: 2.5 guests gives 3 eggs and 0.33333 cups. Plan the fix, and tell me which parts could go to helpers.")
@@ -102,48 +102,18 @@ def trunk(s: Session) -> Fork:
     s.reply(review, "Orchestrator mode it is: I plan, send and review, and leave the writing to the helpers.")
     s.shell("cat README.md")
     question = s.ask("Wren's README is off track. What should happen?", f"todo:{readme}",
-                     {"Stop Wren, send a fresh helper": "Wren stops; a new Claude helper writes the usage again",
-                      "Let Wren fix it": "Wren hears what is wrong and rewrites the section"})
-    return Fork(question, {"plan": plan, "tests": tests, "readme": readme, "quill": quill, "wren": wren})
-
-
-def fresh(s: Session, fork: Fork) -> None:
-    wren_seat = s.helper_seat("Wren Penwright", "claude")
-    s.helpers().stop(fork.rows["wren"])
-    s.ended(wren_seat)
-    s.journal("helper", "finish", str(fork.rows["wren"]))
-    moss = s.dispatch("Moss Inkwell", "Usage in the README", "claude", "haiku",
-                      "Rewrite the Usage section of README.md: scaling pancakes from 2 to 5 guests with python3 -m pantry, and how amounts round.")
-    s.say("Wren is stopped; its section joked about a dog instead of showing an example. Moss (Claude, haiku) writes it again.")
-    moss_seat = s.helper_seat("Moss Inkwell", "claude")
-    s.started(moss_seat)
-    s.journal("todo", "start", "1", seat=moss_seat)
-    s.write("README.md", USAGE, moss_seat)
-    s.journal("todo", "done", "1", "--how", "README has a Usage section with the pancakes example", seat=moss_seat)
-    s.journal("helper", "report", "README.md has a Usage section: scaling pancakes from 2 to 5 guests, and a line on how amounts round.", seat=moss_seat)
-    s.ended(moss_seat)
-    s.journal("helper", "finish", str(moss))
-    s.journal("todo", "done", str(fork.rows["readme"]), "--how", "Moss rewrote the usage after Wren was stopped")
-    s.stop()
-    together(s, fork, "Wren's README was stopped and Moss (Claude) wrote it again")
-
-
-def fixed(s: Session, fork: Fork) -> None:
-    wren_seat = s.helper_seat("Wren Penwright", "claude")
-    s.helpers().say(fork.rows["wren"], "The usage section jokes instead of showing how to run it. Show scaling pancakes from 2 to 5 guests with python3 -m pantry, and how amounts round.")
+                     {"Let Wren fix it": "Wren hears what is wrong and rewrites the section",
+                      "Stop Wren, send a fresh helper": "Wren stops; a new Claude helper writes the usage again"}, "Let Wren fix it")
+    s.answered(question)
+    s.helpers().say(wren, "The usage section jokes instead of showing how to run it. Show scaling pancakes from 2 to 5 guests with python3 -m pantry, and how amounts round.")
     s.say("Told Wren what is wrong: a real example instead of the joke.")
     s.write("README.md", USAGE, wren_seat)
     s.journal("todo", "done", "1", "--how", "The Usage section shows the pancakes example", seat=wren_seat)
     s.journal("helper", "report", "Rewrote the Usage section: scaling pancakes from 2 to 5 guests, and a line on how amounts round. No more dog.", seat=wren_seat)
     s.ended(wren_seat)
-    s.journal("helper", "finish", str(fork.rows["wren"]))
-    s.journal("todo", "done", str(fork.rows["readme"]), "--how", "Wren rewrote the usage with a real example")
+    s.journal("helper", "finish", str(wren))
+    s.journal("todo", "done", str(readme), "--how", "Wren rewrote the usage with a real example")
     s.stop()
-    together(s, fork, "Wren's README went off track and Wren rewrote it with a real example")
-
-
-def together(s: Session, fork: Fork, readme: str) -> None:
-    quill_seat = s.helper_seat("Quill Testwick", "codex", worktree=True)
     s.shell("git add -A && git commit -qm 'Cover every unit conversion with tests'", quill_seat)
     s.journal("todo", "done", "1", "--how", "tests/test_units.py covers flour, sugar and butter", seat=quill_seat)
     s.journal("helper", "report", "tests/test_units.py covers flour, sugar and butter in grams; butter is 227 g a cup. One commit in my worktree.", seat=quill_seat)
@@ -152,8 +122,8 @@ def together(s: Session, fork: Fork, readme: str) -> None:
     bring = s.user("Bring the Codex work into main.")
     s.journal("worktree", "take", str(s.worktree(quill_seat)))
     s.shell("python3 -m pytest -q 2>&1 | tail -1")
-    s.journal("helper", "finish", str(fork.rows["quill"]))
-    s.journal("todo", "done", str(fork.rows["tests"]), "--how", "Quill's tests are in main and pass")
+    s.journal("helper", "finish", str(quill))
+    s.journal("todo", "done", str(tests), "--how", "Quill's tests are in main and pass")
     s.reply(bring, "Quill's tests are in main and pass beside the rounding.")
     s.stop()
     looked = s.user("Did the helpers' work and yours fit together? Review it, then sum up.")
@@ -162,11 +132,9 @@ def together(s: Session, fork: Fork, readme: str) -> None:
                         {"The evidence": "The rounding and Quill's unit tests pass together; the README's example scales pancakes from 2 to 5 guests correctly.",
                          "What was already sound": "Eggs come out whole and cups round to quarters; the unit tests cover every conversion.",
                          "What remains uncertain": "grams() returns unrounded values such as 283.75 g; a kitchen scale reads whole grams."},
-                        [f"todo:{fork.rows['tests']}", f"todo:{fork.rows['readme']}"], "The helpers' work and mine fit, with one gap: grams aren't rounded.")
+                        [f"todo:{tests}", f"todo:{readme}"], "The helpers' work and mine fit, with one gap: grams aren't rounded.")
     s.journal("suggestion", "suggest", "Round grams to whole numbers", "--brief", "grams() returns 283.75 for 1.25 cups of butter; a scale reads whole grams.")
     s.reply(looked, f"They fit, with one gap: grams aren't rounded (report {report}), and I've suggested the fix. "
-                    f"Quill (Codex) wrote the unit tests in its worktree and they're in main; {readme}. I rounded the amounts and reviewed the rest.")
+                    "Quill (Codex) wrote the unit tests in its worktree and they're in main; Wren's README went off track and Wren rewrote it "
+                    "with a real example. I rounded the amounts and reviewed the rest.")
     s.stop()
-
-
-BRANCHES = {"Stop Wren, send a fresh helper": fresh, "Let Wren fix it": fixed}

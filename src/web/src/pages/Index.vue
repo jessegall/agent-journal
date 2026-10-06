@@ -1,4 +1,6 @@
 <script setup>
+import {meta, word} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import EmptyState from "../kit/EmptyState.vue";
 import TabBar from "../kit/TabBar.vue";
 import {useSighted} from "../composables/scrollback.js";
@@ -7,14 +9,12 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, route} from "../route.js";
-import {groupOf, GROUPS, open} from "../domain/records.js";
-import {counted, meta, store, word} from "../state/store.js";
-import {polled} from "../sync/polled.js";
-import {usePoll} from "../poll.js";
-import {earlier, paging, rows} from "../sync/rows.js";
+import {go, href, peek, route} from "../route.js";
+import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
+import {earlier, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
+import ResourceEnd from "../resource/ResourceEnd.vue";
 import CheckCard from "../resource/CheckCard.vue";
 import NewResource from "../resource/NewResource.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -37,10 +37,10 @@ const SHOWS = {
     every: () => all.value,
 };
 const COUNTS = {
-    open: () => counted(props.type, "open") - (splits.value ? updates.value.filter((r) => !r.completed).length : 0),
+    open: () => recordCount(props.type, "open") - (splits.value ? updates.value.filter((r) => !r.completed).length : 0),
     updates: () => updates.value.length,
-    closed: () => counted(props.type, "all") - counted(props.type, "open"),
-    every: () => counted(props.type, "all"),
+    closed: () => recordCount(props.type, "all") - recordCount(props.type, "open"),
+    every: () => recordCount(props.type, "all"),
 };
 const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
 watch(
@@ -56,10 +56,11 @@ const ORDERS = [
     {key: "title", label: "A to Z"},
 ];
 const search = ref(null);
+const libraryPane = ref(null);
 watch(
     library,
     async (on) => {
-        while (on && paging.more[props.type] && (await earlier(props.type)));
+        while (on && store.paging.more[props.type] && (await earlier(props.type)));
     },
     {immediate: true}
 );
@@ -67,7 +68,7 @@ useSlashFocus(search, () => library.value);
 const end = ref(null);
 const scrolled = ref(false);
 const moved = () => (scrolled.value = true);
-useSighted(end, () => scrolled.value && paging.more[props.type] && earlier(props.type));
+useSighted(end, () => scrolled.value && store.paging.more[props.type] && earlier(props.type));
 window.addEventListener("wheel", moved, {passive: true});
 window.addEventListener("touchmove", moved, {passive: true});
 onUnmounted(() => {
@@ -77,9 +78,8 @@ onUnmounted(() => {
 const listed = computed(() =>
     [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
         .filter((r) => !r.data?.hidden)
-        .sort((a, b) => b.created - a.created || b.n - a.n)
+        .sort((a, b) => Boolean(a.data.system) - Boolean(b.data.system) || b.created - a.created || b.n - a.n)
 );
-usePoll(...polled.ticketTodos);
 
 const groups = computed(() => {
     const buckets = {};
@@ -88,8 +88,7 @@ const groups = computed(() => {
         .filter((k) => buckets[k])
         .map((k) => ({
             key: k,
-            title:
-                k === "open" && filter.value !== "open" ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
+            title: k === "open" && filter.value !== "open" ? "Closed" : GROUPS[k],
             list: buckets[k],
         }))
         .concat(held.value);
@@ -97,7 +96,12 @@ const groups = computed(() => {
 
 const held = computed(() =>
     props.type === "todo" && filter.value === "open"
-        ? store.ticketTodos.map((h) => ({key: `ticket-${h.ticket}`, title: `Ticket ${h.ticket} · ${h.title} (${h.env})`, list: h.todos, env: h.env}))
+        ? store.ticketTodos.map((h) => ({
+              key: `ticket-${h.ticket}`,
+              title: `Ticket ${h.ticket} · ${h.title} (${h.env})`,
+              list: h.todos,
+              env: h.env,
+          }))
         : []
 );
 
@@ -122,7 +126,8 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
                     placeholder="Search titles, text and files"
                     aria-label="Find a document"
                     @input="query = $event.target.value"
-                    @keydown.esc="query = ''"
+                    @keydown.esc="query ? (query = '') : $event.target.blur()"
+                    @keydown.down.prevent="libraryPane?.focusFirst()"
                 />
                 <Segmented class="order" :options="ORDERS" :value="order" @pick="order = $event" />
             </template>
@@ -131,7 +136,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
             </template>
             <template v-if="kind.view === 'document'">
                 <span class="sep" />
-                <a class="flat" :href="`#/${route.env}/files`">Files</a>
+                <a class="flat" :href="href.page(route.env, 'files')">Files</a>
             </template>
             <span class="grow" />
             <template v-if="kind.created_in_viewer">
@@ -144,7 +149,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
         <template v-if="adding">
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
-        <template v-if="!listed.length">
+        <template v-if="!listed.length && !library">
             <EmptyState class="empty">
                 No {{ kind.title.toLowerCase() }}s
                 {{
@@ -158,12 +163,23 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
         </template>
         <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
             <template #library>
-                <DocumentLibrary :docs="listed" :query="query" :order="order" @open="(d) => select(d.n)" @clear="query = ''" />
+                <DocumentLibrary
+                    ref="libraryPane"
+                    :docs="listed"
+                    :query="query"
+                    :order="order"
+                    @open="(d) => peek('doc', d.n)"
+                    @clear="query = ''"
+                    @new="adding = true"
+                />
             </template>
             <template #document>
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">
-                        <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                        <div :class="['card-wrap', {shipped: r.data.system}]">
+                            <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                            <ResourceEnd :resource="r" />
+                        </div>
                     </template>
                 </div>
             </template>
@@ -233,11 +249,23 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
         padding: 0 10px;
     }
 
-    .bar.library .order,
     .bar.library .sep,
     .bar.library .new-word {
         display: none;
     }
+}
+
+.card-wrap {
+    position: relative;
+    display: flex;
+}
+
+.card-wrap > :first-child {
+    flex: 1;
+}
+
+.card-wrap.shipped > :first-child {
+    padding-bottom: 36px;
 }
 
 .empty {

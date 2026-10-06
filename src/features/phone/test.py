@@ -13,11 +13,14 @@ from typing import NamedTuple
 import pytest
 
 from controllers.base import Controller
+from controllers.features import Features
 from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
-from features.phone.controller import SAID, Phones
+from features.phone.controller import Phones
+from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
 from features.sharing.controller import Shares
+from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from features.sharing.services import wanted
 from resources.base import AGENT, SYSTEM, USER, Refused
@@ -29,6 +32,7 @@ def served():
     import features
     features.load()
     record = fresh()
+    Features(record, actor=USER).configure(SharingDetails.name, "host", "t.example")
     handler = type("Bound", (ShareHandler,), {"shares": Shares(record, actor=SYSTEM)})
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -82,7 +86,7 @@ def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
     call(base, "/p/")
     assert call(base, "/p/pair", {"code": code, "device": "Pixel"})[0] == 200, "looking at the page first does not use the code up"
     assert call(base, "/p/pair", {"code": code, "device": "Other"})[0] == 410, "a code connects one phone, once"
-    assert any("A phone connected" in row["title"] for row in Notices(record, actor=SYSTEM).summaries()), "a new phone is announced in the chat"
+    assert any("A phone connected" in row["title"] for row in Notices(record, actor=SYSTEM).rows.summaries()), "a new phone is announced in the chat"
     with pytest.raises(Refused):
         Phones(record, actor=USER).connect(7)
 
@@ -100,7 +104,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
                    capture_output=True, timeout=60, check=True)
     ticked = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
     assert ticked and "agent" in ticked[0]["seen"], "a read made in another process shows on the phone's next poll, so its ticks change"
-    assert len([m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
+    assert len([m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
     nods = {Messages(record, actor=AGENT).create(f"Noted {i}.", brief=f"Noted {i}.", acknowledgement=True).ref for i in range(45)}
     refs = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
     assert (f"message:{made['n']}" in refs, refs & nods) == (True, set()), \
@@ -136,7 +140,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     spoken = {"message": lambda: Messages(record, actor=AGENT).create("the build is green"),
               "question": lambda: Questions(record, actor=AGENT).create("Which port should it use"),
               "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"])}
-    assert set(spoken) == set(SAID), "every kind the phone's chat speaks is checked below"
+    assert set(spoken) == set(POSTED), "every kind the phone's chat speaks is checked below"
     for kind, make in spoken.items():
         row = make()
         fed = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
@@ -151,7 +155,8 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
     assert call(base, "/p/message", words, key, **{"X-Phone": ""})[0] == 403, "a write needs the phone page's header"
     assert call(base, "/p/message", words, key, **{"Content-Type": "text/plain"})[0] == 403, "a form post is refused"
     assert call(base, "/p/message", words, "not-a-key")[0] == 401, "a guessed key opens nothing"
-    assert not [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "x"]
+    assert call(base, "/p/", {}, key)[0] == 404, "a phone post without an action has no route"
+    assert not [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "x"]
 
 
 def test_a_disconnected_or_expired_phone_is_refused_on_its_next_tap(served):
@@ -178,7 +183,7 @@ def test_no_secret_is_kept_in_the_record(served):
     assert code not in kept and key not in kept, "only fingerprints of the code and the key are written down"
 
 
-def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
+def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypatch):
     record, _ = served
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).connect(7)
@@ -189,6 +194,12 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served):
     n = Phones(record, actor=USER).connect(7)["n"]
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
+    unaddressed = fresh()
+    with monkeypatch.context() as patched:
+        patched.setattr(Shares, "_address", lambda self: "")
+        with pytest.raises(Refused, match="tunnel address"):
+            Phones(unaddressed, actor=USER).connect(7)
+    assert Phones(unaddressed, actor=USER).rows.summaries() == [], "no code is made for a phone while there is no tunnel address"
 
 
 def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatch):
@@ -196,8 +207,8 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     other = Record(record.root, "elsewhere")
     mine, key = paired(record, base)
     call(base, "/p/message", {"brief": "Here only", "idempotency": "z"}, key)
-    assert [m for m in Messages(record, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "it lands where the phone connected"
-    assert not [m for m in Messages(other, actor=SYSTEM).summaries() if m.get("idempotency") == "z"], "and nowhere else"
+    assert [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "z"], "it lands where the phone connected"
+    assert not [m for m in Messages(other, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "z"], "and nowhere else"
     here, there = Docs(record, actor=AGENT).create("Here"), Docs(other, actor=AGENT).create("There")
     assert call(base, f"/p/row/doc/{here.n}", key=key).status == 200, "its own environment's document opens"
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 404, "another environment's stays closed"
@@ -220,9 +231,9 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
         "only a running journal on this machine can be switched to"
     assert call(base, "/p/switch", {"journal": journal, "environment": "elsewhere"}, key).status == 201
     assert call(base, f"/p/row/doc/{there.n}", key=key).status == 200, "after switching, the other environment's rows open"
-    from features.starting_agents import commands
+    from features.starting_agents import launch
     launched = []
-    monkeypatch.setattr(commands, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent)))
+    monkeypatch.setattr(launch, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
     assert call(base, "/p/start", {"journal": journal, "environment": "elsewhere", "agent": "codex"}, key).status == 201
     assert launched == [("elsewhere", "codex")], "the phone starts an agent in an idle environment, as the user"
     Todos(Record(record.root, "elsewhere"), actor=AGENT).create("Tidy the attic")
@@ -237,7 +248,7 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
 
 
 def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, monkeypatch):
-    from features.phone import controller, push
+    from features.phone import controller, feed, push
     record, base = served
     _, key = paired(record, base)
     assert call(base, "/p/push", {"endpoint": "https://example.com/steal"}, key).status == 422, "only a real push service is ever called"
@@ -251,6 +262,12 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     public = push.Keys.kept(record.root).public
     assert len(pushed) == 1 and push.verified(public, f"{head}.{claims}".encode(), push.base64.urlsafe_b64decode(signature + "==")), \
         "a new question sends one signed push, and not again while it waits"
+    monkeypatch.setattr(Shares, "_address", lambda self: "")
+    Questions(record, actor=AGENT).create("Another one?")
+    Phones(record, actor=SYSTEM)._notify()
+    assert len(pushed) == 1, "with no tunnel address a push has nowhere to point, so none is sent"
+    monkeypatch.undo()
+    monkeypatch.setattr(controller, "send", lambda keys, endpoint, contact: pushed.append(keys.token(endpoint, contact, time.time())) or True)
     assert f"question:{question.n}" in [item["ref"] for item in call(base, "/p/feed", key=key).body["waiting"]], "an open question waits"
     asked = next(item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"question:{question.n}")
     assert asked["hold"] == 3, "the phone holds a picked answer as long as the desktop does, from the same setting"
@@ -299,7 +316,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
         assert "Proposal" in sent.headers["Content-Disposition"] and sent.read(), "a document leaves the phone as a file named for it"
     shared = call(base, "/p/share", {"ref": f"doc:{proposal.n}"}, key)
     assert shared.status == 201 and "/s/" in shared.body["link"], "and as a share link the user made, open at once"
-    said = [m for m in Messages(record, actor=SYSTEM).summaries() if m["title"] == "I accept this proposal"]
+    said = [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m["title"] == "I accept this proposal"]
     assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
     now = time.time()
@@ -324,8 +341,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     CONTROLLERS["work"](helper_record, actor=SYSTEM).create(helper.title, todo=todo.n)
     CONTROLLERS["agent"](helper_record, actor=SYSTEM).create("codex-rhea", status="working", at=now, started=now - 60,
                                                              tool="Edit", file="src/web/src/phone/PhoneHome.vue")
-    from surfaces.summary import summarize
-    monkeypatch.setattr(controller, "lately_summarized", summarize)
+    from overview.summary import summarize
+    monkeypatch.setattr(feed, "lately_summarized", summarize)
     fed = call(base, "/p/feed", key=key).body
     assert fed["agent"] == "offline", "the phone sees no agent running"
     assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"
@@ -342,13 +359,19 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     detail = call(base, f"/p/helper?n={helper.n}", key=key)
     assert detail.status == 200 and detail.body["todo"]["title"] == helper.title and detail.body["running"], \
         "the phone can open a helper from the environment that launched it"
+    from controllers.types import Agents
     from engine.sessions import Sessions
-    from surfaces.agent_state import agent_state
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
-    assert agent_state(record, record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
+    assert Agents(record, actor=SYSTEM).state(record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
     CONTROLLERS["agent"](record, actor=SYSTEM).create("d2c1c997-real", event="PostToolUse", status="working")
     Sessions(record.root).write("d2c1c997-real", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
-    assert agent_state(record, record.env) == "working", "an older launch record of the same agent never hides the session that reports"
+    assert Agents(record, actor=SYSTEM).state(record.env) == "working", "an older launch record of the same agent never hides the session that reports"
+    from engine import runtime
+    from engine.stored import write_json
+    write_json(runtime.session_file(record.root, "claude-4343", "seat.json"), {"at": time.time(), "agent": "claude", "env": record.env, "report": {"title": "claude-4343", "provider": "claude"}})
+    Sessions(record.root).write("claude-4343", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
+    assert [call(base, f"/p/{tap}", {}, key).status for tap in ("pause", "resume")] == [201, 201], "with an agent running, the phone pauses it and resumes it"
+    Sessions(record.root).write("claude-4343", environment="")
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
     Environments(record, actor=USER).create("ticket-4", owner="ticket:4")

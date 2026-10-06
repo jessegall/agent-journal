@@ -1,13 +1,18 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class AcknowledgementsDetails(FeatureDetails):
+    explains = "The agent's replies that only acknowledge a reminder are hidden from the chat. You can show them from the Shown menu."
     name = "acknowledgements"
+    group = Group.CHAT
+    label = "Hide replies that only say a reminder was seen"
+    hint = "The chat's Shown menu brings them back"
     has_skill = False
 
-    title = "Hidden acknowledgements"
+    title = "Hide acknowledgement replies"
 
-    abstract = "A turn that only acknowledges a journal line stays out of the chat; the chat's Shown menu brings them back"
+    abstract = "Agent replies that only say they saw a journal reminder are left out of the chat. The chat's Shown menu brings them back."
 
     help = """
         When the journal hands the agent a line and the agent's whole answer is an

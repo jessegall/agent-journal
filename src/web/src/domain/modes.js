@@ -1,6 +1,6 @@
 export const MODES = [
     {key: "builder", label: "Builder", note: "The agent builds it itself, and sends helpers when a job is better done beside it."},
-    {key: "orchestrator", label: "Orchestrator", note: "The agent plans, sends helpers to do the work, reviews and merges; it writes code only for reviews and small fixes."},
+    {key: "orchestrator", label: "Orchestrator", note: "The agent plans, hands the work to helpers, then reviews and merges it; it writes code only for reviews and small fixes."},
     {key: "solo", label: "Solo", note: "The agent does everything itself, with no helpers."},
 ];
 

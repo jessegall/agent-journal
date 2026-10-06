@@ -1,18 +1,13 @@
-from engine.events.engine import FileEdited
 from features.base import Feature
 from features.file_feed.details import FileFeedDetails
-from features.file_feed.feed import noted
+from features.file_feed.handlers import KeepEdits
 from features.journal import Journal
-from features.parts import AgentContext, Handler
-
-
-class KeepEdits(Handler):
-    def handle(self, context: AgentContext, event: FileEdited) -> None:
-        noted(context.record, event)
+from features.file_feed.routes import get_changes, get_edited_file, get_edits, get_older_edits
 
 
 class FileFeed(Feature):
     details = FileFeedDetails
 
     def register(self, journal: Journal) -> None:
+        journal.routes.add(get_changes, get_edits, get_older_edits, get_edited_file)
         journal.events.handler(KeepEdits())

@@ -1,12 +1,11 @@
 <script setup>
+import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
 import {demo, unlessDemo} from "../platform/demo.js";
 import Spinner from "../kit/Spinner.vue";
 import AgentFact from "./AgentFact.vue";
-import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../agents.js";
+import {loadedSkills, modelFamily, pendingChoice, providerName, usageWindows} from "../domain/agents.js";
 import {span} from "../format/time.js";
-import {peek} from "../route.js";
-import {agent} from "../state/store.js";
 
 const props = defineProps({data: {type: Object, default: null}, open: {type: String, default: ""}});
 const emit = defineEmits(["toggle"]);
@@ -29,19 +28,19 @@ const activityCounts = computed(() => [
         key: "shells",
         icon: "play",
         n: live(props.data && props.data.shell_rows),
-        title: "Background shells: commands the agent left running in the background",
+        title: "Background commands the agent left running",
     },
     {
         key: "subagents",
         icon: "agents",
         n: live(props.data && props.data.subagent_rows),
-        title: "Subagents: helpers the agent dispatched",
+        title: "Subagents: helpers the agent started",
     },
     {
         key: "monitors",
         icon: "crosshair",
         n: live(props.data && props.data.monitor_rows),
-        title: "Monitors: watchers the agent started, each telling it when something happens",
+        title: "Watchers the agent started in the background",
     },
 ]);
 const loops = computed(() => Object.keys((props.data && props.data.loops) || {}).length);
@@ -52,7 +51,14 @@ const toggle = (key, e) => emit("toggle", key, e);
 <template>
     <div class="agent-facts">
         <template v-if="!data">
-            <AgentFact class="agent-fact-lead" icon="agents" :disabled="demo" :title="unlessDemo('')" :aria-expanded="open === 'appoint'" @click="toggle('appoint', $event)">
+            <AgentFact
+                class="agent-fact-lead"
+                icon="agents"
+                :disabled="demo"
+                :title="unlessDemo('')"
+                :aria-expanded="open === 'appoint'"
+                @click="toggle('appoint', $event)"
+            >
                 Assign agent
             </AgentFact>
         </template>
@@ -60,8 +66,9 @@ const toggle = (key, e) => emit("toggle", key, e);
             <AgentFact
                 class="agent-fact-lead"
                 icon="agents"
-                :title="`Open the agent's page — session ${agent.title}`"
-                @click="peek('agent', agent.n)"
+                :title="`Session ${agent.title}: open its page or stop it`"
+                :aria-expanded="open === 'agent'"
+                @click="toggle('agent', $event)"
             >
                 {{ name }}
             </AgentFact>
@@ -151,7 +158,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                 <AgentFact
                     :class="['agent-fact', 'agent-count', 'agent-loops', {open: open === 'loops'}]"
                     icon="loop"
-                    :title="`${loops} scheduled loop${loops === 1 ? '' : 's'}: prompts the agent set to run again on a schedule`"
+                    :title="`${loops} repeating prompt${loops === 1 ? '' : 's'}: prompts the agent set to run again on a schedule`"
                     :aria-expanded="open === 'loops'"
                     @click="toggle('loops', $event)"
                 >
@@ -171,7 +178,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                 </AgentFact>
             </template>
             <template v-else-if="data.branch">
-                <AgentFact class="agent-fact" tag="span" icon="branch" title="the branch it works on">
+                <AgentFact class="agent-fact" tag="span" icon="branch" title="Current branch">
                     {{ data.branch }}
                 </AgentFact>
             </template>

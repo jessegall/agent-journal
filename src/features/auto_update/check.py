@@ -5,22 +5,27 @@ import threading
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Notices
+from controllers.types import Notices
 from engine import runtime
-from resources.types import IDLE
 from engine.heal import refused
-from engine.sessions import Sessions
 from engine.state import State
-from agents.terminal import LAUNCH, relaunch
 from engine.package import entry
 from engine.version import version
-from features import FEATURES
-from features.trigger import spec
+from features import running
+from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
-from surfaces.updates import newer, stale, upstream
+from engine.upgrades import newer, shared_parts, stale, upstream
+from install import changed_managed
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
+
+
+KEPT_PARTS = {"patches": 2, "minor versions": 1, "major versions": 0, "always": 0}
+
+
+def within(installed: str, latest: str, installs: str) -> bool:
+    return shared_parts(latest, installed, KEPT_PARTS[installs])
 
 
 def journal_repository(project: Path) -> bool:
@@ -31,14 +36,18 @@ TRIED_AGAIN_AFTER = (1800, 7200, 21600)
 FAILED_WORDS = ("not refreshed", "failed", "not built")
 
 
+def failure_in(lines) -> str:
+    return next((line for line in lines if any(word in line for word in FAILED_WORDS)), "")
+
+
 def ledger(root: Path) -> State:
     return State(runtime.folder(root) / "auto_update.json")
 
 
-def claimed(root: Path, latest: str) -> bool:
+def claimed(root: Path, latest: str, installs: str) -> bool:
     with ledger(root).changing() as tried:
         last = tried.get(latest) or {}
-        wait = TRIED_AGAIN_AFTER[min(last.get("tries", 1), len(TRIED_AGAIN_AFTER)) - 1]
+        wait = TRIED_AGAIN_AFTER[0 if installs == "always" else min(last.get("tries", 1), len(TRIED_AGAIN_AFTER)) - 1]
         if last.get("ok") or (last and time.time() - last.get("at", 0) < wait):
             return False
         tried[latest] = {"at": time.time(), "tries": last.get("tries", 0) + 1, "ok": False}
@@ -58,20 +67,23 @@ def settled(root: Path, latest: str, failed: str) -> None:
         tried[latest] = {**(tried.get(latest) or {}), "ok": not failed, "why": failed}
 
 
-def installed(root: Path) -> str:
-    started = subprocess.Popen([*entry("journal"), "--root", str(root), "upgrade"], cwd=root.parent, stdout=subprocess.PIPE,
+def installed(root: Path, yes: bool = False) -> str:
+    command = [*entry("journal"), "--root", str(root), "upgrade"]
+    if yes:
+        command.append("--yes")
+    started = subprocess.Popen(command, cwd=root.parent, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True, start_new_session=True)
     try:
         out, _ = started.communicate(timeout=INSTALL_WAIT)
     except subprocess.TimeoutExpired:
         os.killpg(started.pid, signal.SIGKILL)
         started.communicate()
-        (root / "runtime" / "upgrading").unlink(missing_ok=True)
+        runtime.upgrade_mark(root).unlink(missing_ok=True)
         return f"journal upgrade was stopped after {INSTALL_WAIT // 60} minutes"
     lines = out.splitlines()
     if started.returncode:
         return next((line for line in reversed(lines) if line.strip()), f"journal upgrade failed with exit {started.returncode}")
-    return next((line for line in lines if any(word in line for word in FAILED_WORDS)), "")
+    return failure_in(lines)
 
 
 class UpdateCheck:
@@ -81,8 +93,8 @@ class UpdateCheck:
         self.installing = threading.Lock()
 
     def tick(self) -> str:
-        record, feature = self.agent.record, FEATURES.get("auto_update")
-        every = spec(record, feature.name, feature.trigger).every * 60 if feature else 0
+        record, feature = self.agent.record, running(AutoUpdate)
+        every = feature.interval(record) if feature else 0
         if not feature or time.time() - self.checked_at < every:
             return ""
         root = Path(record.root)
@@ -94,9 +106,11 @@ class UpdateCheck:
             if first_refusal(root, latest):
                 self.tell(feature, "failed", latest=latest, why="it would not start here, so the journal went back to the build that works; it is tried again in 12 hours")
             return ""
-        if not claimed(root, latest):
+        if changed_managed(root.parent, root):
+            return "update held for changed files"
+        if not claimed(root, latest, feature.values(record).installs):
             return ""
-        if feature.on(record) and not journal_repository(root.parent):
+        if feature.on(record) and within(installed, latest, feature.values(record).installs) and not journal_repository(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
             return f"installing {latest}"
         self.tell(feature, "newer", latest=latest, installed=installed)
@@ -116,22 +130,4 @@ class UpdateCheck:
             Notices(self.agent.record, actor=SYSTEM).create(f"The journal could not update to {latest}", brief=failed, tone="warn")
 
     def tell(self, feature, line: str, **values) -> None:
-        title, brief = feature.line(line, values)
-        self.agent.driver.send(f"{title} - {brief}")
-
-
-class Relaunch:
-    def __init__(self, agent):
-        self.agent = agent
-
-    def tick(self) -> str:
-        driver, record = self.agent.driver, self.agent.record
-        root = Path(record.root)
-        if Sessions(root).read(driver.session).launch >= LAUNCH or self.agent.state() != IDLE:
-            return ""
-        last = driver.last_report()
-        if not last or not last.title:
-            return ""
-        Agents(record, actor=SYSTEM).card(last.n, label=f"Restarted the agent in the same conversation to pick up journal {version()}", icon="agents", tone="good")
-        relaunch(root, record.env, driver.session, last.title)
-        return "relaunching"
+        self.agent.driver.send(feature.line_text(line, **values))

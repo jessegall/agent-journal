@@ -1,5 +1,6 @@
-import {reactive, ref} from "vue";
+import {ref} from "vue";
 import {store} from "../state/store.js";
+import {ui} from "../state/ui.js";
 
 const FOCUS_FOR = 1800;
 const SETTLE = 120;
@@ -7,6 +8,7 @@ const SETTLE = 120;
 export const framed = window.parent !== window;
 export const chatOnly = new URLSearchParams(location.search).has("chat");
 export const soloView = new URLSearchParams(location.search).get("view") || "";
+export const floatWindow = chatOnly || Boolean(soloView);
 export const soloFloat = Number(new URLSearchParams(location.search).get("float")) || 0;
 
 const NARROW = window.matchMedia("(max-width: 700px)");
@@ -20,11 +22,9 @@ window.addEventListener("resize", () => {
     resizing = setTimeout(() => (laidOut.value += 1), SETTLE);
 });
 
-export const lightbox = reactive({pictures: [], at: -1});
-
 export function openPictures(pictures, at) {
-    lightbox.pictures = pictures;
-    lightbox.at = at;
+    ui.lightbox.pictures = pictures;
+    ui.lightbox.at = at;
 }
 
 export function focusTurn(ref, {instant = false} = {}) {

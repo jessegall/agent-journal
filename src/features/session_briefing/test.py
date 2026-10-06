@@ -5,11 +5,8 @@ from runner.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh
-from controllers.types import Works
 from features.session_briefing.block import COMPACTED
-from runner.hooks import handle
 from engine.gates import start_file
-from resources.base import AGENT
 
 
 def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
@@ -23,6 +20,10 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     Todos(record, actor=USER).create("later")
     block = f.read_text()
     assert block == start_block(record), "every write rewrites the start block"
+    f.write_text("as it was")
+    Works(record, actor=AGENT).section(Works(record, actor=AGENT).rows.standing()[0].n, "Log", "a long entry the block never shows")
+    assert f.read_text() == "as it was", "a work log entry leaves the start block alone: a section never shows in it"
+    f.write_text(block)
     assert [line for line in block.splitlines() if line and not line.startswith("  ")] == \
         ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", QUIET,
          start_block(record).splitlines()[4], "LAWS THE JOURNAL SHIPS, always in force:",
@@ -63,6 +64,10 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     assert start("startup") == plain, "a fresh start is handed the plain block"
     assert start("compact") == compacted, "a start after a compaction is handed the recovery steps first"
     assert start("resume") == plain, "a resume is a fresh start"
+    from engine import bus
+    start_file(record.root, record.env).unlink()
+    with bus.held():
+        assert start("startup") == plain, "with the block not yet written and the bus held, as inside a request, the start writes it and hands it over"
 
 
 def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts():
@@ -111,22 +116,23 @@ def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
 
 def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path):
     import json
-    from channel import contents, fresh_lines, start
+    from providers.claude_channel import contents, fresh_lines, start
     f = tmp_path / "channel.jsonl"
     at = start(f)
     f.write_text(json.dumps({"content": "your last message has no tag"}) + "\n")
     assert contents(fresh_lines(f, at)[0]) == ["your last message has no tag"], "the first line written after the channel started is sent"
-    from channel import build, renewed
+    from engine.package import build_file
+    from providers.claude_channel import renewed
     for name in ("journal-1.0.0-a.pyz", "journal-1.0.1-b.pyz"):
         (tmp_path / name).write_text("")
     (tmp_path / "journal.pyz").symlink_to("journal-1.0.0-a.pyz")
-    began = build(tmp_path)
+    began = build_file(tmp_path)
     assert not renewed(tmp_path, began), "on the build it started from, the channel runs on"
     (tmp_path / "journal.pyz").unlink()
     (tmp_path / "journal.pyz").symlink_to("journal-1.0.1-b.pyz")
     assert renewed(tmp_path, began), "a newly installed build restarts the channel in place, keeping its connection"
     import os
-    from channel import READ_AT
+    from providers.claude_channel import READ_AT
     os.environ[READ_AT] = str(at)
     assert (start(f), READ_AT in os.environ) == (at, False), "the restarted channel reads on from where it stopped, so nothing queued meanwhile is skipped"
 
@@ -179,28 +185,28 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     driver.last_report = lambda: SimpleNamespace(transcript=str(transcript), asking={})
     stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
-    assert driver._handed("todo 5 next", "journal") is True, "a live channel takes the line"
+    assert driver._post("todo 5 next", "journal") is True, "a live channel takes the line"
     time.sleep(0.01)
     written({"type": "attachment", "timestamp": stamp(), "attachment": {"type": "queued_command", "prompt": '<channel source="journal" from="journal">\ntodo 5 next'}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("2 new messages 7, 8", "journal") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
+    assert driver._post("2 new messages 7, 8", "journal") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
     time.sleep(0.01)
     tucked = 'done\nA message arrived from journal while you were working:\n<channel source="journal" from="journal">\n2 new messages 7, 8\n</channel>'
     written({"type": "user", "timestamp": stamp(), "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": tucked}]}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("todo 7 next", "journal") is True, "a line that reached the agent inside a tool result keeps the channel in use"
+    assert driver._post("todo 7 next", "journal") is True, "a line that reached the agent inside a tool result keeps the channel in use"
     time.sleep(0.01)
     written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\ntodo 7 next\n</channel>'},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
+    assert driver._post("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
     time.sleep(0.01)
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
-    assert driver._handed("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
+    assert driver._post("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
+    assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
-    import providers.claude as claude
+    import providers.claude_driver as claude
     from engine import runtime
     from providers import DRIVERS
     record = fresh()
@@ -211,6 +217,7 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     monkeypatch.setattr(claude, "CONFIRM_POLL", 0.01)
     monkeypatch.setattr(claude, "CONFIRM_WAIT", 0.2)
     monkeypatch.setattr("providers.drivers.ENTER_AFTER", 0)
+    monkeypatch.setattr("providers.drivers.ECHO_WAIT", 0)
     sent = []
 
     def wrote(raw):
@@ -232,6 +239,7 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     from providers import DRIVERS
     monkeypatch.setattr(providers.drivers, "ENTER_AFTER", 0)
     monkeypatch.setattr(providers.drivers, "RECHECK", 0)
+    monkeypatch.setattr(providers.drivers, "ECHO_WAIT", 0)
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-7")
     screen = runtime.session_file(record.root, "claude-7", "screen")

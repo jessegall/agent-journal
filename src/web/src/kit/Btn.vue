@@ -1,16 +1,31 @@
 <script setup>
 import Spinner from "./Spinner.vue";
 
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean, fill: Boolean});
+defineProps({
+    kind: {type: String, default: "ghost"},
+    small: Boolean,
+    large: Boolean,
+    busy: Boolean,
+    disabled: Boolean,
+    fill: Boolean,
+    href: {type: String, default: ""},
+});
 </script>
 
 <template>
-    <button type="button" :class="['btn', kind, {small, large, busy, fill}]" :aria-busy="busy" :disabled="busy">
+    <component
+        :is="href ? 'a' : 'button'"
+        :type="href ? undefined : 'button'"
+        :href="href || undefined"
+        :class="['btn', kind, {small, large, busy, fill}]"
+        :aria-busy="busy"
+        :disabled="busy || disabled"
+    >
         <span :class="['btn-label', {hidden: busy}]"><slot /></span>
         <template v-if="busy">
             <Spinner class="btn-spinner" />
         </template>
-    </button>
+    </component>
 </template>
 
 <style scoped>
@@ -26,6 +41,7 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Bool
     background: transparent;
     color: var(--text-2);
     font-size: 12.5px;
+    text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
 }
@@ -59,6 +75,10 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Bool
     background: var(--hover);
     color: var(--text);
 }
+.btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
 .btn.primary {
     border-color: var(--accent);
     background: var(--accent-dim);
@@ -68,10 +88,36 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Bool
     background: var(--accent);
     color: #fff;
 }
-.btn.danger:hover {
-    border-color: var(--danger);
+.btn.danger {
+    border-color: color-mix(in oklab, var(--danger) 55%, var(--border-2));
     color: var(--danger);
 }
+
+.btn.danger:hover {
+    border-color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 12%, transparent);
+    color: var(--danger);
+}
+.btn.text {
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    white-space: normal;
+}
+
+.btn.text:hover {
+    background: none;
+    color: var(--text);
+}
+
+.btn.text .btn-label {
+    display: block;
+}
+
 .btn.icon {
     height: auto;
     padding: 5px;

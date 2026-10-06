@@ -1,11 +1,12 @@
 <script setup>
+import {meta} from "../domain/spec.js";
+import {store} from "../state/store.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
 import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
-import {meta, store, word} from "../state/store.js";
 
 const WORDS = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on", reopened: "Reopened"};
 const settled = ref(false);
@@ -56,7 +57,7 @@ function heading(e) {
     const labels = meta(e.type).event_labels || {};
     const own = labels[`${e.action}.${e.data?.by}`] || labels[did(e)];
     if (own) return own;
-    if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
+    if (e.action === "completed") return `${meta(e.type).title} closed`;
     return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;
 }
 const hooked = (e) => [e.data?.hook, e.data?.tool].filter(Boolean).join(" ");

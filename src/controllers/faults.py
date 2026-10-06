@@ -1,10 +1,10 @@
 import re
-import threading
 import time
 import traceback
 from pathlib import Path
 
 from controllers.types import Notices
+from engine import runtime
 from engine.record import Record
 from resources.base import SYSTEM
 
@@ -12,9 +12,7 @@ CRASH_WITHIN = 8.0
 SHOWN = 14
 TITLE = "The engine is not running"
 FAULT = "The engine hit an error and carried on"
-WHICH = "fault"
 FRAME = re.compile(r'File "([^"]+)", line (\d+)')
-ONCE = threading.Lock()
 DAMAGED = "A row could not be read and is left out"
 SAYS = "journal: {where} hit an error and kept going; the last of it is below and the whole of it is in .journal/runtime/engine.log. Fix it, then say so."
 STEADY = "the engine has been running cleanly again"
@@ -23,7 +21,7 @@ SAID = "journal: the engine stopped the moment it started, so nothing is being d
 
 
 def log_file(root: Path) -> Path:
-    return Path(root) / "runtime" / "engine.log"
+    return runtime.folder(root) / "engine.log"
 
 
 def why(root: Path, lines: int = SHOWN) -> str:
@@ -37,24 +35,8 @@ def crashed(code: int | None, since: float) -> bool:
     return code not in (None, 0) and time.time() - since < CRASH_WITHIN
 
 
-def once(record, title: str, brief: str, which: str = "") -> bool:
-    with ONCE:
-        notices = Notices(record, actor=SYSTEM)
-        if any(n.title == title and n.data.get(WHICH, "") == which for n in notices._standing()):
-            return False
-        notices.create(title, brief=brief, tone="warn", **{WHICH: which})
-        return True
-
-
-def over(record, title: str, how: str) -> None:
-    notices = Notices(record, actor=SYSTEM)
-    for n in notices._every():
-        if not n.completed and n.title == title:
-            notices.complete(n.n, how)
-
-
 def notice_stopped(root: Path, env: str, log: str) -> bool:
-    return once(Record(Path(root), env), TITLE, log or "It left nothing in its log.")
+    return Notices(Record(Path(root), env), actor=SYSTEM).raise_once(TITLE, log or "It left nothing in its log.")
 
 
 def fault_of(trouble: str) -> str:
@@ -70,14 +52,14 @@ def place_of(trouble: str) -> str:
 
 def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
     fault = fault_of(trouble)
-    if not once(record, FAULT, trouble, place_of(trouble)):
+    if not Notices(record, actor=SYSTEM).raise_once(FAULT, trouble, place_of(trouble)):
         return
     line = SAYS.format(where=where)
     if driver and driver.alive():
         driver.send(f"{line} {fault}")
     else:
         from controllers.types import Nudges
-        Nudges(record, actor=SYSTEM)._to_primary(f"{where} hit an error"[-80:].replace(":", " "), brief=f"{line} {fault}")
+        Nudges(record, actor=SYSTEM).to_primary(f"{where} hit an error"[-80:].replace(":", " "), brief=f"{line} {fault}")
 
 
 def threw(root: Path, env: str, where: str, driver=None) -> None:
@@ -91,12 +73,12 @@ def threw(root: Path, env: str, where: str, driver=None) -> None:
 
 
 def damaged(record, path: str, error: str) -> None:
-    once(record, DAMAGED, f"{path} could not be read, so it is left out of every list: {error}", path)
+    Notices(record, actor=SYSTEM).raise_once(DAMAGED, f"{path} could not be read, so it is left out of every list: {error}", path)
 
 
 def steady(record) -> None:
-    over(record, FAULT, STEADY)
+    Notices(record, actor=SYSTEM).close_titled(FAULT, STEADY)
 
 
 def cleared(root: Path, env: str) -> None:
-    over(Record(Path(root), env), TITLE, "the engine is running again")
+    Notices(Record(Path(root), env), actor=SYSTEM).close_titled(TITLE, "the engine is running again")

@@ -1,4 +1,5 @@
 <script setup>
+import {agentRunningIn} from "../composables/settings.js";
 import {computed, reactive, ref} from "vue";
 import EnvStart from "./EnvStart.vue";
 import NewEnvironment from "./NewEnvironment.vue";
@@ -6,17 +7,11 @@ import {demo, unlessDemo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import FoldGroup from "../kit/FoldGroup.vue";
 import Icon from "../kit/Icon.vue";
-import {ink, project, tint} from "../identity.js";
-import {route} from "../route.js";
+import {ink, project, tint} from "../state/identity.js";
+import {href, route} from "../route.js";
 import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
-import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
-import {usePoll} from "../poll.js";
-
-usePoll(...polled.agents);
-usePoll(...polled.pages);
-usePoll(...polled.organization);
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed && !e.data.owner));
 const pages = computed(() => store.pages || []);
@@ -27,8 +22,6 @@ const fold = (key) => {
     folded[key] = !folded[key];
 };
 const {sections: groups} = useNavigation();
-usePoll(...polled.online);
-const live = (name) => store.online.some((agent) => agent.environment === name);
 
 const tip = ref(null);
 
@@ -45,14 +38,14 @@ function point(e) {
 <template>
     <div :class="['side-wrap', {mini: store.sideMini && !narrow, narrow}]">
         <aside class="side" @mouseover="point" @mouseleave="tip = null">
-            <a class="project" :href="`#/${route.env}`" :title="project">
+            <a class="project" :href="href.page(route.env)" :title="project">
                 <span class="logo" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
                 <span class="project-name label">{{ project }}</span>
             </a>
             <template v-if="!demo">
-                <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="`#/${route.env}/hub`">
+                <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="href.page(route.env, 'hub')">
                     <Icon name="panel" />
-                    <span class="label">Hub</span>
+                    <span class="label">Journals</span>
                 </a>
             </template>
             <template v-for="g in groups" :key="g.key">
@@ -71,7 +64,7 @@ function point(e) {
                         <template v-for="p in pages" :key="`${p.plugin}.${p.name}`">
                             <a
                                 :class="['item', {on: route.page === 'page' && String(route.n) === `${p.plugin}.${p.name}`}]"
-                                :href="`#/${route.env}/page/${p.plugin}.${p.name}`"
+                                :href="href.pluginPage(route.env, p)"
                             >
                                 <Icon :name="p.icon" />
                                 <span class="label">{{ p.title }}</span>
@@ -82,11 +75,11 @@ function point(e) {
                 </FoldGroup>
             </template>
             <template v-if="domains.length">
-                <FoldGroup class="group" label="Organization" :open="!folded.organization" @toggle="fold('organization')">
+                <FoldGroup class="group" label="Domains" :open="!folded.organization" @toggle="fold('organization')">
                     <template v-for="d in domains" :key="d.name">
                         <a
                             :class="['item', {on: route.page === 'organization' && route.n === d.name}]"
-                            :href="`#/${route.env}/organization/${d.name}`"
+                            :href="href.organization(route.env, d.name)"
                         >
                             <Icon :name="d.icon || 'agents'" />
                             <span class="label">{{ d.title || d.name }}</span>
@@ -98,11 +91,11 @@ function point(e) {
             <FoldGroup class="group" label="Environments" :open="!folded.environments" @toggle="fold('environments')">
                 <template v-for="e in envs" :key="e.n">
                     <div class="env-row">
-                        <a :class="['item', {on: route.env === e.title}]" :href="`#/${e.title}`">
-                            <span :class="['env-dot', {live: live(e.title)}]" />
+                        <a :class="['item', {on: route.env === e.title}]" :href="href.page(e.title)">
+                            <span :class="['env-dot', {live: agentRunningIn(e.title)}]" />
                             <span class="label">{{ e.title }}</span>
                         </a>
-                        <EnvStart :env="e" :live="live(e.title)" />
+                        <EnvStart :env="e" :live="agentRunningIn(e.title)" />
                     </div>
                 </template>
                 <button type="button" class="item item-new" :disabled="demo" :title="unlessDemo('')" @click="creating = true">
@@ -112,7 +105,7 @@ function point(e) {
             </FoldGroup>
             <div class="side-bottom">
                 <div class="side-foot side-foot-row">
-                    <a class="side-foot-version" :href="`#/${route.env}/about`" title="Version and changelog">
+                    <a class="side-foot-version" :href="href.page(route.env, 'about')" title="Version and changelog">
                         <span class="label side-foot-name">Agent journal</span>
                         <span class="side-foot-number">{{ store.spec.version || "" }}</span>
                     </a>

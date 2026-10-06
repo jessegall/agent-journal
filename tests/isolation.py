@@ -1,5 +1,6 @@
 import os
 import shutil
+import signal
 import socket
 import tempfile
 from pathlib import Path
@@ -56,7 +57,7 @@ def claimed() -> Path:
 def settle() -> None:
     os.environ[HOME] = str(home())
     os.environ["CLAUDE_CONFIG_DIR"] = str(home())
-    os.environ.setdefault("JOURNAL_ENV", "main")
+    os.environ["JOURNAL_ENV"] = "main"
     for away in ("CLAUDE_CODE_MESSAGING_SOCKET", "JOURNAL_ROOT", "AGENT_JOURNAL_ROOT"):
         os.environ.pop(away, None)
 
@@ -85,7 +86,24 @@ def band(size: int = BAND) -> list[int]:
 
 def sweep() -> None:
     if worker() == "master":
+        stop_strays()
         shutil.rmtree(base(), ignore_errors=True)
+
+
+def ours(root: str) -> bool:
+    runs, served = Path(tempfile.gettempdir()).resolve(), Path(root).resolve()
+    return served.is_relative_to(runs) and served.relative_to(runs).parts[0].startswith("agent-journal-")
+
+
+def stop_strays() -> None:
+    from engine.viewer import PORTS, identity
+    for port in PORTS:
+        found = identity(f"http://127.0.0.1:{port}/", timeout=0.2)
+        if found and found.pid and ours(found.root):
+            try:
+                os.kill(found.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
 
 
 def group(path: Path) -> str:

@@ -1,10 +1,10 @@
 from features.plans.resource import PHASE
-from features.plans.worker import SHARED, worker_environment
 from features.tickets.controller import Tickets
+from features.tickets.worker import SHARED, worker_environment
 from resources.base import Refused, SYSTEM
 
 
-def start_phase_tickets(record, plan) -> list[int]:
+def start_tickets_of_phase(record, plan) -> list[int]:
     if not 1 <= plan.current <= len(plan.phases):
         return []
     tickets = Tickets(record, actor=SYSTEM)

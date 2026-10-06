@@ -1,12 +1,18 @@
+import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {computed, effectScope, ref, watch} from "vue";
 import {INSPECTOR_VIEWS, VIEWS, fresh, freshInspector, leaves, measure, opened, resized, valid} from "../domain/panes.js";
-import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
 import {route} from "../route.js";
 
 const SAVE_AFTER = 500;
 const FOLD = 380;
 const HOME = {key: "layout", tab: () => `journal.layout.${route.value.env}`, views: VIEWS, fresh};
-const INSPECTOR = {key: "inspector_layout", tab: () => "journal.inspector-layout", views: INSPECTOR_VIEWS, fresh: freshInspector};
+const INSPECTOR = {
+    key: "inspector_layout",
+    tab: () => "journal.inspector-layout",
+    views: INSPECTOR_VIEWS,
+    whole: true,
+    fresh: freshInspector,
+};
 
 function tabLayout(kind) {
     try {
@@ -25,7 +31,8 @@ function keepInTab(kind, layout) {
 }
 
 function shared(kind) {
-    const fits = (layout) => valid(layout, kind.views);
+    const placed = (layout) => leaves(layout.tree).flatMap((id) => layout.panes[id].tabs);
+    const fits = (layout) => valid(layout, kind.views) && (!kind.whole || kind.views.every((view) => placed(layout).includes(view)));
     const stored = () => viewerSetting(kind.key, null);
     const own = tabLayout(kind);
     const layout = ref(fits(own) ? own : fits(stored()) ? stored() : kind.fresh());

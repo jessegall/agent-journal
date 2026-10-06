@@ -1,13 +1,14 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {closeUpdate, updateView} from "../state/overlays.js";
+import {useEscape} from "../composables/windowEvent.js";
+import {computed, nextTick, onMounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import UpdateReport from "../resource/UpdateReport.vue";
-import {EASE, hydrate, still} from "../composables/hydrate.js";
-import {closeUpdate, updateView} from "./updateView.js";
+import {EASE, hydrate, still} from "../platform/hydrate.js";
 import {markSeen} from "../sync/seen.js";
 import {rows} from "../sync/rows.js";
-import {peek, route} from "../route.js";
+import {href, peek, route} from "../route.js";
 
 const FULL = "inset(0px 0px 0px 0px round 0px)";
 const LEADS = ".body > .head, .body > .abstract, .body > .controls";
@@ -15,8 +16,8 @@ const layer = ref(null);
 const ghost = ref(null);
 const scroller = ref(null);
 const origin = updateView.n;
-const shown = ref(origin);
-const report = computed(() => rows("report").find((r) => r.n === shown.value) || null);
+const current = ref(origin);
+const report = computed(() => rows("report").find((r) => r.n === current.value) || null);
 let busy = false;
 
 const tone = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -39,9 +40,9 @@ function lay(el) {
 }
 
 async function grow() {
-    markSeen("report", [shown.value]);
+    markSeen("report", [current.value]);
     await nextTick();
-    const from = updateView.from;
+    const from = updateView.owner;
     if (still() || !from?.isConnected) return;
     busy = true;
     const at = cardAt(from);
@@ -71,13 +72,13 @@ async function grow() {
 }
 
 function done() {
-    [updateView.from, card()].forEach((el) => el && (el.style.visibility = ""));
+    [updateView.owner, card()].forEach((el) => el && (el.style.visibility = ""));
     closeUpdate();
 }
 
 async function shrink() {
     if (busy) return;
-    const to = updateView.from?.isConnected ? updateView.from : card();
+    const to = updateView.owner?.isConnected ? updateView.owner : card();
     if (still() || !to) return done();
     busy = true;
     try {
@@ -107,7 +108,7 @@ async function shrink() {
 }
 
 async function step(n) {
-    shown.value = n;
+    current.value = n;
     markSeen("report", [n]);
     await nextTick();
     scroller.value.scrollTop = 0;
@@ -117,7 +118,7 @@ async function step(n) {
 async function toPanel() {
     if (busy) return;
     busy = true;
-    peek("report", shown.value);
+    peek("report", current.value);
     try {
         if (!still())
             await layer.value
@@ -131,15 +132,11 @@ async function toPanel() {
 
 function all() {
     done();
-    location.hash = `#/${route.value.env}/report?sub=updates`;
+    location.hash = href.reportUpdates(route.value.env);
 }
 
-const onKey = (e) => e.key === "Escape" && !route.value.open && shrink();
-onMounted(() => {
-    window.addEventListener("keydown", onKey);
-    grow();
-});
-onUnmounted(() => window.removeEventListener("keydown", onKey));
+useEscape(shrink, () => !route.value.open);
+onMounted(grow);
 </script>
 
 <template>

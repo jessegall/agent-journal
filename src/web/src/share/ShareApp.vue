@@ -1,8 +1,8 @@
 <script setup>
 import SwitchCase from "../kit/SwitchCase.vue";
-import {sharedData} from "../api/shared.js";
+import {sharedData, sharedFileUrl} from "../api/shared.js";
 import {computed, provide, reactive, ref, watch} from "vue";
-import {usePoll} from "../poll.js";
+import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {counted} from "../format/number.js";
 import {narrow} from "../platform/view.js";
@@ -64,16 +64,16 @@ const reconnecting = ref(false);
 const drafts = reactive({});
 const errors = reactive({});
 
-provide("fileUrl", (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`);
+provide("fileUrl", sharedFileUrl);
 
-function row(ref, given) {
-    const [type, n] = ref.split(":");
+function shareRow(reference, given) {
+    const [type, n] = reference.split(":");
     const files = Object.fromEntries((given.files || []).map((name) => [name, ""]));
     return {
         ...given,
         type,
         n: Number(n),
-        ref,
+        ref: reference,
         refs: given.members || [],
         seen: [],
         data: {...given.data, files, pictures: given.pictures || {}},
@@ -87,7 +87,7 @@ function stock(rows, types = {}) {
     const names = [...new Set([...Object.keys(KINDS), ...Object.keys(rows).map((ref) => ref.split(":")[0])])];
     store.spec = {priority: names, types: Object.fromEntries(names.map((name) => [name, kindOf(name, types[name])]))};
     const grouped = {};
-    for (const [ref, given] of Object.entries(rows)) (grouped[ref.split(":")[0]] ||= []).push(row(ref, given));
+    for (const [ref, given] of Object.entries(rows)) (grouped[ref.split(":")[0]] ||= []).push(shareRow(ref, given));
     store.rows = grouped;
 }
 
@@ -100,15 +100,17 @@ function take(got) {
 
 function ask() {
     return sharedData().catch((e) => {
-        if ([404, 410].includes(e.status)) failed.value = true;
-        else reconnecting.value = true;
+        if ([401, 404, 410].includes(e.status)) {
+            failed.value = true;
+            reconnecting.value = false;
+        } else reconnecting.value = true;
         throw e;
     });
 }
 
-usePoll("shared", ask, REFRESH_MS, take);
+usePoll("shared", ask, REFRESH_MS, take, () => !failed.value);
 
-const shownRef = computed(() => {
+const currentRef = computed(() => {
     const open = route.value.open;
     const asked = open ? `${open.type}:${open.n}` : "";
     return data.value?.rows[asked] ? asked : data.value?.share.target;
@@ -117,7 +119,7 @@ const rowOf = (ref) => {
     const [type, n] = (ref || ":").split(":");
     return (store.rows[type] || []).find((r) => r.n === Number(n)) || null;
 };
-const currentRow = computed(() => rowOf(shownRef.value));
+const currentRow = computed(() => rowOf(currentRef.value));
 const target = computed(() => rowOf(data.value?.share.target));
 const kind = computed(() => target.value?.type || "");
 const look = computed(() => LOOKS[kind.value] || {noun: kind.value, icon: "docs"});
@@ -127,7 +129,7 @@ const sent = ref([]);
 const thread = computed(() => {
     const known = data.value?.comments || [];
     return [...known, ...sent.value.filter((c) => !known.some((k) => k.n === c.n))]
-        .filter((c) => c.about === shownRef.value)
+        .filter((c) => c.about === currentRef.value)
         .sort((a, b) => a.created - b.created);
 });
 const read = ref(0);
@@ -143,14 +145,14 @@ function showThread() {
     document.getElementById("share-comments")?.scrollIntoView({behavior: "smooth", block: "start"});
 }
 const timeline = computed(() => (currentRow.value?.type === "plan" ? data.value?.timeline || [] : []));
-const away = computed(() => shownRef.value !== data.value?.share.target);
+const away = computed(() => currentRef.value !== data.value?.share.target);
 const ends = computed(() => {
     const at = data.value?.share.expires;
     return at ? new Date(at * 1000).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : "";
 });
 
 watch(currentRow, (item) => item && (document.title = item.title));
-watch(shownRef, () => (read.value = 0));
+watch(currentRef, () => (read.value = 0));
 </script>
 
 <template>
@@ -177,7 +179,7 @@ watch(shownRef, () => (read.value = 0));
             />
             <div :class="['view', {aside: sideline}]">
                 <div class="reading" @scroll.capture="follow">
-                    <DocumentPage :key="shownRef" :resource="currentRow" read-only>
+                    <DocumentPage :key="currentRef" :resource="currentRow" read-only>
                         <SwitchCase :value="currentRow.type">
                             <template #collection>
                                 <CollectionPage :resource="currentRow" read-only />
@@ -220,11 +222,11 @@ watch(shownRef, () => (read.value = 0));
                     </DocumentPage>
                     <template v-if="data.share.comments">
                         <CommentBar
-                            :key="shownRef"
+                            :key="currentRef"
                             v-model:sent="sent"
-                            v-model:draft="drafts[shownRef]"
-                            v-model:error="errors[shownRef]"
-                            :about="shownRef"
+                            v-model:draft="drafts[currentRef]"
+                            v-model:error="errors[currentRef]"
+                            :about="currentRef"
                             :count="thread.length"
                             @show="showThread"
                         />

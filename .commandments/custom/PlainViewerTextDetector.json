@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "frontend",
+    "find": {
+        "select": "kind:Attribute",
+        "where": [
+            {
+                "nameIn": [
+                    "label",
+                    "title",
+                    "placeholder",
+                    "aria-label",
+                    "hint",
+                    "description",
+                    "empty",
+                    "line",
+                    "heading",
+                    "caption",
+                    "note",
+                    "help"
+                ]
+            },
+            {
+                "textMatches": "(?i)(\\b(I|I'm|I'll|I've|me|my|we|we're|our)\\b|\\b(nudges?|engine|hooks?|compact(ion|ed|ing)?|summaris(e|ed|ing)|comes? up|piles?|hub|steer(ed|ing)?|dispatch(ed|es)?|messaged|rows?|resources?|moments?|orchestrators?|inject(ed|s)?|ships with|parked?|dismiss(ed)?|abandon(ed)?)\\b|^(\\S+\\s+){3,}(in|on|for|with|to|of|by)\\s*[:.]*$)"
+            }
+        ],
+        "reject": [
+            {
+                "textLike": "For example*"
+            }
+        ]
+    },
+    "sin": {
+        "name": "plain-viewer-text",
+        "description": "A label, title, placeholder or help text in a viewer template speaks as the app, uses an internal word (row, hook, nudge, engine, compaction, summarised, comes up, pile, hub, steered, dispatched, moment, resource, orchestrator), or ends in a preposition.",
+        "rule": "Write every text a person reads in plain, ordinary words: name who acts ('the agent', 'the journal'), say what a control does, and use the house words (Close, Pause, item, to-do). A heading names what is chosen and never ends in a preposition; an option finishes its heading's sentence.",
+        "skill": "plain-viewer-text"
+    }
+}

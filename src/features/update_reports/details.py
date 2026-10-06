@@ -1,8 +1,12 @@
 from features.base import FeatureDetails, Line
+from features.groups import Group
 
 
 class UpdateReportsDetails(FeatureDetails):
+    explains = 'The agent can write a report of what changed while you were away. You can open the card in the chat.'
     name = "update_reports"
+    group = Group.CHAT
+    label = "Show update reports as cards"
     skill_of = "reports"
     when = "the user asks for an update, a TLDR or what happened while they were away"
     keywords = ("update", "tldr", "recap")

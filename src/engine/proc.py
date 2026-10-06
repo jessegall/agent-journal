@@ -1,6 +1,10 @@
 import subprocess
 import threading
 
+from engine.keeper import teardown
+
+GRACE = 1.0
+
 
 def ran(args: list[str], cwd=None, timeout: float = 5, stdin: str | None = None, env: dict | None = None) -> subprocess.CompletedProcess | None:
     try:
@@ -20,10 +24,10 @@ def git(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> s
 
 def streamed(args: list[str], cwd, timeout: float, on_output, env: dict | None = None) -> tuple[int | None, str]:
     try:
-        child = subprocess.Popen(args, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        child = subprocess.Popen(args, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
     except OSError as error:
         return None, str(error)
-    timer = threading.Timer(timeout, child.kill)
+    timer = threading.Timer(timeout, teardown, (child.pid, GRACE))
     timer.start()
     output = bytearray()
     try:

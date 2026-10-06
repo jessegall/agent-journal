@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import PhoneChevron from "./PhoneChevron.vue";
-import {counted, here, phaseAt, share, WAITS} from "./planGo.js";
+import Icon from "../kit/Icon.vue";
+import {here, phaseAt, phaseProgress, share, WAITS} from "./planGo.js";
 
 const SEGMENTS = 8;
 const props = defineProps({
@@ -19,9 +19,9 @@ const folded = computed(() => (typing.value || props.away) && !waits.value);
 const total = computed(() => props.plan.phases.length);
 const segmented = computed(() => total.value > 1 && total.value <= SEGMENTS);
 const next = computed(() => phaseAt(props.plan, at.value + 1));
-const where = computed(() => (waits.value ? "Waiting for you" : `Phase ${at.value} of ${total.value}`));
-const count = computed(() => counted(phase.value).replace(" done", ""));
-const label = computed(() => `${props.plan.title}, ${where.value}. ${counted(phase.value)}. Open the phases`);
+const where = computed(() => (waits.value ? "Needs you" : `Phase ${at.value} of ${total.value}`));
+const count = computed(() => phaseProgress(phase.value).replace(" done", ""));
+const label = computed(() => `${props.plan.title}, ${where.value}. ${phaseProgress(phase.value)}. Open the phases`);
 
 onMounted(() => {
     document.addEventListener("focusin", focus);
@@ -57,7 +57,7 @@ onUnmounted(() => {
                     {{ where }}
                     <template v-if="folded">· {{ count }}</template>
                 </span>
-                <PhoneChevron :size="12" class="plan-chevron" />
+                <Icon name="chevronRight" bold :size="12" class="plan-chevron" />
             </span>
             <template v-if="!folded">
                 <span class="plan-row plan-progress">

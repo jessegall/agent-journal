@@ -3,7 +3,7 @@ from dataclasses import asdict
 
 from engine.events.engine import CommandRan
 from engine.ran import DELIVERED, NOTED, SHELL, TYPED
-from features.status_bar.commands import JOURNAL_CALL
+from providers.command_effects import JOURNAL_CALL
 
 LOG = "terminal"
 COMMANDS, JOURNAL, EVERYTHING = "commands", "journal", "everything"
@@ -45,6 +45,7 @@ def kept(record, session: str, line: CommandRan) -> None:
         held["lines"] = [*held.get("lines", []), {**asdict(line), "output": capped(line.output.strip()), "level": level}][-KEPT:]
 
 
-def lines(record, session: str, level: str) -> list[dict]:
+def lines(record, session: str, level: str, after: float = 0.0) -> list[dict]:
     included = LEVELS[:LEVELS.index(level) + 1]
-    return sorted((line for name in included for line in record.state(f"{LOG}-{name}", session).get("lines", [])), key=lambda line: line["at"])[-KEPT:]
+    found = (line for name in included for line in record.state(f"{LOG}-{name}", session).get("lines", []) if line["at"] > after)
+    return sorted(found, key=lambda line: line["at"])[-KEPT:]

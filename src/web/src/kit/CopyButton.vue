@@ -1,5 +1,5 @@
 <script setup>
-import {copyText} from "./copy.js";
+import {copyText} from "../platform/clipboard.js";
 import {onUnmounted, ref} from "vue";
 import Icon from "./Icon.vue";
 

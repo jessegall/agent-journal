@@ -30,14 +30,14 @@ const views = inject("views", null);
             <span class="bar-line" />
             <MenuItem @click="schemesOpen = true">
                 <Icon name="palette" :size="14" />
-                Colour schemes
+                Color schemes
                 <span class="bar-more">›</span>
             </MenuItem>
         </template>
         <template #second>
             <MenuItem class="bar-back" @click="schemesOpen = false">
                 <Icon name="back" :size="14" />
-                Colour schemes
+                Color schemes
             </MenuItem>
             <ChoiceList :choices="views.schemes.value" @pick="(key) => emit('scheme', key)" />
         </template>

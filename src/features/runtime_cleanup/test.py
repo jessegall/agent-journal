@@ -1,3 +1,4 @@
+import json
 import os
 import time
 
@@ -51,6 +52,42 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(mon
     assert big.read_bytes().endswith(b"THE END+more") is True, "an append after the trim continues the tail"
 
 
+def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monkeypatch):
+    record = fresh()
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    launches = runtime.folder(record.root) / "launches"
+    launches.mkdir(parents=True)
+    spent, running = launches / "main-old-helper.log", launches / "main-busy-helper.log"
+    spent.write_bytes(b"done")
+    aged(spent, 3)
+    running.write_bytes(b"x" * (2 * 1024 * 1024) + b"still going\n")
+
+    tidy(record.root, 2)
+
+    assert not spent.exists(), "a launch log quiet past the days goes"
+    assert running.stat().st_size == 1024 * 1024, "a running launch log is cut to its last megabyte"
+    assert running.read_bytes().endswith(b"still going\n"), "and ends as it did"
+
+
+def test_an_ended_session_loses_its_terminal_captures_after_a_day(monkeypatch):
+    record = fresh()
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    sessions = {}
+    for name, pid in (("claude-ended", 999_999_999), ("claude-live", os.getpid())):
+        folder = runtime.sessions(record.root) / name
+        folder.mkdir(parents=True)
+        (folder / "session.json").write_text(json.dumps({"environment": "main", "pid": pid}))
+        for capture in ("printed", "screen"):
+            (folder / capture).write_bytes(b"frames")
+        aged(folder, 1.5)
+        sessions[name] = folder
+
+    tidy(record.root, 2)
+
+    assert sorted(f.name for f in sessions["claude-ended"].iterdir()) == ["session.json"], "an ended session's captures go after a day"
+    assert sorted(f.name for f in sessions["claude-live"].iterdir()) == ["printed", "screen", "session.json"], "a live session keeps them"
+
+
 def test_the_days_to_keep_is_a_setting():
     house = FEATURES["runtime_cleanup"]
     record = fresh()
@@ -76,13 +113,13 @@ def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not
     record = fresh()
     for i in range(150):
         record.emit("todo", i, "created", "system", quiet=True)
-    first = record.events(last=150)[0].id
-    record.set_cursor("slow", first + 19)
-    record.set_cursor("gone", first + 4)
+    first = record.event_log.events(last=150)[0].id
+    record.event_log.set_cursor("slow", first + 19)
+    record.event_log.set_cursor("gone", first + 4)
     two_days_ago = time.time() - 2 * 86400
     os.utime(record.home / "runtime" / "cursor-gone", (two_days_ago, two_days_ago))
     tidy(record.root, 2)
-    kept = [e.id for e in record.events()]
+    kept = [e.id for e in record.event_log.events()]
     assert (kept[0], len(kept)) == (first + 20, 130), "the last 100 stay, and everything after a live reader's place; a reader gone for days holds nothing"
     assert record.emit("todo", 1, "updated", "system", quiet=True).id == first + 150, "ids keep counting up"
 
@@ -142,7 +179,7 @@ def test_an_installed_update_tidies_at_once():
     from controllers.types import Notifications
     from features import load
     from resources.base import SYSTEM
-    from surfaces.updates import KIND
+    from features.auto_update.announcing import KIND
     load()
     record = fresh()
     left = record.root / "plugins" / ".staging-old"
@@ -151,3 +188,21 @@ def test_an_installed_update_tidies_at_once():
     os.utime(left, (old, old))
     Notifications(record, actor=SYSTEM)._logged("Journal updated to 9.9.9", brief="from 9.9.8", kind=KIND, version="9.9.9")
     assert not left.exists(), "a new version is housekept the moment it is announced, not an hour later"
+
+
+def test_tidy_drops_the_folds_of_an_old_code_mark_whole_and_keeps_the_current_one(monkeypatch):
+    from features.runtime_cleanup.tidy import OTHER_MARKS_FOR, leftovers
+    from providers.transcript_cache import code_mark
+    record = fresh()
+    folds = record.root.parent / "folds"
+    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", folds)
+    current, old, recent = folds / code_mark(), folds / "old-mark", folds / "another-build"
+    for place in (current, old, recent):
+        place.mkdir(parents=True)
+        (place / "turns.pickle").write_bytes(b"folded")
+    (folds / "flat.pickle").write_bytes(b"from before marks had folders")
+    stale = time.time() - OTHER_MARKS_FOR - 60
+    os.utime(old, (stale, stale))
+    leftovers(record.root)
+    assert (current.exists(), old.exists(), recent.exists(), (folds / "flat.pickle").exists()) == (True, False, True, False), \
+        "an old mark's folds go in one folder, another build still running keeps its own, and folds from before marks had folders go"

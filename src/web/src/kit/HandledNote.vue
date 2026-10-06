@@ -5,7 +5,7 @@ import Icon from "./Icon.vue";
 <template>
     <div class="handled-note">
         <Icon name="check" :size="12" />
-        <span class="handled-label">Handled</span>
+        <span class="handled-label">Closed</span>
         <span class="handled-text"><slot /></span>
     </div>
 </template>

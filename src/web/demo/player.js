@@ -1,4 +1,5 @@
-import {prefill} from "../src/state/prefill.js";
+import {store} from "../src/state/store.js";
+import {ui} from "../src/state/ui.js";
 import {QuietStream} from "./stream.js";
 
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
@@ -8,7 +9,13 @@ const MOVES = [
     ["send", (e) => e.type === "message" && e.action === "created"],
     ["approve", (e) => e.type === "plan" && e.action === "updated" && e.data.by === "approve"],
     ["answer", (e) => e.type === "question" && e.action === "completed"],
+    ["answer", (e) => e.type === "dump" && e.action === "updated" && e.data.by === "answer"],
 ];
+
+const ANSWERS = {
+    question: (row) => row.outcome,
+    dump: (row) => row.data.answers.at(-1).answer,
+};
 
 const newest = (moment) => Math.max(0, ...(moment.events || []).map((e) => e.id));
 
@@ -16,7 +23,7 @@ function moveIn(moment, before) {
     const fresh = (moment.events || []).filter((e) => e.id > newest(before) && e.actor === "user");
     for (const [kind, is] of MOVES) {
         const event = fresh.find(is);
-        if (event) return {kind, n: event.n};
+        if (event) return {kind, n: event.n, type: event.type};
     }
     return null;
 }
@@ -30,21 +37,14 @@ export class Player {
         this.standIn = standIn;
         this.timer = null;
         this.stepped = () => {};
-        this.mapped();
+        this.moves = movesOf(this.standIn.moments).filter(Boolean);
         const first = this.waiting;
         if (first && this.standIn.state.at === 0) this.goTo(first.at - 1);
         this.play();
     }
 
-    mapped() {
-        this.moves = movesOf(this.standIn.moments).filter(Boolean);
-        const branches = Object.values(this.standIn.demo.branches || {});
-        const opening = branches.length && !this.standIn.state.branch && movesOf([this.standIn.demo.moments.at(-1), ...branches[0]]).find(Boolean);
-        this.fork = opening ? {...opening, at: this.standIn.moments.length, fork: true} : null;
-    }
-
     get waiting() {
-        return this.moves.find((move) => move.at > this.standIn.state.at) || this.fork || undefined;
+        return this.moves.find((move) => move.at > this.standIn.state.at);
     }
 
     get playing() {
@@ -57,12 +57,19 @@ export class Player {
 
     offer() {
         const move = this.waiting;
-        prefill.value = move && move.kind === "send" ? this.asked(move.at) : "";
+        ui.prefill = move && move.kind === "send" ? this.asked(move.at) : "";
+        if (move && move.type === "dump") Object.assign(store, {pane: "chat", dumpSelected: move.n, dumping: true});
+        if (this.finished) store.dumping = false;
     }
 
     asked(at) {
         const message = this.message(at);
         return message ? message.brief || message.title : "";
+    }
+
+    recorded(move) {
+        const row = this.standIn.moments[move.at].rows[move.type].find((one) => one.n === move.n);
+        return ANSWERS[move.type](row);
     }
 
     message(at) {
@@ -74,7 +81,7 @@ export class Player {
     send() {
         const move = this.waiting;
         if (!move || move.kind !== "send") return null;
-        prefill.value = "";
+        ui.prefill = "";
         this.goTo(move.at);
         this.play();
         return this.message(move.at);
@@ -83,9 +90,8 @@ export class Player {
     moved(kind, n, how) {
         const move = this.waiting;
         if (!move || move.kind !== kind || move.n !== n) return false;
-        if (move.fork && !this.standIn.branched(how)) return false;
-        if (move.fork) this.mapped();
-        this.goTo(this.waiting.at);
+        if (kind === "answer" && how !== this.recorded(move)) return false;
+        this.goTo(move.at);
         this.play();
         return true;
     }

@@ -48,7 +48,7 @@ const button = computed(
             ready: ["approve", "Approve"],
             waiting: ["continue", "Continue"],
             parked: ["start", "Resume"],
-            done: ["finish", "Finish"],
+            done: ["finish", "Close"],
         })[status.value] || null
 );
 
@@ -85,7 +85,7 @@ async function run(action, body = {}) {
                 <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
                 <template v-if="closable">
-                    <CloseButton @click="emit('close')" />
+                    <CloseButton title="Close the plan" @click="emit('close')" />
                 </template>
             </template>
         </header>

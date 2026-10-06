@@ -1,17 +1,21 @@
 from controllers.base import Controller
 from resources import types
 from controllers.notices import Notices
+from controllers.marks import action
 
 
 class Rules(Controller):
     resource = types.Rule
 
+    @action
     def inject(self, n: int):
         return self.update(n, injected=True)
 
+    @action
     def uninject(self, n: int):
         return self.update(n, injected=False)
 
+    @action
     def pin(self, n: int):
         rule = self.load(n)
         notices = Notices(self.record, actor=self.actor)

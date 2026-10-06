@@ -5,19 +5,15 @@ from pathlib import Path
 from controllers.types import Agents, Notices
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUME, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
-from engine.seats import live_session
+from engine.seats import live_session, offline
 from providers.drivers import AGENT_COMMAND
-from agents.terminal import relaunch as restart
+from agents.terminal import relaunch as relaunch_session
 from providers import DRIVERS, PROVIDERS
+from providers.base import Provider
 from resources.base import SYSTEM, Refused
 from typing import TypedDict
 
 RELOAD_GRACE = 60.0
-
-
-def configured(provider: str, current_model: str) -> tuple[type, dict]:
-    cls = PROVIDERS.get(provider)
-    return cls, cls.control_options(current_model) if cls else {"groups": [], "note": "This CLI does not expose model controls."}
 
 
 def current(group: str, value: str, model: str, effort: str) -> bool:
@@ -33,7 +29,7 @@ class ControlOptions(TypedDict):
 
 
 def options(provider: str, current_model: str, current_effort: str) -> ControlOptions:
-    _, controls = configured(provider, current_model)
+    controls = PROVIDERS.get(provider, Provider).control_options(current_model)
     return {
         "provider": provider,
         "groups": [
@@ -55,16 +51,16 @@ def choice(provider: str, action: str, value: str, current_model: str) -> dict:
 def online(root: Path, env: str, session: str) -> dict:
     pair = live_session(Path(root), session, within=RELOAD_GRACE)
     if not pair:
-        raise Refused(f"session {session!r} is not online")
+        raise Refused(offline(Path(root), session, within=RELOAD_GRACE))
     found = pair[1]
     if found.environment != env:
         raise Refused(f"session {session!r} belongs to environment {found.environment!r}")
     return found
 
 
-def pressed(root: Path, env: str, session: str, label: str, action: str) -> dict:
+def pressed(root: Path, env: str, session: str, label: str, action: str, value: str = "") -> dict:
     found = online(root, env, session)
-    queued = queue(Path(root), session, (), label, provider=found.provider, action=action)
+    queued = queue(Path(root), session, (), label, provider=found.provider, action=action, value=value)
     return queued.for_viewer
 
 
@@ -104,18 +100,14 @@ def shell(root: Path, env: str, session: str, command: str, now: bool = False) -
 
 
 def permit(root: Path, env: str, session: str, allow: bool) -> dict:
-    found = online(root, env, session)
     answer = "allow" if allow else "deny"
-    queued = queue(Path(root), session, (), answer.capitalize(), provider=found.provider, action=PERMIT, value=answer)
-    return queued.for_viewer
+    return pressed(root, env, session, answer.capitalize(), PERMIT, answer)
 
 
-def relaunch(root: Path, env: str, session: str, skip: bool) -> dict:
+def relaunch(root: Path, env: str, session: str) -> dict:
     found = online(root, env, session)
-    record = Record(Path(root), env)
-    record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": skip})
-    restart(Path(root), env, found.terminal, session)
-    return {"relaunching": True, "skip": skip}
+    relaunch_session(Path(root), env, found.terminal, session)
+    return {"relaunching": True}
 
 
 def request(root: Path, env: str, session: str, action: str, value: str) -> dict:

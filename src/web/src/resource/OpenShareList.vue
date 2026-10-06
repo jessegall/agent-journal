@@ -47,7 +47,7 @@ const emit = defineEmits(["approve", "stop"]);
                     <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
                 </div>
                 <CopyButton :text="share.abstract" hint="Copy the link" />
-                <CopyButton :text="linkMessage(title, share.abstract)" icon="chat" hint="Copy it with a line saying what it is" />
+                <CopyButton :text="linkMessage(title, share.abstract)" icon="chat" hint="Copy the link with a short description" />
                 <Btn small kind="danger" :busy="stopping === share.n" @click="emit('stop', share)">Stop sharing</Btn>
             </div>
         </template>

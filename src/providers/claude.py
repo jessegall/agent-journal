@@ -1,5 +1,4 @@
 import json
-import os
 import re
 import shlex
 import shutil
@@ -9,29 +8,20 @@ from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
-from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
-from providers.base import BackgroundTasks, HookCommand, Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
+from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, PeerNote, Turn
+from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
+from providers.base import BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
+from providers.jsonl import complete_lines, last_lines, parsed_row, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
-from engine.stored import read_json, tail, write_json, write_text
-from engine import runtime
-from engine.sessions import Sessions
-from engine.worktree import WORKTREES
-from providers.drivers import ANSI, CHOICE, LINE_START, Driver, joined
-from engine.fields import Loaded
+from engine.proc import run
+from engine.stored import JsonFiles, read_json, write_text
 
-ASKS = frozenset({"AskUserQuestion"})
 SENDS = "SendMessage"
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
-HANDED = "channel-handed.json"
-HANDED_KEPT = 20
-HANDED_TEXT = 80
-MOVED_ON = 4
-TYPED_FOR = 300
 CHANNEL_MARK = '<channel source="journal"'
 BASH_INPUT = re.compile(r"^<bash-input>(.*)</bash-input>$", re.S)
 COMMAND_NAME = re.compile(r"<command-name>(.*?)</command-name>", re.S)
@@ -46,6 +36,7 @@ KEPT_LINKS = 10
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
+SETTINGS_FILES = JsonFiles()
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
 TASK_ID = re.compile(r"\b(?:ID:|task|agentId:) (\w+)")
@@ -54,22 +45,7 @@ MONITOR_DEFAULT = 300000
 DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
-
-
-
-@dataclass(frozen=True)
-class HandedLine(Loaded):
-    line: str = ""
-    at: float = 0.0
-
-
-@dataclass(frozen=True)
-class Handed(Loaded):
-    lines: tuple[HandedLine, ...] = ()
-    typed_until: float = 0.0
-
-    def to_json(self) -> dict:
-        return {"lines": [asdict(h) for h in self.lines], "typed_until": self.typed_until}
+SERVER = "journal"
 
 
 @dataclass
@@ -95,6 +71,34 @@ def subagent_facts(rows: list[Row]) -> SubagentFacts:
     file = next((given.get(key) for key in ("file_path", "notebook_path", "path") if given.get(key)), "")
     answers = [block.text for row in rows if row.type == "assistant" for block in row.of_type("text") if block.text.strip()]
     return SubagentFacts(tool, file, answers[-1][:2000] if answers else "")
+
+
+@dataclass(frozen=True)
+class ClaudeSubagentRow(SubagentRow):
+    task_id: str
+    refusal: str | None
+    skills: list[str]
+    facts: SubagentFacts | None
+
+    def to_json(self) -> dict:
+        fields = asdict(self)
+        facts = fields.pop("facts")
+        return {**fields, **(facts or {})}
+
+
+@dataclass(frozen=True)
+class CommandRow:
+    id: str
+    task_id: str
+    command: str
+    task: str
+    running: bool
+    at: float
+    ended: float
+    status: str
+
+    def to_json(self) -> dict:
+        return asdict(self)
 
 
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
@@ -134,6 +138,7 @@ class Claude(Provider):
     session_variable = "CLAUDE_CODE_SESSION_ID"
     session_markers = ("CLAUDECODE", "CLAUDE_PID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_EXECPATH", "CLAUDE_CODE_CHILD_SESSION",
                        "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
+    home = ".claude"
     sleeping_tools = ("ScheduleWakeup",)
     echoes_typed = True
     background_wakes = True
@@ -141,6 +146,8 @@ class Claude(Provider):
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"
+    shared_files = (".claude/settings.local.json",)
+    worktrees = (".claude", "worktrees")
     link_skills = True
     applies_at_once = ("effort",)
     controls = {
@@ -184,8 +191,8 @@ class Claude(Provider):
 
     def setting(self, project: Path, key: str) -> str:
         found = ""
-        for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
-            saved = read_json(settings, dict, {})
+        for settings in (Path.home() / self.home / "settings.json", project / self.home / "settings.json", project / self.home / "settings.local.json"):
+            saved = SETTINGS_FILES.read(settings, dict, {})
             found = (saved.get(key) if isinstance(saved, dict) else "") or found
         return found
 
@@ -193,7 +200,7 @@ class Claude(Provider):
         return self.reported(transcript, "effort").get("level", "") or self.setting(project, "effortLevel")
 
     def reported(self, transcript: Path | None, key: str) -> dict:
-        status = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), dict, {}) if transcript else {}
+        status = SETTINGS_FILES.read(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), dict, {}) if transcript else {}
         found = status.get(key) if isinstance(status, dict) else None
         return found if isinstance(found, dict) else {}
 
@@ -211,12 +218,22 @@ class Claude(Provider):
         servers[SERVER] = {"command": sys.executable, "args": [str(hook.root / "journal.py"), "-m", "channel", str(hook.root)]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
+    def wiring_trouble(self, project: Path) -> str:
+        found = super().wiring_trouble(project)
+        if found:
+            return found
+        python = ((read_json(project / ".mcp.json", dict, {}).get("mcpServers") or {}).get(SERVER) or {}).get("command", "")
+        if not (python and Path(python).exists()):
+            return f"its channel runs {python or 'no Python'}, which is gone: reinstall: re-run install.sh"
+        if run([python, "-c", "import sys; print(sys.version_info >= (3, 10))"], timeout=10).strip() != "True":
+            return f"its channel runs {python or 'no Python'}, which is not Python 3.10 or newer"
+        return ""
+
     def journal_typed(self, prompt: str) -> bool:
         return CHANNEL_MARK in prompt or super().journal_typed(prompt)
 
-    def wire(self, project: Path, hook: HookCommand) -> Path:
+    def finish_wiring(self, project: Path, hook: HookCommand) -> None:
         self.shared(project)
-        wired = super().wire(project, hook)
         self.channel(project, hook)
         settings = self.settings(project)
         if "statusLine" not in settings:
@@ -227,7 +244,6 @@ class Claude(Provider):
         deny = list(permissions.get("deny") or [])
         if any(rule not in deny for rule in RECORD_FILES):
             self.save(project, {**settings, "permissions": {**permissions, "deny": deny + [r for r in RECORD_FILES if r not in deny]}})
-        return wired
 
     def usage(self, path: Path, now: float | None = None) -> list[UsageWindow] | None:
         limits = self.reported(path, "rate_limits")
@@ -249,29 +265,23 @@ class Claude(Provider):
             return int(float(value))
         return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
 
-    def agent_types(self, project: Path, chosen: list) -> list[Path]:
-        folder = project / ".claude" / "agents"
-        written = []
-        for kind, model in chosen:
-            text = f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.instructions}\n"
-            target = folder / f"{kind.name}.md"
-            if not target.is_file() or target.read_text() != text:
-                folder.mkdir(parents=True, exist_ok=True)
-                write_text(target, text)
-                written.append(target)
-        return written
+    def agent_file(self, project: Path, name: str) -> Path:
+        return project / self.home / "agents" / f"{name}.md"
+
+    def agent_text(self, kind, model: str) -> str:
+        return f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.instructions}\n"
 
     def present(self, project: Path) -> bool:
-        return (project / ".claude").is_dir() or shutil.which("claude") is not None
+        return (project / self.home).is_dir() or shutil.which("claude") is not None
 
     def config(self, project: Path) -> Path:
-        return project / ".claude" / "settings.local.json"
+        return project / self.home / "settings.local.json"
 
     def hook_files(self, project: Path) -> list[Path]:
-        return [Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", self.config(project)]
+        return [Path.home() / self.home / "settings.json", project / self.home / "settings.json", self.config(project)]
 
     def shared(self, project: Path) -> None:
-        f = project / ".claude" / "settings.json"
+        f = project / self.home / "settings.json"
         had = read_json(f, dict, None)
         if had is None:
             return
@@ -289,6 +299,11 @@ class Claude(Provider):
 
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
+
+    @classmethod
+    def display_chunk(cls, raw: dict) -> Chunk | None:
+        chunk = Chunk.from_json(raw)
+        return chunk if chunk.event == DISPLAYED else None
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
@@ -341,7 +356,7 @@ class Claude(Provider):
         return typed
 
     def shell_runs(self, path: Path) -> list[tuple[float, str]]:
-        found = ((row.at, BASH_INPUT.match(row.text)) for row in self.recent(path) if row.type == "user" and row.text is not None)
+        found = ((row.at, BASH_INPUT.match(row.text)) for row in self.recent_rows(path) if row.type == "user" and row.text is not None)
         return [(at, match[1]) for at, match in found if match]
 
     def unwrapped_command(self, command: str) -> str:
@@ -358,16 +373,16 @@ class Claude(Provider):
         path = hook.transcript
         if not path or not path.is_file():
             return hook.model
-        return next((row.model for row in reversed(self.recent(path)) if row.model), hook.model)
+        return next((row.model for row in reversed(self.recent_rows(path)) if row.model), hook.model)
 
     def context(self, hook: Hook) -> float | None:
         path = hook.transcript
         if not path or not path.is_file():
             return None
-        used = next((row.tokens for row in reversed(self.recent(path)) if row.tokens is not None), None)
+        used = next((row.tokens for row in reversed(self.recent_rows(path)) if row.tokens is not None), None)
         return None if used is None else round(100 * used / self.window(hook, used), 1)
 
-    def turn(self, row: Row) -> tuple | None:
+    def turn(self, row: Row, line: int) -> Turn | None:
         if row.type == "attachment" and row.queued.kind == "peer":
             row = replace(row, type="user", origin=row.queued, text=row.prompt, blocks=())
         if (row.sidechain and not row.agent_id) or row.type not in ("user", "assistant"):
@@ -377,22 +392,22 @@ class Claude(Provider):
         if results and not text.strip():
             text = "\n".join(block.result for block in results)
         uses = [ToolCall.from_payload(block.id, block.name, row.at, block.input) for block in row.of_type("tool_use")]
-        questions = [self.question_text(use) for use in uses if use.name in ASKS]
+        questions = [self.question_text(use) for use in uses if use.name in self.question_tools]
         if questions:
             text = "\n".join(part for part in (text, *questions) if part)
         tools = [f"Skill:{use.skill}" if use.name == "Skill" else use.name for use in uses]
         if not text.strip() and not tools:
             return None
         kind = self.kind(row, bool(results))
-        who = SPEAKERS.get(kind, kind)
+        peer = None
         if kind == PEER and row.origin.name and row.origin.sender.startswith(SESSIONS):
-            who, text = f"{PEER}:{row.origin.name}:{row.origin.sender}", row.origin.body if row.origin.body else text
+            peer, text = PeerNote(PEER, row.origin.sender, row.origin.name), row.origin.body if row.origin.body else text
         sent = next((use for use in uses if use.name == SENDS and use.to), None)
         if sent:
-            kind, who, text = PEER, f"{SENT}:{sent.to}", sent.message if sent.message else text
-        asked = [use.id for use in uses if use.name in ASKS]
+            kind, peer, text = PEER, PeerNote(SENT, sent.to), sent.message if sent.message else text
+        asked = [use.id for use in uses if use.name in self.question_tools]
         answered = [block.tool_use_id for block in results]
-        return who, text, kind, row.at, tools, row.parent, asked, answered
+        return Turn(line, SPEAKERS.get(kind, kind), text, kind=kind, at=row.at, tools=tools, parent=row.parent, asked=asked, answered=answered, peer=peer)
 
     def question_text(self, use: ToolCall) -> str:
         lines = (f"{question.text}  [{' / '.join(question.labels)}]" if question.labels else question.text for question in use.questions)
@@ -444,18 +459,6 @@ class Claude(Provider):
     def refused_by_hook(self, block: Block) -> bool:
         return block.is_error and "hook error" in block.result
 
-    def loaded(self, uses: list[ToolCall]) -> list[str]:
-        return sorted({u.skill for u in uses if u.name == "Skill"} - {""})
-
-    def skills(self, session: Path | None) -> list[str]:
-        if session is None or not session.is_file():
-            return []
-        return sorted(self.folded(session, self.skill_names, set))
-
-    def skill_names(self, names: set, row: Row) -> set:
-        names.update(use.skill_loaded for use in self.tool_uses(row) if use.skill_loaded)
-        return names
-
     def crew_rows(self, crew: "Crew", row: Row) -> "Crew":
         if self.starts_window(row):
             crew.window.clear()
@@ -499,61 +502,53 @@ class Claude(Provider):
             writing = now - written <= QUIET_SUBAGENT
             behind = use.background or use.id in held.moved_to_background
             running = not status or writing and (status == "returned" and behind or written > done)
-            facts = asdict(subagent_facts(self.recent(session))) if session else {}
-            subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
-                              "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
-                              "status": "" if running else status, "refusal": held.errors.get(use.id),
-                              "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session), **facts})
+            subagents.append(ClaudeSubagentRow(id=use.id, task=use.description if use.description else "subagent", type=use.subagent_type, model=use.model,
+                                               running=running, at=use.at, ended=0.0 if running else done, status="" if running else status,
+                                               session=session.stem.removeprefix("agent-") if session else "", task_id=ids.get(use.id, ""),
+                                               refusal=held.errors.get(use.id), skills=self.skills(session),
+                                               facts=subagent_facts(self.recent_rows(session)) if session else None).to_json())
         shells = []
         for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):
             status, done = ended.get(use.id, ("", 0.0))
             finished = status not in ("", "returned")
-            shells.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": use.command[:160], "task": use.description,
-                           "running": not finished, "at": use.at, "ended": done if finished else 0.0, "status": status if finished else ""})
+            shells.append(CommandRow(use.id, ids.get(use.id, ""), use.command[:160], use.description, not finished, use.at,
+                                     done if finished else 0.0, status if finished else "").to_json())
         monitors = []
         for use in (u for u in uses if u.name == "Monitor"):
             status, done = ended.get(use.id, ("", 0.0))
             notified = status not in ("", "returned")
             deadline = use.at + min((use.timeout_ms if use.timeout_ms else MONITOR_DEFAULT) / 1000, MONITOR_LONGEST)
             finished = notified or now > deadline
-            monitors.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": (use.command if use.command else use.url)[:160],
-                             "task": use.description if use.description else "monitor", "running": not finished, "at": use.at,
-                             "ended": monitor_end(finished, notified, done, deadline),
-                             "status": monitor_status(finished, notified, status)})
-        return {AgentRow.skills: self.loaded(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
-                AgentRow.monitors: len(monitors), AgentRow.shell_rows: recent(shells), AgentRow.subagent_rows: recent(subagents),
-                AgentRow.monitor_rows: recent(monitors)}
+            monitors.append(CommandRow(use.id, ids.get(use.id, ""), (use.command if use.command else use.url)[:160], use.description if use.description else "monitor",
+                                       not finished, use.at, monitor_end(finished, notified, done, deadline), monitor_status(finished, notified, status)).to_json())
+        return {AgentRow.skills: self.skills_in(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
+                AgentRow.monitors: len(monitors), AgentRow.shell_rows: running_and_latest(shells),
+                AgentRow.subagent_rows: running_and_latest(subagents), AgentRow.monitor_rows: running_and_latest(monitors)}
 
     def stop_instruction(self, task: str) -> str:
         return f"run TaskStop with task_id {task} now"
 
     def conversation_file(self, conversation: str) -> Path | None:
-        return next(iter(sorted((Path.home() / ".claude" / "projects").glob(f"*/{conversation}.jsonl"))), None)
+        return next(iter(sorted((Path.home() / self.home / "projects").glob(f"*/{conversation}.jsonl"))), None)
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
         return found if found.is_file() else None
 
     def settling(self, path: Path) -> bool:
-        for line in reversed(tail(path, SETTLE_BYTES)):
-            raw = parsed(line, dict)
-            row = Row.from_payload(raw) if raw is not None and raw.get("message") else None
-            if row and row.type in ("user", "assistant"):
+        lines, _ = last_lines(path, SETTLE_BYTES)
+        for row in rows(reversed(lines), Row.from_payload):
+            if row.type in ("user", "assistant"):
                 return row.type == "user" or (bool(row.blocks) and all(block.type == "thinking" for block in row.blocks))
         return False
 
     def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
-        try:
-            with open(transcript, "rb") as f:
-                f.seek(offset)
-                lines = f.read().split(b"\n")
-        except OSError:
-            return [], offset
+        lines, _ = complete_lines(transcript, offset)
         blocks: dict[str, list[Block]] = {}
         ends, at, done = [], offset, offset
-        for line in lines[:-1]:
+        for line in lines:
             at += len(line) + 1
-            row = parsed(line.decode(errors="replace"), Row.from_payload)
+            row = parsed_row(line, Row.from_payload)
             if row is None:
                 continue
             if row.type == "assistant" and row.blocks:
@@ -576,144 +571,3 @@ class Claude(Provider):
 
     def is_subagent(self, hook) -> bool:
         return bool(hook.agent) or "subagents" in (hook.transcript.parts if hook.transcript else ())
-
-
-ASKS_BEFORE = ("/model",)
-CONFIRM_PROMPT = b"Entertoconfirm"
-CONFIRM_WAIT = 4.0
-CONFIRM_POLL = 0.25
-
-
-SERVER = "journal"
-
-
-def claude_state() -> Path:
-    return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home()) / ".claude.json"
-
-
-class ClaudeDriver(Driver):
-    HOMES = ("~/.claude/local", *Driver.HOMES)
-    PRODUCT = "Claude Code"
-    DISPLAY_HOOK = True
-    SHELL = "!"
-    INPUT_MARK = "❯".encode()
-    TAKES_CHANNEL = True
-    SUGGESTED = re.compile("(❯\u00a0)\x1b\\[2m([^\x1b\r\n]*)\x1b\\[22m".encode())
-    AUTO_ARGS = ("--permission-mode", "auto")
-    APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
-    SKIP_ARGS = ("--dangerously-skip-permissions",)
-    RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
-    WORKTREE = ("--worktree", "-w")
-    WORKTREES = WORKTREES
-    EXIT = "/exit"
-    TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
-    CHANNEL = ("--dangerously-load-development-channels", f"server:{SERVER}")
-    LISTENING = 15.0
-    MOVE_TO_BACKGROUND = b"\x02"
-    ELSEWHERE = "Message @"
-    name = "claude"
-
-    def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
-        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
-
-    @classmethod
-    def trusted(cls, folder: Path) -> None:
-        state = claude_state()
-        known = read_json(state, dict, {})
-        projects = known.get("projects") or {}
-        entry = projects.get(str(folder.resolve())) or {}
-        approved = entry.get("enabledMcpjsonServers") or []
-        wanted = {**entry, "hasTrustDialogAccepted": True, "enabledMcpjsonServers": approved if SERVER in approved else [*approved, SERVER]}
-        if wanted != entry:
-            write_json(state, {**known, "projects": {**projects, str(folder.resolve()): wanted}}, indent=2)
-
-    @classmethod
-    def latest(cls, project: Path) -> str:
-        folder = Path.home() / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(project))
-        return max(folder.glob("*.jsonl"), key=lambda path: path.stat().st_mtime, default=Path()).stem
-
-    @classmethod
-    def consent(cls, printed: bytes) -> bytes:
-        plain = b"".join(ANSI.sub(b"", printed).split())
-        asking = cls.CHANNEL[0].encode() in plain and CHOICE.search(plain)
-        return b"\r" if asking and plain.rfind(cls.INPUT_MARK) == plain.rfind(cls.INPUT_MARK + b"1.") else b""
-
-    def run_command(self, command: str) -> bool:
-        screen = runtime.session_file(self.record.root, self.session, "screen")
-        start = screen.stat().st_size if screen.is_file() else 0
-        typed = super().run_command(command)
-        if typed and command.strip().startswith(ASKS_BEFORE):
-            self._confirm_after(screen, start)
-        return typed
-
-    def _confirm_after(self, screen: Path, start: int) -> None:
-        until = time.time() + CONFIRM_WAIT
-        while time.time() < until:
-            time.sleep(CONFIRM_POLL)
-            with screen.open("rb") as shown:
-                shown.seek(start)
-                plain = b"".join(ANSI.sub(b"", shown.read()).split())
-            if CONFIRM_PROMPT in plain:
-                self._entered()
-                return
-
-    def _post(self, line: str, by: str) -> bool:
-        return self._handed(line, by)
-
-    def owns(self, row) -> bool:
-        pid = Sessions(self.record.root).read(self.session).pid
-        return bool(pid) and Path(row.inbox).stem == str(pid)
-
-    def _handed(self, line: str, by: str) -> bool:
-        root = self.record.root
-        pid = Sessions(root).read(self.session).pid
-        try:
-            if not pid or not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root, pid).stat().st_mtime > self.LISTENING:
-                return False
-            if not self._delivering():
-                return False
-            with runtime.channel_queue(root, pid).open("a") as queue:
-                queue.write(json.dumps({"content": line, "meta": {"from": by}}) + "\n")
-            handed = runtime.session_file(root, self.session, HANDED)
-            held = read_json(handed, Handed.from_json, Handed.from_json({}))
-            write_json(handed, replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
-            return True
-        except OSError:
-            return False
-
-    @staticmethod
-    def _channel_text(row: Row) -> str:
-        if row.type == "attachment":
-            return row.prompt
-        if row.type == "queue-operation":
-            return row.content
-        if row.type != "user":
-            return ""
-        return row.text if row.text is not None else "\n".join(block.result for block in row.of_type("tool_result"))
-
-    def _landed(self, line: str, since: float, confirmed: bool) -> bool:
-        return self._in_transcript(line, since) or super()._landed(line, since, confirmed)
-
-    def _in_transcript(self, line: str, since: float) -> bool:
-        last = self.last_report()
-        wanted = " ".join(joined(line).split())[:LINE_START]
-        if not wanted or not last or not last.transcript:
-            return False
-        return any(row.at >= since - 1 and wanted in " ".join(self._channel_text(row).split()) for row in Claude().recent(Path(last.transcript)))
-
-    def _delivering(self) -> bool:
-        handed = runtime.session_file(self.record.root, self.session, HANDED)
-        held = read_json(handed, Handed.from_json, Handed.from_json({}))
-        if time.time() < held.typed_until:
-            return False
-        last = self.last_report()
-        waiting = held.lines
-        if not waiting or not last or not last.transcript:
-            return True
-        rows = Claude().recent(Path(last.transcript))
-        arrived = [text for text in map(self._channel_text, rows) if CHANNEL_MARK in text]
-        times = [row.at for row in rows]
-        lost = [h for h in waiting if not any(h.line in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]
-        kept = tuple(h for h in waiting if not any(h.line in text for text in arrived) and h not in lost)
-        write_json(handed, (Handed(typed_until=time.time() + TYPED_FOR) if lost else Handed(lines=kept)).to_json())
-        return not lost

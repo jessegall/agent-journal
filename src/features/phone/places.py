@@ -8,9 +8,10 @@ from engine.color import identity
 from engine.record import Record
 from engine.sessions import Sessions, alive
 from engine.viewer import known, last
+from features.message_buttons.pressing import unspent
+from features.plans.resource import READY
 from features.status_bar.bar import current
 from resources.base import SYSTEM, USER
-from surfaces.agent_state import agent_state
 
 MAIN = "main"
 WAITED = ("question", "plan", "report", "doc")
@@ -27,17 +28,17 @@ class Detail(TypedDict):
 
 def owed(row) -> bool:
     if row.type == "plan":
-        return row.status == "ready"
-    return row.type == "question" or USER not in row.seen
+        return row.status == READY
+    return row.type == "question" or USER not in row.seen or bool(unspent(row))
 
 
 def detail(root: Path, name: str) -> Detail:
     record = Record(root, name)
     queue = current(record)["queue"]
-    waiting = {kind: sum(map(owed, CONTROLLERS[kind](record, actor=SYSTEM)._standing())) for kind in WAITED}
-    agents = Agents(record, actor=SYSTEM).summaries()
-    return Detail(agent=agent_state(record, name), doing=queue[-1]["key"] if queue else "", waiting=waiting,
-                  inHand=len(Works(record, actor=SYSTEM)._standing()), lastActive=max((row["updated"] for row in agents), default=0.0))
+    waiting = {kind: sum(map(owed, CONTROLLERS[kind](record, actor=SYSTEM).rows.standing())) for kind in WAITED}
+    agents = Agents(record, actor=SYSTEM).rows.summaries()
+    return Detail(agent=Agents(record, actor=SYSTEM).state(name), doing=queue[-1]["key"] if queue else "", waiting=waiting,
+                  inHand=len(Works(record, actor=SYSTEM).rows.standing()), lastActive=max((row["updated"] for row in agents), default=0.0))
 
 
 @dataclass(frozen=True)
@@ -59,11 +60,11 @@ class Place:
                    {name: detail(root, name) for name in names})
 
     def row(self, name: str) -> int:
-        return next(env.n for env in Environments(Record(Path(self.root), MAIN), actor=SYSTEM)._standing() if env.title == name and not env.helping)
+        return next(env.n for env in Environments(Record(Path(self.root), MAIN), actor=SYSTEM).rows.standing() if env.title == name and not env.helping)
 
 
 def shown(root: Path) -> tuple[str, ...]:
-    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM)._standing() if not env.owner)
+    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM).rows.standing() if not env.owner)
 
 
 def running(root: Path) -> bool:

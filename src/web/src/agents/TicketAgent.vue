@@ -1,0 +1,111 @@
+<script setup>
+import {computed, ref} from "vue";
+import {useEscape} from "../composables/windowEvent.js";
+import {api} from "../api/client.js";
+import Dialog from "../kit/Dialog.vue";
+import {word} from "../domain/spec.js";
+import {agentState, ticketOf} from "../domain/ticketAgents.js";
+import {helperLine, helperName, helperReport, helperState} from "../domain/helpers.js";
+import {href, route} from "../route.js";
+import {store} from "../state/store.js";
+import {rows} from "../sync/rows.js";
+import AgentInspector from "./AgentInspector.vue";
+
+const props = defineProps({
+    card: {type: Object, required: true},
+    env: {type: String, default: ""},
+    kind: {type: String, default: "ticket"},
+    label: {type: String, default: ""},
+    plan: {type: Number, default: 0},
+});
+const emit = defineEmits(["close", "stopped"]);
+
+const open = ref(true);
+useEscape(() => (open.value = false));
+
+const ticket = computed(() => (props.env ? null : ticketOf(props.card.n)));
+const helper = computed(() => (props.kind === "helper" ? rows("helper").find((row) => row.n === props.card.n) || null : null));
+const env = computed(() => props.env || (ticket.value && ticket.value.data.work_environment) || "");
+const plan = computed(() => props.plan || (ticket.value && ticket.value.data.plan) || 0);
+const name = computed(() => props.label || (helper.value ? helperName(helper.value) : `#${props.card.n}`));
+
+const STOP = {
+    key: "stop",
+    label: "Stop its agent",
+    title: "It stops at once. Its chat, commits and files stay here.",
+    danger: true,
+    confirm: {
+        text: "Stop this agent now? It stops in the middle of what it is doing. Its chat, its commits and its files stay here.",
+        button: "Stop now",
+        cancel: "Keep it running",
+    },
+};
+const REMOVE = (who) => ({
+    key: "remove",
+    label: "Remove helper and its working copy",
+    title: "Removes its environment and its copy of the code. Its report and commits are kept.",
+    danger: true,
+    confirm: {
+        text: `Remove the environment of ${who} and its working copy of the code? Its report stays in the Helpers list under Closed, and the commits it made are kept.`,
+        button: "Remove it",
+        cancel: "Cancel",
+    },
+});
+
+const HELPER_STATES = {
+    running: {key: "working", word: "Working", dot: "running"},
+    reported: {key: "reported", word: "Report ready", dot: "done"},
+    finished: {key: "idle", word: "Closed", dot: "done"},
+};
+const filed = computed(() => {
+    const there = env.value && env.value !== route.value.env;
+    const reports = (there ? store.elsewhere[`${env.value}:report`] : rows("report")) || [];
+    return [...reports].filter((r) => !r.deleted).sort((a, b) => b.created - a.created)[0] || null;
+});
+const reportLink = computed(() =>
+    filed.value ? {href: href.page(env.value || route.value.env, "report", filed.value.n), label: `Open report ${filed.value.n}`} : {}
+);
+const state = computed(() => (helper.value ? HELPER_STATES[helperState(helper.value)] : agentState(props.card)));
+const kicker = computed(() => ({plan: "Plan agent", helper: "Helper"})[props.kind] || "Ticket agent");
+const actions = computed(() => {
+    if (!helper.value) return state.value.key === "stopped" ? [] : [STOP];
+    const phase = helperState(helper.value);
+    return phase === "running" ? [STOP] : phase === "reported" ? [REMOVE(name.value)] : [];
+});
+const info = computed(() => ({
+    kind: kicker.value,
+    name: name.value,
+    title: props.card.title,
+    state: state.value,
+    facts: [
+        ...(helper.value ? [helperLine(helper.value) || "its model"] : []),
+        ...(props.card.reason ? [props.card.reason] : []),
+        env.value || "its environment",
+    ],
+    report: helper.value && helperReport(helper.value) ? {text: helperReport(helper.value), ...reportLink.value} : null,
+    actions: actions.value,
+}));
+
+async function run(key) {
+    if (helper.value) await api.act("helper", helper.value.n, key === "stop" ? "stop" : word("helper", "complete"));
+    else await api.stopTicket(props.card.n);
+    emit("stopped");
+}
+</script>
+
+<template>
+    <Dialog large bare :open="open" :title="`${kicker} ${name}`" @dismiss="open = false" @close="emit('close')">
+        <template v-if="env">
+            <AgentInspector
+                :key="env"
+                :kind="kind"
+                :info="info"
+                :env="env"
+                :plan="plan"
+                :chat-session="card.session"
+                :run="run"
+                @close="open = false"
+            />
+        </template>
+    </Dialog>
+</template>

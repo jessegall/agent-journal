@@ -1,16 +1,20 @@
 from features.base import FeatureDetails
+from features.groups import Group
 
 
 class WorktreesDetails(FeatureDetails):
+    explains = 'Working copies of this project share one journal. You can see their sessions and work together.'
     name = "worktrees"
+    group = Group.SESSIONS
+    label = "Link worktrees to the project's journal"
     has_skill = False
 
     title = "Worktrees"
 
 
     abstract = """
-        A git worktree of the project works from the project's journal: one with no journal of
-        its own gets a link to it
+        A git worktree of the project uses the project's journal. A worktree without a journal of
+        its own gets a link to it.
     """
 
     help = """

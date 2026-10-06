@@ -1,6 +1,6 @@
 import {computed, ref, unref, watch} from "vue";
 import {api} from "../api/client.js";
-import {pollKey, usePoll} from "../poll.js";
+import {pollKey, usePoll} from "./poll.js";
 import {PAGE} from "../sync/rows.js";
 import {keepingPlace} from "./scrollback.js";
 

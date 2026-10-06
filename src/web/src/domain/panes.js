@@ -26,8 +26,8 @@ export const PRESETS = [
     {key: "default", name: "Default", text: "Chat and side panels", shape: DEFAULT_SHAPE},
     {
         key: "jesse",
-        name: "Jesse's setup",
-        text: "Chat, the file feed with questions and to-dos, the terminal",
+        name: "Developer",
+        text: "A layout for developers",
         shape: split(
             "row",
             0.62,
@@ -54,57 +54,66 @@ export const PRESETS = [
             )
         ),
     },
-    {key: "zen", name: "Zen", text: "Only the chat", shape: {...shaped(["chat"]), width: CONTAINED}},
+    {key: "zen", name: "Chat only", text: "Only the chat", shape: {...shaped(["chat"]), width: CONTAINED}},
     {
         key: "hacker",
-        name: "Hacker",
+        name: "Terminal",
         text: "Big terminal, small chat",
         shape: split("row", 0.72, shaped(["terminal"]), shaped(["chat"])),
     },
     {key: "review", name: "Review", text: "Feed and chat", shape: split("row", 0.5, shaped(["feed"]), shaped(["chat"]))},
     {
         key: "watch",
-        name: "Watch",
+        name: "Monitor",
         text: "Terminal, feed, notifications",
         shape: split("row", 0.62, shaped(["terminal"]), split("col", 0.55, shaped(["feed"]), shaped(["waiting"]))),
     },
     {
         key: "triage",
-        name: "Triage",
+        name: "Inbox",
         text: "Chat, questions, to-dos",
         shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["question", "waiting"]), shaped(["todos", "suggestion"]))),
     },
     {
         key: "orchestrator",
-        name: "Orchestrator",
-        text: "Chat and working agents",
+        name: "Agents",
+        text: "Agents",
         shape: split("row", 0.34, shaped(["chat"]), shaped(["agents"])),
     },
 ];
 
-export const INSPECTOR_VIEWS = ["chat", "terminal", "transcript", "history", "tasks", "feed", "todos", "plan"];
+export const INSPECTOR_VIEWS = [
+    "chat",
+    "terminal",
+    "transcript",
+    "history",
+    "tasks",
+    "feed",
+    "todos",
+    "plan",
+    "subagents",
+    "skills",
+    "hooks",
+];
 
-export const INSPECTOR_SHAPE = split(
-    "row",
-    0.5,
-    shaped(["chat", "transcript"]),
-    split("col", 0.58, shaped(["terminal", "feed"]), shaped(["plan", "history", "tasks", "todos"]))
-);
+const WORK_TABS = ["terminal", "feed", "todos", "tasks", "plan", "history", "subagents", "skills", "hooks"];
+
+export const INSPECTOR_SHAPE = split("row", 0.5, shaped(["chat", "transcript"]), shaped(WORK_TABS));
 
 export const INSPECTOR_PRESETS = [
-    {key: "inspector-default", name: "Default", text: "Chat, terminal, plan", shape: INSPECTOR_SHAPE},
-    {key: "inspector-chat", name: "Chat", text: "Only the chat", shape: shaped(["chat", "transcript", "history", "tasks", "plan"])},
+    {key: "inspector-default", name: "Default", text: "The chat on the left, the rest on the right", shape: INSPECTOR_SHAPE},
+    {key: "inspector-chat", name: "Chat only", text: "One wide column", shape: shaped(["chat", "transcript", ...WORK_TABS])},
     {
         key: "inspector-terminal",
         name: "Terminal",
-        text: "Big terminal, small chat",
-        shape: split("row", 0.62, shaped(["terminal"]), shaped(["chat", "transcript"])),
+        text: "The terminal wide, the chat beside it",
+        shape: split("row", 0.62, shaped(["terminal", ...WORK_TABS.filter((v) => v !== "terminal")]), shaped(["chat", "transcript"])),
     },
     {
         key: "inspector-review",
-        name: "Review",
-        text: "Feed and chat",
-        shape: split("row", 0.5, shaped(["feed", "terminal"]), shaped(["chat", "plan", "history"])),
+        name: "File edits",
+        text: "What it changed, next to what it says",
+        shape: split("row", 0.5, shaped(["feed", ...WORK_TABS.filter((v) => v !== "feed")]), shaped(["chat", "transcript"])),
     },
 ];
 
@@ -222,9 +231,9 @@ export function opened(layout) {
 export function valid(layout, views = VIEWS) {
     if (!layout || !layout.tree || !layout.panes || !Number.isInteger(layout.next)) return false;
     const ids = leaves(layout.tree);
-    const shown = ids.flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
+    const tabs = ids.flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
     const loose = [...floating(layout), ...elsewhere(layout)].map((f) => f.view);
-    return [...shown, ...loose].every((v) => views.includes(v)) && new Set(shown).size === shown.length;
+    return [...tabs, ...loose].every((v) => views.includes(v)) && new Set(tabs).size === tabs.length;
 }
 
 const kept = (layout, tree, panes, next) => ({

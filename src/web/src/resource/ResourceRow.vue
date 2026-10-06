@@ -1,22 +1,28 @@
 <script setup>
+import {meta} from "../domain/spec.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {parkedFor, state, waitsOn} from "../domain/records.js";
-import {age} from "../format/time.js";
-import {meta} from "../state/store.js";
+import {age, ago} from "../format/time.js";
 import {computed} from "vue";
+import {plain, sentence, startedBy} from "../domain/triggerWords.js";
 
 const props = defineProps({resource: Object, selected: Boolean});
 
 const held = computed(() => {
     if (props.resource.completed) return "";
     if (props.resource.data.blocked) return props.resource.data.blocked;
-    if (parkedFor(props.resource)) return `Parked: ${parkedFor(props.resource)}`;
+    if (parkedFor(props.resource)) return `Paused: ${parkedFor(props.resource)}`;
     const refs = waitsOn(props.resource);
     return refs.length ? `Waits on ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
 });
+const summary = computed(() =>
+    props.resource.type === "trigger"
+        ? plain(sentence(props.resource.data, startedBy(props.resource.n)))
+        : props.resource.abstract || props.resource.brief
+);
 </script>
 
 <template>
@@ -35,16 +41,16 @@ const held = computed(() => {
         <span class="n">#{{ resource.n }}</span>
         <span class="text">
             <span class="title">{{ resource.title }}</span>
-            <template v-if="resource.abstract || resource.brief">
+            <template v-if="summary">
                 <span class="abstract">
-                    <TextDisplay inline :text="resource.abstract || resource.brief" />
+                    <TextDisplay inline :text="summary" />
                 </span>
             </template>
         </span>
         <template v-if="held">
             <span class="held" :title="held">{{ held }}</span>
         </template>
-        <span class="age">{{ age(resource.updated || resource.created) }}</span>
+        <span class="age">{{ resource.completed ? `Closed ${ago(resource.completed)}` : age(resource.updated || resource.created) }}</span>
     </button>
 </template>
 

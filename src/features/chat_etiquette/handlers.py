@@ -3,10 +3,12 @@ import re
 from engine.events.engine import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from features import trigger
-from features.chat_etiquette.details import REMIND, SHOP
+from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
+from features.form_of_address.names import called, first_name
 from features.parts import AgentContext, Handler
 
 QUOTES = ('"', "“", "'")
+ABOUT_THEM = r"(?:asks|asked|wants|wanted|says|said|writes|wrote|would like|needs|prefers|is asking|has asked)"
 
 SHOP_TALK = re.compile(r"\b(?:(?:your|the|this) message (?:is|was) (?:answered|processed|read|replied to)|I(?:'ve| have)? (?:replied|reacted|answered your message|processed (?:it|your message))"
                        r"|(?:filed|added) (?:it )?as a pill|marked (?:it|the message|your message) (?:as )?read|the journal (?:told|nudged|reminded|held|asked) me"
@@ -29,6 +31,18 @@ class NameShopTalk(Handler):
         found = next((m for m in SHOP_TALK.finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
         if found:
             context.agent.whisper(SHOP, words=found.group(0))
+
+
+def third_person(record) -> re.Pattern:
+    names = sorted({name for name in (called(record), first_name(record), "the user") if name}, key=len, reverse=True)
+    return re.compile(rf"\b(?:{'|'.join(map(re.escape, names))})\s+{ABOUT_THEM}\b", re.IGNORECASE)
+
+
+class NameThirdPerson(Handler):
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        found = next((m for m in third_person(context.record).finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
+        if found:
+            context.agent.whisper(THIRD_PERSON, words=found.group(0))
 
 
 class RemindOfEtiquette(Handler):

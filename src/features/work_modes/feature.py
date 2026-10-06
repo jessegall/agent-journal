@@ -4,13 +4,15 @@ from features.session_briefing.start import MODE, START_PARTS
 from features.work_modes.details import WorkModesDetails
 from features.work_modes.interceptors import RefuseDispatchInSolo, RefuseHelperInSolo, RemindOrchestrator
 from features.work_modes.modes import carried
+from features.work_modes.routes import post_mode
 
 
 class WorkModes(Feature):
     details = WorkModesDetails
 
     def register(self, journal: Journal) -> None:
-        START_PARTS[MODE] = carried
+        journal.routes.add(post_mode)
+        START_PARTS.add(self, carried, key=MODE)
         journal.agent.canceler(RefuseDispatchInSolo())
         journal.agent.interceptor(RefuseHelperInSolo())
         journal.agent.interceptor(RemindOrchestrator())
