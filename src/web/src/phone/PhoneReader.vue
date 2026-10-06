@@ -353,7 +353,7 @@ onMounted(async () => {
     gap: 12px;
     max-width: none;
     margin: 0 calc(-1 * var(--side));
-    padding: 12px var(--side) calc(12px + env(safe-area-inset-bottom));
+    padding: 12px var(--side) calc(12px + var(--safe-bottom));
     border-top: 1px solid var(--line);
     background: var(--bg);
 }

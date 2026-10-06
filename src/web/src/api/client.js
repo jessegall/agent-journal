@@ -18,6 +18,11 @@ export class ApiClient {
         this.base = base;
     }
 
+    point(base, env) {
+        this.base = base;
+        this.env = env;
+    }
+
     at(base, env = this.env) {
         return new ApiClient({base, env: typeof env === "function" ? env : () => env});
     }
@@ -705,5 +710,5 @@ export const api = new ApiClient();
 export const onWrite = (fn) =>
     transport.onWrite((url) => {
         const where = new URL(url, location.origin);
-        if (where.origin === location.origin) fn(where.pathname.split("/")[3]);
+        if (where.origin === location.origin) fn(where.pathname.slice(api.base.length).split("/")[3]);
     });

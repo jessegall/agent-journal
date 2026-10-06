@@ -51,7 +51,7 @@ useDrag(sheet, {
     axis: "y",
     begin: (event) => {
         if (leaving.value) return null;
-        const grabbed = Boolean(event.target.closest(".sheet-grab"));
+        const grabbed = Boolean(event.target.closest(".sheet-grab, .sheet-head")) && !event.target.closest(CONTROLS);
         if (!grabbed && event.target.closest(CONTROLS)) return null;
         return {grabbed};
     },
@@ -78,23 +78,28 @@ defineExpose({close});
 </script>
 
 <template>
-    <div :class="['sheet-root', {lifted: room}]" :style="room || undefined">
-        <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="close" />
-        <div
-            ref="sheet"
-            :class="['sheet', {large: large || tall, dragging, leaving}]"
-            role="dialog"
-            aria-modal="true"
-            :aria-label="label"
-            tabindex="-1"
-            :style="{'--pulled': `${pulled}px`}"
-        >
-            <div class="sheet-grab"><span /></div>
-            <div ref="body" class="sheet-body">
-                <slot :close="close" />
+    <Teleport to="main.phone">
+        <div :class="['sheet-root', {lifted: room}]" :style="room || undefined">
+            <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="close" />
+            <div
+                ref="sheet"
+                :class="['sheet', {large: large || tall, dragging, leaving}]"
+                role="dialog"
+                aria-modal="true"
+                :aria-label="label"
+                tabindex="-1"
+                :style="{'--pulled': `${pulled}px`}"
+            >
+                <div class="sheet-grab"><span /></div>
+                <template v-if="$slots.head">
+                    <div class="sheet-head"><slot name="head" /></div>
+                </template>
+                <div ref="body" class="sheet-body">
+                    <slot :close="close" />
+                </div>
             </div>
         </div>
-    </div>
+    </Teleport>
 </template>
 
 <style scoped>
@@ -125,7 +130,7 @@ defineExpose({close});
     width: 100%;
     max-width: none;
     max-height: calc(100dvh * 0.5);
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: var(--safe-bottom);
     border-radius: 12px 12px 0 0;
     outline: none;
     background: var(--raised);
@@ -162,6 +167,12 @@ defineExpose({close});
     justify-content: center;
     height: 20px;
     padding-top: 6px;
+    touch-action: none;
+}
+
+.sheet-head {
+    flex: none;
+    padding: 0 var(--side) 8px;
     touch-action: none;
 }
 

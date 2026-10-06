@@ -4,6 +4,8 @@ import Icon from "../kit/Icon.vue";
 const TABS = [
     {key: "chat", label: "Chat", icon: "chat"},
     {key: "home", label: "Home", icon: "home"},
+    {key: "todos", label: "To-dos", icon: "todos"},
+    {key: "everything", label: "Everything", icon: "tiles"},
 ];
 const props = defineProps({screen: {type: String, required: true}, count: {type: Number, default: 0}});
 const emit = defineEmits(["pick"]);
@@ -16,6 +18,7 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
             <button
                 type="button"
                 role="tab"
+                :data-tab="tab.key"
                 :aria-selected="screen === tab.key"
                 :aria-label="said(tab)"
                 :class="['tab', {on: screen === tab.key}]"
@@ -38,8 +41,7 @@ const said = (tab) => (tab.key === "home" && props.count ? `${tab.label}, ${prop
     display: flex;
     flex: none;
     max-width: none;
-    margin: 0 calc(-1 * var(--side));
-    padding: 0 var(--side) env(safe-area-inset-bottom);
+    padding: 0 var(--side) var(--safe-bottom);
     border-top: 1px solid var(--line);
     background: var(--bg);
 }

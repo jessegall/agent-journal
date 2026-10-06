@@ -257,7 +257,7 @@ onMounted(() => {
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 10px 0 calc(24px + env(safe-area-inset-bottom));
+    padding: 10px 0 calc(24px + var(--safe-bottom));
 }
 
 .viewer-body.dark {
@@ -274,7 +274,7 @@ onMounted(() => {
     height: 100%;
     max-width: none;
     overflow: hidden;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: var(--safe-bottom);
 }
 
 .viewer-stage {
