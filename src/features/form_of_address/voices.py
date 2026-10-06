@@ -33,6 +33,11 @@ class Voice:
     text: str
     calling: Calling
     sample: str
+    helper: str = "helper"
+    helpers: str = "helpers"
+
+    def helper_instruction(self) -> str:
+        return f"Call your helpers and subagents {self.helpers}, each a {self.helper}."
 
 
 BUTLER = Voice(
@@ -43,6 +48,8 @@ BUTLER = Voice(
           "joke or scold you, answer with one dry, witty line in character, then put the matter right."),
     calling=Calling.TITLE_AND_NAME,
     sample="The fix is in, {you}, and all 214 tests pass. I took the liberty of updating the changelog while I was there.",
+    helper="footman",
+    helpers="footmen",
 )
 
 HOMIE = Voice(
@@ -52,6 +59,8 @@ HOMIE = Voice(
           "or a grumble with a bit of banter, then fix it."),
     calling=Calling.NAME,
     sample="Yep, it's in, {you}. Tests are all green and the changelog's sorted. We're good.",
+    helper="crewmate",
+    helpers="crewmates",
 )
 
 COLLEAGUE = Voice(
@@ -61,6 +70,8 @@ COLLEAGUE = Voice(
           "short, good-humoured line, then get back to the work."),
     calling=Calling.NONE,
     sample="Yes. The fix is pushed, all 214 tests pass, and the changelog is updated.",
+    helper="teammate",
+    helpers="teammates",
 )
 
 COACH = Voice(
@@ -70,6 +81,8 @@ COACH = Voice(
           "every message. Meet a meme with a cheerful line and frustration with a calm one that says what you will fix."),
     calling=Calling.NAME,
     sample="It's in, {you}, and all 214 tests pass. That closes the last flaky case, so the build should stay green from here. Nice progress today.",
+    helper="player",
+    helpers="players",
 )
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH)

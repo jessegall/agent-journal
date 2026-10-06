@@ -13,6 +13,7 @@ from controllers.types import CONTROLLERS, Agents, Comments, Environments, Todos
 from engine.record import Record
 from engine.sessions import Sessions
 from features.ask_questions.details import AskQuestionsDetails
+from features.form_of_address.controller import Profiles
 from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
@@ -108,6 +109,7 @@ class Running(TypedDict):
     mode: str
     helpers: list[dict]
     subagents: list[dict]
+    words: dict[str, str]
 
 
 class PlanTodo(TypedDict):
@@ -229,7 +231,8 @@ def running(home: Record, environment: str) -> Running:
     row = Agents(home, actor=SYSTEM).rows.by_title(holder) if holder else None
     summary = lately_summarized(home.root)
     shared = dict(state=Agents(home, actor=SYSTEM).state(environment), prompt=prompt(summary, environment), auto=automatic(home), mode=mode_of(home),
-                  helpers=helpers_of(home, summary), subagents=subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())))
+                  helpers=helpers_of(home, summary), subagents=subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())),
+                  words=Profiles(home, actor=SYSTEM).words())
     if row is None:
         return Running(paused=False, context=0, usage=[], **shared)
     return Running(paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), **shared)
