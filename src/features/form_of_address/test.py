@@ -80,5 +80,7 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     copy = profiles.duplicate(number_of(record, "Coach"))
     assert copy.title == "Coach (my copy)" and not copy.system and copy.brief == SHIPPED[3].text, "a copy carries the voice and is yours to change"
     assert profiles.update(copy.n, brief="Cheer less.").brief == "Cheer less.", "a copy can be edited"
+    assert profiles.update(copy.n, calling="none").calling == "none", "and how it calls you can be changed"
+    assert refused(lambda: profiles.update(copy.n, calling="sir")), "to one of the three only"
     assert refused(lambda: profiles.create("Odd", brief="x", calling="sir")), "a calling outside the three is refused"
     assert profiles.callings()["none"] == "" and "{you}" not in profiles.samples()[copy.n], "a copy keeps the sample with your name filled in"

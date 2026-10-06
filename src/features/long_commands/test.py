@@ -192,13 +192,15 @@ def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_
     rows = [monitor(1, "2026-09-23T00:00:00Z", command="tail -f a.log", timeout_ms=1000),
             monitor(2, "2026-09-23T00:00:00Z", command="tail -f b.log"),
             monitor(3, now, command="tail -f c.log", timeout_ms=600000),
+            monitor(4, now, ws={"url": "wss://feed.example/stream"}, timeout_ms=600000),
             {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-09-23T00:00:30Z",
              "content": "<tool-use-id>m2</tool-use-id><status>completed</status>"}]
     transcript = tmp_path / "s.jsonl"
     transcript.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
     watched = {row["task"]: (row["running"], row["status"]) for row in Claude().crew(transcript)["monitor_rows"]}
-    assert watched == {"watch 1": (False, "expired"), "watch 2": (False, "completed"), "watch 3": (True, "")}, \
-        "a monitor whose time ran out has expired, one the agent was told about has ended, and one inside its time still runs"
+    assert watched == {"watch 1": (False, "expired"), "watch 2": (False, "completed"), "watch 3": (True, ""), "watch 4": (True, "")}, \
+        "a monitor whose time ran out has expired, one the agent was told about has ended, and one inside its time still runs, watching a command or an address"
+    assert [row["command"] for row in Claude().crew(transcript)["monitor_rows"] if row["task"] == "watch 4"] == ["wss://feed.example/stream"], "a monitor of an address is shown by that address"
 
     thought = lambda text: {"type": "assistant", "timestamp": now, "message": {"id": "a1", "content": [{"type": "thinking", "thinking": text}]}}
     said = {"type": "assistant", "timestamp": now, "message": {"id": "a2", "content": [{"type": "text", "text": "Done."},
