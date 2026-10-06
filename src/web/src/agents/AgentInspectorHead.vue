@@ -39,7 +39,9 @@ function pick(key) {
             <span :class="['inspector-state', state.key]">{{ state.word }}</span>
             <span class="inspector-grow" />
             <div class="inspector-tools">
-                <slot name="tools" />
+                <template v-if="!narrow">
+                    <slot name="tools" />
+                </template>
                 <template v-if="narrow">
                     <span ref="opener">
                         <Btn kind="icon" small title="Actions" @click.stop="menu = !menu">
@@ -65,6 +67,7 @@ function pick(key) {
         </div>
         <template v-if="menu">
             <MenuPanel :anchor="opener" align="right" :min-width="260" @click.stop @close="menu = false">
+                <slot name="menu" />
                 <template v-for="action in info.actions" :key="action.key">
                     <MenuItem :description="action.title" @click="pick(action.key)">{{ action.label }}</MenuItem>
                 </template>

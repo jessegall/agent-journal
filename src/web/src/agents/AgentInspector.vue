@@ -25,6 +25,7 @@ import {scopeIn} from "../composables/scope.js";
 import {useTranscript} from "../composables/transcript.js";
 import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
+import {plainRefusal} from "../domain/agents.js";
 import {age} from "../format/time.js";
 import {pollKey, usePoll} from "../composables/poll.js";
 import {PAGE, holding, rows} from "../sync/rows.js";
@@ -158,7 +159,7 @@ async function perform(key) {
     try {
         await props.run(key);
     } catch (e) {
-        refusal.value = e.message;
+        refusal.value = plainRefusal(e.message, key);
     }
 }
 
@@ -175,6 +176,9 @@ const openSkills = () => go(route.value.env, "skills");
 <template>
     <div class="agent-inspector">
         <AgentInspectorHead :info="info" :asking="asking" @action="choose" @back="emit('back')" @close="emit('close')">
+            <template #menu>
+                <slot name="tools" />
+            </template>
             <template #tools>
                 <slot name="tools" />
                 <span ref="layoutOpener">
