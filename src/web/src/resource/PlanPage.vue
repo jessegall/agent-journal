@@ -85,7 +85,7 @@ async function run(action, body = {}) {
                 <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
                 <template v-if="closable">
-                    <CloseButton @click="emit('close')" />
+                    <CloseButton title="Close the plan" @click="emit('close')" />
                 </template>
             </template>
         </header>

@@ -8,9 +8,10 @@ import PickTag from "../kit/PickTag.vue";
 import ChoiceChosen from "./ChoiceChosen.vue";
 import Spinner from "../kit/Spinner.vue";
 import TextArea from "../kit/TextArea.vue";
+import {useHeldSend} from "../composables/heldSend.js";
 
 const OWN_WORDS = "own words";
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, preview: Boolean});
 const running = ref("");
 const writing = ref(false);
 const own = ref("");
@@ -18,6 +19,8 @@ const written = ref([]);
 const card = ref(null);
 const flashing = ref(false);
 const error = ref("");
+const held = useHeldSend({seconds: () => 5, send: (item) => (item.button ? commitPress(item.button) : commitOwn(item.text))});
+const ownAnswer = computed(() => props.resource.data.answered_own || "");
 const pressed = computed(() => pressedLabels(props.resource));
 const spent = (button) => usedUp(props.resource, button);
 const sentAs = (button) => rows("message").find((m) => m.refs.includes(props.resource.ref) && [m.title, m.brief].includes(button.say));
@@ -37,7 +40,7 @@ const outcome = (button) => {
     const sent = sentAs(button);
     return `Sent as your message${sent ? ` ${sent.n}` : ""}: “${button.say}”. The answer comes in the chat.`;
 };
-const open = computed(() => groups.value.some((group) => !group.chosen) || alone.value.length > 0);
+const open = computed(() => !ownAnswer.value && (groups.value.some((group) => !group.chosen) || alone.value.length > 0));
 const done = computed(() =>
     allButtons(props.resource)
         .filter((button) => !button.choice && pressed.value.includes(button.label))
@@ -53,13 +56,14 @@ function show() {
 
 defineExpose({show});
 
-async function sendOwn() {
-    const text = own.value.trim();
+async function commitOwn(text) {
     if (!text || running.value) return;
     running.value = OWN_WORDS;
     error.value = "";
     try {
         const sent = await api.create("message", {brief: text, about: props.resource.ref});
+        if (props.resource.type === "doc")
+            await api.act("doc", props.resource.n, "update", {status: "final", answered_own: text, answered_message: sent.n});
         written.value.push(`Sent as your message ${sent.n}: “${text}”. The answer comes in the chat.`);
         own.value = "";
         writing.value = false;
@@ -69,7 +73,14 @@ async function sendOwn() {
     running.value = "";
 }
 
-async function press(button) {
+function sendOwn() {
+    const text = own.value.trim();
+    if (!text) return;
+    if (props.resource.type === "doc") held.start({text});
+    else commitOwn(text);
+}
+
+async function commitPress(button) {
     if (running.value || spent(button)) return;
     running.value = button.label;
     error.value = "";
@@ -77,29 +88,54 @@ async function press(button) {
         if (button.say) await api.create("message", {brief: button.say, about: `${props.resource.type}:${props.resource.n}`});
         else if (button.n) await api.act(button.type, button.n, button.action, button.body || {});
         else await api.command(button.type, button.action, button.body || {});
-        await api.act(props.resource.type, props.resource.n, "set", {
-            key: "pressed",
-            value: [...new Set([...pressed.value, button.label])],
-        });
+        const chosen = [...new Set([...pressed.value, button.label])];
+        if (props.resource.type === "doc") {
+            const updated = {...props.resource, data: {...props.resource.data, pressed: chosen}};
+            await api.act("doc", props.resource.n, "update", {
+                pressed: chosen,
+                status: choiceGroups(updated).every((group) => group.chosen) ? "final" : "draft",
+            });
+        } else await api.act(props.resource.type, props.resource.n, "set", {key: "pressed", value: chosen});
     } catch (e) {
         error.value = e.message;
     }
     running.value = "";
+}
+
+function press(button) {
+    if (props.resource.type === "doc" && button.choice) held.start({button});
+    else commitPress(button);
 }
 </script>
 
 <template>
     <template v-if="groups.length || alone.length || done.length">
         <div :class="['choice', {flash: flashing}]" ref="card">
-            <template v-for="group in groups" :key="group.choice">
-                <section class="card">
+            <template v-if="ownAnswer">
+                <div class="card">
                     <span class="kind">Your answer</span>
+                    <p class="ask">{{ ownAnswer }}</p>
+                    <p class="note">Sent as your message {{ resource.data.answered_message }}. This document is final now.</p>
+                </div>
+            </template>
+            <template v-if="held.holding.value">
+                <div class="card held" aria-live="polite">
+                    <strong>{{ held.value.value.button?.label || held.value.value.text }}</strong>
+                    <span>Sending in {{ held.left.value }} seconds</span>
+                    <Btn small @click="held.undo">Undo</Btn>
+                </div>
+            </template>
+            <template v-for="group in ownAnswer ? [] : groups" :key="group.choice">
+                <section class="card">
+                    <span class="kind">
+                        {{ group.answer ? "Your answer" : /approv/i.test(group.ask) ? "Your approval is needed" : "Your answer is needed" }}
+                    </span>
                     <template v-if="group.answer">
                         <ChoiceChosen :answer="group.answer" :about="resource" />
                     </template>
                     <template v-else>
                         <p class="ask">{{ group.ask }}</p>
-                        <div class="answers">
+                        <div v-show="!held.holding.value" class="answers">
                             <div class="buttons">
                                 <template v-for="button in group.buttons" :key="button.label">
                                     <button type="button" class="answer" :disabled="Boolean(running)" @click="press(button)">
@@ -147,7 +183,7 @@ async function press(button) {
                     </div>
                 </div>
             </template>
-            <template v-if="open">
+            <template v-if="open && !held.holding.value">
                 <div class="own">
                     <template v-if="writing">
                         <TextArea

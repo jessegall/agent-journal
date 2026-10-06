@@ -10,6 +10,7 @@ const props = defineProps({
     open: {type: Boolean, default: null},
     depth: {type: Number, default: 0},
     over: {type: Boolean, default: false},
+    closeLabel: {type: String, default: "Close the panel"},
 });
 const emit = defineEmits(["close", "dismiss"]);
 const {visible, close, closed} = closing(emit, props);
@@ -28,7 +29,7 @@ const {visible, close, closed} = closing(emit, props);
                             </template>
                         </div>
                         <slot name="actions" />
-                        <CloseButton @click="close" />
+                        <CloseButton :title="closeLabel" @click="close" />
                     </header>
                     <div class="body">
                         <slot />

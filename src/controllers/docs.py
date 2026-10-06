@@ -27,6 +27,13 @@ class Docs(Controller):
     resource = types.Doc
 
     @action
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        buttons = data.get("buttons") or []
+        pending = any(button.get("choice") for button in buttons)
+        data.setdefault("status", "draft" if pending else "final")
+        return super().create(title, abstract, brief, **data)
+
+    @action
     def hide(self, n: int):
         return self.update(int(n), hidden=True)
 
@@ -60,7 +67,7 @@ class Docs(Controller):
 
     @action
     def draft(self, n: int):
-        return self.update(n, status="draft")
+        return self.update(n, status="writing")
 
     @action
     def complete(self, n: int, how: str = "", **data):

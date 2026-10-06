@@ -68,7 +68,9 @@ async function run(method) {
 <template>
     <div class="actions">
         <template v-if="locked">
-            <Chip :title="`Made by the ${locked} plugin. It is deleted when the plugin is removed and cannot be closed or removed otherwise.`">
+            <Chip
+                :title="`Made by the ${locked} plugin. It is deleted when the plugin is removed and cannot be closed or removed otherwise.`"
+            >
                 <Icon name="lock" :size="11" />
                 Locked · {{ locked }}
             </Chip>
@@ -108,7 +110,12 @@ async function run(method) {
                 </Btn>
             </template>
             <template v-for="m in offered" :key="m">
-                <Btn :kind="m === 'complete' ? 'ghost' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
+                <Btn
+                    :class="{'delete-action': m === 'delete'}"
+                    :kind="m === 'complete' ? 'ghost' : 'danger'"
+                    small
+                    @click="m === 'complete' ? (prompt = m) : run(m)"
+                >
                     <Icon :name="m === 'complete' ? 'check' : 'close'" :size="12" />
                     {{ m === "complete" ? closeWord(resource.type) : "Delete" }}
                 </Btn>
@@ -134,5 +141,8 @@ async function run(method) {
 .error {
     color: var(--danger);
     font-size: 12px;
+}
+.delete-action {
+    margin-left: 14px;
 }
 </style>
