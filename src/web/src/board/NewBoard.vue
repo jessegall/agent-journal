@@ -106,7 +106,7 @@ useFileHandIn({active: () => props.open, take, pastedText: true});
     <FocusStage :open="open" page leave="Back to the board" @close="emit('close')">
         <div class="new-board-head">
             <h1 class="new-board-title">New board</h1>
-            <p class="new-board-lead">Pick a set of stages, or hand me a document and I set the board up from it.</p>
+            <p class="new-board-lead">Pick a set of stages, or give the agent a document and it sets the board up from it.</p>
         </div>
         <div :class="['new-board-presets', {dim: fromDocument}]">
             <template v-for="(p, i) in PRESETS" :key="p.key">
@@ -131,7 +131,7 @@ useFileHandIn({active: () => props.open, take, pastedText: true});
                 large
                 :value="name"
                 :placeholder="
-                    fromDocument ? 'I name it from the document, or type your own' : preset ? preset.suggest : 'What the board is for'
+                    fromDocument ? 'The agent names it from the document, or type your own' : preset ? preset.suggest : 'What the board is for'
                 "
                 @input="named"
                 @keydown.enter.prevent="create"

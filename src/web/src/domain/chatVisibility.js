@@ -3,15 +3,15 @@ export const VISIBILITY_GROUPS = [
         title: "The agent at work",
         kinds: [
             {key: "thoughts", label: "Thoughts", icon: "bulb"},
-            {key: "skills", label: "Skills it loads", icon: "book"},
+            {key: "skills", label: "Skills the agent loads", icon: "book"},
             {key: "subagents", label: "Subagents", icon: "agents"},
-            {key: "compactions", label: "Context compacted", icon: "gauge"},
-            {key: "made", label: "Documents it made", icon: "docs"},
-            {key: "acknowledgements", label: "Acknowledgements of journal lines", icon: "check"},
+            {key: "compactions", label: "Conversation summarised to free space", icon: "gauge"},
+            {key: "made", label: "Documents the agent made", icon: "docs"},
+            {key: "acknowledgements", label: "Replies that only say a reminder was seen", icon: "check"},
         ],
     },
     {
-        title: "Recalled for the agent",
+        title: "Reminders sent to the agent",
         kinds: [
             {key: "rules", label: "Rules", icon: "rules"},
             {key: "facts", label: "Facts", icon: "pins"},
@@ -28,7 +28,7 @@ export const VISIBILITY_GROUPS = [
             {key: "plugins", label: "Plugin notes", icon: "plug"},
             {key: "visitors", label: "Visitor comments", icon: "chat"},
             {key: "filed", label: "Filed from your messages", icon: "inbox"},
-            {key: "notes", label: "Other journal notes", icon: "bell"},
+            {key: "notes", label: "Other journal messages", icon: "bell"},
         ],
     },
 ];

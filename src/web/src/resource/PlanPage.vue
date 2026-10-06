@@ -48,7 +48,7 @@ const button = computed(
             ready: ["approve", "Approve"],
             waiting: ["continue", "Continue"],
             parked: ["start", "Resume"],
-            done: ["finish", "Finish"],
+            done: ["finish", "Close"],
         })[status.value] || null
 );
 

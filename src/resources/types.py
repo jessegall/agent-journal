@@ -201,7 +201,7 @@ class Reminder(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Reminder",
         abstract="An instruction said again until it is retired",
-        help="A reminder repeats at every start and every so often mid-work, because knowing is not doing. One written with --set whom=<session> is said to that agent alone, which is how an agent reminds itself or leaves one for another.",
+        help="A reminder is repeated to the agent at each start and every so often while it works.",
     )
     type = "reminder"
     event_labels = {"created": "Reminder set", "completed": "Reminder closed"}
@@ -337,7 +337,7 @@ class AgentRow(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent",
         abstract="A session of Claude or Codex, and what it is doing right now",
-        help="The hooks report activity; the engine distinguishes idle, busy, declared work and compaction.",
+        help="The journal watches what the agent reports and tells whether it is idle, busy, working, or has shortened its conversation.",
     )
     type = "agent"
     indexed = ("parent", "at")
@@ -394,7 +394,7 @@ class Notice(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Notice",
         abstract="One line kept over the chat while it matters",
-        help="A notice stays until the user's X or the agent's close; a tone and a link may ride on it.",
+        help="A notice stays until you close it or the agent closes it. It can have a colour and a link.",
     )
     type = "notice"
     takes_comments = False
@@ -465,7 +465,7 @@ class Plugin(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Plugin",
         abstract="A repository installed into the journal: it hears the bus, answers, and may run services of its own",
-        help="Installed from a GitHub URL or a local path, pinned to a commit; its manifest says what it listens to, what it runs and which pages it shows.",
+        help="Installed from a GitHub URL or a local path, fixed at one exact version; its manifest says what it listens to, what it runs and which pages it shows.",
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="source"),
@@ -493,7 +493,7 @@ class Environment(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Environment",
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
-        help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
+        help="An agent works in one environment at a time. It can switch to a free one, or claim a taken one by giving a reason.",
     )
     data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched"), Field(TEXT, "", name="folder")]
     listed_open = True
@@ -527,7 +527,7 @@ class Ask(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Browser ask",
         abstract="What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension",
-        help="journal browser ask shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar.",
+        help="Asks the browser tab for a screenshot, its text or a click. Turn on control in the chat window's bar.",
     )
     loading = LAZY
     type = "browser"
@@ -547,7 +547,7 @@ class FeatureRow(Shape, Resource):
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Feature",
-        abstract="A capability the engine loads, with its switch",
+        abstract="A built-in part of the journal that can be switched on or off",
         help="One row per feature the engine finds, carrying whether it is on. A row whose file is gone stays, switched off.",
     )
     type = "feature"
@@ -564,7 +564,7 @@ class Nudge(Shape, Resource):
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Nudge",
-        abstract="A line a feature has the engine type to the agent",
+        abstract="A short instruction the journal sends the agent by itself; you never see it in the chat.",
         help="A nudge is written by a feature and spoken to the agent as it is; the user never hears it.",
     )
     loading = LAZY

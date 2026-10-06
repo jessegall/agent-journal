@@ -87,7 +87,7 @@ function startFrom(row) {
                 <Chip tone="good">In use</Chip>
             </template>
             <template v-if="locked">
-                <Chip>Ships with the journal</Chip>
+                <Chip>Comes with the journal</Chip>
             </template>
             <template v-if="!isNew">
                 <ProfileMenu :row="row" @duplicate="$emit('duplicate', $event)" @remove="$emit('remove', $event)" />
@@ -96,12 +96,12 @@ function startFrom(row) {
         <div class="profile-panel">
             <template v-if="locked">
                 <Notice>
-                    Ships with the journal, so it can't be changed, and an update may change its wording. Duplicate it to make a version
+                    Comes with the journal, so it can't be changed, and an update may change its wording. Duplicate it to make a version
                     of your own.
                 </Notice>
             </template>
             <template v-if="isNew">
-                <FormField label="Start from" help="Copies how it talks, what it calls you and the sample line. You change them below.">
+                <FormField label="Copy an existing profile" help="Copies how it talks, what it calls you and the sample line. You change them below.">
                     <div class="profile-panel-starts">
                         <template v-for="other in profiles" :key="other.n">
                             <Btn small :kind="start === other.n ? 'primary' : 'ghost'" @click="startFrom(other)">{{ other.title }}</Btn>
@@ -110,7 +110,7 @@ function startFrom(row) {
                     </div>
                 </FormField>
             </template>
-            <FormField label="Name">
+            <FormField label="Profile name">
                 <TextInput
                     :value="draft.title"
                     :disabled="locked"
@@ -118,7 +118,7 @@ function startFrom(row) {
                     @input="edit('title', $event.target.value)"
                 />
             </FormField>
-            <FormField label="How it sounds, with the sample question">
+            <FormField label="Preview of this profile’s answer">
                 <p class="profile-panel-question">{{ QUESTION }}</p>
                 <p class="profile-panel-answer">{{ sample || "Write a sample line below to hear it." }}</p>
             </FormField>
@@ -133,7 +133,7 @@ function startFrom(row) {
                     @input="edit('brief', $event.target.value)"
                 />
             </FormField>
-            <FormField label="What it calls you" help="Your title and first name are set in Settings › Agent, under Your title and name.">
+            <FormField label="How the agent addresses you" help="Your title and first name are set in Settings › Agent, under Your title and name.">
                 <ChoiceList stacked :choices="choices" :disabled="locked" @pick="edit('calling', $event)" />
             </FormField>
             <FormField

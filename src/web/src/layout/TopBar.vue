@@ -80,7 +80,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 type="button"
                 :class="['icon-btn', {on: floatingFamily}]"
                 :title="
-                    floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, dispatched and messaged whom'
+                    floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, sent out or messaged which agent'
                 "
                 @click="toggleFamily"
             >

@@ -84,7 +84,7 @@ function pick(event, ...args) {
                 <PaneMenuVisible :hidden="hidden" @back="list = ''" @hide="hide" />
             </template>
             <template #schemes>
-                <PaneMenuBack @click="list = ''">Colour scheme</PaneMenuBack>
+                <PaneMenuBack @click="list = ''">Color scheme</PaneMenuBack>
                 <ChoiceList :choices="schemes" @pick="(key) => pick('scheme', key)" />
             </template>
             <template #floating>

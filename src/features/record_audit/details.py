@@ -18,7 +18,7 @@ class RecordAuditDetails(FeatureDetails):
         not exist, and which have waited on you too long.
     """
 
-    help = "Each finding names the row, what is wrong with it, and the command that retires it."
+    help = "Each finding names the item, what is wrong with it, and the command that closes it."
 
     trigger = Trigger(every=1440, unit=MINUTES)
 

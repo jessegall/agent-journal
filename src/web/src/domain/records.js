@@ -7,7 +7,7 @@ const UNSTARTED = ["building", "ready", "approved"];
 
 export const GROUPS = {
     started: "In progress",
-    parked: "Parked",
+    parked: "Paused",
     blocked: "Blocked",
     planned: "Planned",
     waiting: "Waiting on others",

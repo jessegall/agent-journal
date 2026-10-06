@@ -71,7 +71,7 @@ onMounted(loadProfiles);
             <Notice>No profile is chosen yet, so the agent talks as Butler.</Notice>
         </template>
         <div class="profiles-card">
-            <SectionHeading class="profiles-group">Ship with the journal</SectionHeading>
+            <SectionHeading class="profiles-group">Included with the journal</SectionHeading>
             <template v-for="row in shipped" :key="row.n">
                 <ProfileRow
                     :row="row"

@@ -99,7 +99,7 @@ function close() {
                     <button
                         type="button"
                         class="shell-btn shell-wheel"
-                        title="Let the agent drive this tab: see it, click and type on it"
+                        title="Let the agent control this tab: see it, click and type on it"
                         @click="drive(true)"
                     >
                         <Icon name="wheel" />

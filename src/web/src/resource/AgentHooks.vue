@@ -58,8 +58,7 @@ onMounted(fetchHooks);
 
 <template>
     <div class="agent-hooks">
-        <p class="where">
-            Read from and saved to
+        <p class="where">Hooks are commands the agent runs automatically at set moments. Read from and saved to
             <code>{{ path }}</code>
         </p>
         <template v-if="error">

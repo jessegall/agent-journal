@@ -55,7 +55,7 @@ function openNode(node) {
 function hint(node) {
     if (node.fold) return node.fold.open ? "Fold these back into one" : `Show ${node.fold.count} more: finished ones and quieter sessions`;
     const m = node.member;
-    const said = [m.label, m.detail, m.status, m.loops ? `${m.loops} scheduled loop${m.loops === 1 ? "" : "s"}` : ""].filter(Boolean);
+    const said = [m.label, m.detail, m.status, m.loops ? `${m.loops} repeating prompt${m.loops === 1 ? "" : "s"}` : ""].filter(Boolean);
     return said.join(" · ");
 }
 

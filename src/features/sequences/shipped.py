@@ -15,20 +15,20 @@ def included(shipped: ShippedSequence) -> tuple[str, str]:
 
 
 FILING_A_DUMP = ShippedSequence(
-    title="Filing a dump",
+    title="Sort dumped files",
     brief="When the user writes in the dump, answer there with journal dump say <dump n> \"<text>\", never in the chat. "
              "What the agent does with a pile a user drops in a dump: sort it by subject, file each subject straight into the "
              "dump's collection, then sum up and suggest.",
     starts_on="dump.created",
     talks_in="the dump window",
     steps=[
-        ("Read everything", "journal dump items <dump n> lists what was dropped. Go through the items one at a time: read an item in "
+        ("Read each file", "journal dump items <dump n> lists what was dropped. Go through the items one at a time: read an item in "
                             "full and at once record what it is with journal dump note <dump n> <item> \"<what it is>\", so the pile "
                             "shows it as read, before you open the next. When the pasted text holds "
                             "several things, such as a summary, a transcript and a link, split it with journal dump split <dump n> "
                             "\"Summary, Transcript, Link\". Name its collection for what the pile is about with journal dump name "
                             "<dump n> \"<name>\"."),
-        ("File by subject", "Sort the pile by concern: one document per subject, never one big document, even when a single "
+        ("File each subject", "Sort the pile by concern: one document per subject, never one big document, even when a single "
                             "transcript or note covers several. Name each for what it is about, never after the file it came "
                             "in. Decide the shape yourself: where a summary, meeting notes, the decisions or the action items "
                             "would help, write them without being asked and list them with --added; action items become to-dos. "
@@ -39,7 +39,7 @@ FILING_A_DUMP = ShippedSequence(
                             "have what it needs, one at a time: journal dump filed <dump n> <item> \"<what you did>\" --refs \"<ref, ref>\" --added \"<ref>\" (every added row also in refs) or "
                             "journal dump failed. Ask only what you cannot tell, with journal dump ask <dump n> \"<question>\" "
                             "--guesses \"<one>|<two>\"."),
-        ("Sum up and suggest", "Once every item is filed the dump closes. Sum up what you filed and where with journal dump "
+        ("Summarise and suggest next steps", "Once every item is filed the dump closes. Sum up what you filed and where with journal dump "
                                "offer <dump n> '[...]' --summary \"<two or three plain lines>\". Suggest up to four next steps only "
                                "where one is worth taking, each a question with a button: {\"ask\": \"<question>\", \"label\": "
                                "\"<button>\"}; use '[]' when there is nothing to suggest. The user takes or leaves each one."),
@@ -50,12 +50,12 @@ BUILDING_A_PLAN = ShippedSequence(
     brief="How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
     starts_on="plan.created",
     steps=[
-        ("Name the goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
-        ("Add the phases", "Add every phase in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and "
+        ("Agree on the plan’s goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
+        ("Add the plan’s phases", "Add every phase in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and "
                            "--checkpoint where the user should look before it goes on."),
-        ("File the rows", "journal plan stage <plan n> todos, then file the to-dos and put each under its phase with journal plan "
+        ("Add to-dos to each phase", "journal plan stage <plan n> todos, then file the to-dos and put each under its phase with journal plan "
                           "todos <plan n> <phase> <rows>."),
-        ("Hand it over", "When every phase has rows, journal plan ready <plan n>. Only the user approves it; you start it when "
+        ("Ask the user to approve the plan", "When every phase has rows, journal plan ready <plan n>. Only the user approves it; you start it when "
                          "they have."),
     ],
 )
@@ -67,32 +67,32 @@ WRITING_AN_UPDATE = ShippedSequence(
               "what happened since", "geef me een update", "update graag", "nog updates", "statusupdate", "stand van zaken",
               "praat me bij", "bijpraten", "wat is er gebeurd"),
     steps=[
-        ("See what changed", "journal report changes lists what happened since the user last opened an update, under need, "
+        ("Find what changed since the last update", "journal report changes lists what happened since the user last opened an update, under need, "
                              "done, doing, plans, commits and also. Read any row you do not remember before you sum it "
                              "up. Then journal sequence next <this sequence> --about <ref>."),
-        ("Write the update", "journal report recap \"<one or two plain sentences: what got done, what is under way, what "
+        ("Write the update report", "journal report recap \"<one or two plain sentences: what got done, what is under way, what "
                              "waits on the user>\" writes the report with those rows in that order. Give every row under "
                              "need and doing a short note of what it waits on or what is being done now: journal report "
                              "note <report n> <row> \"<line>\". Add a row the list missed with journal report item <report "
                              "n> <section> <row> \"<title>\", and take out one that is only noise with journal report drop "
                              "<report n> <row>. Then journal sequence next <this sequence> --about <ref>."),
-        ("Answer with it", "Reply in one short line that says the update is pinned at the bottom of the chat, like \"Here's "
+        ("Tell the user in the chat", "Reply in one short line that says the update is pinned at the bottom of the chat, like \"Here's "
                            "the update; I pinned it at the bottom of the chat.\" Leave the report's reference out: the pinned "
                            "card is how the user opens it. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )
 FINISHING_WHAT_YOU_WROTE = ShippedSequence(
-    title="Finishing what you wrote",
+    title="Filing and sharing a document or report",
     brief="The closing steps of a document or report: file it where it belongs, link what it relates to, offer the user a "
              "next step where one fits, then answer with it.",
     steps=[
-        ("Put it in a collection", "If a collection the user keeps fits what you wrote, add it: journal collection add "
+        ("Add the document or report to a collection", "If a collection the user keeps fits what you wrote, add it: journal collection add "
                                    "<collection n> <ref>. Look with journal collection all first; skip this when none fits, and "
                                    "never make a collection just for it. Then journal sequence next <this sequence> --about <ref>."),
-        ("Link what it relates to", "Link the rows it answers or was built on, such as the to-dos, plans, documents, reports or "
+        ("Link the items behind the document or report", "Link the rows it answers or was built on, such as the to-dos, plans, documents, reports or "
                                     "messages it is about, with journal <type> link <ref n> \"<row>\" for each. Leave out rows "
                                     "it only mentions in passing. Then journal sequence next <this sequence> --about <ref>."),
-        ("Offer the next step", "If it asks the user to decide or approve something, give it buttons: journal <type> update "
+        ("Offer the user a next step", "If it asks the user to decide or approve something, give it buttons: journal <type> update "
                                 "<ref n> --set buttons='[{\"label\": \"Accept this proposal\", \"say\": \"I accept this "
                                 "proposal\", \"choice\": \"answer\"}, {\"label\": \"Change it first\", \"say\": \"I want "
                                 "changes first\", \"choice\": \"answer\"}]'. A button with say sends those words to you as the "
@@ -100,7 +100,7 @@ FINISHING_WHAT_YOU_WROTE = ShippedSequence(
                                 "a choice, so the others go once one is pressed. Skip this when nothing waits on the user. Then "
                                 "journal sequence next "
                                 "<this sequence> --about <ref>."),
-        ("Answer with it", "Say in one or two plain lines what it concludes, then its reference on a line of its own, like "
+        ("Tell the user in the chat", "Say in one or two plain lines what it concludes, then its reference on a line of its own, like "
                            "doc 41 or report 98, never in backticks. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )
@@ -113,14 +113,14 @@ WRITING_A_DOCUMENT = ShippedSequence(
     only_when_idle=True,
     unless={"written": True},
     steps=[
-        ("Lay out the chapters", "If the text is already written, in a file or the conversation, do not copy it in chapter by "
+        ("Add the document’s chapter headings", "If the text is already written, in a file or the conversation, do not copy it in chapter by "
                                  "chapter: journal sequence abandon <this sequence> --about <ref> --why \"already written\" "
                                  "--sure, journal doc delete <doc n> \"filed whole instead\", and file it whole with journal "
                                  "doc file \"<title>\" <file>. Otherwise put every chapter you plan on the document before writing any of them: journal doc section "
                                  "<doc n> \"<chapter>\" \"Being written.\" for each, in order. Put the document's reference "
                                  "on a line of its own in the chat, like doc 41, so the user can open it and watch. Then "
                                  "journal sequence next <this sequence> --about <ref>."),
-        ("Write each chapter", "Write the chapters one at a time and in order with journal doc section <doc n> \"<chapter>\" "
+        ("Write the document’s chapters", "Write the chapters one at a time and in order with journal doc section <doc n> \"<chapter>\" "
                                "\"<body>\"; the user sees each one appear where you are. Cut a chapter that turned out "
                                "empty with journal doc cut <doc n> \"<chapter>\". Then journal sequence next <this sequence> "
                                "--about <ref>."),
@@ -128,7 +128,7 @@ WRITING_A_DOCUMENT = ShippedSequence(
     ],
 )
 FILING_A_WRITTEN_DOCUMENT = ShippedSequence(
-    title="Filing a written document",
+    title="Filing a document that is already written",
     brief="You filed a document whose text was already written. Its chapters are in; file it, link it and answer with it.",
     starts_on="doc.created",
     started_by=AGENT,
@@ -145,11 +145,11 @@ WRITING_A_REPORT = ShippedSequence(
     only_when_idle=True,
     unless={"kind": "update"},
     steps=[
-        ("Lay out the parts", "Lead with the answer in the report's brief, then put every part you plan on the report "
+        ("Add the report’s section headings", "Lead with the answer in the report's brief, then put every part you plan on the report "
                               "before writing any of them: journal report section <report n> \"<part>\" \"Being written.\" "
                               "for each, in order: the evidence, what was already sound, what remains uncertain. Then journal "
                               "sequence next <this sequence> --about <ref>."),
-        ("Write each part", "Write the parts one at a time and in order with journal report section <report n> \"<part>\" "
+        ("Write the report’s sections", "Write the parts one at a time and in order with journal report section <report n> \"<part>\" "
                             "\"<body>\"; the user sees each one appear where you are. Then journal sequence next <this sequence> "
                             "--about <ref>."),
         included(FINISHING_WHAT_YOU_WROTE),
@@ -162,14 +162,14 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
     words=("check the instruction files", "check agents.md", "check claude.md", "contradictions in the instructions",
               "controleer de instructiebestanden", "controleer agents.md", "tegenstrijdigheden in de instructies"),
     steps=[
-        ("Read the files", "Read AGENTS.md and CLAUDE.md at the project root and the journal's block at the head of each, "
+        ("Read the instruction files", "Read AGENTS.md and CLAUDE.md at the project root and the journal's block at the head of each, "
                            "narrowly: grep for the headings, then sed the sections you need. Note every place where two of "
                            "them tell an agent opposite things, with the file and line on both sides. Then journal sequence "
                            "next <this sequence> --about <ref>."),
-        ("Report what you found", "With nothing found, say so in one plain line and move on. Otherwise journal report create "
+        ("Report any conflicting instructions", "With nothing found, say so in one plain line and move on. Otherwise journal report create "
                                   "\"Contradictions in the instruction files\" --brief \"<each one: both sides with file and "
                                   "line, which should win and why>\". Then journal sequence next <this sequence> --about <ref>."),
-        ("Propose each fix", "File each fix as a suggestion whose brief holds the exact change, as a diff: journal suggestion "
+        ("Suggest a fix for each conflict", "File each fix as a suggestion whose brief holds the exact change, as a diff: journal suggestion "
                              "suggest \"<the change>\" --brief \"<why, and the diff>\". Never edit the files yourself; the "
                              "user accepts a suggestion first, and the journal's block is only ever written by the journal. When an "
                              "accepted fix comes back as a to-do, apply it only where the lines still read as the diff shows; if they "

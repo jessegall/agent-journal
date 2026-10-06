@@ -105,7 +105,7 @@ async function save() {
                             <span class="stop-title">
                                 {{ s.title }}
                                 <template v-if="inHand.has(i + 1)">
-                                    <span class="now-label">In hand</span>
+                                    <span class="now-label">In progress</span>
                                 </template>
                             </span>
                             <template v-if="s.from && s.from.n !== track[i - 1]?.from?.n">

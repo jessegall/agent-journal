@@ -25,7 +25,7 @@ async function answer(allow) {
 
 <template>
     <section class="permit" aria-label="A permission waits">
-        <p class="permit-asks">Wants a permission</p>
+        <p class="permit-asks">Asks for permission</p>
         <p class="permit-what">{{ prompt }}</p>
         <div class="permit-choices">
             <button type="button" class="permit-deny" :disabled="busy" @click="answer(false)">Deny</button>

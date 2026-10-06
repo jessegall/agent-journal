@@ -48,7 +48,7 @@ async function close() {
             <Btn small :disabled="working" @click="permit(false)">Deny</Btn>
         </template>
         <template v-else-if="notice.data.action && notice.data.session">
-            <Btn small :busy="working" @click="force">Force now</Btn>
+            <Btn small :busy="working" @click="force">Send now</Btn>
         </template>
         <template v-if="!fixed">
             <CloseButton :class="{unarmed: !armed}" :disabled="working" title="Close this" @click="close" />

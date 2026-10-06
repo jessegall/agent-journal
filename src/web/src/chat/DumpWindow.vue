@@ -433,7 +433,7 @@ const earlierRows = computed(() => earlier.value.map((d) => ({n: d.n, title: d.t
                     </div>
                     <template v-if="merging">
                         <div class="dump-float">
-                            <template v-if="merging.size < 2">1 picked · pick one more to merge with it</template>
+                            <template v-if="merging.size < 2">1 selected. Select one more to merge.</template>
                             <template v-else>
                                 {{ merging.size }} picked
                                 <Btn kind="primary" small @click="merge">Merge into one document</Btn>

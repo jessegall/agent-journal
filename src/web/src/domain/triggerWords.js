@@ -7,27 +7,27 @@ const TRIGGERED = /^trigger:(\d+)$/;
 
 export const WHERE = [
     {value: USER, label: "Your messages only", hint: "Only what you write to the agent."},
-    {value: "text", label: "What is written", hint: "Your messages, the agent's chat messages and the files it writes."},
+    {value: "text", label: "Chat messages and files", hint: "Your messages, the agent's chat messages and the files it writes."},
     {value: "commands", label: "Commands the agent runs", hint: "Only commands in the agent's terminal."},
     {
         value: "both",
-        label: "Written and run",
+        label: "Chat messages, files and commands",
         hint: "Your messages, the agent's chat messages, the files it writes and the commands it runs.",
     },
     {
         value: "everything",
-        label: "Everything",
+        label: "All watched activity",
         hint: "All of that, plus files the agent opens, what it searches for and web addresses it visits.",
     },
 ];
 
 export const KEYWORD_WHERE = [
-    {value: "text", label: "What is written", hint: "The agent's chat messages and the files it writes."},
+    {value: "text", label: "Chat messages and files", hint: "The agent's chat messages and the files it writes."},
     {value: "commands", label: "Commands the agent runs", hint: "Only commands in the agent's terminal."},
-    {value: "both", label: "Written and run", hint: "The agent's chat messages, the files it writes and the commands it runs."},
+    {value: "both", label: "Chat messages, files and commands", hint: "The agent's chat messages, the files it writes and the commands it runs."},
     {
         value: "everything",
-        label: "Everything",
+        label: "All watched activity",
         hint: "All of that, plus files the agent opens, what it searches for and web addresses it visits.",
     },
 ];
@@ -59,7 +59,7 @@ export const DOES = [
     },
     {
         value: "deny",
-        label: "Block it",
+        label: "Block a command or file change",
         short: "It blocks the command.",
         hint: "The command or file change is refused, and the agent is given your reason. If the words are in the agent's chat message, it can't be unsaid, so the agent is told instead.",
         ask: "Reason the agent is given",

@@ -93,7 +93,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 </template>
             </template>
             <template #unreadable>
-                <p class="jt-focus past">This journal runs {{ journal.version || "an older version" }}; the hub reads 2.3.0 and up.</p>
+                <p class="jt-focus past">The hub can only show journals on version 2.3.0 or later. This one runs {{ journal.version || "an older version" }}.</p>
             </template>
         </SwitchCase>
         <template v-if="lead" #foot>

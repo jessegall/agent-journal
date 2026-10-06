@@ -62,7 +62,7 @@ function slipMeta(item) {
             <span class="dump-error">{{ moreError }}</span>
         </template>
         <ProgressBar thin :value="settled" :max="Math.max(1, items.length)" />
-        <DumpEyebrow>What I'm doing</DumpEyebrow>
+        <DumpEyebrow>What the agent is doing</DumpEyebrow>
         <DumpNarration :timeline="timeline" :current="current" :thinking="thinking" />
         <template v-if="question">
             <div class="dump-ask">
@@ -79,7 +79,7 @@ function slipMeta(item) {
         </template>
         <template v-else-if="!removed">
             <DumpAnswer
-                :placeholder="working ? 'Ask, or paste more files' : 'Ask about what I filed'"
+                :placeholder="working ? 'Ask, or paste more files' : 'Ask about what was filed'"
                 action="Send"
                 :send="say"
                 @paste="emit('paste-more', $event)"

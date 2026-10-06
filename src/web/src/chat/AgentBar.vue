@@ -107,7 +107,7 @@ function openSkills() {
                     </template>
                     <template #shells>
                         <CrewList
-                            heading="Background shells"
+                            heading="Background commands"
                             :agent="agent ? agent.n : 0"
                             :rows="data.shell_rows || []"
                             :total="data.shells || 0"

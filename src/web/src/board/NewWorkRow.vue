@@ -42,7 +42,7 @@ const emit = defineEmits(["example", "unhand", "hand", "retry", "ask-again", "ke
             <template #stalled>
                 <div key="stalled" class="row-layer">
                     <span class="row-text">
-                        {{ halted ? stalled || "The drafting stopped." : "No answer yet. The agent may be busy with other work." }}
+                        {{ halted ? stalled || "The agent stopped drafting." : "No answer yet. The agent may be busy with other work." }}
                     </span>
                     <template v-if="halted">
                         <Btn small :busy="retrying" @click="emit('retry')">Retry</Btn>

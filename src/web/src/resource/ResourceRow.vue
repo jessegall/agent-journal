@@ -14,7 +14,7 @@ const props = defineProps({resource: Object, selected: Boolean});
 const held = computed(() => {
     if (props.resource.completed) return "";
     if (props.resource.data.blocked) return props.resource.data.blocked;
-    if (parkedFor(props.resource)) return `Parked: ${parkedFor(props.resource)}`;
+    if (parkedFor(props.resource)) return `Paused: ${parkedFor(props.resource)}`;
     const refs = waitsOn(props.resource);
     return refs.length ? `Waits on ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
 });

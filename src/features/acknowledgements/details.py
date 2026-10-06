@@ -5,7 +5,7 @@ from features.groups import Group
 class AcknowledgementsDetails(FeatureDetails):
     name = "acknowledgements"
     group = Group.CHAT
-    label = "Hide agent replies that only say they saw a journal reminder"
+    label = "Hide replies that only say a reminder was seen"
     hint = "The chat's Shown menu brings them back"
     has_skill = False
 

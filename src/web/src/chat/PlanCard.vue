@@ -76,7 +76,7 @@ async function start() {
                     {{ parked ? "Resume" : "Start" }}
                 </Btn>
             </span>
-            <CloseButton title="Take this plan out of the chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
+            <CloseButton title="Hide from chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
         </template>
         <template v-if="!parked && (phases.length || building)">
             <ol class="plan-card-phases" data-fades>

@@ -12,7 +12,7 @@ class SourceLinksDetails(FeatureDetails):
 
     title = "Source links"
 
-    abstract = "If you create a plan, doc or report without linking what you read to build it, you are told which link to add"
+    abstract = "If you create a plan, doc or report without linking what you read to build it, the agent is told which link to add"
 
     help = """
         A plan, doc or report created soon after you read a report or doc, and citing none

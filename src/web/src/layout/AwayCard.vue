@@ -43,7 +43,7 @@ useEscape(
                 </button>
             </template>
             <template v-if="!lines.length">
-                <p class="away-line muted">No notifications you missed.</p>
+                <p class="away-line muted">You missed no notifications.</p>
             </template>
         </div>
         <div class="away-foot">

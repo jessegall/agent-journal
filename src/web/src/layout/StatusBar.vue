@@ -137,7 +137,7 @@ async function runBar(p) {
             <Btn
                 kind="icon"
                 :class="['statusbar-pause', {paused}]"
-                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s turn and hold the journal\'s nudges'"
+                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'"
                 @click="pauseOrResume"
             >
                 <template v-if="wanted !== null">

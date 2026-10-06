@@ -166,7 +166,7 @@ const row = computed(() => {
     return "";
 });
 const placeholder = computed(() => {
-    if (handing.value) return "Anything I should know? Optional";
+    if (handing.value) return "Anything the agent should know? Optional";
     if (asking.value) return "Pick one, or answer in your own words";
     if (drafts.value.length) return "Change these drafts…";
     if (since.value) return "Anything to add?";
@@ -272,7 +272,7 @@ function greet() {
     say(false, `What do you want to get done on ${props.board.title}?`, "greet", "lead");
     say(
         false,
-        "Say it in a sentence. I ask a few short questions until I understand, then draft tickets for you to pick from.",
+        "Say it in a sentence. The agent asks a few short questions until it understands, then drafts tickets for you to pick from.",
         "intro",
         "aside"
     );
@@ -519,7 +519,7 @@ function startAnew() {
                         <template v-if="lost">
                             <div class="lost">
                                 <ChatLine
-                                    text="I still don't know what you want. Let's start over: say it again in other words, or give me an example."
+                                    text="The agent still does not understand the request. Start over: say it again in other words, or give me an example."
                                 />
                                 <Btn kind="primary" small @click="startOver">
                                     <Icon name="restore" :size="12" />

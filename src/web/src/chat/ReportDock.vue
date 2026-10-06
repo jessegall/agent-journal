@@ -44,7 +44,7 @@ function open() {
                 <Btn small @click="open">{{ update ? "Open update" : "Open report" }}</Btn>
             </span>
             <CloseButton
-                title="Take this report out of the chat; it stays on the Reports page"
+                title="Hide from chat; it stays on the Reports page"
                 @click="api.act('report', report.n, 'dismiss')"
             />
         </template>

@@ -67,7 +67,7 @@ onMounted(load);
                     <p class="tunnel-line">
                         {{
                             switching
-                                ? "Log in with another account; it replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so a journal on the other account's address stops answering until you switch back, which needs that account's password."
+                                ? "Logging in with another account replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so those addresses stop answering until you switch back with that account's password."
                                 : "Not connected. Connect once, and every journal on this machine uses it."
                         }}
                     </p>

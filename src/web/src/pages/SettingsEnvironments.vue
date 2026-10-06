@@ -120,7 +120,7 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
                             <template #remove>
                                 <Btn small @click="say(row.env)">Keep it</Btn>
                                 <Btn kind="danger" small @click="remove(row)">
-                                    {{ row.live || kindOf(row.env) === "refused" ? "Remove anyway" : "Yes, remove" }}
+                                    {{ row.live || kindOf(row.env) === "refused" ? "Archive anyway" : "Yes, archive" }}
                                 </Btn>
                             </template>
                             <template #sweep>
@@ -139,12 +139,12 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
                                     :disabled="here(row.env)"
                                     :title="
                                         here(row.env)
-                                            ? 'Switch to another environment to remove this one'
+                                            ? 'Switch to another environment to archive this one'
                                             : 'Move this environment into the archive'
                                     "
                                     @click="remove(row)"
                                 >
-                                    Remove
+                                    Archive environment
                                 </Btn>
                             </template>
                         </SwitchCase>

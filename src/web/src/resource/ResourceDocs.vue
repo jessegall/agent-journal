@@ -8,7 +8,7 @@ defineProps({docs: {type: Array, required: true}});
 
 <template>
     <section class="linked-docs">
-        <SectionHeading class="linked-docs-head">Documents</SectionHeading>
+        <SectionHeading class="linked-docs-head">Related documents</SectionHeading>
         <div class="linked-docs-cards">
             <template v-for="d in docs" :key="d.ref">
                 <ResourceCard :resource="d" @click="peek('doc', d.n)" />

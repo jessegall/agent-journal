@@ -40,7 +40,7 @@ const emit = defineEmits(["pick", "open", "all"]);
         />
     </template>
     <template v-if="schemes.length">
-        <PaneMenuLink icon="palette" label="Colour scheme" @click="emit('open', 'schemes')" />
+        <PaneMenuLink icon="palette" label="Color scheme" @click="emit('open', 'schemes')" />
     </template>
     <template v-if="all">
         <MenuItem @click="emit('all')">

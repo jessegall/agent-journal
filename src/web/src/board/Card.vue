@@ -157,7 +157,7 @@ function begin(event) {
                 <Chip tone="accent">{{ titleOf(name) }}</Chip>
             </template>
             <template v-if="card.worker && card.worker.parked">
-                <Chip>parked</Chip>
+                <Chip>paused</Chip>
             </template>
             <template v-if="card.reported">
                 <Chip>Reported</Chip>

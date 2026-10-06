@@ -52,7 +52,7 @@ function move(lane) {
             </template>
         </template>
         <template v-if="card.session">
-            <MenuItem @click="(emit('close'), board.watchAgent(card))">Watch its agent</MenuItem>
+            <MenuItem @click="(emit('close'), board.watchAgent(card))">Open its agent</MenuItem>
         </template>
         <MenuItem class="open" @click="(emit('close'), peek(card.type, card.n))">Open</MenuItem>
     </MenuPanel>

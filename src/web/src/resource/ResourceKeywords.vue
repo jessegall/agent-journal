@@ -17,7 +17,7 @@ const closed = computed(() => Boolean(props.resource.completed));
 const help = computed(() =>
     words.value.length
         ? "Whole words or phrases. Upper or lower case doesn't matter. Press Enter after each one."
-        : `With no words, this ${noun.value} is only repeated as the agent's context fills.`
+        : `With no words, this ${noun.value} is only repeated as the agent's memory fills.`
 );
 
 const save = (words) => api.act(noun.value, props.resource.n, "update", {keywords: words});

@@ -26,7 +26,7 @@ export const PRESETS = [
     {key: "default", name: "Default", text: "Chat and side panels", shape: DEFAULT_SHAPE},
     {
         key: "jesse",
-        name: "Jesse's setup",
+        name: "Developer layout",
         text: "The developer's favourite setup",
         shape: split(
             "row",

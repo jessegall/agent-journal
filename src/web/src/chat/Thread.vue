@@ -86,9 +86,9 @@ const dumpIdle = computed(() => ({
 }));
 const dumpOffer = {
     icon: "inbox",
-    title: (n) => `${n} files. Dump them instead?`,
-    text: "The dump reads them together and files each subject as its own document with a proper name, in a new collection you can remove in one step.",
-    action: "Dump them",
+    title: (n) => `${n} files. Send as a dump instead?`,
+    text: "The agent reads them together and files each subject as its own document with a proper name, in a new collection you can remove in one step.",
+    action: "Send as a dump",
     take: (files) => {
         store.dumpFiles = files;
         openDump(0);

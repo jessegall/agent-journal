@@ -12,7 +12,7 @@ const summaryKey = computed(() => `${props.summary.text}|${props.summary.step}`)
                 <span class="reading-text">{{ summary.text }}</span>
             </template>
             <template v-else>
-                <span class="reading-text quiet">I'll say here what I think you mean.</span>
+                <span class="reading-text quiet">The agent will say here what it thinks you mean.</span>
             </template>
             <span class="reading-step">{{ summary.step }}</span>
         </div>

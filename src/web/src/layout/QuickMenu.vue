@@ -424,7 +424,7 @@ function onFileKey(e) {
                         <button type="button" class="quick-key" @click="back">esc</button>
                     </div>
                     <div class="quick-write" @keydown.esc.prevent.stop="back">
-                        <Compose :send="send" placeholder="Ask it something, or tell it what to do next…" />
+                        <Compose :send="send" placeholder="Ask the agent something, or tell it what to do next…" />
                     </div>
                 </template>
             </SwitchCase>
