@@ -51,3 +51,36 @@ def test_hosting_services_follow_the_feature_switch():
     Features(record, actor=USER).create("hosting", enabled=False)
     booted(record)
     assert all(spec.service != "app" for spec in specs(record.root, []))
+
+
+def test_a_service_counts_as_answering_by_its_port_or_its_address_and_a_gone_group_is_noticed():
+    import http.server
+    import socket
+    import threading
+    from engine import keeper
+
+    assert keeper.answers(0, "/x") is True, "a service with no port has nothing to answer"
+    free = socket.socket()
+    free.bind(("127.0.0.1", 0))
+    closed = free.getsockname()[1]
+    free.close()
+    assert (keeper.answers(closed, ""), keeper.answers(closed, "/x")) == (False, False), "nothing listening does not answer, by port or by address"
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response({"/ok": 200, "/missing": 404, "/broken": 503}[self.path])
+            self.end_headers()
+
+        def log_message(self, *args):
+            return None
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    port = server.server_port
+    try:
+        assert (keeper.answers(port, ""), keeper.answers(port, "/ok"), keeper.answers(port, "/missing"), keeper.answers(port, "/broken")) == (True, True, True, False), \
+            "an open port answers, and so does any address that is not a server error"
+        assert keeper.answers(port, "/bad address with spaces") is False, "an address that cannot be asked is not an answer"
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert keeper.gone(2 ** 22 + 7) is True, "a process group that does not exist is gone"

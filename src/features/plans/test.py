@@ -191,6 +191,29 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):
     by_user.start(by_user.approve(late.n).n)
     assert by_agent.load(late.n).data["status"] == "done", "its rows already closed, it completes itself when started"
 
+    from features.plans.resource import ABANDONED
+    from migrations.m0056_plans_with_open_rows import run as reopen_plans
+    from migrations.m0065_abandoned_plans_closed import run as close_abandoned
+    stale = by_agent.create("done too early", goal="rows are still open")
+    by_agent.phase(stale.n, "only phase", when="its row is closed")
+    by_agent.place(stale.n, 1, [todos.create("a row still open").n])
+    by_agent.ready(stale.n)
+    for how in ("closed", "marked"):
+        marked = by_agent.load(stale.n)
+        marked.status = "done"
+        by_agent.save(marked, "updated", status="done")
+        if how == "closed":
+            by_agent.complete(stale.n, how="finished")
+        assert reopen_plans(record.root) == [f"t {stale.ref}"], f"a plan {how} done with an open row is reopened"
+        assert (by_agent.load(stale.n).status, by_agent.load(stale.n).completed) == ("active", 0.0), "the reopened plan runs again at its open phase"
+    assert reopen_plans(record.root) == [], "a plan that is not done is left alone"
+    gone = by_agent.create("given up", goal="never mind")
+    given_up = by_agent.load(gone.n)
+    given_up.status = ABANDONED
+    by_agent.save(given_up, "updated", status=ABANDONED)
+    assert close_abandoned(record.root) == [f"t: plan {gone.n} was abandoned, so it is closed"], "an abandoned plan is closed"
+    assert close_abandoned(record.root) == [], "a closed plan is not closed twice"
+
 
 def test_an_agent_building_a_plan_is_told_each_next_step():
     from tests.kit import nudges, report

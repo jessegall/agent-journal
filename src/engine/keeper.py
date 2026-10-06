@@ -1,4 +1,5 @@
 import fcntl
+import http.client
 import os
 import select
 import signal
@@ -102,7 +103,7 @@ def answers(port: int, path: str) -> bool:
             return answered.status < 500
     except urllib.error.HTTPError as answered:
         return answered.code < 500
-    except (urllib.error.URLError, OSError, ValueError):
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException):
         return False
 
 

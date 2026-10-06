@@ -284,7 +284,7 @@ def test_long_typed_text_arrives_whole_a_full_queue_is_reported_and_another_user
     done.set()
     reading.join()
     got.extend(typist.receive(inbox))
-    assert (sent, b"".join(got) == raw), "a megabyte typed at once arrives whole and in order"
+    assert (bool(sent), b"".join(got) == raw) == (True, True), "a megabyte typed at once arrives whole and in order"
     typist.close(inbox, root, "claude-1")
     stalled = typist.listen(root, "claude-2")
     monkeypatch.setattr(typist, "FULL_FOR", 0.3)
@@ -297,3 +297,81 @@ def test_long_typed_text_arrives_whole_a_full_queue_is_reported_and_another_user
     seat.root, seat.session = root, "claude-2"
     assert seat.socket_path().parent == elsewhere, "the supervisor and the sender agree on which folder"
     stalled.close()
+
+
+def test_an_agent_silent_for_two_minutes_is_probed_and_then_marked_idle_or_stopped_by_what_comes_back(monkeypatch):
+    from runner import engine as engine_module
+    engine, calls = fake_engine(monkeypatch, "working")
+    driver = engine.agent.driver
+    marks = []
+    monkeypatch.setattr(driver, "alive", lambda: False)
+    assert engine.probe() == "", "an agent whose terminal is gone is not probed"
+    monkeypatch.setattr(driver, "alive", lambda: True)
+    monkeypatch.setattr(driver, "quiet_for", lambda: 0)
+    monkeypatch.setattr(driver, "asking", lambda: False)
+    monkeypatch.setattr(engine.agent, "mark", lambda state, why: marks.append((state, why)))
+    assert engine.probe() == "", "an agent that has been heard from lately is left alone"
+    monkeypatch.setattr(driver, "quiet_for", lambda: engine_module.SILENT_AFTER)
+    engine.typed_at = 0.0
+    silent_at = driver.last_report().at + engine_module.SILENT_AFTER + 1
+    monkeypatch.setattr(engine_module.time, "time", lambda: silent_at)
+    assert engine.probe() == "silent for two minutes: probing with Ctrl-C" and "interrupt" in calls, "a silent working agent is interrupted once to see whether it answers"
+    assert engine.probe() == "probed, waiting", "the probe waits for an answer"
+    now = engine_module.time.time()
+    monkeypatch.setattr(engine_module.time, "time", lambda: now + engine_module.PROBE_WAIT + 1)
+    assert engine.probe() == "probe: at the prompt, idle" and marks[-1][0] == engine_module.IDLE, "an agent back at its prompt is idle"
+    monkeypatch.setattr(driver, "at_prompt", lambda: False)
+    assert engine.probe() == "probe: nothing came back, stopped" and marks[-1][0] == engine_module.STOPPED, "an agent that stays silent and away from its prompt is stopped"
+    monkeypatch.setattr(driver, "quiet_for", lambda: 0)
+    assert engine.probe() == "probe: working" and engine.probed_at == 0.0, "an agent that printed something in the meantime is working"
+
+
+def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_reports_a_failed_command(tmp_path):
+    import collections
+    import os
+    import socket
+    import subprocess
+    import supervisor
+    from supervisor import Adopted, Supervisor
+
+    assert (supervisor.as_bytes("ff00"), supervisor.as_bytes(b"\x01")) == (b"\xff\x00", b"\x01"), "saved terminal settings come back as bytes"
+    adopted = Adopted.from_json({"pid": 4, "fd": 5, "session": "claude-4", "saved": [1, 2, 3, 4, 5, 6, ["00", "01"]]})
+    assert (adopted.saved[6], Adopted.from_json({"pid": 4, "fd": 5, "session": "s", "saved": None}).saved) == ([b"\x00", b"\x01"], None), \
+        "an adopted terminal keeps its saved settings, or none"
+
+    ignoring = subprocess.Popen(["python3", "-c", "import signal,time\nsignal.signal(signal.SIGHUP, signal.SIG_IGN)\nsignal.signal(signal.SIGTERM, signal.SIG_IGN)\nprint('up', flush=True)\ntime.sleep(60)"],
+                                stdout=subprocess.PIPE)
+    ignoring.stdout.readline()
+    assert supervisor.stop(ignoring.pid, grace=0.3) != 0, "an agent that ignores hangup and terminate is killed in the end"
+    assert supervisor.stop(ignoring.pid, grace=0.1) == 0, "an agent that is already gone is not an error"
+
+    seat = object.__new__(Supervisor)
+    reader, writer = socket.socketpair(socket.AF_UNIX, socket.SOCK_DGRAM)
+    reader.setblocking(False)
+    seat.inbox = reader
+    assert seat.received() == [], "an empty inbox gives nothing"
+    writer.send(b"typed one")
+    writer.send(b"typed two")
+    assert seat.received() == [b"typed one", b"typed two"], "everything waiting in the inbox is read at once"
+
+    inward, outward = os.pipe()
+    seat.fd, seat.pending = outward, collections.deque([b"a" * 1_000_000, b"tail"])
+    seat.feed()
+    assert 0 < len(seat.pending[0]) < 1_000_000, "a full terminal takes what it can and the rest waits"
+    os.close(inward)
+    seat.feed()
+    assert list(seat.pending) == [b"tail"], "a terminal that is gone drops what was waiting for it"
+    os.close(outward)
+
+    seat.folder, seat.typed_at = tmp_path, 0.0
+    seat.typing(b"hello")
+    assert (tmp_path / supervisor.TYPED).exists(), "typing in the terminal leaves a mark that the user is typing"
+    seat.typing(b"\r")
+    assert not (tmp_path / supervisor.TYPED).exists(), "pressing enter clears the mark"
+
+    seat.cwd, seat.stdout = tmp_path, os.open(tmp_path / "shown", os.O_CREAT | os.O_WRONLY)
+    assert seat.delegate(["python3", "-c", "import sys; sys.stderr.write('boom'); sys.exit(3)"]) == "", "a command that fails returns no output"
+    assert "failed: boom" in (tmp_path / "shown").read_text(), "and says in the terminal why"
+    ignoring.wait()
+    reader.close()
+    writer.close()

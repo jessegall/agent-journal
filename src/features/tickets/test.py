@@ -7,7 +7,7 @@ from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
 
 
-def test_a_ticket_belongs_to_the_project_and_one_source_event_stays_one_ticket():
+def test_a_ticket_belongs_to_the_project_and_one_source_event_stays_one_ticket(tmp_path):
     record = fresh()
     Boards(record, actor=USER).create("Bugs", stages=["New", "Doing", "Done"])
     made = Tickets(record, actor=USER).create("Checkout fails on empty cart", brief="the pay button errors", board=1)
@@ -19,6 +19,20 @@ def test_a_ticket_belongs_to_the_project_and_one_source_event_stays_one_ticket()
     other = elsewhere.create("TypeError in checkout", source="sentry", source_id="evt-2")
     assert (again.n, again.brief, other.n != first.n) == (first.n, "seen 40 times", True), \
         "the same event from the same source updates its ticket; another event makes another"
+
+    from migrations.m0055_card_backs_in_parts import run as reshape
+    from migrations.m0059_tickets_name_their_provider import run as name_provider
+    plain = Tickets(record, actor=AGENT).create("Plain card", brief="just words")
+    lettered = Tickets(record, actor=AGENT).create("Lettered card")
+    Tickets(record, actor=AGENT).update(lettered.n, brief="What: fix it Why: it breaks")
+    assert reshape(record.root) == [lettered.ref], "only a card back written in run-on parts is reshaped"
+    assert Tickets(record, actor=AGENT).load(lettered.n).brief == "**What:** fix it\n\n**Why:** it breaks", "each part gets its own paragraph"
+    assert Tickets(record, actor=AGENT).load(plain.n).brief == "just words", "a card back without parts is left as it was"
+    assert reshape(tmp_path) == [] and name_provider(tmp_path) == [], "a project without environments has nothing to reshape or name"
+    Tickets(record, actor=AGENT).update(plain.n, agent="codex")
+    assert name_provider(record.root) == [f"ticket {plain.n} runs on codex"], "a ticket stamped with its agent names that provider"
+    assert Tickets(record, actor=AGENT).load(plain.n).provider == "codex", "the provider is now its own field"
+    assert name_provider(record.root) == [], "a ticket that names its provider is left alone"
 
 
 def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():

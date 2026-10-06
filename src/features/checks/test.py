@@ -147,3 +147,28 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
     checks.run(check.n, wait=True)
     assert nudged()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
         "a failure that reports something else is nudged again and replaces the one before"
+
+
+def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tmp_path):
+    import json
+    from migrations.m0008_plain_stored_keys import run
+
+    home = tmp_path / "environments" / "main"
+    (home / "agent").mkdir(parents=True)
+    (tmp_path / "project" / "check").mkdir(parents=True)
+    (tmp_path / "check").mkdir()
+    (home / "events.jsonl").write_text('{"heard": 1}\n')
+    (home / "agent" / "001.md").write_text('{"said": "hello"}')
+    (home / "agent" / "002.md").write_text('{"nothing": "to rename"}')
+    (tmp_path / "project" / "check" / "001.md").write_text('{"said": "ok"}')
+    (tmp_path / "check" / "001.md").write_text('{"said": "old"}')
+    (home / "settings.json").write_text(json.dumps({"work_tracking": {"said_after": 5}}))
+    other = tmp_path / "environments" / "other"
+    other.mkdir()
+    (other / "settings.json").write_text(json.dumps({"work_tracking": {"name_work_every": 5}, "x": 1}))
+    assert run(tmp_path) == "1 event logs, 3 rows and 1 settings files use the plain key names", "every old key is renamed where it is stored"
+    assert '"handled"' in (home / "events.jsonl").read_text() and '"last_message"' in (home / "agent" / "001.md").read_text(), "events and agents use the plain keys"
+    assert '"output"' in (tmp_path / "project" / "check" / "001.md").read_text(), "a check row uses the plain key"
+    assert json.loads((home / "settings.json").read_text()) == {"work_tracking": {"name_work_every": 5}}, "the setting is renamed"
+    (other / "settings.json").write_text("{")
+    assert run(tmp_path) == "0 event logs, 0 rows and 0 settings files use the plain key names", "a second run finds nothing, and an unreadable settings file is skipped"

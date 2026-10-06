@@ -268,6 +268,14 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     agent = Agents(record, actor="system").by_session("claude-1")
     assert len(agent.data.get("compactions") or []) == 1, "one compaction, one mark for the chat"
     agents = Agents(record, actor="system")
+    from migrations.m0026_stopping_description import run as describe
+    from migrations.m0058_marks_without_a_label import run as mend
+    agents.stamp(agent.n, stopping={"what": "Poll production", "task": "b7"}, cards=[{"label": "kept"}, {"text": "no label"}])
+    assert describe(record.root) == [agent.ref], "an agent whose stopping task still has the old key is rewritten"
+    assert agents.load(agent.n).data["stopping"] == {"task": "b7", "description": "Poll production"}, "the old key becomes description"
+    assert describe(record.root) == [], "a stopping task already described is left alone"
+    assert mend(record.root) == [f"t agent {agent.n}: 1 marks without a label"], "a chat mark without a label is dropped"
+    assert agents.load(agent.n).data["cards"] == [{"label": "kept"}], "the labelled marks stay"
     record.set_setting("agent_sessions", {"quiet": 1})
     record.set_setting("triggers", {"agent_sessions.liveness": {"every": 0, "unit": "minutes"}})
     report(record, "working", "PreToolUse", session="claude-2")
@@ -398,3 +406,15 @@ def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_pat
     with transcript.open("a") as f:
         f.write(json.dumps(completed(now + 1)) + "\n")
     assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "and its next completion ends it again"
+
+    from engine import runtime
+    from engine.sessions import alive as process_alive
+    record = fresh()
+    sessions = Sessions(record.root)
+    assert (process_alive("not a pid"), process_alive(None), process_alive(0), process_alive(-3), process_alive(os.getpid()), process_alive(2 ** 22 + 9)) == \
+        (False, False, False, False, True, False), "only a number that names a running process is alive"
+    sessions.write("claude-1", environment="old")
+    runtime.set_env(record.root, "old")
+    sessions.rebind("old", "renamed")
+    assert (sessions.read("claude-1").environment, runtime.env(record.root)) == ("renamed", "renamed"), "renaming an environment moves its sessions and the one the journal opens on"
+    assert sessions.grant("claude-1", "renamed") == ["renamed"] and sessions.grant("claude-1", "renamed", on=False) == [], "a lent environment is taken back"
