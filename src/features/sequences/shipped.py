@@ -87,8 +87,10 @@ FINISHING_WHAT_YOU_WROTE = ShippedSequence(
              "next step where one fits, then answer with it.",
     steps=[
         ("Add the document or report to a collection", "If a collection the user keeps fits what you wrote, add it: journal collection add "
-                                   "<collection n> <ref>. Look with journal collection all first; skip this when none fits, and "
-                                   "never make a collection just for it. Then journal sequence next <this sequence> --about <ref>."),
+                                   "<collection n> <ref>. Look with journal collection all first. When none fits but other documents or reports "
+                                   "on the same subject sit in no collection, make one named for the subject with journal collection create "
+                                   "\"<subject>\", add this and them, and say so in one line. A row with nothing related gets no collection of "
+                                   "its own. Then journal sequence next <this sequence> --about <ref>."),
         ("Link the items behind the document or report", "Link the rows it answers or was built on, such as the to-dos, plans, documents, reports or "
                                     "messages it is about, with journal <type> link <ref n> \"<row>\" for each. Leave out rows "
                                     "it only mentions in passing. Then journal sequence next <this sequence> --about <ref>."),

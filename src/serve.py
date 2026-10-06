@@ -5,6 +5,7 @@ import re
 import sys
 import threading
 import time
+import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
@@ -19,11 +20,10 @@ from features.routing import Reply  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
-from controllers.types import warm, warm_record  # noqa: E402
+from controllers.types import warm  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
 from runner.chat_mirror import replay  # noqa: E402
 from engine.runtime import default_env
-from engine.record import Record  # noqa: E402
 from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
 
 DEFAULT_PORT = 8430
@@ -182,6 +182,16 @@ def warm_commands() -> None:
         parser(noun)
 
 
+def warmed(root: Path) -> None:
+    try:
+        warm_viewer(root, default_env(root))
+        read_transcripts(root)
+    except Exception:
+        traceback.print_exc()
+        os._exit(1)
+    gc.freeze()
+
+
 def warm_viewer(root: Path, env: str) -> None:
     from commands.parser import parser
     from controllers.types import CONTROLLERS
@@ -198,11 +208,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
     halting = threading.Event()
-    home = Record(root, default_env(root))
-    warm_record(home)
-    warm_viewer(root, default_env(root))
-    read_transcripts(root)
-    gc.freeze()
+    threading.Thread(target=warmed, args=(root,), daemon=True).start()
     threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
