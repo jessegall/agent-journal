@@ -51,4 +51,9 @@ export async function checkTunnel() {
     return store.tunnel;
 }
 
+export async function recheckTunnel() {
+    store.tunnel = await api.tunnelRecheck().catch(() => UNKNOWN_TUNNEL);
+    return store.tunnel;
+}
+
 export const linkMessage = (title, link) => `Here's the link to ${title}: ${link}`;

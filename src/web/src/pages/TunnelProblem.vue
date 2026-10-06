@@ -2,7 +2,7 @@
 import Icon from "../kit/Icon.vue";
 import TunnelLogin from "./TunnelLogin.vue";
 import TunlerInstall from "./TunlerInstall.vue";
-import {checkTunnel} from "../composables/shares.js";
+import {checkTunnel, recheckTunnel} from "../composables/shares.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 
@@ -40,7 +40,7 @@ const emit = defineEmits(["ready"]);
                     <p>{{ problem }}</p>
                 </template>
                 <span class="tunnel-actions">
-                    <Btn small @click="checkTunnel">Check again</Btn>
+                    <Btn small @click="recheckTunnel">Check again</Btn>
                     <Btn small @click="openSettings">Open the sharing settings</Btn>
                 </span>
             </div>

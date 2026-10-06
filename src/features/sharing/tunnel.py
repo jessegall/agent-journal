@@ -25,6 +25,7 @@ LOCAL_BIN = Path.home() / ".local" / "bin" / "tunler"
 SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 ARCHES = {"x86_64": "amd64", "aarch64": "arm64"}
 DOWNLOAD_SECONDS = 60
+ROUTE_LINES = ("gateway", "interface")
 
 
 def kept_address(root: Path) -> dict:
@@ -81,6 +82,19 @@ def held_by_server(log: Path) -> bool:
     return bool(lines) and HELD in lines[-1]
 
 
+def tunler_build(command: str) -> str:
+    made = Path(command).stat()
+    return f"{command}:{made.st_size}:{made.st_mtime_ns}"
+
+
+def default_route() -> str:
+    asking = ["route", "-n", "get", "default"] if platform.system() == "Darwin" else ["ip", "route", "show", "default"]
+    done = ran_command(asking, timeout=3)
+    if not done or done.returncode:
+        return ""
+    return "\n".join(line.strip() for line in done.stdout.splitlines() if line.split(":")[0].strip() in ROUTE_LINES or line.startswith("default"))
+
+
 def tunler() -> str:
     found = shutil.which("tunler")
     if found:
@@ -95,8 +109,11 @@ KEPT_STATUS: dict = {}
 def tunler_status() -> dict:
     if time.time() - KEPT_STATUS.get("at", 0) < STATUS_KEPT:
         return KEPT_STATUS["status"]
-    KEPT_STATUS.update(at=time.time(), status=asked_status())
-    return KEPT_STATUS["status"]
+    asked = asked_status()
+    if asked["unreadable"]:
+        return asked
+    KEPT_STATUS.update(at=time.time(), status=asked)
+    return asked
 
 
 class TunnelStatus(TypedDict):
@@ -104,6 +121,7 @@ class TunnelStatus(TypedDict):
     logged_in: bool
     account: str
     host: str
+    unreadable: bool
 
 
 class Login(TypedDict):
@@ -115,14 +133,16 @@ class Login(TypedDict):
 def asked_status() -> TunnelStatus:
     command = tunler()
     if not command:
-        return TunnelStatus(installed=False, logged_in=False, account="", host="")
+        return TunnelStatus(installed=False, logged_in=False, account="", host="", unreadable=False)
     done = ran_command([command, "status", "--json"], timeout=STATUS_SECONDS)
     try:
-        told = json.loads(done.stdout if done else "{}") or {}
+        fields = json.loads(done.stdout) if done else None
     except ValueError:
-        told = {}
-    return TunnelStatus(installed=True, logged_in=bool(told.get("logged_in") and told.get("auth_ok")), account=told.get("user") or told.get("email", ""),
-                        host=told.get("host", ""))
+        fields = None
+    if not isinstance(fields, dict):
+        return TunnelStatus(installed=True, logged_in=False, account="", host="", unreadable=True)
+    return TunnelStatus(installed=True, logged_in=bool(fields.get("logged_in") and fields.get("auth_ok")), account=fields.get("user") or fields.get("email", ""),
+                        host=fields.get("host", ""), unreadable=False)
 
 
 LOGIN_SECONDS = 30

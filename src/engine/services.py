@@ -11,7 +11,7 @@ from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
 from engine.locks import claim
 from engine.package import ARCHIVE, entry
-from engine.ports import free
+from engine.ports import free, reserve
 from engine.runtime import env, folder
 from engine.sessions import alive
 from typing import TypedDict
@@ -119,7 +119,7 @@ def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     if held.port and held.port not in taken and (free(held.port) or alive(held.keeper)):
         return held.port, ""
     for port in PORTS:
-        if port not in taken and free(port):
+        if port not in taken and free(port) and reserve(port, f"{root}:{sid}"):
             return port, ""
     return 0, f"no port free from {PORTS.start} through {PORTS.stop - 1}"
 
