@@ -1,4 +1,5 @@
 <script setup>
+import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import TunnelLogin from "./TunnelLogin.vue";
 import TunlerInstall from "./TunlerInstall.vue";
@@ -11,9 +12,15 @@ const openSettings = () => (location.hash = `#/${route.value.env}/settings?sub=s
 
 defineProps({status: {type: Object, required: true}});
 const emit = defineEmits(["ready"]);
+const updateFailure = ref("");
 const update = async () => {
-    await api.updateTunler().catch(() => null);
-    recheckTunnel();
+    updateFailure.value = "";
+    try {
+        await api.updateTunler();
+        recheckTunnel();
+    } catch (e) {
+        updateFailure.value = e.message;
+    }
 };
 </script>
 
@@ -36,6 +43,9 @@ const update = async () => {
                 <span class="tunnel-actions">
                     <Btn small kind="primary" @click="update">Update tunler</Btn>
                 </span>
+                <template v-if="updateFailure">
+                    <p>{{ updateFailure }}</p>
+                </template>
             </div>
         </template>
         <template v-else-if="!status.logged_in">
