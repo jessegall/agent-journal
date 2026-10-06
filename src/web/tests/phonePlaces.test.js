@@ -39,6 +39,11 @@ describe("a row on a phone list", () => {
         expect(linesOf({one: "Question"}, {...asked, completed: 1, outcome: "Hill road"})).toContain("Answered: Hill road");
     });
 
+    test("work says how many log entries it has and the latest one", () => {
+        const work = {type: "work", n: 2, completed: 0, data: {}, sections: [{body: "Started"}, {body: "x".repeat(80)}]};
+        expect(linesOf({one: "Work"}, work)).toEqual(["Work 2", "In hand", "2 log entries", `${"x".repeat(59)}…`]);
+    });
+
     test("a suggestion says what you decided", () => {
         expect(linesOf({one: "Suggestion"}, {type: "suggestion", n: 1, completed: 1, data: {decision: "adjust"}})).toContain("Adjusted");
     });

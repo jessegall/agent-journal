@@ -30,7 +30,7 @@ const busy = ref(false);
 const words = ref("");
 const end = ref(null);
 const {under, scrolled} = useScrolled();
-const shown = computed(() => {
+const visible = computed(() => {
     const asked = words.value.trim().toLowerCase();
     const kept = rows.value.filter((row) => props.keep(row) && (!asked || props.wordsOf(row).toLowerCase().includes(asked)));
     return props.order ? kept.sort(props.order) : kept;
@@ -105,11 +105,11 @@ defineExpose({reload, rows});
             </template>
             <template v-else>
                 <div class="list-group">
-                    <template v-for="row in shown" :key="keyOf(row)">
+                    <template v-for="row in visible" :key="keyOf(row)">
                         <slot name="row" :row="row" />
                     </template>
                 </div>
-                <template v-if="words && !shown.length">
+                <template v-if="words && !visible.length">
                     <p class="list-none">Nothing loaded so far matches “{{ words }}”.</p>
                 </template>
             </template>
