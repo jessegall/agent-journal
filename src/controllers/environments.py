@@ -89,6 +89,14 @@ class Environments(Controller):
             raise Refused("no session to bind: say which with --session")
         return Sessions(self.record.root)
 
+    def _agent(self, session: str) -> set[str]:
+        pid = self.sessions().read(session).pid
+        return {name for name, s in self.sessions().all().items() if pid and s.pid == pid} | {session}
+
+    def _bind_agent(self, session: str, env: str) -> None:
+        for each in self._agent(session):
+            self.sessions().bind(each, env)
+
     def switch(self, n: int, project: bool = False, move: str = "", back: bool = False):
         who = move or self.session
         if back:
@@ -98,14 +106,10 @@ class Environments(Controller):
             return self.switch(self.find(was).n, move=who)
         env = self.load(n)
         holder = self.sessions().holder(env.title)
-        if holder and holder != who:
+        if holder and holder not in self._agent(who):
             self._refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
         before = self.sessions().environment(who)
-        self.sessions().bind(who, env.title)
-        running = self.sessions().read(who)
-        terminal = self.sessions().terminal(running.provider, running.pid) if running.pid else ""
-        if terminal and terminal != who:
-            self.sessions().bind(terminal, env.title)
+        self._bind_agent(who, env.title)
         if before and before != env.title:
             self.sessions().write(who, before=before)
         if project:
@@ -188,9 +192,10 @@ class Environments(Controller):
     def claim(self, n: int, why: str):
         env = self.load(n)
         holder = self.sessions().holder(env.title)
-        if holder and holder != self.session:
-            self.sessions().evict(holder, self.session, env.title, why)
-        self.sessions().bind(self.session, env.title)
+        if holder and holder not in self._agent(self.session):
+            for each in self._agent(holder):
+                self.sessions().evict(each, self.session, env.title, why)
+        self._bind_agent(self.session, env.title)
         return self.update(n, holder=self.session, claimed={"from": holder, "why": why})
 
     def leave(self, n: int):

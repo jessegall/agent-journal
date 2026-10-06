@@ -98,6 +98,13 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     assert outside.wait(timeout=5) != 0, "an agent in a terminal the journal did not open is ended by its process when the user stops it"
     sessions.bind("gone-9", "u", pid=999999, provider="claude")
     assert "no agent holds" in refused(lambda: users.stop(users._titled("u").n)), "an agent that is gone holds nothing to stop"
+    mine = f"claude-{os.getpid()}"
+    sessions.bind("conversation-5", "t", pid=os.getpid(), provider="claude")
+    sessions.bind(mine, "w", pid=os.getpid(), provider="claude")
+    me = Environments(record, actor=AGENT, session="conversation-5")
+    me.claim(me.create("w").n, "back where my terminal is")
+    assert (sessions.environment("conversation-5"), sessions.environment(mine), sessions.read(mine).evicted) == ("w", "w", {}), \
+        "an agent claiming the environment its own terminal holds keeps that terminal: it is never evicted by itself"
 
 
 def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the_same_law(env):
