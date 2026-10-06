@@ -87,3 +87,31 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     assert "waits on another to-do" in refused(lambda: todos.after(one.n, "banana")), "a to-do waits on a to-do or a plan"
     todos.after(two.n, one.n)
     assert todos.mark(todos.load(two.n)).startswith("  [waits on"), "a to-do that waits says on what"
+    from agents.actors import System, User
+    from controllers.base import check_abstract, controller_of
+    from controllers.types import warm
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    row = todos.create("a row to mark")
+    todos.block(row.n, "waiting for the build")
+    assert todos.mark(todos.load(row.n)) == "  [blocked: waiting for the build]", "a blocked to-do says why"
+    todos.unblock(row.n)
+    todos.assign(row.n, "helper:3")
+    assert todos.mark(todos.load(row.n)) == "  [assigned to helper 3]", "an assigned to-do says to whom"
+    todos.complete(row.n, how="finished")
+    assert todos.mark(todos.load(row.n)) == "  [done]", "a finished to-do says so"
+    assert controller_of(record, f"todo:{row.n}").load(row.n).title == "a row to mark", "a reference names the row it points to"
+    assert "is not a row" in refused(lambda: controller_of(record, "nothing:1")), "a reference to a type that does not exist is refused"
+    assert "an abstract is at most" in refused(lambda: check_abstract("x " * 400)), "a long abstract is sent back to be shortened"
+    note = Todos(record, actor=AGENT).create("a row with a file")
+    folder = todos.folder(note.n)
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "found.txt").write_text("here")
+    assert "found.txt" in todos.index(note.n).files, "a file that was put beside a row by hand is indexed"
+    event = record.event_log.events(0, 5)[0]
+    User(record).notify(event)
+    System(record).notify(event)
+    assert (User(record).cursor(), System(record).cursor()) == (event.id, event.id), "the person's and the system's events are marked as handled"
+    warm(record.root)
+
+

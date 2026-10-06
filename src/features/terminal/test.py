@@ -45,7 +45,7 @@ def test_a_poll_after_the_last_line_gets_only_the_newer_ones():
     assert polled({"level": "everything-and-more"}).code == 400, "a level the terminal does not know is refused"
 
 
-def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch):
+def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch, tmp_path):
     from runner import engine as engine_module
     from runner.engine import Engine
     from providers import DRIVERS
@@ -93,6 +93,29 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     assert (lines[-1], b"!/effort high" in typed, "/effort high" in pending()) == (b"/effort high", False, False), \
         "a line starting with / is a command for the agent: typed as it is, and not waited on as a shell command"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
+    import os
+    import pty
+    import threading
+    from types import SimpleNamespace
+    import agents.screen as screen
+    from engine import runtime
+    root = tmp_path / ".journal"
+    shown = runtime.session_file(root, "claude-3", screen.SCREEN)
+    shown.parent.mkdir(parents=True)
+    shown.write_bytes(b"hello from the agent")
+    master, slave = pty.openpty()
+    out_read, out_write = os.pipe()
+    monkeypatch.setattr(screen.sys, "stdin", SimpleNamespace(fileno=lambda: slave))
+    monkeypatch.setattr(screen.sys, "stdout", SimpleNamespace(fileno=lambda: out_write))
+    typed = []
+    monkeypatch.setattr(screen.typist, "send", lambda root, session, keys: typed.append(keys) or True)
+    assert "no session ghost" in screen.attach(root, "ghost"), "a session that never printed cannot be attached to"
+    threading.Timer(0.3, lambda: os.write(master, b"ls")).start()
+    threading.Timer(0.8, lambda: os.write(master, screen.DETACH)).start()
+    left = screen.attach(root, "claude-3")
+    assert os.read(out_read, 4096) == b"hello from the agent", "what the agent printed is shown on arrival"
+    assert typed and typed[0].startswith(b"ls"), "keys typed while attached reach the agent"
+    assert "left session claude-3" in left, "the detach key leaves the session running"
 
 
 def test_the_worker_stops_on_request_or_signal_reloads_when_its_session_moves_and_a_failing_check_stops_nothing(monkeypatch):
