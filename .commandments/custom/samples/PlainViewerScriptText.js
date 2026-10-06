@@ -14,6 +14,9 @@ const moment = {line: "When a moment comes up"};
 const trigger = {label: "Trigger when"};
 
 // @righteous PlainViewerScriptTextDetector
+const links = {title: "Assigned to"};
+
+// @righteous PlainViewerScriptTextDetector
 const option = {label: "A word appears anywhere", hint: "The agent is only warned."};
 
 // @righteous PlainViewerScriptTextDetector

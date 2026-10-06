@@ -21,6 +21,8 @@
         <!-- @righteous PlainViewerTextDetector -->
         <RadioGroup label="Trigger when" />
         <!-- @righteous PlainViewerTextDetector -->
+        <LinkList label="Linked by" />
+        <!-- @righteous PlainViewerTextDetector -->
         <Btn title="Copy the link with a short description" />
         <!-- @righteous PlainViewerTextDetector -->
         <FormField label="What the agent is doing" />
