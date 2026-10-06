@@ -19,5 +19,5 @@ class HandedRowsCloseOnlyThroughTheirHelper(ActionInterceptor):
 
 class HandedRowsStayAssigned(ActionInterceptor):
     def intercept(self, feature_context: Context, controller, n: int, **args) -> None:
-        if "assigned" in args:
+        if {"assigned", "pending"} & args.keys():
             keep_with_its_helper(controller, n)

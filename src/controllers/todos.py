@@ -29,7 +29,8 @@ class Todos(Prioritised, Controller):
 
     @action
     def complete(self, n: int, how: str = "", **data):
-        return super().complete(n, how, **{"pending": None, **data})
+        data.setdefault("pending", None)
+        return super().complete(n, how, **data)
 
     @action
     def reopen(self, n: int, why: str):
