@@ -291,6 +291,11 @@ def test_stopping_a_service_stops_every_process_it_forked():
     manager.one(ServiceSpec(id="busy.web", plugin="busy", service="web", run=["true"], when="echo none here; exit 1", **files_for(record.root, "busy.web")))
     assert json.loads(status_file(record.root, "busy.web").read_text())["state"] == "not needed", \
         "a restart, as after a plugin upgrade, asks the when-command again instead of keeping the old answer"
+    stuck = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
+    status_file(record.root, "stuck.web").write_text(json.dumps({"state": "starting", "keeper": stuck.pid, "pgid": stuck.pid}))
+    manager.one(ServiceSpec(id="stuck.web", plugin="stuck", service="web", run=["true"], when="exit 1", **files_for(record.root, "stuck.web")))
+    assert (stuck.wait(5) is not None, json.loads(status_file(record.root, "stuck.web").read_text())["state"]) == (True, "not needed"), \
+        "a service already running is stopped once its when-command says it is not needed"
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
