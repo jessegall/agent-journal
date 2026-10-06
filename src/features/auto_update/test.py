@@ -170,13 +170,19 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
 def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from controllers.types import Notifications
     from features.auto_update.announcing import announce
+    from install import LEGACY_COPY_MARKER
     record = fresh()
     announce(record.root, "1.0.0")
+    copy_note = record.root / "runtime" / LEGACY_COPY_MARKER
+    copy_note.parent.mkdir(parents=True, exist_ok=True)
+    copy_note.write_text(".journal/attic/before-update-1.0.0-123")
     assert announce(record.root, "1.0.1") == "1.0.1"
     from engine.runtime import default_env
     from engine.record import Record
     notified = [n for n in Notifications(Record(record.root, default_env(record.root))).rows.every() if n.title == "Journal updated to 1.0.1"]
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
+    assert ".journal/attic/before-update-1.0.0-123" in notified[0].brief and not copy_note.exists(), \
+        "the update notice names the copy of legacy managed files once"
 
 
 def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypatch):

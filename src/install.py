@@ -35,6 +35,7 @@ KEPT_BUILDS = 2
 KEPT_COPIES = 1
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
 MANAGED = "managed-files.json"
+LEGACY_COPY_MARKER = "managed-update-copy"
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
@@ -48,7 +49,7 @@ def managed_paths(project: Path, root: Path) -> set[Path]:
     paths = {path for path in code(root).rglob("*") if path.is_file() and not path.is_symlink()}
     for home in (".agents/skills", ".claude/skills"):
         folder = project / home
-        paths.update(path for skill in folder.glob("journal-*") if skill.is_dir() and not skill.is_symlink()
+        paths.update(path for skill in folder.glob("journal*") if skill.is_dir() and not skill.is_symlink()
                      for path in skill.rglob("*") if path.is_file() and not path.is_symlink())
     for home, extension in ((".claude/agents", "md"), (".codex/agents", "toml")):
         paths.update(path for path in (project / home).glob(f"*.{extension}") if path.is_file() and path.stem in
@@ -92,16 +93,34 @@ def remember_managed(project: Path, root: Path) -> None:
 def changed_managed(project: Path, root: Path) -> list[Path]:
     target = root / MANAGED
     if not target.is_file():
-        if not code(root).is_dir():
-            return []
-        return sorted(path for path in managed_paths(project, root) if path.is_file() and
-                      (path.is_relative_to(root) or managed_bytes(path)))
+        return []
     remembered = json.loads(target.read_text())
     changed = {project / name for name, digest in remembered.items()
                if not (project / name).is_file() or managed_hash(project / name) != digest}
     changed.update(path for path in managed_paths(project, root)
                    if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
     return sorted(changed)
+
+
+def copy_legacy_managed(project: Path, root: Path) -> list[str]:
+    if (root / MANAGED).is_file():
+        return []
+    existing = sorted(managed_paths(project, root))
+    if not existing or not code(root).is_dir():
+        return []
+    attic = root / "attic"
+    attic.mkdir(parents=True, exist_ok=True)
+    version = version_in(code(root), "unknown")
+    copy = attic / f"before-update-{version}-{int(time.time() * 1000)}"
+    for path in existing:
+        destination = copy / path.relative_to(project)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, destination)
+    location = copy.relative_to(project).as_posix()
+    marker = root / "runtime" / LEGACY_COPY_MARKER
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(location)
+    return [f"Managed files from before this update were copied to {location}"]
 
 
 def archive_changed(project: Path, root: Path, changed: list[Path]) -> Path:
@@ -270,6 +289,7 @@ def put_on_path(bin_: Path) -> str:
 
 def install(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
+    copied = copy_legacy_managed(project, root)
     changed = changed_managed(project, root)
     if changed and not yes:
         return [changed_message(project, changed)]
@@ -279,7 +299,7 @@ def install(project: Path, root: Path | None = None, yes: bool = False) -> list[
     done = configure(project, root)
     retire(root)
     remember_managed(project, root)
-    return done
+    return copied + done
 
 
 def old_git_hook(project: Path) -> list[str]:
@@ -396,6 +416,7 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             return ["another upgrade of this journal is running; this one stepped aside"]
+        copied = copy_legacy_managed(project, root)
         changed = changed_managed(project, root)
         if changed and not yes:
             return [changed_message(project, changed)]
@@ -403,7 +424,7 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[
             archive_changed(project, root, changed)
         mark.touch()
         try:
-            return upgrading(project, root)
+            return copied + upgrading(project, root)
         finally:
             mark.unlink(missing_ok=True)
 
