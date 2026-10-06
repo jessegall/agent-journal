@@ -134,7 +134,7 @@ await runScenarios(
         async "the To-dos tab lists the lanes, and the board moves a card to another lane"(page) {
             await home(page);
             await tab(page, "To-dos");
-            await page.getByRole("heading", {name: "Held · 1"}).waitFor({timeout: SHOWN});
+            await page.getByRole("heading", {name: "Held · 2"}).waitFor({timeout: SHOWN});
             await page.getByText("blocked: waits for the hinges").waitFor();
             await page.getByRole("radio", {name: "Board"}).click();
             await page.getByRole("button", {name: "Everything you can do with To-do 3"}).click();
