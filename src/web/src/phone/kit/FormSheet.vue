@@ -43,38 +43,46 @@ function closed() {
                 <template v-if="field.options">
                     <div class="form-field">
                         <span :id="`form-${field.key}`" class="form-label">{{ field.label }}</span>
-                        <Segmented :options="field.options" :value="values[field.key]" fill :aria-labelledby="`form-${field.key}`" @pick="values[field.key] = $event" />
+                        <Segmented
+                            :options="field.options"
+                            :value="values[field.key]"
+                            fill
+                            :aria-labelledby="`form-${field.key}`"
+                            @pick="values[field.key] = $event"
+                        />
                     </div>
                 </template>
-                <label v-else class="form-field">
-                    <span class="form-label">{{ field.label }}</span>
-                    <template v-if="field.area">
-                        <textarea
-                            v-model="values[field.key]"
-                            class="form-input form-area"
-                            rows="4"
-                            :placeholder="field.placeholder || ''"
-                        />
-                    </template>
-                    <template v-else>
-                        <input
-                            v-model="values[field.key]"
-                            class="form-input"
-                            :placeholder="field.placeholder || ''"
-                            :list="field.choices ? `form-${field.key}` : null"
-                            :autocapitalize="field.verbatim ? 'off' : null"
-                            :autocorrect="field.verbatim ? 'off' : null"
-                            :spellcheck="field.verbatim ? 'false' : null"
-                        />
-                        <template v-if="field.choices">
-                            <datalist :id="`form-${field.key}`">
-                                <template v-for="choice in field.choices" :key="choice">
-                                    <option :value="choice" />
-                                </template>
-                            </datalist>
+                <template v-else>
+                    <label class="form-field">
+                        <span class="form-label">{{ field.label }}</span>
+                        <template v-if="field.area">
+                            <textarea
+                                v-model="values[field.key]"
+                                class="form-input form-area"
+                                rows="4"
+                                :placeholder="field.placeholder || ''"
+                            />
                         </template>
-                    </template>
-                </label>
+                        <template v-else>
+                            <input
+                                v-model="values[field.key]"
+                                class="form-input"
+                                :placeholder="field.placeholder || ''"
+                                :list="field.choices ? `form-${field.key}` : null"
+                                :autocapitalize="field.verbatim ? 'off' : null"
+                                :autocorrect="field.verbatim ? 'off' : null"
+                                :spellcheck="field.verbatim ? 'false' : null"
+                            />
+                            <template v-if="field.choices">
+                                <datalist :id="`form-${field.key}`">
+                                    <template v-for="choice in field.choices" :key="choice">
+                                        <option :value="choice" />
+                                    </template>
+                                </datalist>
+                            </template>
+                        </template>
+                    </label>
+                </template>
             </template>
             <div class="form-controls">
                 <Btn :kind="danger ? 'danger' : 'primary'" :disabled="!ready" @click="submit(close)">{{ button }}</Btn>
