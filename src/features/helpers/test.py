@@ -72,6 +72,13 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
         "a to-do one helper holds is not handed to another"
     assert "only a helper marks" in refused(lambda: helpers.done(finished, "x")), "the agent that dispatched a helper closes its own to-dos itself"
     assert "is not running" in refused(lambda: helpers.say(1, "hello")), "a helper that is not running cannot be told anything"
+    from engine.sessions import Sessions
+    from features.agent_sessions.launch import running_in, stop_in, tell_in
+    Sessions(record.root).bind("claude-8", "helper-env", provider="claude")
+    assert (running_in(record, "helper-env"), running_in(record, "elsewhere"), tell_in(record, "elsewhere", "claude", "hi")) == ("claude-8", "", False), \
+        "an environment with an agent seated in it is running, and nothing can be typed into one without"
+    stop_in(record, "helper-env")
+    stop_in(record, "elsewhere")
     mine = todos.create("hand this on").n
     helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(mine))
     zed = Helpers(Record(record.root, helpers.load(2).environment), actor=AGENT)

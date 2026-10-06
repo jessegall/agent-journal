@@ -423,6 +423,7 @@ def test_a_connected_phone_keeps_the_tunnel_wanted(served):
 
 def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
     record, base = served
+    assert Phones(record, actor=SYSTEM)._notify() is None, "with no phone connected there is nobody to push to"
     made = Phones(record, actor=USER).connect(7)
     assert len(made["short"]) == 9 and made["short"][4] == "-", "a short code reads as two groups of four"
     pairing = call(base, "/p/pair", {"code": made["short"].lower().replace("-", " "), "device": "iPhone"})
@@ -442,6 +443,11 @@ def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
     assert [call(base, "/p/", key=key).status, call(base, "/p/nowhere/page", key=key).status] == [200, 404], "the page opens at its own address and nowhere else"
     assert [call(base, path, {}, key=key).status for path in ("/p/", "/p/nothing/here")] == [404, 404], "a write to no action finds none"
     assert call(base, "/p/message", {"text": "x" * 20000}, key=key).status == 413, "a write too large to be a note is refused"
+    from controllers.types import Docs, Notices
+    note, task = Docs(record, actor=USER).create("A note", brief="words"), Notices(record, actor=SYSTEM).create("A notice")
+    assert [call(base, "/p/comment", {"ref": note.ref, "text": " "}, key).status, call(base, "/p/comment", {"ref": task.ref, "text": "hm"}, key).status] == [422, 422], \
+        "a comment on a row needs words, and a row that takes no comments takes none from the phone"
+    assert [call(base, "/p/auto", {"on": flag}, key).status for flag in (False, True)] == [201, 201], "the phone switches auto mode on and off"
     assert [call(base, "/p/arrange", {"cards": ["nothing"]}, key).status, call(base, "/p/switch", {"journal": "/nowhere", "environment": "x"}, key).status,
             call(base, "/p/start", {"journal": "/nowhere", "environment": "x"}, key).status, call(base, "/p/push", {"endpoint": "http://example.com"}, key).status] == [422] * 4, \
         "a phone cannot arrange cards that do not exist, switch to or start an environment it cannot find, or subscribe to a push service it does not trust"

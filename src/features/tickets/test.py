@@ -344,6 +344,17 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert across.merge(spanning.n).completed and "site work" in site("log", "-1", "--format=%s").stdout, \
         "journal ticket merge merges each repository it changed, skips the untouched one, and closes it"
 
+    second = tickets.bind(tickets.create("Light mode", board=board.n).n)
+    git("switch", "-q", "-c", f"worktree-{second.work_environment}", home)
+    (project / "clash.txt").write_text("the ticket's version\n")
+    git("add", "clash.txt")
+    git("commit", "-q", "-m", "the ticket's change")
+    git("switch", "-q", home)
+    (project / "clash.txt").write_text("the board's version\n")
+    git("add", "clash.txt")
+    git("commit", "-q", "-m", "the board's change")
+    assert "was not merged into" in refused(lambda: tickets.merge(second.n)), "a ticket whose branch conflicts with the board's is not merged, and says why"
+
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
     from resources.base import AGENT
@@ -448,6 +459,10 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
+    assert "no plan waiting for you to approve" in refused(lambda: tickets.approve_plan(ticket.n)), "a plan that is already approved is not approved again"
+    Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status="ready")
+    tickets.approve_plan(ticket.n)
+    assert plans.load(plan.n).status == APPROVED, "you approve the plan from its ticket's card as well"
     from features.plans.controller import ACTIVE, WAITING
     Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status=WAITING)
     drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
@@ -608,8 +623,20 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     record.set_setting("tickets", {"running": 1})
     assert "no agent running to look at" in refused(lambda: tickets.screen(second.n)), "a queued ticket has no screen to show"
     assert "no agent running to tell" in refused(lambda: tickets.tell(second.n, "hello")), "a queued ticket has no agent to tell"
+    from types import SimpleNamespace
+    typed = []
+    with monkeypatch.context() as scoped:
+        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: typed.append(text) or bool(text)))
+        tickets.tell(second.n, "  hello  ")
+        assert (typed, "told" in tickets.load(second.n).data) == (["hello"], True), "a note to a ticket's agent is typed into its terminal and remembered"
+        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: False))
+        assert "stayed in its input box" in refused(lambda: tickets.tell(second.n, "again")), "a note the terminal would not take says its agent may be stuck"
     assert "no provider 'nowhere'" in refused(lambda: tickets.start(fourth.n, provider="nowhere")), "a provider the journal does not know is refused before anything starts"
     assert "never started" in refused(lambda: tickets.merge(fifth.n)), "a ticket that never started has no branch to merge"
+    from commands.http import dispatch
+    choices = dispatch("GET", f"/api/{record.env}/ticket/{first.n}/choices", record.root, {}, {}).body
+    assert ([found["label"] for found in choices["board"]], [found["key"] for found in choices["stage"]]) == (["Queue"], ["Ideas", "Building"]), \
+        "a ticket's form offers the boards and the stages of its own board"
     from controllers.base import COMMANDS
     Todos(Record(record.root, tickets.load(fourth.n).work_environment), actor=AGENT).create("Draw the dark theme")
     held = COMMANDS["ticket"]["todos"](tickets)
