@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.249.7 — Enter always sends a message typed into Codex
+
+**A message typed into Codex is sent, not left in its input box.** While Codex was busy it could read the typed text
+and the Enter after it in one go, take them for a paste, and turn the Enter into a new line; a message from you or a
+ticket then sat unsent with a new line under it. The journal now waits until the text shows in Codex's input box
+before it presses Enter, and checks that Codex took the message, either as a new turn or queued for after its next
+tool call, pressing Enter again when it did not. Nothing to do: it applies once the journal is upgraded.
+
 ## 2.249.6 — a project path with a space works, and a killed server makes way
 
 **A project whose path has a space in it works.** The hook commands were written without quotes, so the shell cut the

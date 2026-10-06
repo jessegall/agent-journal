@@ -489,6 +489,7 @@ class CodexDriver(Driver):
     TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
     READY = b"AskCodextodoanything"
     BUSY = b"esctointerrupt"
+    ENTER_CAN_MISS = True
     ASKING = (b"Wouldyouliketorun", b"Yes,proceed", b"Allowcommand", b"Approve")
     ASKED_COMMAND = re.compile(r"Would you like to run the following command\?.*\$ (.+?)\s*›\s*1\.\s*Yes, proceed", re.S)
     ALLOW = b"y"
