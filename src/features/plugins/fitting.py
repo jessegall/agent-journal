@@ -16,6 +16,7 @@ from features.parts import AgentContext, Handler
 from features.plugins.declared import Fits, called
 from features.plugins.lifecycle import fetched
 from features.plugins.paths import home
+from features.plugins.preview import RUNS_AS, preview_rows
 from features.suggestions.controller import INSTALL, OPEN_SUGGESTIONS, Suggestions
 from resources.base import Refused, SYSTEM, USER
 
@@ -39,12 +40,22 @@ class Offer(Loaded):
     title: str = ""
     description: str = ""
     fits: Fits = field(default_factory=Fits)
+    commit: str = ""
+    commands: tuple[str, ...] = ()
 
     def suggestion(self) -> str:
         return f"Install the {self.title} plugin"
 
+    def brief(self, found: list[str]) -> str:
+        commands = "\n".join(f"- {command}" for command in self.commands)
+        return f"""This project has {', '.join(found)}. The {self.title} plugin describes itself in its own words: "{self.description}"
+
+{RUNS_AS}
+
+{commands}"""
+
     def button(self) -> dict:
-        return {"label": YES, "type": "plugin", "action": "install", "body": {"source": self.source, "yes": True}}
+        return {"label": YES, "type": "plugin", "action": "install", "body": {"source": self.source, "ref": self.commit, "yes": True}}
 
 
 def written_in(names: list[str]) -> set[str]:
@@ -67,7 +78,8 @@ def offer_of(root: Path, listed: Listed) -> list[Offer]:
     try:
         with fetched(root, listed.source, "") as stage:
             manifest = stage.manifest
-            return [Offer(listed.source, listed.title or manifest.heading, manifest.description, manifest.fits)]
+            commands = tuple(row.line() for row in preview_rows(manifest))
+            return [Offer(listed.source, listed.title or manifest.heading, manifest.description, manifest.fits, stage.commit, commands)]
     except Refused:
         return []
 
@@ -107,8 +119,7 @@ def suggest(record, offers: list[Offer]) -> None:
             continue
         if len(suggestions.rows.standing()) >= OPEN_SUGGESTIONS:
             return
-        suggestions.create(offer.suggestion(), brief=f"This project has {', '.join(found)}. The {offer.title} plugin {offer.description}.",
-                           plugin=offer.source, buttons=[offer.button()])
+        suggestions.create(offer.suggestion(), brief=offer.brief(found), plugin=offer.source, buttons=[offer.button()])
 
 
 def refresh(record) -> None:
@@ -121,9 +132,11 @@ def refresh(record) -> None:
 
 
 def mark_failed(plugins, source: str, why: str) -> None:
+    if plugins.actor != USER:
+        return
     agents = Agents(plugins.record, actor=SYSTEM)
     row = agents.primary()
-    if plugins.actor != USER or not row:
+    if not row:
         return
     agents.card(row.n, label=f"Could not install the plugin from {source}", detail=why, icon="warn", tone="warn")
 
