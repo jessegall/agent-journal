@@ -65,7 +65,7 @@ def written_in(names: list[str]) -> set[str]:
 def official(root: Path) -> list[Listed]:
     staging = home(root) / f".staging-{secrets.token_hex(4)}"
     try:
-        if fetch(staging, "")[1]:
+        if fetch(staging)[1]:
             return []
         return [Listed.from_json(one) for one in json.loads((staging / LISTED).read_text())]
     except (OSError, ValueError):
