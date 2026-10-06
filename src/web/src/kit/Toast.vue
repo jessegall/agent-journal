@@ -1,7 +1,7 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
 
-const props = defineProps({toast: {type: Object, default: null}, lasts: {type: Number, default: 8000}});
+const props = defineProps({toast: {type: Object, default: null}, lasts: {type: Number, default: 8000}, top: Boolean});
 const emit = defineEmits(["done"]);
 const hovered = ref(false);
 let timer = 0;
@@ -27,7 +27,7 @@ function act() {
 <template>
     <Transition name="toast">
         <template v-if="toast">
-            <div class="toast" role="status" @mouseenter="hovered = true" @mouseleave="((hovered = false), wait())">
+            <div :class="['toast', {top}]" role="status" @mouseenter="hovered = true" @mouseleave="((hovered = false), wait())">
                 <span>{{ toast.text }}</span>
                 <template v-if="toast.action">
                     <button type="button" class="action" @click="act">{{ toast.label }}</button>
@@ -53,6 +53,12 @@ function act() {
     color: var(--text-2);
     font-size: 13px;
     transform: translateX(-50%);
+}
+
+.toast.top {
+    top: calc(12px + env(safe-area-inset-top));
+    bottom: auto;
+    z-index: 90;
 }
 
 .action {

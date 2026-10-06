@@ -1,7 +1,11 @@
 <script setup>
 import CloseButton from "./CloseButton.vue";
-import {onUnmounted, ref, watch} from "vue";
+import {onUnmounted, ref, useId, watch} from "vue";
 import {closing} from "../composables/closing.js";
+import {useTrap} from "../composables/trap.js";
+
+const ARMED_AFTER_MS = 500;
+const NUDGE_MS = 400;
 
 const props = defineProps({
     title: {type: String, default: ""},
@@ -13,10 +17,30 @@ const props = defineProps({
     bare: Boolean,
     open: {type: Boolean, default: null},
     closable: {type: Boolean, default: true},
+    modal: Boolean,
 });
-const emit = defineEmits(["close", "dismiss"]);
+const emit = defineEmits(["close", "dismiss", "escape"]);
 const {visible, close, closed} = closing(emit, props);
 const body = ref(null);
+const panel = ref(null);
+const heading = ref(null);
+const headingId = useId();
+const nudged = ref(false);
+const openedAt = Date.now();
+
+if (props.modal) useTrap(panel, () => emit("escape"), heading);
+
+function outside() {
+    if (!props.modal) return props.closable && close();
+    nudged.value = true;
+    setTimeout(() => (nudged.value = false), NUDGE_MS);
+}
+
+function unarmed(event) {
+    if (!props.modal || Date.now() - openedAt >= ARMED_AFTER_MS || ![" ", "Enter"].includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+}
 const toBottom = () => body.value && (body.value.scrollTop = body.value.scrollHeight);
 const watcher = new MutationObserver(toBottom);
 
@@ -32,11 +56,19 @@ onUnmounted(() => watcher.disconnect());
 
 <template>
     <Transition name="dialog" appear @after-leave="closed">
-        <div v-if="visible" :class="['dialog', {large}]" @click.self="closable && close()">
-            <section :class="['dialog-panel', {fixed: !fits, small, tall, large}]" role="dialog" :aria-label="title">
+        <div v-if="visible" :class="['dialog', {large}]" @click.self="outside">
+            <section
+                ref="panel"
+                :class="['dialog-panel', {fixed: !fits, small, tall, large, nudged}]"
+                role="dialog"
+                :aria-modal="modal || undefined"
+                :aria-label="modal ? undefined : title"
+                :aria-labelledby="modal ? headingId : undefined"
+                @keydown.capture="unarmed"
+            >
                 <template v-if="!bare">
                     <header class="dialog-head">
-                        <h3>{{ title }}</h3>
+                        <h3 :id="headingId" ref="heading" :tabindex="modal ? -1 : undefined">{{ title }}</h3>
                         <template v-if="closable">
                             <CloseButton @click="close" />
                         </template>
@@ -65,6 +97,23 @@ onUnmounted(() => watcher.disconnect());
     justify-content: center;
     padding: 32px;
     background: rgba(0, 0, 0, 0.62);
+}
+
+.dialog-panel.nudged {
+    animation: nudge 0.28s ease;
+}
+
+@keyframes nudge {
+    40% {
+        transform: scale(1.015);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialog-panel.nudged {
+        animation: none;
+        outline: 2px solid var(--accent);
+    }
 }
 
 .dialog-panel {
@@ -164,6 +213,7 @@ onUnmounted(() => watcher.disconnect());
     margin: 0;
     font-size: 13.5px;
     font-weight: 600;
+    outline: none;
 }
 
 .dialog-body {
