@@ -28,7 +28,7 @@ function send() {
         />
         <div class="actions">
             <Btn small @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" small :disabled="!ready" @click="send">Move it</Btn>
+            <Btn kind="primary" small :disabled="!ready" @click="send">Move</Btn>
         </div>
     </Dialog>
 </template>

@@ -6,12 +6,10 @@ import {rowsOf} from "../domain/plans.js";
 import {kindOf} from "./kinds.js";
 import {loadSpec} from "./manifest.js";
 import ActionSheet from "./kit/ActionSheet.vue";
-import FormSheet from "./kit/FormSheet.vue";
+import PhoneNew from "./PhoneNew.vue";
 import ItemRow from "./kit/ItemRow.vue";
 import ListScreen from "./kit/ListScreen.vue";
-import NewButton from "./kit/NewButton.vue";
 import {newestFirst} from "./kit/listed.js";
-import {toast} from "./kit/toast.js";
 import PhoneFamily from "./places/PhoneFamily.vue";
 import PhoneRowActions from "./places/PhoneRowActions.vue";
 import PhoneShelves from "./places/PhoneShelves.vue";
@@ -29,8 +27,8 @@ const emit = defineEmits(["back", "open"]);
 const kind = computed(() => kindOf(props.target));
 const list = ref(null);
 const acting = ref(null);
+const creating = ref(null);
 const choosing = ref(false);
-const making = ref(false);
 const spec = ref(false);
 const counts = ref({open: 0, all: 0});
 const closed = ref([]);
@@ -112,26 +110,7 @@ function changed() {
     return list.value?.reload();
 }
 
-async function make({title, abstract, brief}) {
-    try {
-        const made = await api.create(props.target, {title, abstract, brief});
-        toast(`Added ${kind.value.one.toLowerCase()} ${made.n}`);
-        changed();
-    } catch (error) {
-        toast(error.message);
-    }
-}
-
 const lines = (row) => linesOf(kind.value, row, todos.value);
-const newFields = computed(() => [
-    {key: "title", label: "Title", placeholder: `${kind.value.one} title, at most 80 characters`, required: true},
-    ...(props.target === "collection"
-        ? []
-        : [
-              {key: "abstract", label: "One short line about it", placeholder: "Optional"},
-              {key: "brief", label: "Details", placeholder: "Extra details, as long as they need to be", area: true},
-          ]),
-]);
 
 onMounted(async () => {
     count();
@@ -150,7 +129,7 @@ onMounted(async () => {
         :keep="keep"
         :order="ORDERS[order].order"
         @back="emit('back')"
-        @act="making = true"
+        @act="creating.open()"
     >
         <template #top>
             <template v-if="target === 'doc' && shelves.length">
@@ -195,7 +174,7 @@ onMounted(async () => {
         <template #foot>
             <div class="kind-foot">
                 <template v-if="makes">
-                    <NewButton :label="kind.make" @press="making = true" />
+                    <PhoneNew ref="creating" :type="target" @made="changed" />
                 </template>
                 <template v-else>
                     <span />
@@ -209,9 +188,6 @@ onMounted(async () => {
     </template>
     <template v-if="choosing">
         <ActionSheet :title="`Order the ${kind.many.toLowerCase()}`" :about="kind.many" :actions="orders" @close="choosing = false" />
-    </template>
-    <template v-if="making">
-        <FormSheet :title="kind.make" :fields="newFields" button="Add" @close="making = false" @submit="make" />
     </template>
 </template>
 
