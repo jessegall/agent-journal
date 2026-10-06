@@ -601,3 +601,56 @@ def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back
     monkeypatch.setattr(serve.os, "_exit", exits.append)
     serve.warmed(fresh().root)
     assert exits == [1], "warming runs beside the server, so a failure in it must end the process for the supervisor to roll back"
+
+
+def test_one_engine_runs_per_environment_and_an_orphan_or_a_stale_build_ends(tmp_path, monkeypatch):
+    from runner import engines
+    root = tmp_path / ".journal"
+    (runtime.folder(root)).mkdir(parents=True)
+    first, second = engines.Engines(root, "e"), engines.Engines(root, "e")
+    lock = runtime.folder(root) / "engines-e.lock"
+    with lock.open("a") as one, lock.open("a") as two:
+        assert first.owned(one) and not second.owned(two), "a second engine for the environment never owns it, so it never types"
+    orphan = engines.Engines(root, "e")
+    orphan.parent = -1
+    assert not orphan.going(), "an engine whose parent is gone is an orphan"
+    began = time.time()
+    with lock.open("a") as held:
+        engines.fcntl.flock(held, engines.fcntl.LOCK_EX)
+        orphan.run(threading.Event())
+    assert time.time() - began < 5, "an orphan ends even while another engine holds the environment"
+    monkeypatch.setattr(engines, "ZIPPED", True)
+    monkeypatch.setattr(engines, "build_file", lambda _root: Path("/elsewhere/other.pyz"))
+    assert not engines.current(root) and not first.going(), "an engine on a replaced build ends"
+
+
+def test_the_supervisor_runs_one_child_per_environment_and_ends_the_unwanted_and_the_dead(tmp_path, monkeypatch):
+    from runner import engines
+    root = tmp_path / ".journal"
+    (runtime.folder(root)).mkdir(parents=True)
+    stray = subprocess.Popen([sys.executable, "-c", f"x = {engines.CHILD!r} + {str(root)!r}; import time; time.sleep(60)"])
+    kept = subprocess.Popen([sys.executable, "-c", f"x = {engines.CHILD!r} + {str(root)!r} + {str(engines.CODE)!r}; import time; time.sleep(60)"])
+    try:
+        time.sleep(1)
+        assert {stray.pid, kept.pid} >= set(engines.leftovers(root)) and stray.pid in engines.leftovers(root) and kept.pid not in engines.leftovers(root), \
+            "an engine left by an older build is found by its command line, one on this build is not"
+        engines.Children(root)
+        assert stray.wait(10) is not None and kept.poll() is None, "a new supervisor ends the leftovers of an older build and only those"
+        spawned = []
+        wants = {"a", "b"}
+        monkeypatch.setattr(engines.Children, "wanted", lambda self: wants)
+        monkeypatch.setattr(engines.Children, "spawn", lambda self, env: spawned.append(env) or subprocess.Popen(["sleep", "60"]))
+        children = engines.Children(root)
+        children.tick()
+        children.tick()
+        assert sorted(spawned) == ["a", "b"], "two ticks start one engine per environment"
+        wants.discard("b")
+        children.running["a"].kill()
+        children.running["a"].wait(10)
+        children.tick()
+        assert sorted(spawned) == ["a", "a", "b"] and list(children.running) == ["a"], "an environment nobody wants loses its engine and a dead engine is started again"
+        children.stop()
+        assert not children.running
+    finally:
+        kept.kill()
+        kept.wait(10)
