@@ -92,6 +92,9 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     with pytest.raises(KeyboardInterrupt):
         recording.main([str(record.root), str(tmp_path / "watching")])
     assert polls == [1], "the recorder polls the journal, then waits, until it is stopped"
+    from features.session_recording.demo import readable
+    (tmp_path / "picture.bin").write_bytes(b"\xff\xfe\x00")
+    assert readable(tmp_path / "picture.bin") == "", "a file that is not text is read as nothing"
 
 
 REPOSITORY = Path(__file__).resolve().parents[3]

@@ -124,6 +124,8 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert [(entry["title"], entry["status"], entry["phase"], entry["phases"], entry["rows"], entry["done"]) for entry in plans_shown(record)] == \
         [("Port everything", "active", "Third", 3, 5, 4), ("Another", "building", "", 0, 0, 0)], "the viewer's plan list shows each plan with its phase and how many of its rows are done, one still being written included"
     from features.plans.handlers import doable
+    from types import SimpleNamespace
+    assert doable(record, SimpleNamespace(current_phase=None)) == "", "a plan with no phase in hand has nothing to take next"
     assert doable(record, by_agent.load(plan.n)) == "take to-do 4", "a plan's next step names the to-dos ready to take"
     todos.start(4)
     assert doable(record, by_agent.load(plan.n)) == "go on with to-do 4", "and the ones already in hand"
