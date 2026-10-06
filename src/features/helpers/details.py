@@ -36,7 +36,7 @@ class HelpersDetails(FeatureDetails):
         packs its environment away.
 
         --todos <n>,<n> hands the helper rows of your own list: they are its alone, so nobody else
-        starts or closes them. The helper marks one with journal helper done <n> --how "<what
+        starts or closes them. The helper marks one with journal helper done <n> "<what
         landed>": it shows as done, waiting for its merge, and closes once its worktree is taken.
         Stopping the helper, or its turn ending in an error, gives back the rows it has not
         finished; finishing it gives back the rest.

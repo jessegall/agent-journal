@@ -59,7 +59,7 @@ def handed_over(todos: list[Todo]) -> str:
         return ""
     listed = "\n".join(f"- to-do {t.n}: {t.title}" + (f" ({t.brief})" if t.brief else "") for t in todos)
     return (f"These to-dos of the agent that dispatched you are yours alone:\n{listed}\n"
-            f"When a commit of yours holds one, mark it with journal helper done <n> --how \"<what landed>\": "
+            f"When a commit of yours holds one, mark it with journal helper done <n> \"<what landed>\": "
             f"it shows as done and closes once your work is taken. ")
 
 
