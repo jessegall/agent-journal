@@ -35,7 +35,7 @@ const hot = (place) => Boolean(place.type && counts.value[place.type]?.unread);
     <div class="screen">
         <NavBar title="Everything" :under="under" />
         <div class="screen-scroll" data-scroller @scroll.passive="scrolled">
-            <BigTitle title="Everything" :sub="`Every place in ${connection.project}`" />
+            <BigTitle title="Everything" :sub="`Everything in ${connection.project}, in one list`" />
             <button type="button" class="everything-search" @click="emit('open', 'search:')">
                 <Icon name="search" :size="17" />
                 <span>Search everything in {{ connection.environment }}</span>

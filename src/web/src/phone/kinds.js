@@ -57,7 +57,7 @@ const KINDS = {
         many: "Agents",
         icon: "agents",
         intro: "The main agent and its helpers.",
-        description: "The main agent, its helpers, the family tree",
+        description: "The main agent and its helpers, and who started whom",
     },
     doc: {
         one: "Document",
@@ -66,7 +66,7 @@ const KINDS = {
         waiting: "New document",
         icon: "docs",
         intro: "Documents of the whole project: designs, briefs, notes.",
-        description: "Designs, briefs and notes, on shelves",
+        description: "Designs, briefs and notes, sorted into groups",
         make: "New document",
     },
     ticket: {
@@ -74,8 +74,8 @@ const KINDS = {
         word: "ticket",
         many: "Tickets",
         icon: "ticket",
-        intro: "Work for the board, each done by its own agent.",
-        description: "Work for the board, one agent each",
+        intro: "Tickets on the board. Each one is worked by its own agent.",
+        description: "Tickets on the board. Each one is worked by its own agent.",
         make: "New ticket",
     },
     trigger: {
@@ -83,8 +83,8 @@ const KINDS = {
         word: "trigger",
         many: "Triggers",
         icon: "bolt",
-        intro: "Words or moments that start something by themselves.",
-        description: "Words that start something by themselves",
+        intro: "Rules that start an action when you say a phrase or a time comes.",
+        description: "Rules that start an action when you say a phrase or a time comes",
         make: "New trigger",
     },
     sequence: {
