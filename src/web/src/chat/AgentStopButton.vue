@@ -35,8 +35,10 @@ async function stopped() {
             :aria-expanded="Boolean(anchor)"
             @click.stop="toggle"
         >
-            <Icon name="stop" />
             <template v-if="quiet">{{ label }}</template>
+            <template v-else>
+                <Icon name="stop" />
+            </template>
         </Btn>
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="280" :max-width="340" @click.stop @close="anchor = null">

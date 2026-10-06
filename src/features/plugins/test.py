@@ -450,3 +450,18 @@ def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_pa
                 "installed": "sh scan.sh"}
     made = rows.action("install")(repository(tmp_path, manifest, {"scan.sh": "echo '{\"settings\": {\"folders\": \"src\"}}'\n"}), yes=True)
     assert (rows.load(made.n).settings or {}).get("chosen") == {"folders": "src"}, "what the plugin found is chosen by the time the install is done"
+    from engine.events.agents import SessionStarted
+    from features.parts import AgentContext
+    from features.plugins.recommended import SuggestFittingPlugins
+    from features.suggestions.controller import Suggestions
+    from tests.kit import project_on
+    import features
+    repo = project_on("work")
+    (repo.project / "app.py").write_text("print('hi')\n")
+    subprocess.run(["git", "add", "app.py"], cwd=repo.project, capture_output=True, timeout=30)
+    row = Agents(repo.record, actor="system").by_session("claude-1")
+    for _ in range(2):
+        SuggestFittingPlugins().handle(AgentContext.of(features.FEATURES["plugins"], repo.record, row), SessionStarted())
+    suggested = [s for s in Suggestions(repo.record, actor="system").rows.every() if s.title == "Install the Code Commandments plugin"]
+    assert len(suggested) == 1 and "written in Python" in suggested[0].brief, \
+        "a project written in a language a known plugin judges is offered that plugin once, as a suggestion the user takes or leaves"
