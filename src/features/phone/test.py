@@ -427,7 +427,7 @@ def test_a_connected_phone_keeps_the_tunnel_wanted(served):
     assert wanted(record.root), "the share server and tunnel stay up while a phone is connected"
 
 
-def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
+def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served, monkeypatch):
     record, base = served
     assert Phones(record, actor=SYSTEM)._notify() is None, "with no phone connected there is nobody to push to"
     made = Phones(record, actor=USER).connect(7)
@@ -447,6 +447,10 @@ def test_the_short_code_pairs_and_the_page_can_live_on_the_home_screen(served):
     assert [read("/p/feed?before=soon"), read("/p/helper"), read("/p/helper?n=x"), read("/p/nothing"), read("/p/export/doc/9999"), read("/p/file/doc/9999/a.txt")] == \
         [400, 400, 400, 404, 404, 404], "a read that asks wrongly is told so, and one for a row or file the phone cannot reach finds nothing"
     assert [call(base, "/p/", key=key).status, call(base, "/p/nowhere/page", key=key).status] == [200, 404], "the page opens at its own address and nowhere else"
+    assert (call(base, "/p", key=key).status, read("/p/a/b/c/d")) == (200, 404), "the page is also found without its closing slash, and a read that names too much finds nothing"
+    from features.phone import routes as phone_routes
+    monkeypatch.setattr(phone_routes, "APP_DIR", Path("/nonexistent/app"))
+    assert (read("/p/feed"), call(base, "/p/", key=key).status, phone_routes.built()) == (200, 404, ""), "without the built page the phone still reads its feed and the page is not found"
     assert [call(base, path, {}, key=key).status for path in ("/p/", "/p/nothing/here")] == [404, 404], "a write to no action finds none"
     assert call(base, "/p/message", {"text": "x" * 20000}, key=key).status == 413, "a write too large to be a note is refused"
     from controllers.types import Docs, Notices

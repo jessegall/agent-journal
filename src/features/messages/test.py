@@ -165,6 +165,9 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
     assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "f", "index": 0, "final": True, "delta": "👍"}))
+    assert ("👍" in chat(), any("your message was only 👍, so it was not posted" in line for line in nudges(record))) == (False, True), \
+        "a message that is only a face is not posted, and the agent is told to react instead"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():

@@ -210,6 +210,14 @@ def test_a_skills_keyword_makes_the_agent_load_it():
     assert "journal-plans" in outstanding(record, agent), "and the skill is owed before the next tool call"
     require_named(record, agent, "nothing to see")
     assert outstanding(record, agent) == ["journal-plans"], "a text without a keyword asks for nothing"
+    folder = record.root.parent / ".agents" / "skills" / "journal-demo"
+    folder.mkdir(parents=True)
+    (folder / "SKILL.md").write_text('---\nname: journal-demo\ndescription: "A demo"\n---\n\n# Demo\n')
+    page = dispatch("GET", f"/api/{record.env}/skills/journal-demo", record.root, {}, {}).body
+    assert (page["description"], "# Demo" in page["text"]) == ("A demo", True), "a skill's own page carries its description and its text"
+    assert "journal-demo" in [row[SKILL.name] for row in dispatch("GET", f"/api/{record.env}/skills", record.root, {}, {}).body], "the Skills page lists it"
+    assert "its tool calls wait until the skill is loaded" in dispatch("POST", f"/api/{record.env}/skills/journal-demo/load", record.root, {}, {}).body["notice"], \
+        "its Load button asks the agent to load it and holds its tool calls until it has"
 
 
 def test_the_todos_skill_is_loaded_at_every_start_and_cannot_be_switched_off():

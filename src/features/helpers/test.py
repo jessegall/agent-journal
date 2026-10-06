@@ -89,6 +89,12 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     monkeypatch.setattr("features.helpers.controller.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
     assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
         "a helper that cannot be launched gives back the to-dos it was handed"
+    ghost = Helpers(record, actor=SYSTEM).create("Ghost job", name="Ghost", provider="claude", model="sonnet", environment="helper-env")
+    assert "is still running" in refused(lambda: helpers.complete(ghost.n)), "a helper whose agent still runs is stopped before it is finished"
+    lost = Helpers(record, actor=SYSTEM).create("Lost job", name="Lost", provider="claude", model="sonnet", environment="no-such-env")
+    assert "has no environment left to stop" in refused(lambda: helpers.stop(lost.n)), "a helper whose environment is gone has nothing to stop"
+    monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
+    assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
 
 
 def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_a_nudge(monkeypatch):

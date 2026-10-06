@@ -91,6 +91,9 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
         and roots("sudo -u me --preserve git pull") == [("git pull", ())], "a command is named by what a wrapper runs, however the wrapper is told to behave"
     assert roots('echo "a\\" b" && git add x') == [("git add", ("x",))] and roots("a=1; echo $a $b") == [], \
         "a quoted separator does not split a command, and a command that only talks or sets a name is nothing to show"
+    assert roots("git commit -m a\\ b") == [("git commit", ("a\\ b",))] and roots("git log $(git rev-parse HEAD) && ls") == [("git log", ()), ("ls", ())] \
+        and roots("nohup nice -n 5 timeout 10 pytest -q") == [("pytest", ())] and roots("perl -e 'print 1' git status") == [("git status", ())], \
+        "an escaped space stays in its word, a command inside another's arguments is not counted, and wrappers with their own arguments are skipped"
     assert roots("x=$(git rev-parse HEAD); git show $x") == [("git rev-parse", ("HEAD",)), ("git show", ())] \
         and roots("(git push) | tail -3") == [("git push", ())] and roots("for f in a; do npm run build; done") == [("npm run build", ())], \
         "a command inside a capture, a group or a loop is found, and a filter after it is left out"
