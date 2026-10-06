@@ -30,6 +30,10 @@ A subagent that drew a design, wrote the code or ran the research keeps what it 
 
 A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as "Dr. Einstein: profile the slow hooks" or "Coco Rams: draw the plan card". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.
 
+## Rules
+
+- Every viewer heading and label says plainly what it is about
+
 <!-- END: agent-journal, form 2 -->
 
 ## Dispatching subagents
