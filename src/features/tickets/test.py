@@ -354,6 +354,9 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     git("add", "clash.txt")
     git("commit", "-q", "-m", "the board's change")
     assert "was not merged into" in refused(lambda: tickets.merge(second.n)), "a ticket whose branch conflicts with the board's is not merged, and says why"
+    unmerged = Docs(Record(record.root, second.work_environment), actor=USER).create("How light mode works")
+    tickets.complete(second.n, how="dropped", yes=True)
+    assert Docs(record).load(unmerged.n).deleted, "a doc a ticket proposed goes with it when the ticket closes without its branch merged"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
@@ -413,6 +416,12 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     user.complete(api.n, how="shipped")
     user.start_queued()
     assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "once its dependency closes, the sweep starts it"
+    first, left, right, last = (user.create(title, board=board.n) for title in ("First", "Left", "Right", "Last"))
+    for waiting, on in ((left, first), (right, first), (last, left), (last, right)):
+        user.update(waiting.n, dependencies={**user.load(waiting.n).dependencies, on.ref: "confirmed"})
+    assert "would wait on itself" in refused(lambda: user.depend(first.n, last.n)), "a cycle through two ways to the same ticket is found, and each way is followed once"
+    user.update(last.n, dependencies={"ticket:999": "confirmed"})
+    assert user._waiting_on(user.load(last.n)) == [], "a wait on a ticket that is gone holds nothing"
 
 
 def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypatch):

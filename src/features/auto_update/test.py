@@ -72,6 +72,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(routes, "upstream", lambda root: "99.0.0")
     release = dispatch("GET", "/api/upstream", record.root, {}, {}).body
     assert (release["latest"], release["newer"], release["changed"]) == ("99.0.0", True, []), "the viewer is told the newest release, that it is newer, and which managed files were changed"
+    monkeypatch.setattr(routes, "code", lambda root: record.root)
+    assert dispatch("GET", "/api/changelog", record.root, {}, {}).code == 404, "an install without a changelog says so"
+    (record.root / "CHANGELOG.md").write_text("# 99.0.0\n")
+    page = dispatch("GET", "/api/changelog", record.root, {}, {}).body
+    assert (page["changelog"], page["updating"], page["repository"]) == ("# 99.0.0\n", False, False), "the viewer reads the changelog with whether an update is running"
     import install
     managed = record.root / "src" / "install.py"
     managed.parent.mkdir(parents=True, exist_ok=True)
@@ -210,6 +215,7 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
     import sys
+    from types import SimpleNamespace
     from features.auto_update import check
     upgrade = lambda code, script: [sys.executable, "-c", f"import sys, time\n{script}\nsys.exit({code})"]
     monkeypatch.setattr(check, "entry", lambda name: upgrade(3, "print('could not start')\nprint('')"))
@@ -219,6 +225,13 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "time.sleep(30)"))
     monkeypatch.setattr(check, "INSTALL_WAIT", 1)
     assert "was stopped after" in check.installed(record.root), "an upgrade that never finishes is stopped"
+    monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "print('install failed halfway')"))
+    assert check.installed(record.root) == "install failed halfway", "an upgrade that exits well but says it failed is a failure"
+    monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "print('all done')"))
+    assert check.installed(record.root) == "", "an upgrade that says nothing is wrong has not failed"
+    updating = check.UpdateCheck(SimpleNamespace(record=record))
+    updating.installing.acquire()
+    assert updating.install(None, "99.0.0") is None, "an install already running is not started a second time"
     assert [check.first_refusal(record.root, "9.9.9"), check.first_refusal(record.root, "9.9.9")] == [True, False], "a refused version is told once"
     from tests.conftest import refused
     feature = features.FEATURES["auto_update"]
