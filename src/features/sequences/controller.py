@@ -130,10 +130,13 @@ class Sequences(Controller):
         runs = {k: v for k, v in r.runs.items() if k != key}
         going = run["step"] <= len(titles)
         self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0)
-        moved = self.update(r.n, runs={**runs, key: run} if going else runs)
+        self.update(r.n, runs={**runs, key: run} if going else runs)
         if not going:
             self._resume()
-        return self.follow(r.n, about=about) if going and handing else moved
+            return f"Sequence {r.n} is finished."
+        if handing:
+            return self.follow(r.n, about=about)
+        return f"Step {run['step']} of {len(titles)} of sequence {r.n} is next, {titles[run['step'] - 1]}: take it up with journal sequence follow {r.n}{' --about ' + about if about else ''}."
 
     def follow(self, n: int, about: str | None = None):
         r = self.load(n)
