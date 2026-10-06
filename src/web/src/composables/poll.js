@@ -14,6 +14,7 @@ export const pollKey = () => ++instance;
 const interval = (user) => (typeof user.every === "function" ? user.every() : user.every);
 const fastest = (held) => Math.min(...[...held.users.values()].map(interval));
 const jittered = (ms) => ms / 2 + (Math.random() * ms) / 2;
+const newest = (held) => [...held.users.values()].pop();
 const kept = (held) => polls.get(held.key) === held;
 const staggered = () => Math.random() * WAKE_SPREAD_MS;
 
@@ -43,7 +44,7 @@ async function answer(held) {
     const started = performance.now();
     held.started = started;
     try {
-        const got = await transport.attemptOnce(held.ask);
+        const got = await transport.attemptOnce(newest(held).ask);
         held.took = performance.now() - started;
         held.failures = 0;
         return got;
@@ -57,7 +58,7 @@ async function rounds(held) {
     do {
         held.again = false;
         clearTimeout(held.timer);
-        if (!held.active()) continue;
+        if (!newest(held).active()) continue;
         try {
             const got = await answer(held);
             held.users.forEach((user) => user.take(got));
@@ -99,9 +100,9 @@ export function startPoll(key, ask, every, take = () => {}, active = () => true)
     const token = Symbol(String(key));
     const held = polls.get(key);
     if (held) {
-        held.users.set(token, {every, take});
+        held.users.set(token, {ask, every, take, active});
     } else {
-        const fresh = {key, ask, active, users: new Map([[token, {every, take}]]), timer: 0, failures: 0, took: 0, started: -Infinity};
+        const fresh = {key, users: new Map([[token, {ask, every, take, active}]]), timer: 0, failures: 0, took: 0, started: -Infinity};
         polls.set(key, fresh);
         round(fresh);
     }
