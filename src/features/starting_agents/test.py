@@ -125,7 +125,7 @@ def test_declining_a_takeover_asks_which_environment_again_and_never_makes_a_new
     assert Sessions(record.root).holder(record.env) == "claude-1", "the agent was not moved off"
 
 
-def test_the_command_line_answers_what_is_wired_what_is_set_and_what_a_command_does(capsys):
+def test_the_command_line_answers_what_is_wired_what_is_set_and_what_a_command_does(capsys, tmp_path, monkeypatch):
     from commands.cli import run
     features.load()
     record = fresh()
@@ -141,6 +141,34 @@ def test_the_command_line_answers_what_is_wired_what_is_set_and_what_a_command_d
         "a service is asked to run or to stop by name"
     assert "nothing is logged" in read("services", "log", "sharing.server"), "a service that never ran has no log"
     assert "which service" in read("services", "restart") and "knows list" in read("services", "juggle"), "a restart without a name and an unknown action are refused with the way to ask"
+    record = fresh()
+    read = lambda *words: (run(["--root", str(record.root), "--env", record.env, *words]), (lambda seen: seen.out + seen.err)(capsys.readouterr()))[1]
+    record.set_setting("delivery", {"mode": "one"})
+    assert "delivery: {'mode': 'one'}" in read("settings"), "a setting that is not a feature is listed with its value"
+    agents = Agents(record, actor=SYSTEM)
+    agents.create("claude-1", provider="claude", transcript=str(tmp_path / "gone.jsonl"))
+    agents.create("claude-2", provider="nobody", transcript=str(tmp_path))
+    assert read("search", "anything") == "\n", "a transcript that is gone or of no known provider finds nothing"
+    assert read("conversation").strip() == "", "with no session named there is no conversation to read back"
+    calls = []
+    monkeypatch.setattr("commands.queries.launch", lambda rec, agent, args: calls.append((agent, args)) or "started")
+    assert "started" in read("claude", "--model", "x") and calls[0][0] == "claude", "starting an agent hands the rest of the line to it"
+    monkeypatch.setattr("engine.heal.heal", lambda root: "went back to the last build that started")
+    assert "went back" in read("heal"), "heal says which build it went back to"
+    ticks = []
+    class Manager:
+        def __init__(self, root, alive, sources): ticks.append("made")
+        def tick(self): ticks.append("tick")
+    monkeypatch.setattr("engine.services.Manager", Manager)
+    def sleep(seconds):
+        raise KeyboardInterrupt
+    monkeypatch.setattr("commands.queries.time.sleep", sleep)
+    assert "the services are stopped" in read("services", "up"), "Ctrl-C stops the services kept up in the terminal"
+    assert ticks == ["made", "tick"], "the services are looked after once a second until then"
+    ran = []
+    monkeypatch.setattr("serve.run", lambda root, port: ran.append(port))
+    read("serve", "--port", "8123")
+    assert ran == [8123], "the viewer is served on the port asked for"
 
 
 def test_a_running_agents_screen_is_read_from_where_the_viewer_stopped_and_a_live_session_is_moved_to_another_environment():
