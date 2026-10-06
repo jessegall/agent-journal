@@ -1,5 +1,5 @@
 import {remember, remembered} from "../platform/storage.js";
-import {ref, watch} from "vue";
+import {ref, toRaw, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {route} from "../route.js";
@@ -211,7 +211,7 @@ export async function optimistic(type, row, send) {
         await send();
         await refresh([type]);
     } finally {
-        store.rows[type] = (store.rows[type] || []).filter((r) => r !== row);
+        store.rows[type] = (store.rows[type] || []).filter((r) => toRaw(r) !== row);
     }
 }
 
