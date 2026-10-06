@@ -138,6 +138,14 @@ export class ApiClient {
         return this.command("share", "readdress");
     }
 
+    tunnelCause() {
+        return this.command("share", "tunnel_cause");
+    }
+
+    restartTunnel() {
+        return this.command("share", "restart_tunnel");
+    }
+
     connectPhone(days) {
         return this.command("phone", "connect", {days});
     }
