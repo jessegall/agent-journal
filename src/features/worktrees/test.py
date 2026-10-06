@@ -57,10 +57,10 @@ def worktree_of(tmp_path, name: str):
     return worktree
 
 
-def hooked(record, session: str, cwd, pid: int, **given) -> None:
+def hooked(record, session: str, cwd, pid: int, event: str = "SessionStart", **given) -> None:
     from runner.hooks import answer
     from providers import PROVIDERS
-    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": session, "cwd": str(cwd), **given}, pid)
+    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": event, "session_id": session, "cwd": str(cwd), **given}, pid)
 
 
 def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tmp_path):
@@ -99,6 +99,8 @@ def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_
         "a conversation the journal already knew follows the worktree it now runs in, and so does its restarted terminal"
     hooked(record, "resumed", tmp_path / "main", 5151, agent_id="helper")
     assert sessions.environment("resumed") == "feature-z", "a subagent's hook outside the worktree never moves the main conversation"
+    hooked(record, "resumed", worktree_of(tmp_path, "feature-y") / "src", 5151, event="PostToolUse")
+    assert sessions.environment("resumed") == "feature-z", "a tool call run from another folder never moves a running conversation out of its environment"
 
 
 def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_path):

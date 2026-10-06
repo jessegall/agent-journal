@@ -220,7 +220,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     session = hook.session
     env = sessions.environment(session)
     worked = "" if provider.is_subagent(hook) else worked_environment(hook)
-    moving = bool(worked and worked != env) and worked not in owned_environments(root) and not held_elsewhere(sessions, worked, {session, sessions.terminal(provider.name, agent_pid(pid))})
+    moving = hook.event == "SessionStart" and bool(worked and worked != env) and worked not in owned_environments(root) and not held_elsewhere(sessions, worked, {session, sessions.terminal(provider.name, agent_pid(pid))})
     if not env or not sessions.read(session).provider or moving:
         env = worked or prefer or sessions.choose(session, provider.name, default_env(root), owned_environments(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
