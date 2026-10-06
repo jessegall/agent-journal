@@ -6,6 +6,7 @@ import {useAgentLinks} from "../composables/agentLinks.js";
 import {usePoll} from "../composables/poll.js";
 import {useScope} from "../composables/scope.js";
 import {modelFamily, providerName} from "../domain/agents.js";
+import {project} from "../state/identity.js";
 import {span} from "../format/time.js";
 import {route, showSession} from "../route.js";
 import {PAGE} from "../sync/rows.js";
@@ -48,11 +49,17 @@ const stateKey = computed(() => {
     return running.value ? "working" : "busy";
 });
 
+const task = computed(() => {
+    const open = rows("work").find((w) => !w.completed && !w.data.agent && (w.data.session === props.resource.title || !w.data.session));
+    return open ? open.title : "Waiting for its next task";
+});
+
 const factsOf = computed(() => {
     const d = data.value;
     return [
         family.value ? `${providerName(d.provider)} · ${family.value}` : providerName(d.provider),
         `agent ${props.resource.n}`,
+        `session ${props.resource.title}`,
         environment.value,
         ...(d.branch ? [d.branch] : []),
         d.started ? `running for ${span(Date.now() / 1000 - d.started)}` : "just started",
@@ -62,8 +69,8 @@ const factsOf = computed(() => {
 
 const mainInfo = computed(() => ({
     kind: "Main agent",
-    name: `Agent ${props.resource.n}`,
-    title: props.resource.title,
+    name: project.value,
+    title: task.value,
     state: {key: stateKey.value, ...STATES[stateKey.value]},
     facts: factsOf.value,
     counts: {subagents: data.value.subagents || 0, skills: (data.value.skills || []).length},
@@ -98,7 +105,7 @@ const subagentInfo = computed(() => ({
               word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Closed",
               dot: "done",
           },
-    facts: [picked.value.model || "inherited model", `subagent of agent ${props.resource.n}`, environment.value],
+    facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.n}`, environment.value],
     actions: [],
 }));
 

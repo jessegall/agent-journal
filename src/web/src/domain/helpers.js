@@ -1,3 +1,4 @@
+import {providerName} from "./agents.js";
 export const helperState = (row) => row.state || (row.completed ? "finished" : row.data?.report ? "reported" : "running");
 
 export const HELPER_WORDS = {
@@ -36,7 +37,10 @@ export function agentCounts(helpers, subagents, now = Date.now() / 1000) {
     };
 }
 
-export const helperLine = (row) => [row.provider || row.data?.provider, row.model || row.data?.model].filter(Boolean).join(" · ");
+const providerLabel = (provider) => (provider ? providerName(provider, provider) : "");
+
+export const helperLine = (row) =>
+    [providerLabel(row.provider || row.data?.provider), row.model || row.data?.model].filter(Boolean).join(" · ");
 
 export function helpersInOrder(rows, keepFinished = 5) {
     const open = rows.filter((row) => helperState(row) !== "finished");

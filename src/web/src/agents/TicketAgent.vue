@@ -6,6 +6,8 @@ import Dialog from "../kit/Dialog.vue";
 import {word} from "../domain/spec.js";
 import {agentState, ticketOf} from "../domain/ticketAgents.js";
 import {helperLine, helperName, helperReport, helperState} from "../domain/helpers.js";
+import {href, route} from "../route.js";
+import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import AgentInspector from "./AgentInspector.vue";
 
@@ -55,6 +57,14 @@ const HELPER_STATES = {
     reported: {key: "reported", word: "Report ready", dot: "done"},
     finished: {key: "idle", word: "Closed", dot: "done"},
 };
+const filed = computed(() => {
+    const there = env.value && env.value !== route.value.env;
+    const reports = (there ? store.elsewhere[`${env.value}:report`] : rows("report")) || [];
+    return [...reports].filter((r) => !r.deleted).sort((a, b) => b.created - a.created)[0] || null;
+});
+const reportLink = computed(() =>
+    filed.value ? {href: href.page(env.value || route.value.env, "report", filed.value.n), label: `Open report ${filed.value.n}`} : {}
+);
 const state = computed(() => (helper.value ? HELPER_STATES[helperState(helper.value)] : agentState(props.card)));
 const kicker = computed(() => ({plan: "Plan agent", helper: "Helper"})[props.kind] || "Ticket agent");
 const actions = computed(() => {
@@ -72,7 +82,7 @@ const info = computed(() => ({
         ...(props.card.reason ? [props.card.reason] : []),
         env.value || "its environment",
     ],
-    report: helper.value && helperReport(helper.value) ? {text: helperReport(helper.value)} : null,
+    report: helper.value && helperReport(helper.value) ? {text: helperReport(helper.value), ...reportLink.value} : null,
     actions: actions.value,
 }));
 
