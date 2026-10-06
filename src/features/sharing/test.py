@@ -460,6 +460,13 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     monkeypatch.setattr(watchdog, "tunler_status", lambda: {**standing, "installed": True})
     tick(record)
     assert len([m for m in Messages(record).all() if m.title == "The tunnel cannot start"]) == 1, "one that is installed but logged out is the same notice, not another"
+    monkeypatch.setattr(controller_words, "reached", lambda url, wait: False)
+    assert Shares(record, actor=USER).tunnel_cause()["cause"] == controller_words.Cause.HOST, "a tunler server that does not answer is the cause named first"
+    monkeypatch.setattr(controller_words, "reached", lambda url, wait: True)
+    log.write_text("tunler: connection reset by peer\n")
+    stopped = Shares(record, actor=USER).tunnel_cause()
+    assert (stopped["cause"], stopped["lines"][-1]) == (controller_words.Cause.STOPPED, "tunler: connection reset by peer"), "a tunnel that is not running shows its last lines"
+    assert "only the user" in refused_with(lambda: Shares(record, actor=AGENT).restart_tunnel()), "only the user restarts the tunnel"
 
 
 def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_path, monkeypatch):

@@ -2,13 +2,16 @@ import json
 import re
 import time
 import uuid
+from enum import StrEnum
+from typing import TypedDict
 
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.features import Features
 from controllers.messages import Messages
-from engine.ports import REACH_SECONDS, answers, vouched
+from engine.keeper import READY
+from engine.ports import REACH_SECONDS, answers, reached, vouched
 from engine.record import Record
 from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
@@ -16,7 +19,7 @@ from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
 from engine.services import DOWN, FAILED, UP, log_file, status, want
 from features.sharing.address import Claim, relied_on, this_machine
-from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
+from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
@@ -33,6 +36,19 @@ ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choos
 TUNNEL_STOPPED = "The tunnel to this journal keeps stopping. The journal starts it again every few seconds."
 HOST_MISMATCH = "This journal uses the tunler server {saved}, but tunler is logged in to {host}. Log in to {saved} again, so the phone and share links reach this journal."
 OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new address instead: the old one is released once the new one is in use."
+
+class Cause(StrEnum):
+    HOST = "host"
+    STOPPED = "stopped"
+    OLD = "old"
+    WAITING = "waiting"
+
+
+class TunnelCause(TypedDict):
+    cause: Cause
+    text: str
+    lines: list[str]
+
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": DAY / 24, "d": DAY}
@@ -164,6 +180,25 @@ class Shares(ShareVisits, SharePages, Controller):
             return {**standing, "address": self._address(), "problems": self._problems(standing)}
         except Refused as unreadable:
             return {**standing, "address": "", "problems": [str(unreadable)]}
+
+    @action
+    def tunnel_cause(self) -> TunnelCause:
+        root, host = self.record.root, self._host()
+        if not reached(f"https://{host}/", REACH_SECONDS):
+            return TunnelCause(cause=Cause.HOST, text=f"The tunler server {host} does not answer, so the tunnel cannot open. Check the server in Settings, or try again once it is back.", lines=[])
+        if status(root, TUNNEL).state != READY:
+            return TunnelCause(cause=Cause.STOPPED, text="The tunnel is not running. The last lines it wrote:", lines=last_lines(log_file(root, TUNNEL)))
+        version = versions(host)
+        if version["update_available"]:
+            return TunnelCause(cause=Cause.OLD, text=f"tunler {version['current']} is older than {version['latest']} on the server. Updating it may fix the connection.", lines=[])
+        return TunnelCause(cause=Cause.WAITING, text=f"The tunnel is running, but {self._address()} does not answer yet.", lines=[])
+
+    @action
+    def restart_tunnel(self) -> dict:
+        self._user_only("restart the tunnel")
+        KEPT_STATUS.clear()
+        want(self.record.root, TUNNEL, UP, nonce=time.time())
+        return self.tunnel()
 
     @action
     def check_tunnel(self) -> dict:

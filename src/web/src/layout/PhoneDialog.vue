@@ -9,7 +9,9 @@ import Spinner from "../kit/Spinner.vue";
 import {usePoll} from "../composables/poll.js";
 import {checkTunnel, tunnelStatus} from "../composables/shares.js";
 import {connectedPhones} from "../composables/phones.js";
+import {refresh} from "../sync/rows.js";
 import PhoneRow from "./PhoneRow.vue";
+import TunnelCause from "./TunnelCause.vue";
 import TunnelProblem from "../pages/TunnelProblem.vue";
 
 const emit = defineEmits(["close"]);
@@ -28,7 +30,7 @@ const CAN = [
 
 const ASK_EVERY = 1500;
 const OPEN_WAIT = 10000;
-const NOT_OPENED = "The secure connection did not open. Check that tunler is running, then make a new code.";
+const NOT_OPENED = "The secure connection did not open.";
 const days = ref("7");
 const made = ref(null);
 const busy = ref(false);
@@ -39,6 +41,12 @@ const active = computed(() => connectedPhones.value[0] || null);
 const reachable = ref(false);
 const connected = computed(() => made.value && reachable.value);
 const stalled = ref(false);
+const cause = ref(null);
+const paired = ref(false);
+const showCause = computed(() => cause.value && !connected.value && (stalled.value || cause.value.cause === "host"));
+
+const askCause = async () => (cause.value = await api.tunnelCause().catch(() => null));
+watch(stalled, (now) => now && askCause());
 
 watch([made, reachable], ([code, up], _, onCleanup) => {
     stalled.value = false;
@@ -54,6 +62,7 @@ usePoll(
     (got) => got && (reachable.value = Boolean(got.reachable))
 );
 usePoll("phone-tunnel-problems", () => (made.value && !reachable.value ? checkTunnel() : null), ASK_EVERY * 2);
+usePoll("phone-paired", () => (connected.value ? refresh(["phone"]) : null), ASK_EVERY);
 
 async function fresh() {
     busy.value = true;
@@ -85,7 +94,8 @@ function pick(key) {
 }
 
 const opened = ref(false);
-watch(active, () => {
+watch(active, (phone) => {
+    paired.value = Boolean(phone && made.value);
     made.value = null;
     opened.value = false;
 });
@@ -98,7 +108,10 @@ watch(
     },
     {immediate: true}
 );
-onMounted(checkTunnel);
+onMounted(() => {
+    checkTunnel();
+    askCause();
+});
 </script>
 
 <template>
@@ -109,8 +122,14 @@ onMounted(checkTunnel);
             </template>
             <template v-else-if="active">
                 <div class="phone-active">
-                    <span class="phone-label">Active session</span>
-                    <p class="phone-done">One phone at a time: stop this session to connect another.</p>
+                    <span class="phone-label">{{ paired ? "Connected" : "Active session" }}</span>
+                    <p class="phone-done">
+                        {{
+                            paired
+                                ? "Your phone is connected. You can close this window."
+                                : "One phone at a time: stop this session to connect another."
+                        }}
+                    </p>
                     <PhoneRow :title="active.title" :data="active.data" :busy="stopping === active.n" @disconnect="stop(active)" />
                 </div>
             </template>
@@ -142,6 +161,9 @@ onMounted(checkTunnel);
                         </template>
                     </div>
                 </div>
+            </template>
+            <template v-if="showCause">
+                <TunnelCause :cause="cause" @restarted="fresh" />
             </template>
             <template v-if="failure">
                 <p class="phone-failure">{{ failure }}</p>

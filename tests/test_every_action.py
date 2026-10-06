@@ -44,7 +44,7 @@ UNBOUND = ("unexpected keyword argument", "missing a required argument", "positi
 BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "page", "origin", "journal", "pluginUrl", "markdownUrl", "fileUrl",
          "extensionZip", "stream", "layoutFrom"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
-        "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "setService", "installPlugin", "upgradePlugin", "previewPlugin",
+        "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "upgradePlugin", "previewPlugin",
         "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
@@ -52,7 +52,7 @@ CALLS = {
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "tunler.example", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["tunler.example"], "tunnelAnswering": [],
-    "tunnelDomains": [], "tunnelRelease": ["walk.tunler.example"], "tunnelReaddress": [], "connectPhone": [7], "disconnectPhone": [1],
+    "tunnelDomains": [], "tunnelRelease": ["walk.tunler.example"], "tunnelReaddress": [], "tunnelCause": [], "restartTunnel": [], "connectPhone": [7], "disconnectPhone": [1],
     "shareLayout": ["a layout", {"panels": []}], "services": [], "serviceLog": ["sharing.server"], "setService": ["sharing.server", "up"],
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],
