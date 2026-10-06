@@ -2,6 +2,7 @@ import subprocess
 import threading
 
 from engine.keeper import teardown
+from install import git_env
 
 GRACE = 1.0
 
@@ -18,8 +19,13 @@ def run(args: list[str], cwd=None, timeout: float = 5, stdin: str | None = None)
     return done.stdout if done else ""
 
 
+def git_ran(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> subprocess.CompletedProcess | None:
+    return ran(["git", *args], cwd, timeout, stdin, git_env())
+
+
 def git(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> str:
-    return run(["git", *args], cwd, timeout, stdin)
+    done = git_ran(args, cwd, timeout, stdin)
+    return done.stdout if done else ""
 
 
 def streamed(args: list[str], cwd, timeout: float, on_output, env: dict | None = None) -> tuple[int | None, str]:
@@ -44,7 +50,7 @@ def git_objects(cwd, shas: list[str], timeout: float = 5) -> dict[str, str]:
     if not shas:
         return {}
     try:
-        out = subprocess.run(["git", "cat-file", "--batch"], cwd=cwd, input="\n".join(shas).encode() + b"\n", capture_output=True, timeout=timeout).stdout
+        out = subprocess.run(["git", "cat-file", "--batch"], cwd=cwd, input="\n".join(shas).encode() + b"\n", capture_output=True, timeout=timeout, env=git_env()).stdout
     except (OSError, subprocess.SubprocessError):
         return {}
     found, at = {}, 0

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from engine.package import ARCHIVE
 from engine.paths import ENVIRONMENTS
-from engine.proc import ran
+from engine.proc import git_ran
 from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
 
@@ -245,9 +245,9 @@ def link_folders(project: Path, folder: Path) -> None:
             link.symlink_to(path)
 
 
-def git(project: Path, *args: str) -> subprocess.CompletedProcess:
+def git(project: Path, *args: str, stdin: str | None = None) -> subprocess.CompletedProcess:
     failed = f"git {args[0]} did not finish within {GIT_WAIT} seconds or could not start"
-    return ran(["git", *args], cwd=project, timeout=GIT_WAIT) or subprocess.CompletedProcess(["git", *args], 1, "", failed)
+    return git_ran(list(args), project, GIT_WAIT, stdin) or subprocess.CompletedProcess(["git", *args], 1, "", failed)
 
 
 def lines(project: Path, *args: str) -> list[str]:
@@ -299,8 +299,7 @@ def belongs(top: Path, project: Path) -> bool:
 def ignored(project: Path, paths: list[Path], folders: WorkspaceFolders) -> list[Path]:
     if not paths:
         return []
-    asked = subprocess.run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], input="\n".join(map(str, paths)),
-                           capture_output=True, text=True, timeout=30)
+    asked = git(project, "check-ignore", "--verbose", "--stdin", stdin="\n".join(map(str, paths)))
     managed = folders.managed
     named = {path for source, path in (line.split("\t", 1) for line in asked.stdout.splitlines() if "\t" in line)
              if not (source.split(":", 2)[0].endswith("info/exclude") and source.split(":", 2)[2].startswith(managed))}

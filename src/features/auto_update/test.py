@@ -396,7 +396,7 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         patch.setattr(install, "complete", lambda folder: False)
         patch.delenv(install.REPAIRED, raising=False)
         patch.setattr(install, "configure", lambda site, site_root: ["configured"])
-        patch.setattr(install, "LOADED", SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles"))
+        patch.setattr(install, "loaded", lambda: SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles"))
         patch.setattr(install, "retire", lambda site_root: 3)
         patch.setattr(install, "pack", lambda site_root: "packed")
         patch.setattr(install, "remember_managed", lambda site, site_root: None)
@@ -418,7 +418,7 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         class Absent:
             def present(self, site):
                 return False
-        patch.setattr(install, "LOADED", SimpleNamespace(providers={"ghost": Absent}))
+        patch.setattr(install, "loaded", lambda: SimpleNamespace(providers={"ghost": Absent}))
         assert install.configure(site, site_root)[-1] == "no agent found here: neither Ghost", "a site with no agent in it is told so"
     broken = tmp_path / "broken"
     broken.mkdir()

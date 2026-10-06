@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.17 — the installer's git never acts on the repository it is pushed from
+A git hook hands its commands GIT_DIR and the other variables that point git at a repository. The pre-push hook runs the boot guard, which installs a journal, and the installer's git init, fetch and checkout inherited those variables. So they acted on the repository being pushed instead of a temporary folder: it was marked bare, cut to a shallow history, and a checkout's HEAD moved to a detached FETCH_HEAD. Every git command the journal runs now drops the variables git itself lists as pointing at a repository, and the boot guard starts everything without them. If your repository says it must be run in a work tree, run git config core.bare false; if it has a .git/shallow file, run git fetch --unshallow.
+
 ## 2.253.16 — a suggestion shows in the chat as a card, and opens once in a window after three hours
 Every suggestion now shows in the chat as a card, with Yes, I want this, Change it first and No, don't do this. The same card shows in its side panel, on the phone and in a window. Yes on a plugin suggestion installs the commit the suggestion showed. The card first shows where the plugin comes from and the commands it runs. The chat marks Installing, then Installed or Install failed with the reason. Your answers are marked on your side of the chat. A No can be undone for six seconds. A suggestion still unanswered after the hours set in Settings › Suggestions (three by default, 0 for never) opens once in a window, never over a draft you are writing. On the phone it opens in a sheet. Only you install a suggested plugin. Nothing to do.
 
