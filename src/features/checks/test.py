@@ -131,6 +131,27 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     assert "is already running" in checks.run(suite.n), "a check that is running is not started again"
     monkeypatch.setattr(Checks, "in_background", lambda self, n: True)
     assert "is running; its result lands on the row" in checks.run(suite.n), "a check started on its own tells where its result lands"
+    monkeypatch.undo()
+    from types import SimpleNamespace
+    from engine import runtime
+    from features.checks import controller as running_checks
+    seen = []
+    with monkeypatch.context() as scoped:
+        scoped.setattr(running_checks.threading, "Thread", lambda target, args, daemon: SimpleNamespace(start=lambda: target(*args)))
+        scoped.setattr(Checks, "_ran", lambda self, n: seen.append(n))
+        assert (checks.in_background(suite.n), seen) == (True, [suite.n]), "a check started on its own runs in a thread and lets go of its lock when it ends"
+        lock = running_checks.claim(runtime.folder(repo.record.root) / running_checks.REPORTS / f"{suite.n}.lock")
+        assert checks.in_background(suite.n) is False, "a check already running in another process is not started twice"
+        lock.close()
+        scoped.setattr(Checks, "_ran", lambda self, n: (_ for _ in ()).throw(RuntimeError("the shell is gone")))
+        assert checks.in_background(suite.n) is True, "a check that crashes is filed as a fault and never takes the engine down"
+        checks.gate(suite.n, "crashes", paths="hooks/code.py", wait=True)
+    assert git(repo.project, "log", "-1", "--format=%s") != "crashes", "a gate whose check crashes commits nothing"
+    chatty = checks.create("prints a lot", command="echo one; sleep 0.2; echo two")
+    with monkeypatch.context() as scoped:
+        scoped.setattr(running_checks, "STAMP_EVERY", 0.0)
+        checks.run(chatty.n, wait=True)
+    assert checks.load(chatty.n).last_run.ok, "a check that prints while it runs shows its progress and still ends on its result"
 
 
 def test_a_check_that_runs_out_of_time_says_so():

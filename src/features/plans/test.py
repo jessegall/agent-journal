@@ -427,3 +427,9 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
     tickets.close_merged()
     assert (all(tickets.load(n).completed for n in (first.n, second.n)), stopped, bool(plans.load(plan.n).merged)) == \
         (True, [f"session-plan-{plan.n}"], True), "once the plan's branch is merged its tickets close together and its agent stops, once"
+    from resources.base import Refused
+    straggler = tickets.update(tickets.create("Still going", board=board.n).n, work_environment=f"plan-{plan.n}")
+    tickets._close_plan_worktree(f"plan-{plan.n}")
+    assert stopped == [f"session-plan-{plan.n}"], "a plan's agent is left running while one of its tickets is still open"
+    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
+    assert tickets._hand_to_plan(straggler).queued, "a ticket the plan's agent cannot be told of waits in the queue"
