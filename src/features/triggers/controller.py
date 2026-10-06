@@ -1,6 +1,7 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
+from controllers.marks import action
 from features.triggers.resource import DOES, FIRED, FROM_USER, START, Trigger
 from resources.base import SYSTEM, Refused, Resource
 
@@ -14,6 +15,18 @@ class Triggers(Controller):
         if not r.words:
             raise Refused('a trigger needs words to watch for: --set words="one,two"')
         return super().save(r, action, **event)
+
+    @action
+    def delete(self, n: int, why: str = "") -> Resource:
+        self._stop_starting(n)
+        return super().delete(n, why)
+
+    def _stop_starting(self, n: int) -> None:
+        from features.sequences.controller import Sequences
+        sequences = Sequences(self.record, actor=SYSTEM)
+        for row in sequences.rows.every():
+            if row.data.get("starts_on") == f"trigger:{n}" and not row.system:
+                sequences.update(row.n, starts_on="")
 
     def fired(self, n: int, about: str = "") -> None:
         self.record.emit("trigger", n, FIRED, SYSTEM, about=about)

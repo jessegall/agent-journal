@@ -7,6 +7,7 @@ import PriorityIcon from "../kit/PriorityIcon.vue";
 import {parkedFor, state, waitsOn} from "../domain/records.js";
 import {age, ago} from "../format/time.js";
 import {computed} from "vue";
+import {plain, sentence, startedBy} from "../domain/triggerWords.js";
 
 const props = defineProps({resource: Object, selected: Boolean});
 
@@ -17,6 +18,11 @@ const held = computed(() => {
     const refs = waitsOn(props.resource);
     return refs.length ? `Waits on ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
 });
+const summary = computed(() =>
+    props.resource.type === "trigger"
+        ? plain(sentence(props.resource.data, startedBy(props.resource.n)))
+        : props.resource.abstract || props.resource.brief
+);
 </script>
 
 <template>
@@ -35,9 +41,9 @@ const held = computed(() => {
         <span class="n">#{{ resource.n }}</span>
         <span class="text">
             <span class="title">{{ resource.title }}</span>
-            <template v-if="resource.abstract || resource.brief">
+            <template v-if="summary">
                 <span class="abstract">
-                    <TextDisplay inline :text="resource.abstract || resource.brief" />
+                    <TextDisplay inline :text="summary" />
                 </span>
             </template>
         </span>

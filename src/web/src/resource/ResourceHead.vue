@@ -1,10 +1,11 @@
 <script setup>
-import {meta} from "../domain/spec.js";
+import {MENUED, meta} from "../domain/spec.js";
 import {computed} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Chapters from "./Chapters.vue";
+import ResourceMenu from "./ResourceMenu.vue";
 import DownloadLink from "./DownloadLink.vue";
 import {isUpdate, updateLabel} from "../domain/updates.js";
 import {age} from "../format/time.js";
@@ -78,6 +79,9 @@ const chaptered = computed(
                 <template v-if="kind.view === 'document'">
                     <DownloadLink :resource="resource" />
                 </template>
+                <template v-if="MENUED.includes(resource.type) && !data.system">
+                    <ResourceMenu :resource="resource" @gone="emit('close')" />
+                </template>
                 <CloseButton @click="emit('close')" />
             </template>
         </div>
@@ -102,7 +106,7 @@ const chaptered = computed(
                 @keydown.esc="emit('cancel')"
             />
         </template>
-        <template v-else>
+        <template v-else-if="resource.type !== 'trigger' || data.system || readOnly">
             <h2 class="title">{{ resource.title }}</h2>
             <template v-if="chaptered">
                 <Chapters :sections="resource.sections" :body="body" />

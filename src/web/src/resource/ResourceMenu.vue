@@ -1,26 +1,41 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {DELETE_NOTE, closeNote, closeWord, word} from "../domain/spec.js";
+import {DELETE_NOTE, MENUED, closeNote, closeWord, word} from "../domain/spec.js";
+import {startedBy} from "../domain/triggerWords.js";
+import AlertDialog from "../kit/AlertDialog.vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 
 const props = defineProps({resource: {type: Object, required: true}});
+const emit = defineEmits(["gone"]);
 const open = ref(false);
+const asking = ref(false);
 const anchor = ref(null);
 const refusal = ref("");
 const closed = computed(() => Boolean(props.resource.completed));
+const sequences = computed(() => (props.resource.type === "trigger" ? startedBy(props.resource.n) : []));
+const asks = computed(() => MENUED.includes(props.resource.type));
+const name = computed(() => `${props.resource.type} ${props.resource.n}`);
 
 async function run(method, data) {
     open.value = false;
     refusal.value = "";
     try {
         await api.act(props.resource.type, props.resource.n, word(props.resource.type, method), data);
+        if (method === "delete") emit("gone");
     } catch (e) {
         refusal.value = e.message;
     }
+}
+
+const erase = () => (asks.value ? ((open.value = false), (asking.value = true)) : run("delete", {}));
+
+function sure() {
+    asking.value = false;
+    return run("delete", {});
 }
 </script>
 
@@ -42,8 +57,25 @@ async function run(method, data) {
                         {{ closeWord(resource.type) }}
                     </MenuItem>
                 </template>
-                <MenuItem :description="DELETE_NOTE" @click="run('delete', {})">Delete</MenuItem>
+                <MenuItem :description="asks ? `${DELETE_NOTE} Asks first.` : DELETE_NOTE" @click="erase">Delete</MenuItem>
             </MenuPanel>
+        </template>
+        <template v-if="asking">
+            <Teleport to="body">
+                <AlertDialog :title="`Delete ${name}?`">
+                    <p>
+                        It leaves every list and the agent no longer uses it. Its history stays in Activity.
+                        <template v-if="sequences.length">
+                            {{ sequences.length === 1 ? "The sequence it starts" : `The ${sequences.length} sequences it starts` }} will
+                            then start only when you or the agent start {{ sequences.length === 1 ? "it" : "them" }}.
+                        </template>
+                    </p>
+                    <template #actions>
+                        <Btn @click="asking = false">Keep it</Btn>
+                        <Btn kind="danger" @click="sure">Delete it</Btn>
+                    </template>
+                </AlertDialog>
+            </Teleport>
         </template>
     </span>
 </template>
