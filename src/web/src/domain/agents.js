@@ -21,3 +21,11 @@ export function pendingChoice(data, key) {
 export const usageWindows = (data) => (data && data.usage && data.usage.windows) || [];
 
 export const loadedSkills = (data) => (data && data.skills) || [];
+
+const PAST = {pause: "paused", resume: "resumed", stop: "stopped", remove: "removed"};
+
+export function plainRefusal(message, action) {
+    return /not online|isn't running|is not running/i.test(message)
+        ? `Its agent isn't running, so it can't be ${PAST[action] || "changed"}.`
+        : message;
+}

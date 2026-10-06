@@ -7,6 +7,7 @@ import Icon from "../kit/Icon.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import PaneGrid from "../kit/PaneGrid.vue";
 import PaneTabs from "../kit/PaneTabs.vue";
+import TabBar from "../kit/TabBar.vue";
 import PaneMenu from "../panes/PaneMenu.vue";
 import {useInspectorLayout} from "../composables/paneLayout.js";
 import {
@@ -125,9 +126,7 @@ const shape = (next) => apply(arranged(layout.value, next));
 const phoneView = ref("");
 const phoneViews = computed(() => leaves(layout.value.tree).flatMap((id) => visibleTabs(layout.value.panes[id])));
 const phoneActive = computed(() => (phoneViews.value.includes(phoneView.value) ? phoneView.value : phoneViews.value[0] || ""));
-const phoneTabs = computed(() =>
-    phoneViews.value.map((key) => ({key, title: props.views[key].title, icon: props.views[key].icon, on: key === phoneActive.value}))
-);
+const phoneTabs = computed(() => phoneViews.value.map((key) => ({key, title: props.views[key].title})));
 const noTune = () => {};
 
 function show(view) {
@@ -142,7 +141,12 @@ defineExpose({shape, layout, show});
 <template>
     <div class="agent-panes">
         <template v-if="narrow">
-            <PaneTabs :tabs="phoneTabs" @pick="(key) => (phoneView = key)" />
+            <TabBar
+                class="agent-phone-tabs"
+                :tabs="phoneTabs"
+                :model-value="phoneActive"
+                @update:model-value="(key) => (phoneView = key)"
+            />
             <div class="agent-pane-body full">
                 <slot name="view" :view="phoneActive" :pane="{}" :id="0" :tune="noTune" />
             </div>
@@ -259,5 +263,11 @@ defineExpose({shape, layout, show});
 .agent-pane-body.contained > * {
     width: min(100%, 760px);
     margin: 0 auto;
+}
+
+.agent-phone-tabs {
+    flex: none;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--border);
 }
 </style>

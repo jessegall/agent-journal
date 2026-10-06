@@ -70,7 +70,7 @@ const reportOpen = ref(false);
     flex: none;
     flex-direction: column;
     gap: 8px;
-    padding: 8px 16px 0;
+    padding: 8px 16px;
 }
 
 .inspector-bands:empty {

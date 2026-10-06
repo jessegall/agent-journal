@@ -115,7 +115,7 @@ defineExpose({element: panel});
 <style scoped>
 .menu-panel {
     position: absolute;
-    z-index: 40;
+    z-index: 90;
     display: flex;
     flex-direction: column;
     gap: 2px;
