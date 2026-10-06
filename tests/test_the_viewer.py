@@ -6,10 +6,12 @@ import sys
 import time
 import urllib.request
 from pathlib import Path
+from typing import NamedTuple
 
 import pytest
 
 from scripts.boot_guard import PROJECT
+from tests import phone_pages, shared_pages
 
 HERE = Path(__file__).resolve().parents[1]
 CODE = HERE / "src"
@@ -19,6 +21,7 @@ PLAYWRIGHT = WEB / "node_modules" / "playwright-core"
 BOOT_WAIT = 60
 UNITS_WAIT = 300
 SCENARIOS_WAIT = 240
+HELPERS = {"harness", "proxy"}
 
 needs_node_modules = pytest.mark.skipif(not VITEST.is_file() or not PLAYWRIGHT.is_dir(), reason="the viewer's npm packages are not installed")
 
@@ -27,6 +30,11 @@ def free_port() -> int:
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         return sock.getsockname()[1]
+
+
+class Scratch(NamedTuple):
+    url: str
+    root: Path
 
 
 @pytest.fixture(scope="module")
@@ -52,7 +60,7 @@ def scratch_viewer(tmp_path_factory):
     else:
         server.kill()
         pytest.fail("the scratch install's server did not answer")
-    yield url
+    yield Scratch(url, root)
     server.terminate()
     server.wait(BOOT_WAIT)
 
@@ -64,8 +72,26 @@ def test_the_viewers_own_code_passes_its_unit_tests():
 
 
 @needs_node_modules
-@pytest.mark.parametrize("script", ["boot", "phone", "settings"])
+@pytest.mark.parametrize("script", sorted(path.stem for path in (WEB / "browser").glob("*.mjs") if path.stem not in HELPERS))
 def test_the_viewer_answers_every_state_in_a_browser(scratch_viewer, script):
-    run = subprocess.run(["node", f"browser/{script}.mjs", scratch_viewer], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+    env = {**os.environ, "JOURNAL_SCRATCH_ROOT": str(scratch_viewer.root), "JOURNAL_PYTHON": sys.executable}
+    run = subprocess.run(["node", f"browser/{script}.mjs", scratch_viewer.url], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+    assert run.returncode == 0, run.stderr[-2000:]
+    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+
+
+@needs_node_modules
+def test_a_shared_page_answers_every_state_a_visitor_meets():
+    with shared_pages.served() as pages:
+        env = {**os.environ, "SHARED_OPEN": pages.open, "SHARED_ENDED": pages.ended, "SHARED_MISSING": pages.missing}
+        run = subprocess.run(["node", "browser/shared/page.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+    assert run.returncode == 0, run.stderr[-2000:]
+    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+
+
+@needs_node_modules
+def test_a_paired_phone_answers_every_state_in_a_browser():
+    with phone_pages.served() as page:
+        run = subprocess.run(["node", "browser/phoneapp/page.mjs", page.pair], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
