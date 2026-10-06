@@ -73,8 +73,17 @@ function pick(key) {
     fresh();
 }
 
+const opened = ref(false);
 watch(active, () => (made.value = null));
-watch([ready, active, made], () => ready.value && !active.value && !made.value && !busy.value && fresh(), {immediate: true});
+watch(
+    [ready, active],
+    () => {
+        if (!ready.value || active.value || opened.value) return;
+        opened.value = true;
+        fresh();
+    },
+    {immediate: true}
+);
 onMounted(checkTunnel);
 </script>
 

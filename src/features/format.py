@@ -3,6 +3,7 @@ from engine.markers import plain
 from features.switches import generation
 from resources.base import SECTION, as_dict
 from engine.extension import Extension
+from engine.memo import Memo
 
 FORMATTERS = Extension()
 DOWNLOAD = "download"
@@ -10,10 +11,10 @@ VIEWER = "viewer"
 SHARED = "shared"
 TEXT_FIELDS = ("title", "abstract", "brief", "outcome")
 PLAIN_FIELDS = ("title", "abstract")
-SHAPED: dict = {}
 CATALOGUES: dict = {}
 KEEP_CATALOGUES = 8
 KEEP_SHAPED = 5000
+SHAPED = Memo(KEEP_SHAPED)
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
@@ -36,14 +37,9 @@ def settled(record) -> tuple:
 
 def shaped(r, record=None, surface: str = "") -> dict:
     key = (str(record.home), r.type, r.n, r.updated, surface, settled(record)) if record is not None and hasattr(r, "updated") else None
-    if key in SHAPED:
-        return SHAPED[key]
-    out = shape(r, record, surface)
-    if key:
-        if len(SHAPED) >= KEEP_SHAPED:
-            SHAPED.clear()
-        SHAPED[key] = out
-    return out
+    if key is None:
+        return shape(r, record, surface)
+    return SHAPED.get(key, None, lambda: shape(r, record, surface))
 
 
 def shape(r, record=None, surface: str = "") -> dict:

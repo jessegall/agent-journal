@@ -192,9 +192,8 @@ function group(g, members, settings, loose) {
         .filter((f) => f !== lead)
         .sort((a, b) => (a.position ?? 100) - (b.position ?? 100) || a.label.localeCompare(b.label));
     const extras = loose.extras;
-    const listed = g.key === "always";
-    const always = listed ? [] : rest.filter((f) => f.fixed && !f.parts);
-    const flat = rest.filter((f) => !always.includes(f) && (listed ? !f.parts : plain(f, extras)));
+    const always = rest.filter((f) => f.fixed && !f.parts);
+    const flat = rest.filter((f) => !always.includes(f) && plain(f, extras));
     const blocks = rest.filter((f) => !always.includes(f) && !flat.includes(f));
     const head = lead ? featureHead(lead, g.title, g.line, settings) : null;
     return {

@@ -5,7 +5,7 @@ from features.groups import Group
 class BrowserControlDetails(FeatureDetails):
     explains = 'The agent can request a screenshot, text, or a click from your browser tab. You choose when to turn tab control on.'
     name = "browser_control"
-    group = Group.ALWAYS
+    group = Group.AGENT
     label = "Let the agent use your browser tab"
     hint = "Screenshots, text and clicks, through the Chrome extension"
     when = "you need to see or act in the tab the user is driving"
