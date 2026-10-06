@@ -315,3 +315,40 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
     CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(update.n, about=second.ref, why="asked twice")
     assert sequences.in_hand()[1].endswith(first.ref) and "followed" not in sequences.in_hand()[2], \
         "when the inner run ends, the one it interrupted is handed again, to be taken up anew"
+
+    todos = CONTROLLERS["todo"]
+    watching = sequences.create("Watching todos", starts_on="todo.created", started_by="user", unless={"assigned": "bot"})
+    sequences.section(watching.n, "Look at <ref>", "journal todo show <todo n> then <ref n> as <type>, <this sequence>")
+    started = lambda: sorted(sequences.load(watching.n).runs)
+    todos(record, actor=AGENT).create("by the agent")
+    assert started() == [], "a sequence for what the user made does not start on a row the agent made"
+    todos(record, actor=USER).create("assigned to a bot", assigned="bot")
+    assert started() == [], "a row matching its unless is left alone"
+    own = todos(record, actor=USER).create("by the user")
+    assert [key.split("|", 1)[1] for key in started()] == [own.ref], "a row of the user's that matches no unless starts it, about that row"
+    step = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {watching.n}"))
+    assert f"journal todo show {own.n} then {own.n} as todo, {watching.n}" in step, "the step fills in the row it is about"
+    todos(record, actor=SYSTEM).delete(own.n)
+    assert started() == [], "a run ends with the row it is about"
+
+    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(update.n, about=first.ref, why="done")
+    idle = sequences.create("Only when idle", starts_on="todo.created", only_when_idle=True)
+    sequences.section(idle.n, "Idle step", "do it")
+    busy = sequences.create("Busy", brief="in hand")
+    sequences.section(busy.n, "Hold", "hold")
+    sequences.run(busy.n)
+    todos(record, actor=AGENT).create("while busy")
+    assert sequences.load(idle.n).runs == {}, "a sequence that starts only when idle waits while another is in hand"
+    CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(busy.n, why="done")
+    todos(record, actor=AGENT).create("when idle")
+    assert len(sequences.load(idle.n).runs) == 1, "and starts once nothing is in hand"
+
+    from engine.sessions import Sessions
+    dispatching = sequences.create("Dispatching", dispatch="filler")
+    sequences.section(dispatching.n, "Fill <board n>", "fill it")
+    sequences.run(dispatching.n, about="board:3")
+    assert ("board 3 waits for the filler (a new request) - dispatch it now" in nudges(record), Sessions(record.root).granted("claude-1", record.env)) == (True, True), \
+        "a sequence that dispatches tells the working agent to dispatch, about the board, and lends it the environment"
+    asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3")
+    CONTROLLERS["question"](record, actor=USER).complete(asked.n, how="the first")
+    assert f"board 3 waits for the filler (question {asked.n} answered - the first) - dispatch it now" in nudges(record), "an answer to a question about the board dispatches it again"
