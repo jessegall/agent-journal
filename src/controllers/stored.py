@@ -364,7 +364,7 @@ class RowStore:
 
     def pack(self, before: float) -> int:
         folder = self.folder()
-        chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before]
+        chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before and (folder / member(row["n"])).is_file()]
         days: dict[str, list[dict]] = {}
         for row in chosen:
             days.setdefault(time.strftime("%Y-%m-%d", time.localtime(row["updated"])), []).append(row)
