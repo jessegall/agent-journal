@@ -1,24 +1,15 @@
 <script setup>
-import AgentPageFacts from "./AgentPageFacts.vue";
-import AgentPageWork from "./AgentPageWork.vue";
-import CloseButton from "../kit/CloseButton.vue";
-import TabBar from "../kit/TabBar.vue";
-import {useTranscript} from "../composables/transcript.js";
-import {withWhispers} from "../domain/transcript.js";
-import {computed, ref, watch} from "vue";
-import CommentToggle from "./CommentToggle.vue";
-import DropList from "../kit/DropList.vue";
-import {modelFamily, providerName} from "../domain/agents.js";
-import Icon from "../kit/Icon.vue";
-import {go, route, showSession} from "../route.js";
-import {useScope} from "../composables/scope.js";
-import AgentHooks from "./AgentHooks.vue";
-import TranscriptLog from "./TranscriptLog.vue";
-import AgentHome from "../agents/AgentHome.vue";
-import AgentLinks from "./AgentLinks.vue";
-import SubagentChat from "../chat/SubagentChat.vue";
+import {computed} from "vue";
+import AgentInspector from "../agents/AgentInspector.vue";
+import {stopAgentNamed} from "../actions/agents.js";
+import {useAgentLinks} from "../composables/agentLinks.js";
 import {usePoll} from "../composables/poll.js";
+import {useScope} from "../composables/scope.js";
+import {modelFamily, providerName} from "../domain/agents.js";
+import {span} from "../format/time.js";
+import {route, showSession} from "../route.js";
 import {PAGE} from "../sync/rows.js";
+import CommentToggle from "./CommentToggle.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -31,48 +22,75 @@ if (env)
         ELSEWHERE_EVERY
     );
 const data = computed(() => props.resource.data);
-const resourceTitle = computed(() => props.resource.title);
-const family = computed(() => modelFamily(data.value.model));
-const name = computed(() => providerName(data.value.provider));
+const environment = computed(() => env || route.value.env);
 const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
-const session = computed(() => route.value.sub);
-const picked = computed(() => subagents.value.find((r) => r.session === session.value));
-const works = computed(() =>
-    rows("work")
-        .filter((w) =>
-            picked.value
-                ? w.data.agent === picked.value.session
-                : !w.data.agent && (w.data.session === props.resource.title || (!w.data.session && !w.completed))
-        )
-        .slice(-5)
-        .reverse()
-);
+const picked = computed(() => subagents.value.find((r) => r.session === route.value.sub) || null);
 const skills = computed(() => (picked.value ? picked.value.skills : data.value.skills) || []);
-const sessions = computed(() => [
-    {key: "", label: "This session", note: resourceTitle.value, running: data.value.status === "working"},
-    ...subagents.value.map((r) => ({
-        key: r.session,
-        label: r.task || r.session,
-        note: r.type || r.model || "",
-        running: Boolean(r.running),
-    })),
-]);
-const sessionLabel = computed(() => (sessions.value.find((s) => s.key === (session.value || "")) || sessions.value[0]).label);
-const skillItems = computed(() => skills.value.map((name) => ({key: name, label: name})));
-const state = computed(() => {
+const links = useAgentLinks(api, () => [props.resource.n, picked.value ? picked.value.session : ""]);
+const sessionLink = computed(() => links.value.find((href) => /claude\.ai\/code\/(?!artifact)/.test(href)) || "");
+const family = computed(() => modelFamily(data.value.model));
+const running = computed(() =>
+    rows("work").some((w) => !w.completed && !w.data.agent && (w.data.session === props.resource.title || !w.data.session))
+);
+
+const STATES = {
+    working: {word: "Working", dot: "running"},
+    busy: {word: "Working", dot: "running"},
+    idle: {word: "Idle", dot: "queued"},
+    compacting: {word: "Summarising its context", dot: "running"},
+    stopped: {word: "Stopped", dot: ""},
+    paused: {word: "Paused", dot: "queued"},
+};
+const stateKey = computed(() => {
     const reported = data.value.status;
-    return ["stopped", "idle", "compacting"].includes(reported) ? reported : works.value.some((w) => !w.completed) ? "working" : "busy";
+    if (data.value.paused) return "paused";
+    if (["stopped", "idle", "compacting"].includes(reported)) return reported;
+    return running.value ? "working" : "busy";
 });
-const TABS = [
-    {key: "transcript", title: "Transcript"},
-    {key: "work", title: "Work"},
-    {key: "hooks", title: "Hooks"},
-];
-const tabs = TABS;
-const subagentBand = computed(() => ({
-    kicker: "Subagent",
-    label: picked.value.type || "general",
+
+const factsOf = computed(() => {
+    const d = data.value;
+    return [
+        family.value ? `${providerName(d.provider)} · ${family.value}` : providerName(d.provider),
+        `agent ${props.resource.n}`,
+        environment.value,
+        ...(d.branch ? [d.branch] : []),
+        d.started ? `running for ${span(Date.now() / 1000 - d.started)}` : "just started",
+        `context ${Math.round(Number(d.context || 0))}% full`,
+    ];
+});
+
+const mainInfo = computed(() => ({
+    kind: "Main agent",
+    name: `Agent ${props.resource.n}`,
+    title: props.resource.title,
+    state: {key: stateKey.value, ...STATES[stateKey.value]},
+    facts: factsOf.value,
+    counts: {subagents: data.value.subagents || 0, skills: (data.value.skills || []).length},
+    link: sessionLink.value ? {href: sessionLink.value, label: "Open its session on claude.ai"} : null,
+    actions: [
+        data.value.paused
+            ? {key: "resume", label: "Resume its agent", title: "It carries on from where it waited."}
+            : {key: "pause", label: "Pause its agent", title: "It finishes the step it is on, then waits until you resume it."},
+        {
+            key: "stop",
+            label: "Stop its agent",
+            title: "It stops at once. Its chat, commits and files stay here.",
+            danger: true,
+            confirm: {
+                text: "Stop this agent now? It stops in the middle of what it is doing. Its chat, its commits and its files stay here.",
+                button: "Stop now",
+                cancel: "Keep it running",
+            },
+        },
+    ],
+}));
+
+const subagentInfo = computed(() => ({
+    kind: "Subagent",
+    name: picked.value.type || "general",
     title: picked.value.task,
+    back: "Main agent",
     state: picked.value.running
         ? {key: "working", word: "Working", dot: "running"}
         : {
@@ -80,354 +98,48 @@ const subagentBand = computed(() => ({
               word: picked.value.status ? picked.value.status[0].toUpperCase() + picked.value.status.slice(1) : "Closed",
               dot: "done",
           },
-    reason: `subagent of agent ${props.resource.n} · ${picked.value.model || "inherited model"}`,
+    facts: [picked.value.model || "inherited model", `subagent of agent ${props.resource.n}`, environment.value],
+    actions: [],
 }));
-const tab = ref(picked.value ? "chat" : "transcript");
-watch(
-    () => picked.value && picked.value.session,
-    (session) => (tab.value = session ? "chat" : "transcript")
-);
-const log = ref(null);
-const scroller = computed(() => log.value && log.value.scroller);
-const transcript = useTranscript(() => props.resource.n, session, scroller, api);
-const {turns, total} = transcript;
-watch(session, () => (tab.value = "transcript"));
-const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.resource.title));
+
+const ACTIONS = {
+    pause: () => api.pauseAgent(props.resource.title),
+    resume: () => api.resumeAgent(props.resource.title),
+    stop: () => stopAgentNamed(api, environment.value),
+};
 </script>
 
 <template>
     <template v-if="picked">
-        <article class="agent-page subagent-page">
-            <AgentHome subagent :band="subagentBand" :env="env" :agent="resource" :session="picked.session" :chat-session="picked.session">
-                <template #actions>
-                    <DropList
-                        icon="agents"
-                        :label="sessionLabel"
-                        :items="sessions"
-                        :picked="session || ''"
-                        empty="No subagents yet"
-                        @pick="(item) => showSession(item.key)"
-                    />
-                    <CloseButton @click="emit('close')" />
-                </template>
-            </AgentHome>
-        </article>
+        <AgentInspector
+            :key="picked.session"
+            kind="subagent"
+            :info="subagentInfo"
+            :env="env"
+            :agent="resource"
+            :session="picked.session"
+            :chat-session="picked.session"
+            @back="showSession('')"
+            @close="emit('close')"
+        />
     </template>
     <template v-else>
-        <article class="body agent-page">
-            <div class="agent-head">
-                <header class="top">
-                    <span class="kind">
-                        <Icon name="agents" :size="13" />
-                        Agent {{ resource.n }}
-                    </span>
-                    <span :class="['state', state]">{{ state }}</span>
-                    <span class="grow" />
-                    <CommentToggle :resource="resource" />
-                    <CloseButton @click="emit('close')" />
-                </header>
-                <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
-                <p class="session">session {{ resource.title }}</p>
-                <AgentPageFacts :data="data" />
-                <div class="pickers">
-                    <DropList
-                        icon="agents"
-                        :label="sessionLabel"
-                        :items="sessions"
-                        :picked="session || ''"
-                        empty="No subagents yet"
-                        @pick="(item) => showSession(item.key)"
-                    />
-                    <DropList
-                        icon="book"
-                        :label="`${skills.length} skills in this window`"
-                        :items="skillItems"
-                        empty="No skill loaded in this window"
-                        @pick="() => go(route.env, 'skills')"
-                    />
-                    <AgentLinks :agent="resource.n" :session="picked ? picked.session : ''" />
-                </div>
-                <TabBar v-model="tab" class="agent-tabs" :tabs="tabs">
-                    <template v-if="tab === 'transcript'">
-                        <span class="tab-note">
-                            {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
-                        </span>
-                    </template>
-                </TabBar>
-            </div>
-            <template v-if="tab === 'work'">
-                <AgentPageWork :works="works" :subagent="Boolean(picked)" />
+        <AgentInspector
+            key="main"
+            kind="main"
+            :info="mainInfo"
+            :env="env"
+            :agent="resource"
+            :subagents="subagents"
+            :skills="skills"
+            :provider="data.provider"
+            :run="(key) => ACTIONS[key]()"
+            @open-subagent="showSession"
+            @close="emit('close')"
+        >
+            <template #tools>
+                <CommentToggle :resource="resource" />
             </template>
-            <template v-if="tab === 'chat' && picked">
-                <section class="block chat-block">
-                    <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
-                </section>
-            </template>
-            <template v-if="tab === 'hooks'">
-                <section class="block">
-                    <AgentHooks :provider="data.provider" />
-                </section>
-            </template>
-            <section v-show="tab === 'transcript'" class="block">
-                <TranscriptLog ref="log" :transcript="transcript" :entries="entries" />
-            </section>
-        </article>
+        </AgentInspector>
     </template>
 </template>
-
-<style scoped>
-.agent-page {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-sizing: border-box;
-    height: 100%;
-    padding-top: 0;
-}
-
-.subagent-page {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-}
-
-.block.chat-block {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-height: 320px;
-    margin: -10px -24px -24px;
-}
-
-.agent-head {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0 -24px;
-    padding: 18px 24px 0;
-    background: var(--bg);
-}
-
-.top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 -24px;
-    padding: 0 24px 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-}
-
-.kind {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--accent-text);
-}
-
-.state {
-    padding: 1px 7px;
-    border-radius: 99px;
-    background: var(--raised);
-    font-size: 11px;
-    color: var(--text-3);
-}
-
-.state.working,
-.state.busy,
-.state.compacting {
-    color: var(--progress);
-}
-
-.grow {
-    flex: 1;
-}
-
-.title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.session {
-    margin: -6px 0 0;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    color: var(--text-3);
-}
-
-.block {
-    margin-top: 12px;
-}
-
-.pickers {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.agent-tabs {
-    display: flex;
-    align-items: stretch;
-    gap: 16px;
-    height: 32px;
-    margin: 2px -24px 0;
-    padding: 0 24px;
-    border-bottom: 1px solid var(--border);
-}
-
-.tab-note {
-    margin-left: auto;
-    align-self: center;
-    font-size: 11px;
-    color: var(--text-4);
-}
-
-.session-pick .dot {
-    width: 6px;
-    height: 6px;
-}
-
-.transcript {
-    max-height: 70vh;
-    overflow-y: auto;
-    font-size: 12.5px;
-}
-
-.read-error {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 0 0 8px;
-    color: var(--blocking);
-}
-
-.read-error button {
-    border: 0;
-    background: none;
-    color: inherit;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-.edge {
-    padding: 14px 0;
-    font-size: 12px;
-    color: var(--text-3);
-    text-align: center;
-}
-
-.turn {
-    padding: 8px 2px;
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-.turn.superseded {
-    opacity: 0.62;
-}
-
-.turn.superseded .turn-text {
-    text-decoration: line-through;
-}
-
-.turn.whisper {
-    padding-left: 10px;
-    border-left: 2px solid var(--accent-dim);
-}
-
-.turn.whisper .who {
-    color: var(--accent-text);
-}
-
-.meta {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    font-size: 11.5px;
-    color: var(--text-3);
-}
-
-.who {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.fold-mark {
-    margin-left: 5px;
-    color: var(--text-4);
-    font-weight: 400;
-}
-
-.turn.human .who {
-    color: var(--accent-text);
-}
-
-.line {
-    margin-left: auto;
-    font-variant-numeric: tabular-nums;
-    opacity: 0.7;
-}
-
-.tools {
-    color: var(--text-3);
-}
-
-.turn-text {
-    margin-top: 4px;
-    line-height: 1.5;
-    color: var(--text);
-}
-
-.raw {
-    max-height: 280px;
-    margin: 4px 0 0;
-    overflow: auto;
-    font: inherit;
-    font-size: 12.5px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    color: var(--text-2);
-}
-
-.clipped {
-    font-size: 11px;
-    color: var(--text-4);
-}
-
-.turn-text :deep(p) {
-    margin: 0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.turn-text :deep(p + p) {
-    margin-top: 0.5em;
-}
-
-.every {
-    margin-left: 8px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 11px;
-    text-transform: none;
-    letter-spacing: 0;
-    cursor: pointer;
-}
-</style>

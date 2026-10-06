@@ -59,6 +59,7 @@ const cardOf = (row) => ({
                 kind="helper"
                 :label="helperName(inspected)"
                 @close="inspected = null"
+                @stopped="emit('changed')"
             />
         </template>
     </div>

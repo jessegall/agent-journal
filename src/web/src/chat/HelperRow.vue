@@ -2,6 +2,7 @@
 import {HELPER_WORDS, helperLine, helperName, helperReport, helperState, stateAt} from "../domain/helpers.js";
 import {nextTick, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {word as commandWord} from "../domain/spec.js";
 import {ago} from "../format/time.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -19,13 +20,13 @@ const clipped = ref(false);
 const name = () => helperName(props.row);
 const report = () => helperReport(props.row);
 const state = () => helperState(props.row);
-const word = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : HELPER_WORDS[state()]);
+const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : HELPER_WORDS[state()]);
 
 async function remove() {
     busy.value = true;
     refusal.value = "";
     try {
-        await api.act("helper", props.row.n, "complete");
+        await api.act("helper", props.row.n, commandWord("helper", "complete"));
         confirming.value = false;
         emit("changed");
     } catch (e) {
@@ -49,7 +50,7 @@ onMounted(() =>
                 {{ row.title }}
                 <small>{{ helperLine(row) }}</small>
             </Btn>
-            <span :class="['helper-state', state()]">{{ word() }}</span>
+            <span :class="['helper-state', state()]">{{ stateLabel() }}</span>
             <template v-if="state() === 'running'">
                 <AgentStopButton
                     quiet

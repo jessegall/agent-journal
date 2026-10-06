@@ -7,16 +7,18 @@ import Icon from "../kit/Icon.vue";
 import ListRow from "../kit/ListRow.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import PresetList from "../kit/PresetList.vue";
-import StateDot from "../kit/StateDot.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import FileFeed from "../chat/FileFeed.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import Thread from "../chat/Thread.vue";
 import RailTodos from "../rail/RailTodos.vue";
+import AgentHooks from "../resource/AgentHooks.vue";
 import PlanPage from "../resource/PlanPage.vue";
 import TaskList from "../resource/TaskList.vue";
 import TranscriptLog from "../resource/TranscriptLog.vue";
+import AgentInspectorBands from "./AgentInspectorBands.vue";
+import AgentInspectorHead from "./AgentInspectorHead.vue";
 import AgentTodo from "./AgentTodo.vue";
 import AgentPanes from "./AgentPanes.vue";
 import {scopeIn} from "../composables/scope.js";
@@ -26,17 +28,22 @@ import {levelOf} from "../domain/verbosity.js";
 import {age} from "../format/time.js";
 import {pollKey, usePoll} from "../composables/poll.js";
 import {PAGE, holding, rows} from "../sync/rows.js";
-import {route} from "../route.js";
+import {go, route} from "../route.js";
 
 const props = defineProps({
-    band: {type: Object, required: true},
+    info: {type: Object, required: true},
+    kind: {type: String, default: "helper"},
     env: {type: String, default: ""},
     agent: {type: Object, default: null},
     session: {type: String, default: ""},
     chatSession: {type: String, default: ""},
     plan: {type: Number, default: 0},
-    subagent: Boolean,
+    subagents: {type: Array, default: () => []},
+    skills: {type: Array, default: () => []},
+    provider: {type: String, default: ""},
+    run: {type: Function, default: async () => {}},
 });
+const emit = defineEmits(["back", "close", "open-subagent"]);
 const EVERY = 5000;
 const CHAT_TYPES = ["message", "comment", "question", "reaction", "doc", "agent", "work", "plan", "report", "todo", "notice"];
 const HISTORY = PAGE;
@@ -45,17 +52,20 @@ const VIEWS = {
     terminal: {title: "Terminal", icon: "terminal"},
     transcript: {title: "Transcript", icon: "list"},
     history: {title: "History", icon: "clock"},
-    tasks: {title: "Tasks", icon: "todos"},
-    feed: {title: "File feed", icon: "edits"},
+    tasks: {title: "Its tasks", icon: "todos"},
+    feed: {title: "Files changed", icon: "edits"},
     todos: {title: "To-dos", icon: "todos"},
     plan: {title: "Plan", icon: "flag"},
+    subagents: {title: "Subagents", icon: "agents"},
+    skills: {title: "Skills", icon: "book"},
+    hooks: {title: "Hooks", icon: "activity"},
 };
+const subagent = props.kind === "subagent";
 
 const elsewhere = Boolean(props.env) && props.env !== route.value.env;
 const scope = elsewhere ? scopeIn(props.env) : null;
 if (scope) provide("scope", scope);
 const there = scope ? scope.api : api;
-const state = computed(() => props.band.state);
 const rowsHere = scope ? scope.rows : rows;
 
 const found = ref(null);
@@ -70,7 +80,7 @@ usePoll(
 const agent = computed(() => props.agent || found.value);
 
 const works = ref([]);
-const worked = (w) => (props.subagent ? w.data.agent === props.session : !w.data.agent);
+const worked = (w) => (subagent ? w.data.agent === props.session : !w.data.agent);
 usePoll(
     pollKey(),
     () => there.list("work", {last: HISTORY, completed: true}),
@@ -81,7 +91,7 @@ usePoll(
 const tasks = ref([]);
 usePoll(
     pollKey(),
-    () => (props.subagent ? there.tasks(props.session) : Promise.resolve(null)),
+    () => (subagent ? there.tasks(props.session) : Promise.resolve(null)),
     EVERY,
     (got) => got && (tasks.value = got)
 );
@@ -101,13 +111,16 @@ usePoll(
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const transcript = useTranscript(() => (agent.value ? agent.value.n : 0), props.session, scroller, there);
-const {turns} = transcript;
+const {turns, total} = transcript;
 
-const available = computed(() =>
-    props.subagent
-        ? ["chat", "terminal", "transcript", "tasks", "history"]
-        : ["chat", "terminal", "transcript", "history", "feed", "todos", ...(props.plan ? ["plan"] : [])]
-);
+const AVAILABLE = {
+    main: ["chat", "transcript", "terminal", "feed", "todos", "history", "subagents", "skills", "hooks"],
+    subagent: ["chat", "transcript", "terminal", "tasks", "history"],
+    helper: ["chat", "transcript", "terminal", "feed", "todos", "history"],
+    ticket: ["chat", "transcript", "terminal", "feed", "todos", "history"],
+    plan: ["chat", "transcript", "terminal", "feed", "todos", "history"],
+};
+const available = computed(() => [...(AVAILABLE[props.kind] || AVAILABLE.helper), ...(props.plan ? ["plan"] : [])]);
 
 const panes = ref(null);
 const todoN = ref(0);
@@ -130,48 +143,89 @@ function pickPreset(key) {
     layoutMenu.value = false;
     panes.value.shape(INSPECTOR_PRESETS.find((p) => p.key === key).shape);
 }
+
+const stateKey = computed(() => props.info.state.key);
+const counts = computed(() => props.info.counts);
+const link = computed(() => props.info.link);
+const asking = ref("");
+const refusal = ref("");
+const actionOf = (key) => props.info.actions.find((action) => action.key === key);
+const question = computed(() => (asking.value ? actionOf(asking.value) : null));
+
+async function perform(key) {
+    refusal.value = "";
+    asking.value = "";
+    try {
+        await props.run(key);
+    } catch (e) {
+        refusal.value = e.message;
+    }
+}
+
+function choose(key) {
+    const action = actionOf(key);
+    if (action.confirm) asking.value = key;
+    else perform(key);
+}
+
+const showing = (view) => panes.value && panes.value.show(view);
+const openSkills = () => go(route.value.env, "skills");
 </script>
 
 <template>
-    <div class="agent-home">
-        <header :class="['band', state.key]">
-            <div class="band-main">
-                <span class="band-kicker">
-                    <Icon name="agents" :size="12" />
-                    {{ band.kicker }}
-                </span>
-                <h2 class="band-title">
-                    <span class="band-label">{{ band.label }}</span>
-                    {{ band.title }}
-                </h2>
-                <span class="band-facts">
-                    <StateDot :state="state.dot" />
-                    <span class="band-state">{{ state.word }}</span>
-                    <template v-if="band.reason">
-                        <span class="band-reason">{{ band.reason }}</span>
-                    </template>
-                    <span class="band-where">{{ agent ? `agent ${agent.n}` : "its agent" }} · {{ env || route.env }}</span>
-                </span>
-            </div>
-            <div class="band-tools">
+    <div class="agent-inspector">
+        <AgentInspectorHead :info="info" :asking="asking" @action="choose" @back="emit('back')" @close="emit('close')">
+            <template #tools>
+                <slot name="tools" />
                 <span ref="layoutOpener">
-                    <Btn small title="How this inspector's panes are laid out, for every agent" @click.stop="layoutMenu = !layoutMenu">
+                    <Btn
+                        small
+                        title="How the panes are laid out. It applies to every agent's inspector."
+                        @click.stop="layoutMenu = !layoutMenu"
+                    >
                         <Icon name="layout" :size="12" />
-                        Layout
+                        Change layout
                     </Btn>
                 </span>
-                <slot name="actions" />
-            </div>
-        </header>
+            </template>
+            <template #facts>
+                <template v-if="counts">
+                    <Btn kind="text" class="inspector-link" @click="showing('subagents')">{{ counts.subagents }} subagents</Btn>
+                    <Btn kind="text" class="inspector-link" @click="showing('skills')">{{ counts.skills }} skills loaded</Btn>
+                </template>
+                <template v-if="link">
+                    <Btn kind="text" class="inspector-link" :href="link.href" target="_blank">{{ link.label }}</Btn>
+                </template>
+            </template>
+        </AgentInspectorHead>
         <template v-if="layoutMenu">
             <MenuPanel :anchor="layoutOpener" align="end" :min-width="240" :max-width="300" @click.stop @close="layoutMenu = false">
                 <PresetList :presets="presets" @pick="pickPreset" />
             </MenuPanel>
         </template>
+        <AgentInspectorBands
+            :confirm="question && question.confirm"
+            :report="info.report"
+            :refusal="refusal"
+            :state-key="stateKey"
+            :plan="plan"
+            :resume="actionOf('resume')"
+            @cancel="asking = ''"
+            @confirmed="perform(question.key)"
+            @show-plan="showing('plan')"
+            @resume="choose('resume')"
+        />
         <AgentPanes ref="panes" :views="VIEWS" :available="available" :flushable="['feed']">
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
+                        <p class="pane-note">
+                            {{
+                                subagent
+                                    ? "What this subagent was asked and what it answered. It can't be messaged."
+                                    : "The conversation with this agent."
+                            }}
+                        </p>
                         <template v-if="subagent">
                             <SubagentChat :turns="turns" :session="chatSession || session" read-only />
                         </template>
@@ -180,6 +234,9 @@ function pickPreset(key) {
                         </template>
                     </template>
                     <template #transcript>
+                        <p class="pane-note">
+                            What the agent did, step by step. {{ turns.length ? `${turns.length} of ${total} lines · live` : "Live" }}
+                        </p>
                         <TranscriptLog ref="log" class="fill" :transcript="transcript" :entries="turns" :env="env" />
                     </template>
                     <template #terminal>
@@ -202,7 +259,11 @@ function pickPreset(key) {
                         </template>
                         <div class="fill scroll">
                             <template v-for="w in works" :key="w.n">
-                                <ListRow :kind="w.completed ? 'Done' : 'Working'" :title="w.title" :text="age(w.completed || w.created)" />
+                                <ListRow
+                                    :kind="w.completed ? 'Closed' : 'Working'"
+                                    :title="w.title"
+                                    :text="age(w.completed || w.created)"
+                                />
                             </template>
                         </div>
                     </template>
@@ -240,6 +301,42 @@ function pickPreset(key) {
                             </div>
                         </template>
                     </template>
+                    <template #subagents>
+                        <p class="pane-note">
+                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent and can't
+                            be messaged. Helpers are different: separate agents with their own environment, listed under Helpers.
+                        </p>
+                        <template v-if="!subagents.length">
+                            <EmptyState title="No subagents yet">The jobs this agent hands off show here.</EmptyState>
+                        </template>
+                        <div class="fill scroll">
+                            <template v-for="row in subagents" :key="row.session">
+                                <ListRow
+                                    :kind="row.running ? 'Working' : 'Closed'"
+                                    :title="row.task || row.session"
+                                    :text="row.type || row.model || ''"
+                                >
+                                    <template #end>
+                                        <Btn small @click="emit('open-subagent', row.session)">Open</Btn>
+                                    </template>
+                                </ListRow>
+                            </template>
+                        </div>
+                    </template>
+                    <template #skills>
+                        <p class="pane-note">{{ skills.length }} skills are loaded in this agent's current context.</p>
+                        <div class="fill scroll padded skill-names">
+                            <template v-for="name in skills" :key="name">
+                                <span class="skill-name">{{ name }}</span>
+                            </template>
+                            <Btn kind="text" class="skill-link" @click="openSkills">Open the Skills page</Btn>
+                        </div>
+                    </template>
+                    <template #hooks>
+                        <div class="fill scroll padded">
+                            <AgentHooks :provider="provider" />
+                        </div>
+                    </template>
                     <template #plan>
                         <template v-if="planRow">
                             <div class="fill scroll padded">
@@ -257,99 +354,11 @@ function pickPreset(key) {
 </template>
 
 <style scoped>
-.agent-home {
+.agent-inspector {
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 0;
-}
-
-.band {
-    display: flex;
-    flex: none;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid color-mix(in srgb, var(--tone-commit) 35%, var(--border));
-    border-left: 3px solid var(--tone-commit);
-    background: color-mix(in srgb, var(--tone-commit) 13%, var(--bg));
-}
-
-.band-main {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-}
-
-.band-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--tone-commit);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
-.band-title {
-    margin: 0;
-    overflow: hidden;
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.band-label {
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
-
-.band-facts {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 8px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.band-state {
-    color: var(--text);
-    font-weight: 500;
-}
-
-.band.waiting .band-state {
-    color: var(--tone-warn);
-}
-
-.band.stuck .band-state {
-    color: var(--danger);
-}
-
-.band-reason {
-    overflow: hidden;
-    color: var(--text-2);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.band-where {
-    font-family: var(--mono);
-    font-size: 11px;
-}
-
-.band-tools {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
 }
 
 .fill {
@@ -379,18 +388,30 @@ function pickPreset(key) {
     font-size: 12px;
 }
 
-@media (max-width: 700px) {
-    .band {
-        flex-direction: column;
-    }
+.skill-names {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 6px;
+}
 
-    .band-tools {
-        justify-content: flex-start;
-    }
+.skill-name {
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-2);
+    font-size: 12px;
+}
 
-    .band-main,
-    .band-tools {
-        align-self: stretch;
-    }
+.skill-link {
+    flex-basis: 100%;
+    margin-top: 8px;
+    color: var(--accent-text);
+    font-size: 12.5px;
+}
+
+.inspector-link {
+    color: var(--accent-text);
+    font-size: 12px;
 }
 </style>

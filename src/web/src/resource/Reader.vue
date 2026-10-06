@@ -14,6 +14,7 @@ import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 import Revisions from "./Revisions.vue";
 import CollectionPage from "./CollectionPage.vue";
+import Dialog from "../kit/Dialog.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 import UpdateReport from "./UpdateReport.vue";
@@ -92,84 +93,90 @@ watch(
 </script>
 
 <template>
-    <SidePanel
-        :open="(!!resource || !!broken) && !leaving"
-        :width="panelWidth"
-        :depth="depth"
-        :over="over"
-        @dismiss="close"
-        @close="emit('gone')"
-    >
-        <template v-if="broken">
-            <div class="damaged">
-                <EmptyState>{{ meta(type).title }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
-                <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
-                    {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
-                </Btn>
-            </div>
-        </template>
-        <template v-else-if="panel === 'inspector'">
-            <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
-                <div class="inspector-pages">
-                    <Transition name="inspector-page">
-                        <div :key="resource.ref" :class="['inspector-page', shape]">
-                            <template v-if="swapping">
-                                <div class="skeleton">
-                                    <span class="blank short" />
-                                    <span class="blank wide" />
-                                    <span class="blank" />
-                                    <span class="blank" />
-                                    <span class="blank half" />
-                                </div>
-                            </template>
-                            <template v-else>
-                                <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
-                            </template>
-                        </div>
-                    </Transition>
+    <template v-if="shape === 'agent'">
+        <Dialog large bare :open="(!!resource || !!broken) && !leaving" @dismiss="close" @close="emit('gone')">
+            <template v-if="resource">
+                <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                    <AgentPage :resource="resource" @close="close" />
+                </DocumentPage>
+            </template>
+        </Dialog>
+    </template>
+    <template v-else>
+        <SidePanel
+            :open="(!!resource || !!broken) && !leaving"
+            :width="panelWidth"
+            :depth="depth"
+            :over="over"
+            @dismiss="close"
+            @close="emit('gone')"
+        >
+            <template v-if="broken">
+                <div class="damaged">
+                    <EmptyState>{{ meta(type).title }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
+                    <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
+                        {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
+                    </Btn>
                 </div>
-                <template v-if="takesComments">
-                    <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
-                </template>
-            </div>
-        </template>
-        <template v-else>
-            <div class="page">
-                <SwitchCase :value="shape">
-                    <template #plan>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <PlanPage :resource="resource" @close="close" />
-                        </DocumentPage>
+            </template>
+            <template v-else-if="panel === 'inspector'">
+                <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
+                    <div class="inspector-pages">
+                        <Transition name="inspector-page">
+                            <div :key="resource.ref" :class="['inspector-page', shape]">
+                                <template v-if="swapping">
+                                    <div class="skeleton">
+                                        <span class="blank short" />
+                                        <span class="blank wide" />
+                                        <span class="blank" />
+                                        <span class="blank" />
+                                        <span class="blank half" />
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
+                                </template>
+                            </div>
+                        </Transition>
+                    </div>
+                    <template v-if="takesComments">
+                        <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
                     </template>
-                    <template #collection>
-                        <DocumentPage :resource="resource" :focus="focusComment" :linked="resource.refs" @close="close">
-                            <CollectionPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </template>
-                    <template #agent>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <AgentPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </template>
-                    <template #document>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <template v-if="resource.data.revisions">
-                                <Revisions :resource="resource" @close="close" />
-                            </template>
-                            <template v-else-if="isUpdate(resource)">
-                                <ResourceBody :resource="resource" :comments="false" :links="false" @close="close">
-                                    <UpdateReport :resource="resource" @step="stepTo" @all="allUpdates" />
-                                </ResourceBody>
-                            </template>
-                        </DocumentPage>
-                    </template>
-                    <template #default>
-                        <ResourceBody :resource="resource" @close="close" />
-                    </template>
-                </SwitchCase>
-            </div>
-        </template>
-    </SidePanel>
+                </div>
+            </template>
+            <template v-else>
+                <div class="page">
+                    <SwitchCase :value="shape">
+                        <template #plan>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <PlanPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #collection>
+                            <DocumentPage :resource="resource" :focus="focusComment" :linked="resource.refs" @close="close">
+                                <CollectionPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #document>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <template v-if="resource.data.revisions">
+                                    <Revisions :resource="resource" @close="close" />
+                                </template>
+                                <template v-else-if="isUpdate(resource)">
+                                    <ResourceBody :resource="resource" :comments="false" :links="false" @close="close">
+                                        <UpdateReport :resource="resource" @step="stepTo" @all="allUpdates" />
+                                    </ResourceBody>
+                                </template>
+                            </DocumentPage>
+                        </template>
+                        <template #default>
+                            <ResourceBody :resource="resource" @close="close" />
+                        </template>
+                    </SwitchCase>
+                </div>
+            </template>
+        </SidePanel>
+    </template>
 </template>
 
 <style scoped>
