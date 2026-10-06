@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.4 — an upgrade from an older version fills in every folder the release added
+
+**An upgrade now brings in every folder the new release added, however old the version you upgrade from.** Upgrading
+from 2.249.x to 2.252.0 left out the new `overview` folder, so direct commands failed with `No module named 'overview'`.
+The upgrade now copies the release's own folders and repairs an install that is missing one. Run `journal upgrade` once
+to repair an install that lacks `overview`.
+
 ## 2.253.3 — quitting never waits on the journal's cleanup
 
 **Quitting the agent returns at once.** The cleanup after it ends now runs on its own, with its output in the

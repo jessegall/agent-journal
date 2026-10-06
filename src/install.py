@@ -34,6 +34,7 @@ REPOSITORY_ENV = "AGENT_JOURNAL_REPO"
 LOOKUP_SECONDS = 10
 BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
 HEALED = "AGENT_JOURNAL_HEALED"
+REPAIRED = "AGENT_JOURNAL_REPAIRED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
@@ -144,9 +145,17 @@ def changed_message(project: Path, changed: list[Path]) -> str:
     return f"Files changed since the journal wrote them: {names}. Run journal upgrade --yes to copy them into .journal/attic and update anyway."
 
 
-def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
+def layout(root: Path) -> tuple[str, ...]:
+    return tuple(sorted(f"{tree.name}/dist" if tree.name == "web" else tree.name for tree in root.iterdir() if tree.is_dir() and not tree.name.startswith(("_", "."))))
+
+
+def packed_dirs(src: Path) -> list[str]:
+    return [name for name in layout(src) if (src / name / "__init__.py").is_file()]
+
+
+def package_files(root: Path, left: tuple = LEFT_BEHIND, trees: tuple = PACKAGE_TREES) -> set[Path]:
     files = {Path(name) for name in PACKAGE_FILES if (root / name).is_file()}
-    for name in PACKAGE_TREES:
+    for name in trees:
         base = root / name
         if base.is_dir():
             files.update(f.relative_to(root) for f in base.rglob("*") if f.is_file() and f.name not in left and f.suffix != ".pyc" and "__pycache__" not in f.parts)
@@ -169,12 +178,13 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
     source, target = packaged(source).resolve(), target.resolve()
     if source == target:
         return set(), set()
-    wanted = package_files(source)
+    trees = layout(source)
+    wanted = package_files(source, trees=trees)
     if "install.py" not in {rel.as_posix() for rel in wanted}:
         raise OSError(f"{source} holds no journal package; nothing was changed")
     if (source / "web").is_dir() and not (source / "web" / "dist" / "index.html").is_file():
         raise OSError(f"{source / 'web' / 'dist'} holds no finished viewer build, perhaps one still running; nothing was changed")
-    existing = package_files(target, left=())
+    existing = package_files(target, left=(), trees=(*dict.fromkeys((*PACKAGE_TREES, *trees)),))
     gone = existing - wanted
     changed = {rel for rel in wanted if not (target / rel).is_file() or (source / rel).read_bytes() != (target / rel).read_bytes()}
     for rel in sorted(gone):
@@ -482,9 +492,9 @@ def complete(folder: Path) -> bool:
     return all((folder / name).is_file() for name in PACKAGE_FILES) and all((folder / name).is_dir() for name in PACKED_DIRS)
 
 
-def handed_over(project: Path, root: Path) -> list[str]:
+def handed_over(project: Path, root: Path, marks: tuple = ()) -> list[str]:
     finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120,
-                              env={**os.environ, BOOTSTRAPPED: "1"})
+                              env={**os.environ, BOOTSTRAPPED: "1", **dict.fromkeys(marks, "1")})
     return finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"]
 
 
@@ -497,7 +507,7 @@ def finish(project: Path, root: Path) -> list[str]:
     if PACKAGE.resolve() == root.resolve():
         refresh(PACKAGE, code(root))
     done = []
-    if not complete(code(root)) and not os.environ.get(BOOTSTRAPPED):
+    if not complete(code(root)) and not os.environ.get(REPAIRED):
         temporary = Path(tempfile.mkdtemp())
         _, failed = fetch(temporary / "package", ref=release_of(code(root)))
         try:
@@ -508,7 +518,7 @@ def finish(project: Path, root: Path) -> list[str]:
         shutil.rmtree(temporary, ignore_errors=True)
         done.append(f"package files an older installer did not know: {failed or 'fetched'}")
         if not failed:
-            return done + handed_over(project, root)
+            return done + handed_over(project, root, (REPAIRED,))
     done += configure(project, root)
     ran = LOADED.migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
@@ -522,9 +532,9 @@ def finish(project: Path, root: Path) -> list[str]:
     return done
 
 
-def python_files(src: Path) -> list[Path]:
+def python_files(src: Path, dirs: list[str]) -> list[Path]:
     top = [src / name for name in PACKAGE_FILES if name.endswith(".py") and (src / name).is_file()]
-    return top + sorted(f for name in PACKED_DIRS if (src / name).is_dir() for f in (src / name).rglob("*.py") if "__pycache__" not in f.parts)
+    return top + sorted(f for name in dirs if (src / name).is_dir() for f in (src / name).rglob("*.py") if "__pycache__" not in f.parts)
 
 
 def compiled(source: bytes, name: str, stamp: float) -> bytes:
@@ -534,7 +544,8 @@ def compiled(source: bytes, name: str, stamp: float) -> bytes:
 
 def pack(root: Path) -> str:
     src = code(root)
-    files = python_files(src)
+    dirs = packed_dirs(src)
+    files = python_files(src, dirs)
     if not (src / "__main__.py").is_file():
         return f"the Python is already in {ARCHIVE}"
     digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
@@ -562,7 +573,7 @@ def pack(root: Path) -> str:
             old.unlink(missing_ok=True)
     for f in files:
         f.unlink()
-    for name in PACKED_DIRS:
+    for name in dirs:
         for cache in sorted((src / name).rglob("__pycache__"), reverse=True) if (src / name).is_dir() else ():
             shutil.rmtree(cache, ignore_errors=True)
         for folder in sorted((p for p in (src / name).rglob("*") if p.is_dir()), key=lambda p: len(p.parts), reverse=True) if (src / name).is_dir() else ():

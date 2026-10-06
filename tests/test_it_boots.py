@@ -87,6 +87,31 @@ def upgrade_from(repository: Path, root: Path) -> subprocess.CompletedProcess:
     return subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], cwd=root.parent, env=env, capture_output=True, text=True, timeout=180)
 
 
+def as_older_installer(root: Path) -> None:
+    older = root / "journal-0.0.1-older00000.pyz"
+    with zipfile.ZipFile((root / "journal.pyz").resolve()) as current, zipfile.ZipFile(older, "w", zipfile.ZIP_DEFLATED) as target:
+        for item in current.infolist():
+            if item.filename == "install.pyc":
+                continue
+            data = current.read(item)
+            if item.filename == "install.py":
+                data = data.decode().replace('"migrations", "overview", ', '"migrations", ').replace("trees = layout(source)", "trees = PACKAGE_TREES").encode()
+            target.writestr(item, data)
+    point(root, older)
+
+
+def test_an_upgrade_from_an_older_installer_fills_in_a_folder_the_release_added(tmp_path):
+    root = installed(tmp_path)
+    as_older_installer(root)
+    repository = released(tmp_path)
+    subprocess.run(["git", "tag", f"v{(HERE / 'VERSION').read_text().strip()}"], cwd=repository, capture_output=True, timeout=WAIT)
+    upgraded = upgrade_from(repository, root)
+    with zipfile.ZipFile((root / "journal.pyz").resolve()) as packed:
+        held = "overview/__init__.py" in packed.namelist()
+    status = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "status"], cwd=root.parent, env={**os.environ, "HOME": str(tmp_path / "home")}, capture_output=True, text=True, timeout=WAIT)
+    assert (held, "failed" in upgraded.stdout, "ModuleNotFoundError" in status.stderr, status.returncode) == (True, False, False, 0), f"an older installer's upgrade still brings in every folder the release added:\n{upgraded.stdout}{upgraded.stderr}{status.stderr}"
+
+
 def test_an_installed_journal_keeps_its_records_and_upgrades_itself_from_a_release(tmp_path):
     place = tmp_path
     (place / PROJECT).mkdir()
