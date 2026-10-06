@@ -61,3 +61,27 @@ def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache
     transcript.write_text(entry("the first word!") + entry("and more of them"))
     assert [turn.text for turn in claude.turns(transcript)][0] == "the first word!", "one replaced at a size it had before is read again too"
     assert "engine.transcript" in SHAPED_BY and code_mark(), "the cache is keyed on the code that shapes a turn, so an upgrade never reads old turns"
+
+
+def test_the_conversation_a_summary_replaced_and_your_own_words_are_read_back(capsys):
+    import json
+    from datetime import datetime, timezone
+    from commands.cli import run
+    from tests.kit import report
+    features.load()
+    record = fresh()
+    stamp = datetime.now(timezone.utc).isoformat()
+    rows = [{"type": "user", "timestamp": stamp, "message": {"content": "make the tunnel restart itself"}},
+            {"type": "assistant", "timestamp": stamp, "message": {"content": [{"type": "text", "text": "On it, the watchdog first."}]}},
+            {"type": "user", "timestamp": stamp, "isCompactSummary": True, "message": {"content": "summary of the tunnel work"}},
+            {"type": "user", "timestamp": stamp, "message": {"content": "now the phone dialog"}}]
+    transcript = record.root.parent / "claude-1.jsonl"
+    transcript.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    read = lambda *words: (run(["--root", str(record.root), "--env", record.env, "--session", "claude-1", *words]), capsys.readouterr().out)[1]
+    back = read("conversation", "--back", "1")
+    assert "make the tunnel restart itself" in back and "On it, the watchdog first." in back and "now the phone dialog" not in back, \
+        "the conversation a summary replaced is read back, and nothing after it"
+    own = read("user")
+    assert "make the tunnel restart itself" in own and "now the phone dialog" in own and "watchdog" not in own, "your own words are read back, and only yours"
+    assert "make the tunnel restart itself" in read("search", "restart itself"), "a search finds words in any conversation of the environment"
