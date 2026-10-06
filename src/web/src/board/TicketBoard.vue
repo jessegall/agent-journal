@@ -4,7 +4,6 @@ import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {saveSettings} from "../actions/settings.js";
 import {workingCards} from "../domain/ticketAgents.js";
-import AgentDrawer from "../agents/AgentDrawer.vue";
 import TicketAgent from "../agents/TicketAgent.vue";
 import BoardGoal from "./BoardGoal.vue";
 import BoardLanes from "./BoardLanes.vue";
@@ -32,7 +31,6 @@ const writing = ref(false);
 const stage = ref("");
 const starting = ref(false);
 const stopping = ref(null);
-const watching = ref(null);
 const opened = ref(null);
 const slots = computed(() => store.board.slots);
 const building = computed(() => props.board && (props.board.data.building || {}).since);
@@ -147,14 +145,11 @@ defineExpose({newWork, writing});
         :refresh="refresh"
         :new-work="newWork"
         :open-agent="(card) => (opened = card)"
-        :watch-agent="(card) => (watching = card)"
+        :watch-agent="(card) => (opened = card)"
         adds
     />
     <template v-if="agentCard">
-        <TicketAgent :card="agentCard" @close="opened = null" @terminal="watching = agentCard" />
-    </template>
-    <template v-if="watching">
-        <AgentDrawer :card="watching" @close="watching = null" @stopped="refresh" />
+        <TicketAgent :card="agentCard" @close="opened = null" @stopped="refresh" />
     </template>
     <template v-if="stopping">
         <StopPrompt :move="stopping" @stop="stopAndMove(stopping)" @keep="keepAndMove(stopping)" @close="stopping = null" />

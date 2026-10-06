@@ -122,46 +122,68 @@ function moveTab(from, to) {
 }
 
 const shape = (next) => apply(arranged(layout.value, next));
-defineExpose({shape, layout});
+const phoneView = ref("");
+const phoneViews = computed(() => leaves(layout.value.tree).flatMap((id) => visibleTabs(layout.value.panes[id])));
+const phoneActive = computed(() => (phoneViews.value.includes(phoneView.value) ? phoneView.value : phoneViews.value[0] || ""));
+const phoneTabs = computed(() =>
+    phoneViews.value.map((key) => ({key, title: props.views[key].title, icon: props.views[key].icon, on: key === phoneActive.value}))
+);
+const noTune = () => {};
+
+function show(view) {
+    if (narrow.value) return (phoneView.value = view);
+    const id = leaves(layout.value.tree).find((leaf) => layout.value.panes[leaf].tabs.includes(view));
+    if (id !== undefined) pick(id, view);
+}
+
+defineExpose({shape, layout, show});
 </script>
 
 <template>
     <div class="agent-panes">
-        <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" :stacked="narrow" :rank="firstChat" @resize="resize">
-            <template #pane="{id, pane, state}">
-                <PaneTabs
-                    :tabs="tabsOf(id, pane)"
-                    :data-inspector-tabs="id"
-                    @grab="(e, key) => grabTab(e, id, key)"
-                    @pick="(key) => pick(id, key)"
-                    @close="(key) => apply(tabClosed(layout, id, key))"
-                >
-                    <span class="agent-pane-menu">
-                        <button
-                            type="button"
-                            :class="['agent-pane-menu-btn', {on: menu && menu.id === id}]"
-                            title="Pane menu"
-                            @click.stop="toggleMenu($event, id)"
-                        >
-                            <Icon name="dots" />
-                        </button>
-                    </span>
-                </PaneTabs>
-                <div :class="['agent-pane-body', widthOf(pane)]">
-                    <template v-if="activeOf(pane)">
-                        <slot name="view" :view="activeOf(pane)" :pane="pane" :id="id" :tune="(patch) => tune(id, patch)" />
+        <template v-if="narrow">
+            <PaneTabs :tabs="phoneTabs" @pick="(key) => (phoneView = key)" />
+            <div class="agent-pane-body full">
+                <slot name="view" :view="phoneActive" :pane="{}" :id="0" :tune="noTune" />
+            </div>
+        </template>
+        <template v-else>
+            <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" :stacked="narrow" :rank="firstChat" @resize="resize">
+                <template #pane="{id, pane, state}">
+                    <PaneTabs
+                        :tabs="tabsOf(id, pane)"
+                        :data-inspector-tabs="id"
+                        @grab="(e, key) => grabTab(e, id, key)"
+                        @pick="(key) => pick(id, key)"
+                        @close="(key) => apply(tabClosed(layout, id, key))"
+                    >
+                        <span class="agent-pane-menu">
+                            <button
+                                type="button"
+                                :class="['agent-pane-menu-btn', {on: menu && menu.id === id}]"
+                                title="Pane menu"
+                                @click.stop="toggleMenu($event, id)"
+                            >
+                                <Icon name="dots" />
+                            </button>
+                        </span>
+                    </PaneTabs>
+                    <div :class="['agent-pane-body', widthOf(pane)]">
+                        <template v-if="activeOf(pane)">
+                            <slot name="view" :view="activeOf(pane)" :pane="pane" :id="id" :tune="(patch) => tune(id, patch)" />
+                        </template>
+                        <template v-else>
+                            <EmptyState title="Nothing for this agent here">
+                                This pane holds views this agent does not have. Pick a preset or close the pane.
+                            </EmptyState>
+                        </template>
+                    </div>
+                    <template v-if="aimed && aimed.id === id && aimed.zone !== 'tabs' && state === 'live'">
+                        <DropCompass :zone="aimed.zone" />
                     </template>
-                    <template v-else>
-                        <EmptyState title="Nothing for this agent here">
-                            This pane holds views this agent does not have. Pick a preset or close the pane.
-                        </EmptyState>
-                    </template>
-                </div>
-                <template v-if="aimed && aimed.id === id && aimed.zone !== 'tabs' && state === 'live'">
-                    <DropCompass :zone="aimed.zone" />
                 </template>
-            </template>
-        </PaneGrid>
+            </PaneGrid>
+        </template>
         <template v-if="drag">
             <DragGhost :x="drag.x" :y="drag.y" :icon="views[drag.view].icon" :title="views[drag.view].title" :hint="ghostHint" />
         </template>

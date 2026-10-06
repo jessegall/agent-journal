@@ -2,7 +2,6 @@
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import Tile from "../kit/Tile.vue";
-import AgentDrawer from "./AgentDrawer.vue";
 import AgentWindow from "./AgentWindow.vue";
 import TicketAgent from "./TicketAgent.vue";
 import {hiddenBy, hiddenSummary, orchestraOf, ordered} from "../domain/orchestra.js";
@@ -27,7 +26,6 @@ const hidden = computed(() => every.value.length - entries.value.length);
 const why = computed(() => hiddenSummary(every.value, ui.agentView).join(", "));
 const openedKey = ref("");
 const opened = computed(() => entries.value.find((e) => e.key === openedKey.value) || null);
-const terminal = ref(null);
 const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.parent, 0, entry.session) : (openedKey.value = entry.key));
 </script>
 
@@ -60,11 +58,7 @@ const openEntry = (entry) => (entry.sub ? peekThere(entry.env, "agent", entry.pa
                 :label="opened.label"
                 :plan="opened.plan ? opened.plan.n : 0"
                 @close="openedKey = ''"
-                @terminal="terminal = opened.card"
             />
-        </template>
-        <template v-if="terminal">
-            <AgentDrawer :card="terminal" @close="terminal = null" />
         </template>
     </div>
 </template>
