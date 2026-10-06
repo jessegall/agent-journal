@@ -24,6 +24,8 @@ READDRESS = {"label": "Choose a new address", "type": "share", "action": "readdr
 SETTINGS_UNREADABLE, HOST_IS_DOWN, TUNLER_UNUSABLE = "settings_unreadable", "host_down", "tunler_unusable"
 MISSES, RESTARTED_AT, UNREACHABLE_SINCE, RESTARTS = "misses", "restarted", "unreachable_since", "restarts"
 HOLD_FOR = 60.0
+SETTLE = 60.0
+READDRESSED = "readdressed"
 
 
 class TunnelWatch:
@@ -48,9 +50,7 @@ class TunnelWatch:
             return
         state.set(TUNLER_UNUSABLE, 0)
         if refused_address(log_file(record.root, TUNNEL)):
-            alert_once(state, ADDRESS_REFUSED, lambda: Messages(record, actor=SYSTEM).create(
-                "The tunnel address is owned by another user", buttons=[READDRESS],
-                brief="The phone and share links cannot use this address. Choosing a new one changes the phone's address, so it has to be paired again."))
+            self.refused(shares, state)
             return
         state.set(ADDRESS_REFUSED, 0)
         try:
@@ -63,7 +63,7 @@ class TunnelWatch:
             return
         state.set(SETTINGS_UNREADABLE, 0)
         if answering:
-            for key in (MISSES, HOST_IS_DOWN, UNREACHABLE_SINCE, RESTARTS):
+            for key in (MISSES, HOST_IS_DOWN, UNREACHABLE_SINCE, RESTARTS, READDRESSED):
                 state.set(key, 0)
             return
         state.set(UNREACHABLE_SINCE, float(state.get(UNREACHABLE_SINCE, 0)) or time.time())
@@ -80,6 +80,21 @@ class TunnelWatch:
         state.set(RESTARTED_AT, time.time())
         state.set(RESTARTS, int(state.get(RESTARTS, 0)) + 1)
         self.feature.to_primary(record, RESTARTED, misses=misses, part=PARTS[down])
+
+    def refused(self, shares: Shares, state: State) -> None:
+        record = shares.record
+        if not state.get(READDRESSED):
+            state.set(READDRESSED, time.time())
+            name = shares._readdress()
+            Messages(record, actor=SYSTEM).create("The tunnel moved to a new address", brief=(
+                f"Another tunler account owns the old address, so the journal chose {name} and restarted the tunnel on it. "
+                "Share links sent before now stop working: send them again. A paired phone has to be paired again."))
+            return
+        if time.time() - float(state.get(READDRESSED)) < SETTLE:
+            return
+        alert_once(state, ADDRESS_REFUSED, lambda: Messages(record, actor=SYSTEM).create(
+            "The tunnel address is owned by another user", buttons=[READDRESS],
+            brief="The new address was refused as well. Choosing another one changes the phone's address, so it has to be paired again."))
 
     def due(self, state: State, misses: int, root) -> bool:
         since = time.time() - float(state.get(RESTARTED_AT, 0))
