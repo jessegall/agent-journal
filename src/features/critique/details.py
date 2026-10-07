@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import FeatureDetails
 from features.settings import Setting
 from features.groups import Group
@@ -34,9 +35,9 @@ class CritiqueDetails(FeatureDetails):
     """
 
     settings = [
-        Setting(name="app", default="", title="Address of the app the critics open", runs_commands=True),
-        Setting(name="login", default="", title="Login file the critics' browser starts with"),
-        Setting(name="seed", default="", title="Command that loads the demo data", runs_commands=True),
-        Setting(name="browsers", default="", title="Folder with Playwright installed", runs_commands=True),
+        Setting(name="app", default="", title="Address of the app the critics open", runs_commands=True, scope=PROJECT),
+        Setting(name="login", default="", title="Login file the critics' browser starts with", scope=PROJECT),
+        Setting(name="seed", default="", title="Command that loads the demo data", runs_commands=True, scope=PROJECT),
+        Setting(name="browsers", default="", title="Folder with Playwright installed", runs_commands=True, scope=PROJECT),
     ]
 

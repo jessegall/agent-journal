@@ -10,11 +10,12 @@ import {go, route} from "../route.js";
 import {dragShell, tellShell} from "../platform/extension.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
+import {isMain} from "../domain/environments.js";
 
 const shell = reactive({hosted: false, shut: false, journals: false, envs: false, driving: false, drivingUrl: ""});
 const journals = computed(() => store.journals);
 const project = computed(() => (store.spec && store.spec.project) || "journal");
-const environments = computed(() => rows("environment").map((e) => e.title));
+const environments = computed(() => rows("environment").filter(isMain).map((e) => e.title));
 function toShell(op, extra) {
     if (framed) tellShell(op, extra || {});
 }

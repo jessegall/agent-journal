@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import FeatureDetails
 from features.groups import Group
 
@@ -5,7 +6,8 @@ from features.groups import Group
 class PhoneDetails(FeatureDetails):
     explains = 'The journal can connect your phone to this environment. You can read the chat and answer questions from your phone.'
     name = "phone"
-    group = Group.VIEWER
+    group = Group.PROJECT
+    scope = PROJECT
     label = "Connect a phone"
     hint = "Scan a code to use the chat on your phone"
     has_skill = False

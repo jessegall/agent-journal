@@ -1,5 +1,6 @@
 from engine.organization import AGENT, PLAN, Role
 from features.agent_sessions.launch import PROVIDER, start_agent_in, tell_in
+from resources.types import EnvironmentKind
 
 
 def role_environment(env: str, role: Role, n: int) -> str:
@@ -20,5 +21,5 @@ def start_role_agent(record, role: Role, n: int, brief: str) -> str:
     if role.cardinality == PLAN and tell_in(record, name, PROVIDER, kickoff(record.env, role, n, brief)):
         return name
     return start_agent_in(record, name, record.env, f"Where {role.label} works on to-do {n} of {record.env}",
-                          f"todo:{n}", kickoff(record.env, role, n, brief))
+                          f"todo:{n}", kickoff(record.env, role, n, brief), EnvironmentKind.SUBAGENT)
 

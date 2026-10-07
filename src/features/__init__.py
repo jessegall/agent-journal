@@ -87,13 +87,13 @@ def seat(root: Path) -> None:
     from engine.paths import environments
     from engine.record import Record
     from features.switches import booted
-    from resources.base import SYSTEM
+    from resources.base import PROJECT, SYSTEM
     for home in sorted(p for p in environments(root).glob("*") if p.is_dir()):
         record = Record(root, home.name)
         rows = Features(record, actor=SYSTEM)
         known = {r.title: r for r in rows.rows.every()}
         for name, feature in FEATURES.items():
-            if name not in known:
+            if name not in known and feature.scope != PROJECT:
                 rows.create(name, enabled=feature.default_for(root))
         for name, row in known.items():
             if name not in FEATURES and not row.missing:
@@ -124,8 +124,10 @@ def describe() -> dict:
 
 
 def passed(event, record) -> None:
+    from engine.record import Record
     from features.switches import rebooted
-    if event.data.get("setting"):
+    setting = event.data.get("setting")
+    if setting:
         record.reread_settings()
-    elif event.type in CHANGE_SWITCHES:
+    if event.type in CHANGE_SWITCHES and setting in (None, Record.features):
         rebooted(event, record)

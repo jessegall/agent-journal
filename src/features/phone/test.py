@@ -34,6 +34,7 @@ from engine.viewer import SERVING
 from serve import Handler, JournalServer
 from features.sharing.services import wanted
 from resources.base import AGENT, SYSTEM, USER, Refused
+from resources.types import EnvironmentKind
 from tests.conftest import fresh
 
 
@@ -413,7 +414,7 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
         (record.root.parent / "notes" / f"private.{suffix}").write_text("secret")
         assert call(base, f"/p/source?q=notes/private.{suffix}", key=key).status == 404
     journal = str(record.root.resolve())
-    Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "elsewhere")
+    Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "elsewhere", kind=EnvironmentKind.MAIN)
     assert "elsewhere" in next(p for p in call(base, "/p/places", key=key).body["places"] if p["root"] == journal)["environments"]
     assert call(base, "/p/switch", {"journal": "/somewhere/else/.journal", "environment": "main"}, key).status == 422, \
         "only a running journal on this machine can be switched to"
@@ -573,7 +574,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     helper = Helpers(record, actor=SYSTEM).create("Split the phone view", name="Rhea", provider="codex", model="gpt-5-codex",
                                                   environment=f"{record.env}-rhea")
     from controllers.types import Environments
-    Environments(record, actor=SYSTEM).create(helper.environment, owner=helper.ref, launched_from=record.env)
+    Environments(record, actor=SYSTEM).create(helper.environment, owner=helper.ref, launched_from=record.env, kind=EnvironmentKind.HELPER)
     helper_record = Record(record.root, helper.environment)
     todo = Todos(helper_record, actor=SYSTEM).create(helper.title)
     CONTROLLERS["work"](helper_record, actor=SYSTEM).create(helper.title, todo=todo.n)
@@ -617,7 +618,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     Sessions(record.root).write("claude-4343", environment="")
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
-    Environments(record, actor=USER).create("ticket-4", owner="ticket:4")
+    Environments(record, actor=USER).create("ticket-4", owner="ticket:4", kind=EnvironmentKind.TICKET)
     assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(shown(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \

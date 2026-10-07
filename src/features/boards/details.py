@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 from features.settings import Setting
@@ -11,6 +12,7 @@ class BoardsDetails(FeatureDetails):
     explains = 'The agent turns a request into tickets on a board and moves them through its stages. You can review the tickets and run the board.'
     name = "boards"
     group = Group.BOARDS
+    scope = PROJECT
     skill_of = "tickets"
     when = "a board is made, its stages change, or a ticket moves between them"
 
@@ -64,12 +66,14 @@ class BoardsDetails(FeatureDetails):
             default="sonnet",
             choices=MODELS,
             title="Model for the agent that fills a board",
+            scope=PROJECT,
         ),
         Setting(
             name="reviewer_model",
             default="sonnet",
             choices=MODELS,
             title="Model for the agents that review plans and tickets",
+            scope=PROJECT,
         ),
         Setting(
             name="orchestrating",
