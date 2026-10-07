@@ -310,13 +310,13 @@ class AgentRow(Shape, Resource):
         Field(default="", name="tool"),
         Field(default="", name="file"),
         Field(name="wrote"),
-        Field(default="", name="cwd"),
+        Field(default="", name="cwd", journal_only=True),
         Field(default=0, name="at"),
-        Field(default="", name="provider"),
+        Field(default="", name="provider", journal_only=True),
         Field(default=0, name="uses"),
-        Field(default="", name="transcript"),
-        Field(default="", name="inbox"),
-        Field(default="", name="model"),
+        Field(default="", name="transcript", journal_only=True),
+        Field(default="", name="inbox", journal_only=True),
+        Field(default="", name="model", journal_only=True),
         Field(default="", name="effort"),
         Field(default=dict, name="pending"),
         Field(default=0, name="paused"),
@@ -512,7 +512,10 @@ class Environment(Shape, Resource):
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
         help="An agent works in one environment at a time. It can switch to a free one, or claim a taken one by giving a reason.",
     )
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched"), Field(TEXT, "", name="folder")]
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, "", name="owner", journal_only=True), Field(TEXT, "", name="launched_from", journal_only=True), Field(NUMBER, 0, name="launched"),
+        Field(TEXT, "", name="folder", journal_only=True),
+    ]
     listed_open = True
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment closed"}

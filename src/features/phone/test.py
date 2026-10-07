@@ -15,12 +15,13 @@ import pytest
 
 from controllers.base import Controller
 from controllers.features import Features
-from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
+from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
 from engine.record import Record
 from features.phone import allow_list
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
+from features.tickets.controller import Tickets
 from features.sharing.controller import Shares
 from features.suggestions.controller import Suggestions
 from features.sharing.details import SharingDetails
@@ -199,6 +200,17 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         kept = Controller.create(CONTROLLERS["worktree"](record, actor=SYSTEM), "shed", path="/kept")
         assert call(base, f"/p/api/{record.env}/worktree/{kept.n}/update", {"path": "/"}, key)[0] == 400 \
             and CONTROLLERS["worktree"](record, actor=SYSTEM).load(kept.n).path == "/kept", "a path the journal sets is never written by hand"
+        place = Environments(record, actor=SYSTEM).create("placed", folder="/kept")
+        agent = Agents(record, actor=SYSTEM).create("hooked", transcript="/kept.jsonl")
+        ticket = Tickets(record, actor=SYSTEM).create("carded", work_environment="placed")
+        assert [call(base, f"/p/api/{record.env}/{page}", written, key)[0] for page, written in (
+            ("environment", {"title": "elsewhere", "folder": "/"}), (f"environment/{place.n}/update", {"folder": "/"}),
+            (f"environment/{place.n}/update", {"owner": "helper:1"}), (f"agent/{agent.n}/update", {"transcript": "/etc/passwd"}),
+            (f"agent/{agent.n}/update", {"cwd": "/"}), (f"ticket/{ticket.n}/update", {"work_environment": "main"}),
+            (f"ticket/{ticket.n}/update", {"bases": {"x": "y"}}), (f"ticket/{ticket.n}/update", {"provider": "nope"}))] == [400] * 8 \
+            and (Environments(record, actor=SYSTEM).load(place.n).folder, Agents(record, actor=SYSTEM).load(agent.n).transcript,
+                 Tickets(record, actor=SYSTEM).load(ticket.n).provider) == ("/kept", "/kept.jsonl", "claude"), \
+            "a phone sets no folder, transcript, work environment or base, and no provider the journal cannot start"
         status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
         assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
         row = f"/p/api/{record.env}/todo/{answered['n']}"
