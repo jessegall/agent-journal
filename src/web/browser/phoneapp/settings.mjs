@@ -1,5 +1,6 @@
 import {chromium} from "playwright-core";
 import {runScenarios} from "../harness.mjs";
+import {allowRuns} from "./paired.mjs";
 
 const PAIR = process.argv[2];
 const PHONE = {viewport: {width: 390, height: 844}, hasTouch: true, isMobile: true};
@@ -65,6 +66,7 @@ await runScenarios(PAIR, {
         await top(page).getByRole("switch").first().waitFor({timeout: SHOWN});
     },
     async "the phone region unpairs after asking, reaches tunler, and alerts have a key"(page) {
+        await allowRuns(page);
         await region(page, "Phone and share links");
         await top(page).getByRole("button", {name: /Unpair this phone/}).click();
         await page.getByRole("dialog").getByText("Unpair this phone?").waitFor({timeout: SHOWN});
@@ -111,6 +113,7 @@ await runScenarios(PAIR, {
         await top(page).getByText("About this journal").first().waitFor({timeout: SHOWN});
     },
     async "plugins offer an install with the commands shown first"(page) {
+        await allowRuns(page);
         await home(page);
         await everything(page, "Plugins");
         await top(page).getByRole("button", {name: "Add a plugin"}).last().click();

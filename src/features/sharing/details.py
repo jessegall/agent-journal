@@ -94,5 +94,6 @@ class SharingDetails(FeatureDetails):
             default="",
             title="Tunler server",
             hidden=True,
+            runs_commands=True,
         ),
     ]

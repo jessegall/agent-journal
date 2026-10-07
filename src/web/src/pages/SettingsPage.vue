@@ -48,7 +48,7 @@ const sections = computed(() =>
         identity: store.identity,
         extension: extension.value,
         extensionZip: api.extensionZip(),
-        demo,
+        stoppable: !demo,
         stopping: stopping.value,
     })
 );

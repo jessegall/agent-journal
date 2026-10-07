@@ -16,6 +16,13 @@ export async function pairedState() {
     return state;
 }
 
+export async function allowRuns(page) {
+    await page.route(/\/p\/state$/, async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({response, json: {...(await response.json()), runs: true}});
+    });
+}
+
 export const tab = (page, name) => page.getByRole("tab", {name: new RegExp(`^${name}`)}).click();
 
 export const home = async (page) => {

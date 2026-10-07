@@ -13,6 +13,7 @@ import {waitingActions, waitingToSend} from "./outbox.js";
 import {wanted} from "./wanted.js";
 import {useKeyboard} from "./keyboard.js";
 import {usePoll} from "../composables/poll.js";
+import {runsAllowed} from "./runs.js";
 import {store} from "../state/store.js";
 
 const OPEN = "open=";
@@ -43,6 +44,7 @@ watch(
     },
     {flush: "sync"}
 );
+watch(connection, (now) => (runsAllowed.value = Boolean(now && now.runs)));
 
 const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 

@@ -10,13 +10,14 @@ import CellGroup from "../kit/CellGroup.vue";
 import Field from "../kit/Field.vue";
 import {toast} from "../kit/toast.js";
 import PhonePage from "./PhonePage.vue";
+import {runsAllowed} from "../runs.js";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back"]);
 const plugin = ref(null);
 const groups = computed(() => (plugin.value ? settingGroups(plugin.value) : []));
 const childrenOf = (group, s) => group.visible.filter((child) => child.parent === s.key);
-const withKids = (group) => group.settings.flatMap((s) => [s, ...childrenOf(group, s)]);
+const withKids = (group) => group.settings.flatMap((s) => [s, ...childrenOf(group, s)]).filter((s) => s.type !== "command" || runsAllowed.value);
 const kindOf = (s) => (s.type === "flag" ? "flag" : s.options.length ? "options" : "text");
 
 async function load() {

@@ -182,8 +182,15 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         assert call(base, "/p/api/elsewhere/todo", made, key)[0] == 403, "another environment stays closed"
         assert call(base, "/p/api/summary?env=elsewhere", key=key)[0] == 403
         assert call(base, "/p/api/run", made, key)[0] == 403, "a page the phone app never calls is refused"
-        assert [call(base, f"/p/api/{record.env}/{page}", made, key)[0] for page in ("tool", "agent/main/shell", "phone/connect")] == [403] * 3, \
+        assert [call(base, f"/p/api/{record.env}/{page}", {**made, "entry": "touch x"}, key)[0] for page in ("tool", "agent/main/shell", "phone/connect")] == [403] * 3, \
             "running commands stays off for a phone, and phones are never its to change"
+        seed = {"name": "critique", "key": "seed", "value": "touch x"}
+        assert [call(base, f"/p/api/{record.env}/{page}", asked, key)[0] for page, asked in (
+            ("critique/round", {"what": "the phone"}), ("feature/configure", seed), ("settings", {"critique": {"seed": "touch x"}}),
+            ("sequence/run", {"n": 1}), ("agent/main/relaunch", {"skip": True}))] == [403] * 5, \
+            "a phone neither runs nor sets a command, in any shape of the page, nor restarts the agent without permission prompts"
+        assert call(base, f"/p/api/{record.env}/agent/main/relaunch", {}, key)[0] != 403, "a restart that keeps the prompts passes"
+        assert call(base, f"/p/api/{record.env}/settings", {"form_of_address": {"title": "Captain"}}, key)[0] == 200
         status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
         assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
         row = f"/p/api/{record.env}/todo/{answered['n']}"
@@ -195,8 +202,7 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
             (tmp_path / name).write_text("<script src=x.js></script>")
             Todos(record, actor=SYSTEM).attach(answered["n"], str(tmp_path / name))
         assert call(base, f"{row}/files/page.html", key=key)[0] == 403, "a page the phone app does not call is refused"
-        ((listed, _), *rest) = allow_list.LISTS
-        monkeypatch.setattr(allow_list, "LISTS", (((*listed, allow_list.get("/api/{env}/{type}/{n}/files/{name}")), True), *rest))
+        monkeypatch.setattr(allow_list, "NAMED", allow_list.NAMED | {allow_list.Action("todo", "files")})
         sent = {"Cookie": f"__Host-phone={key}"}
         with urllib.request.urlopen(urllib.request.Request(f"{base}{row}/files/page.html", headers=sent), timeout=5) as got:
             assert (got.headers["X-Content-Type-Options"], got.headers["Content-Disposition"].split(";")[0]) == ("nosniff", "attachment"), \

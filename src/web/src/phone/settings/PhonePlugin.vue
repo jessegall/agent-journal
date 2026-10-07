@@ -13,6 +13,7 @@ import FormSheet from "../kit/FormSheet.vue";
 import PhonePage from "./PhonePage.vue";
 import PhonePluginPreview from "./PhonePluginPreview.vue";
 import PhoneTerm from "./PhoneTerm.vue";
+import {runsAllowed} from "../runs.js";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back", "open"]);
@@ -83,7 +84,9 @@ onMounted(load);
                 <Cell label="Installed from" :sub="plugin.source" still />
                 <Cell :label="plugin.enabled ? 'On' : 'Off'" sub="Turn the plugin on or off" still>
                     <template #end>
-                        <Switch large :on="plugin.enabled" :title="plugin.title" @change="act($event ? 'enable' : 'disable')" />
+                        <template v-if="plugin.enabled || runsAllowed">
+                            <Switch large :on="plugin.enabled" :title="plugin.title" @change="act($event ? 'enable' : 'disable')" />
+                        </template>
                     </template>
                 </Cell>
             </CellGroup>
@@ -113,8 +116,10 @@ onMounted(load);
                 </CellGroup>
             </template>
             <CellGroup head="Manage">
-                <Cell label="Check for updates" sub="Shows what changes before anything runs" tone="accent" :chevron="false" @pick="upgrade(plugin)" />
-                <Cell label="Run setup again" sub="Its settings stay. Its services restart." :chevron="false" @pick="asking = 'setup'" />
+                <template v-if="runsAllowed">
+                    <Cell label="Check for updates" sub="Shows what changes before anything runs" tone="accent" :chevron="false" @pick="upgrade(plugin)" />
+                    <Cell label="Run setup again" sub="Its settings stay. Its services restart." :chevron="false" @pick="asking = 'setup'" />
+                </template>
                 <Cell label="Remove" sub="Its pages, settings and services go" tone="danger" :chevron="false" @pick="asking = 'remove'" />
             </CellGroup>
         </template>

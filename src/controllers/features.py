@@ -1,6 +1,6 @@
 import json
 
-from controllers.base import Controller
+from controllers.base import Arguments, Controller
 from engine.extension import Extension
 from resources.base import Refused
 from resources import types
@@ -25,13 +25,27 @@ class Features(Controller):
 
     @action
     def configure(self, name: str, key: str, value: str):
-        known = SETTING_KEYS.keyed().get(name)
-        if known is None:
+        known = [setting.name for setting in SETTING_KEYS.keyed().get(name, ())]
+        if not known:
             raise Refused(f"no feature named {name!r} has settings")
         if key not in known:
             raise Refused(f"{name} has no setting {key!r}; its settings are {', '.join(known)}")
         self.record.set_setting(name, {**self.record.setting(name, {}), key: setting_value(value)})
         return self.record.setting(name, {})
+
+    def _runs_commands(self, word: str, arguments: Arguments) -> bool:
+        if word != "configure":
+            return super()._runs_commands(word, arguments)
+        return runs_commands(arguments.name, arguments.key)
+
+
+def runs_commands(name: str, key: str) -> bool:
+    return any(setting.name == key and setting.runs_commands for setting in SETTING_KEYS.keyed().get(name, ()))
+
+
+def writes_what_runs(settings: dict) -> bool:
+    """Whether a settings write sets a feature setting that decides what runs."""
+    return any(runs_commands(name, key) for name, values in settings.items() if isinstance(values, dict) for key in values)
 
 
 def setting_value(value: str) -> bool | int | float | str:

@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../../api/client.js";
 import {usePoll} from "../../composables/poll.js";
 import {ownerTitle, useServiceAction} from "../../composables/service.js";
+import {runsAllowed} from "../runs.js";
 import {isRunning, stateWord} from "../../domain/services.js";
 import {span} from "../../format/time.js";
 import Cell from "../kit/Cell.vue";
@@ -47,15 +48,17 @@ const line = computed(() => {
             <template v-if="service.why">
                 <p class="service-why">{{ service.why }}</p>
             </template>
-            <CellGroup>
-                <Cell
-                    :label="running ? (busy(service.id, 'down') ? 'Stopping…' : 'Stop') : busy(service.id, 'up') ? 'Starting…' : 'Start'"
-                    :tone="running ? 'danger' : 'accent'"
-                    :chevron="false"
-                    @pick="working(service.id) || set(service.id, running ? 'down' : 'up')"
-                />
-                <Cell :label="busy(service.id, 'restart') ? 'Restarting…' : 'Restart'" :chevron="false" @pick="working(service.id) || set(service.id, 'restart')" />
-            </CellGroup>
+            <template v-if="runsAllowed">
+                <CellGroup>
+                    <Cell
+                        :label="running ? (busy(service.id, 'down') ? 'Stopping…' : 'Stop') : busy(service.id, 'up') ? 'Starting…' : 'Start'"
+                        :tone="running ? 'danger' : 'accent'"
+                        :chevron="false"
+                        @pick="working(service.id) || set(service.id, running ? 'down' : 'up')"
+                    />
+                    <Cell :label="busy(service.id, 'restart') ? 'Restarting…' : 'Restart'" :chevron="false" @pick="working(service.id) || set(service.id, 'restart')" />
+                </CellGroup>
+            </template>
             <template v-if="service.url">
                 <CellGroup>
                     <Cell label="Open its address" :sub="service.url" icon="open" @pick="goTo(service.url)" />

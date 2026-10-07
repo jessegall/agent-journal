@@ -5,6 +5,7 @@ import {catalog, counts, inTab, narrowed} from "../../domain/settingsCatalog.js"
 import {demo} from "../../platform/demo.js";
 import {store} from "../../state/store.js";
 import {toast} from "../kit/toast.js";
+import {runsAllowed} from "../runs.js";
 
 const extension = ref(null);
 const stopping = ref(false);
@@ -32,7 +33,7 @@ export const sections = computed(() =>
         identity: store.identity,
         extension: extension.value,
         extensionZip: api.extensionZip(),
-        demo,
+        stoppable: !demo && runsAllowed.value,
         stopping: stopping.value,
     })
 );

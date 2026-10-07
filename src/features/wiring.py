@@ -143,6 +143,7 @@ class Commands:
         call.__signature__ = inspect.Signature([inspect.Parameter("controller", inspect.Parameter.POSITIONAL_OR_KEYWORD), *given])
         call.__name__ = command.name
         call.network = command.network
+        call.runs_commands = command.runs_commands
         COMMANDS.setdefault(type_, {})[command.name] = call
 
     def intercept(self, action: str, interceptor: ActionInterceptor) -> None:

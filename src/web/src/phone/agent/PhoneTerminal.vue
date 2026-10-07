@@ -11,6 +11,7 @@ import PhonePage from "../settings/PhonePage.vue";
 import PhoneCommandLines from "./PhoneCommandLines.vue";
 import PhoneNoAgent from "./PhoneNoAgent.vue";
 import {useLeadAgent} from "./lead.js";
+import {runsAllowed} from "../runs.js";
 
 defineProps({target: {type: String, default: ""}, back: {type: String, default: ""}});
 const emit = defineEmits(["back"]);
@@ -19,6 +20,9 @@ const lines = useTerminal(DEFAULT_LEVEL, () => agent.value);
 const queued = computed(() => (data.value && data.value.queued_commands) || []);
 const writing = ref(false);
 const hurrying = ref("");
+const line = computed(() =>
+    runsAllowed.value ? "Shows what the agent's terminal shows. A command you type runs there." : "Shows what the agent's terminal shows."
+);
 
 async function run(command, now) {
     try {
@@ -32,7 +36,7 @@ async function run(command, now) {
 </script>
 
 <template>
-    <PhonePage title="Agent terminal" line="Shows what the agent's terminal shows. A command you type runs there." :back="back" @back="emit('back')">
+    <PhonePage title="Agent terminal" :line="line" :back="back" @back="emit('back')">
         <template v-if="loaded && !data">
             <PhoneNoAgent />
         </template>
@@ -43,12 +47,14 @@ async function run(command, now) {
             <template v-else>
                 <p class="terminal-none">Nothing has run yet.</p>
             </template>
-            <CellGroup head="Waiting to run" foot="A command waits until the agent finishes its turn. Run now interrupts the agent.">
-                <template v-for="item in queued" :key="item.at">
-                    <Cell :label="item.command" sub="Waits for the agent's turn" @pick="hurrying = item.command" />
-                </template>
-                <Cell icon="terminal" label="Run a command" @pick="writing = true" />
-            </CellGroup>
+            <template v-if="runsAllowed">
+                <CellGroup head="Waiting to run" foot="A command waits until the agent finishes its turn. Run now interrupts the agent.">
+                    <template v-for="item in queued" :key="item.at">
+                        <Cell :label="item.command" sub="Waits for the agent's turn" @pick="hurrying = item.command" />
+                    </template>
+                    <Cell icon="terminal" label="Run a command" @pick="writing = true" />
+                </CellGroup>
+            </template>
         </template>
     </PhonePage>
     <template v-if="writing">

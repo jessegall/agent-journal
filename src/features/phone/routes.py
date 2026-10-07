@@ -8,6 +8,7 @@ from http.cookies import SimpleCookie
 
 from engine.record import Record
 from engine.fields import Loaded
+from features.phone.allow_list import RUNS_ALLOWED
 from features.phone.controller import Phones
 from features.phone.desktop import Desktop
 from features.phone.surface import PhoneSurface
@@ -150,6 +151,7 @@ class Connection(TypedDict):
     home: list[str]
     project: str
     color: str
+    runs: bool
 
 
 def made(row) -> dict:
@@ -178,7 +180,7 @@ def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]
     if rest == ["state"]:
         known = identity(surface.home.root)
         return Connection(phone=phone.title, n=phone.n, environment=phone.environment, expires=phone.expires, home=phone.home,
-                          project=known["project"], color=known["color"])
+                          project=known["project"], color=known["color"], runs=RUNS_ALLOWED)
     if rest == ["feed"]:
         try:
             return {**surface.feed(float(asked.get("before", "inf"))), "build": built()}

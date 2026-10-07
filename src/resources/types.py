@@ -452,7 +452,7 @@ class Tool(Shape, Resource):
         help="A tool names its entry (how to run it), its usage and what it does; run executes it from the project root.",
     )
     data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, name="entry"),
+        Field(TEXT, name="entry", runs_commands=True),
         Field(TEXT, name="usage"),
     ]
     type = "tool"
@@ -485,14 +485,14 @@ class Plugin(Shape, Resource):
         help="Installed from a GitHub URL or a local path, fixed at one exact version; its manifest says what it listens to, what it runs and which pages it shows.",
     )
     data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, name="source"),
+        Field(TEXT, name="source", runs_commands=True),
         Field(TEXT, name="revision"),
         Field(TEXT, name="commit"),
         Field(TEXT, name="version"),
         Field(FLAG, name="linked"),
         Field(FLAG, name="enabled"),
-        Field(name="manifest"),
-        Field(name="settings"),
+        Field(name="manifest", runs_commands=True),
+        Field(name="settings", runs_commands=True),
         Field(name="token"),
         Field(NUMBER, 0.0, name="read_at"),
     ]
