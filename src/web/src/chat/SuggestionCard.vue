@@ -37,6 +37,7 @@ const card = ref(null);
 const s = computed(() => props.suggestion);
 const source = computed(() => s.value.data.plugin || "");
 const commit = computed(() => pinned(s.value));
+const runs = computed(() => s.value.data.runs || []);
 const phase = computed(() => {
     if (busy.value === "install") return "installing";
     if (installError.value && !s.value.completed) return "failed";
@@ -134,6 +135,20 @@ const press = (choice) => ACTS[choice.act]();
         <template v-if="(open || changing) && !briefless">
             <TextDisplay class="sg-brief" :text="s.brief" />
         </template>
+        <template v-if="(open || changing) && runs.length">
+            <details class="sg-runs">
+                <summary>See what it runs</summary>
+                <template v-if="s.data.described">
+                    <p class="sg-runs-said">In its own words: {{ s.data.described }}</p>
+                </template>
+                <p class="sg-runs-said">It runs as you, with your files and your network.</p>
+                <ul>
+                    <template v-for="line in runs" :key="line">
+                        <li><code>{{ line }}</code></li>
+                    </template>
+                </ul>
+            </details>
+        </template>
         <template v-if="changing">
             <SuggestionChange
                 :id="boxId"
@@ -164,6 +179,31 @@ const press = (choice) => ACTS[choice.act]();
 </template>
 
 <style scoped>
+
+.sg-runs {
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+.sg-runs summary {
+    cursor: pointer;
+    color: var(--fade);
+}
+
+.sg-runs-said {
+    margin: 6px 0;
+    color: var(--fade);
+}
+
+.sg-runs ul {
+    margin: 4px 0 0;
+    padding-left: 18px;
+}
+
+.sg-runs code {
+    font-size: 12px;
+    word-break: break-word;
+}
 .sg {
     box-sizing: border-box;
     width: 100%;
