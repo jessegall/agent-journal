@@ -65,6 +65,7 @@ class SessionRecord(Loaded):
     before: str = ""
     evicted: dict = field(default_factory=dict)
     grants: tuple = ()
+    worked_in: str = ""
 
     @property
     def evicted_since_start(self) -> bool:
@@ -138,8 +139,8 @@ class Sessions:
                  and not name.startswith(f"{provider}-")]
         return max(ended)[1] if ended else ""
 
-    def touch(self, session: str) -> None:
-        self.write(session, seen=time.time())
+    def touch(self, session: str, worked_in: str) -> None:
+        self.write(session, seen=time.time(), worked_in=worked_in)
 
     def unbind(self, session: str) -> None:
         self.write(session, environment="")
