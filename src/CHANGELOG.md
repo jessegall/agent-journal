@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.11 — Every voice has a humour of its own, and the journal's words stay plain in every voice
+Each profile now has a Humour part: how it answers a meme, a joke, criticism of its work or anger, in one line of its own manner before it puts the matter right. The Butler is dry and witty, the Homie answers in slang and street talk, the Coach is cheerful or calm, the Colleague brief and good-humoured. You edit it with the rest of a profile, on the desktop and on the phone; the four that ship stay locked, and Make a copy gives you one to change. The voices no longer have their own words for helpers: in every voice the agent says helper, subagent, to-do and environment, and the voice shapes only its tone and how it addresses you. Nothing to do.
+
 ## 2.254.10 — A turn that only answers a journal line stays out of the chat; hooks do less after they answer
 A reply to a line from the journal is now left out of the chat whenever that turn changed nothing, whatever words it used; it is kept as a message the chat's Shown menu brings back. A turn that failed, changed files, asks you something, or answers your message, a question, a comment or a line that asks about a stall still reaches the chat. Every hook now does about a third less work after it answers: the open messages are read from a kept list instead of scanning every message, and the agent's own row is copied once per hook instead of several times, so replies and other commands wait less behind it. Nothing to do.
 ## 2.254.9 — The choice card no longer explains what the others do

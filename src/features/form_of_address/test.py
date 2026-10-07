@@ -1,7 +1,7 @@
 import features
 from controllers.types import Nudges
 from features.form_of_address.controller import Profiles, ship
-from features.form_of_address.voices import SHIPPED
+from features.form_of_address.voices import PLAIN_WORDS, SHIPPED
 from features.session_briefing.start import start_block
 from resources.base import SYSTEM, USER, Refused
 from surfaces.settings import apply
@@ -86,11 +86,16 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     assert profiles.callings()["none"] == "" and "{you}" not in profiles.samples()[copy.n], "a copy keeps the sample with your name filled in"
 
 
-def test_each_profile_names_its_own_word_for_helpers_for_the_chat_only():
+def test_each_profile_answers_a_joke_in_its_own_manner_and_the_journal_words_stay_plain_in_every_voice():
     record = shipped_record()
-    assert len({(voice.helper, voice.helpers) for voice in SHIPPED}) == len(SHIPPED), "every shipped profile has a word of its own"
+    assert len({voice.humour for voice in SHIPPED}) == len(SHIPPED) and all(voice.humour for voice in SHIPPED), "every shipped profile has humour of its own"
     for voice in SHIPPED:
         choose(record, number_of(record, voice.title))
         block = start_block(record)
-        assert f"In the chat, and only there, call your helpers {voice.helpers}, each a {voice.helper}." in block, "the chat word is given"
-        assert "In code, in text written into a project, in commit messages, in docs and in briefs to other agents, always write helper and subagent." in block, "plain words everywhere else"
+        assert voice.humour in block, "the profile's humour is in the voice text"
+        assert PLAIN_WORDS in block and "call your helpers" not in block, "helper, subagent, to-do and environment stay plain in every voice"
+    profiles = Profiles(record, actor=USER)
+    copy = profiles.duplicate(number_of(record, "Butler"))
+    assert copy.humour == SHIPPED[0].humour, "a copy keeps the humour"
+    assert profiles.update(copy.n, humour="Answer with one growl.").humour == "Answer with one growl.", "and it can be changed"
+    assert refused(lambda: profiles.update(number_of(record, "Butler"), humour="Answer with one growl.")), "a shipped profile's humour is locked"

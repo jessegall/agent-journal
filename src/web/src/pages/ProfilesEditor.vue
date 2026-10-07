@@ -95,7 +95,7 @@ onMounted(loadProfiles);
                 />
             </template>
             <template v-if="!own.length">
-                <EmptyState class="profiles-empty">None yet. Duplicate one above to change it, or press New profile.</EmptyState>
+                <EmptyState class="profiles-empty">None yet. Make a copy of one above to change it, or press New profile.</EmptyState>
             </template>
         </div>
         <template v-if="open && (open === NEW || panelRow)">

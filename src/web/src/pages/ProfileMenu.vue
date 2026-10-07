@@ -32,7 +32,7 @@ function remove() {
         </button>
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="260" :max-width="300" @close="anchor = null">
-                <MenuItem description="Makes a copy under Your profiles that you can change." @click="duplicate">Duplicate</MenuItem>
+                <MenuItem description="Makes a copy under Your profiles that you can change." @click="duplicate">Make a copy</MenuItem>
                 <MenuItem
                     :disabled="Boolean(reason())"
                     :description="reason() || 'Removes it for good.'"
