@@ -254,6 +254,10 @@ def lines(project: Path, *args: str) -> list[str]:
     return [line for line in git(project, *args).stdout.splitlines() if line.strip()]
 
 
+def tracked_files(project: Path) -> list[str]:
+    return [str((repo / name).relative_to(project)) for repo in repositories(project) for name in lines(repo, "ls-files")]
+
+
 JOURNAL_FOLDER = ".journal"
 JOURNAL_MARKS = (ENVIRONMENTS, ARCHIVE)
 

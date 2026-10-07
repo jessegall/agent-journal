@@ -135,6 +135,7 @@ class Dispatch:
     name_supported: bool = False
     models: tuple[str, ...] = ()
     prompt: str = ""
+    read_only: bool = False
 
     def offers_model(self) -> bool:
         return not self.models or self.model in self.models

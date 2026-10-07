@@ -818,6 +818,14 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     (declaring / MANIFEST).parent.mkdir(parents=True)
     (declaring / MANIFEST).write_text(json.dumps({**WORKS, "name": "declaring", "fits": {"languages": ["PHP"], "files": ["*.csproj"]}}))
     assert read(declaring).fits.found({"PHP"}, ["a/App.csproj", "b.txt"]) == ["PHP", "App.csproj"], "a declared fit names the languages and the files it matched"
+    from engine.worktree import tracked_files
+    spread = tmp_path / "spread"
+    (spread / "shop").mkdir(parents=True)
+    (spread / "shop" / "Order.cs").write_text("class Order {}\n")
+    subprocess.run(["git", "init", "-q"], cwd=spread / "shop", capture_output=True, timeout=30)
+    subprocess.run(["git", "add", "Order.cs"], cwd=spread / "shop", capture_output=True, timeout=30)
+    assert fitting.written_in(tracked_files(spread)) == {"C#"}, \
+        "a project that is no repository itself is read through the repositories inside it, so their languages count"
     from engine.events.agents import SessionStarted
     from features.parts import AgentContext
     from features.suggestions.controller import Suggestions

@@ -214,7 +214,7 @@ def test_a_provider_that_knows_nothing_extra_answers_neutrally(tmp_path):
     bare, path = Bare(), tmp_path / "none.jsonl"
     assert (bare.shell_wrapper(Path("x.sh")), bare.unwrapped_command("ls -la"), bare.shell_runs(path), bare.typed_runs(path), bare.work_links(path)) == ({}, "ls -la", [], [], []), \
         "a provider that wraps no shell and reads no commands, runs or links answers with nothing"
-    assert (bare.failure(path), bare.dispatch(object()), bare.context(object()), bare.usage(path), bare.effort(tmp_path)) == (None, None, None, None, ""), \
+    assert (bare.failure(path), bare.dispatch(object(), tmp_path), bare.context(object()), bare.usage(path), bare.effort(tmp_path)) == (None, None, None, None, ""), \
         "one that cannot tell a failure, a dispatch, the context, the usage or the effort answers with nothing"
     assert bare.background_tasks(path).started == {}, "one that reads no background tasks finds none"
     assert (bare.row_of({"a": 1}), bare.turn(object(), 1), bare.tool_uses({}), bare.crew(path), bare.stop_instruction("b1")) == ({"a": 1}, None, [], {}, "stop task b1 now"), \

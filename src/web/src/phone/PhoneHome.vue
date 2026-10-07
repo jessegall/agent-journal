@@ -177,11 +177,9 @@ const olderBusy = ref(false);
 const beginning = ref(false);
 const olderFailed = ref(false);
 let olderSpent = false;
-let pinned = false;
 
 function freshGesture() {
     olderSpent = false;
-    pinned = false;
 }
 const items = computed(() => {
     const newest = feed.value.items;
@@ -347,36 +345,14 @@ function took(got) {
     navigator.setAppBadge?.(got.waiting.length).catch(() => {});
     newer.value = Boolean(got.build && LOADED && got.build !== LOADED);
     settle(got.items);
-    if (landNext) {
-        landNext = false;
-        if (lookedAt.value === null) {
-            lookedAt.value = items.value.at(-1)?.created || 0;
-            looked(placeKey, lookedAt.value);
-        }
-        land();
-    } else if (following) toBottom();
+    if (landNext && lookedAt.value === null) {
+        lookedAt.value = items.value.at(-1)?.created || 0;
+        looked(placeKey, lookedAt.value);
+    }
+    if (landNext || following) toBottom();
+    landNext = false;
 }
 
-function toMark() {
-    const el = list.value;
-    const mark = el?.querySelector(".home-new");
-    if (!mark) return false;
-    const after = el.scrollHeight - dockHeight.value - mark.offsetTop;
-    const room = el.clientHeight - dockHeight.value;
-    el.scrollTop = after <= room ? el.scrollHeight : Math.max(0, mark.offsetTop - 8);
-    return true;
-}
-
-function land() {
-    nextTick(() => {
-        pinned = toMark();
-        if (!pinned) return toBottom();
-        unseen.value = items.value.filter(
-            (item) => item.created > lookedAt.value && item.who !== "user" && TALKING.includes(item.type)
-        ).length;
-        measure();
-    });
-}
 
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got || switching.value) return;
@@ -409,8 +385,7 @@ function loaded() {
     if (loadFrame) return;
     loadFrame = requestAnimationFrame(() => {
         loadFrame = 0;
-        if (pinned) toMark();
-        else if (nearBottom() && still()) toBottom();
+        if (nearBottom() && still()) toBottom();
     });
 }
 

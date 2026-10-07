@@ -11,7 +11,7 @@ from engine.events.agents import SessionStarted
 from engine.fields import Loaded
 from engine.stored import write_text
 from engine.upgrades import fetch
-from engine.worktree import lines
+from engine.worktree import tracked_files
 from features.parts import AgentContext, Handler
 from features.plugins.declared import Fits, called
 from features.plugins.lifecycle import fetched
@@ -105,7 +105,7 @@ def offers_read(root: Path) -> list[Offer]:
 
 
 def suggest(record, offers: list[Offer]) -> None:
-    names = lines(record.root.parent, "ls-files")
+    names = tracked_files(record.root.parent)
     spoken = written_in(names)
     installed = {row.source for row in Plugins(record, actor=SYSTEM).rows.every()}
     suggestions = Suggestions(record, actor=SYSTEM)
