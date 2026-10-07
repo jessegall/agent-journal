@@ -5,6 +5,8 @@ import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {cardPlan} from "../domain/plans.js";
 import {waitsFor} from "../domain/agentState.js";
+import {useWaiting} from "../composables/waiting.js";
+import WaitingPanel from "./WaitingPanel.vue";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
@@ -117,6 +119,7 @@ function unedit() {
 }
 const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
+const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting();
 const planCard = computed(() => cardPlan(rows("plan")));
 const reportDock = computed(() => dockedReport(rows("report")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
@@ -467,6 +470,8 @@ watch(
                 </template>
                 <Compose
                     :send="post"
+                    :waiting="waitingNow"
+                    @waiting-list="toggleWaiting"
                     :quote="quote.text"
                     quote-label="Replying to"
                     @unquote="quote = {text: '', ref: ''}"
@@ -478,6 +483,9 @@ watch(
                     :many="here ? dumpOffer : null"
                     :idle="here ? dumpIdle : null"
                 />
+                <template v-if="waitingOpen && waitingNow">
+                    <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
+                </template>
             </div>
             <template v-if="!ready">
                 <ThreadSkeleton />

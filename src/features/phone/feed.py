@@ -9,7 +9,7 @@ from controllers.messages import Messages
 from controllers.notices import Notices
 from controllers.questions import Questions
 from controllers.reactions import Reactions
-from controllers.types import CONTROLLERS, Agents, Comments, Environments, Todos
+from controllers.types import CONTROLLERS, Agents, Comments, Environments, Todos, Works
 from engine.record import Record
 from engine.sessions import Sessions
 from features.ask_questions.details import AskQuestionsDetails
@@ -103,6 +103,12 @@ class Waiting(TypedDict):
     created: float
 
 
+class Awaiting(TypedDict):
+    text: str
+    on: str
+    since: float
+
+
 class Running(TypedDict):
     state: str
     prompt: str
@@ -113,6 +119,7 @@ class Running(TypedDict):
     mode: str
     helpers: list[dict]
     subagents: list[dict]
+    awaiting: Awaiting
 
 
 class PlanTodo(TypedDict):
@@ -234,12 +241,19 @@ EXTRAS = {"question": lambda home: {"hold": hold(home)},
           "suggestion": lambda home: {"window_after": SuggestionsDetails.values(home).window_after}}
 
 
+def awaited(home: Record) -> Awaiting:
+    work = next((w for w in Works(home, actor=SYSTEM).rows.standing() if w.awaiting and not w.parked), None)
+    if work is None:
+        return Awaiting(text="", on="", since=0.0)
+    return Awaiting(text=work.awaiting, on=work.awaiting_on, since=float(work.awaiting_since))
+
+
 def running(home: Record, environment: str) -> Running:
     holder = Sessions(home.root).holder(environment)
     row = Agents(home, actor=SYSTEM).rows.by_title(holder) if holder else None
     summary = lately_summarized(home.root)
     shared = dict(state=Agents(home, actor=SYSTEM).state(environment), prompt=prompt(summary, environment), auto=automatic(home), mode=mode_of(home),
-                  helpers=helpers_of(home, summary), subagents=subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())))
+                  helpers=helpers_of(home, summary), subagents=subagents_of(home, subagents(Agents(home, actor=SYSTEM).primary())), awaiting=awaited(home))
     if row is None:
         return Running(paused=False, context=0, usage=[], **shared)
     return Running(paused=bool(row.paused), context=int(row.context), usage=list(row.usage.get("windows", [])), **shared)

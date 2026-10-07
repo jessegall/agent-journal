@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.255.0 — The agent says Waiting, and what it waits on, instead of Idle
+While the agent has ended its turn but waits on helpers, subagents or a run it started, the status bar and the phone's top bar say Waiting, with what it waits on and for how long, such as "on 3 helpers · 4 min" or "on the test suite". The message box gets a calm light that travels round its border for as long as the wait lasts (a still tint when you prefer reduced motion), with a label on the border saying the same words. Press the label or the status line to see the list of what the agent waits on; on the phone the list is in the main agent's sheet. Each report that comes in lowers the count, and when the wait ends the border lights once. Idle now says "ready for your next message". On the phone, the tour's ring now stays inside the screen, so the top bar's edge is no longer cut off. Nothing to do.
+
 ## 2.254.8 — Every option button answers a press at once
 The agent's question options in the chat, on the phone and on shared pages now show a spinner on the pressed option and disable the others while the answer is sent, the same way document and report buttons already do. All of them share one pending state. Nothing to do.
 ## 2.254.7 — A shell command that only waits is refused
