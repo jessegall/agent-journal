@@ -3,6 +3,7 @@ from features.session_briefing.start import start_block
 from engine.stored import write_text
 
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:
+  journal message recent          the latest messages, yours and the user's, in full
   journal conversation --back=1   the stretch the summary replaced
   journal user                    the user's own words, in full
   journal open                    the work still open, with its notes
