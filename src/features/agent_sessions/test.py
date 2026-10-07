@@ -248,6 +248,10 @@ def test_the_start_question_never_offers_a_busy_environment_on_enter():
     assert asked_for(record, ask=ask, answering=True) == record.env, "a busy one picked on purpose is taken over"
     assert Sessions(record.root).holder(record.env) == "", "and the agent there is moved off"
 
+    def closed(_=""):
+        raise EOFError
+    assert asked_for(record, ask=closed, answering=True) == record.env, "input that ends before an answer keeps the environment it started in"
+
 
 def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_words():
     from controllers.types import Agents, Nudges
@@ -367,6 +371,8 @@ def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcr
             {"type": "assistant", "timestamp": "2026-09-20T10:01:00Z", "message": {"content": [{"type": "text", "text": "Fixed: the token expired early."}]}}]
     transcript.write_text("".join(json.dumps(row) + "\n" for row in rows))
     monkeypatch.setattr(PROVIDERS["claude"], "conversation_file", lambda self, conversation: transcript if conversation == "conv-7" else None)
+    asked_history(record, "claude", "conv-7", ask=lambda _: "2", answering=True)
+    assert Messages(record, actor=USER).rows.every() == [], "No starts from here and brings nothing in"
     asked_history(record, "claude", "conv-7", ask=lambda _: "1", answering=True)
     asked_history(record, "claude", "conv-7", ask=lambda _: "1", answering=True)
     brought = [(m.brief, m.seen[0], bool(m.completed)) for m in Messages(record, actor=USER).rows.every()]
@@ -375,7 +381,7 @@ def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcr
     assert Sessions(record.root).environment("conv-7") == record.env, "the conversation now belongs to the environment, so it is not asked again"
 
 
-def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_path):
+def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_path, monkeypatch):
     import json
     from providers.claude import Claude
     dispatched = {"type": "assistant", "timestamp": "2026-09-23T00:00:00Z", "message": {"content": [
@@ -417,4 +423,23 @@ def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_pat
     runtime.set_env(record.root, "old")
     sessions.rebind("old", "renamed")
     assert (sessions.read("claude-1").environment, runtime.env(record.root)) == ("renamed", "renamed"), "renaming an environment moves its sessions and the one the journal opens on"
+    sessions.rebind("renamed", "third")
+    assert runtime.renamed(record.root, "old") == "third", "a name renamed twice is followed to the name it has now"
+    Environments(record, actor=SYSTEM).create("old")
+    assert runtime.renamed(record.root, "old") == "old", "a new environment that takes an old name is no longer followed away"
+    sessions.rebind("third", "renamed")
     assert sessions.grant("claude-1", "renamed") == ["renamed"] and sessions.grant("claude-1", "renamed", on=False) == [], "a lent environment is taken back"
+    assert process_alive(1), "a process another user owns is alive, though it cannot be signalled"
+    from engine.sessions import agent_pid, held_builds
+    builds = runtime.builds(record.root)
+    builds.mkdir(parents=True, exist_ok=True)
+    for name, build in (("notes", ""), (str(2 ** 22 + 9), "old.pyz"), (str(os.getpid()), "mine.pyz")):
+        (builds / name).write_text(build)
+    assert (held_builds(record.root), [p.name for p in builds.iterdir()]) == ({"mine.pyz"}, [str(os.getpid())]), \
+        "a build is held only by a live process, and every other marker is cleared"
+    monkeypatch.setattr("engine.sessions.run", lambda *args, **kwargs: "4242 -zsh\n")
+    assert agent_pid(77) == 4242, "a chain of shells is climbed only so far"
+    sessions.write("claude-2", environment="spare", provider="claude", since=1.0)
+    assert sessions.choose("claude-3", "claude", "main", set()) == "spare", "a new session takes the environment an ended one left behind"
+    sessions.write("claude-3", environment="own", provider="claude", pid=os.getpid())
+    assert sessions.choose("claude-3", "claude", "main", set()) == "own", "a session goes back to its own environment while nobody else holds it"

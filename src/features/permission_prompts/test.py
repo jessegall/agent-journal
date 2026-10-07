@@ -119,6 +119,11 @@ def test_the_start_asks_about_permission_prompts_only_when_the_flag_is_not_typed
     asked_prompts(record, "claude", [], ask=lambda _: "2", answering=True)
     assert record.setting("permission_prompts", {}).get("skip") is False, "No keeps the prompts, and is remembered"
 
+    def closed(_=""):
+        raise EOFError
+    asked_prompts(record, "claude", [], ask=closed, answering=True)
+    assert record.setting("permission_prompts", {}).get("skip") is False, "input that ends before an answer changes nothing"
+
 
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):
     from providers import PROVIDERS

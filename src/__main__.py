@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import commands.cli  # noqa: E402,F401
 if len(sys.argv) > 2 and sys.argv[1] == "-m":
     module = sys.argv[2]
     sys.argv = [sys.argv[0], *sys.argv[3:]]

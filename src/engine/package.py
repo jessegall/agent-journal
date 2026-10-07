@@ -45,9 +45,7 @@ def data(*parts: str) -> Path:
 
 
 def entry(module: str) -> list[str]:
-    if ZIPPED:
-        return [sys.executable, str(CODE.with_name(ARCHIVE)), "-m", module]
-    return [sys.executable, str(CODE.joinpath(*module.split("."))) + ".py"]
+    return [sys.executable, str(CODE.with_name(ARCHIVE) if ZIPPED else CODE), "-m", module]
 
 
 def own_build(root: Path) -> bool:

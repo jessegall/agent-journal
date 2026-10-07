@@ -49,8 +49,6 @@ def read_source(project: Path, asked: str) -> ProjectSource:
         if len(matches) != 1:
             raise Refused(f"{len(matches)} files in the project are called {asked!r}" if matches else f"no file {asked!r} in the project")
         target = project_path(project, matches[0])
-    if not target.is_file():
-        raise Refused(f"no file {asked!r} in the project")
     kind = mimetypes.guess_type(target.name)[0] or ""
     text = "" if kind.startswith("image/") else target.read_bytes()[:SOURCE_LIMIT].decode("utf-8", errors="replace")
     return ProjectSource(str(target.relative_to(project.resolve())), target.stat().st_size, kind, text, len(text.splitlines()))

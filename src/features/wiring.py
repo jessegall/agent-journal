@@ -100,7 +100,7 @@ class AgentHooks:
         self.guards.append(guard)
 
         def policy(call: HookCall) -> str:
-            if call.hook.tool.loads_skill and not interceptor.before_checks:
+            if call.hook.tool.loads_skill:
                 return ""
             context = hooked(feature, call)
             if not feature.enabled(call.record) or not wanted(interceptor, feature, call.record, call.row, timed=False):
@@ -108,9 +108,6 @@ class AgentHooks:
             refused = interceptor.intercept(context, call.hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.guard = guard
-        if interceptor.before_checks:
-            POLICIES.add(None, policy, first=True)
-            return
         (POLICIES if interceptor.refuses else AFTERWARDS).add(None, policy)
 
     def canceler(self, canceler: Canceler) -> None:

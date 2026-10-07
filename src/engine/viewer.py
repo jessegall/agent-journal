@@ -156,11 +156,6 @@ def lately_running(root: Path) -> str:
     return url
 
 
-def marked(root: Path) -> str:
-    url = candidates(root)[:1]
-    return url[0] if url and answers(url[0], root, timeout=0.2) else ""
-
-
 def waited(port: int, seconds: float = PORT_WAIT) -> bool:
     until = time.time() + seconds
     while not free(port):
@@ -195,14 +190,6 @@ def free_from(start: int) -> int:
 
 def last(root: Path) -> ViewerMark:
     return read_json(marker(root), ViewerMark.from_json, ViewerMark.from_json({}))
-
-
-def restart(root: Path, project: Path) -> str:
-    was = last(root)
-    if was.pid and (reply := identity(was.url, timeout=0.2)) and reply.serves(root) and reply.pid == was.pid and alive(was.pid):
-        os.kill(was.pid, signal.SIGTERM)
-        waited(was.port)
-    return start(root, project)
 
 
 def elsewhere(root: Path) -> str:

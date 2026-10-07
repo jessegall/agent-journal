@@ -65,8 +65,8 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
             print(f"    {e}")
 
 
-def defaults(_: str) -> str:
-    return ""
+def defaults(_: str) -> None:
+    """Takes every default without asking: choose answers with the default before it would call this."""
 
 
 def choose(heading: str, notes: list[str], choices: list, default: int, ask=input) -> int | None:
@@ -192,7 +192,7 @@ def launch(record: Record, agent: str, given: list[str] | None) -> str:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
     resumed = driver.conversation(args) or driver.continued(args, project)
-    env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, answering)
+    env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, False if quiet else answering)
     here = Record(record.root, env)
     args = driver.within(args, env) if env in linked(project) or driver.asks_worktree(args) else args
     put_back(here)

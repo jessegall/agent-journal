@@ -14,7 +14,7 @@ import pytest
 
 from controllers.base import Controller
 from controllers.features import Features
-from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
+from controllers.types import CONTROLLERS, Agents, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
@@ -155,6 +155,12 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         row = make()
         fed = {item["ref"] for item in call(base, "/p/feed", key=key).body["items"]}
         assert row.ref in fed, f"a {kind} the agent writes reaches the phone's chat"
+    agents = Agents(record, actor=SYSTEM)
+    lead = agents.primary() or agents.create("claude-1")
+    agents.update(lead.n, subagent_rows=[{"task_id": "t-7", "task": "Ada: map the hooks"}])
+    handed = Messages(record, actor=AGENT).create("for Ada", brief="for Ada", sent_to="t-7")
+    assert [item["to"] for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == handed.ref] == ["Ada: map the hooks"], \
+        "a message sent to a subagent names it on the phone"
 
 
 def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
