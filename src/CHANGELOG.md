@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.7 — A shell command that only waits is refused
+When the agent waits, a sleep, a timeout, or an until or while loop that only sleeps blocks the message queue until it ends. The journal now refuses such a command and tells the agent to say what it waits for with the await tag and stop; a message or a report wakes it. A sleep inside a real command, or one run in the background, passes. Nothing to do.
+
 ## 2.254.6 — A pressed option shows a spinner at once, on the desktop and the phone
 Pressing an option button on a document, a report or the chat's choice card now shows a spinner on that button and disables the others of the same choice until the server answers; a failure returns the buttons and says the error. The desktop choice card and the phone's buttons share one pending state. Nothing to do.
 
