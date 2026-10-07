@@ -143,3 +143,7 @@ def test_the_upgrade_folds_every_environments_settings_into_the_project_with_the
     assert json.loads((homes["aside"].home / "settings.json").read_text()) == {"form_of_address": {}, "viewer": {"zoom": 1}}, \
         "what moved to the project leaves the environment, and the rest stays"
     assert json.loads((root / "attic" / "settings-before-project" / "aside.json").read_text()) == values["aside"], "the old file is kept in the attic"
+    run(root)
+    assert json.loads((root / "attic" / "settings-before-project" / "aside.json").read_text()) == values["aside"], \
+        "a second run keeps the first backup instead of overwriting it with the emptied file"
+    assert json.loads((root / "settings.json").read_text())["form_of_address"] == {"title": "Captain", "first_name": "Ada"}, "and changes nothing else"

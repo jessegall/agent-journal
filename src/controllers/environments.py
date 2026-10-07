@@ -55,7 +55,7 @@ class Environments(Controller):
         return super().update(n, **data)
 
     def _seat(self, name: str, session: str):
-        row = self.rows.by_title(name) or self.create(name)
+        row = self.rows.by_title(name) or self.create(name, kind=EnvironmentKind.MAIN)
         return self.update(row.n, holder=session)
 
     @action
@@ -91,15 +91,21 @@ class Environments(Controller):
         return self._stopping(env.n, session=holder)
 
     @action
-    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+    def create(self, title: str, abstract: str = "", brief: str = "", kind: str | None = None, **data):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
         home = environment_home(self.record.root, name)
-        made = super().create(name, abstract, brief, **{**data, "kind": kind_of(data.get("kind", EnvironmentKind.MAIN))})
+        made = super().create(name, abstract, brief, kind=self._kind_made(kind, data.get("owner", "")), **data)
         home.mkdir(parents=True, exist_ok=True)
         runtime.forget_rename(self.record.root, name)
         return made
+
+    def _kind_made(self, kind: str | None, owner: str) -> EnvironmentKind:
+        """The kind a new environment is made with: the one named, else the one its owner gives it, else main."""
+        if kind is not None:
+            return kind_of(kind)
+        return EnvironmentKind.owned_by(owner)
 
     @cached_property
     def _sessions(self) -> Sessions:
