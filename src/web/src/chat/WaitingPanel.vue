@@ -1,6 +1,6 @@
 <script setup>
 import MenuPanel from "../kit/MenuPanel.vue";
-import WaitingList from "./WaitingList.vue";
+import WaitingList from "../kit/WaitingList.vue";
 
 defineProps({waiting: {type: Object, required: true}, anchor: {type: Object, default: null}});
 const emit = defineEmits(["close"]);

@@ -12,7 +12,7 @@ import PhoneAgent from "./PhoneAgent.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 import PhoneAgentControls from "./PhoneAgentControls.vue";
 import PhoneAgentMore from "./agent/PhoneAgentMore.vue";
-import WaitingList from "../chat/WaitingList.vue";
+import WaitingList from "../kit/WaitingList.vue";
 import {phoneWaiting} from "./agentWait.js";
 
 const props = defineProps({
