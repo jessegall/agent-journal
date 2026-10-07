@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.255.2 — A message never starts a second copy of a running conversation
+- When you write to an environment with no agent in it, the journal starts its last conversation again only if that conversation is not already running somewhere else. Before, a session pulled into another environment could be started a second time in its old one, and the two copies then worked side by side.
+
 ## 2.255.1 — A restarted session keeps its environment
 - A session that Claude Code resumes in the worktree folder it was already running in keeps the environment it held, instead of moving to a new environment named after the folder. A session resumed in a different worktree still moves there, and the start after a compaction always keeps its environment.
 
