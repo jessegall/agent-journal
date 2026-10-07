@@ -408,6 +408,9 @@ class RowStore:
     def viewed(self) -> list[Resource]:
         return [self.peek(row["n"]) for row in self.summaries() if not row["deleted"]]
 
+    def attached(self) -> list[Resource]:
+        return [self.peek(row["n"]) for row in self.summaries() if row["files"] and not row["deleted"]]
+
     def every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:

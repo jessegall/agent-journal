@@ -317,6 +317,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     for given, words in [
         ("not json", "is not JSON"), ([1], "holds one object"), ({"name": "X Y"}, "name must be"),
         ({"name": "messages"}, "is a built-in feature"), ({"name": "pp", "journal": "99.0.0"}, "needs journal 99.0.0 or newer"),
+        ({"name": "pp", "journal": "99.0.0", "fitz": {}}, "this is 2.0.0: upgrade the journal"),
         ({"name": "pp", "wat": 1}, "unknown key 'wat'"), ({"name": "pp", "refuse_socket": "x"}, "refuse_socket names one of its services"),
         ({"name": "pp", "events": {"e": {"title": "E", "tone": "loud"}}}, "tone is one of"),
         ({"name": "pp", "events": {"e": {"title": "E", "card": {"size": 1}}}}, "unknown key 'size'"),
