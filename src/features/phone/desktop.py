@@ -1,15 +1,22 @@
 from http.client import HTTPConnection, HTTPException
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
 from engine.viewer import lately_running
-from features.routing import PHONE_ENVIRONMENT
+from features.routing import JSON, PHONE_ENVIRONMENT
+from features.sharing.page import disposition
 from features.sharing.server import APP_HEADERS
 
 CARRIED = ("Content-Type", "Accept", "Last-Event-ID")
-KEPT = ("Content-Type", "Cache-Control", "Content-Disposition")
+KEPT = ("Content-Type", "Cache-Control")
 STREAMED = "text/event-stream"
 WAIT_SECONDS = 600
 CHUNK = 65536
+
+
+def encoded(asked) -> str:
+    """The asked path and query, decoded and encoded again, so no raw character reaches the request line."""
+    path = "/".join(quote(unquote(part), safe="") for part in asked.path.split("/"))
+    return f"{path}?{urlencode(parse_qsl(asked.query, keep_blank_values=True))}" if asked.query else path
 
 
 class Desktop:
@@ -23,14 +30,18 @@ class Desktop:
         reached = urlsplit(lately_running(self.handler.shares.record.root))
         if not reached.port:
             return self.handler.answer(503, "the journal on your computer is not running")
+        asked = urlsplit(self.handler.path.removeprefix("/p"))
         connection = HTTPConnection(reached.hostname, reached.port, timeout=WAIT_SECONDS)
         try:
-            connection.request(self.handler.command, self.handler.path.removeprefix("/p"), body or None, self.carried())
+            connection.request(self.handler.command, encoded(asked), body or None, self.carried())
             reply = connection.getresponse()
             headers = {name: reply.getheader(name) for name in KEPT if reply.getheader(name)}
-            if reply.getheader("Content-Type", "").startswith(STREAMED):
+            kind = reply.getheader("Content-Type", "")
+            if kind.startswith(STREAMED):
                 return self.stream(reply, headers)
-            return self.handler.packed(reply.status, reply.read(), {**headers, **APP_HEADERS})
+            if not kind.startswith(JSON):
+                headers["Content-Disposition"] = disposition(unquote(asked.path.rsplit("/", 1)[-1]))
+            return self.handler.packed(reply.status, reply.read(), {**headers, **APP_HEADERS, "X-Content-Type-Options": "nosniff"})
         except (OSError, HTTPException):
             return self.handler.answer(502, "the journal on your computer did not answer")
         finally:

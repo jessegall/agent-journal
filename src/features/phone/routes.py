@@ -12,7 +12,7 @@ from features.phone.controller import Phones
 from features.phone.desktop import Desktop
 from features.phone.surface import PhoneSurface
 from engine.color import identity
-from features.sharing.page import PICTURES, unshared
+from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused, Stale
@@ -241,9 +241,7 @@ class PhoneRoutes:
         except Refused as refused:
             return handler.answer(404, str(refused))
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
-        shown = found.suffix.lower() in PICTURES
-        return handler.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "private, max-age=3600",
-                                                      "Content-Disposition": f"{'inline' if shown else 'attachment'}; filename*=UTF-8''{quote(found.name)}"})
+        return handler.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "private, max-age=3600", "Content-Disposition": disposition(found.name)})
 
     def read(self, handler, rest: list[str]) -> None:
         phone = self.phone(handler)

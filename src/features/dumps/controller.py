@@ -10,6 +10,7 @@ from features.collections.controller import Collections
 from features.dumps.resource import ENTRY, ITEM, Dump, Offer, entry
 from features.message_buttons.shaping import one
 from resources.base import AGENT, Ref, Refused, titled
+from resources.types import ref_named
 from controllers.marks import action
 
 LABEL = 40
@@ -17,6 +18,11 @@ LOG_KEPT = 20
 ANSWER = 600
 OFFERED = 4
 OWN_WORDS = -2
+
+
+def named_refs(text: str) -> list[str]:
+    """Every row a comma list names, written as type:number."""
+    return [str(ref_named(part.strip())) for part in text.split(",") if part.strip()]
 
 
 class Dumps(Controller):
@@ -184,8 +190,7 @@ class Dumps(Controller):
     def filed(self, n: int, item: str, how: str, refs: str = "", added: str = ""):
         if not how.strip():
             raise Refused("say what was done with it")
-        found = [ref.strip() for ref in refs.split(",") if ref.strip()]
-        own = [ref.strip() for ref in added.split(",") if ref.strip()]
+        found, own = named_refs(refs), named_refs(added)
         if set(own) - set(found):
             raise Refused("--added names rows you also list in refs")
         for ref in found:
