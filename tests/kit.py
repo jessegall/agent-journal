@@ -53,11 +53,11 @@ def idle(record, **more):
 
 
 def nudges(record):
-    return [n.title for n in Nudges(record).all()]
+    return [n.title for n in Nudges(record).all(completed=True)]
 
 
 def nudges_with_briefs(record):
-    return [(n.title, n.brief) for n in Nudges(record).all()]
+    return [(n.title, n.brief) for n in Nudges(record).all(completed=True)]
 
 
 def git(where: Path, *args: str) -> str:

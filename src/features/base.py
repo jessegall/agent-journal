@@ -36,9 +36,9 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 class Line:
     def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None, label: str = "",
-                 reach: Reach = Reach.MAIN, reply_kept: bool = False):
+                 reach: Reach = Reach.MAIN, reply_kept: bool = False, until: tuple[str, ...] = ()):
         self.name, self.title, self.brief, self.lead, self.label, self.reach = name, paragraphs(title), paragraphs(brief), lead, label, reach
-        self.reply_kept = reply_kept
+        self.reply_kept, self.until = reply_kept, until
         self.while_waiting = while_waiting
 
     def placeholders(self) -> list[str]:
@@ -50,6 +50,9 @@ class Line:
             raise Refused(f"the line {self.title!r} takes {sorted(wanted)}, given {sorted(values)}")
         fill = lambda text: PLACEHOLDER.sub(lambda found: str(values[found.group(1)]), text)
         return fill(self.title), fill(self.brief)
+
+    def asking(self, feature: str) -> dict:
+        return {"until": list(self.until), "asks": f"{feature}.{self.name}"} if self.until else {}
 
     def describe(self) -> dict:
         return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders(), "reach": self.reach}

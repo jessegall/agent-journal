@@ -97,6 +97,7 @@ class MessagesDetails(FeatureDetails):
         Line(
             name="answer",
             title="answer {{messages}} before you write anything",
+            until=("message.completed",),
             brief="a reply, a reaction, or journal message processed <n>",
         ),
         Line(

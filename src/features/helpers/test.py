@@ -104,11 +104,33 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Agents(record, actor=SYSTEM).create("claude-1")
     Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
     assert "only a helper reports" in refused(lambda: Helpers(record, actor=AGENT).report("done")), "the dispatcher cannot report for it"
+    import os
+    import time
+    from engine.sessions import Sessions
+    from features.helpers.handlers import NameStoppedOrQuietHelpers
+    from features.parts import AgentContext
+    sessions = Sessions(record.root)
+    seated = "codex-9"
+    sessions.bind(seated, f"{record.env}-rhea", provider="codex")
+    watch = lambda: NameStoppedOrQuietHelpers().handle(AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).primary()), None)
+    titles = lambda: [n.title for n in Nudges(record, actor=SYSTEM).all() if "helper 1" in n.title]
+    watch()
+    assert titles() == [], "a helper at work is left alone"
+    sessions.write(seated, pid=os.getpid(), seen=time.time() - 25 * 60)
+    watch()
+    watch()
+    assert titles() == ["helper 1, Rhea, has done nothing for 25 minutes"], "one quiet for a while is named once, so the agent checks on it"
+    sessions.write(seated, pid=2 ** 22 + 7)
+    watch()
+    stopped, = [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title]
+    assert (stopped.title, stopped.until) == ("helper 1, Rhea, stopped running before it reported", ["helper.completed"]), \
+        "one whose agent is gone is named at once, and said again until it is finished"
     Helpers(Record(record.root, f"{record.env}-rhea"), actor=AGENT).report("The hooks spend 40ms in imports")
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     told = Messages(record, actor=SYSTEM).all()[-1]
     assert (told.brief, told.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
-    assert any("helper 1, Rhea, reported" in n.title for n in Nudges(record, actor=SYSTEM).all()), "the dispatcher is told"
+    reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
+    assert reported.until == ["helper.completed"], "the dispatcher is told, until it finishes the helper"
 
 
 def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):

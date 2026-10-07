@@ -581,6 +581,8 @@ class Nudge(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(name="private"),
         Field(name="session"),
+        Field(default="", name="asks"),
+        Field(default=list, name="until"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent instruction",
