@@ -12,11 +12,13 @@ from os.path import commonprefix
 from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
 
+import pytest
+
 import controllers.files as files
 import controllers.stored as stored
 import features
 from commands.dispatch import dispatch, ranked, resolve
-from commands.invoke import spread
+from commands.invoke import invoked, spread
 from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
@@ -341,6 +343,8 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
     assert answered("services", "list") != "", "services lists"
     assert ran("services", "bogus")[0] == 1, "a services word it does not know is refused in words"
     assert answered("browser", "driving").startswith("{"), "a word that answers with a mapping prints it whole"
+    report(record, "working", "PreToolUse")
+    assert "this session: working after PreToolUse" in answered("--session", "claude-1", "verify"), "verify names what the asking session last reported"
     Works(record, actor=AGENT).create("the work in hand")
     assert "the work in hand" in answered("open"), "open names the work in hand"
     plan = CONTROLLERS["plan"](record, actor=AGENT).create("a plan")
@@ -483,6 +487,11 @@ def test_stopping_an_environment_asks_its_terminal_or_ends_the_process_that_hold
         child.kill()
     sessions.write("unknown", environment="ghost", provider="claude", seen=time.time())
     assert "its process is not found" in refused(lambda: places.stop(ghost.n)), "an agent with no terminal and no process is left to end where it runs"
+    from engine.seats import live, offline
+    write_json(seat_file(record.root, "terminal-2"), {"at": time.time() - 100, "report": {"title": "gone-quiet"}})
+    assert "last checked in 100s ago" in offline(record.root, "gone-quiet"), "a session whose terminal went quiet says how long ago it was heard"
+    assert "gone-quiet" not in [agent.session for _, agent in live(record.root)], "and is not online"
+    assert live(record.root, within=0.000001) == [], "a seat file older than the window is not read at all"
 
 
 def test_an_update_check_asked_for_reads_the_newest_release_once_at_a_time(monkeypatch):
@@ -512,6 +521,16 @@ def test_rows_and_help_shaped_for_the_viewer_are_kept_only_up_to_their_limit(mon
     assert (len(formatting.SHAPED.held), len(formatting.CATALOGUES)) == (1, 1), "the oldest shapes give way, so memory never grows past the limit"
 
 
+def test_a_listing_polled_since_a_moment_or_holding_a_damaged_row_still_answers():
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    kept, damaged = todos.create("kept"), todos.create("damaged")
+    todos.path(damaged.n).write_text("not a row")
+    listed = [row["n"] for row in get(record, "/api/{env}/todo").body["rows"]]
+    since = [row["n"] for row in get(record, "/api/{env}/todo", since="1").body["rows"]]
+    assert listed == since == [kept.n], "a row that no longer reads is left out of the listing, polled or not"
+
+
 def test_no_environment_name_is_shadowed_by_a_global_route():
     features.load()
     fixed = {parts[2] for parts in (r.pattern.split("/") for r in ranked()) if parts[1] == "api" and len(parts) > 3 and not parts[2].startswith("{")}
@@ -534,6 +553,29 @@ def test_unloading_the_features_empties_every_extension_point():
         features.load()
 
 
+def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_elsewhere_is_read():
+    features.load()
+    record = fresh()
+    rows = CONTROLLERS["feature"](record, actor=SYSTEM)
+    features.seat(record.root)
+    row = rows.rows.by_title("thinking")
+    rows.update(row.n, missing=True)
+    features.seat(record.root)
+    assert not rows.load(row.n).missing, "a feature that is there again is no longer marked missing"
+    rows.update(row.n, enabled=False)
+    features.passed(record.event_log.events()[-1], record)
+    assert not features.FEATURES["thinking"].enabled(record), "a switch another process made is read when its event is relayed"
+    from engine.reach import Unreached
+    from features.base import Feature, FeatureDetails, Line
+    from features.groups import Group
+
+    class Careless(FeatureDetails):
+        name, title, group = "careless", "Careless", Group.CHAT
+        lines = (Line("A line", name="told", reach="main"),)
+    with pytest.raises(Unreached):
+        type("CarelessFeature", (Feature,), {"details": Careless})
+
+
 def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out():
     features.load()
     rows = [{"deleted": 0, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [USER]}, {"deleted": 0, "completed": 5, "seen": []},
@@ -551,6 +593,10 @@ def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out(
     counted = environment(record)["counts"]
     assert {"todos": counted["todos"], "messages": counted["messages"]} == {"todos": 1, "messages": 1}, \
         "an environment counts its open to-dos and its unread messages, never a closed or archived row"
+    CONTROLLERS["question"](record, actor=AGENT).create("Which port should it use")
+    assert environment(record)["attention"] == {"kind": "question", "text": "Which port should it use"}, "an open question asks for attention"
+    CONTROLLERS["notice"](record, actor=SYSTEM).create("Allow Bash to remove the build folder", action="permission")
+    assert environment(record)["attention"] == {"kind": "permission", "text": "Allow Bash to remove the build folder"}, "and a waiting permission prompt comes first"
     environments = Environments(record, actor=SYSTEM)
     environments.create("helped", owner="helper:1")
     environments.create("plain")
@@ -603,7 +649,7 @@ def test_a_failed_attach_leaves_the_attached_file_and_its_description_as_they_we
     for type_, resource, record, controller in each_type():
         row = acting(type_, record, SYSTEM).create(f"a {type_} with a file", **needed(type_))
         write_text(source, "first")
-        controller.attach(row.n, str(source), "the first")
+        invoked(controller, "attach", (row.n, str(source), "the first"))
         write_text(source, "second")
         moves = []
         real = os.replace
@@ -636,6 +682,9 @@ def test_the_file_browser_and_its_search_leave_out_secrets_and_the_journal():
     assert get(record, "/api/{env}/project-files", folder=".env").code == 400, "a secret cannot be opened by asking for it by name"
     from engine.paths import contained
     assert "leaves its folder" in refused(lambda: contained(project, "elsewhere")), "a name that links out of its folder is never followed"
+    assert get(record, "/api/{env}/commit/" + "a" * 40).code == 404, "a commit the project does not hold is a 404"
+    (project / "fresh.txt").write_text("new\n")
+    assert "+new" in dispatch("GET", f"/api/{record.env}/diff", record.root, {"path": "fresh.txt"}, {}).body["diff"], "a file git does not track yet shows whole, as added"
 
 
 def test_trimming_the_event_log_keeps_what_a_lagging_reader_has_not_yet_read():

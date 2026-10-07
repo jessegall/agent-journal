@@ -242,6 +242,11 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     engine.permitted()
     assert calls[-1] == "permit False", "Esc for deny"
     assert engine.permitted() == ""
+    old = inputs.queue(root, "claude-1", (), "Allow", action=inputs.PERMIT, value="allow")
+    now = time.time
+    monkeypatch.setattr(inputs.time, "time", lambda: old.at + inputs.STALE + 1)
+    assert (engine.permitted(), list(inputs.runtime.inputs(root).glob("*.json"))) == ("", []), "an answer left waiting too long is dropped, never typed late"
+    monkeypatch.setattr(inputs.time, "time", now)
 
     calls.clear()
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE)
