@@ -29,7 +29,7 @@ function cloned() {
     copy.setAttribute("aria-hidden", "true");
     preview.value.replaceChildren(copy);
 }
-const emit = defineEmits(["react", "reply", "copy", "close"]);
+const emit = defineEmits(["react", "reply", "copy", "pin", "delete", "close"]);
 const box = ref(null);
 const strip = ref(null);
 const edges = ref({left: false, right: false});
@@ -41,6 +41,7 @@ function scrolled() {
 }
 const top = ref(0);
 const mine = computed(() => props.item.who === "user");
+const deletable = computed(() => mine.value && !props.item.completed);
 const hint = firstTime("phone-reply-hint");
 const side = computed(() => {
     const rect = props.rect;
@@ -127,6 +128,20 @@ onUnmounted(() => {
                         <Icon name="copy" :size="18" />
                     </button>
                 </li>
+                <li>
+                    <button type="button" class="hold-action" @click="emit('pin')">
+                        Pin to the chat
+                        <Icon name="pin" :size="18" />
+                    </button>
+                </li>
+                <template v-if="deletable">
+                    <li>
+                        <button type="button" class="hold-action danger" @click="emit('delete')">
+                            Delete
+                            <Icon name="trash" :size="18" />
+                        </button>
+                    </li>
+                </template>
                 <template v-if="hint">
                     <li class="hold-hint">Tip: swipe a message to the right to reply.</li>
                 </template>
@@ -257,6 +272,10 @@ onUnmounted(() => {
     font: inherit;
     font-size: 1rem;
     text-align: left;
+}
+
+.hold-action.danger {
+    color: var(--danger);
 }
 
 .hold-action:active {
