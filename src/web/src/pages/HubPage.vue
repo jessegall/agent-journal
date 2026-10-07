@@ -4,6 +4,8 @@ import {remember, remembered} from "../platform/storage.js";
 import {projectPath, stoppedNote} from "../domain/journals.js";
 import {useHub} from "../composables/hub.js";
 import {computed, reactive, ref, watch} from "vue";
+import {api} from "../api/client.js";
+import AgentStartButton from "../chat/AgentStartButton.vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import IconCount from "../kit/IconCount.vue";
@@ -90,7 +92,8 @@ function toggleStopped() {
                 <template v-for="j in stopped" :key="j.root">
                     <ListRow :kind="stoppedNote(j)" :title="j.project" :text="`Start it with journal claude in ${projectPath(j)}`">
                         <template v-if="!j.running" #end>
-                            <Btn small v-tip="'Remove this journal from the list until its viewer runs again'" @click="forget(j)">Remove</Btn>
+                            <AgentStartButton :environment="j.project" :start="(agent) => api.startJournal(j.root, agent)" @started="refresh" />
+                            <Btn small v-tip="'Remove this journal from the list until it runs again'" @click="forget(j)">Remove</Btn>
                         </template>
                     </ListRow>
                 </template>
