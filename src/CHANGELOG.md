@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.1 — Reading a to-do no longer rebuilds the start block, and an interceptor refuses only by raising
+Marking a row as read no longer rebuilds the start block each session begins with, so a first read of a to-do answers in a few milliseconds instead of over the 50 ms budget. A plugin's repeated create of a row with the same title now returns that row from create itself, and no interceptor answers with a row any more: raising is the one way an interceptor refuses. Nothing to do.
+
 ## 2.254.0 — The phone app offers everything the desktop viewer does
 The phone app now offers everything the desktop viewer does. Four tabs, Chat, Home, To-dos and Everything, reach every place the desktop has and every action in it. Each item opens on its own page with the actions of its type. The board, dumps and commits are there, and the agent sheet carries the terminal, skills and activity. Settings holds plugins, services, the tunnel and unpair. The phone reaches the desktop API only through a named allow list. Actions that run commands on the computer stay off on the phone for now. The message box stays above the keyboard when you focus it. Nothing to do.
 

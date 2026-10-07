@@ -21,6 +21,11 @@ class ResourceEvent(RowAction):
     type: str = ""
     actor: str = ""
     section: str = ""
+    by: str = ""
+
+    @property
+    def is_read_mark(self) -> bool:
+        return self.by == "read"
 
     @classmethod
     def read(cls, event) -> "ResourceEvent":

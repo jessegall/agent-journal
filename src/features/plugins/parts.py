@@ -150,17 +150,6 @@ class KeepPluginRows(ActionInterceptor):
         return None
 
 
-class OneRowPerTitle(ActionInterceptor):
-    def intercept(self, feature_context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
-        name = data.get(OWNER)
-        if not name:
-            return None
-        found = next((row for row in controller.rows.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)
-        if found is None:
-            return None
-        return controller.update(found["n"], abstract=abstract or None, brief=brief or None, **data)
-
-
 class ReadLinkedManifests(Handler):
     def handle(self, context: Context, event: ClockTicked) -> None:
         plugins = Plugins(context.record, actor=SYSTEM)
