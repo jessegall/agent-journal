@@ -101,3 +101,71 @@ def test_a_file_name_is_a_chip_when_one_project_file_has_it_and_the_agent_hears_
         Nudges(record).delete(nudge.n, "cleared")
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "again: test.py")
     assert [n.title for n in Nudges(record).all() if "test.py" in n.title] == [], "naming the same shared file a second time does not tell the agent again"
+
+
+def test_cold_project_indexing_is_shared_while_the_viewer_keeps_answering():
+    import threading
+    from engine import project_files
+    from resources.base import AGENT
+
+    load()
+    record = fresh()
+    project = record.root.parent
+    cold_file = project / "ColdWidget.vue"
+    cold_file.write_text("<template />")
+    project_files.WALKED.pop(str(project), None)
+    project_files.WALKING.discard(str(project))
+    entered, release, published = threading.Event(), threading.Event(), threading.Event()
+    actual_walk, walks, scan_threads, scan_errors = project_files.walk, [], [], []
+
+    def held_walk(path):
+        if path == project:
+            walks.append(path)
+            scan_threads.append(threading.current_thread())
+            entered.set()
+            release.wait()
+        try:
+            result = actual_walk(path)
+        except BaseException as error:
+            scan_errors.append(error)
+            raise
+        if path == project:
+            published.set()
+        return result
+
+    project_files.walk = held_walk
+    workers, results, worker_errors = [], [None, None], []
+
+    def format_row(row, index):
+        try:
+            results[index] = shaped(row, record, VIEWER)
+        except BaseException as error:
+            worker_errors.append(error)
+            raise
+
+    try:
+        rows = [Todos(record, actor=AGENT).create(f"cold {i}", brief="ColdWidget.vue") for i in range(2)]
+        workers = [threading.Thread(target=format_row, args=(row, index)) for index, row in enumerate(rows)]
+        for worker in workers:
+            worker.start()
+        assert entered.wait(5), "the native project walk started"
+        for worker in workers:
+            worker.join(5)
+        assert not worker_errors and not scan_errors, f"formatter and scan workers completed without errors: {worker_errors + scan_errors}"
+        assert all(not worker.is_alive() for worker in workers), "viewer formatting answers while indexing is held"
+        assert all(result is not None for result in results), f"both formatter requests returned: {results}"
+        assert all("[[file" not in result["brief"] for result in results), "cold responses do not invent a file chip"
+        release.set()
+        assert published.wait(5), "the native project walk publishes after release"
+        resolved = Todos(record, actor=AGENT).create("resolved", brief="ColdWidget.vue")
+        assert shaped(resolved, record, VIEWER)["brief"] == "[[file ColdWidget.vue|ColdWidget.vue]]", "published indexing resolves the actual file"
+        assert len(walks) == 1, "overlapping viewer requests share one native walk"
+    finally:
+        release.set()
+        for worker in workers:
+            worker.join(5)
+        for scan_thread in scan_threads:
+            scan_thread.join(5)
+        finished = all(not worker.is_alive() for worker in workers) and all(not thread.is_alive() for thread in scan_threads)
+        project_files.walk = actual_walk
+        assert finished, "request and native scan threads finish before the wrapper is restored"
