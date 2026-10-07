@@ -18,7 +18,7 @@ const legend = computed(() => {
     return {words: `Waiting on ${props.waiting.helping ? plural(open.value || props.waiting.items.length) : props.waiting.text}`, tick: false};
 });
 
-function say(words, ended) {
+function setNote(words, ended) {
     clearTimeout(timer);
     note.value = {words, tick: true, ended};
     lit.value = ended;
@@ -32,12 +32,12 @@ watch(
     () => props.waiting,
     (now, before) => {
         if (!before || now) return;
-        say(before.helping ? `All ${plural(before.items.length)} reported` : `${capital(before.text)} finished`, true);
+        setNote(before.helping ? `All ${plural(before.items.length)} reported` : `${capital(before.text)} finished`, true);
     }
 );
 watch(open, (now, before) => {
     if (!props.waiting?.helping || now >= before) return;
-    say(`${before - now} ${before - now === 1 ? "helper" : "helpers"} reported, ${now} still at work`, false);
+    setNote(`${before - now} ${before - now === 1 ? "helper" : "helpers"} reported, ${now} still at work`, false);
 });
 onUnmounted(() => clearTimeout(timer));
 </script>
