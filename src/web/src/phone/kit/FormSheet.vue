@@ -59,6 +59,7 @@ function closed() {
                         :label="field.label"
                         :area="field.area"
                         :verbatim="field.verbatim"
+                        :type="field.secret ? 'password' : 'text'"
                         :placeholder="field.placeholder || ''"
                         :list="field.choices ? `form-${field.key}` : null"
                     />

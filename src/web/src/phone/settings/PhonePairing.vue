@@ -2,20 +2,20 @@
 import {onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {phone} from "../../api/phone.js";
-import {checkTunnel, tunnelStatus} from "../../composables/shares.js";
 import {phoneTime} from "../../composables/phones.js";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import {toast} from "../kit/toast.js";
 import FormSheet from "../kit/FormSheet.vue";
+import PhoneTunnel from "./PhoneTunnel.vue";
 
 const emit = defineEmits(["open"]);
 const connection = ref(null);
 const leaving = ref(false);
 
-async function signOut() {
+async function unpair() {
     try {
-        await api.act("phone", connection.value.n, "disconnect");
+        await api.disconnectPhone(connection.value.n);
     } catch (error) {
         return toast(error.message);
     }
@@ -23,36 +23,27 @@ async function signOut() {
 }
 
 onMounted(async () => {
-    checkTunnel().catch(() => null);
     connection.value = await phone.state().catch(() => null);
 });
 </script>
 
 <template>
-    <CellGroup head="This phone">
+    <CellGroup head="Phones">
         <template v-if="connection">
             <Cell :label="connection.phone" :sub="`Reaches the journal until ${phoneTime(connection.expires)}`" icon="phone" still />
-            <Cell label="Sign out of this journal" sub="It stops reaching the journal until you pair it again." tone="danger" :chevron="false" @pick="leaving = true" />
+            <Cell label="Unpair this phone" sub="It stops reaching the journal until you pair it again." tone="danger" :chevron="false" @pick="leaving = true" />
         </template>
     </CellGroup>
-    <CellGroup head="Reaching the journal from outside" foot="Change the tunler login on your computer; signing out here would cut this phone off.">
-        <template v-if="tunnelStatus && tunnelStatus.logged_in">
-            <Cell label="Tunler account" :sub="`Connected as ${tunnelStatus.account} on ${tunnelStatus.host}`" still />
-        </template>
-        <template v-else-if="tunnelStatus">
-            <Cell label="Tunler account" sub="Not connected on this computer" still />
-        </template>
-        <Cell label="Share links" sub="Pages you shared with other people" icon="share" @pick="emit('open', 'list:share')" />
-    </CellGroup>
+    <PhoneTunnel @open="(target) => emit('open', target)" />
     <template v-if="leaving">
         <FormSheet
-            title="Sign out of this journal?"
-            sub="This phone stops reaching the journal until you pair it again."
-            button="Sign out"
+            title="Unpair this phone?"
+            sub="It stops reaching the journal until you pair it again."
+            button="Unpair"
             keep="Keep it paired"
             danger
             @close="leaving = false"
-            @submit="signOut"
+            @submit="unpair"
         />
     </template>
 </template>

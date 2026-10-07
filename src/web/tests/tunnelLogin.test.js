@@ -2,7 +2,7 @@ import {createApp, nextTick} from "vue";
 import {beforeEach, describe, expect, test, vi} from "vitest";
 
 const tunnelLogin = vi.fn();
-vi.mock("../src/api/client.js", () => ({api: {tunnelLogin: (...a) => tunnelLogin(...a)}}));
+vi.mock("../src/api/client.js", () => ({api: {tunnelLogin: (...a) => tunnelLogin(...a)}, onWrite: vi.fn()}));
 
 const {default: TunnelLogin} = await import("../src/pages/TunnelLogin.vue");
 
