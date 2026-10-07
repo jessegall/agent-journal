@@ -10,7 +10,6 @@ from pathlib import Path
 from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-import commands.cli  # noqa: E402,F401
 from engine.package import data  # noqa: E402
 from features import running  # noqa: E402
 from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402

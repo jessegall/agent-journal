@@ -725,10 +725,13 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     assert "doc 16" in linked and "/doc/16" not in linked, "a row outside the page stays text"
     import subprocess
     import sys
-    from engine.package import CODE
-    entered = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, sys.argv[1]); import features.sharing.server, features; from features.format import formatted; "
-                              "features.load(); print(formatted('run journal todo done 3'))", str(CODE)], capture_output=True, text=True, timeout=60)
-    assert entered.stdout.strip() == "run `journal todo done` 3", "the share server's own process wires the command line, so a journal command in a shared page is set as code: " + entered.stderr[-300:]
+    from engine.package import entry
+    entered = subprocess.run([sys.executable, "-c", "import runpy, sys; sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__'); import features; "
+                              "from features.format import formatted; features.load(); print(formatted('run journal todo done 3'))", *entry("features.sharing.page")[1:]],
+                             capture_output=True, text=True, timeout=60)
+    assert entered.stdout.strip() == "run `journal todo done` 3", \
+        "a module the journal starts in a process of its own, as the share server is, has the command line wired, so a journal command in a shared page is set as code: " \
+        + entered.stderr[-300:]
     illustrated = Docs(record := fresh(), actor=USER).create("Pictured", abstract="A short line", brief="Words")
     picture = record.root / "chart.png"
     picture.write_bytes(b"\x89PNG")
