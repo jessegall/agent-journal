@@ -9,7 +9,6 @@ import ActionSheet from "../kit/ActionSheet.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
 
-const MOVABLE = ["todo", "plan", "suggestion", "collection", "report", "fact", "reminder"];
 const COLLECTABLE = ["todo", "plan", "suggestion", "doc", "report", "message", "fact", "rule", "ticket"];
 const ANSWERED = ["question", "suggestion"];
 
@@ -21,7 +20,6 @@ const props = defineProps({
 const emit = defineEmits(["close", "open"]);
 const form = ref(null);
 const collections = ref([]);
-const environments = ref([]);
 const name = computed(() => `${props.kind.one} ${props.row.n}`);
 const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const options = computed(() =>
@@ -85,8 +83,6 @@ const openRows = async (type) => (await api.list(type).catch(() => ({rows: []}))
 
 onMounted(async () => {
     if (COLLECTABLE.includes(props.row.type)) collections.value = await openRows("collection");
-    if (MOVABLE.includes(props.row.type))
-        environments.value = (await openRows("environment")).filter((one) => !one.data.owner && one.title !== api.env());
 });
 
 function collect() {
@@ -108,17 +104,6 @@ function collect() {
                 toast(error.message);
             }
         },
-    };
-}
-
-function moving() {
-    const names = environments.value.map((one) => one.title);
-    form.value = {
-        title: `Move ${name.value.toLowerCase()}`,
-        sub: "It leaves this environment and gets a new number in the other one.",
-        fields: [{key: "env", label: "Environment", placeholder: names.join(", "), required: true, choices: names}],
-        button: "Move",
-        done: ({env}) => act("move", {env}, `Moved ${name.value.toLowerCase()} to ${env}`),
     };
 }
 
@@ -175,9 +160,6 @@ const actions = computed(() => [
     ...(props.row.type === "check" ? [{key: "run", label: "Run this check now", run}] : []),
     ...(props.row.seen && !props.row.seen.includes("user") ? [{key: "read", label: "Mark as read", run: read}] : []),
     ...(COLLECTABLE.includes(props.row.type) ? [{key: "collect", label: "Add to a collection", run: collect}] : []),
-    ...(MOVABLE.includes(props.row.type) && environments.value.length && !props.row.data.system
-        ? [{key: "move", label: "Move to another environment", run: moving}]
-        : []),
     ...ending.value,
     ...(props.row.data.system ? [] : [{key: "delete", label: "Delete", sub: DELETE_NOTE, danger: true, run: sure}]),
 ]);

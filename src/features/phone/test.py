@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import subprocess
 import sys
 import threading
@@ -16,6 +17,7 @@ from controllers.base import Controller
 from controllers.features import Features
 from controllers.types import CONTROLLERS, Comments, Docs, Messages, Notices, Questions, Todos
 from engine.record import Record
+from features.phone import allow_list
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
@@ -159,7 +161,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         assert row.ref in fed, f"a {kind} the agent writes reaches the phone's chat"
 
 
-def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
+def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch, tmp_path):
     record, base = served
     _, key = paired(record, base)
     words = {"brief": "Delete everything", "idempotency": "x"}
@@ -179,10 +181,30 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
         assert call(base, f"/p/api/{record.env}/todo", made, key, Origin="https://evil.example")[0] == 403
         assert call(base, "/p/api/elsewhere/todo", made, key)[0] == 403, "another environment stays closed"
         assert call(base, "/p/api/summary?env=elsewhere", key=key)[0] == 403
-        assert call(base, "/p/api/run", made, key)[0] == 403, "the command line is never the phone's"
+        assert call(base, "/p/api/run", made, key)[0] == 403, "a page the phone app never calls is refused"
+        assert [call(base, f"/p/api/{record.env}/{page}", made, key)[0] for page in ("tool", "agent/main/shell", "environment/1/rename", "phone/connect")] == [403] * 4, \
+            "running commands stays off for a phone, and environments and phones are never its to change"
         status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
         assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
-        assert call(base, f"/p/api/{record.env}/todo/{answered['n']}", key=key).body["title"] == "From the phone"
+        row = f"/p/api/{record.env}/todo/{answered['n']}"
+        assert call(base, row, key=key).body["title"] == "From the phone"
+        assert call(base, f"{row}/move", {"env": "elsewhere"}, key)[0] == 403 and Todos(record, actor=SYSTEM).load(answered["n"]), \
+            "a body that names another environment is refused too"
+        for name in ("page.html", "face.png"):
+            (tmp_path / name).write_text("<script src=x.js></script>")
+            Todos(record, actor=SYSTEM).attach(answered["n"], str(tmp_path / name))
+        assert call(base, f"{row}/files/page.html", key=key)[0] == 403, "a page the phone app does not call is refused"
+        ((listed, _), *rest) = allow_list.LISTS
+        monkeypatch.setattr(allow_list, "LISTS", (((*listed, allow_list.get("/api/{env}/{type}/{n}/files/{name}")), True), *rest))
+        sent = {"Cookie": f"__Host-phone={key}"}
+        with urllib.request.urlopen(urllib.request.Request(f"{base}{row}/files/page.html", headers=sent), timeout=5) as got:
+            assert (got.headers["X-Content-Type-Options"], got.headers["Content-Disposition"].split(";")[0]) == ("nosniff", "attachment"), \
+                "a forwarded file is downloaded, never opened on the phone's own origin"
+        with urllib.request.urlopen(urllib.request.Request(f"{base}{row}/files/face.png", headers=sent), timeout=5) as got:
+            assert got.headers["Content-Disposition"].split(";")[0] == "inline", "a picture still shows in place"
+        with socket.create_connection(("127.0.0.1", int(base.rsplit(":", 1)[1])), timeout=5) as raw:
+            raw.sendall(f"GET {row}/files/caf\xe9\x01 HTTP/1.1\r\nHost: x\r\nCookie: __Host-phone={key}\r\nConnection: close\r\n\r\n".encode("latin-1"))
+            assert raw.recv(64).split(b" ")[1] == b"404", "a path with a raw or control character is answered, not dropped"
     finally:
         SERVING.pop(str(record.root.resolve()))
         desk.shutdown()

@@ -1,12 +1,10 @@
 import {api} from "../api/client.js";
-import {phone} from "../api/phone.js";
 import {closeWord, meta, SHARED} from "../domain/spec.js";
 import {shiftQuestion} from "../board/moves.js";
 import {deleteReason, profileInUse, useProfile} from "../composables/profiles.js";
 import {stopLinksOf} from "../composables/shares.js";
 import {CALLINGS} from "../domain/callings.js";
 import {kindWord} from "./kinds.js";
-import {place} from "./outbox.js";
 import {todoLane} from "./todo.js";
 
 const HIDDEN = new Set([
@@ -162,13 +160,6 @@ async function roles() {
     return picked;
 }
 
-async function environments(row) {
-    const [project, here] = place.value.split("/");
-    const places = await phone.places();
-    const mine = places.find((one) => one.project === project) || {environments: []};
-    return mine.environments.filter((name) => name !== here).map((name) => ({value: name, label: name}));
-}
-
 async function lanes(row) {
     const board = await api.board();
     const card = board.lanes.flatMap((lane) => lane.cards.map((one) => ({...one, lane: lane.key}))).find((one) => one.n === row.n);
@@ -237,14 +228,6 @@ const COMMON = {
     },
     link: {label: "Link to another item", fields: [text("ref", "Which item?", {placeholder: LINK_HINT})], result: () => "Linked"},
     unlink: {label: "Remove a link", when: (row) => row.refs.length > 0, pick: refsOf, name: "ref", result: () => "Link removed"},
-    move: {
-        label: "Move to another environment",
-        sub: "It leaves this environment",
-        when: standing,
-        pick: environments,
-        name: "env",
-        result: (row, env) => `Moved ${named(row)} to ${env}`,
-    },
     attach: {label: "Attach files", upload: true, result: () => "Attached"},
     detach: {label: "Remove a file", when: (row) => filesOf(row).length > 0, pick: filesOf, name: "name", result: () => "File removed"},
     delete: {
