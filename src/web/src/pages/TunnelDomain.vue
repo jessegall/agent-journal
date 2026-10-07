@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {api} from "../api/client.js";
+import {releaseDomain} from "../composables/tunnel.js";
 import Btn from "../kit/Btn.vue";
 
 const props = defineProps({domain: {type: String, required: true}, own: {type: Boolean, default: false}});
@@ -13,12 +13,7 @@ async function release() {
     busy.value = true;
     failure.value = "";
     try {
-        if (props.own) {
-            await api.tunnelReaddress();
-            emit("released", await api.tunnelDomains());
-        } else {
-            emit("released", await api.tunnelRelease(props.domain));
-        }
+        emit("released", await releaseDomain(props.domain, props.own));
     } catch (e) {
         failure.value = e.message;
     } finally {

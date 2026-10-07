@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {api} from "../api/client.js";
+import {logInTunnel, noAccountYet} from "../composables/tunnel.js";
 import Btn from "../kit/Btn.vue";
 import FormField from "../kit/FormField.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -16,16 +16,13 @@ const busy = ref(false);
 const failure = ref("");
 const note = ref("");
 
+const login = () => ({endpoint: endpoint.value, username: username.value, password: password.value, master: master.value});
+
 async function connect() {
     busy.value = true;
     failure.value = "";
     try {
-        const got = await api.tunnelLogin({
-            endpoint: endpoint.value.trim(),
-            username: username.value.trim(),
-            password: password.value,
-            master_password: master.value || undefined,
-        });
+        const got = await logInTunnel(login());
         if (got.connected) {
             master.value = "";
             password.value = "";
@@ -34,7 +31,7 @@ async function connect() {
         }
         if (got.needs_master) {
             asking.value = true;
-            note.value = `No account "${username.value.trim()}" on ${endpoint.value.trim()} yet. Enter the server's master password to create it.`;
+            note.value = noAccountYet(login());
             return;
         }
         failure.value = got.error;

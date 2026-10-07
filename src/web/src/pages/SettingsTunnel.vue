@@ -1,10 +1,9 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {api} from "../api/client.js";
-import {store} from "../state/store.js";
 import Btn from "../kit/Btn.vue";
 import ListBox from "../kit/ListBox.vue";
-import {checkTunnel, tunnelStatus} from "../composables/shares.js";
+import {tunnelStatus} from "../composables/shares.js";
+import {logOutTunnel, tunnelDomains} from "../composables/tunnel.js";
 import TunnelLogin from "./TunnelLogin.vue";
 import TunnelDomain from "./TunnelDomain.vue";
 import TunlerVersion from "./TunlerVersion.vue";
@@ -15,15 +14,14 @@ const leaving = ref(false);
 const failure = ref("");
 
 async function load() {
-    const status = await checkTunnel();
-    domains.value = status && status.logged_in ? await api.tunnelDomains().catch(() => []) : [];
+    domains.value = await tunnelDomains();
 }
 
 async function logOut() {
     leaving.value = true;
     failure.value = "";
     try {
-        store.tunnel = await api.tunnelLogout();
+        await logOutTunnel();
         domains.value = [];
     } catch (e) {
         failure.value = e.message;

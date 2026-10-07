@@ -64,9 +64,13 @@ await runScenarios(PAIR, {
         await page.getByLabel("Search settings").fill("agent");
         await top(page).getByRole("switch").first().waitFor({timeout: SHOWN});
     },
-    async "the phone region offers sign out, and alerts have a key"(page) {
+    async "the phone region unpairs after asking, reaches tunler, and alerts have a key"(page) {
         await region(page, "Phone and share links");
-        await top(page).getByRole("button", {name: /Sign out of this journal/}).waitFor({timeout: SHOWN});
+        await top(page).getByRole("button", {name: /Unpair this phone/}).click();
+        await page.getByRole("dialog").getByText("Unpair this phone?").waitFor({timeout: SHOWN});
+        await page.getByRole("dialog").getByRole("button", {name: "Keep it paired"}).click();
+        await top(page).getByRole("button", {name: /^(Install tunler|Tunler account|Connect a tunler account)/}).click();
+        await page.getByRole("dialog").getByRole("button", {name: /^(Install tunler|Use another account|Connect)/}).first().waitFor({timeout: SHOWN});
         await region(page, "Alerts on this phone");
         await top(page).getByRole("button", {name: /Alerts key/}).waitFor({timeout: SHOWN});
     },
