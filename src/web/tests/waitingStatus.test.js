@@ -47,7 +47,7 @@ describe("the waiting word and its line", () => {
 describe("the message box edge", () => {
     beforeEach(() => (document.body.innerHTML = ""));
 
-    function shown(waiting) {
+    function mounted(waiting) {
         const into = document.createElement("div");
         document.body.append(into);
         const state = reactive({waiting});
@@ -57,7 +57,7 @@ describe("the message box edge", () => {
 
     test("a wait puts what it waits on on the border, and an ended wait lights it once", async () => {
         const waiting = waitingFor({text: "the test suite", on: "", since: NOW - 60}, {now: NOW});
-        const {into, state} = shown(waiting);
+        const {into, state} = mounted(waiting);
         expect(into.querySelector(".legend").textContent).toContain("Waiting on the test suite");
         expect(into.querySelector(".wait-edge").classList.contains("waiting")).toBe(true);
         state.waiting = null;
@@ -68,7 +68,7 @@ describe("the message box edge", () => {
 
     test("each helper report says who is still at work, and the last one says all reported", async () => {
         const wait = (state) => waitingFor({text: "2 helpers", on: "helper:1,helper:2", since: NOW - 60}, {helpers: state, now: NOW});
-        const {into, state} = shown(wait([helper(1, "running"), helper(2, "running")]));
+        const {into, state} = mounted(wait([helper(1, "running"), helper(2, "running")]));
         state.waiting = wait([helper(1, "reported"), helper(2, "running")]);
         await flush();
         expect(into.querySelector(".legend").textContent).toContain("1 helper reported, 1 still at work");
@@ -78,7 +78,7 @@ describe("the message box edge", () => {
     });
 
     test("with no wait there is no label", () => {
-        const {into} = shown(null);
+        const {into} = mounted(null);
         expect(into.querySelector(".legend")).toBeNull();
     });
 });
