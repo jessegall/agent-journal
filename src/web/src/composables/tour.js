@@ -2,6 +2,7 @@ import {saveViewerSetting, settingsLoaded, viewerSetting} from "./settings.js";
 import {onUnmounted, ref, watch} from "vue";
 import {boxAround} from "../platform/boxes.js";
 import {useFollowedBox} from "./followedBox.js";
+import {pollKey, startPoll} from "./poll.js";
 
 const KEY = "tour_seen";
 const START_AFTER = 800;
@@ -11,7 +12,7 @@ const around = (selector) => boxAround([...document.querySelectorAll(selector)])
 export function useTour(steps, menu) {
     const step = ref(-1);
     const rect = ref(null);
-    let waiting = 0;
+    let stopWaiting = () => {};
 
     function measure() {
         const now = steps[step.value];
@@ -32,8 +33,17 @@ export function useTour(steps, menu) {
     const covered = () => Boolean(document.querySelector(".dialog, .veil"));
 
     function attempt() {
-        if (covered()) waiting = setTimeout(attempt, START_AFTER);
-        else start();
+        const since = Date.now();
+        stopWaiting = startPoll(
+            pollKey(),
+            async () => Date.now() - since >= START_AFTER && !covered(),
+            START_AFTER,
+            (clear) => {
+                if (!clear) return;
+                stopWaiting();
+                start();
+            }
+        );
     }
 
     function start() {
@@ -56,13 +66,13 @@ export function useTour(steps, menu) {
     watch(
         settingsLoaded,
         (loaded) => {
-            if (loaded && !viewerSetting(KEY, false) && step.value < 0) waiting = setTimeout(attempt, START_AFTER);
+            if (loaded && !viewerSetting(KEY, false) && step.value < 0) attempt();
         },
         {immediate: true}
     );
     window.addEventListener("keydown", key);
     onUnmounted(() => {
-        clearTimeout(waiting);
+        stopWaiting();
         window.removeEventListener("keydown", key);
     });
     return {step, rect, next, end};

@@ -430,5 +430,5 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
 
     monkeypatch.setattr(http, "Queue", Quiet)
     stream = ask("GET", f"/api/{record.env}/stream").chunks
-    assert [next(stream), next(stream)] == [b": open\n\n", b": keep\n\n"], "a stream says it is open, and keeps the connection alive while nothing happens"
+    assert [next(stream), next(stream)] == [b": open\n\n", b"event: beat\ndata: keep\n\n"], "a stream says it is open, and beats while nothing happens, so the viewer can tell it is alive"
     stream.close()

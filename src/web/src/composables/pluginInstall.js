@@ -1,5 +1,6 @@
 import {ref} from "vue";
 import {api} from "../api/client.js";
+import {pollKey, startPoll} from "./poll.js";
 
 const LOG_EVERY = 1000;
 const LOG_LINES = 5000;
@@ -9,16 +10,13 @@ export function usePluginInstall(busy = ref(""), fresh = () => {}) {
     const previewed = ref(null);
     const outcome = ref(null);
     const live = ref("");
-    let following = false;
+    let stopFollowing = () => {};
 
     async function logLines(name) {
         return (await api.pluginLog(name, LOG_LINES).catch(() => ({log: ""}))).log.split("\n");
     }
 
-    async function follow(name, skipped) {
-        live.value = (await logLines(name)).slice(skipped).join("\n");
-        if (following) setTimeout(() => follow(name, skipped), LOG_EVERY);
-    }
+    const follow = async (name, skipped) => (live.value = (await logLines(name)).slice(skipped).join("\n"));
 
     function closePreview() {
         previewed.value = null;
@@ -42,8 +40,7 @@ export function usePluginInstall(busy = ref(""), fresh = () => {}) {
         live.value = "";
         const name = previewed.value.name;
         const skipped = (await logLines(name)).length;
-        following = true;
-        follow(name, skipped);
+        stopFollowing = startPoll(pollKey(), () => follow(name, skipped), LOG_EVERY);
         try {
             const upgrading = previewed.value.upgrading;
             const installed = upgrading ? await api.upgradePlugin(upgrading, previewed.value.current) : await api.installPlugin(source);
@@ -52,7 +49,7 @@ export function usePluginInstall(busy = ref(""), fresh = () => {}) {
         } catch (e) {
             outcome.value = {ok: false, text: e.message};
         }
-        following = false;
+        stopFollowing();
         await follow(name, skipped);
         busy.value = "";
     }

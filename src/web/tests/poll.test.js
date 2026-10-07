@@ -52,6 +52,23 @@ describe("a poll", () => {
         expect(ask.mock.calls.length - before).toBeGreaterThanOrEqual(4);
     });
 
+    test("a throw in every() or active() still schedules the next round", async () => {
+        const ask = vi.fn().mockResolvedValue("row");
+        let broken = true;
+        begin(ask, () => {
+            if (broken) throw new Error("bad interval");
+            return 1000;
+        }, undefined, () => {
+            if (broken) throw new Error("bad active");
+            return true;
+        });
+        await passed(0);
+        expect(ask).not.toHaveBeenCalled();
+        broken = false;
+        await passed(10000);
+        expect(ask).toHaveBeenCalled();
+    });
+
     test("a failed round never reaches the user", async () => {
         const take = vi.fn();
         begin(vi.fn().mockRejectedValue(new Error("down")), 1000, take);
