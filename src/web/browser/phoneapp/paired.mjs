@@ -1,6 +1,7 @@
 import {chromium} from "playwright-core";
 
 export const PAIR = process.argv[2];
+export const DESK = process.argv[3];
 export const PHONE = {viewport: {width: 390, height: 844}, hasTouch: true, isMobile: true};
 export const SHOWN = 8000;
 
@@ -17,10 +18,20 @@ export async function pairedState() {
 }
 
 export async function allowRuns(page) {
-    await page.route(/\/p\/state$/, async (route) => {
-        const response = await route.fetch();
-        await route.fulfill({response, json: {...(await response.json()), runs: true}});
-    });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("WebAuthn.enable");
+    const options = {protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true};
+    await cdp.send("WebAuthn.addVirtualAuthenticator", {options: {...options, automaticPresenceSimulation: true}});
+}
+
+export async function allowOnComputer(page) {
+    const computer = await page.context().browser().newPage({viewport: {width: 1280, height: 900}});
+    try {
+        await computer.goto(DESK);
+        await computer.locator(".chat-notice", {hasText: "Set up Face ID for phone"}).getByRole("button", {name: "Allow", exact: true}).click({timeout: SHOWN});
+    } finally {
+        await computer.close();
+    }
 }
 
 export const tab = (page, name) => page.getByRole("tab", {name: new RegExp(`^${name}`)}).click();

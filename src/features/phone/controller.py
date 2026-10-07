@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 import time
+from dataclasses import asdict
 from pathlib import Path
 from typing import TypedDict
 
@@ -13,6 +14,7 @@ from controllers.types import Environments
 from engine import runtime
 from engine.record import Record
 from features.phone.feed import waiting
+from features.phone.passkey import CREATE, GET, Assertion, Challenge, Creating, Enrolment, Getting, Passkey, PendingPasskey, Relying, Unlock, Unverified, creating
 from features.phone.places import MAIN, Place, places
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
@@ -25,11 +27,15 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed", "home", "tries")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed", "home", "tries", "passkey", "challenge", "unlock", "pending_passkey")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 WAITING_CARD = "waiting"
 MOST_TRIES = 10
+CHALLENGE_SECONDS = 120
+UNLOCK_SECONDS = 60
+ALLOW_SECONDS = 120
+PASSKEY_NOTICE = "passkey"
 
 
 class Code(TypedDict):
@@ -185,6 +191,109 @@ class Phones(Controller):
             send(Keys.kept(self.record.root), phone.push, f"https://{address}")
         if owed != phone.pushed:
             super().update(phone.n, pushed=owed)
+
+    def _enrolling(self, phone: Phone, relying: Relying) -> Creating:
+        if phone.passkey:
+            raise Refused("this phone already has its passkey: connect the phone again to make a new one")
+        return creating(self._challenged(phone, CREATE, ""), relying, f"phone-{phone.n}".encode(), phone.title)
+
+    def _enrol(self, phone: Phone, relying: Relying, given: Enrolment) -> PendingPasskey:
+        """The passkey the phone made, held until the user allows it on the computer within ALLOW_SECONDS."""
+        with self.record.locked(PROJECT):
+            challenge = self._taken(phone)
+            current = self.load(phone.n)
+            if current.passkey:
+                raise Refused("this phone already has its passkey: connect the phone again to make a new one")
+            if current.waiting_passkey.waits(time.time()):
+                raise Refused("Face ID for this phone already waits for Allow on your computer")
+            if current.waiting_passkey.passkey:
+                self._cleared(current, "the phone asked again")
+            passkey = given.passkey(challenge, relying, time.time())
+            desk = self._desk(current)
+            notice = Notices(desk, actor=SYSTEM).create(
+                f"Set up Face ID for phone {current.title}?", tone="warn", action=PASSKEY_NOTICE, phone=current.n,
+                brief="The phone asks to run commands after Face ID or its passcode. Allow it only if you asked for this on your phone just now.")
+            pending = PendingPasskey(asdict(passkey), desk.env, notice.n, time.time() + ALLOW_SECONDS)
+            super().update(phone.n, pending_passkey=asdict(pending))
+        return pending
+
+    @action
+    def allow_passkey(self, n: int) -> Phone:
+        """Keeps the passkey the phone asked to set up, so it runs commands after Face ID or its passcode."""
+        self._require_user()
+        with self.record.locked(PROJECT):
+            phone = self.load(int(n))
+            pending = self._cleared(phone, "allowed on the computer")
+            if not phone.connected or not pending.waits(time.time()):
+                raise Refused("the phone's request ran out: ask again from the phone")
+            allowed = super().update(phone.n, passkey=pending.passkey)
+        Notices(Record(self.record.root, pending.environment), actor=SYSTEM).create(
+            f"Face ID was set up for phone {phone.title}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
+        return allowed
+
+    @action
+    def refuse_passkey(self, n: int) -> Phone:
+        """Drops the passkey the phone asked to set up."""
+        self._require_user()
+        with self.record.locked(PROJECT):
+            phone = self.load(int(n))
+            self._cleared(phone, "refused on the computer")
+        return self.load(phone.n)
+
+    def _require_user(self) -> None:
+        if self.actor != USER:
+            raise Refused("only the user answers a phone's Face ID, with Allow or Refuse in the viewer on the computer")
+
+    def _cleared(self, phone: Phone, how: str) -> PendingPasskey:
+        """The passkey the phone asked to set up, cleared with the notice that asks about it."""
+        pending = phone.waiting_passkey
+        if not pending.passkey:
+            raise Refused(f"phone {phone.n} has not asked to set up Face ID")
+        super().update(phone.n, pending_passkey={})
+        Notices(Record(self.record.root, pending.environment), actor=SYSTEM).complete(pending.notice, how=how)
+        return pending
+
+    def _desk(self, phone: Phone) -> Record:
+        """The environment on this computer whose chat asks about this phone."""
+        return Record(self.record.root, phone.environment if phone.journal is None else self.record.env)
+
+    def _unlocking(self, phone: Phone, relying: Relying, request: str) -> Getting:
+        if not phone.passkey:
+            raise Unverified.because("this phone has no passkey yet")
+        return Passkey.from_json(phone.passkey).asked(self._challenged(phone, GET, request), relying)
+
+    def _unlock(self, phone: Phone, relying: Relying, given: Assertion) -> str:
+        """A one-use unlock for the request the challenge named, good for a minute on this phone alone."""
+        with self.record.locked(PROJECT):
+            challenge = self._taken(phone)
+            passkey = given.counted(Passkey.from_json(self.load(phone.n).passkey), challenge, relying, time.time())
+            unlock = secrets.token_urlsafe(32)
+            super().update(phone.n, passkey=asdict(passkey), unlock=asdict(Unlock(hashed(unlock), challenge.request, time.time() + UNLOCK_SECONDS)))
+        return unlock
+
+    def _spend(self, phone: Phone, unlock: str, request: str) -> bool:
+        """Whether this unlock opens this request; a matching unlock is spent whether or not it does."""
+        if not unlock:
+            return False
+        with self.record.locked(PROJECT):
+            kept = Unlock.from_json(self.load(phone.n).unlock)
+            if not kept.fits(hashed(unlock)):
+                return False
+            super().update(phone.n, unlock={})
+        return kept.opens(request, time.time())
+
+    def _challenged(self, phone: Phone, kind: str, request: str) -> Challenge:
+        challenge = Challenge(secrets.token_urlsafe(32), kind, time.time() + CHALLENGE_SECONDS, request)
+        super().update(phone.n, challenge=asdict(challenge))
+        return challenge
+
+    def _taken(self, phone: Phone) -> Challenge:
+        """The challenge this phone was given, cleared so it answers one attempt only."""
+        kept = self.load(phone.n).challenge
+        super().update(phone.n, challenge={})
+        if not kept:
+            raise Unverified.because("ask again, the last request has run out")
+        return Challenge.from_json(kept)
 
     def _live(self) -> list[dict]:
         now = time.time()

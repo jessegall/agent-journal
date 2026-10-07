@@ -18,6 +18,7 @@ JSON = "application/json"
 PLAIN = "text/plain; charset=utf-8"
 
 PHONE_ENVIRONMENT = "X-Phone-Environment"
+PHONE_UNLOCKED = "X-Phone-Unlocked"
 
 
 @dataclass(frozen=True)

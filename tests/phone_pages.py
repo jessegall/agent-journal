@@ -24,6 +24,7 @@ from tests.kit import commit, git
 
 class PhonePage(NamedTuple):
     pair: str
+    desk: str
 
 
 def add_committed_roses(record) -> None:
@@ -83,7 +84,7 @@ def served() -> Iterator[PhonePage]:
     add_committed_roses(record)
     code = Phones(record, actor=USER).connect(7)["link"].split("#", 1)[1]
     try:
-        yield PhonePage(f"http://127.0.0.1:{server.server_port}/p/#{code}")
+        yield PhonePage(f"http://localhost:{server.server_port}/p/#{code}", f"http://127.0.0.1:{desk.server_port}/#/{record.env}")
     finally:
         SERVING.pop(str(record.root.resolve()))
         desk.shutdown()

@@ -94,7 +94,7 @@ def test_a_shared_page_answers_every_state_a_visitor_meets():
 @pytest.mark.parametrize("script", sorted(path.stem for path in (WEB / "browser" / "phoneapp").glob("*.mjs") if path.stem not in PHONE_HELPERS))
 def test_a_paired_phone_answers_every_state_in_a_browser(script):
     with phone_pages.served() as page:
-        run = subprocess.run(["node", f"browser/phoneapp/{script}.mjs", page.pair], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+        run = subprocess.run(["node", f"browser/phoneapp/{script}.mjs", page.pair, page.desk], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
 
@@ -102,6 +102,6 @@ def test_a_paired_phone_answers_every_state_in_a_browser(script):
 @needs_node_modules
 def test_a_paired_phone_settings_work_in_a_browser():
     with phone_pages.served() as page:
-        run = subprocess.run(["node", "browser/phoneapp/settings.mjs", page.pair], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+        run = subprocess.run(["node", "browser/phoneapp/settings.mjs", page.pair, page.desk], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
