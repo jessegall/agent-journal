@@ -158,7 +158,7 @@ function press(button) {
                                 small
                                 :kind="i === 0 && !groups.length && !pressed.length ? 'primary' : 'ghost'"
                                 :disabled="Boolean(running)"
-                                :title="means(button)"
+                                v-tip="means(button)"
                                 @click="press(button)"
                             >
                                 <template v-if="running === button.label">

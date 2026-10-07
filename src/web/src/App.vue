@@ -34,6 +34,7 @@ import HubPage from "./pages/HubPage.vue";
 import FilePage from "./pages/FilePage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
+import Tooltip from "./kit/Tooltip.vue";
 import Btn from "./kit/Btn.vue";
 import EmptyState from "./kit/EmptyState.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
@@ -266,6 +267,7 @@ watch(
                     />
                 </template>
                 <Lightbox />
+                <Tooltip />
                 <Transition name="quick">
                     <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>

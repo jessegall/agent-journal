@@ -151,14 +151,14 @@ watch(
     <section class="board">
         <header class="bar">
             <TabBar v-model="chosenTab" :tabs="tabs" class="board-tabs" />
-            <Btn kind="icon" class="new-board" title="New board" @click="newBoard = true">
+            <Btn kind="icon" class="new-board" v-tip="'New board'" @click="newBoard = true">
                 <Icon name="plus" />
             </Btn>
             <Btn
                 ref="boardMenuOpener"
                 kind="icon"
                 :class="['board-settings', {spare: !current && !archived.length}]"
-                title="Board settings"
+                v-tip="'Board settings'"
                 @click.stop="boardMenu = !boardMenu"
             >
                 <Icon name="settings" />
@@ -175,7 +175,7 @@ watch(
                 />
             </template>
             <span class="grow" />
-            <Btn kind="icon" :class="['search', {on: searching}]" title="Filter cards" @click="searching = !searching">
+            <Btn kind="icon" :class="['search', {on: searching}]" v-tip="'Filter cards'" @click="searching = !searching">
                 <Icon name="search" />
                 <template v-if="text.trim()">
                     <span class="search-dot" />
@@ -185,7 +185,7 @@ watch(
                 <TextInput ref="finder" :value="text" class="find" placeholder="Filter cards  /" @input="text = $event.target.value" />
                 <Switch :on="showingDone" word="Show done cards" @change="(on) => lens({done: on})" />
             </div>
-            <Btn kind="primary" small title="New work (N)" @click="newWork">
+            <Btn kind="primary" small v-tip="'New work (N)'" @click="newWork">
                 <Icon name="plus" />
                 New work
             </Btn>

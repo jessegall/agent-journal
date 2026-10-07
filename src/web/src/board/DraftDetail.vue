@@ -36,7 +36,7 @@ function keep() {
             <TextDisplay class="brief" :text="ticket.brief" />
         </template>
         <template #foot>
-            <Btn :kind="picked ? 'ghost' : 'primary'" small :title="picked ? 'Click to unpick it' : ''" @click="keep">
+            <Btn :kind="picked ? 'ghost' : 'primary'" small v-tip="picked ? 'Click to unpick it' : ''" @click="keep">
                 {{ picked ? "✓ Picked" : "Pick this ticket" }}
             </Btn>
         </template>

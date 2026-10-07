@@ -45,21 +45,21 @@ function grow(e) {
             <button
                 type="button"
                 class="float-btn"
-                :title="minimized ? 'Show the whole window' : 'Show only this bar'"
+                v-tip="minimized ? 'Show the whole window' : 'Show only this bar'"
                 @click="emit('minimize', !minimized)"
             >
                 <Icon :name="minimized ? 'window' : 'minimize'" />
             </button>
-            <button type="button" class="float-btn float-menu-btn" title="Window menu" @click.stop="emit('menu', $event)">
+            <button type="button" class="float-btn float-menu-btn" v-tip="'Window menu'" @click.stop="emit('menu', $event)">
                 <Icon name="dots" />
             </button>
-            <button type="button" class="float-btn" title="Dock it back into the layout" @click="emit('dock')">
+            <button type="button" class="float-btn" v-tip="'Dock it back into the layout'" @click="emit('dock')">
                 <Icon name="dock" />
             </button>
         </div>
         <div v-show="!minimized" class="float-body"><slot /></div>
         <template v-if="!minimized">
-            <span class="float-grip" title="Resize" @pointerdown="grow" />
+            <span class="float-grip" v-tip="'Resize'" @pointerdown="grow" />
         </template>
     </div>
 </template>

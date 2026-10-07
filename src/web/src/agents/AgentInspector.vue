@@ -187,7 +187,7 @@ const openSkills = () => go(route.value.env, "skills");
                 <span ref="layoutOpener">
                     <Btn
                         small
-                        title="How the panes are laid out. It applies to every agent's inspector."
+                        v-tip="`How the panes are laid out. It applies to every agent's inspector.`"
                         @click.stop="layoutMenu = !layoutMenu"
                     >
                         <Icon name="layout" :size="12" />

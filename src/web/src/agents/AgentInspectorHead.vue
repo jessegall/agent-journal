@@ -44,7 +44,7 @@ function pick(key) {
                 </template>
                 <template v-if="narrow">
                     <span ref="opener">
-                        <Btn kind="icon" small title="Actions" @click.stop="menu = !menu">
+                        <Btn kind="icon" small v-tip="'Actions'" @click.stop="menu = !menu">
                             <Icon name="dots" :size="14" />
                         </Btn>
                     </span>
@@ -55,7 +55,7 @@ function pick(key) {
                             small
                             :kind="action.danger ? 'danger' : 'ghost'"
                             :disabled="asking === action.key"
-                            :title="action.title"
+                            v-tip="action.title"
                             @click="emit('action', action.key)"
                         >
                             {{ action.label }}

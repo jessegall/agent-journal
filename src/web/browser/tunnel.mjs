@@ -12,7 +12,7 @@ async function pill(page, url, standing) {
     const state = {status: standing, logins: [], installs: 0, checks: 0};
     await page.route(STATUS, (route) => (state.checks++, reply(route, state.status)));
     await page.goto(`${url}#/main`);
-    await page.getByTitle(/^Sharing:/).click();
+    await page.getByRole("button", {name: /^Sharing:/}).click();
     return {state, drop: page.locator(".tunnel-drop")};
 }
 

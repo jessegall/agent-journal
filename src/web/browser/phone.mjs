@@ -14,7 +14,7 @@ async function opened(page, url, {tunnel, answering = {reachable: false}, connec
         return connect ? reply(route, connect) : reply(route, {error: "no code today"}, 500);
     });
     await page.goto(`${url}#/main`);
-    await page.getByTitle("Connect your phone").click();
+    await page.getByRole("button", {name: "Connect your phone"}).click();
     return {sent, dialog: page.getByRole("dialog", {name: "Connect your phone"})};
 }
 

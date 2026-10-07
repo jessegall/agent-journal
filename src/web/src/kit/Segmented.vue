@@ -1,6 +1,9 @@
 <script setup>
+import {useId} from "vue";
+
 defineProps({options: {type: Array, required: true}, value: {type: String, default: ""}, fill: Boolean, wrap: Boolean});
 const emit = defineEmits(["pick"]);
+const id = useId();
 </script>
 
 <template>
@@ -10,7 +13,7 @@ const emit = defineEmits(["pick"]);
                 type="button"
                 role="radio"
                 :aria-checked="o.key === value"
-                :title="o.title"
+                v-tip:[`${id}-${o.key}`]="o.tip || o.title"
                 :class="['segmented-option', {on: o.key === value}]"
                 @click="emit('pick', o.key)"
             >

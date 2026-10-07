@@ -27,7 +27,7 @@ const ENDED = ["done", "abandoned"];
             <span class="note">The agent is still writing this plan. It can be started once it is ready.</span>
         </template>
         <template v-if="!ENDED.includes(status)">
-            <Btn title="Ask the agent to have other agents critique this plan" @click="critiquing = true">Ask for a critique</Btn>
+            <Btn v-tip="'Ask the agent to have other agents critique this plan'" @click="critiquing = true">Ask for a critique</Btn>
             <Btn kind="danger" @click="emit('run', 'abandon', {why: 'stopped from the viewer'})">Close without finishing</Btn>
         </template>
         <template v-if="holdsTickets && !ENDED.includes(status)">
