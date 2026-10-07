@@ -250,6 +250,17 @@ def test_the_attic_packs_unpacks_and_finds_what_was_put_away_and_a_stubborn_serv
     monkeypatch.setattr(attic.shutil, "rmtree", stubborn)
     attic.removed(tmp_path / "back")
     assert len(tries) == 3, "a folder that is busy is tried again, and one that is already gone ends the tries"
+    tries.clear()
+
+    def busy(path, *args, **kwargs):
+        tries.append(path)
+        if len(tries) <= attic.REMOVE_TRIES:
+            raise OSError("busy")
+        return real(path, *args, **kwargs)
+    monkeypatch.setattr(attic.shutil, "rmtree", busy)
+    (tmp_path / "held").mkdir()
+    attic.removed(tmp_path / "held")
+    assert (len(tries), (tmp_path / "held").exists()) == (attic.REMOVE_TRIES + 1, False), "a folder busy at every try is removed once more at the end"
 
     kills, gone_after = [], iter([False, False, True])
     monkeypatch.setattr(stop, "serving", lambda root: 4242)

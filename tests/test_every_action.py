@@ -20,7 +20,7 @@ from commands.invoke import spread
 from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
-from controllers.types import CONTROLLERS, Environments, Todos
+from controllers.types import CONTROLLERS, Environments, Todos, Works
 from engine.extension import EXTENSIONS
 from engine.package import code
 from engine.paths import ROUTED
@@ -297,6 +297,18 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_ev
     features.load()
     record = fresh()
     assert get(record, "/api/nowhere/todo").code == 404, "an environment that is not there is a 404"
+    assert get(record, "/api/a\\b/todo").code == 404, "a name no environment folder could have is a 404"
+    import cProfile
+    from engine.timing import PROFILING
+    PROFILING.raise_flag(record.root)
+    assert get(record, "/api/{env}/todo").code == 200, "a request is answered while it is profiled"
+    outer = cProfile.Profile()
+    outer.enable()
+    try:
+        assert get(record, "/api/{env}/todo").code == 200, "a request that cannot be profiled while another profile runs is answered unprofiled"
+    finally:
+        outer.disable()
+        PROFILING.lower_flag(record.root)
     assert post(record, "/api/{env}/nonsense/create").code == 404, "a type that is not there is a 404"
     assert post(record, "/api/{env}/work/start", {"title": "one"}).code == 201, "the first work starts"
     assert post(record, "/api/{env}/work/start", {"title": "two"}).code == 400, "an action the row's state refuses is a 400"
@@ -328,6 +340,16 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
     assert "usage:" in answered("help") and "usage:" in answered("help", "todo") and "no command" in answered("help", "nonsense"), "help answers for the whole journal, for one noun and for a word it does not have"
     assert answered("services", "list") != "", "services lists"
     assert ran("services", "bogus")[0] == 1, "a services word it does not know is refused in words"
+    assert answered("browser", "driving").startswith("{"), "a word that answers with a mapping prints it whole"
+    Works(record, actor=AGENT).create("the work in hand")
+    assert "the work in hand" in answered("open"), "open names the work in hand"
+    plan = CONTROLLERS["plan"](record, actor=AGENT).create("a plan")
+    CONTROLLERS["plan"](record, actor=AGENT).phase(plan.n, "first", when="it is done")
+    assert ran("plan", "rephrase", str(plan.n), "1", "--checkpoint", "yes")[0] == 0 and CONTROLLERS["plan"](record, actor=AGENT).load(plan.n).phases[0]["checkpoint"], \
+        "a yes-or-no option is read from the word"
+    from commands.cli import captured
+    helped, code = captured(["todo", "--help"], record.root)
+    assert (code, "usage:" in helped) == (0, True), "help asked of the server's command line is printed and exits cleanly, never raising"
 
 
 def test_no_command_argument_shares_a_name_with_a_global_option():
@@ -436,6 +458,58 @@ def test_every_type_with_its_own_word_for_create_is_created_over_http():
                for type_ in renamed}
     assert {type_: reply.code for type_, reply in answers.items()} == {type_: 201 for type_ in renamed}, \
         {type_: reply.body for type_, reply in answers.items() if reply.code != 201}
+
+
+def test_stopping_an_environment_asks_its_terminal_or_ends_the_process_that_holds_it():
+    import sys
+    from engine.seats import seat_file
+    from engine.sessions import Sessions
+    from engine.stop import session_flag
+    from engine.stored import write_json
+    record = fresh()
+    places = Environments(record, actor=USER)
+    sessions = Sessions(record.root)
+    seated, outside, ghost = (places.create(name) for name in ("seated", "outside", "ghost"))
+    sessions.write("in-a-terminal", environment="seated", provider="claude", pid=os.getpid())
+    write_json(seat_file(record.root, "terminal-1"), {"at": time.time(), "report": {"title": "in-a-terminal"}})
+    places.stop(seated.n)
+    assert session_flag(record.root, "terminal-1").is_file(), "an agent in a journal terminal is asked to stop through it"
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+    try:
+        sessions.write("on-its-own", environment="outside", provider="claude", pid=child.pid)
+        places.stop(outside.n)
+        assert child.wait(timeout=10) == -15, "an agent running on its own is ended through its process"
+    finally:
+        child.kill()
+    sessions.write("unknown", environment="ghost", provider="claude", seen=time.time())
+    assert "its process is not found" in refused(lambda: places.stop(ghost.n)), "an agent with no terminal and no process is left to end where it runs"
+
+
+def test_an_update_check_asked_for_reads_the_newest_release_once_at_a_time(monkeypatch):
+    from engine import runtime, upgrades
+    record = fresh()
+    monkeypatch.setattr(upgrades, "released", lambda repository=None: "v9.9.9")
+    cache = runtime.upstream_cache(record.root)
+    with upgrades.FETCHING:
+        assert post(record, "/api/update/check").code == 200 and not cache.exists(), "a check asked for while another runs is not started twice"
+    assert post(record, "/api/update/check").code == 200
+    until = time.time() + 10
+    while not cache.exists() and time.time() < until:
+        time.sleep(0.05)
+    with upgrades.FETCHING:
+        assert cache.read_text() == "v9.9.9", "the check runs in the background and keeps the newest release it found"
+
+
+def test_rows_and_help_shaped_for_the_viewer_are_kept_only_up_to_their_limit(monkeypatch):
+    from features import format as formatting
+    monkeypatch.setattr(formatting.SHAPED, "limit", 1)
+    monkeypatch.setattr(formatting, "KEEP_CATALOGUES", 1)
+    record, other = fresh(), fresh("other")
+    for n in range(2):
+        formatting.shaped(Todos(record, actor=SYSTEM).create(f"row {n}"), record)
+    formatting.catalogue({}, record)
+    formatting.catalogue({}, other)
+    assert (len(formatting.SHAPED.held), len(formatting.CATALOGUES)) == (1, 1), "the oldest shapes give way, so memory never grows past the limit"
 
 
 def test_no_environment_name_is_shadowed_by_a_global_route():
@@ -554,10 +628,14 @@ def test_the_file_browser_and_its_search_leave_out_secrets_and_the_journal():
     for name in ("src/app.py", "src/.env", ".env", "notes.txt"):
         (project / name).write_text("x")
     (record.root / "kept.txt").write_text("x")
+    (project / "src" / "gone.py").symlink_to(project / "src" / "deleted.py")
+    (project / "elsewhere").symlink_to(project.parent)
     names = [row["path"] for row in get(record, "/api/{env}/project-files").body]
-    found = [row["path"] for q in (".env", "kept.txt", "app.py") for row in get(record, "/api/{env}/project-files/find", q=q).body]
-    assert (sorted(names), found) == (["notes.txt", "shared.txt", "src"], ["src/app.py"]), "the listing and the search show project files, never a .env file or anything inside .journal"
+    found = [row["path"] for q in (".env", "kept.txt", "app.py", "gone.py") for row in get(record, "/api/{env}/project-files/find", q=q).body]
+    assert (sorted(names), found) == (["notes.txt", "shared.txt", "src"], ["src/app.py"]), "the listing and the search show project files, never a .env file, anything inside .journal, a broken link or a link out of the project"
     assert get(record, "/api/{env}/project-files", folder=".env").code == 400, "a secret cannot be opened by asking for it by name"
+    from engine.paths import contained
+    assert "leaves its folder" in refused(lambda: contained(project, "elsewhere")), "a name that links out of its folder is never followed"
 
 
 def test_trimming_the_event_log_keeps_what_a_lagging_reader_has_not_yet_read():
@@ -573,6 +651,22 @@ def test_trimming_the_event_log_keeps_what_a_lagging_reader_has_not_yet_read():
     record.event_log.set_cursor_text("slow", "")
     record.event_log.trim(keep=4, readers_since=0)
     assert [e.id for e in record.event_log.events()] == ids[-4:], "with no reader behind, the log is cut to the number kept"
+
+
+def test_the_event_log_reads_back_past_the_events_it_holds_in_memory(monkeypatch):
+    import engine.event_log as event_log
+    record = fresh()
+    log = record.event_log
+    assert (log.trim(keep=4, readers_since=0), log.events()) == (0, []), "a log with no file yet has nothing to trim or read"
+    log.file.write_text("")
+    assert log.back() == [], "an empty log reads back as nothing"
+    for n in range(6):
+        CONTROLLERS["todo"](record, actor=SYSTEM).create(f"row {n}")
+    ids = [event.id for event in log.events()]
+    monkeypatch.setattr(event_log, "KEPT_EVENTS", 3)
+    event_log.RECENT.clear()
+    assert [e.id for e in log.events(since=ids[0])] == ids[1:], "a reader behind the window held in memory reads the rest from the file"
+    assert [e.id for e in log.events(since=ids[0], last=4)] == ids[-4:], "and reads no more of the latest than it asked for"
 
 
 def each_type():

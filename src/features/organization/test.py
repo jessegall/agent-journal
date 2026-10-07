@@ -32,6 +32,15 @@ def test_the_organization_is_read_from_domain_and_role_files_and_refuses_what_do
     with pytest.raises(Refused, match="runs is agent"):
         organization(tmp_path)
     assert organization(tmp_path / "elsewhere").text().startswith("no organization yet"), "a project without the folder has an empty organization"
+    with pytest.raises(Refused, match="has no domain 'design'; it has engineering"):
+        found.domain("design")
+    write(home / "roles" / "developer" / "role.toml", 'title = "Developer\n')
+    with pytest.raises(Refused, match="cannot be read"):
+        organization(tmp_path)
+    write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\n')
+    write(home / "domain.toml", 'title = "Engineering"\nlead = "architect"\n')
+    with pytest.raises(Refused, match="its lead 'architect' is not one of its roles"):
+        organization(tmp_path)
 
 
 def test_a_task_is_delegated_to_a_role_queues_behind_its_own_and_is_reported_against_its_outputs(tmp_path):

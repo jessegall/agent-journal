@@ -20,10 +20,6 @@ class Delta(Loaded):
     def plus(self, other: "Delta") -> "Delta":
         return Delta(**{key: getattr(self, key) + getattr(other, key) for key in COUNTED})
 
-    @property
-    def changed_files(self) -> bool:
-        return bool(self.edited or self.created or self.deleted)
-
 
 @dataclass(frozen=True)
 class Outcome(Loaded):

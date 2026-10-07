@@ -39,6 +39,18 @@ def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
     os.utime(marked, ns=(time.time_ns(), time.time_ns() + 1_000_000))
     assert (counted > 0, trigger.last(record, "claude-1", "work_tracking").edits) == (True, 0), \
         "a reset written by another process, such as the server running journal work log, is read, never an old count kept in memory"
+    from engine.events.engine import FileEdited
+    from features.work_tracking.tracker import record_edit
+    agents = Agents(record, actor=SYSTEM)
+    agent = agents.by_session("claude-1")
+    sed = {"command": "sed -i s/a/b/ a.py", "tool": "Bash", "at": 5.0, "done": 6.0}
+    agents.update(agent.n, running={"command": "pytest", "tool": "Bash", "at": 7.0, "before": sed}, commands=[sed, {"command": "a.py", "tool": "Read", "at": 5.0}])
+    for added in (2, 3):
+        record_edit(agents.load(agent.n), record, works.rows.standing()[0], FileEdited(agent=agent.n, path="a.py", kind="edit", before="x", after="x", added=added))
+    counted = agents.load(agent.n)
+    assert (counted.running["before"]["changed"]["added"], counted.running["before"]["files"]) == (5, ["a.py"]), \
+        "an edit made while a command ran is counted on that command, even after the next one started"
+    assert [one.get("changed", {}).get("added") for one in counted.commands] == [5, None], "and on its row in the list, never on a read at the same moment"
 
 
 def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():

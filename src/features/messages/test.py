@@ -10,7 +10,7 @@ from engine.gates import held
 from engine.sessions import Sessions
 from features.format import VIEWER, formatted
 from providers import DRIVERS, PROVIDERS
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, holds, refused
 from tests.kit import nudges, report
 
@@ -243,6 +243,17 @@ def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_mes
     driver.pump()
     engine.deliver()
     assert not any("before you write" in line for line in delivered), "answered in the meantime: the waiting line is dropped, not sent late"
+    later = Messages(record, actor=USER).create("and the docs?")
+    engine.agent.pending = [e for e in record.event_log.events() if (e.type, e.n, e.action) == ("message", later.n, "created")]
+    monkeypatch.setattr(driver, "ready", lambda: True)
+    monkeypatch.setattr(driver, "send", lambda line, groups=None, yielding="", now=False, by="journal": True)
+    engine.agent.flush()
+    assert Messages(record, actor=SYSTEM).load(later.n).data.get("delivered"), "a message told to the agent is stamped with the moment it was told"
+    whisper = Nudges(record, actor=SYSTEM).create("answer message", rows=[later.ref])
+    Messages(record, actor=AGENT).reply(later.n, "on it")
+    engine.agent.pending = [e for e in record.event_log.events() if (e.type, e.n, e.action) == ("nudge", whisper.n, "created")]
+    engine.agent.flush()
+    assert engine.agent.pending == [], "a line about rows that are all finished is dropped before it is sent"
 
 
 def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_session(tmp_path):
