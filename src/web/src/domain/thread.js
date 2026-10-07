@@ -1,3 +1,4 @@
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
 import {visibleIn} from "./chatVisibility.js";
@@ -166,7 +167,7 @@ export const SUBAGENT_COLOR = "#e2c55c";
 const GROUPS = {
     skill: () => ({key: "skill", icon: "book", tone: "good", label: (n) => `${n} skills loaded`}),
     whisper: () => ({key: "whisper", icon: "rules", label: (n) => `${n} rules and facts recalled`}),
-    subagent: () => ({key: "subagent", icon: "agents", color: SUBAGENT_COLOR, label: (n) => `${n} subagent updates`}),
+    subagent: () => ({key: "subagent", icon: "agents", color: SUBAGENT_COLOR, label: (n) => `${n} ${helperWord()} updates`}),
     card: (t) => ({
         key: `card:${t.data.icon}:${t.data.label}`,
         icon: t.data.icon,

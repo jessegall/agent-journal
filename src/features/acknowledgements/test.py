@@ -48,3 +48,5 @@ def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():
     agents.update(row.n, status="idle")
     actor.delivered([Event(3, 0.0, "nudge", 4, "created", SYSTEM)])
     assert agents.load(row.n).delivered == ["nudge:4"], "a new turn starts with only what it was handed"
+    Agent(record, SimpleNamespace(last_report=lambda: None)).delivered([Event(5, 0.0, "nudge", 6, "created", SYSTEM)])
+    assert agents.load(row.n).delivered == ["nudge:4"], "with no agent reporting, nothing is put on any agent"

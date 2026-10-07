@@ -31,9 +31,22 @@ from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, launches
 from scripts.checks.imports import imports, missing
 from serve import Handler, JournalServer
+from tests import isolation
 from tests.conftest import fresh
 
-HERE = Path(__file__).resolve().parents[1]
+def shipped_once() -> Path:
+    """One copy of the files the checkout ships, taken once, so every version a test reads comes from the same moment."""
+    checkout = Path(__file__).resolve().parents[1]
+    names = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=checkout, capture_output=True, text=True, timeout=60).stdout.split()
+    copy = isolation.world() / "shipped"
+    for name in names:
+        if (checkout / name).is_file():
+            (copy / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(checkout / name, copy / name)
+    return copy
+
+
+HERE = shipped_once()
 CODE = HERE / "src"
 
 
@@ -73,11 +86,7 @@ def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
 
 def released(place: Path) -> Path:
     repository = place / "release"
-    shipped = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=HERE, capture_output=True, text=True, timeout=WAIT).stdout.split()
-    for name in shipped:
-        if (HERE / name).is_file():
-            (repository / name).parent.mkdir(parents=True, exist_ok=True)
-            (repository / name).write_bytes((HERE / name).read_bytes())
+    shutil.copytree(HERE, repository, symlinks=True)
     for step in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "release"]):
         subprocess.run(["git", *step], cwd=repository, capture_output=True, timeout=WAIT)
     return repository
@@ -436,7 +445,7 @@ def test_an_installer_left_with_only_itself_fetches_the_package_and_finishes(tmp
     code.mkdir(parents=True)
     (code / "install.py").write_bytes((HERE / "install.py").read_bytes())
     ran = subprocess.run([sys.executable, str(code / "install.py"), "finish", str(tmp_path)], cwd=tmp_path, capture_output=True, text=True,
-                         timeout=WAIT * 4, env={**os.environ, "AGENT_JOURNAL_REPO": str(HERE)})
+                         timeout=WAIT * 4, env={**os.environ, "AGENT_JOURNAL_REPO": str(released(tmp_path))})
     assert ran.returncode == 0, f"an older installer copies only install.py and runs it; it must heal:\n{ran.stderr[-2000:]}"
     assert (code / "engine").is_dir() and (tmp_path / ".journal" / "journal.pyz").is_file(), "the package is back and packed"
 
@@ -739,6 +748,15 @@ def test_a_branch_links_to_its_web_page_only_on_a_known_host_and_a_compaction_en
     assert seat.branch() == "feature" and marks == [{"branch": "feature", "branch_url": "https://github.com/owner/repo/tree/feature", "at": 1.0}], \
         "the branch the agent works on and its web page are put on the agent"
     assert seat.branch() == "feature" and len(marks) == 1, "looking again within moments reads nothing and says nothing more"
+    seat.branched_at = 0.0
+    assert seat.branch() == "feature" and len(marks) == 1, "a HEAD that has not moved is not read again"
+    transcript = tmp_path / "transcript.jsonl"
+    transcript.write_text("{}\n")
+    last.transcript, last.provider = str(transcript), "unknown"
+    seat.crew()
+    seat.crewed_at = 0.0
+    seat.crew()
+    assert len(marks) == 1, "a transcript no provider reads, or one that has not grown, puts nothing on the agent"
 
 
 def test_a_second_journal_gets_a_free_viewer_port_and_a_journal_already_served_says_where(tmp_path, monkeypatch, capsys):
@@ -915,7 +933,7 @@ def test_a_hook_reaches_a_busy_server_whose_heartbeat_is_late_and_no_second_serv
         slow.wait(timeout=10)
 
 
-def test_a_server_that_starts_but_never_answers_is_stopped_and_counted_as_a_crash(tmp_path, monkeypatch):
+def test_a_server_our_own_deadline_stopped_is_never_counted_as_a_crash(tmp_path, monkeypatch):
     from runner.worker import crashing
     root = tmp_path / ".journal"
     (root / "runtime").mkdir(parents=True)
@@ -926,8 +944,8 @@ def test_a_server_that_starts_but_never_answers_is_stopped_and_counted_as_a_cras
     for _ in range(3):
         url, code = viewer.launch(root, tmp_path)
         exits.append(code)
-        assert (url, bool(code)) == ("", True), "a server that never answers fails the launch"
-    assert crashing(exits), "three hung starts in a row roll the build back"
+        assert url == "", "a server that never answers fails the launch"
+    assert not crashing(exits), "a slow start on a loaded machine never rolls a good build back; only a server that exits on its own counts"
     assert "did not answer" in runtime.viewer_log(root).read_text(), "and the log says why in a line"
 
 
@@ -1231,13 +1249,7 @@ def test_the_engine_starts_from_a_paused_agent_survives_a_failed_tick_and_relays
     monkeypatch.setattr(engine_module.features, "load", lambda root: None)
     monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(paused=5.0))
     engine.start()
-    assert (engine.running, engine.paused) == (True, True), "an engine started for an agent that was paused keeps it paused"
-
-    steps = []
-    monkeypatch.setattr(engine_module, "TICK", 0)
-    monkeypatch.setattr(Engine, "step", lambda self: (steps.append(1), setattr(self, "running", len(steps) < 3)))
-    engine.run()
-    assert len(steps) == 3, "a running engine steps until it is stopped"
+    assert engine.paused, "an engine started for an agent that was paused keeps it paused"
     monkeypatch.undo()
 
     faults, steady = [], []

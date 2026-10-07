@@ -1,10 +1,11 @@
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {envState, focusOf, isActive} from "./journals.js";
 import {rows} from "../sync/rows.js";
 import {agentState} from "./ticketAgents.js";
 
 const SILENT_AFTER = 300;
 const OWNED = /^(ticket|plan|helper):(\d+)$/;
-const LABELS = {ticket: (n) => `#${n}`, plan: (n) => `Plan ${n}`, helper: (n) => `Helper ${n}`};
+const LABELS = {ticket: (n) => `#${n}`, plan: (n) => `Plan ${n}`, helper: (n) => `${capitalised(helperWord())} ${n}`};
 const PLAN_WAITS = {ready: "its plan waits for your approval", waiting: "its plan is at a checkpoint"};
 
 const fileName = (path) => (path || "").split("/").pop();
@@ -57,7 +58,7 @@ function subagentsOf(e) {
         sub: true,
         parent: sub.parent,
         session: sub.session,
-        label: "Subagent",
+        label: capitalised(helperWord()),
         of: `of ${parent}`,
         title: sub.task || sub.session,
         now: [sub.type, sub.model].filter(Boolean).join(" · "),
@@ -107,8 +108,22 @@ export const STATE_SWITCHES = [
 export const KIND_SWITCHES = [
     {key: "ticket", label: "Ticket agents", icon: "ticket", hidden: (n) => `${n} ${n === 1 ? "ticket agent" : "ticket agents"}`},
     {key: "plan", label: "Plan agents", icon: "flag", hidden: (n) => `${n} ${n === 1 ? "plan agent" : "plan agents"}`},
-    {key: "helper", label: "Helpers", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "helper" : "helpers"}`},
-    {key: "subagent", label: "Subagents", icon: "agents", hidden: (n) => `${n} ${n === 1 ? "subagent" : "subagents"}`},
+    {
+        key: "helper",
+        get label() {
+            return capitalised(helperWord(2));
+        },
+        icon: "agents",
+        hidden: (n) => helperCount(n),
+    },
+    {
+        key: "subagent",
+        get label() {
+            return `${capitalised(helperWord(2))} inside the agent`;
+        },
+        icon: "agents",
+        hidden: (n) => `${helperCount(n)} inside the agent`,
+    },
 ];
 
 export const ORDERS = [

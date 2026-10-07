@@ -69,10 +69,12 @@ def test_what_a_dump_files_is_in_the_journal_at_once_and_removing_it_takes_out_o
         "what it files is listed at once, with nothing to confirm"
     assert agent.load(dump.n).data["items"]["text"]["added"] == [task.ref], "the agent marks what it wrote without being asked"
     assert refused(lambda: agent.remove(dump.n)) == "only the user removes what a dump filed", "the agent cannot remove it"
+    todos.force_delete(task.n)
+    collections.delete(made.n, why="tidied by hand")
     removed = CONTROLLERS["dump"](record, actor=USER).remove(dump.n)
     assert ([c.n for c in collections.all()], [d.n for d in docs.all()], [t.n for t in todos.all()]) == ([], [earlier.n], []), \
         "removing takes out the collection and all it made, and keeps a row it only extended"
-    assert (bool(removed.completed), removed.data["removed_refs"]) == (True, [doc.ref, task.ref]), "the dump closes and says what it took out"
+    assert (bool(removed.completed), removed.data["removed_refs"]) == (True, [doc.ref]), "the dump closes and says what it took out, passing over what is already gone"
 
 
 def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_next_step():
@@ -157,8 +159,11 @@ def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     assert not [c for c in CONTROLLERS["agent"](record).primary().data.get("cards") or [] if "dump" in c["label"]], "and nothing about it reaches the main chat"
     agent.log(dump.n, "Booked the room", detail="Room 4, Thursday")
     assert agent.load(dump.n).data["log"][-1]["text"] == "Booked the room", "the agent logs what it does after the summary"
-    agent.offer(dump.n, '[{"label": "Add a to-do", "type": "todo", "action": "create", "body": {"title": "Confirm the room"}}]')
+    agent.offer(dump.n, '[{"ask": "a step with no label"}, {"label": "Add a to-do", "type": "todo", "action": "create", "body": {"title": "Confirm the room"}}]')
+    assert [step["label"] for step in agent.load(dump.n).data["options"]] == ["Add a to-do"], "a step offered without a label is left out"
     user.choose(dump.n, 0)
+    assert (user.choose(dump.n, -1).data["chosen"]["label"], "-1" in user.load(dump.n).data["taken"]) == ("You decide", False), \
+        "You decide hands the choice back without taking a step"
     assert [row.title for row in Todos(record, actor=AGENT).rows.standing()].count("Confirm the room") == 1, "a suggestion that names a command runs it when the user takes it"
     assert "has no option 7" in refused(lambda: user.choose(dump.n, 7)) and "has no option 7" in refused(lambda: user.decline(dump.n, 7)), \
         "only an offered step is taken or declined"

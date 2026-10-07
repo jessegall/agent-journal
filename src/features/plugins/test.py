@@ -95,6 +95,9 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
         log(record.root, "../outside")
     ClearLog().run(None, Plugins(record, actor=SYSTEM), guardian.n)
     assert not log(record.root, "guardian").exists(), "and the log can be emptied"
+    from features.format import formatted
+    installed(record, "spelling", "true\n", chat=[{"find": "colour", "as": "color"}])
+    assert formatted("the colour of it", record) == "the color of it", "a plugin's chat rule rewrites what the chat shows"
     served = alone("served")
     installed(served, "served", "read x; echo '{\"refuse\": \"from the command\"}'\n", refuse_socket="hooks", services={"hooks": {"run": "true"}})
     assert writing(served) == CLAUDE.blocking("served: from the command"), "with nothing listening on its socket the command is run"
@@ -161,7 +164,7 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent(monkeypatch):
 def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_path):
     broken = fresh("broken")
     rows = Plugins(broken, actor=AGENT)
-    why = refused(lambda: rows.action("install")(repository(tmp_path, {**WORKS, "name": "broken", "setup": [{"name": "build", "run": "echo building; exit 3"}]}), yes=True))
+    why = refused(lambda: rows.action("install")(repository(tmp_path, {**WORKS, "name": "broken", "setup": [{"name": "list", "run": ["echo", "listed in {dir}"]}, {"name": "build", "run": "echo building; exit 3"}]}), yes=True))
     assert ("setup step 'build' failed (3): echo building; exit 3" in why, "the whole output is in" in why) == (True, True), \
         "the failing step, its code and its command are named"
     assert "$ echo building; exit 3\nbuilding\n" in log(broken.root, "broken").read_text(), "the log holds each command and the output it printed, as it came"
@@ -249,6 +252,9 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         host.refusal("linter", refusals[0])
     told = [n.title for n in Notices(Record(record.root, "other"), actor=SYSTEM).all()]
     assert told == ["Plugin linter queued a line the journal refused"], "a refusal is told once, as a notice, in the environment of the line"
+    Path(queued).write_text('todo create "Elsewhere again" --env ' + record.env + "\n")
+    assert host.drained(["linter"]) == 1 and len(Notices(Record(record.root, "other"), actor=SYSTEM).all()) == 1, \
+        "the host drains a plugin's queue in turn, and what it refuses is told through the same notice"
     titles = lambda env: [t.title for t in Todos(Record(record.root, env), actor=SYSTEM).all()]
     assert (titles("other"), "Somewhere else" in titles(record.env)) == (["From the event"], False), \
         "what a plugin queues answering an event runs in that event's environment, and a queued --env is refused"
@@ -260,7 +266,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert typed({"php": {"type": "flag"}, "strict": {"parent": "php"}})["strict"]["parent"] == "php", "a setting sits under the switch that turns it on"
     assert "no flag setting" in refused(lambda: typed({"php": {"type": "text"}, "strict": {"parent": "php"}})), "only under a switch"
     typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
-                      events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}})
+                      events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}, "checked": {"title": "Checked"}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
     from features.plugins.answer import KEYS, apply
@@ -278,8 +284,13 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert isinstance(ports_for(record.root, Manifest.of({"name": "portly", "services": {"web": {"run": "true", "port": "auto"}}}))["web"], int), "a service that asks for a port is given one"
     apply(record, None, "typed", "", {"settings": {"level": "high", "made-up": "x"}})
     assert settings_of(plugins.load(typed.n)).chosen == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
+    stamp = plugins.load(typed.n).updated
+    apply(record, None, "typed", "", {"settings": {"level": "high"}})
+    assert plugins.load(typed.n).updated == stamp, "a setting filled in with the value it has changes nothing"
     from features import FEATURES
     from engine import bus
+    apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "sin-found", "brief": "before any agent"}, "say": "before any agent"})
+    assert Agents(record, actor=SYSTEM).all() == [], "with no agent to tell, a plugin's card and words wait for nobody"
     heard = []
     Agents(record, actor=AGENT).create("s-1")
     off = bus.on("typed.sin-found", lambda event, record: heard.append(event.data["brief"]))
@@ -287,6 +298,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     raised = [e for e in record.event_log.events() if e.action == "raised"][-1]
     assert (raised.data["title"], raised.data["tone"], raised.data["brief"], heard) == ("Sin found", "warn", "deep-nesting at src/A.php:12", ["deep-nesting at src/A.php:12"]), \
         "a plugin raises an event it declared, styled from its manifest, and anything listening by its name hears it"
+    apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "checked", "brief": "all clean"}})
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
     assert (card["label"], card["tone"], card["icon"], card["detail"]) == ("Sin found", "warn", "warn", "deep-nesting at src/A.php:12"), \
         f"an event whose declaration carries a card puts it in the chat, looking as the manifest says: {card}"
@@ -317,6 +329,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     for given, words in [
         ("not json", "is not JSON"), ([1], "holds one object"), ({"name": "X Y"}, "name must be"),
         ({"name": "messages"}, "is a built-in feature"), ({"name": "pp", "journal": "99.0.0"}, "needs journal 99.0.0 or newer"),
+        ({"name": "pp", "journal": "99.0.0", "fitz": {}}, "this is 2.0.0: upgrade the journal"),
         ({"name": "pp", "wat": 1}, "unknown key 'wat'"), ({"name": "pp", "refuse_socket": "x"}, "refuse_socket names one of its services"),
         ({"name": "pp", "events": {"e": {"title": "E", "tone": "loud"}}}, "tone is one of"),
         ({"name": "pp", "events": {"e": {"title": "E", "card": {"size": 1}}}}, "unknown key 'size'"),
@@ -338,6 +351,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         ({"name": "pp", "requires": {"a": 5}}, "requires.a is an object with"),
         ({"name": "pp", "on": {"todo.created": {"post": ""}}}, 'is a command, or {"post"'),
         ({"name": "pp", "pages": "x"}, "pages is a list"), ({"name": "pp", "pages": ["x"]}, "each page is an object"),
+        ({"name": "pp", "services": {"web": {"run": "x"}}, "pages": [{"service": "api"}]}, "names service 'api', which is not declared"),
         ({"name": "pp", "dashboards": "x"}, "dashboards is a list"), ({"name": "pp", "dashboards": [{"title": "T"}]}, "each dashboard is an object with a name"),
     ]:
         (bad / MANIFEST).parent.mkdir(parents=True, exist_ok=True)
@@ -345,8 +359,9 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         assert words in refused(lambda: read(bad, "2.0.0")), (given, words)
     (bad / MANIFEST).write_text(json.dumps({"name": "pp", "setup": ["echo a", {"run": ["echo", "b"], "cwd": "sub"}], "cancels": {"agent.command.long": "true"},
                                             "services": {"web": {"run": "true"}}, "chat": [{"find": "x", "as": "y"}], "refuse": ["true"],
-                                            "on": {"todo.created": {"post": "http://x"}}}))
+                                            "on": {"todo.created": {"post": "http://x"}}, "pages": [{"service": "web"}]}))
     made = read(bad, "2.0.0")
+    assert [(page.name, page.title, page.path) for page in made.pages] == [("web", "Pp", "/")], "a page is named after its service and opens at the root unless it says"
     assert (made.setup[0].name, made.setup[1].cwd, made.refuse, made.chat[0].replacement) == ("step 1", "sub", ["true"], "y"), \
         "a manifest may give setup as bare commands or steps, a refuse as a word list, a chat rule and a post handler"
 
@@ -682,7 +697,7 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
         assert words in refused(lambda: dashboard_checked(document)), (document, words)
     import os
     import time
-    from features.plugins.lifecycle import changed_on_disk, reread
+    from features.plugins.lifecycle import changed_on_disk
     plugins = Plugins(record, actor=SYSTEM)
     plugins.update(row.n, linked=True, read_at=time.time())
     given = folder(record.root, "teacher") / MANIFEST
@@ -690,7 +705,8 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     given.write_text(json.dumps({"name": "teacher", "dashboards": [{"name": "sins", "title": "Sins"}, {"name": "trend", "title": "Trend"}]}))
     os.utime(given, (time.time() + 5, time.time() + 5))
     assert changed_on_disk(plugins, plugins.load(row.n)), "a linked plugin's manifest changed in place is noticed"
-    reread(plugins, plugins.load(row.n))
+    from tests.kit import tick
+    tick(record)
     assert [d["name"] for d in plugins.load(row.n).manifest["dashboards"]] == ["sins", "trend"], "and read again without an upgrade"
 
 
@@ -742,6 +758,16 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     assert host.step(now) == 0, "and is left alone for a while before the next event reaches it"
     script.write_text("""echo '{"notice": {"title": "Seen the new to-do"}}'\n""")
     assert host.step(now + 61) == 1 and open_notices() == ["Seen the new to-do"], "its answer is applied once it answers again, and the failing notice goes"
+    script.write_text("true\n")
+    Todos(record, actor=SYSTEM).create("Answered with nothing")
+    assert host.step(now + 61) == 1 and open_notices() == ["Seen the new to-do"], "an answer that says nothing changes nothing"
+    from resources.base import PLUGIN
+    Todos(record, actor=PLUGIN).create("Made by the answerer itself", plugin="answerer")
+    assert host.step(now + 61) == 0, "a plugin is not told of the rows it made itself"
+    installed(record, "watcher", "exit 0", on={"plugin.updated": "true"}, load={"todo.created": ["journal"]})
+    Plugins(record, actor=SYSTEM).update(plugin.n, abstract="looked at again")
+    Todos(record, actor=SYSTEM).create("One more for the watcher")
+    assert host.step(now + 61) >= 1, "a plugin hears of other plugins changing, and the skills it loads on an event are asked for"
     installed(record, "poster", "exit 0", on={"todo.created": {"post": f"http://127.0.0.1:{server.server_port}/event"}})
     host.step(now + 61)
     Todos(record, actor=SYSTEM).create("Posted one")
@@ -803,7 +829,10 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
         {"source": repository(tmp_path, {**fitting_manifest, "name": "snake"}, name="snake"), "title": "Snake"},
         {"source": repository(tmp_path, {**WORKS, "name": "gem", "fits": {"languages": ["Ruby"], "files": ["Gemfile"]}}, name="gem"), "title": "Gem"},
         {"source": repository(tmp_path, {**fitting_manifest, "name": "broken", "setup": [{"name": "boom", "run": "echo no disk left >&2; exit 3"}]}, name="broken"), "title": "Broken"},
+        {"source": str(tmp_path / "nowhere"), "title": "Nowhere"},
     ])}, name="official")
+    monkeypatch.setenv("AGENT_JOURNAL_REPO", repository(tmp_path, [], {"plugins.json": "not a list"}, name="garbled"))
+    assert fitting.official(tmp_path) == [], "an official list that does not read is no list"
     monkeypatch.setenv("AGENT_JOURNAL_REPO", listed)
     repo = project_on("work")
     (repo.project / "app.py").write_text("print('hi')\n")
@@ -825,6 +854,11 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert sorted(suggested) == ["Install the Broken plugin", "Install the Snake plugin"], \
         f"a listed plugin whose declared languages the project is written in is suggested, and one that declares other languages is not: {sorted(suggested)}"
     assert len(asked) == 1, "the official list is read once a day, not at every session start"
+    from dataclasses import replace
+    monkeypatch.setattr(fitting, "OPEN_SUGGESTIONS", 0)
+    another = replace(next(o for o in fitting.offers_kept(repo.record.root) if o.title == "Snake"), source="elsewhere", title="Another snake")
+    fitting.suggest(repo.record, [another])
+    assert "Install the Another snake plugin" not in {s.title for s in Suggestions(repo.record, actor="system").rows.every()}, "no more suggestions wait than the cap allows"
     assert "written" not in suggested["Install the Snake plugin"].brief and "Python" in suggested["Install the Snake plugin"].brief, "the suggestion says which part of the project fits"
     snake = suggested["Install the Snake plugin"]
     assert "in its own words" in snake.brief and "setup" in snake.brief, f"the suggestion quotes the plugin and lists the commands it runs: {snake.brief}"

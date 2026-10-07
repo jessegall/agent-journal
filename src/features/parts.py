@@ -153,7 +153,6 @@ class ToolInterceptor:
     refuses: ClassVar[bool] = True
     limit: ClassVar[str] = ""
     steps_aside: ClassVar[str] = ""
-    before_checks: ClassVar[bool] = False
 
     def intercept(self, context: "AgentContext", call) -> str:
         raise NotImplementedError
@@ -179,6 +178,8 @@ class Command:
 
 
 class ActionInterceptor:
+    """Runs before a controller action; it refuses by raising. Only a create may answer: the row it returns stands for the new one."""
+
     def intercept(self, feature_context: Context, controller, **args):
         raise NotImplementedError
 

@@ -2,6 +2,7 @@ import {computed, ref} from "vue";
 import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
+import {words} from "./helperWords.js";
 
 export const profiles = ref([]);
 export const callings = ref({});
@@ -22,8 +23,12 @@ export const calls = (row) => callings.value[row.data.calling] || "";
 
 export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
+export const loadWords = async () => {
+    words.value = await api.profileWords();
+};
+
 export async function loadProfiles() {
-    const [rows, names, lines] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples()]);
+    const [rows, names, lines] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), loadWords()]);
     profiles.value = rows.filter((row) => !row.deleted);
     callings.value = names;
     samples.value = lines;

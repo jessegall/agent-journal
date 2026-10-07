@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import PhonePermit from "./PhonePermit.vue";
 import {computed, inject, ref, watch} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
@@ -22,7 +23,9 @@ const failed = inject("phoneFailed");
 const busy = ref("");
 const confirming = ref(false);
 const told = ref("");
-const contextUsed = computed(() => (typeof props.running.context === "number" ? Math.max(0, Math.min(100, Math.round(props.running.context))) : null));
+const contextUsed = computed(() =>
+    typeof props.running.context === "number" ? Math.max(0, Math.min(100, Math.round(props.running.context))) : null
+);
 const windows = computed(() => props.running.usage || []);
 const NEEDS = {pause: "pause", resume: "resume", stop: "stop"};
 const wantedAuto = ref(null);
@@ -34,7 +37,7 @@ const mode = computed(() => modeOf(picked.value || props.running.mode));
 
 watch(
     () => props.running.auto,
-    (now) => wantedAuto.value !== null && Boolean(now) === wantedAuto.value && (wantedAuto.value = null),
+    (now) => wantedAuto.value !== null && Boolean(now) === wantedAuto.value && (wantedAuto.value = null)
 );
 
 const failedLine = (error, words, offline) => (error instanceof PhoneError ? words : offline);
@@ -103,17 +106,32 @@ async function act(what) {
             <Segmented class="controls-segments" :options="MODES" :value="mode.key" fill aria-labelledby="work-mode" @pick="pickMode" />
             <span class="controls-note fixed">{{ mode.note }}</span>
             <template v-if="mode.key === 'solo' && helpersOut">
-                <span class="controls-hint">Solo sends no new helpers; the {{ helpersOut }} already out keep going until they finish.</span>
+                <span class="controls-hint">
+                    Solo sends no new {{ helperWord(2) }}; the {{ helpersOut }} already out keep going until they finish.
+                </span>
             </template>
             <template v-if="modeTold">
                 <span class="controls-failed">{{ modeTold }}</span>
             </template>
         </div>
         <div class="controls-box">
-            <button type="button" class="controls-auto" role="switch" :aria-checked="autoOn" :disabled="busy === 'auto'" @click="toggleAuto">
+            <button
+                type="button"
+                class="controls-auto"
+                role="switch"
+                :aria-checked="autoOn"
+                :disabled="busy === 'auto'"
+                @click="toggleAuto"
+            >
                 <span class="controls-words">
                     <span class="controls-name">Auto</span>
-                    <span class="controls-note">{{ autoOn ? "The agent works through the to-do list without asking" : "The agent asks before picking up the next to-do" }}</span>
+                    <span class="controls-note">
+                        {{
+                            autoOn
+                                ? "The agent works through the to-do list without asking"
+                                : "The agent asks before picking up the next to-do"
+                        }}
+                    </span>
                 </span>
                 <span :class="['controls-switch', {on: autoOn}]" aria-hidden="true"><span /></span>
             </button>
@@ -150,7 +168,9 @@ async function act(what) {
             </div>
         </template>
         <template v-else-if="silent">
-            <p class="controls-silent" role="status">The agent was started but never reported in, so it is not working. Stop it, then start it again.</p>
+            <p class="controls-silent" role="status">
+                The agent was started but never reported in, so it is not working. Stop it, then start it again.
+            </p>
             <div class="controls-row">
                 <button type="button" class="controls-button danger" :disabled="Boolean(busy)" @click="confirming = true">Stop</button>
             </div>
@@ -163,7 +183,9 @@ async function act(what) {
                     </template>
                     {{ running.paused ? "Resume" : "Pause" }}
                 </button>
-                <button type="button" class="controls-button danger-quiet" :disabled="Boolean(busy)" @click="confirming = true">Stop</button>
+                <button type="button" class="controls-button danger-quiet" :disabled="Boolean(busy)" @click="confirming = true">
+                    Stop
+                </button>
             </div>
         </template>
     </div>

@@ -4,7 +4,6 @@ import mimetypes
 import sys
 from base64 import b64decode
 import threading
-import time
 from dataclasses import asdict, dataclass, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -253,9 +252,8 @@ class ShareHandler(BaseHTTPRequestHandler):
     do_PUT = do_PATCH = do_DELETE = do_OPTIONS = refused
 
 
-def ticking(shares) -> None:
-    while True:
-        time.sleep(TICK_EVERY)
+def ticking(shares, stopped: threading.Event) -> None:
+    while not stopped.wait(TICK_EVERY):
         for tick in TICKS.each(shares.record):
             try:
                 tick(shares)
@@ -264,10 +262,14 @@ def ticking(shares) -> None:
 
 
 def serve(shares, port: int) -> None:
-    threading.Thread(target=ticking, args=(shares,), daemon=True).start()
+    stopped = threading.Event()
+    threading.Thread(target=ticking, args=(shares, stopped), daemon=True).start()
     handler = type("BoundShareHandler", (ShareHandler,), {"shares": shares, "timeout": READ_SECONDS})
-    with ThreadingHTTPServer(("127.0.0.1", int(port)), handler) as server:
-        server.serve_forever()
+    try:
+        with ThreadingHTTPServer(("127.0.0.1", int(port)), handler) as server:
+            server.serve_forever()
+    finally:
+        stopped.set()
 
 
 def main(argv: list[str]) -> None:

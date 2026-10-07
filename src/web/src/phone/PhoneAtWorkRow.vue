@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperWord} from "../composables/helperWords.js";
 import {computed, ref} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -11,7 +12,7 @@ const props = defineProps({row: {type: Object, required: true}, kind: {type: Str
 const emit = defineEmits(["open", "read"]);
 const unfolded = ref(false);
 const helper = computed(() => props.kind === "helper");
-const name = computed(() => props.row.name || props.row.type || "Subagent");
+const name = computed(() => props.row.name || props.row.type || capitalised(helperWord()));
 const timing = computed(() => {
     const at = stateAt(props.row);
     const value = age(at);

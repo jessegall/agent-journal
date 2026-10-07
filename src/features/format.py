@@ -35,11 +35,8 @@ def settled(record) -> tuple:
     return record.settings_file.held()[0], generation()
 
 
-def shaped(r, record=None, surface: str = "") -> dict:
-    key = (str(record.home), r.type, r.n, r.updated, surface, settled(record)) if record is not None and hasattr(r, "updated") else None
-    if key is None:
-        return shape(r, record, surface)
-    return SHAPED.get(key, None, lambda: shape(r, record, surface))
+def shaped(r, record, surface: str = "") -> dict:
+    return SHAPED.get((str(record.home), r.type, r.n, r.updated, surface, settled(record)), None, lambda: shape(r, record, surface))
 
 
 def shape(r, record=None, surface: str = "") -> dict:

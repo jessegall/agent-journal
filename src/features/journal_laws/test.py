@@ -122,6 +122,10 @@ def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it(
     home(record.root).mkdir(parents=True, exist_ok=True)
     where.mkdir(parents=True, exist_ok=True)
     (where / "cancel.sh").write_text("cat > /dev/null; echo '{\"cancel\": \"no subagents during the demo\"}'")
+    for name, enabled in (("switched-off", False), ("unbothered", True)):
+        folder(record.root, name).mkdir(parents=True, exist_ok=True)
+        (folder(record.root, name) / "cancel.sh").write_text("cat > /dev/null; echo '{}'")
+        Plugins(record, actor=SYSTEM).create(name, enabled=enabled, token="t0ken", settings={}, manifest={"name": name, "cancels": {"agent.dispatching": "sh cancel.sh"}})
     Plugins(record, actor=SYSTEM).create("quiet", enabled=True, token="t0ken", settings={}, manifest={"name": "quiet", "cancels": {"agent.dispatching": "sh cancel.sh"}})
     hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-cancel", "tool_name": tool, "tool_input": given})
     refused = hook("Agent", {"subagent_type": "Explore", "model": "haiku", "description": "Nikola Tesla: map the hooks"})

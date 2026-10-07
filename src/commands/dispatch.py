@@ -63,8 +63,7 @@ def sooner(reply: Reply, first) -> Reply:
 
     def after() -> None:
         first()
-        if rest:
-            rest()
+        rest()
     reply.after = after
     return reply
 
@@ -131,7 +130,7 @@ def guarded(reply: Reply, root: Path, env: str, where: str) -> Reply:
     return reply
 
 
-def represented(got, record=None):
+def represented(got, record):
     return {"ok": True} if got is None else rendered(got, record)
 
 

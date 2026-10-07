@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parents[1] / "src"
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from engine.viewer import busy
 from install import git_env
 from providers import DRIVERS
 
@@ -60,12 +61,13 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
 
 
 def lingering(place: Path, within: float = 10.0) -> list[str]:
-    began = time.time()
+    calm = 0.0
     while True:
         found = subprocess.run(["pgrep", "-fl", str(place).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.splitlines()
-        if not found or time.time() - began >= within:
+        if not found or calm >= within:
             return found
         time.sleep(0.1)
+        calm += 0.0 if busy() else 0.1
 
 
 def cleared(place: Path) -> None:

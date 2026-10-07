@@ -36,6 +36,9 @@ def read(folder: Path, version: str = "") -> Manifest:
         raise Refused(f"plugin.json is not JSON: {error}") from error
     if not isinstance(given, dict):
         raise Refused("plugin.json holds one object, with a name and what the plugin listens to")
+    wanted = given.get("journal")
+    if wanted and version and newer(str(wanted), version):
+        raise Refused(f"{given.get('name') or 'this plugin'} needs journal {wanted} or newer; this is {version}: upgrade the journal")
     unknown_keys(given, KEYS, "plugin.json")
     name = given.get("name")
     if not isinstance(name, str) or not NAME.fullmatch(name):
@@ -45,9 +48,6 @@ def read(folder: Path, version: str = "") -> Manifest:
     if name in taken:
         raise Refused(f"plugin.json: name {name!r} is a built-in feature"
                       + (f", which {taken[name]} used to be called" if taken[name] != name else ""))
-    wanted = given.get("journal")
-    if wanted and version and newer(str(wanted), version):
-        raise Refused(f"{name} needs journal {wanted} or newer; this is {version} — run journal upgrade")
     checked = {key: given[key] for key in KEYS if key in given}
     checked["requires"] = shaped(given.get("requires") or {}, "requires", ("check", "hint"), ("check",))
     checked["env"] = texts(given.get("env") or {}, "env")

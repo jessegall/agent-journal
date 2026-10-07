@@ -52,10 +52,6 @@ class Seat(Loaded):
     def status(self) -> str:
         return self.state if self.state else self.reported.status
 
-    @property
-    def context(self) -> float:
-        return self.reported.context
-
 
 @dataclass(frozen=True)
 class LiveAgent:

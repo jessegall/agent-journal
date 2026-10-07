@@ -4,7 +4,7 @@ import zipfile
 from bisect import bisect_left
 from dataclasses import dataclass
 from pathlib import Path
-from resources.base import LAZY, MEMORY, OWNER, PART_OF, Missing, Refused, Resource
+from resources.base import MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
 from engine.memo import Memo
 
@@ -399,14 +399,16 @@ class RowStore:
 
     def warm(self) -> None:
         rows = self.summaries()
-        if self.resource.loading == LAZY:
+        if self.resource.loading != MEMORY:
             return
         for row in rows:
-            if self.resource.loading == MEMORY:
-                self.load(row["n"])
+            self.load(row["n"])
 
     def viewed(self) -> list[Resource]:
         return [self.peek(row["n"]) for row in self.summaries() if not row["deleted"]]
+
+    def attached(self) -> list[Resource]:
+        return [self.peek(row["n"]) for row in self.summaries() if row["files"] and not row["deleted"]]
 
     def every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo

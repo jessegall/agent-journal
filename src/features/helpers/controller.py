@@ -4,6 +4,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Environments, Messages, Nudges, Todos
+from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
@@ -184,6 +185,10 @@ class Helpers(Controller):
     def _told(self, place, text: str, given_back_text: str = "") -> None:
         home = Record(self.record.root, place.launched_from)
         row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text)
+        bus.defer(lambda: self._relayed(home, row, text, given_back_text))
+
+    @staticmethod
+    def _relayed(home: Record, row: Helper, text: str, given_back_text: str) -> None:
         told = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{given_back_text}", peer=row.name)
         Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped")
@@ -209,15 +214,18 @@ class Helpers(Controller):
         place = places.rows.by_title(row.environment)
         if Sessions(self.record.root).holder(row.environment):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
-        if place:
-            places.complete(place.n, "the helper finished", yes=True)
-        cut = Worktrees(self.record, actor=SYSTEM)
-        if row.worktree and not cut.load(int(row.worktree)).completed:
-            cut.complete(int(row.worktree))
         rows = held(self.record, row)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
         give_back(self.record, rows)
+        bus.defer(lambda: self._packed(row, place))
         return finished
+
+    def _packed(self, row: Helper, place) -> None:
+        if place:
+            Environments(self.record, actor=SYSTEM).complete(place.n, "the helper finished", yes=True)
+        cut = Worktrees(self.record, actor=SYSTEM)
+        if row.worktree and not cut.load(int(row.worktree)).completed:
+            cut.complete(int(row.worktree))
 
 
 resources_module.register(Helper)
