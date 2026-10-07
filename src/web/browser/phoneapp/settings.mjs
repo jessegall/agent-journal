@@ -77,6 +77,7 @@ await runScenarios(PAIR, {
         await top(page).getByRole("button", {name: /Alerts key/}).waitFor({timeout: SHOWN});
     },
     async "the tunnel login sheet asks for the server, the name and the password"(page) {
+        await allowRuns(page);
         await page.route(/\/share\/tunnel$/, (route) =>
             route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify({installed: true, logged_in: false, command: "", host: "", server: "", address: ""})})
         );

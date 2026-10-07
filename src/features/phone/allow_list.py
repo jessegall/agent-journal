@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from controllers.base import Arguments
@@ -22,7 +22,7 @@ class Page:
     pattern: str
 
     def asks_to_run(self, record: Record, arguments: Arguments, body: dict) -> bool:
-        return self in ASKS_TO_RUN and ASKS_TO_RUN[self](body)
+        return self in ASKS_TO_RUN and ASKS_TO_RUN[self](record, body)
 
 
 @dataclass(frozen=True)
@@ -34,6 +34,16 @@ class Action:
 
     def asks_to_run(self, record: Record, arguments: Arguments, body: dict) -> bool:
         return CONTROLLERS[self.type](record, actor=SYSTEM)._runs_commands(self.word, arguments)
+
+
+@dataclass(frozen=True)
+class SettingsWrite(Loaded):
+    """What a settings write sets among the viewer's own settings."""
+
+    viewer: dict = field(default_factory=dict)
+
+    def changes_only(self, stored: dict, named: frozenset[str]) -> bool:
+        return {key for key, value in self.viewer.items() if stored.get(key) != value} <= named
 
 
 @dataclass(frozen=True)
@@ -125,9 +135,13 @@ RUNS = (
     *actions("suggestion", "install"), *actions("share", "install_tunler login readdress update_tunler"),
 )
 
+# The viewer settings a phone writes; none of them sets a command.
+VIEWER_SETTINGS = frozenset(("away", "chat_hidden", "color_scheme", "tour_seen"))
+
 ASKS_TO_RUN = {
-    post("/api/{env}/settings"): writes_what_runs,
-    post("/api/{env}/agent/{session}/relaunch"): lambda body: Relaunch.from_json(body).skip,
+    post("/api/{env}/settings"): lambda record, body: writes_what_runs(record, body)
+    or not SettingsWrite.from_json(body).changes_only(record.viewer, VIEWER_SETTINGS),
+    post("/api/{env}/agent/{session}/relaunch"): lambda record, body: Relaunch.from_json(body).skip,
 }
 
 NAMED = frozenset((*ALLOWED, *TO_WEIGH, *RUNS))
