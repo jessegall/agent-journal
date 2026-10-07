@@ -56,7 +56,7 @@ await runScenarios(
             await sheet(page).getByText("Ideas · Planned · Building · Shipped").waitFor({timeout: SHOWN});
             await sheet(page).getByLabel("Name").fill("Herb beds");
             await sheet(page).getByRole("button", {name: "Create board"}).click();
-            await page.getByText(/^Made the board/).waitFor({timeout: SHOWN});
+            await page.getByText(/^Created board/).waitFor({timeout: SHOWN});
         },
         async "a plan asks for a review with a critique template and shows its timeline"(page) {
             await everything(page, "Plans");

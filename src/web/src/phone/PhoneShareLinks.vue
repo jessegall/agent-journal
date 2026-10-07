@@ -16,7 +16,7 @@ async function stop(link) {
     stopping.value = link.n;
     try {
         await stopShare(link);
-        toast("The link is stopped");
+        toast("The link no longer works");
         await load();
     } catch (error) {
         toast(error.message);

@@ -29,7 +29,7 @@ async function create() {
     making.value = true;
     try {
         const made = await makeBoard({preset: preset.value, file: preset.value ? null : file.value, name: name.value.trim(), steer: steer.value});
-        toast(`Made the board ${made.title || name.value.trim() || ""}`.trim());
+        toast(`Created board ${made.title || name.value.trim() || ""}`.trim());
         emit("made", made);
         sheet.value.close();
     } catch (error) {
@@ -43,16 +43,16 @@ async function create() {
 <template>
     <PhoneSheet ref="sheet" label="New board" tall @close="emit('close')">
         <h2 class="board-title">New board</h2>
-        <Segmented class="board-presets" :options="options" :value="chosen" wrap aria-label="Stages of the board" @pick="chosen = $event" />
+        <Segmented class="board-presets" :options="options" :value="chosen" wrap aria-label="Kind of board" @pick="chosen = $event" />
         <p class="board-lead">{{ lead }}</p>
         <template v-if="!preset">
             <Button kind="plain" fill @click="picker.click()">{{ file ? file.name : "Choose a document" }}</Button>
             <input ref="picker" type="file" hidden @change="file = $event.target.files[0] || null" />
-            <Field v-model="steer" label="Anything to know?" placeholder="Keep stages simple, five at most" />
+            <Field v-model="steer" label="Notes for the agent" placeholder="Keep stages simple, five at most" />
         </template>
         <Field v-model="name" label="Name" :placeholder="preset ? preset.suggest : 'The agent names it from the document, or type your own'" />
         <Button class="board-make" fill :busy="making" :disabled="!ready" @click="create">
-            {{ preset ? "Create board" : "Build the board" }}
+            Create board
         </Button>
     </PhoneSheet>
 </template>
