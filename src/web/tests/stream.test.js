@@ -8,6 +8,9 @@ class FakeSource {
         this.closed = false;
         sources.push(this);
     }
+    addEventListener(name, handler) {
+        this.beats = {...this.beats, [name]: handler};
+    }
     close() {
         this.closed = true;
         this.readyState = FakeSource.CLOSED;
@@ -77,8 +80,20 @@ test("a stream the browser gave up on is opened again, one the browser retries i
     expect(sources[0].closed).toBe(true);
 });
 
-test("an event is taken, and a damaged one is ignored", () => {
+test("an event is taken, and a damaged one reloads the rows", () => {
     sources[0].onmessage({data: JSON.stringify({id: 4})});
+    expect(reload).not.toHaveBeenCalled();
     sources[0].onmessage({data: "{nope"});
     expect(takeEvents.mock.calls).toEqual([[[{id: 4}]]]);
+    expect(reload).toHaveBeenCalledTimes(1);
+});
+
+test("an open stream that goes silent is treated as down and opened again, a beat keeps it", () => {
+    vi.advanceTimersByTime(40000);
+    sources[0].beats.beat();
+    vi.advanceTimersByTime(40000);
+    expect([store.streamOpen, sources]).toEqual([true, [sources[0]]]);
+    vi.advanceTimersByTime(10000);
+    expect(sources).toHaveLength(2);
+    expect(store.streamOpen).toBe(false);
 });

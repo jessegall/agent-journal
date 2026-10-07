@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.3 — Every viewer poll survives an error, and a silent event stream no longer stops updates
+A throw while a poll works out its interval or whether it is active no longer ends that poll for good; the next round is always scheduled. The phone feed now backs off like every other poll while the computer is gone. The server sends a beat on the event stream every 15 seconds, and a stream that has been silent for 45 seconds is treated as down: the viewer polls for events and opens the stream again. An event that does not parse reloads the rows instead of being dropped. The plugin install log and the first-run tour wait on the shared poller. Nothing to do.
+
 ## 2.254.2 — tests stay off the live tunnel server, and two tests no longer fail now and then
 A test run no longer reaches the network or uses your tunler login. Every test, the feature tests included, runs with a home folder of its own and a stand-in tunler that answers locally, so a suite run no longer opens tunnels on your account or knocks the phone's address off; the boot guard uses the same stand-in. The half-done upgrade test fetches its release from a repository it builds instead of GitHub, so it no longer fails on a release commit. Finding plugins that fit a project is held per journal, so one journal's search no longer skips another's. Nothing to do.
 

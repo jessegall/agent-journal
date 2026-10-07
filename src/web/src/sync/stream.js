@@ -7,17 +7,34 @@ import {reload, takeEvents} from "./rows.js";
 
 const REOPEN_AFTER = 3000;
 const OFFLINE_AFTER = 15000;
+const SILENT_AFTER = 45000;
+const WATCH_EVERY = 5000;
 
 let source = null;
 let failing = 0;
+let heardAt = 0;
+let watching = 0;
+
+const heard = () => (heardAt = Date.now());
 
 function receive(message) {
+    heard();
     try {
         takeEvents([JSON.parse(message.data)]);
-    } catch (e) {}
+    } catch (e) {
+        reload();
+    }
+}
+
+function watchSilence() {
+    clearInterval(watching);
+    watching = setInterval(() => {
+        if (store.streamOpen && Date.now() - heardAt >= SILENT_AFTER) listen();
+    }, WATCH_EVERY);
 }
 
 function opened() {
+    heard();
     failing = 0;
     store.streamOpen = true;
     if (store.offline) reload();
@@ -39,5 +56,7 @@ export function listen() {
     source = api.stream();
     source.onopen = opened;
     source.onmessage = receive;
+    source.addEventListener("beat", heard);
+    watchSilence();
     source.onerror = failed;
 }

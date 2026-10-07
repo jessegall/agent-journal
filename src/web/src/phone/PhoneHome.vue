@@ -153,7 +153,7 @@ async function asked() {
     } catch (error) {
         if (ended(error)) failed(error);
         else offline.value = true;
-        return null;
+        throw error;
     }
 }
 

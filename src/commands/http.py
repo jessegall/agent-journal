@@ -551,7 +551,7 @@ def get_stream(req: Request) -> Reply:
                     e = queue.get(timeout=15)
                     yield f"id: {e.id}\ndata: {json.dumps(e.to_json())}\n\n".encode()
                 except Empty:
-                    yield b": keep\n\n"
+                    yield b"event: beat\ndata: keep\n\n"
         finally:
             off()
     return Reply(200, kind="text/event-stream", chunks=chunks())

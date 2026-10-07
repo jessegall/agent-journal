@@ -11,7 +11,16 @@ let instance = 0;
 
 export const pollKey = () => ++instance;
 
-const interval = (user) => (typeof user.every === "function" ? user.every() : user.every);
+const FALLBACK_EVERY_MS = 5000;
+
+function interval(user) {
+    if (typeof user.every !== "function") return user.every;
+    try {
+        return user.every();
+    } catch (e) {
+        return FALLBACK_EVERY_MS;
+    }
+}
 const fastest = (held) => Math.min(...[...held.users.values()].map(interval));
 const jittered = (ms) => ms / 2 + (Math.random() * ms) / 2;
 const newest = (held) => [...held.users.values()].pop();
@@ -58,8 +67,8 @@ async function rounds(held) {
     do {
         held.again = false;
         clearTimeout(held.timer);
-        if (!newest(held).active()) continue;
         try {
+            if (!newest(held).active()) continue;
             const got = await answer(held);
             held.users.forEach((user) => user.take(got));
         } catch (e) {}
