@@ -18,7 +18,7 @@ const asking = ref("");
 const login = ref({endpoint: "", username: "", password: "", master: ""});
 
 const LOGIN_FIELDS = [
-    {key: "endpoint", label: "Tunler server address", placeholder: "tunler.example.com", required: true, verbatim: true},
+    {key: "endpoint", label: "tunler server address", placeholder: "tunler.example.com", required: true, verbatim: true},
     {key: "username", label: "Username", required: true, verbatim: true},
     {key: "password", label: "Password, at least 8 characters", required: true, secret: true},
 ];
@@ -36,7 +36,7 @@ const own = computed(() => domain.value === tunnelStatus.value?.address);
 const domainActions = computed(() => [
     own.value
         ? {key: "move", label: "Move to a new address", sub: "The old address stops working for this journal.", run: () => (open.value = "release")}
-        : {key: "release", label: "Release", sub: "Anyone can claim it after.", danger: true, run: () => (open.value = "release")},
+        : {key: "release", label: "Give up this address", sub: "Anyone can claim it afterwards.", danger: true, run: () => (open.value = "release")},
 ]);
 
 async function load() {
@@ -71,7 +71,7 @@ async function connect(values) {
 const logOut = () => attempt(logOutTunnel, () => "Logged out of tunler");
 const update = () => attempt(() => api.updateTunler(), (told) => told || "tunler updated");
 const install = ({server}) => attempt(() => api.installTunler(server), (told) => told || "tunler installed");
-const release = () => attempt(() => releaseDomain(domain.value, own.value), () => (own.value ? "Moved to a new address" : `Released ${domain.value}`));
+const release = () => attempt(() => releaseDomain(domain.value, own.value), () => (own.value ? "Moved to a new address" : `Gave up ${domain.value}`));
 
 function pickDomain(name) {
     domain.value = name;
@@ -84,13 +84,13 @@ onMounted(() => load().catch(() => null));
 <template>
     <CellGroup head="Reaching the journal from outside" foot="Every journal on your computer uses this tunler login, this phone too.">
         <template v-if="!tunnelStatus">
-            <Cell label="Tunler account" sub="Checking…" still />
+            <Cell label="tunler account" sub="Checking…" still />
         </template>
         <template v-else-if="!tunnelStatus.installed">
             <Cell label="Install tunler" sub="tunler is not installed on your computer" icon="download" @pick="open = 'install'" />
         </template>
         <template v-else-if="tunnelStatus.logged_in">
-            <Cell label="Tunler account" :sub="account" @pick="open = 'account'" />
+            <Cell label="tunler account" :sub="account" @pick="open = 'account'" />
         </template>
         <template v-else>
             <Cell label="Connect a tunler account" sub="Not connected on your computer" @pick="open = 'login'" />
@@ -106,17 +106,17 @@ onMounted(() => load().catch(() => null));
         <Cell label="Share links" sub="Pages you shared with other people" icon="share" @pick="emit('open', 'list:share')" />
     </CellGroup>
     <template v-if="domains.length">
-        <CellGroup head="Domains" foot="Addresses your tunler account holds.">
+        <CellGroup head="Addresses" foot="Addresses your tunler account holds">
             <template v-for="name in domains" :key="name">
                 <Cell :label="name" :sub="name === tunnelStatus?.address ? 'In use by this journal' : ''" @pick="pickDomain(name)" />
             </template>
         </CellGroup>
     </template>
     <template v-if="open === 'account'">
-        <ActionSheet title="Tunler account" :about="account" line="what you can do with it" :actions="accountActions" @close="open = ''" />
+        <ActionSheet title="tunler account" :about="account" line="what you can do with it" :actions="accountActions" @close="open = ''" />
     </template>
     <template v-if="open === 'domain'">
-        <ActionSheet :title="domain" about="Domain" line="what you can do with it" :actions="domainActions" @close="open = ''" />
+        <ActionSheet :title="domain" about="Address" line="what you can do with it" :actions="domainActions" @close="open = ''" />
     </template>
     <template v-if="open === 'login' || open === 'switch'">
         <FormSheet
@@ -151,7 +151,7 @@ onMounted(() => load().catch(() => null));
         <FormSheet
             title="Install tunler"
             sub="No server yet? tunler on GitHub, github.com/jessegall/tunler, explains how to run one."
-            :fields="[{key: 'server', label: 'Tunler server address', placeholder: 'tunler.example.com', value: tunnelStatus.server || '', required: true, verbatim: true}]"
+            :fields="[{key: 'server', label: 'tunler server address', placeholder: 'tunler.example.com', value: tunnelStatus.server || '', required: true, verbatim: true}]"
             button="Install tunler"
             @close="open = ''"
             @submit="install"
@@ -159,9 +159,9 @@ onMounted(() => load().catch(() => null));
     </template>
     <template v-if="open === 'release'">
         <FormSheet
-            :title="own ? `Move ${domain} to a new address?` : `Release ${domain}?`"
-            :sub="own ? 'This journal gets a new address, and links to the old one stop working.' : 'Anyone can claim it after.'"
-            :button="own ? 'Move' : 'Release'"
+            :title="own ? `Move ${domain} to a new address?` : `Give up ${domain}?`"
+            :sub="own ? 'This journal gets a new address, and links to the old one stop working.' : 'Anyone can claim it afterwards.'"
+            :button="own ? 'Move' : 'Give up this address'"
             keep="Keep it"
             :danger="!own"
             @close="open = ''"
