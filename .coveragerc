@@ -23,4 +23,4 @@ exclude_also =
     if sys.version_info < 
 skip_covered = true
 sort = cover
-fail_under = 97
+fail_under = 98.9
