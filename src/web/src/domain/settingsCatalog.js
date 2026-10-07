@@ -429,6 +429,17 @@ export function tabCounts(sections) {
     return found;
 }
 
+export function navGroups(groups) {
+    const folded = new Set();
+    return groups.flatMap((g) => {
+        const [head, rest] = g.title.split("/");
+        if (!rest) return [g];
+        if (folded.has(head)) return [];
+        folded.add(head);
+        return [{...g, title: head.charAt(0).toUpperCase() + head.slice(1)}];
+    });
+}
+
 export function navMark(g, searching) {
     if (g.mark) return {kind: "count", text: g.mark};
     if (searching) return {kind: "count", text: String(counted(g))};
