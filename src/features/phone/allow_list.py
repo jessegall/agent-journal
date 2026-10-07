@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
 from controllers.base import Arguments
@@ -8,10 +9,21 @@ from engine.fields import Loaded
 from engine.paths import known_environment
 from engine.record import Record
 from features.permission_prompts.skipping import Relaunch
-from features.routing import Named, Route
+from features.routing import Named, Reply, Route
 from resources.base import SYSTEM
 
-RUNS_ALLOWED = False
+
+
+class Reach(Enum):
+    """How far a phone gets with one request: through, through once it unlocks, or nowhere."""
+
+    OPEN = 200
+    LOCKED = 428
+    CLOSED = 403
+
+    def refusal(self) -> Reply:
+        return Reply(self.value, {Reach.LOCKED: {"error": "Running a command from the phone needs Face ID or the phone's passcode first", "unlock": True},
+                                  Reach.CLOSED: {"error": "a phone reaches only the pages its app uses, in its own environment"}}[self])
 
 
 @dataclass(frozen=True)
@@ -154,18 +166,20 @@ def reach(route: Route, path: GenericPath) -> Page | Action:
     return Action(path.type, path.action or GENERIC[page])
 
 
-def allowed(root: Path, environment: str, route: Route, params: dict, body: dict) -> bool:
-    """A named page or action is allowed unless it runs a command while RUNS is off; anything unnamed is refused."""
+def allowed(root: Path, environment: str, route: Route, params: dict, body: dict, unlocked: bool) -> Reach:
+    """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed."""
     reached = reach(route, GenericPath.from_json(params))
     if reached not in NAMED:
-        return False
-    return RUNS_ALLOWED or not (reached in RUNS or reached.asks_to_run(Record(root, environment), Arguments.given(body, params), body))
+        return Reach.CLOSED
+    if unlocked or not (reached in RUNS or reached.asks_to_run(Record(root, environment), Arguments.given(body, params), body)):
+        return Reach.OPEN
+    return Reach.LOCKED
 
 
-def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str) -> bool:
-    """Whether a phone in this environment may reach the page."""
+def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str, unlocked: bool) -> Reach:
+    """How far a phone in this environment gets with the page."""
     here = {Named.from_json(given).env for given in (params, query)} - {""}
     target = Named.from_json(body).env
     if not here <= {environment} or (target and not known_environment(root, target)):
-        return False
-    return allowed(root, environment, route, params, body)
+        return Reach.CLOSED
+    return allowed(root, environment, route, params, body, unlocked)

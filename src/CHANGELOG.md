@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.255.0 — The phone runs commands right after Face ID or its passcode
+The paired phone may now run what it could not before: the agent terminal's commands, plugin installs and upgrades, check, tool and sequence runs, services, update and stop, and the tunler login and address. Each one runs only right after the phone unlocks again. The first time you run something, the phone makes a passkey with Face ID or the passcode, kept on that phone's connection only. After that, every run asks for Face ID or the passcode. The journal checks the passkey's signature, its counter, the page it came from and a one-time challenge for that exact request. It then lets that one request through within a minute, on that phone only. A run without a fresh unlock is refused and the phone asks for Face ID. A phone or browser that cannot ask for Face ID or a passcode keeps these controls hidden and says so. The signature is checked with the journal's own P-256 code, so nothing new is installed. Nothing to do.
+
 ## 2.254.8 — Every option button answers a press at once
 The agent's question options in the chat, on the phone and on shared pages now show a spinner on the pressed option and disable the others while the answer is sent, the same way document and report buttons already do. All of them share one pending state. Nothing to do.
 ## 2.254.7 — A shell command that only waits is refused

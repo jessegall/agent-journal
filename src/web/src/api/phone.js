@@ -29,6 +29,10 @@ async function got(path) {
 export const phone = {
     pair: (code, device) => sent("./pair", {code, device}),
     state: () => got("./state"),
+    passkeyBegin: () => sent("./passkey/begin", {}),
+    passkey: (made) => sent("./passkey", made),
+    unlockBegin: (request) => sent("./unlock/begin", {request}),
+    unlock: (answer) => sent("./unlock", answer),
     feed: () => got("./feed"),
     older: (before) => got(`./feed?before=${encodeURIComponent(before)}`),
     bar: () => got("./bar"),

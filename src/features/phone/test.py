@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import socket
@@ -7,6 +8,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from dataclasses import asdict
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from typing import NamedTuple
@@ -17,7 +19,9 @@ from controllers.base import Controller
 from controllers.features import Features
 from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
 from engine.record import Record
-from features.phone import allow_list
+from features.phone import allow_list, push
+from features.phone import controller as phone_controller
+from features.phone.passkey import Assertion, Enrolment, encoded, requested
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
@@ -63,7 +67,46 @@ def call(base: str, path: str, body: dict | None = None, key: str | None = None,
             body = json.loads(got.read()) if got.headers.get_content_type() == "application/json" else {}
             return Answer(got.status, body, got.headers.get("Set-Cookie", ""))
     except urllib.error.HTTPError as error:
-        return Answer(error.code, {}, "")
+        return Answer(error.code, json.loads(error.read() or b"{}") if error.headers.get_content_type() == "application/json" else {}, "")
+
+
+def cbor(value) -> bytes:
+    def head(major: int, size: int) -> bytes:
+        return bytes([major << 5 | size]) if size < 24 else bytes([major << 5 | 25]) + size.to_bytes(2, "big")
+    if isinstance(value, int):
+        return head(0, value) if value >= 0 else head(1, -1 - value)
+    if isinstance(value, bytes):
+        return head(2, len(value)) + value
+    if isinstance(value, str):
+        return head(3, len(value.encode())) + value.encode()
+    return head(5, len(value)) + b"".join(cbor(key) + cbor(item) for key, item in value.items())
+
+
+class Authenticator:
+    """A phone's platform authenticator in software: one P-256 passkey for one site, answering with Face ID passed."""
+
+    def __init__(self, origin: str) -> None:
+        self.keys, self.origin, self.count, self.id = push.Keys.made(), origin, 0, os.urandom(16)
+
+    def data(self, flags: int) -> bytes:
+        self.count += 1
+        site = self.origin.split("//", 1)[1].split(":", 1)[0]
+        return hashlib.sha256(site.encode()).digest() + bytes([flags]) + self.count.to_bytes(4, "big")
+
+    def client(self, kind: str, challenge: str) -> bytes:
+        return json.dumps({"type": kind, "challenge": challenge, "origin": self.origin}).encode()
+
+    def made(self, challenge: str) -> Enrolment:
+        public = self.keys.public
+        key = cbor({1: 2, 3: -7, -1: 1, -2: public[1:33], -3: public[33:]})
+        data = self.data(0x45) + bytes(16) + len(self.id).to_bytes(2, "big") + self.id + key
+        return Enrolment(encoded(self.client("webauthn.create", challenge)), encoded(cbor({"fmt": "none", "attStmt": {}, "authData": data})))
+
+    def signed(self, challenge: str) -> Assertion:
+        data, client = self.data(0x05), self.client("webauthn.get", challenge)
+        raw = self.keys.signed(data + hashlib.sha256(client).digest())
+        der = b"".join(b"\x02" + bytes([len(part)]) + part for part in (b"\x00" + raw[:32], b"\x00" + raw[32:]))
+        return Assertion(encoded(self.id), encoded(client), encoded(data), encoded(b"\x30" + bytes([len(der)]) + der))
 
 
 class Paired(NamedTuple):
@@ -189,18 +232,41 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         assert call(base, "/p/api/elsewhere/todo", made, key)[0] == 403, "another environment stays closed"
         assert call(base, "/p/api/summary?env=elsewhere", key=key)[0] == 403
         assert call(base, "/p/api/run", made, key)[0] == 403, "a page the phone app never calls is refused"
-        assert [call(base, f"/p/api/{record.env}/{page}", {**made, "entry": "touch x"}, key)[0] for page in ("tool", "agent/main/shell", "phone/connect")] == [403] * 3, \
-            "running commands stays off for a phone, and phones are never its to change"
+        assert [call(base, f"/p/api/{record.env}/{page}", {**made, "entry": "touch x"}, key)[0] for page in ("tool", "agent/main/shell", "phone/connect")] == [428, 428, 403], \
+            "running a command waits for Face ID, and phones are never the phone's to change"
         seed = {"name": "critique", "key": "seed", "value": "touch x"}
         assert [call(base, f"/p/api/{record.env}/{page}", asked, key)[0] for page, asked in (
             ("critique/round", {"what": "the phone"}), ("feature/configure", seed), ("settings", {"critique": {"seed": "touch x"}}),
-            ("sequence/run", {"n": 1}), ("agent/main/relaunch", {"skip": True}))] == [403] * 5, \
-            "a phone neither runs nor sets a command, in any shape of the page, nor restarts the agent without permission prompts"
+            ("sequence/run", {"n": 1}), ("agent/main/relaunch", {"skip": True}))] == [403, 403, 428, 428, 428], \
+            "a phone runs or sets a command, in any shape of the page, or restarts the agent without permission prompts, only after Face ID"
         assert call(base, f"/p/api/{record.env}/agent/main/relaunch", {}, key)[0] != 403, "a restart that keeps the prompts passes"
         assert [call(base, f"/p/api/{record.env}/settings", written, key)[0] for written in (
             {"form_of_address": {"title": "Captain"}}, {"viewer": {"chat_hidden": ["thoughts"], "color_scheme": "dark"}}, {"viewer": {"open_with": "sh"}},
-            {"critique": {"login": "state.json", "seed": ""}})] == [200, 200, 403, 200], \
+            {"critique": {"login": "state.json", "seed": ""}})] == [200, 200, 428, 200], \
             "the phone writes the settings it names, and a command it sends back unchanged sets nothing"
+        run, face, other = f"/p/api/{record.env}/check/999/run", Authenticator(base), Authenticator(base)
+
+        def unlocked(path: str = run, by: Authenticator = face) -> tuple[str, dict]:
+            signed = asdict(by.signed(call(base, "/p/unlock/begin", {"request": requested("POST", path, b"{}")}, key).body["challenge"]))
+            return call(base, "/p/unlock", signed, key).body.get("unlock", ""), signed
+
+        assert call(base, run, {}, key).body["unlock"] and call(base, "/p/unlock/begin", {"request": "x"}, key).status == 422, \
+            "a command run waits for Face ID, and a phone without its passkey has nothing to unlock with"
+        assert call(base, "/p/passkey", asdict(face.made(call(base, "/p/passkey/begin", {}, key).body["challenge"])), key).body == {"passkey": True} \
+            and call(base, "/p/passkey/begin", {}, key).status == 422, "the phone makes its passkey once"
+        other.id = face.id
+        assert unlocked(by=other)[0] == "", "another key answering for this phone's passkey unlocks nothing"
+        unlock, signed = unlocked()
+        assert call(base, "/p/unlock", signed, key).status == 422, "a replayed answer unlocks nothing"
+        assert call(base, run, {}, key, **{"X-Phone-Unlock": "guessed"}).status == 428, "a guessed unlock opens nothing"
+        assert call(base, run, {}, key, **{"X-Phone-Unlock": unlock}).status not in (403, 428), "a fresh unlock lets the run through"
+        assert call(base, run, {}, key, **{"X-Phone-Unlock": unlock}).status == 428, "and only once"
+        assert call(base, f"/p/api/{record.env}/tool/999/run", {}, key, **{"X-Phone-Unlock": unlocked()[0]}).status == 428, \
+            "an unlock opens only the request it was asked for"
+        unlock, later = unlocked()[0], time.time() + 120
+        monkeypatch.setattr(phone_controller, "time", type("Later", (), {"time": staticmethod(lambda: later)}))
+        assert call(base, run, {}, key, **{"X-Phone-Unlock": unlock}).status == 428, "an unlock older than a minute opens nothing"
+        monkeypatch.undo()
         assert call(base, f"/p/api/{record.env}/settings", {"boards": {"filler_model": "opus\ntools: Bash"}}, key)[0] == 400, \
             "a model the provider does not offer is not written"
         kept = Controller.create(CONTROLLERS["worktree"](record, actor=SYSTEM), "shed", path="/kept")
