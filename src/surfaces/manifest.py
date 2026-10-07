@@ -4,6 +4,7 @@ from pathlib import Path
 
 import features
 from engine.record import Record
+from features.chat_kinds import MARKED, RECALLED
 from features.format import catalogue
 from features import groups
 from controllers.base import actions
@@ -38,6 +39,7 @@ class Manifest(TypedDict):
     types: dict[str, dict]
     features: dict
     groups: list[groups.Described]
+    chat_kinds: dict[str, dict[str, str]]
 
 
 def manifest(root: Path) -> Manifest:
@@ -56,4 +58,5 @@ def manifest(root: Path) -> Manifest:
         "types": described_types(),
         "features": catalogue(features.describe(), Record(root, runtime.env(root))),
         "groups": groups.describe(),
+        "chat_kinds": {"recalled": RECALLED, "marked": MARKED},
     }

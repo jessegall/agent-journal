@@ -9,7 +9,7 @@ const FORCED = {light: "all", dark: "not all"};
 const original = new WeakMap();
 
 export const SCHEMES = [
-    {key: "system", label: "Like this phone"},
+    {key: "system", label: "Follow this phone"},
     {key: "light", label: "Light"},
     {key: "dark", label: "Dark"},
 ];
