@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Agents, Environments, Messages
 from engine.events.resources import MessageCreated
-from engine.sessions import Sessions
+from engine.sessions import Sessions, live
 from features.parts import Context, Handler
 from features.starting_agents.launch import launch
 from providers import DRIVERS
@@ -29,6 +29,6 @@ class WakeOnMessage(Handler):
         if place is None or time.time() - float(place.launched) < LAUNCHING_FOR:
             return
         last = last_conversation(record)
-        if last is None:
+        if last is None or live(Sessions(record.root).read(last.title)):
             return
         launch(environments, place, last.provider, last.title)

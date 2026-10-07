@@ -35,6 +35,10 @@ def test_a_message_wakes_the_environments_last_conversation_when_no_agent_runs(m
     Sessions(record.root).write("claude-held", environment=record.env, pid=os.getpid())
     Messages(record, actor=USER).create("are you still there?")
     assert len(started) == 1, "a message while an agent holds the environment wakes nothing"
+    Sessions(record.root).write("claude-held", environment="elsewhere")
+    Sessions(record.root).write("bea86f27-last", environment="elsewhere", pid=os.getpid())
+    Messages(record, actor=USER).create("where did you go?")
+    assert len(started) == 1, "a conversation still running in another environment is never resumed a second time"
     quiet = fresh("quiet")
     quiet.set_setting("starting_agents", {"wake_on_message": True})
     Environments(quiet, actor=SYSTEM).create(quiet.env)
