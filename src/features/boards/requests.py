@@ -102,8 +102,6 @@ class DraftingBoards:
     def say(self, n: int, line: str):
         board = self._drafting(n)
         asked = board.asked
-        if not asked:
-            raise Refused(f"nothing was asked on board {board.n} to answer")
         drafted = len(self._drafts(board))
         if board.phase == DRAFTING_PHASE and drafted < board.expected:
             raise Refused(f"you guessed {board.expected} cards and drafted {drafted}: draft the rest before you say you are done")

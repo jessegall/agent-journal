@@ -77,10 +77,7 @@ def readable(controller, record, n: int, row_stamp, settings: tuple) -> dict | N
 
 
 def viewed(controller, record, n: int, row_stamp, settings: tuple) -> dict:
-    key = (str(record.home), controller.type, n)
-    if not row_stamp:
-        VIEWED.forget(key)
-    return VIEWED.get(key, (row_stamp, settings), lambda: shaped(controller.load(n), record, VIEWER))
+    return VIEWED.get((str(record.home), controller.type, n), (row_stamp, settings), lambda: shaped(controller.load(n), record, VIEWER))
 
 
 def counted(record, types) -> dict:

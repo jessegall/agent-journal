@@ -20,6 +20,7 @@ source =
 exclude_also =
     raise NotImplementedError
     if __name__ == .__main__.:
+    if sys.version_info < 
 skip_covered = true
 sort = cover
 fail_under = 97

@@ -32,10 +32,14 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "upstream", lambda root: "0.0.1")
     check.tick()
     assert len(sent) == 1, "an older published version says nothing"
-    write_json(ledger(record.root), {"builds": ["journal-98.0.0-0123456789.pyz"]})
+    write_json(ledger(record.root), {"builds": ["journal-98.0.0-0123456789.pyz"], "at": {"journal-98.0.0-0123456789.pyz": time.time()}})
     monkeypatch.setattr(updates, "upstream", lambda root: "98.0.0")
     check.tick()
-    assert len(sent) == 1, "a version that would not start here is never offered again"
+    check.checked_at = 0.0
+    check.tick()
+    assert ([line for line in sent if "98.0.0 is out" in line], len([line for line in sent if "98.0.0" in line])) == ([], 1), \
+        "a version that would not start here is never offered again, and its failure is told once"
+    del sent[1:]
     Features(record, actor=SYSTEM).switch("auto_update", True)
     record.set_setting("auto_update", {"installs": "patches"})
     installing = []
@@ -58,6 +62,10 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
         "a failed install is told to the agent and filed as a notice"
+    told = len(sent)
+    monkeypatch.setattr(updates, "installed", lambda root, yes=False: "")
+    updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
+    assert len(sent) == told, "an install that went well tells nothing; the restart says the rest"
     assert updates.claimed(record.root, "3.0.1", "patches") and not updates.claimed(record.root, "3.0.1", "patches"), "a release just tried waits before it is tried again"
     with updates.ledger(record.root).changing() as tried:
         tried["3.0.2"] = {"at": __import__("time").time() - 3600, "tries": 2, "ok": False}
@@ -214,6 +222,14 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     ran.clear()
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
+    monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("99.0.0"))
+    monkeypatch.setattr("install.upgrade", lambda project, root: ["! the package could not be fetched"])
+    monkeypatch.setattr(launch, "failure_in", lambda lines: lines[0])
+    assert (launch.latest_first(record), ran) == ("! the package could not be fetched", []), "a failed install is said and the launch goes on, never started again"
+    monkeypatch.setattr(launch, "fetched", lambda cache: 1 / 0)
+    assert "the update check did not finish" in launch.latest_first(record), "an update check that breaks is said, and the launch goes on"
+    monkeypatch.setattr(launch, "journal_repository", lambda project: True)
+    assert launch.latest_first(record) == "", "the journal's own repository is never updated over itself"
     import sys
     from types import SimpleNamespace
     from features.auto_update import check
