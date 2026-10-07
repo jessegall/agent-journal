@@ -12,6 +12,8 @@ import PhoneAgent from "./PhoneAgent.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 import PhoneAgentControls from "./PhoneAgentControls.vue";
 import PhoneAgentMore from "./agent/PhoneAgentMore.vue";
+import WaitingList from "../kit/WaitingList.vue";
+import {phoneWaiting} from "./agentWait.js";
 
 const props = defineProps({
     state: {type: String, required: true},
@@ -26,6 +28,7 @@ const root = ref("");
 const starting = ref("");
 const told = ref("");
 const running = computed(() => props.state !== "offline");
+const waiting = computed(() => phoneWaiting({agent: props.state, running: props.live}));
 
 onMounted(async () => {
     try {
@@ -82,6 +85,9 @@ async function start(agent) {
                 </div>
             </template>
         </dl>
+        <template v-if="waiting">
+            <WaitingList :waiting="waiting" :closable="false" />
+        </template>
         <PhoneAgentControls
             :running="live"
             :alive="running"

@@ -3,6 +3,7 @@ import Button from "./kit/Button.vue";
 import {computed} from "vue";
 import {SILENT, SILENT_WORD} from "../domain/agentState.js";
 import {agentCounts} from "../domain/helpers.js";
+import {phoneWaiting} from "./agentWait.js";
 import {counted} from "../format/number.js";
 import PhoneAtWorkChip from "./PhoneAtWorkChip.vue";
 import Icon from "../kit/Icon.vue";
@@ -28,12 +29,14 @@ const jobs = computed(() => {
     return (props.feed.agent === "working" ? 1 : 0) + agentCounts(live.helpers || [], live.subagents || []).working;
 });
 const paused = computed(() => Boolean(props.feed.running?.paused));
+const waiting = computed(() => phoneWaiting(props.feed));
 const agentWords = computed(() => {
     if (AGENT_WORDS[props.feed.agent]) return AGENT_WORDS[props.feed.agent];
     if (paused.value) return "Paused";
+    if (waiting.value) return `Waiting ${waiting.value.line}`;
     return jobs.value ? `Working on ${counted(jobs.value, "job", "jobs")}` : "Idle";
 });
-const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "working" : ""));
+const agentTone = computed(() => (paused.value ? "paused" : waiting.value ? "waiting" : jobs.value ? "working" : ""));
 </script>
 
 <template>
@@ -150,6 +153,25 @@ const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "workin
 
 .top-live.working {
     background: var(--tone-good);
+}
+
+.top-live.waiting {
+    background: none;
+    border: 1.5px solid var(--accent-text);
+    border-right-color: transparent;
+    animation: top-wait 2.4s linear infinite;
+}
+
+@keyframes top-wait {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .top-live.waiting {
+        animation: none;
+    }
 }
 
 .top-live.paused {

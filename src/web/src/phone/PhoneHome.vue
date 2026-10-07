@@ -12,6 +12,8 @@ import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
+import WaitEdge from "../kit/WaitEdge.vue";
+import {phoneWaiting} from "./agentWait.js";
 import PhoneHold from "./PhoneHold.vue";
 import PhoneItem from "./PhoneItem.vue";
 import PhonePlaces from "./PhonePlaces.vue";
@@ -78,6 +80,7 @@ const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const listing = ref(false);
 const agentOpen = ref(false);
+const waitingNow = computed(() => phoneWaiting(feed.value));
 const atWorkOpen = ref(false);
 const planOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
@@ -776,21 +779,23 @@ onMounted(startTourOnce);
                         <template v-else>
                             <div class="home-status-space" />
                         </template>
-                        <PhoneCompose
-                            :key="placeKey"
-                            ref="compose"
-                            :about="about"
-                            :quote="quote"
-                            :draft="draft"
-                            @sending="toBottom"
-                            @focused="boxFocus"
-                            @blurred="boxBlur"
-                            @typing="toBottom"
-                            @sent="sent"
-                            @unabout="about = ''"
-                            @unquote="((quote = ''), (about = ''))"
-                            @dump="dumpThem"
-                        />
+                        <WaitEdge class="home-compose-edge" :waiting="waitingNow" @list="agentOpen = true">
+                            <PhoneCompose
+                                :key="placeKey"
+                                ref="compose"
+                                :about="about"
+                                :quote="quote"
+                                :draft="draft"
+                                @sending="toBottom"
+                                @focused="boxFocus"
+                                @blurred="boxBlur"
+                                @typing="toBottom"
+                                @sent="sent"
+                                @unabout="about = ''"
+                                @unquote="((quote = ''), (about = ''))"
+                                @dump="dumpThem"
+                            />
+                        </WaitEdge>
                     </div>
                 </section>
                 <template v-if="screen === 'home'">
@@ -1042,6 +1047,10 @@ onMounted(startTourOnce);
 
 .pane.away {
     visibility: hidden;
+}
+
+.home-compose-edge {
+    --edge-radius: 26px;
 }
 
 .home-status-space {
