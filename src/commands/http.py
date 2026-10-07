@@ -43,6 +43,7 @@ from engine.git_view import commit, file_diff
 from engine.project_files import list_folder, matching, project_path, read_source
 from engine.paths import contained
 from commands.dispatch import rank_routes, represented, route
+from features.phone.places import place_at
 from features.routing import JSON, PLAIN, Reply, Request
 from resources.base import Missing
 
@@ -140,6 +141,12 @@ class EventsQuery(Loaded):
 @dataclass(frozen=True)
 class Forgotten(Loaded):
     root: str = ""
+
+
+@dataclass(frozen=True)
+class StartedJournal(Loaded):
+    root: str = ""
+    agent: str = "claude"
 
 
 @dataclass(frozen=True)
@@ -385,6 +392,14 @@ def get_journals(req: Request) -> Reply:
         if j.root not in up and Path(j.root).is_dir():
             found.append({"port": 0, "project": j.project, "version": "", "root": j.root, "current": False, "running": False, "at": j.at})
     return Reply(200, found)
+
+
+@route("POST", "/api/journals/start")
+def post_journal_start(req: Request) -> Reply:
+    body = req.body_as(StartedJournal)
+    place = place_at(req.root, body.root)
+    place.start(place.start_environment, body.agent)
+    return Reply(200, {"ok": True})
 
 
 @route("POST", "/api/journals/forget")

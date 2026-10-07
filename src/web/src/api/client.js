@@ -79,6 +79,10 @@ export class ApiClient {
         return this.get("/journals");
     }
 
+    startJournal(root, agent) {
+        return this.post("/journals/start", {root, agent});
+    }
+
     forgetJournal(root) {
         return this.post("/journals/forget", {root});
     }

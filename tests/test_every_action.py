@@ -51,7 +51,7 @@ REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin"
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
     "changelog": [], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
-    "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
+    "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "startJournal": ["/nowhere/.journal", "codex"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],
     "tunnelDomains": [], "tunnelRelease": ["walk.127.0.0.1"], "tunnelReaddress": [], "tunnelCause": [], "restartTunnel": [], "connectPhone": [7], "disconnectPhone": [1],
