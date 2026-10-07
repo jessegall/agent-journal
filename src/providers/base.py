@@ -122,6 +122,7 @@ class Provider(ABC):
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
                                   "Skill": SkillCall, "Agent": AgentCall, "Task": AgentCall}
     session_variable: ClassVar[str] = ""
+    follow_up: ClassVar[str] = ""
     session_markers: ClassVar[tuple[str, ...]] = ()
     name = ""
     home = ""

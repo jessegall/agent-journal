@@ -1,6 +1,6 @@
 from features.base import Feature
 from features.journal import Journal
-from features.nudges import Nudge
+from features.nudges.sending import Nudge
 from features.sequences.controller import Sequences
 from features.sequences.details import SequencesDetails
 from features.sequences.details import UNFINISHED

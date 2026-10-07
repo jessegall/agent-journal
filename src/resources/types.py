@@ -342,6 +342,7 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="monitors"),
         Field(default=list, name="monitor_rows"),
         Field(default="", name="parent"),
+        Field(default=list, name="touched_files"),
         Field(FLAG, False, name="compacting"),
         Field(default=dict, name="running"),
         Field(default=list, name="commands"),
@@ -582,6 +583,8 @@ class Nudge(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(name="private"),
         Field(name="session"),
+        Field(default="", name="asks"),
+        Field(default=list, name="until"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent instruction",

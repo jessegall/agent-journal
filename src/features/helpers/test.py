@@ -1,14 +1,25 @@
 import io
+import os
 import re
 import shlex
+import time
 from pathlib import Path
+from types import SimpleNamespace
 
 import features
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine.record import Record
+from engine.sessions import Sessions
+from providers import PROVIDERS
+from runner.hooks import answer
+from features.helpers.handlers import NameStoppedOrQuietHelpers
+from features.parts import AgentContext
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on, run
 from features.helpers.controller import Helpers
+from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
+from features.helpers.reuse import kept
+from providers.payload import Dispatch
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
 from overview.summary import summarize
@@ -104,11 +115,29 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Agents(record, actor=SYSTEM).create("claude-1")
     Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
     assert "only a helper reports" in refused(lambda: Helpers(record, actor=AGENT).report("done")), "the dispatcher cannot report for it"
+    sessions = Sessions(record.root)
+    seated = "codex-9"
+    sessions.bind(seated, f"{record.env}-rhea", provider="codex")
+    watch = lambda: NameStoppedOrQuietHelpers().handle(AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).primary()), None)
+    titles = lambda: [n.title for n in Nudges(record, actor=SYSTEM).all() if "helper 1" in n.title]
+    watch()
+    assert titles() == [], "a helper at work is left alone"
+    sessions.write(seated, pid=os.getpid(), seen=time.time() - 25 * 60)
+    watch()
+    watch()
+    assert titles() == ["helper 1, Rhea, has done nothing for 25 minutes"], "one quiet for a while is named once, so the agent checks on it"
+    sessions.write(seated, pid=2 ** 22 + 7)
+    watch()
+    stopped, = [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title]
+    assert (stopped.title, stopped.until) == ("helper 1, Rhea, stopped running before it reported", ["helper.completed", "helper.deleted"]), \
+        "one whose agent is gone is named at once, and said again until it is finished"
     Helpers(Record(record.root, f"{record.env}-rhea"), actor=AGENT).report("The hooks spend 40ms in imports")
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     told = Messages(record, actor=SYSTEM).all()[-1]
     assert (told.brief, told.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
-    assert any("helper 1, Rhea, reported" in n.title for n in Nudges(record, actor=SYSTEM).all()), "the dispatcher is told"
+    reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
+    assert reported.until == ["helper.completed", "helper.deleted"], "the dispatcher is told, until it finishes the helper"
+    assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
 
 
 def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):
@@ -215,6 +244,10 @@ def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, t
     helpers.dispatch("Ada", "carry on with the queue", "claude", "sonnet", checkout="platform")
     assert [h.title for h in helpers.all()] == ["carry on with the queue"] and helpers.load(first.n).completed, \
         "a helper started again in a stopped helper's environment takes its place: the stopped row is closed, never listed twice"
+    place = helpers.all()[0].environment
+    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "SessionStart", "session_id": "ada-session", "cwd": str(project / "platform")}, os.getpid(), place)
+    assert place != "platform" and Sessions(record.root).holder(place) == "ada-session", \
+        "a checkout named unlike its environment: its session binds to the environment it was launched for, so it is found and can be told"
 
 
 def test_a_helper_is_working_idle_needing_you_reported_stopped_or_finished_by_what_its_agent_last_did():
@@ -235,24 +268,6 @@ def test_a_helper_is_working_idle_needing_you_reported_stopped_or_finished_by_wh
         "a silent helper says for how long, and one that needs nothing says nothing"
 
 
-def test_a_helper_in_a_checkout_named_unlike_its_environment_can_be_told_something(monkeypatch):
-    import os
-    from engine.sessions import Sessions
-    from providers import PROVIDERS
-    from runner.hooks import answer
-    features.load()
-    started(monkeypatch)
-    record = fresh()
-    project = record.root.resolve().parent
-    (project / "platform").mkdir()
-    (project / "platform" / ".git").write_text("gitdir: /elsewhere/.git/worktrees/platform")
-    Helpers(record, actor=AGENT).dispatch("Ada", "review the queue", "claude", "sonnet", checkout="platform")
-    place = Helpers(record, actor=AGENT).all()[0].environment
-    assert place != "platform"
-    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "SessionStart", "session_id": "ada-session", "cwd": str(project / "platform")}, os.getpid(), place)
-    assert Sessions(record.root).holder(place) == "ada-session", "its session binds to the environment it was launched for, so it is found and can be told"
-
-
 def test_a_report_and_a_finish_answer_first_and_do_their_slow_work_after_the_answer(monkeypatch):
     features.load()
     started(monkeypatch)
@@ -269,3 +284,37 @@ def test_a_report_and_a_finish_answer_first_and_do_their_slow_work_after_the_ans
     bus.release(queue)
     assert Messages(record, actor=SYSTEM).all()[-1].brief == "Done", "the message follows the answer"
     assert not Environments(record, actor=SYSTEM).rows.by_title(f"{record.env}-rhea"), "the packing follows the answer"
+
+
+def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back_a_new_dispatch(monkeypatch):
+    features.load()
+    started(monkeypatch)
+    record = fresh()
+    project, helpers = record.root.resolve().parent, Helpers(record, actor=AGENT)
+    record.set_setting("helpers", {"kept": 0})
+    helpers.dispatch("Rhea", "profile the hooks", "claude", "sonnet")
+    helpers.dispatch("Zed", "fix src/features/nudges/standing.py", "claude", "sonnet")
+    monkeypatch.setattr("features.helpers.reuse.touched", lambda record, row: ("src/features/nudges/standing.py",) if row.name == "Zed" else ())
+    Agents(Record(record.root, helpers.load(2).environment), actor=SYSTEM).create("claude-zed", status=IDLE, at=time.time() - 600)
+    started_answer = helpers.dispatch("Ivy", "tidy nudges/standing.py", "claude", "sonnet")
+    assert "helper 2, Zed" in started_answer and "helper 1" not in started_answer, "a new helper's answer names the idle one that touched the files its job names"
+    record.set_setting("helpers", {"kept": 3})
+    held_back = refused(lambda: helpers.dispatch("Bo", "change nudges/standing.py again", "claude", "sonnet"))
+    assert held_back.index("helper 2, Zed") < held_back.index("helper 1, Rhea") and 'journal helper say 2 "<the new work>"' in held_back, \
+        "at the limit, with one idle, a dispatch is refused: the ones that touched the same files come first, with the line that sends them the work"
+    guard = OfferKeptAgentsFirst()
+    context = AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).create("claude-1", provider="claude"))
+    asked = lambda kind: guard.cancel(context, Dispatch(kind=kind, model="sonnet", model_supported=True, description="Ada: map the hooks"))
+    assert (asked("reviewer"), "of this kind (explore)" in asked("explore")) == ("", True), "a reviewer always starts fresh, and kinds stay apart"
+    for row in helpers.rows.standing():
+        Agents(Record(record.root, row.environment), actor=SYSTEM).create("busy", status="working", at=time.time())
+    assert "started" in helpers.dispatch("Bo", "change nudges/standing.py again", "claude", "sonnet"), "when every kept one is busy the dispatch goes through"
+    Agents(record, actor=SYSTEM).update(context.agent.row.n, subagent_rows=[{"id": "toolu_1", "task": "Ada: map the hooks", "type": "explore", "session": "a1"}])
+    child = Agents(record, actor=SYSTEM).create("a1", parent="claude-1")
+    KeepSubagentFiles().intercept(AgentContext.of(features.FEATURES["helpers"], record, child), SimpleNamespace(paths=(str(project / "src" / "hooks.py"),)))
+    ada, = [k for k in kept(record, []) if k.kind == "explore"]
+    assert (ada.files, ada.message) == (("src/hooks.py",), 'SendMessage({to: "a1", message: "<the new work>"})'), \
+        "a subagent keeps the files it touched, and is offered with its provider's line for a follow-up"
+    assert "is not one of your subagents" in refused(lambda: Agents(record, actor=AGENT).action("retire")("a9")), "only one of your own subagents is retired"
+    Agents(record, actor=AGENT).action("retire")("a1")
+    assert [k for k in kept(record, []) if k.kind == "explore"] == [], "a retired subagent frees its place"

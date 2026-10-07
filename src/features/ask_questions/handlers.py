@@ -5,7 +5,7 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from controllers.types import Agents, Questions
 from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
-from features.nudges import Sent
+from features.nudges.sending import Sent
 from features.trigger import DAY
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
@@ -51,6 +51,7 @@ class MarkTheAnswer(Handler):
             return
         agents.card(row.n, label=f"You answered question {question.n}", icon="question",
                     color="var(--blocking)", side=USER, row=question.ref)
+        context.feature.to_primary(context.record, "answered", n=question.n, answer=question.outcome, rows=[question.ref])
 
 
 class DismissSettledQuestions(Handler):

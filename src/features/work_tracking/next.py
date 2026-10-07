@@ -27,6 +27,16 @@ def carried_on(record) -> list:
     return [w for w in Works(record, actor=SYSTEM).rows.standing() if not w.parked and not w.awaiting and f"todo:{w.todo}" not in questioned]
 
 
+def still_next(journal, rows: tuple[str, ...]) -> bool:
+    open_work = [w for w in journal.get(Works).rows.standing() if not w.parked]
+    named_work = {ref for ref in rows if ref.startswith("work:")}
+    return any(t.ref in rows for t in ready(journal.record)) and {w.ref for w in open_work} == named_work and not any(w.awaiting for w in open_work)
+
+
+def still_stopped(journal, rows: tuple[str, ...]) -> bool:
+    return any(w.ref in rows for w in carried_on(journal.record))
+
+
 def waiting_rows(record, numbers: set | None = None) -> list:
     return [t for t in Todos(record, actor=SYSTEM).rows.standing() if (numbers is None or t.n in numbers) and t.blocked and not asked(record, t)]
 

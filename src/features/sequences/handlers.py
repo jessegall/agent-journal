@@ -8,7 +8,7 @@ from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
 from features.journal import waiting
-from features.nudges import Sent
+from features.nudges.sending import Sent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED

@@ -44,3 +44,7 @@ def read_and_open(journal) -> list:
 
 def unanswered(journal) -> list:
     return [m for m in read_and_open(journal) if not answered(journal, m)]
+
+
+def still_unanswered(journal, rows: tuple[str, ...]) -> bool:
+    return any(m.ref in rows for m in unanswered(journal))

@@ -2,7 +2,7 @@ import re
 from abc import ABC
 from dataclasses import asdict
 from functools import cached_property
-from typing import ClassVar
+from typing import Callable, ClassVar
 
 from controllers.features import SETTING_KEYS
 from controllers.types import Agents
@@ -34,11 +34,15 @@ class Behaviour:
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
+def always_owed(journal, rows: tuple[str, ...]) -> bool:
+    return True
+
+
 class Line:
     def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None, label: str = "",
-                 reach: Reach = Reach.MAIN, reply_kept: bool = False):
+                 reach: Reach = Reach.MAIN, reply_kept: bool = False, until: tuple[str, ...] = (), owed: Callable = always_owed):
         self.name, self.title, self.brief, self.lead, self.label, self.reach = name, paragraphs(title), paragraphs(brief), lead, label, reach
-        self.reply_kept = reply_kept
+        self.reply_kept, self.until, self.owed = reply_kept, until, owed
         self.while_waiting = while_waiting
 
     def placeholders(self) -> list[str]:
@@ -50,6 +54,9 @@ class Line:
             raise Refused(f"the line {self.title!r} takes {sorted(wanted)}, given {sorted(values)}")
         fill = lambda text: PLACEHOLDER.sub(lambda found: str(values[found.group(1)]), text)
         return fill(self.title), fill(self.brief)
+
+    def asking(self, feature: str) -> dict:
+        return {"until": list(self.until), "asks": f"{feature}.{self.name}"} if self.until else {}
 
     def describe(self) -> dict:
         return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders(), "reach": self.reach}
@@ -137,7 +144,7 @@ class Feature(ABC):
         if self.settings:
             SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
         if self.nudges:
-            from features.nudges import SendOnTheClock, SendOnToolUse
+            from features.nudges.sending import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))
             self.journal.events.handler(SendOnToolUse(self.nudges))
 
@@ -157,6 +164,11 @@ class Feature(ABC):
 
     def standing(self, record, controller: type) -> list:
         return controller(record, actor=SYSTEM).rows.standing()
+
+    def is_owed(self, record, line: str, rows: tuple[str, ...]) -> bool:
+        """Whether a line this feature sent about these rows still asks the agent to act."""
+        declared = line not in self.lines or self.lines[line].owed(self.journal.at(record), rows)
+        return declared and self.on(record, next((nudge.behaviour for nudge in self.nudges if nudge.line == line), ""))
 
     def keyed(self, key: str = "") -> str:
         return f"{self.name}.{key}" if key else self.name

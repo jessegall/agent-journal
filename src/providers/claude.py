@@ -136,6 +136,7 @@ def monitor_status(finished: bool, notified: bool, status: str) -> str:
 class Claude(Provider):
     name = "claude"
     session_variable = "CLAUDE_CODE_SESSION_ID"
+    follow_up = 'SendMessage({{to: "{id}", message: "<the new work>"}})'
     session_markers = ("CLAUDECODE", "CLAUDE_PID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_EXECPATH", "CLAUDE_CODE_CHILD_SESSION",
                        "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
     home = ".claude"
@@ -367,7 +368,8 @@ class Claude(Provider):
         if not isinstance(tool, AgentCall) or tool.name != "Agent":
             return None
         kind = tool.kind.strip().lower()
-        return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork", description=tool.task.strip(), name_supported=True)
+        return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork", description=tool.task.strip(), name_supported=True,
+                        prompt=tool.prompt)
 
     def model(self, hook: Hook) -> str:
         chosen = self.reported(hook.transcript, "model").get("id")

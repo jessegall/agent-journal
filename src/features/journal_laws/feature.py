@@ -7,7 +7,7 @@ from features.journal_laws.details import TOO_LONG, LawDetails
 from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword
 from features.journal_laws.laws import carry
-from features.nudges import Nudge
+from features.nudges.sending import Nudge
 from features.session_briefing.start import LAW, START_PARTS
 
 __all__ = ["Outputs"]
