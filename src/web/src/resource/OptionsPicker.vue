@@ -44,10 +44,10 @@ const ownWords = computed(() => settled.value && !dismissed.value && chosen.valu
 
 function submit(text) {
     const choice = String(text || "").trim();
-    if (!choice) return;
+    if (!choice) return Promise.resolve();
     changing.value = false;
     own.value = "";
-    answer(props.resource, choice);
+    return answer(props.resource, choice);
 }
 
 async function elaborate() {
