@@ -18,6 +18,7 @@ from controllers.stored import RowStore
 from engine.wording import noun
 
 WORDS = ("title", "abstract", "brief")
+FIELD_WRITES = ("create", "update", "set")
 LAST = 25
 SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
 
@@ -345,8 +346,19 @@ class Controller(Files, Links, Discussed):
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
             return bus.commanded(self.type, name, partial(command, self))
-        method = next((method for method, alias in self.resource.command_names.items() if alias == name), name)
+        method = self._method_called(name)
         return bus.commanded(self.type, method, getattr(self, method))
+
+    def _method_called(self, word: str) -> str:
+        return next((method for method, alias in self.resource.command_names.items() if alias == word), word)
+
+    def _refuse_journal_fields(self, word: str, arguments: Arguments) -> None:
+        """Refuses a create, update or set from outside that writes a field only the journal sets, such as a path or a process."""
+        if self._method_called(word) not in FIELD_WRITES:
+            return
+        written = sorted(arguments.writes().keys() & self.resource.journal_fields)
+        if written:
+            self._refuse(f"the journal sets {', '.join(written)} of a {self.type} itself; it is not written by hand")
 
     @marks.action
     def restore(self, n: int) -> Resource:

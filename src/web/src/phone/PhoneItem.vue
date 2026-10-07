@@ -17,7 +17,7 @@ import CellGroup from "./kit/CellGroup.vue";
 import Cell from "./kit/Cell.vue";
 import PhoneActs from "./PhoneActs.vue";
 import PhoneVersions from "./PhoneVersions.vue";
-import {itemActions} from "./acts.js";
+import {itemActions, runsOffLine} from "./acts.js";
 import PhoneShareSheet from "./PhoneShareSheet.vue";
 import {chipOpener} from "./peeked.js";
 import {itemFacts, todoLane} from "./todo.js";
@@ -367,7 +367,7 @@ onMounted(async () => {
             <FormSheet title="Comment" :sub="row.title" :fields="COMMENT" button="Comment" @close="commenting = false" @submit="commented" />
         </template>
         <template v-if="moreOpen && row">
-            <ActionSheet :title="row.title" :about="`${kindTitle(row.type)} ${row.n}`" :actions="actions" @close="moreOpen = false" />
+            <ActionSheet :title="row.title" :about="`${kindTitle(row.type)} ${row.n}`" :actions="actions" :foot="runsOffLine(row)" @close="moreOpen = false" />
         </template>
         <template v-if="row">
             <PhoneActs ref="acts" :row="row" @changed="changed" @gone="emit('close')" @share="sharing = true" />

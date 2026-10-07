@@ -43,7 +43,8 @@ const phase = computed(() => {
     return phaseOf(s.value);
 });
 const open = computed(() => isOpen(phase.value));
-const choices = computed(() => choicesFor(s.value, phase.value));
+const installBlocked = computed(() => (source.value ? acts.installBlocked() : ""));
+const choices = computed(() => choicesFor(s.value, phase.value).filter((choice) => !(installBlocked.value && choice.act === "yes")));
 const outcome = computed(() => outcomeOf(s.value, phase.value, failure(s.value) || installError.value));
 const boxId = computed(() => `suggestion-change-${s.value.n}-${props.bare ? "window" : "chat"}`);
 
@@ -151,6 +152,9 @@ const press = (choice) => ACTS[choice.act]();
             </template>
             <template v-if="open">
                 <SuggestionChoices :choices="choices" :busy="busy" :phone="phone" @press="press" />
+                <template v-if="installBlocked">
+                    <p class="sg-blocked">{{ installBlocked }}</p>
+                </template>
             </template>
             <template v-if="saveError">
                 <p class="sg-error" role="alert">Your answer was not saved: {{ saveError }}. Try again.</p>
@@ -240,6 +244,12 @@ const press = (choice) => ACTS[choice.act]();
     color: var(--text-2);
     font-size: 12.5px;
     line-height: 1.55;
+}
+
+.sg-blocked {
+    margin: 8px 0 0;
+    color: var(--text-3);
+    font-size: 11.5px;
 }
 
 .sg-error {

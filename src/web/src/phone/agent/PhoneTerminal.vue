@@ -11,7 +11,7 @@ import PhonePage from "../settings/PhonePage.vue";
 import PhoneCommandLines from "./PhoneCommandLines.vue";
 import PhoneNoAgent from "./PhoneNoAgent.vue";
 import {useLeadAgent} from "./lead.js";
-import {runsAllowed} from "../runs.js";
+import {runsAllowed, runsOff} from "../runs.js";
 
 defineProps({target: {type: String, default: ""}, back: {type: String, default: ""}});
 const emit = defineEmits(["back"]);
@@ -47,7 +47,10 @@ async function run(command, now) {
             <template v-else>
                 <p class="terminal-none">Nothing has run yet.</p>
             </template>
-            <template v-if="runsAllowed">
+            <template v-if="!runsAllowed">
+                <CellGroup :foot="runsOff" />
+            </template>
+            <template v-else>
                 <CellGroup head="Waiting to run" foot="A command waits until the agent finishes its turn. Run now interrupts the agent.">
                     <template v-for="item in queued" :key="item.at">
                         <Cell :label="item.command" sub="Waits for the agent's turn" @pick="hurrying = item.command" />

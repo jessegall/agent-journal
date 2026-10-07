@@ -12,7 +12,7 @@ import {toast} from "../kit/toast.js";
 import {hold} from "../outbox.js";
 import FormSheet from "../kit/FormSheet.vue";
 import PhonePluginPreview from "./PhonePluginPreview.vue";
-import {runsAllowed} from "../runs.js";
+import {runsAllowed, runsOff} from "../runs.js";
 
 defineProps({target: {type: String, default: ""}, back: {type: String, default: ""}});
 const emit = defineEmits(["back", "open"]);
@@ -54,7 +54,7 @@ function make(wish) {
         </template>
     </ListScreen>
     <template v-if="adding">
-        <ActionSheet title="Add a plugin" about="Plugins" :actions="ADDING" @close="adding = false" />
+        <ActionSheet title="Add a plugin" about="Plugins" :actions="ADDING" :foot="runsOff" @close="adding = false" />
     </template>
     <template v-if="asking === 'install'">
         <FormSheet

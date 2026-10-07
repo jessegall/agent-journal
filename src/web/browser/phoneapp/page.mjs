@@ -40,6 +40,7 @@ await runScenarios(
         },
         async "typing the first words brings the chat to the newest message"(page) {
             await home(page);
+            await page.locator(".home-feed").waitFor({timeout: SHOWN});
             const gap = () =>
                 page.evaluate(() => {
                     const s = document.querySelector(".home-feed");

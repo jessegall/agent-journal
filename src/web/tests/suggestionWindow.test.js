@@ -30,6 +30,7 @@ function opened(suggestion) {
     const acts = {
         complete: vi.fn().mockResolvedValue({}),
         install: vi.fn(),
+        installBlocked: () => "",
         noteWindow: vi.fn().mockResolvedValue({}),
         offerUndo: vi.fn(),
         speak: vi.fn(),

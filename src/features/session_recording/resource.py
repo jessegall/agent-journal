@@ -11,8 +11,8 @@ class Recording(Shape, Resource):
         help="journal record start <folder> records alongside the session into that folder; journal record stop ends it and copies in the transcripts of the agents that ran.",
     )
     data_fields: ClassVar[list[Field]] = [
-        Field(default="", name="folder"),
-        Field(default=0, name="pid"),
+        Field(default="", name="folder", journal_only=True),
+        Field(default=0, name="pid", journal_only=True),
     ]
     type = "record"
     icon = "film"
