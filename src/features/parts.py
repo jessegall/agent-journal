@@ -174,7 +174,9 @@ class Command:
 
 
 class ActionInterceptor:
-    def intercept(self, feature_context: Context, controller, **args):
+    """Runs before a controller action; it refuses by raising, and what it returns is ignored."""
+
+    def intercept(self, feature_context: Context, controller, **args) -> None:
         raise NotImplementedError
 
 
