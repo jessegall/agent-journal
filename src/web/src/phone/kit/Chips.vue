@@ -13,7 +13,7 @@ const emit = defineEmits(["pick"]);
                 :class="['chip', {on: option.key === value}]"
                 @click="emit('pick', option.key)"
             >
-                {{ option.label }}
+                <span class="chip-label">{{ option.label }}</span>
                 <template v-if="option.count !== undefined">
                     <em class="chip-count">{{ option.count }}</em>
                 </template>
@@ -41,6 +41,7 @@ const emit = defineEmits(["pick"]);
     flex: none;
     align-items: center;
     gap: 6px;
+    max-width: 240px;
     min-height: 36px;
     padding: 0 14px;
     border: 1px solid var(--line);
@@ -55,6 +56,12 @@ const emit = defineEmits(["pick"]);
     border-color: var(--accent);
     background: var(--accent);
     color: #fff;
+}
+
+.chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .chip-count {

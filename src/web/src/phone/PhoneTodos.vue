@@ -19,6 +19,7 @@ import {toast} from "./kit/toast.js";
 import {place} from "./outbox.js";
 import PhoneActs from "./PhoneActs.vue";
 import PhoneNew from "./PhoneNew.vue";
+import PhoneNewBoard from "./PhoneNewBoard.vue";
 import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
 import PhoneTodoRow from "./PhoneTodoRow.vue";
 
@@ -127,6 +128,7 @@ const orders = computed(() => ORDERS.map((one) => ({key: one.key, label: one.lab
 const archived = ref([]);
 const settings = computed(() => [
     {key: "done", label: "Show the Done lane", check: doneLane.value, run: () => (doneLane.value = !doneLane.value)},
+    {key: "new-board", label: "Make a new board", sub: "Pick its stages, or build it from a document", run: () => (sheet.value = "new-board")},
     ...archived.value.map((board) => ({key: `board-${board.n}`, label: board.title, sub: "Archived board · Restore it", run: () => restore(board)})),
 ]);
 
@@ -227,6 +229,9 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
     </template>
     <template v-if="sheet === 'settings'">
         <ActionSheet title="Board settings" about="Board" line="lanes and boards" :actions="settings" @close="sheet = ''" />
+    </template>
+    <template v-if="sheet === 'new-board'">
+        <PhoneNewBoard @made="refresh" @close="sheet = ''" />
     </template>
     <template v-if="sheet === 'actions' && acting">
         <ActionSheet :title="acting.title" :about="`To-do ${acting.n}`" :actions="actionsOf(acting)" @close="sheet = ''" />

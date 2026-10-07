@@ -5,6 +5,7 @@ import {fileSize} from "../../format/files.js";
 import {aboutLines, linesWord} from "../../format/quote.js";
 import Diff from "../../kit/Diff.vue";
 import {highlight, languageOf} from "../../text/highlight.js";
+import Button from "../kit/Button.vue";
 import EmptyList from "../kit/EmptyList.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import PlaceScreen from "../kit/PlaceScreen.vue";
@@ -94,7 +95,7 @@ async function ask({words}) {
             </template>
         </template>
         <template v-if="picked" #foot>
-            <button type="button" class="file-ask" @click="asking = true">Ask the agent about {{ linesWord(picked) }}</button>
+            <Button fill @click="asking = true">Ask the agent about {{ linesWord(picked) }}</Button>
         </template>
     </PlaceScreen>
     <template v-if="asking">
@@ -154,16 +155,5 @@ async function ask({words}) {
     color: var(--text-3);
     text-align: right;
     user-select: none;
-}
-
-.file-ask {
-    width: 100%;
-    min-height: 44px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
 }
 </style>

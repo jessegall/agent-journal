@@ -418,6 +418,7 @@ function flashTo(key) {
 
 function open(target) {
     if (target.startsWith("tab:")) return pick(target.slice(4));
+    if (target.startsWith("place:")) return pick("everything");
     const key = target.replace(":", "");
     if (IN_CHAT.test(target) && findTurn(key)) {
         if (screen.value === "chat" && !pages.value.length) return nextTick(() => flashTo(key));

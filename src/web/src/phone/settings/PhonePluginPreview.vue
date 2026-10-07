@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {CHANGE_WORDS, PREVIEW_KINDS, SAME_VERSION} from "../../domain/pluginWords.js";
+import Button from "../kit/Button.vue";
 import PhoneSheet from "../PhoneSheet.vue";
 import PhoneTerm from "./PhoneTerm.vue";
 
@@ -25,7 +26,7 @@ const sheet = ref(null);
                 {{ outcome.ok ? `${previewed.title} is installed.` : "It did not install. Nothing of it was kept." }}
             </p>
             <PhoneTerm :text="live || outcome.text" />
-            <button type="button" class="preview-go" @click="sheet.close()">Close</button>
+            <Button fill @click="sheet.close()">Close</Button>
         </template>
         <template v-else-if="busy === 'install'">
             <p class="preview-result">{{ previewed.upgrading ? "Upgrading" : "Installing" }}…</p>
@@ -54,8 +55,8 @@ const sheet = ref(null);
                 <p class="preview-row"><b>{{ PREVIEW_KINDS[row.kind] }}</b>{{ row.label }}<code>{{ row.command }}</code></p>
             </template>
             <div class="preview-buttons">
-                <button type="button" class="preview-no" @click="sheet.close()">Cancel</button>
-                <button type="button" class="preview-go" @click="emit('install')">{{ previewed.upgrading ? "Upgrade" : "Install" }}</button>
+                <Button kind="plain" @click="sheet.close()">Cancel</Button>
+                <Button @click="emit('install')">{{ previewed.upgrading ? "Upgrade" : "Install" }}</Button>
             </div>
         </template>
     </PhoneSheet>
@@ -109,20 +110,5 @@ const sheet = ref(null);
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     margin: 12px 0;
-}
-
-.preview-no,
-.preview-go {
-    min-height: 44px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--sel);
-    color: var(--text);
-    font: inherit;
-}
-
-.preview-go {
-    background: var(--accent);
-    color: #fff;
 }
 </style>

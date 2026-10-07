@@ -5,6 +5,7 @@ import Switch from "../../kit/Switch.vue";
 import TextDisplay from "../../kit/TextDisplay.vue";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
+import Field from "../kit/Field.vue";
 import {toast} from "../kit/toast.js";
 import PhonePage from "./PhonePage.vue";
 
@@ -70,11 +71,14 @@ onMounted(async () => {
                     </template>
                 </Cell>
             </CellGroup>
-            <label class="skill-words">
-                <span>Trigger words</span>
-                <input type="text" placeholder="dump, drop, paste" :value="(skill.keywords || []).join(', ')" @change="keywords($event.target.value)" />
-                <small>Separate words with commas. Saved when you leave the field.</small>
-            </label>
+            <Field
+                class="skill-words"
+                :model-value="(skill.keywords || []).join(', ')"
+                label="Trigger words"
+                placeholder="dump, drop, paste"
+                hint="Separate words with commas. Saved when you leave the field."
+                @change="keywords($event.target.value)"
+            />
             <h2 class="skill-head">Instructions</h2>
             <template v-if="failed">
                 <p class="skill-status">{{ failed }}</p>
@@ -95,7 +99,6 @@ onMounted(async () => {
     margin: 18px 0 0;
 }
 
-.skill-words span,
 .skill-head {
     display: block;
     margin: 0 4px 6px;
@@ -108,18 +111,6 @@ onMounted(async () => {
     margin-top: 22px;
 }
 
-.skill-words input {
-    width: 100%;
-    min-height: 44px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--raised);
-    color: var(--text);
-    font: inherit;
-}
-
-.skill-words small,
 .skill-status {
     display: block;
     margin: 6px 4px 0;

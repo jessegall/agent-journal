@@ -34,6 +34,14 @@ export const viewsOf = (share) => `${share.data.views || 0} ${share.data.views =
 
 export const stopShare = (share) => api.stopShare(share.n);
 
+export const linksOf = async (ref) => (await api.all("share")).filter((share) => live(share) && share.data.target === ref);
+
+export async function stopLinksOf(ref) {
+    const links = await linksOf(ref);
+    for (const link of links) await stopShare(link);
+    return links.length;
+}
+
 export const approveShare = (share) => api.approveShare(share.n);
 
 export const tunnelStatus = computed(() => store.tunnel);

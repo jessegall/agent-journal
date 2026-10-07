@@ -8,7 +8,7 @@ export const REGIONS = [
     region("services", "Services", "play", tabLine("services")),
     region("phone", "Phone and share links", "phone", "Your phone, who it reaches this journal as, and share links."),
     region("pluginsettings", "Plugin settings", "plug", tabLine("plugins")),
-    region("environments", "Environments", "branch", tabLine("environments"), "place:environments"),
+    region("environments", "Environments", "branch", tabLine("environments"), "environments:"),
     region("system", "System", "settings", "Updates, the project folder and shutting down."),
     region("developer", "Developer", "terminal", tabLine("developer")),
     region("voice", "Your title and name", "smile", "What the agent calls you, and how it talks to you."),

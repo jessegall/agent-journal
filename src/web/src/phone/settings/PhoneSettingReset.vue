@@ -1,4 +1,5 @@
 <script setup>
+import Button from "../kit/Button.vue";
 import {resets, resettable} from "../../domain/settingsCatalog.js";
 
 defineProps({row: {type: Object, required: true}});
@@ -7,18 +8,6 @@ const emit = defineEmits(["change", "timing"]);
 
 <template>
     <template v-if="resettable(row)">
-        <button type="button" class="reset" @click="resets(row).forEach(([name, value]) => emit(name, value))">Back to the default</button>
+        <Button kind="link" @click="resets(row).forEach(([name, value]) => emit(name, value))">Back to the default</Button>
     </template>
 </template>
-
-<style scoped>
-.reset {
-    min-height: 44px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 0.875rem;
-}
-</style>

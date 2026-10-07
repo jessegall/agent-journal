@@ -85,6 +85,15 @@ await runScenarios(PAIR, {
         await page.getByRole("button", {name: /Install a plugin/}).click();
         await page.getByLabel("Where it comes from").waitFor({timeout: SHOWN});
     },
+    async "the title and name use the kit field and button, and save"(page) {
+        await region(page, "Your title and name");
+        await top(page).getByLabel("Your title").fill("Sir");
+        const save = top(page).getByRole("button", {name: "Save"});
+        const box = await save.boundingBox();
+        if (box.height < 44) throw new Error(`the Save button is ${box.height}pt tall, under 44`);
+        await save.click();
+        await page.getByText("Saved: your title and name").waitFor({timeout: SHOWN});
+    },
     async "skills list opens from Everything"(page) {
         await home(page);
         await everything(page, "Skills");

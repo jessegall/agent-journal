@@ -9,6 +9,7 @@ from controllers.types import Docs, Environments, Facts, Questions, Todos
 from features.collections.controller import Collections
 from features.plans.controller import Plans
 from features.suggestions.controller import Suggestions
+from features.templates.shipped import ship
 from engine.viewer import SERVING
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
@@ -25,7 +26,7 @@ class PhonePage(NamedTuple):
 
 @contextmanager
 def served() -> Iterator[PhonePage]:
-    """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file, a to-do in a plan, questions and a suggestion waiting for an answer, and a document on a shelf, and to-dos in lanes."""
+    """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file, a to-do in a plan, questions and a suggestion waiting for an answer, and a document on a shelf with two versions, the shipped templates, and to-dos in lanes."""
     import features
     features.load()
     record = fresh()
@@ -44,7 +45,12 @@ def served() -> Iterator[PhonePage]:
     Plans(record, actor=AGENT).phase(plan.n, "Watering", when="the plants are watered")
     Plans(record, actor=AGENT).place(plan.n, 1, [plants.n])
     Suggestions(record, actor=AGENT).create("Plant more roses", abstract="A suggestion the phone answers")
-    notes = Docs(record, actor=AGENT).create("Garden notes", abstract="A document on a shelf")
+    ship(record)
+    docs = Docs(record, actor=AGENT)
+    notes = docs.create("Garden notes", abstract="A document on a shelf")
+    docs.section(notes.n, "Soil", "Loam")
+    docs.stamp(notes.n, open_until=0)
+    docs.section(notes.n, "Soil", "Clay")
     Collections(record, actor=AGENT).add(Collections(record, actor=AGENT).create("Garden").n, [notes.ref])
     Facts(record, actor=AGENT).create("The roses face south", brief="A fact the phone can close", keywords=["roses"])
     todos.block(todos.create("Fix the gate", brief="A to-do held by a reason").n, "waits for the hinges")
