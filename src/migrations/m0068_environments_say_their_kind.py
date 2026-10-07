@@ -6,9 +6,6 @@ from features.helpers.controller import Helpers
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind
 
-OWNERS = {"helper": EnvironmentKind.HELPER, "todo": EnvironmentKind.SUBAGENT}
-
-
 def run(root: Path) -> list[str]:
     records = list(environment_records(Path(root)))
     if not records:
@@ -27,5 +24,5 @@ def run(root: Path) -> list[str]:
 
 def kind_of(owner: str, title: str, checkouts: set[str]) -> EnvironmentKind:
     if owner:
-        return OWNERS.get(owner.split(":")[0], EnvironmentKind.TICKET)
+        return EnvironmentKind.owned_by(owner)
     return EnvironmentKind.HELPER if re.sub(r"-\d+$", "", title) in checkouts else EnvironmentKind.MAIN

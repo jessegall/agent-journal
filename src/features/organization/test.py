@@ -237,6 +237,8 @@ def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_t
     prepared(record, "helper-ada", "Where helper Ada works", "helper:1", record.root.parent, EnvironmentKind.HELPER)
     prepared(record, "ticket-3", "Where ticket 3 runs", "ticket:3", record.root.parent, EnvironmentKind.TICKET)
     assert [row.kind for row in envs.rows.every()] == ["main", "helper", "ticket"], "each environment says what kind it is from the moment it is made"
+    assert envs.create("helper-bo", owner="helper:2").kind == "helper", "a helper's environment made without a kind takes it from its owner, so it never shows as a main one"
+    envs.delete(envs.rows.by_title("helper-bo").n, "made only to check its kind")
     assert "an environment is one of" in refused(lambda: envs.update(main.n, kind="")), "an environment can never be made untagged"
     assert "an environment is one of" in refused(lambda: envs.create("loose", kind="")), "nor made without a kind"
     runtime.set_env(record.root, record.env)

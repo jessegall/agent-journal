@@ -504,6 +504,13 @@ class EnvironmentKind(StrEnum):
     SUBAGENT = "subagent"
     TICKET = "ticket"
 
+    @classmethod
+    def owned_by(cls, owner: str) -> "EnvironmentKind":
+        """The kind an environment has from its owner: a helper's, a subagent's (a to-do's), a ticket's, or main when nobody owns it."""
+        if not owner:
+            return cls.MAIN
+        return {"helper": cls.HELPER, "todo": cls.SUBAGENT}.get(owner.split(":")[0], cls.TICKET)
+
 
 class Environment(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(

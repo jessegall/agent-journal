@@ -11,6 +11,7 @@ from engine.version import version as package_version
 from engine.wording import plural
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
+from resources.types import EnvironmentKind
 
 NO_INTERACTION = "--no-interaction"
 LAUNCHED = "launched"
@@ -51,7 +52,7 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
                 return names[picked]
             continue
         try:
-            return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip()).title
+            return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip(), kind=EnvironmentKind.MAIN).title
         except EOFError:
             return record.env
         except Refused as e:

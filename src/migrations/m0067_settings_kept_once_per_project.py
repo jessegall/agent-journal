@@ -26,7 +26,8 @@ def run(root: Path) -> str:
             folded[key] = {**{part: values[part] for part in parts if part in values}, **folded.get(key, {})}
         kept(root, home)
     write_json(root / "settings.json", {**project, **{key: value for key, value in folded.items() if value}}, indent=2)
-    return f"the settings of {len(homes)} environments are kept once for the project, the {homes[0].name} environment's first"
+    return (f"the settings of {len(homes)} environments are kept once for the project, the {homes[0].name} environment's first; "
+            f"every environment's own file as it was is kept in attic/{ATTIC}")
 
 
 def with_switches(root: Path, home: Path) -> dict:
@@ -42,6 +43,7 @@ def kept(root: Path, home: Path) -> None:
         return
     copy = attic.folder(root) / ATTIC / f"{home.name}.json"
     copy.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(file, copy)
+    if not copy.exists():
+        shutil.copy2(file, copy)
     own = read_json(file, dict, {})
     write_json(file, {key: PROJECT_PARTS.split(key, value)[ENVIRONMENT] for key, value in own.items()}, indent=2)
