@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
 import {demo, unlessDemo} from "../platform/demo.js";
@@ -35,7 +34,7 @@ const activityCounts = computed(() => [
         key: "subagents",
         icon: "agents",
         n: live(props.data && props.data.subagent_rows),
-        title: `${capitalised(helperWord(2))}: helpers the agent started`,
+        title: "Subagents: helpers the agent started",
     },
     {
         key: "monitors",

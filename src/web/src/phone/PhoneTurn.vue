@@ -1,6 +1,5 @@
 <script setup>
 import {computed, ref} from "vue";
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import SuggestionCard from "../chat/SuggestionCard.vue";
@@ -60,7 +59,7 @@ const betweenLabel = computed(() => {
     const name = String(props.item.to || "")
         .split(":")[0]
         .trim();
-    return `To ${name || `a ${helperWord()}`}`;
+    return `To ${name || "a helper"}`;
 });
 const HOLDABLE = ["message", "comment"];
 const holdable = computed(() => HOLDABLE.includes(props.item.type));

@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {HELPER_WORDS, helperLine, helperName, helperReport, helperState, stateAt} from "../domain/helpers.js";
 import {nextTick, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
@@ -46,7 +45,7 @@ onMounted(() =>
     <div :class="['helper', state()]">
         <div class="helper-head">
             <span :class="['helper-dot', state()]" />
-            <Btn kind="text" class="helper-what" :title="`Open this ${helperWord()}'s inspector`" @click="emit('inspect')">
+            <Btn kind="text" class="helper-what" title="Open this helper's inspector" @click="emit('inspect')">
                 <strong class="helper-name">{{ name() }}</strong>
                 <span class="helper-job" :title="row.title">{{ row.title }}</span>
                 <small>{{ helperLine(row) }}</small>
@@ -87,7 +86,7 @@ onMounted(() =>
                 </div>
             </template>
             <template v-else>
-                <Btn small class="helper-remove" @click="confirming = true">Remove the {{ helperWord() }} and its worktree</Btn>
+                <Btn small class="helper-remove" @click="confirming = true">Remove the helper and its worktree</Btn>
             </template>
         </template>
         <template v-if="refusal">

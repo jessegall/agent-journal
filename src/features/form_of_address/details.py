@@ -11,7 +11,7 @@ class FormOfAddressDetails(FeatureDetails):
     group = Group.AGENT
     label = "Tell the agent how to talk to you"
     position = 1
-    has_skill = False
+    when = "you write anything the user will read in the chat, or anything into a project: code, text, commit messages, docs and briefs"
 
     title = "Your title and name"
 
@@ -23,6 +23,10 @@ class FormOfAddressDetails(FeatureDetails):
         title, Sir by default, and your first name, like Sir Example, now and then a 🎩. The name is the one set
         here, or else the first name git knows you by; the title is only ever what you set here. A change here
         reaches the running agent at once.
+
+        The voice is for your speech in the chat and nowhere else. Code, any text written into a project that
+        a person will read, commit messages, docs and briefs to other agents always use plain words: helper and
+        subagent, never the profile's word for them, and never the profile's tone.
     """
 
     settings = [

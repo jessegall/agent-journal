@@ -1,7 +1,6 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {words} from "../composables/helperWords.js";
 import {callings, profileInUse, profiles, sampleOf} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -70,7 +69,6 @@ const sample = computed(() => (locked.value ? sampleOf(props.row) : draft.sample
 const missing = computed(() => {
     if (!draft.title.trim()) return "Give it a name.";
     if (!draft.brief.trim()) return "Write how it talks.";
-    if (!draft.helper.trim() || !draft.helpers.trim()) return "Give it a word for helpers, one and many.";
     return draft.sample.trim() ? "" : "Write a sample line.";
 });
 
@@ -113,15 +111,12 @@ function startFrom(row) {
         <div class="profile-panel">
             <template v-if="locked">
                 <Notice>
-                    Comes with the journal, so it can't be changed, and an update may change its wording. Duplicate it to make a version of
-                    your own.
+                    Comes with the journal, so it can't be changed, and an update may change its wording. Duplicate it to make a version
+                    of your own.
                 </Notice>
             </template>
             <template v-if="isNew">
-                <FormField
-                    label="Copy an existing profile"
-                    help="Copies how it talks, what it calls you and the sample line. You change them below."
-                >
+                <FormField label="Copy an existing profile" help="Copies how it talks, what it calls you and the sample line. You change them below.">
                     <div class="profile-panel-starts">
                         <template v-for="other in profiles" :key="other.n">
                             <Btn small :kind="start === other.n ? 'primary' : 'ghost'" @click="startFrom(other)">{{ other.title }}</Btn>
@@ -167,23 +162,6 @@ function startFrom(row) {
                     @input="edit('sample', $event.target.value)"
                 />
             </FormField>
-            <FormField
-                label="Word for helpers"
-                help="What this profile calls helpers and subagents: shown in the viewer and used by the agent. Give the word for one and for many."
-            >
-                <TextInput
-                    :value="draft.helper"
-                    :disabled="locked"
-                    placeholder="One, for example: helper"
-                    @input="edit('helper', $event.target.value)"
-                />
-                <TextInput
-                    :value="draft.helpers"
-                    :disabled="locked"
-                    placeholder="Many, for example: helpers"
-                    @input="edit('helpers', $event.target.value)"
-                />
-            </FormField>
             <template v-if="failed">
                 <Notice tone="danger">{{ failed }}</Notice>
             </template>
@@ -202,14 +180,10 @@ function startFrom(row) {
                 <Btn small kind="primary" @click="$emit('duplicate', row)">Duplicate to change it</Btn>
             </template>
             <template v-else-if="inUse">
-                <span class="profile-panel-status">
-                    You're editing the profile in use. Each change is saved and the agent is told at once.
-                </span>
+                <span class="profile-panel-status">You're editing the profile in use. Each change is saved and the agent is told at once.</span>
             </template>
             <template v-else>
-                <span class="profile-panel-status">
-                    Changes are saved as you make them. The agent hears them once you use this profile.
-                </span>
+                <span class="profile-panel-status">Changes are saved as you make them. The agent hears them once you use this profile.</span>
                 <Btn small @click="$emit('use', row)">Use this profile</Btn>
             </template>
         </template>

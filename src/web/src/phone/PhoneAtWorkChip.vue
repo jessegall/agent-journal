@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agentCounts} from "../domain/helpers.js";
 import {counted} from "../format/number.js";
 import {computed} from "vue";
@@ -10,7 +9,7 @@ const emit = defineEmits(["open"]);
 const counts = computed(() => agentCounts(props.live.helpers || [], props.live.subagents || []));
 const chip = computed(() => {
     if (counts.value.needs) return {tone: "needs", text: counted(counts.value.needs, "needs you", "need you")};
-    if (counts.value.working) return {tone: "working", text: `${helperCount(counts.value.working)} at work`};
+    if (counts.value.working) return {tone: "working", text: `${counts.value.working} at work`};
     if (counts.value.reported) return {tone: "reported", text: counted(counts.value.reported, "reported", "reported")};
     if (counts.value.finished) return {tone: "finished", text: counted(counts.value.finished, "finished", "finished")};
     return null;
@@ -18,7 +17,7 @@ const chip = computed(() => {
 const part = (n, one, many) => (n ? counted(n, one, many) : "");
 const label = computed(() => {
     const lines = [
-        part(counts.value.needs, `${helperWord()} needs you`, `${helperWord(2)} need you`),
+        part(counts.value.needs, "helper needs you", "helpers need you"),
         part(counts.value.working, "at work", "at work"),
         part(counts.value.reported, "reported", "reported"),
         part(counts.value.finished, "finished", "finished"),

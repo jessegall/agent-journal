@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {computed, provide, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -59,9 +58,7 @@ const VIEWS = {
     todos: {title: "To-dos", icon: "todos"},
     plan: {title: "Plan", icon: "flag"},
     subagents: {
-        get title() {
-            return capitalised(helperWord(2));
-        },
+        title: "Subagents",
         icon: "agents",
     },
     skills: {title: "Skills", icon: "book"},
@@ -200,7 +197,7 @@ const openSkills = () => go(route.value.env, "skills");
             </template>
             <template #facts>
                 <template v-if="counts">
-                    <Btn kind="text" class="inspector-link" @click="showing('subagents')">{{ helperCount(counts.subagents) }}</Btn>
+                    <Btn kind="text" class="inspector-link" @click="showing('subagents')">{{ counts.subagents }} subagents</Btn>
                     <Btn kind="text" class="inspector-link" @click="showing('skills')">{{ counts.skills }} skills loaded</Btn>
                 </template>
                 <template v-if="link">
@@ -232,7 +229,7 @@ const openSkills = () => go(route.value.env, "skills");
                         <p class="pane-note">
                             {{
                                 subagent
-                                    ? `What this ${helperWord()} was asked and what it answered. It can't be messaged.`
+                                    ? `What this subagent was asked and what it answered. It can't be messaged.`
                                     : "The conversation with this agent."
                             }}
                         </p>
@@ -313,12 +310,12 @@ const openSkills = () => go(route.value.env, "skills");
                     </template>
                     <template #subagents>
                         <p class="pane-note">
-                            A {{ helperWord() }} is a short job this agent hands off inside its own session. It answers only to this agent
+                            A subagent is a short job this agent hands off inside its own session. It answers only to this agent
                             and you can't send it messages. Helper agents are different: separate agents with their own environment, listed
-                            under {{ capitalised(helperWord(2)) }}.
+                            under Helpers.
                         </p>
                         <template v-if="!subagents.length">
-                            <EmptyState :title="`No ${helperWord(2)} yet`">The jobs this agent hands off show here.</EmptyState>
+                            <EmptyState :title="`No subagents yet`">The jobs this agent hands off show here.</EmptyState>
                         </template>
                         <div class="fill scroll">
                             <template v-for="row in subagents" :key="row.session">

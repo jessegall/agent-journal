@@ -1,7 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../../api/client.js";
-import {helperCount} from "../../composables/helperWords.js";
 import {usePoll} from "../../composables/poll.js";
 import {useToggledSet} from "../../composables/toggledSet.js";
 import {SIZES, familyCounts, familyTree, nodeLook} from "../../domain/family.js";
@@ -25,7 +24,7 @@ const nodes = computed(() => (family.value ? familyTree(family.value, unfolded.v
 const line = computed(() => {
     if (!family.value) return "";
     const counts = familyCounts(family.value);
-    return `${counted(counts.agents, "agent")} and ${helperCount(counts.subagents)}, ${counts.live} working now. Who started whom.`;
+    return `${counted(counts.agents, "agent")} and ${counted(counts.subagents, "subagent")}, ${counts.live} working now. Who started whom.`;
 });
 const opens = (node) => Boolean(node.fold || (node.member.n && node.member.kind !== "subagent"));
 const subOf = (look) => [look.note, look.badge ? counted(Number(look.badge), "repeating prompt") : ""].filter(Boolean).join(" · ");

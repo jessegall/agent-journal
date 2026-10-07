@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
@@ -116,7 +115,7 @@ function openSkills() {
                     </template>
                     <template #default>
                         <CrewList
-                            :heading="capitalised(helperWord(2))"
+                            heading="Subagents"
                             :agent="agent ? agent.n : 0"
                             :rows="data.subagent_rows || []"
                             :total="data.subagents || 0"

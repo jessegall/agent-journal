@@ -1,6 +1,5 @@
 <script setup>
 import Button from "./kit/Button.vue";
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agentCounts, agentsInOrder, FINISHED_STATES} from "../domain/helpers.js";
 import {counted} from "../format/number.js";
 import {computed, nextTick, ref, watch} from "vue";
@@ -17,7 +16,7 @@ const counts = computed(() => agentCounts(helpers.value, subagents.value));
 const summary = computed(() =>
     [
         counts.value.needs ? counted(counts.value.needs, "needs you", "need you") : "",
-        counts.value.working ? `${helperCount(counts.value.working)} at work` : "",
+        counts.value.working ? `${counts.value.working} at work` : "",
         counts.value.reported ? counted(counts.value.reported, "reported", "reported") : "",
         counts.value.finished ? counted(counts.value.finished, "finished", "finished") : "",
     ]
@@ -76,7 +75,7 @@ function read(target) {
                     <template v-if="listedHelpers.length">
                         <section class="at-work-group">
                             <header>
-                                <h3>{{ capitalised(helperWord(2)) }}</h3>
+                                <h3>Helpers</h3>
                                 <span>Separate agents, one job each</span>
                             </header>
                             <div class="at-work-rows">
@@ -89,7 +88,7 @@ function read(target) {
                     <template v-if="listedSubagents.length">
                         <section class="at-work-group">
                             <header>
-                                <h3>{{ capitalised(helperWord(2)) }} inside the agent</h3>
+                                <h3>Subagents</h3>
                                 <span>Short errands for the main agent</span>
                             </header>
                             <div class="at-work-rows">
