@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.9 — The choice card no longer explains what the others do
+The note under a choice card's buttons said the others go away once you choose; it now says only "Choose one.". Nothing to do.
+
 ## 2.254.8 — Every option button answers a press at once
 The agent's question options in the chat, on the phone and on shared pages now show a spinner on the pressed option and disable the others while the answer is sent, the same way document and report buttons already do. All of them share one pending state. Nothing to do.
 ## 2.254.7 — A shell command that only waits is refused
