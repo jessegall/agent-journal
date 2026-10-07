@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.256.0 — After a compaction the agent reads the latest messages before it changes anything
+- When the agent's context is compacted, its writes wait until it runs journal message recent, which prints the latest 50 messages in full, yours and its own, oldest first, each with its number and time. Reading is never held. Settings › Catch up after a compaction sets how many messages, and switches it off.
+- The steps handed over after a compaction now start with that command.
+
 ## 2.255.2 — A message never starts a second copy of a running conversation
 - When you write to an environment with no agent in it, the journal starts its last conversation again only if that conversation is not already running somewhere else. Before, a session pulled into another environment could be started a second time in its old one, and the two copies then worked side by side.
 

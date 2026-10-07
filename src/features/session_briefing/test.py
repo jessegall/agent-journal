@@ -53,7 +53,7 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     plain = start_file(record.root, record.env).read_text()
     compacted = start_file(record.root, record.env, compacted=True).read_text()
     assert compacted == COMPACTED + plain, "every write also rewrites the compacted block, the recovery steps before the same block"
-    assert all(w in COMPACTED for w in ("conversation --back=1", "journal user", "journal open", "journal search", "Skill: journal")) is True, \
+    assert all(w in COMPACTED for w in ("message recent", "conversation --back=1","journal user", "journal open", "journal search", "Skill: journal")) is True, \
         "the steps name the reads that recover what the summary dropped"
 
     provider = PROVIDERS["claude"]()
