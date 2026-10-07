@@ -306,6 +306,8 @@ def test_a_phone_speaks_and_reads_only_in_its_own_environment(served, monkeypatc
     (record.root.parent / ".env").write_text("SECRET=1\n")
     (record.root.parent / "notes" / "credentials.json").write_text("{}")
     assert call(base, "/p/source?q=notes/plan.md", key=key).body["lines"] == 2
+    from engine.project_files import walk
+    walk(record.root.parent.resolve())
     assert call(base, "/p/source?q=plan.md", key=key).body["path"] == "notes/plan.md", "a bare file name finds the one file of that name"
     assert [call(base, f"/p/source?q={asked}", key=key).status for asked in (".env", ".journal/record.json", "../../etc/hosts", "notes/credentials.json")] == [404, 404, 404, 404], \
         "hidden files, the journal's own and anything outside the project stay closed"

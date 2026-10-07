@@ -6,7 +6,7 @@ from argparse import _SubParsersAction
 
 from engine.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
-from engine.project_files import matching
+from engine.project_files import is_listed, matching
 from resources.base import SYSTEM
 from features.trigger import DAY
 
@@ -32,7 +32,8 @@ def missing_paths(project, text: str) -> list[str]:
 def present(project, home: str, path: str) -> bool:
     if home:
         return (Path.home() / path).exists()
-    return (project / path).exists() or bool(matching(project, path))
+    listed = is_listed(project)
+    return (project / path).exists() or bool(matching(project, path)) or not listed
 
 
 def unknown_verbs(text: str, words: dict[str, set[str]]) -> list[str]:
