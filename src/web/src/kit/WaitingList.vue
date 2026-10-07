@@ -1,7 +1,7 @@
 <script setup>
 import {span} from "../format/time.js";
 import {useNow} from "../composables/now.js";
-import CloseButton from "../kit/CloseButton.vue";
+import CloseButton from "./CloseButton.vue";
 
 const props = defineProps({waiting: {type: Object, required: true}, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
