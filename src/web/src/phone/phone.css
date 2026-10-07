@@ -246,9 +246,9 @@ main.phone {
     position: relative;
     z-index: 56;
     border-radius: 14px;
-    box-shadow:
-        0 0 0 3px var(--accent-text),
-        0 0 0 9999px rgb(0 0 0 / 55%);
+    outline: 3px solid var(--accent-text);
+    outline-offset: -3px;
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 55%);
 }
 
 .phone button {

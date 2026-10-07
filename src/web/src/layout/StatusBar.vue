@@ -11,6 +11,9 @@ import PSection from "./PSection.vue";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Dot from "../kit/Dot.vue";
+import WaitMark from "../kit/WaitMark.vue";
+import WaitingPanel from "../chat/WaitingPanel.vue";
+import {useWaiting} from "../composables/waiting.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
@@ -41,6 +44,7 @@ watch(
 
 const mode = workMode;
 const {rows: helpers, refresh: refreshHelpers} = useHelpers();
+const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(helpers);
 const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter(isWorking).length);
 const helpersOpen = ref(false);
@@ -85,9 +89,10 @@ const line = computed(() =>
         ? "held until you resume it"
         : silent.value
           ? "started, but it never reported in"
-          : lineOf(agent.value, rows("work"), waiting.value)
+          : lineOf(agent.value, rows("work"), waiting.value, helpers.value)
 );
 const inspect = () => peek("work", current.value.n);
+const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());
 const was = ref("");
 const sentence = computed(() => {
     const now = line.value;
@@ -113,15 +118,20 @@ async function runBar(p) {
 
 <template>
     <div class="statusbar">
-        <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused, silent: state === SILENT}]" kind="started" solid :size="8" />
+        <template v-if="state === 'waiting'">
+            <WaitMark class="statusbar-dot" />
+        </template>
+        <template v-else>
+            <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused, silent: state === SILENT}]" kind="started" solid :size="8" />
+        </template>
         <span class="statusbar-text">
             <b :class="{silent: state === SILENT}">{{ wordOf(state) }}</b>
             <component
-                :is="current ? 'button' : 'span'"
-                :type="current ? 'button' : null"
-                :class="['statusbar-roll', {link: current}]"
-                :title="current ? 'Open this work' : null"
-                @click="current && inspect()"
+                :is="current || waitingNow ? 'button' : 'span'"
+                :type="current || waitingNow ? 'button' : null"
+                :class="['statusbar-roll', {link: current || waitingNow}]"
+                :title="waitingNow ? 'See what the agent is waiting on' : current ? 'Open this work' : null"
+                @click="roll"
             >
                 <template v-if="sentence.head">
                     <span class="statusbar-head">{{ sentence.head }}</span>
@@ -204,6 +214,9 @@ async function runBar(p) {
             </Btn>
         </span>
     </div>
+    <template v-if="waitingOpen && waitingNow">
+        <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
+    </template>
     <Transition name="planbar">
         <PSection
             v-if="bar"
