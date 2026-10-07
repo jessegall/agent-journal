@@ -9,16 +9,16 @@ import ChoiceChosen from "./ChoiceChosen.vue";
 import Spinner from "../kit/Spinner.vue";
 import TextArea from "../kit/TextArea.vue";
 import {useHeldSend} from "../composables/heldSend.js";
+import {usePressing} from "../composables/pressing.js";
 
 const OWN_WORDS = "own words";
 const props = defineProps({resource: Object, preview: Boolean});
-const running = ref("");
+const {pressing: running, failure: error, run} = usePressing();
 const writing = ref(false);
 const own = ref("");
 const written = ref([]);
 const card = ref(null);
 const flashing = ref(false);
-const error = ref("");
 const held = useHeldSend({seconds: () => 5, send: (item) => (item.button ? commitPress(item.button) : commitOwn(item.text))});
 const ownAnswer = computed(() => props.resource.data.answered_own || "");
 const pressed = computed(() => pressedLabels(props.resource));
@@ -57,20 +57,15 @@ function show() {
 defineExpose({show});
 
 async function commitOwn(text) {
-    if (!text || running.value) return;
-    running.value = OWN_WORDS;
-    error.value = "";
-    try {
+    if (!text) return;
+    await run(OWN_WORDS, async () => {
         const sent = await api.create("message", {brief: text, about: props.resource.ref});
         if (props.resource.type === "doc")
             await api.act("doc", props.resource.n, "update", {status: "final", answered_own: text, answered_message: sent.n});
         written.value.push(`Sent as your message ${sent.n}: “${text}”. The answer comes in the chat.`);
         own.value = "";
         writing.value = false;
-    } catch (e) {
-        error.value = e.message;
-    }
-    running.value = "";
+    });
 }
 
 function sendOwn() {
@@ -81,10 +76,8 @@ function sendOwn() {
 }
 
 async function commitPress(button) {
-    if (running.value || spent(button)) return;
-    running.value = button.label;
-    error.value = "";
-    try {
+    if (spent(button)) return;
+    await run(button.label, async () => {
         if (button.say) await api.create("message", {brief: button.say, about: `${props.resource.type}:${props.resource.n}`});
         else if (button.n) await api.act(button.type, button.n, button.action, button.body || {});
         else await api.command(button.type, button.action, button.body || {});
@@ -96,10 +89,7 @@ async function commitPress(button) {
                 status: choiceGroups(updated).every((group) => group.chosen) ? "final" : "draft",
             });
         } else await api.act(props.resource.type, props.resource.n, "set", {key: "pressed", value: chosen});
-    } catch (e) {
-        error.value = e.message;
-    }
-    running.value = "";
+    });
 }
 
 function press(button) {
