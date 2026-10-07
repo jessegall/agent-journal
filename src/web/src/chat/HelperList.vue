@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {helperCounts, helperEnvironment, helperName, helperState, helpersByState} from "../domain/helpers.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
@@ -33,14 +32,14 @@ const cardOf = (row) => ({
     <div class="helpers">
         <header class="helpers-head">
             <div>
-                <h4 class="helpers-heading">{{ capitalised(helperWord(2)) }}</h4>
+                <h4 class="helpers-heading">Helpers</h4>
                 <span class="helpers-counts">{{ countsLine }}</span>
             </div>
             <CloseButton @click="emit('close')" />
         </header>
         <div class="helpers-body">
             <template v-if="!rows.length">
-                <p class="helpers-none">No {{ helperWord(2) }} have been started here.</p>
+                <p class="helpers-none">No helpers have been started here.</p>
             </template>
             <template v-for="row in grouped.open" :key="row.n">
                 <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />

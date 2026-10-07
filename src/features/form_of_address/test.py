@@ -86,15 +86,11 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     assert profiles.callings()["none"] == "" and "{you}" not in profiles.samples()[copy.n], "a copy keeps the sample with your name filled in"
 
 
-def test_each_profile_names_its_own_word_for_helpers_and_the_agent_is_told_to_say_it():
+def test_each_profile_names_its_own_word_for_helpers_for_the_chat_only():
     record = shipped_record()
-    profiles = Profiles(record, actor=USER)
     assert len({(voice.helper, voice.helpers) for voice in SHIPPED}) == len(SHIPPED), "every shipped profile has a word of its own"
     for voice in SHIPPED:
         choose(record, number_of(record, voice.title))
-        assert f"Call your helpers and subagents {voice.helpers}, each a {voice.helper}." in start_block(record), "the agent is told the word"
-        assert profiles.words() == {"helper": voice.helper, "helpers": voice.helpers}, "the viewer reads the word of the profile in use"
-    copy = profiles.duplicate(number_of(record, "Coach"))
-    assert (copy.helper, copy.helpers) == ("player", "players"), "a copy keeps the word"
-    assert profiles.update(copy.n, helper="athlete", helpers="athletes").helper == "athlete", "a copy's word can be changed"
-    assert refused(lambda: profiles.update(copy.n, helper=" ")), "a blank word is refused"
+        block = start_block(record)
+        assert f"In the chat, and only there, call your helpers {voice.helpers}, each a {voice.helper}." in block, "the chat word is given"
+        assert "In code, in text written into a project, in commit messages, in docs and in briefs to other agents, always write helper and subagent." in block, "plain words everywhere else"

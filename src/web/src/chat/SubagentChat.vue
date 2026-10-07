@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {standingLink} from "../domain/links.js";
 import {computed, nextTick, ref, watch} from "vue";
 import {chatTurns} from "../domain/transcript.js";
@@ -50,7 +49,7 @@ watch(
         </div>
         <template v-if="!readOnly">
             <div class="composer">
-                <Compose :send="send" :placeholder="task ? `Message ${task}` : `Message the ${helperWord()}`" />
+                <Compose :send="send" :placeholder="task ? `Message ${task}` : 'Message the subagent'" />
             </div>
         </template>
     </div>

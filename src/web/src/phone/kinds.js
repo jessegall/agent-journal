@@ -1,4 +1,3 @@
-import {helperWord} from "../composables/helperWords.js";
 
 const KINDS = {
     waiting: {many: "Needs you"},
@@ -59,10 +58,10 @@ const KINDS = {
         many: "Agents",
         icon: "agents",
         get intro() {
-            return `The main agent and its ${helperWord(2)}.`;
+            return `The main agent and its subagents.`;
         },
         get description() {
-            return `The main agent and its ${helperWord(2)}, and who started whom`;
+            return `The main agent and its subagents, and who started whom`;
         },
     },
     doc: {
@@ -116,7 +115,7 @@ const KINDS = {
         many: "Messages",
         icon: "inbox",
         get intro() {
-            return `Messages between agents and from ${helperWord(2)}.`;
+            return `Messages between agents and from subagents.`;
         },
         description: "Messages between agents",
     },

@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.4 — The voice profile's helper words stay in the chat; the screens say helper and subagent again
+The count on the helpers icon and in the status bar now counts only helpers still working, not ones that have reported and wait to be finished. The viewer and the phone name helpers and subagents with the plain words for everyone, whatever profile is in use, and a profile no longer has a word for helpers that you can edit. The agent is told plainly that the profile's word is for its chat speech only: in code, in text written into a project, in commit messages, in docs and in briefs to other agents it always writes helper and subagent. Nothing to do.
+
 ## 2.254.3 — Every viewer poll survives an error, and a silent event stream no longer stops updates
 A throw while a poll works out its interval or whether it is active no longer ends that poll for good; the next round is always scheduled. The phone feed now backs off like every other poll while the computer is gone. The server sends a beat on the event stream every 15 seconds, and a stream that has been silent for 45 seconds is treated as down: the viewer polls for events and opens the stream again. An event that does not parse reloads the rows instead of being dropped. The plugin install log and the first-run tour wait on the shared poller. Nothing to do.
 

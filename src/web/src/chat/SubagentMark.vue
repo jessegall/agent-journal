@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import {SUBAGENT_COLOR} from "../domain/thread.js";
@@ -22,13 +21,13 @@ const open = () => peek("agent", props.agent, 0, props.session);
 const label = computed(() => {
     if (props.refusal) return "Dispatch stopped";
     if (!props.finished) return "Dispatched";
-    return props.stopped ? `${capitalised(helperWord())} stopped` : `${capitalised(helperWord())} finished`;
+    return props.stopped ? "Subagent stopped" : "Subagent finished";
 });
 const tone = computed(() => (props.refusal ? "danger" : props.stopped ? "warn" : ""));
 const color = computed(() => (tone.value ? "" : SUBAGENT_COLOR));
 const detail = computed(() => (props.refusal ? `${props.task}: ${props.refusal}` : props.task));
 const card = computed(() => (props.report ? `report ${props.report}` : ""));
-const name = computed(() => [props.kind || helperWord(), props.model].filter(Boolean).join(" · "));
+const name = computed(() => [props.kind || "subagent", props.model].filter(Boolean).join(" · "));
 const mark = computed(() => ({
     icon: "agents",
     color: color.value,
@@ -38,7 +37,7 @@ const mark = computed(() => ({
     at: props.at,
     detail: detail.value,
 }));
-const openable = computed(() => ({...mark.value, title: `Open the ${helperWord()}`}));
+const openable = computed(() => ({...mark.value, title: "Open the subagent"}));
 const reported = computed(() => ({...mark.value, card: card.value}));
 </script>
 

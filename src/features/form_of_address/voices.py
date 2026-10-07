@@ -39,7 +39,8 @@ class Voice:
     helpers: str = HELPERS
 
     def helper_instruction(self) -> str:
-        return f"Call your helpers and subagents {self.helpers}, each a {self.helper}."
+        return (f"In the chat, and only there, call your helpers {self.helpers}, each a {self.helper}. In code, in text written into a project, "
+                "in commit messages, in docs and in briefs to other agents, always write helper and subagent.")
 
 
 BUTLER = Voice(
@@ -88,3 +89,4 @@ COACH = Voice(
 )
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH)
+HELPER_WORDS = {voice.title: (voice.helper, voice.helpers) for voice in SHIPPED}

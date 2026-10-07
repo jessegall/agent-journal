@@ -1,4 +1,3 @@
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {computed} from "vue";
 import {store} from "../state/store.js";
 
@@ -15,9 +14,7 @@ const NAMED_CLOSES = {
     question: "Answer",
     suggestion: "Accept or decline",
     worktree: "Remove worktree",
-    get helper() {
-        return `Remove ${helperWord()} and its working copy`;
-    },
+    helper: "Remove helper and its working copy",
 };
 const STOPS = {trigger: "It stops running.", sequence: "It stops starting by itself.", rule: "The agent stops following it."};
 

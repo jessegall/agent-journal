@@ -1,5 +1,4 @@
 <script setup>
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agent} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -22,7 +21,7 @@ import Segmented from "../kit/Segmented.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
 import {useHelpers} from "../composables/helpers.js";
-import {helperState} from "../domain/helpers.js";
+import {isWorking} from "../domain/helpers.js";
 import {MODES} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
 import {runPlan, setAuto} from "../actions/work.js";
@@ -43,16 +42,13 @@ watch(
 const mode = workMode;
 const {rows: helpers, refresh: refreshHelpers} = useHelpers();
 const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
-const helpersOut = computed(() => helpers.value.filter((row) => helperState(row) !== "finished").length);
+const helpersOut = computed(() => helpers.value.filter(isWorking).length);
 const helpersOpen = ref(false);
 const helpersAnchor = ref(null);
 const modeOptions = computed(() =>
     MODES.map((one) => ({
         ...one,
-        title:
-            one.key === "solo" && helpersOut.value
-                ? `${one.note} ${capitalised(helperWord(2))} already out keep going until they finish.`
-                : one.note,
+        title: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note,
     }))
 );
 
@@ -141,11 +137,7 @@ async function runBar(p) {
             <Btn
                 kind="icon"
                 :class="['statusbar-pause', {paused}]"
-                :title="
-                    paused
-                        ? 'Resume: tell the agent to carry on'
-                        : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'
-                "
+                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'"
                 @click="pauseOrResume"
             >
                 <template v-if="wanted !== null">
@@ -176,8 +168,8 @@ async function runBar(p) {
                         :class="['statusbar-helpers', {none: !helpers.length}]"
                         :title="
                             helpersOut
-                                ? `${helperCount(helpersOut)} out: see what they do`
-                                : `${capitalised(helperWord(2))}: agents on other providers this environment dispatched`
+                                ? `${helpersOut} helper(s) out: see what they do`
+                                : 'Helpers: agents on other providers this environment dispatched'
                         "
                         :aria-expanded="helpersOpen"
                         @click.stop="toggleHelpers"

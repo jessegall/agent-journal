@@ -1,4 +1,3 @@
-import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {providerName} from "./agents.js";
 export const helperState = (row) => row.state || (row.completed ? "finished" : row.data?.report ? "reported" : "running");
 
@@ -28,11 +27,14 @@ export function agentsListed(rows, older = false) {
     return older ? [...open, ...finished] : [...open, ...finished.slice(0, 3)];
 }
 
+const WORKING_STATES = new Set(["working", "running", "idle"]);
+export const isWorking = (row) => WORKING_STATES.has(helperState(row));
+
 export function agentCounts(helpers, subagents, now = Date.now() / 1000) {
     const rows = [...helpers, ...subagents];
     return {
         needs: rows.filter((row) => row.state === "needs").length,
-        working: rows.filter((row) => ["working", "running", "idle"].includes(row.state)).length,
+        working: rows.filter(isWorking).length,
         reported: helpers.filter((row) => row.state === "reported").length,
         finished: rows.filter((row) => FINISHED_STATES.has(row.state) && now - stateAt(row) <= 3600).length,
     };
@@ -52,7 +54,7 @@ export function helpersInOrder(rows, keepFinished = 5) {
     return [...open.filter((row) => helperState(row) === "running"), ...open.filter((row) => helperState(row) === "reported"), ...done];
 }
 
-export const helperName = (row) => row.data?.name || `${capitalised(helperWord())} ${row.n}`;
+export const helperName = (row) => row.data?.name || `Helper ${row.n}`;
 export const helperEnvironment = (row) => row.data?.environment;
 export const helperReport = (row) => row.data?.report || "";
 
@@ -65,6 +67,6 @@ export function helpersByState(rows) {
 }
 
 export const helperCounts = (rows) => ({
-    working: rows.filter((row) => helperState(row) === "running").length,
+    working: rows.filter(isWorking).length,
     reported: rows.filter((row) => helperState(row) === "reported").length,
 });

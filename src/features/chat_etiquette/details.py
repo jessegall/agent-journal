@@ -53,6 +53,10 @@ class ChatEtiquetteDetails(FeatureDetails):
         If you describe the journal's workings in the chat anyway, the journal tells you once,
         quoting the words that did it; and every 20 journal lines you are reminded of this
         (Settings can change the count).
+
+        How you speak in the chat, the voice of your profile, stays in the chat. Code, text written
+        into a project, commit messages, docs and briefs to other agents use plain words: helper
+        and subagent.
     """
 
     primary = True

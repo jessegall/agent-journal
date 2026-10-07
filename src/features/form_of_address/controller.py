@@ -4,11 +4,11 @@ from controllers.base import Controller
 from controllers.marks import action
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
-from features.form_of_address.voices import BUTLER, SHIPPED, Calling, Voice, filled
+from features.form_of_address.voices import BUTLER, HELPER, HELPER_WORDS, HELPERS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 
 COPY = " (my copy)"
-SHAPE = ("brief", "calling", "sample", "helper", "helpers")
+SHAPE = ("brief", "calling", "sample")
 
 
 class Profiles(Controller):
@@ -16,7 +16,8 @@ class Profiles(Controller):
 
     def voice(self, n: int) -> Voice:
         r = self.load(n)
-        return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, helper=r.helper, helpers=r.helpers)
+        helper, helpers = HELPER_WORDS.get(r.title, (HELPER, HELPERS)) if r.system else (HELPER, HELPERS)
+        return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, helper=helper, helpers=helpers)
 
     def standing(self) -> Voice:
         try:
@@ -26,14 +27,13 @@ class Profiles(Controller):
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", calling: str = Calling.TITLE_AND_NAME.value, sample: str = "", **data):
-        return super().create(title, abstract, brief, calling=self._calling(calling), sample=sample, **self._words(data))
+        return super().create(title, abstract, brief, calling=self._calling(calling), sample=sample, **data)
 
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None,
                calling: str | None = None, **data):
         if calling is not None:
             data["calling"] = self._calling(calling)
-        self._words(data)
         row = super().update(n, title, abstract, brief, outcome, **data)
         if n == in_use(self.record):
             self._tell()
@@ -48,8 +48,7 @@ class Profiles(Controller):
     @action
     def duplicate(self, n: int):
         row = self.load(n)
-        return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row),
-                           helper=row.helper, helpers=row.helpers)
+        return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row))
 
     @action
     def callings(self) -> dict:
@@ -58,17 +57,6 @@ class Profiles(Controller):
     @action
     def samples(self) -> dict:
         return {r.n: self._sample(r) for r in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
-
-    @action
-    def words(self) -> dict:
-        voice = self.standing()
-        return {"helper": voice.helper, "helpers": voice.helpers}
-
-    def _words(self, data: dict) -> dict:
-        for name in ("helper", "helpers"):
-            if name in data and not str(data[name]).strip():
-                raise Refused(f"a profile needs a word for {name}")
-        return data
 
     def _called(self, calling: Calling) -> str:
         return calling.called(title(self.record), first_name(self.record))
@@ -92,10 +80,9 @@ def ship(record) -> list[str]:
     held = {r.title: r for r in (profiles.load(row["n"]) for row in profiles.rows.summaries() if not row["deleted"]) if r.system}
     made = []
     for voice in SHIPPED:
-        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "helper": voice.helper, "helpers": voice.helpers}
+        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample}
         if voice.title not in held:
-            profiles.create(voice.title, brief=voice.text, calling=voice.calling.value, sample=voice.sample,
-                            helper=voice.helper, helpers=voice.helpers, system=True)
+            profiles.create(voice.title, brief=voice.text, calling=voice.calling.value, sample=voice.sample, system=True)
         elif {name: getattr(held[voice.title], name) for name in SHAPE} != shape:
             for name, value in shape.items():
                 setattr(held[voice.title], name, value)
