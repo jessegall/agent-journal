@@ -104,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
     def answered(self, method: str, url, body: dict) -> Reply:
         query = dict(parse_qsl(url.query))
         within = self.headers.get(PHONE_ENVIRONMENT)
-        if within is not None and not reached_by_phone(method, url.path, query, body, within):
+        if within is not None and not reached_by_phone(self.root, method, url.path, query, body, within):
             return Reply(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
         return dispatch(method, url.path, self.root, query, body)
 

@@ -182,14 +182,15 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         assert call(base, "/p/api/elsewhere/todo", made, key)[0] == 403, "another environment stays closed"
         assert call(base, "/p/api/summary?env=elsewhere", key=key)[0] == 403
         assert call(base, "/p/api/run", made, key)[0] == 403, "a page the phone app never calls is refused"
-        assert [call(base, f"/p/api/{record.env}/{page}", made, key)[0] for page in ("tool", "agent/main/shell", "environment/1/rename", "phone/connect")] == [403] * 4, \
-            "running commands stays off for a phone, and environments and phones are never its to change"
+        assert [call(base, f"/p/api/{record.env}/{page}", made, key)[0] for page in ("tool", "agent/main/shell", "phone/connect")] == [403] * 3, \
+            "running commands stays off for a phone, and phones are never its to change"
         status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
         assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
         row = f"/p/api/{record.env}/todo/{answered['n']}"
         assert call(base, row, key=key).body["title"] == "From the phone"
+        assert call(base, "/p/api/changelog", key=key).body["changelog"], "About on the phone reads the changelog"
         assert call(base, f"{row}/move", {"env": "elsewhere"}, key)[0] == 403 and Todos(record, actor=SYSTEM).load(answered["n"]), \
-            "a body that names another environment is refused too"
+            "a body that names an environment outside this journal is refused"
         for name in ("page.html", "face.png"):
             (tmp_path / name).write_text("<script src=x.js></script>")
             Todos(record, actor=SYSTEM).attach(answered["n"], str(tmp_path / name))
@@ -205,6 +206,10 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         with socket.create_connection(("127.0.0.1", int(base.rsplit(":", 1)[1])), timeout=5) as raw:
             raw.sendall(f"GET {row}/files/caf\xe9\x01 HTTP/1.1\r\nHost: x\r\nCookie: __Host-phone={key}\r\nConnection: close\r\n\r\n".encode("latin-1"))
             assert raw.recv(64).split(b" ")[1] == b"404", "a path with a raw or control character is answered, not dropped"
+        CONTROLLERS["environment"](record, actor=SYSTEM).create("garden")
+        moved = call(base, f"{row}/move", {"env": "garden"}, key)
+        assert moved.status == 200 and Todos(Record(record.root, "garden"), actor=SYSTEM).load(moved.body["n"]).title == "From the phone", \
+            "a row moves to another environment of the same journal"
     finally:
         SERVING.pop(str(record.root.resolve()))
         desk.shutdown()

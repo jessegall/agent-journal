@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from pathlib import Path
 
+from engine.paths import known_environment
 from features.routing import Named, Route
 
 RUNS_ALLOWED = False
@@ -41,13 +43,19 @@ ALLOWED = (
     get("/api/{env}/diff"), get("/api/{env}/family"), get("/api/{env}/file"), get("/api/{env}/files"),
     get("/api/{env}/plugin/{n}/dashboard/{name}"), get("/api/{env}/project-files"), get("/api/{env}/project-files/find"),
     get("/api/{env}/search"), get("/api/{env}/settings"), get("/api/{env}/skills"), get("/api/{env}/skills/{name}"),
-    post("/api/identity"), post("/api/journals/forget"), post("/api/update/check"), post("/api/{env}/settings"),
+    post("/api/identity"), post("/api/journals/forget"), post("/api/update/check"),
     post("/api/{env}/{type}"), post("/api/{env}/{type}/{action}"), post("/api/{env}/{type}/{n}/{action}"),
     post("/api/{env}/{type}/{n}/upload"), post("/api/{env}/{type}/read-all"), post("/api/{env}/agent/{session}/relaunch"),
     post("/api/{env}/skills/{name}/always"), post("/api/{env}/skills/{name}/keywords"), post("/api/{env}/skills/{name}/load"),
-    post("/api/{env}/environment"), post("/api/{env}/phone/{n}/disconnect"),
+    post("/api/{env}/phone/{n}/disconnect"),
     post("/api/{env}/plugin/{n}/clear_log"), post("/api/{env}/plugin/{n}/configure"), post("/api/{env}/plugin/{n}/disable"),
     post("/api/{env}/plugin/{n}/purge"), post("/api/{env}/plugin/{n}/remove"),
+)
+
+# Allowed until question 206 is answered, then weighed with RUNS.
+TO_WEIGH = (
+    post("/api/{env}/helper/dispatch"), post("/api/{env}/ticket/{n}/start"), post("/api/{env}/worktree/cut"),
+    post("/api/{env}/worktree/{n}/take"), post("/api/{env}/board/{n}/build"), post("/api/{env}/settings"),
 )
 
 RUNS = (
@@ -57,12 +65,9 @@ RUNS = (
     post("/api/services/{id}"), post("/api/stop"), post("/api/update"), post("/api/upgrade"),
 )
 
-NEVER = (
-    post("/api/{env}/environment/{action}"), post("/api/{env}/environment/{n}/{action}"),
-    *writes("phone"), get("/api/{env}/phone"), get("/api/{env}/phone/{n}"),
-)
+NEVER = (*writes("phone"), get("/api/{env}/phone"), get("/api/{env}/phone/{n}"))
 
-LISTS = ((ALLOWED, True), (RUNS, RUNS_ALLOWED), (NEVER, False))
+LISTS = ((ALLOWED, True), (TO_WEIGH, True), (RUNS, RUNS_ALLOWED), (NEVER, False))
 
 
 def allowed(route: Route, params: dict) -> bool:
@@ -71,7 +76,8 @@ def allowed(route: Route, params: dict) -> bool:
     return bool(naming) and not max(naming)[1]
 
 
-def reached(route: Route, params: dict, query: dict, body: dict, environment: str) -> bool:
-    """Whether a phone in this environment may reach the page, with every environment the path, query and body name its own."""
-    named = {Named.from_json(given).env for given in (params, query, body)} - {""}
-    return allowed(route, params) and named <= {environment}
+def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str) -> bool:
+    """Whether a phone in this environment may reach the page: the path and query name its own environment, and a target the body names is one of this journal's."""
+    here = {Named.from_json(given).env for given in (params, query)} - {""}
+    target = Named.from_json(body).env
+    return allowed(route, params) and here <= {environment} and (not target or known_environment(root, target))

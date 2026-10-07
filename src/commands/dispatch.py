@@ -11,7 +11,7 @@ from engine.package import data
 from engine.memo import Memo
 from features.phone.allow_list import reached
 from features.routing import FEATURE_ROUTES, Reply, Request, Route
-from engine.paths import contained, environment_home
+from engine.paths import contained, known_environment
 
 
 WEB = data("web", "dist")
@@ -42,9 +42,9 @@ def resolve(method: str, path: str) -> tuple[Route, dict] | None:
     return None
 
 
-def reached_by_phone(method: str, path: str, query: dict, body: dict, environment: str) -> bool:
+def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str) -> bool:
     found = resolve(method, path)
-    return found is not None and reached(*found, query, body, environment)
+    return found is not None and reached(root, *found, query, body, environment)
 
 
 def later(reply: Reply, then) -> Reply:
@@ -77,13 +77,6 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Sto
     kind = "hook" if "/hook/" in path else "request"
     later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered[0] if answered else None))
     return sooner(reply, lambda: answered.append(began.lap()))
-
-
-def known_environment(root: Path, env: str) -> bool:
-    try:
-        return environment_home(root, env).is_dir()
-    except Refused:
-        return False
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:

@@ -24,3 +24,10 @@ def environments(root: Path) -> Path:
 
 def environment_home(root: Path, name: str) -> Path:
     return contained(environments(root), name)
+
+
+def known_environment(root: Path, env: str) -> bool:
+    try:
+        return environment_home(root, env).is_dir()
+    except Refused:
+        return False

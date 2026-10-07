@@ -2,6 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {phone} from "../../api/phone.js";
+import {removeWords, sentence, sweepWords} from "../../domain/journals.js";
 import {plainDoing} from "../doing.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import Cell from "../kit/Cell.vue";
@@ -64,6 +65,50 @@ const make = ({title}) =>
         () => `Created ${title}`
     );
 
+function rename(row, {name}) {
+    tried(
+        () => api.act("environment", row.n, "rename", {name}),
+        () => `Renamed ${row.title} to ${name}`
+    );
+    if (here(row)) emit("moved");
+}
+
+async function sweep(row) {
+    try {
+        const text = sweepWords(await api.sweepEnvironment(row.n, false));
+        if (text === "There is nothing to archive.") return toast(text);
+        form.value = {
+            title: `Archive old items in ${row.title}?`,
+            sub: text,
+            button: "Archive now",
+            done: () => tried(() => api.sweepEnvironment(row.n, true), sentence),
+        };
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+function removing(row, refusal = "") {
+    form.value = {
+        title: refusal ? `Archive ${row.title} anyway?` : `Archive ${row.title}?`,
+        sub: refusal || removeWords({live: live(row), title: row.title}),
+        button: refusal || live(row) ? "Archive anyway" : "Yes, archive",
+        keep: "Keep the environment",
+        danger: true,
+        done: () => remove(row, Boolean(refusal)),
+    };
+}
+
+async function remove(row, forced) {
+    try {
+        await api.removeEnvironment(row.n, forced);
+        toast(`Archived ${row.title}`);
+        load();
+    } catch (error) {
+        removing(row, error.message);
+    }
+}
+
 const actionsOf = (row) => [
     {
         key: "open",
@@ -71,6 +116,29 @@ const actionsOf = (row) => [
         sub: "Open it here, or start an agent in it",
         run: () => (opening.value = {root: place.value?.root, name: row.title}),
     },
+    {
+        key: "rename",
+        label: "Rename",
+        run: () =>
+            (form.value = {
+                title: `Rename ${row.title}`,
+                fields: [{key: "name", label: "New name", value: row.title, required: true}],
+                button: "Rename",
+                done: (got) => rename(row, got),
+            }),
+    },
+    {key: "sweep", label: "Archive old items", sub: "Moves old messages and closed items into the archive", run: () => sweep(row)},
+    ...(here(row)
+        ? []
+        : [
+              {
+                  key: "remove",
+                  label: "Archive environment",
+                  sub: "Moves this environment into the archive",
+                  danger: true,
+                  run: () => removing(row),
+              },
+          ]),
 ];
 
 function submitted(values) {

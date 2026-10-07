@@ -44,6 +44,15 @@ await runScenarios(
             await page.getByText("Fact 1 is open again").waitFor({timeout: SHOWN});
             await page.getByRole("button", {name: "The roses face south"}).waitFor({timeout: SHOWN});
         },
+        async "a fact moves to another environment from its row"(page) {
+            await place(page, "Facts");
+            await page.getByRole("button", {name: "Everything you can do with Fact 1"}).click();
+            await sheet(page).getByRole("button", {name: "Move to another environment"}).click();
+            await sheet(page).getByLabel("Environment").fill("garden");
+            await sheet(page).getByRole("button", {name: "Move", exact: true}).click();
+            await page.getByText("Moved fact 1 to garden").waitFor({timeout: SHOWN});
+            await page.getByText("No open facts").waitFor({timeout: SHOWN});
+        },
         async "an unread question is marked as read from its row"(page) {
             await place(page, "Questions");
             await page.getByRole("button", {name: "Everything you can do with Question 1"}).click();
@@ -79,15 +88,19 @@ await runScenarios(
             )
                 throw new Error(`the agent was sent: ${JSON.stringify(sent)}`);
         },
-        async "an environment is made on the phone, and no other environment is changed from it"(page) {
+        async "an environment is made and renamed on the phone"(page) {
             await place(page, "Environments");
             await page.getByRole("button", {name: "New environment"}).click();
             await sheet(page).getByLabel("Name").fill("shed");
             await sheet(page).getByRole("button", {name: "Create"}).click();
-            await page.getByText("Created shed").waitFor({timeout: SHOWN});
             await page.getByRole("button", {name: /^shed/}).click();
-            if (await sheet(page).getByRole("button", {name: /^(Rename|Archive)/}).count())
-                throw new Error("an environment still offers to be renamed or archived from the phone");
+            await sheet(page)
+                .getByRole("button", {name: /^Rename/})
+                .click();
+            await sheet(page).getByLabel("New name").fill("barn");
+            await sheet(page).getByRole("button", {name: "Rename", exact: true}).click();
+            await page.getByText("Renamed shed to barn").waitFor({timeout: SHOWN});
+            await page.getByRole("button", {name: /^barn/}).waitFor({timeout: SHOWN});
         },
         async "the journals page says what needs you in each environment"(page) {
             await place(page, "Journals");
