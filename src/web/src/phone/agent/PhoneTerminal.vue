@@ -32,7 +32,7 @@ async function run(command, now) {
 </script>
 
 <template>
-    <PhonePage title="Agent terminal" line="What the agent's terminal shows, newest last." :back="back" @back="emit('back')">
+    <PhonePage title="Agent terminal" line="Shows what the agent's terminal shows. A command you type runs there." :back="back" @back="emit('back')">
         <template v-if="loaded && !data">
             <PhoneNoAgent />
         </template>
