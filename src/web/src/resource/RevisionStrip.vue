@@ -9,7 +9,7 @@ defineProps({revisions: Object});
     <nav class="revisions" aria-label="Revisions">
         <div class="steps">
             <template v-if="revisions.count > 1">
-                <Btn kind="icon" small :disabled="revisions.at <= 0" title="Earlier revision" @click="revisions.go(revisions.at - 1)">
+                <Btn kind="icon" small :disabled="revisions.at <= 0" v-tip="'Earlier revision'" @click="revisions.go(revisions.at - 1)">
                     <Icon name="chevron" class="back" />
                 </Btn>
                 <template v-if="revisions.hidden > 0">
@@ -24,7 +24,7 @@ defineProps({revisions: Object});
                         @click="revisions.go(i)"
                     />
                 </template>
-                <Btn kind="icon" small :disabled="revisions.latest" title="Later revision" @click="revisions.go(revisions.at + 1)">
+                <Btn kind="icon" small :disabled="revisions.latest" v-tip="'Later revision'" @click="revisions.go(revisions.at + 1)">
                     <Icon name="chevron" />
                 </Btn>
                 <span class="count">Revision {{ revisions.at + 1 }} of {{ revisions.count }}</span>
@@ -34,7 +34,7 @@ defineProps({revisions: Object});
             </template>
             <span class="grow" />
             <template v-if="revisions.latest && revisions.open">
-                <Btn small title="Keep this revision as it is; the next edit starts a new one" @click="revisions.keep()">
+                <Btn small v-tip="'Keep this revision as it is; the next edit starts a new one'" @click="revisions.keep()">
                     Keep this revision
                 </Btn>
             </template>

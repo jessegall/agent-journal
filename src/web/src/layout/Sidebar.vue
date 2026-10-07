@@ -38,7 +38,7 @@ function point(e) {
 <template>
     <div :class="['side-wrap', {mini: store.sideMini && !narrow, narrow}]">
         <aside class="side" @mouseover="point" @mouseleave="tip = null">
-            <a class="project" :href="href.page(route.env)" :title="project">
+            <a class="project" :href="href.page(route.env)" v-tip="project">
                 <span class="logo" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
                 <span class="project-name label">{{ project }}</span>
             </a>
@@ -98,14 +98,14 @@ function point(e) {
                         <EnvStart :env="e" :live="agentRunningIn(e.title)" />
                     </div>
                 </template>
-                <button type="button" class="item item-new" :disabled="demo" :title="unlessDemo('')" @click="creating = true">
+                <button type="button" class="item item-new" :disabled="demo" v-tip="unlessDemo('')" @click="creating = true">
                     <Icon name="plus" />
                     <span class="label">New environment</span>
                 </button>
             </FoldGroup>
             <div class="side-bottom">
                 <div class="side-foot side-foot-row">
-                    <a class="side-foot-version" :href="href.page(route.env, 'about')" title="Version and changelog">
+                    <a class="side-foot-version" :href="href.page(route.env, 'about')" v-tip="'Version and changelog'">
                         <span class="label side-foot-name">Agent journal</span>
                         <span class="side-foot-number">{{ store.spec.version || "" }}</span>
                     </a>
@@ -115,7 +115,7 @@ function point(e) {
         <button
             type="button"
             class="side-toggle"
-            :title="store.sideMini ? 'Expand the sidebar' : 'Collapse the sidebar to icons'"
+            v-tip="store.sideMini ? 'Expand the sidebar' : 'Collapse the sidebar to icons'"
             :aria-expanded="!store.sideMini"
             @click="((store.sideMini = !store.sideMini), (tip = null))"
         >

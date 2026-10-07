@@ -31,7 +31,7 @@ async function stopped() {
             :kind="quiet ? 'ghost' : 'icon'"
             :small="quiet"
             :class="['agent-stop-button', {quiet, open: anchor}]"
-            :title="`Stop the agent in ${environment}; it ends its session`"
+            v-tip="`Stop the agent in ${environment}; it ends its session`"
             :aria-expanded="Boolean(anchor)"
             @click.stop="toggle"
         >

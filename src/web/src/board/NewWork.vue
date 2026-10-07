@@ -548,7 +548,7 @@ function startAnew() {
                         </template>
                         <template #tool>
                             <template v-if="!since">
-                                <Btn small title="Draft tickets from a document" @click="picker.click()">
+                                <Btn small v-tip="'Draft tickets from a document'" @click="picker.click()">
                                     <Icon name="paperclip" />
                                 </Btn>
                             </template>

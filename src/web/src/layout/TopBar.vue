@@ -42,36 +42,36 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
     <div class="top">
         <div class="crumb">
             <template v-if="narrow">
-                <button type="button" class="icon-btn" title="Open the menu" @click="store.sideOpen = !store.sideOpen">
+                <button type="button" class="icon-btn" v-tip="'Open the menu'" @click="store.sideOpen = !store.sideOpen">
                     <Icon name="list" />
                 </button>
             </template>
             <template v-if="full">
-                <a class="icon-btn back" :href="href.page(route.env)" title="Back to Home"><Icon name="back" /></a>
+                <a class="icon-btn back" :href="href.page(route.env)" v-tip="'Back to Home'"><Icon name="back" /></a>
             </template>
             <a
                 class="crumb-link crumb-project"
                 :href="href.page(route.env, demo ? '' : 'hub')"
-                :title="demo ? '' : 'The journals running on this machine'"
+                v-tip="demo ? '' : 'The journals running on this machine'"
             >
                 <span class="crumb-tint" :style="{background: tint}" />
                 <span class="crumb-name">{{ project }}</span>
             </a>
             <span class="sep crumb-wide">/</span>
-            <a class="crumb-link" :href="envLink" :title="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
+            <a class="crumb-link" :href="envLink" v-tip="owner ? `Open ${owner.replace(':', ' ')}, which runs here` : ''">
                 {{ route.env }}
             </a>
             <span class="sep crumb-wide">/</span>
             <b class="crumb-wide">{{ title }}</b>
             <template v-if="route.page && meta(route.page)">
-                <span class="icon-btn help-btn" :title="meta(route.page).help"><Icon name="info" /></span>
+                <span class="icon-btn help-btn" v-tip="meta(route.page).help"><Icon name="info" /></span>
             </template>
         </div>
         <div class="top-tools">
             <button
                 type="button"
                 :class="['icon-btn', {on: floatingChat}]"
-                :title="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
+                v-tip="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
                 @click="toggleChat"
             >
                 <Icon name="chat" />
@@ -79,7 +79,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             <button
                 type="button"
                 :class="['icon-btn', {on: floatingFamily}]"
-                :title="
+                v-tip="
                     floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, sent out or messaged which agent'
                 "
                 @click="toggleFamily"
@@ -91,7 +91,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <button
                     type="button"
                     :class="['icon-btn', {on: phoneOpen}]"
-                    :title="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
+                    v-tip="connectedPhones.length ? `Phones: ${connectedPhones.length} connected` : 'Connect your phone'"
                     @click="phoneOpen = true"
                 >
                     <Icon name="phone" />
@@ -103,9 +103,9 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     <PhoneDialog @close="phoneOpen = false" />
                 </template>
             </template>
-            <a class="icon-btn" :href="href.page(route.env, 'search')" title="Search"><Icon name="search" /></a>
+            <a class="icon-btn" :href="href.page(route.env, 'search')" v-tip="'Search'"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
-                <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
+                <button type="button" :class="['icon-btn', {on: drop}]" v-tip="'Notifications'" :aria-expanded="drop" @click="drop = !drop">
                     <Icon name="bell" />
                     <template v-if="waiting">
                         <CountBadge :count="waiting" />
@@ -122,7 +122,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <button
                     type="button"
                     :class="['icon-btn', {on: activityVisible()}]"
-                    :title="activityVisible() ? 'Hide activity' : 'Show activity'"
+                    v-tip="activityVisible() ? 'Hide activity' : 'Show activity'"
                     @click="toggleActivity"
                 >
                     <Icon name="activity" />

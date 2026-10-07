@@ -28,7 +28,7 @@ async function attach(list) {
         <template v-if="error">
             <span class="attach-error">{{ error }}</span>
         </template>
-        <Btn small :busy="busy" title="Add files to this document" @click="picker.click()">
+        <Btn small :busy="busy" v-tip="'Add files to this document'" @click="picker.click()">
             <Icon name="paperclip" :size="12" />
             {{ busy ? "Attaching…" : "Attach files" }}
         </Btn>

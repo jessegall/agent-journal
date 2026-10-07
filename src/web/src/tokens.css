@@ -9,6 +9,9 @@
     --raised: #18191c;
     --hover: #1d1e22;
     --sel: #212329;
+    --tip-bg: var(--sel);
+    --tip-edge: var(--border-3);
+    --tip-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
     --border: #25272b;
     --border-2: #2f3136;
     --border-3: #3a3d44;

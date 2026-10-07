@@ -109,13 +109,13 @@ const holdSeconds = computed(() => store.settings?.ask_questions?.hold);
             <form class="own" @submit.prevent="submit(own)">
                 <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value">
                     <template #end>
-                        <Btn small :disabled="elaborated" title="Ask the agent for more context on this question" @click="elaborate">
+                        <Btn small :disabled="elaborated" v-tip="'Ask the agent for more context on this question'" @click="elaborate">
                             {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
                         </Btn>
                         <template v-if="resource.type === 'question' && !resource.data.hidden">
                             <Btn
                                 small
-                                title="Close the question without answering. Anything you typed is sent as the reason."
+                                v-tip="'Close the question without answering. Anything you typed is sent as the reason.'"
                                 @click="dismiss(resource, own)"
                             >
                                 Close

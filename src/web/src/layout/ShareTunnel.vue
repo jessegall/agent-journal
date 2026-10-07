@@ -168,7 +168,7 @@ async function stop(shares) {
                 <div class="tunnel-foot">
                     <span class="meta">The connection closes by itself when the last link ends.</span>
                     <template v-if="tunnel && tunnel.url">
-                        <Btn small title="See every request that came through the tunnel" @click="inspect">Request inspector</Btn>
+                        <Btn small v-tip="'See every request that came through the tunnel'" @click="inspect">Request inspector</Btn>
                     </template>
                     <template v-if="openShares.length > 1">
                         <Btn small kind="danger" :busy="stopping === -1" @click="stop(openShares)">Stop every share</Btn>

@@ -93,7 +93,7 @@ async function run(method) {
         </template>
         <template v-else>
             <template v-if="plannable">
-                <Btn kind="primary" small title="Turn this approved design into a plan that covers every must-have point" @click="makePlan">
+                <Btn kind="primary" small v-tip="'Turn this approved design into a plan that covers every must-have point'" @click="makePlan">
                     Make the plan
                 </Btn>
             </template>
