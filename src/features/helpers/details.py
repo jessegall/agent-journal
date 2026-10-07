@@ -1,5 +1,7 @@
-from features.base import FeatureDetails
+from features.base import Behaviour, FeatureDetails, Line
 from features.groups import Group
+from features.settings import Setting
+from features.trigger import MINUTES, Trigger
 
 
 class HelpersDetails(FeatureDetails):
@@ -40,4 +42,47 @@ class HelpersDetails(FeatureDetails):
         landed>": it shows as done, waiting for its merge, and closes once its worktree is taken.
         Stopping the helper, or its turn ending in an error, gives back the rows it has not
         finished; finishing it gives back the rest.
+
+        A helper whose agent stops running before it reports, as after a restart of the machine, is
+        named to you at once; one that has done nothing for a while is named so you can check on it.
     """
+
+    behaviours = [
+        Behaviour(
+            name="watch",
+            title="Tell the agent when a helper stops or goes quiet before it reports",
+            trigger=Trigger(every=1, unit=MINUTES),
+        ),
+    ]
+
+    settings = [
+        Setting(
+            name="quiet_after",
+            default=20,
+            title="A helper counts as quiet after",
+            unit="minutes",
+            under="watch",
+        ),
+    ]
+
+    lines = [
+        Line(
+            name="stopped",
+            title="helper {{n}}, {{name}}, stopped running before it reported",
+            brief="""
+                its agent is gone, so journal helper say cannot reach it. Dispatch the job again, or
+                journal helper finish {{n}} and do the job yourself
+            """,
+            until=("helper.completed",),
+            while_waiting=True,
+        ),
+        Line(
+            name="quiet",
+            title="helper {{n}}, {{name}}, has done nothing for {{minutes}} minutes",
+            brief="""
+                check on it: journal helper say {{n}} "<what you want to know>", or journal helper stop
+                {{n}} if it is stuck
+            """,
+            while_waiting=True,
+        ),
+    ]

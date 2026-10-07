@@ -191,7 +191,8 @@ class Helpers(Controller):
     def _relayed(home: Record, row: Helper, text: str, given_back_text: str) -> None:
         told = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{given_back_text}", peer=row.name)
         Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
-                                               f"read it, then journal helper finish {row.n} once its work is taken or dropped")
+                                               f"read it, then journal helper finish {row.n} once its work is taken or dropped",
+                                               asks="helpers.reported", until=["helper.completed"], rows=[row.ref])
 
     @action(network=True)
     def stop(self, n: int):

@@ -51,6 +51,7 @@ class MarkTheAnswer(Handler):
             return
         agents.card(row.n, label=f"You answered question {question.n}", icon="question",
                     color="var(--blocking)", side=USER, row=question.ref)
+        context.feature.to_primary(context.record, "answered", n=question.n, answer=question.outcome, rows=[question.ref])
 
 
 class DismissSettledQuestions(Handler):
