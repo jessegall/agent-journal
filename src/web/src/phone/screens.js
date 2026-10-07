@@ -8,6 +8,7 @@ import PhoneProjectFile from "./places/PhoneProjectFile.vue";
 import PhoneProjectFiles from "./places/PhoneProjectFiles.vue";
 import PhoneTimeline from "./PhoneTimeline.vue";
 
+import {AGENT_SCREENS} from "./agent/screens.js";
 import {SETTINGS_SCREENS} from "./settings/screens.js";
 
 export const SCREENS = {
@@ -21,6 +22,7 @@ export const SCREENS = {
     attached: PhoneAttachedFiles,
     timeline: PhoneTimeline,
     ...SETTINGS_SCREENS,
+    ...AGENT_SCREENS,
 };
 
 const kindOfRoute = (route) => route.split(":")[0];

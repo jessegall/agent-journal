@@ -11,6 +11,7 @@ import {ended} from "./outbox.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import PhoneSheet from "./PhoneSheet.vue";
 import PhoneAgentControls from "./PhoneAgentControls.vue";
+import PhoneAgentMore from "./agent/PhoneAgentMore.vue";
 
 const props = defineProps({
     state: {type: String, required: true},
@@ -18,7 +19,7 @@ const props = defineProps({
     lastActive: {type: Number, default: 0},
     live: {type: Object, default: () => ({})},
 });
-const emit = defineEmits(["close", "started", "changed"]);
+const emit = defineEmits(["close", "started", "changed", "read"]);
 const failed = inject("phoneFailed");
 const doing = ref("");
 const root = ref("");
@@ -88,6 +89,7 @@ async function start(agent) {
             :environment="environment"
             @changed="emit('changed')"
         />
+        <PhoneAgentMore @read="(target) => emit('read', target)" />
         <template v-if="told">
             <p class="agent-told" role="status">{{ told }}</p>
         </template>

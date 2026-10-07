@@ -2,7 +2,7 @@
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
 import {computed, inject, ref, watch} from "vue";
-import {loadedSkills, usageWindows} from "../domain/agents.js";
+import {loadedSkills, runningData, usageWindows} from "../domain/agents.js";
 import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import AgentAppoint from "./AgentAppoint.vue";
@@ -21,7 +21,7 @@ import {go, peek, route} from "../route.js";
 const open = ref("");
 const schemesOpen = ref(false);
 watch(open, () => (schemesOpen.value = false));
-const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
+const data = computed(() => runningData(agent.value));
 const skills = computed(() => loadedSkills(data.value));
 const usage = computed(() => usageWindows(data.value));
 const views = inject("views", null);

@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import FormSheet from "./kit/FormSheet.vue";
 import NewButton from "./kit/NewButton.vue";
 import {toast} from "./kit/toast.js";
+import {filled, NEW_PROFILE, PROFILE_FIELDS} from "./acts.js";
 import {kindOf} from "./kinds.js";
 
 const props = defineProps({type: {type: String, required: true}});
@@ -14,7 +15,8 @@ const DEPTHS = [
 ];
 const writing = ref(false);
 const kind = computed(() => kindOf(props.type));
-const fields = computed(() => [
+const fields = computed(() => (props.type === "profile" ? filled(PROFILE_FIELDS, NEW_PROFILE) : written.value));
+const written = computed(() => [
     {key: "title", label: "Title", placeholder: `${kind.value.one} title, at most 80 characters`, required: true},
     ...(props.type === "collection"
         ? []

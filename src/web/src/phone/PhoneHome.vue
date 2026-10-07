@@ -836,6 +836,7 @@ onMounted(startTourOnce);
             @changed="refresh()"
             @close="agentOpen = false"
             @started="((agentOpen = false), refresh())"
+            @read="(target) => ((agentOpen = false), open(target))"
         />
     </template>
     <template v-if="atWorkOpen">

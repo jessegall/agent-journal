@@ -4,7 +4,10 @@ import {api} from "../api/client.js";
 import {pollKey, usePoll} from "./poll.js";
 
 const EVERY = 2000;
+const MARKS = {Bash: "$", Journal: "#"};
 const KEPT = 200;
+
+export const commandMark = (tool) => MARKS[tool] || "›";
 
 export function useTerminal(level, agentOf = () => agent.value, client = api) {
     const lines = ref([]);

@@ -5,6 +5,7 @@ from http.server import ThreadingHTTPServer
 from typing import NamedTuple
 
 from controllers.features import Features
+from controllers.agents import Agents
 from controllers.types import Docs, Environments, Facts, Questions, Todos
 from features.collections.controller import Collections
 from features.plans.controller import Plans
@@ -26,7 +27,7 @@ class PhonePage(NamedTuple):
 
 @contextmanager
 def served() -> Iterator[PhonePage]:
-    """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file, a to-do in a plan, questions and a suggestion waiting for an answer, and a document on a shelf with two versions, the shipped templates, and to-dos in lanes."""
+    """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file, a to-do in a plan, questions and a suggestion waiting for an answer, a document on a shelf with two versions, the shipped templates, to-dos in lanes, and an agent with a loaded skill and a repeating prompt."""
     import features
     features.load()
     record = fresh()
@@ -61,6 +62,8 @@ def served() -> Iterator[PhonePage]:
         ("Which bridge?", "The computer refuses the answer", ("Old bridge", "New bridge")),
     ):
         Questions(record, actor=AGENT).create(title, abstract=abstract, options=[{"title": choice, "brief": "an option"} for choice in choices], pick=1)
+    Agents(record, actor=SYSTEM).create("claude-garden", status="idle", provider="claude", model="claude-opus-5-5", effort="high", context=40,
+                                        skills=["journal"], loops={"loop-1": {"schedule": "*/10 * * * *", "prompt": "Water the roses", "at": 0}})
     code = Phones(record, actor=USER).connect(7)["link"].split("#", 1)[1]
     try:
         yield PhonePage(f"http://127.0.0.1:{server.server_port}/p/#{code}")
