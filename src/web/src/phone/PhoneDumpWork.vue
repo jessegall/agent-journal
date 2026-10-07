@@ -3,10 +3,10 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {useDump} from "../composables/dump.js";
 import {PHASE_WORDS} from "../domain/dumpPile.js";
-import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {itemActions} from "./acts.js";
 import ActionSheet from "./kit/ActionSheet.vue";
+import Button from "./kit/Button.vue";
 import Cell from "./kit/Cell.vue";
 import CellGroup from "./kit/CellGroup.vue";
 import FormSheet from "./kit/FormSheet.vue";
@@ -158,12 +158,12 @@ async function merge() {
     <input ref="picker" type="file" multiple hidden aria-label="More files to send" @change="added" />
     <div class="dump-foot">
         <template v-if="merging">
-            <Btn kind="primary" large :disabled="merging.size < 2" @click="merge">Merge into one document</Btn>
-            <Btn large @click="merging = null">Cancel</Btn>
+            <Button :disabled="merging.size < 2" @click="merge">Merge into one document</Button>
+            <Button kind="plain" @click="merging = null">Cancel</Button>
         </template>
         <template v-else>
-            <Btn kind="primary" large @click="form = 'say'">{{ working ? "Say how to sort it" : "Ask about it" }}</Btn>
-            <Btn large aria-haspopup="dialog" @click="moreOpen = true">More</Btn>
+            <Button @click="form = 'say'">{{ working ? "Say how to sort it" : "Ask about it" }}</Button>
+            <Button kind="plain" aria-haspopup="dialog" @click="moreOpen = true">More</Button>
         </template>
     </div>
     <template v-if="moreOpen">

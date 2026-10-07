@@ -4,11 +4,11 @@ import {startDump} from "../composables/dump.js";
 import {PHASE_WORDS} from "../domain/dumpPile.js";
 import {fileSize} from "../format/files.js";
 import {store} from "../state/store.js";
-import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import TextArea from "../kit/TextArea.vue";
+import Button from "./kit/Button.vue";
 import Cell from "./kit/Cell.vue";
 import CellGroup from "./kit/CellGroup.vue";
+import Field from "./kit/Field.vue";
 
 defineProps({earlier: {type: Array, default: () => []}});
 const emit = defineEmits(["started", "pick"]);
@@ -59,18 +59,17 @@ async function send() {
         <Cell icon="plus" label="Add files" @pick="picker.click()" />
     </CellGroup>
     <input ref="picker" type="file" multiple hidden aria-label="Files to send" @change="picked" />
-    <label class="dump-start-label" for="dump-start-text">Notes for the agent</label>
-    <TextArea
-        id="dump-start-text"
-        :value="draft.text"
-        @input="draft.text = $event.target.value"
+    <Field
+        v-model="draft.text"
         class="dump-start-text"
+        label="Notes for the agent"
+        area
         :placeholder="draft.files.length ? 'Anything the agent should know before sorting? Optional' : 'Type or paste anything'"
     />
     <template v-if="draft.error">
         <p class="dump-start-error" role="alert">{{ draft.error }}</p>
     </template>
-    <Btn kind="primary" large fill :busy="draft.sending" :disabled="!ready" @click="send">Send to sort</Btn>
+    <Button fill :busy="draft.sending" :disabled="!ready" @click="send">Send to sort</Button>
     <template v-if="earlier.length">
         <CellGroup head="Earlier dumps">
             <template v-for="row in earlier" :key="row.n">
@@ -81,17 +80,8 @@ async function send() {
 </template>
 
 <style scoped>
-.dump-start-label {
-    display: block;
-    margin: 16px 4px 6px;
-    color: var(--text-2);
-    font-size: 0.8125rem;
-}
-
 .dump-start-text {
-    min-height: 120px;
-    margin-bottom: 12px;
-    font-size: 1rem;
+    margin: 16px 0 12px;
 }
 
 .dump-start-error {

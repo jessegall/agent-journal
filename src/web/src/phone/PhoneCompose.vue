@@ -2,9 +2,9 @@
 import {remember, remembered} from "../platform/storage.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
-import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
+import Button from "./kit/Button.vue";
 import Icon from "../kit/Icon.vue";
 import {ended, flush, hold, place, waitingToSend} from "./outbox.js";
 import {announce} from "./announce.js";
@@ -140,7 +140,7 @@ async function send() {
         <template v-if="files.length > 1">
             <div class="compose-dump">
                 <span class="compose-dump-title">{{ DUMP_OFFER.title(files.length) }}</span>
-                <Btn @click="dumpThem">{{ DUMP_OFFER.action }}</Btn>
+                <Button kind="plain" @click="dumpThem">{{ DUMP_OFFER.action }}</Button>
             </div>
         </template>
         <textarea
@@ -221,9 +221,8 @@ async function send() {
     font-size: 0.875rem;
 }
 
-.compose-dump :deep(.btn) {
+.compose-dump .phone-button {
     flex: none;
-    min-height: 44px;
 }
 
 .compose-files {
