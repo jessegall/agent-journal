@@ -39,7 +39,9 @@ class WorkDetails(FeatureDetails):
         once instead of writing another line each time nothing has changed. Working again clears
         it, and you are told that it was cleared; parking clears it too. While it stands you
         are told every five minutes (work.ask_awaiting_every) to check the thing you wait
-        on and carry on or wait again.
+        on and carry on or wait again. A shell command that only waits, such as sleep 30 or an until
+        or while loop around sleep, is refused: say journal work await and stop, and a message or a
+        report wakes you.
 
         Auto mode is on by default: it is the user's word to work the list and decide without
         blocking questions, and switching it off stops the offers. The next ready row by priority is offered on idle

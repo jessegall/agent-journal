@@ -339,6 +339,15 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     works.action("await")("the deploy")
     works.action("park")("the release goes out tomorrow")
     assert works.load(build.n).awaiting == "", "parking clears the wait"
+    from providers import PROVIDERS
+    from runner.hooks import handle
+    shell = lambda command, **more: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-wait", "tool_name": "Bash",
+                                                                                           "tool_input": {"command": command, **more}})
+    for waiting in ("sleep 30", "until grep -q done b.log; do sleep 5; done", "while true; do sleep 2; done", "sleep 1 && sleep 2"):
+        assert "await tag" in shell(waiting).get("reason", ""), f"{waiting} only waits and is refused, naming the await tag"
+    for working in ("sleep 1 && pytest -q", "until grep -q done b.log; do tail -1 b.log; sleep 5; done", "python3 wait_for_it.py"):
+        assert shell(working).get("decision") != "block", f"{working} does real work and passes"
+    assert shell("sleep 30", run_in_background=True).get("decision") != "block", "a sleep in the background blocks nothing"
 
 
 def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkeypatch):
