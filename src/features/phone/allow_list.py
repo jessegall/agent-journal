@@ -37,7 +37,8 @@ def writes(type_: str) -> tuple[Endpoint, ...]:
 
 
 ALLOWED = (
-    get("/api/changelog"), get("/api/extension"), get("/api/identity"), get("/api/manifest"), get("/api/pages"),
+    get("/api/agent-controls/{provider}"), get("/api/agents"), get("/api/changelog"), get("/api/extension"), get("/api/identity"),
+    get("/api/manifest"), get("/api/pages"), get("/api/{env}/agent/{n}/terminal"), get("/api/{env}/events"),
     get("/api/plugins/{name}/log"), get("/api/services"), get("/api/services/{id}/log"),
     get("/api/{env}/{type}"), get("/api/{env}/{type}/{n}"), get("/api/{env}/dashboard"), get("/api/{env}/diagnostics"),
     get("/api/{env}/diff"), get("/api/{env}/family"), get("/api/{env}/file"), get("/api/{env}/files"),
@@ -47,7 +48,7 @@ ALLOWED = (
     post("/api/{env}/{type}"), post("/api/{env}/{type}/{action}"), post("/api/{env}/{type}/{n}/{action}"),
     post("/api/{env}/{type}/{n}/upload"), post("/api/{env}/{type}/read-all"), post("/api/{env}/agent/{session}/relaunch"),
     post("/api/{env}/skills/{name}/always"), post("/api/{env}/skills/{name}/keywords"), post("/api/{env}/skills/{name}/load"),
-    post("/api/{env}/phone/{n}/disconnect"),
+    post("/api/{env}/agent/{session}/control"), post("/api/{env}/appoint"), post("/api/{env}/phone/{n}/disconnect"),
     post("/api/{env}/plugin/{n}/clear_log"), post("/api/{env}/plugin/{n}/configure"), post("/api/{env}/plugin/{n}/disable"),
     post("/api/{env}/plugin/{n}/purge"), post("/api/{env}/plugin/{n}/remove"),
 )
@@ -62,6 +63,7 @@ RUNS = (
     post("/api/{env}/agent/{session}/keys"), post("/api/{env}/agent/{session}/shell"),
     *writes("tool"), *writes("check"), post("/api/{env}/sequence/{n}/run"),
     *writes("plugin"), post("/api/{env}/plugins/preview"), post("/api/{env}/plugins/{n}/upgrade-preview"),
+    post("/api/{env}/share/install_tunler"), post("/api/{env}/share/update_tunler"),
     post("/api/services/{id}"), post("/api/stop"), post("/api/update"), post("/api/upgrade"),
 )
 
