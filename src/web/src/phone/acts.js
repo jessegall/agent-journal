@@ -408,7 +408,7 @@ const EXTRA = [
         when: (row) => SHARED.includes(row.type),
         confirm: true,
         run: (row) => stopLinksOf(row.ref),
-        result: () => "Its links are stopped",
+        result: () => "Its share links no longer work",
     },
     {
         key: "plan",
