@@ -10,26 +10,23 @@ from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from features.permission_prompts.skipping import prompted
 from resources.base import SYSTEM
+from resources.types import EnvironmentKind
 
 QUIET = ("dev_faults",)
 PROVIDER = "claude"
 
 
-def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str) -> str:
+def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
     from providers import DRIVERS
     driver = DRIVERS[PROVIDER]
-    return start_in(record, name, abstract, owner, PROVIDER, driver.prompted(driver.within([], worktree), prompt), record.root.parent)
+    prepared(record, name, abstract, owner, record.root.parent, kind)
+    return launched(record, name, PROVIDER, driver.prompted(driver.within([], worktree), prompt), record.root.parent)
 
 
-def start_in(record, name: str, abstract: str, owner: str, provider: str, args: list[str], cwd: Path) -> str:
-    prepared(record, name, abstract, owner, cwd)
-    return launched(record, name, provider, args, cwd)
-
-
-def prepared(record, name: str, abstract: str, owner: str, folder: Path) -> Record:
+def prepared(record, name: str, abstract: str, owner: str, folder: Path, kind: EnvironmentKind) -> Record:
     environments = Environments(record, actor=SYSTEM)
     if not environments.rows.by_title(name):
-        environments.create(name, abstract=abstract, owner=owner, launched_from=record.env, folder=str(folder))
+        environments.create(name, abstract=abstract, owner=owner, launched_from=record.env, folder=str(folder), kind=kind)
     place = Record(record.root, name)
     prompted(place)
     for feature in QUIET:

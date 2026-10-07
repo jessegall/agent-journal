@@ -35,7 +35,7 @@ from overview.summary import environment, summarize
 from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, SYSTEM, USER
 from resources.pictures import dimensions
 from resources.shapes import normalize_options
-from resources.types import TYPES
+from resources.types import TYPES, EnvironmentKind
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, project_on, report, run
 from commands import http  # noqa: F401
@@ -599,7 +599,7 @@ def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out(
     CONTROLLERS["notice"](record, actor=SYSTEM).create("Allow Bash to remove the build folder", action="permission")
     assert environment(record)["attention"] == {"kind": "permission", "text": "Allow Bash to remove the build folder"}, "and a waiting permission prompt comes first"
     environments = Environments(record, actor=SYSTEM)
-    environments.create("helped", owner="helper:1")
+    environments.create("helped", owner="helper:1", kind=EnvironmentKind.HELPER)
     environments.create("plain")
     found = summarize(record.root)
     assert ([e["name"] for e in found["helpers"]], "helped" in [e["name"] for e in found["environments"]], "plain" in [e["name"] for e in found["environments"]]) == \

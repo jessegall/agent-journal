@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line, Setting
 from features.trigger import MINUTES, Trigger
 from features.groups import Group
@@ -7,6 +8,7 @@ class TicketsDetails(FeatureDetails):
     explains = 'A ticket gives one piece of board work its own environment and agent. You can review its plan and result.'
     name = "tickets"
     group = Group.TICKETS
+    scope = PROJECT
     trigger_label = "Check the tickets"
     when = "work is put on a board, arrives from an outside source, or a ticket is started"
 
@@ -109,6 +111,7 @@ class TicketsDetails(FeatureDetails):
             default=5,
             title="Remind the board's agent that a ticket's plan is done, every",
             unit="minutes",
+            scope=PROJECT,
         ),
         Setting(
             name="running",
@@ -116,5 +119,6 @@ class TicketsDetails(FeatureDetails):
             title="Tickets running at once",
             abstract="0 means no limit",
             unit="tickets",
+            scope=PROJECT,
         ),
     ]

@@ -1,9 +1,12 @@
 import pytest
 
+import features
 from controllers.base import COMMANDS
+from controllers.types import Environments
 
 from engine.organization import organization
-from resources.base import Refused
+from resources.base import SYSTEM, Refused
+from tests.conftest import fresh, refused
 
 
 def write(folder, text):
@@ -215,3 +218,41 @@ def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_th
     assert [r["title"] for r in envs().rows.summaries() if not r["deleted"]].count("beta") == 0, "a removed environment is gone from the list"
     again = envs().unarchive("beta")
     assert again.title == "beta", "an archived environment comes back under its own name"
+
+
+def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_to_work_in():
+    from features.agent_sessions.launch import prepared
+    from engine import runtime
+    from features.phone.places import shown
+    from overview.summary import summarize
+    from resources.types import EnvironmentKind
+    features.load()
+    record = fresh()
+    envs = Environments(record, actor=SYSTEM)
+    main = envs.create(record.env)
+    prepared(record, "helper-ada", "Where helper Ada works", "helper:1", record.root.parent, EnvironmentKind.HELPER)
+    prepared(record, "ticket-3", "Where ticket 3 runs", "ticket:3", record.root.parent, EnvironmentKind.TICKET)
+    assert [row.kind for row in envs.rows.every()] == ["main", "helper", "ticket"], "each environment says what kind it is from the moment it is made"
+    assert "an environment is one of" in refused(lambda: envs.update(main.n, kind="")), "an environment can never be made untagged"
+    assert "an environment is one of" in refused(lambda: envs.create("loose", kind="")), "nor made without a kind"
+    runtime.set_env(record.root, record.env)
+    summary = summarize(record.root)
+    assert ([e["name"] for e in summary["environments"]], shown(record.root)) == ([record.env], (record.env,)), \
+        "the viewer and the phone list only the environments a main agent works in"
+    assert [e["owner"] for e in summary["helpers"]] == ["helper:1"], "a helper's environment is listed with the helpers"
+
+
+def test_the_upgrade_tags_every_environment_from_its_owner_and_a_helpers_folder_named_one_as_a_helper():
+    from controllers.base import Controller
+    from features.helpers.controller import Helpers
+    from migrations.m0068_environments_say_their_kind import run
+    features.load()
+    record = fresh()
+    envs = Environments(record, actor=SYSTEM)
+    Helpers(record, actor=SYSTEM).create("a job", name="Ada", provider="claude", model="sonnet", environment="helper-ada", checkout="/elsewhere/platform")
+    for title, owner in (("t", ""), ("helper-ada", "helper:1"), ("role", "todo:4"), ("ticket-3", "ticket:3"), ("platform-2", ""), ("feature", "")):
+        Controller.create(envs, title, owner=owner)
+    run(record.root)
+    assert {row.title: row.kind for row in envs.rows.every()} == {
+        "t": "main", "helper-ada": "helper", "role": "subagent", "ticket-3": "ticket", "platform-2": "helper", "feature": "main"}, \
+        "the owner says the kind, and an unowned environment named after a helper's checkout is that helper's"

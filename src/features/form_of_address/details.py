@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import FeatureDetails, Line
 from features.settings import Setting
 from features.groups import Group
@@ -8,7 +9,7 @@ VOICE_SET = "voice set"
 class FormOfAddressDetails(FeatureDetails):
     explains = 'The agent uses the title, name, and voice you choose. You can change them in your profile.'
     name = "form_of_address"
-    group = Group.AGENT
+    group = Group.VOICE
     label = "Tell the agent how to talk to you"
     position = 1
     when = "you write anything the user will read in the chat, or anything into a project: code, text, commit messages, docs and briefs"
@@ -40,12 +41,14 @@ class FormOfAddressDetails(FeatureDetails):
             default="Sir",
             title="Title",
             abstract="Leave it empty to use your first name only",
+            scope=PROJECT,
         ),
         Setting(
             name="first_name",
             default="",
             title="First name",
             abstract="Leave it empty to use the name git knows you by",
+            scope=PROJECT,
         ),
         Setting(
             name="profile",
@@ -53,6 +56,7 @@ class FormOfAddressDetails(FeatureDetails):
             title="Profile",
             abstract="The profile the agent talks as; until you choose, it talks as the Butler",
             hidden=True,
+            scope=PROJECT,
         ),
     ]
 

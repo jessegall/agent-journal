@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 from features.groups import Group
@@ -13,6 +14,7 @@ class SequencesDetails(FeatureDetails):
     explains = 'The agent follows a sequence one step at a time. You can start one and inspect its progress.'
     name = "sequences"
     group = Group.SEQUENCES
+    scope = PROJECT
     when = "a sequence is run, stepped or written"
 
     title = "Sequences"

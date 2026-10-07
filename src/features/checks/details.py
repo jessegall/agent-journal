@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import FeatureDetails, Line
 from features.groups import Group
 
@@ -5,7 +6,8 @@ from features.groups import Group
 class ChecksDetails(FeatureDetails):
     explains = 'The agent can run saved checks and inspect their results. You can run a check in the viewer whenever you need it.'
     name = "checks"
-    group = Group.RECORDS
+    group = Group.SHARED_RECORDS
+    scope = PROJECT
     label = "Checks"
     hint = "Scripts that pass or fail; a failure is filed"
     when = "a check is created, run or fails"

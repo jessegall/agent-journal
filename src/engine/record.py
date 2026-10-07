@@ -10,7 +10,7 @@ from typing import Callable
 
 from engine import bus, runtime, waits
 from engine.event_log import EventLog
-from engine.settings_file import SettingsFile
+from engine.settings_file import PROJECT_PARTS, ScopedSettings
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.transaction import held_back
@@ -20,11 +20,13 @@ RESOURCES = "project"
 
 
 class Setting:
-    def __init__(self, default=None):
-        self.default = default
+    def __init__(self, default=None, project: tuple[str, ...] = ()):
+        self.default, self.project = default, project
 
     def __set_name__(self, owner, name: str) -> None:
         self.name = name
+        if self.project:
+            PROJECT_PARTS.keep(name, *self.project)
 
     def __get__(self, obj, owner=None):
         if obj is None:
@@ -48,8 +50,8 @@ class Record:
     agents = Setting(dict)
     skills = Setting(list)
     questions = Setting(dict)
-    delivery = Setting(dict)
-    viewer = Setting(dict)
+    delivery = Setting(dict, project=("channel",))
+    viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with"))
 
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
@@ -62,7 +64,7 @@ class Record:
         self.memo = {} if memo else None
         self._made: set[Path] = set()
         self.event_log = EventLog(self.home, self.locked)
-        self.settings_file = SettingsFile(self.home)
+        self.settings_file = ScopedSettings(self.home, self.root)
 
     @classmethod
     def every(cls, root: Path) -> list["Record"]:
@@ -164,7 +166,7 @@ class Record:
             self.memo.pop("settings", None)
 
     def set_setting(self, key: str, value) -> None:
-        with self.locked():
-            self.settings_file.write(key, value)
+        shared = self.settings_file.write(key, value, self.locked)
         self.reread_settings()
-        self.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting=key)
+        for record in [self, *(r for r in Record.every(self.root) if shared and r.env != self.env)]:
+            record.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting=key)

@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import FeatureDetails, Line
 from features.settings import Setting
 from features.groups import Group
@@ -9,6 +10,7 @@ class SharingDetails(FeatureDetails):
     explains = 'The journal can make a private link to a document, report, collection, or plan. You can send that link to someone outside the journal.'
     name = "sharing"
     group = Group.SHARING
+    scope = PROJECT
     when = "the user wants to show a document, a report, a collection or a plan to someone outside the journal"
 
     title = "Sharing"
@@ -95,5 +97,6 @@ class SharingDetails(FeatureDetails):
             title="Tunler server",
             hidden=True,
             runs_commands=True,
+            scope=PROJECT,
         ),
     ]

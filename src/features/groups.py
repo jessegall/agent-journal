@@ -14,6 +14,7 @@ class Section(StrEnum):
     AGENT = "Agent"
     WORK = "Work"
     MEMORY = "Memory"
+    PROJECT = "Project"
     CHAT = "Chat"
     SYSTEM = "System"
     SHARING = "Sharing"
@@ -54,17 +55,18 @@ class Group(Enum):
     PLANS = Grouping("Plans", "How the agent moves through a plan", Section.WORK, lead="plans")
     QUESTIONS = Grouping("Questions", "Choices only you can make are asked as questions", Section.WORK, lead="ask_questions")
     MESSAGES = Grouping("Messages", "How the agent handles the messages you send", Section.WORK, lead="messages")
-    SEQUENCES = Grouping("Sequences", "Steps the agent follows in order", Section.WORK, lead="sequences")
-    BOARDS = Grouping("Boards", "Ticket boards and the agents that fill them", Section.WORK, lead="boards")
-    TICKETS = Grouping("Tickets", "Each ticket runs in an environment of its own", Section.WORK, lead="tickets")
+    VOICE = Grouping("Voice", "How the agent talks to you and what it calls you, in every environment of this project", Section.PROJECT)
+    SEQUENCES = Grouping("Sequences", "Steps the agent follows in order, in every environment of this project", Section.PROJECT, lead="sequences")
+    BOARDS = Grouping("Boards", "Ticket boards and the agents that fill them, in every environment of this project", Section.PROJECT, lead="boards")
+    TICKETS = Grouping("Tickets", "Each ticket runs in an environment of its own", Section.PROJECT, lead="tickets")
+    SHARED_RECORDS = Grouping("Checks, triggers and templates", "Kept once for the project and used by every environment", Section.PROJECT)
     MEMORY = Grouping("Memory", "Facts, rules and reminders repeated to the agent", Section.MEMORY)
     RECORDS = Grouping("Documents", "Documents, collections, checks and other things the agent files", Section.MEMORY)
     ARCHIVE = Grouping("Archive", "How long closed items and runtime files are kept", Section.MEMORY)
     CHAT = Grouping("Chat", "What the chat shows", Section.CHAT)
     VIEWER = Grouping("Viewer", "What the viewer shows, and when it opens", Section.CHAT)
-    UPDATES = Grouping("Updates", "How new versions of the journal are installed", Section.SYSTEM, Tab.SYSTEM)
-    PROJECT = Grouping("Project", "Settings for the whole project, in every environment", Section.SYSTEM, Tab.SYSTEM)
-    BROWSER = Grouping("Browser", "Settings saved in this browser only", Section.SYSTEM, Tab.SYSTEM)
+    UPDATES = Grouping("Updates", "How new versions of the journal are installed in this project", Section.PROJECT, Tab.SYSTEM)
+    PROJECT = Grouping("Project", "Settings for the whole project, in every environment", Section.PROJECT, Tab.SYSTEM)
     STOP = Grouping("Journal", "Stop the journal: closes the viewer and every plugin. Nothing is deleted.", Section.SYSTEM, Tab.SYSTEM)
     SHARING = Grouping(
         "Share links",

@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import FeatureDetails, Line
 from features.templates.instructions import INSTRUCTIONS
 from features.groups import Group
@@ -6,7 +7,8 @@ from features.groups import Group
 class TemplatesDetails(FeatureDetails):
     explains = 'The agent can start an item from a saved template. You can choose the template and edit the result.'
     name = "templates"
-    group = Group.RECORDS
+    group = Group.SHARED_RECORDS
+    scope = PROJECT
     label = "Templates"
     when = "something is to be made from a template, or a template is written"
 
