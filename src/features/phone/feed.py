@@ -16,6 +16,7 @@ from features.ask_questions.details import AskQuestionsDetails
 from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
+from features.phone.chat_view import card_shows, hidden, whisper_shows
 from features.phone.places import WAITED, owed
 from features.suggestions.controller import Suggestions
 from features.suggestions.details import SuggestionsDetails
@@ -49,6 +50,7 @@ class Mark(Marked, total=False):
     color: str
     state: str
     command: str
+    shows: str
 
 
 class HelperTodo(TypedDict, total=False):
@@ -73,23 +75,23 @@ class Session:
         return cls(view["n"], data.get("thoughts") or [], data.get("cards") or [], data.get("subagent_rows") or [], data.get("skill_loads") or [],
                    data.get("compactions") or [], data.get("whispers") or [])
 
-    def mark(self, at: float, label: str, kind: str = "card", **fields: str | None) -> Mark:
-        return Mark(type=kind, n=f"{self.n}-{at}", ref=f"{kind}:{self.n}-{at}", who="agent", created=at, label=label,
+    def mark(self, at: float, label: str, shows: str, kind: str = "card", **fields: str | None) -> Mark:
+        return Mark(type=kind, n=f"{self.n}-{at}", ref=f"{kind}:{self.n}-{at}", who="agent", created=at, label=label, shows=shows,
                     **{key: value for key, value in fields.items() if value is not None})
 
     def marks(self) -> list[Mark]:
         return [
-            *(self.mark(t["at"], t["text"], kind="thought") for t in self.thoughts),
-            *(self.mark(c["at"], c["label"], icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
+            *(self.mark(t["at"], t["text"], "thoughts", kind="thought") for t in self.thoughts),
+            *(self.mark(c["at"], c["label"], card_shows(c.get("icon"), c.get("name", c.get("plugin"))), icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
                         color=c.get("color"), state=c.get("state"), command=c.get("command")) for c in self.cards),
-            *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", icon="agents", name=sub["task"],
+            *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", "subagents", icon="agents", name=sub["task"],
                         detail=sub["refusal"] if sub.get("refusal") else sub.get("model"), tone="danger" if sub.get("refusal") else None)
               for sub in self.subagents if "at" in sub),
-            *(self.mark(sub["ended"], f"Subagent {sub.get('status', 'finished')}", icon="agents", name=sub["task"], tone="good")
+            *(self.mark(sub["ended"], f"Subagent {sub.get('status', 'finished')}", "subagents", icon="agents", name=sub["task"], tone="good")
               for sub in self.subagents if sub.get("ended") and not sub.get("refusal")),
-            *(self.mark(load["at"], "Loaded skill", icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
-            *(self.mark(done["at"], "The agent compacted its context", icon="activity", tone="warn") for done in self.compactions),
-            *(self.mark(w["at"], w["title"], icon="reminders") for w in self.whispers),
+            *(self.mark(load["at"], "Loaded skill", "skills", icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
+            *(self.mark(done["at"], "The agent compacted its context", "compactions", icon="activity", tone="warn") for done in self.compactions),
+            *(self.mark(w["at"], w["title"], whisper_shows(w["ref"]), icon="reminders") for w in self.whispers),
         ]
 
 
@@ -145,8 +147,10 @@ class Feed(TypedDict):
     plan: PlanStrip | None
 
 
-def in_feed(kind: str, row) -> bool:
-    return kind != "message" or not (row.data.get("window") or row.data.get("acknowledgement"))
+def in_feed(kind: str, row, away: list[str]) -> bool:
+    if kind != "message":
+        return True
+    return not (row.data.get("window") or (row.data.get("acknowledgement") and "acknowledgements" in away))
 
 
 def hold(home: Record) -> int:
@@ -173,12 +177,13 @@ def waiting(home: Record, phone) -> list[Waiting]:
 
 
 def feed(home: Record, phone, before: float = math.inf) -> Feed:
-    posted = [entry(home, kind, row) for kind in POSTED for row in latest(home, kind, before)]
+    away = hidden(home)
+    posted = [entry(home, kind, row) for kind in POSTED for row in latest(home, kind, before, away)]
     items = sorted((item for item in posted if item), key=lambda item: item["created"])[-FEED:]
     found = faces(home, {item["ref"] for item in items})
     items = [{**item, "reactions": found.get(item["ref"], [])} for item in items]
     since = items[0]["created"] if items else before
-    shown = [mark for mark in marks(home, since) if mark["created"] < before]
+    shown = [mark for mark in marks(home, since) if mark["created"] < before and mark["shows"] not in away]
     tasks = task_names(home) if any(item["data"].get("sent_to") for item in items) else {}
     items = sorted([*({**item, "to": tasks.get(item["data"].get("sent_to"))} for item in items), *shown], key=lambda item: item["created"])
     return Feed(items=items, waiting=waiting(home, phone), agent=Agents(home, actor=SYSTEM).state(phone.environment), notices=notices(home),
@@ -214,10 +219,10 @@ def faces(home: Record, refs: set[str]) -> dict[str, list[dict]]:
     return found
 
 
-def latest(home: Record, kind: str, before: float) -> list:
+def latest(home: Record, kind: str, before: float, away: list[str]) -> list:
     rows = POSTED[kind](home, actor=SYSTEM)
     loaded = (rows.load(row["n"]) for row in reversed(rows.rows.summaries()) if not row["deleted"])
-    return list(islice((row for row in loaded if row.created < before and in_feed(kind, row)), FEED))[::-1]
+    return list(islice((row for row in loaded if row.created < before and in_feed(kind, row, away)), FEED))[::-1]
 
 
 def entry(home: Record, kind: str, row) -> dict:

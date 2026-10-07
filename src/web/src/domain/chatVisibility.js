@@ -35,6 +35,7 @@ export const VISIBILITY_GROUPS = [
 
 const RECALLED = {rule: "rules", fact: "facts", reminder: "reminders"};
 const MARKED = {terminal: "commands", branch: "commits", list: "sequences", bolt: "triggers"};
+export const HIDDEN_KEY = "chat_hidden";
 export const DEFAULT_HIDDEN = ["acknowledgements"];
 
 const KINDS = {

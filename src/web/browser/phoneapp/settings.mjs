@@ -74,6 +74,34 @@ await runScenarios(PAIR, {
         await region(page, "Alerts on this phone");
         await top(page).getByRole("button", {name: /Alerts key/}).waitFor({timeout: SHOWN});
     },
+    async "the tunnel login sheet asks for the server, the name and the password"(page) {
+        await page.route(/\/share\/tunnel$/, (route) =>
+            route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify({installed: true, logged_in: false, command: "", host: "", server: "", address: ""})})
+        );
+        await region(page, "Phone and share links");
+        await top(page).getByRole("button", {name: /^Connect a tunler account/}).click();
+        const sheet = page.getByRole("dialog");
+        await sheet.getByLabel("tunler server address").fill("tunler.example.com");
+        await sheet.getByLabel("Username").fill("sir");
+        await sheet.getByLabel("Password, at least 8 characters").fill("a long password");
+        await sheet.getByRole("button", {name: "Connect", exact: true}).waitFor({timeout: SHOWN});
+    },
+    async "what the chat shows hides a kind and saves it"(page) {
+        await region(page, "What the chat shows");
+        const thoughts = top(page).getByRole("switch", {name: "Thoughts"});
+        await thoughts.waitFor({timeout: SHOWN});
+        const before = await thoughts.getAttribute("aria-checked");
+        await thoughts.click();
+        await page.waitForFunction(([label, was]) => document.querySelector(`[role=switch][title="${label}"]`)?.getAttribute("aria-checked") !== was, ["Thoughts", before], {timeout: SHOWN});
+    },
+    async "the colors choice follows the pick and keeps it after a reload"(page) {
+        await region(page, "Colors");
+        await top(page).getByRole("button", {name: "Dark"}).click();
+        await page.waitForFunction(() => getComputedStyle(document.documentElement).colorScheme === "dark", null, {timeout: SHOWN});
+        await page.reload();
+        await page.getByPlaceholder("Message the agent").waitFor();
+        await page.waitForFunction(() => getComputedStyle(document.documentElement).colorScheme === "dark", null, {timeout: SHOWN});
+    },
     async "services shows the empty state"(page) {
         await region(page, "Services");
         await top(page).getByText(/Nothing runs yet|not running|running/).first().waitFor({timeout: SHOWN});
@@ -102,5 +130,12 @@ await runScenarios(PAIR, {
         await home(page);
         await everything(page, "Skills");
         await top(page).getByText("Instructions the agent loads when a job needs them.").waitFor({timeout: SHOWN});
+    },
+    async "unpairing asks first, then signs this phone out"(page) {
+        await region(page, "Phone and share links");
+        await top(page).getByRole("button", {name: /Unpair this phone/}).click();
+        await page.getByRole("dialog").getByText("Unpair this phone?").waitFor({timeout: SHOWN});
+        await page.getByRole("dialog").getByRole("button", {name: "Unpair", exact: true}).click();
+        await page.getByPlaceholder("Message the agent").waitFor({state: "detached", timeout: SHOWN});
     },
 }, {voice: false, device: {...PHONE, storageState: state}});

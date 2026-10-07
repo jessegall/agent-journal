@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {loadViewerSettings} from "../composables/colorScheme.js";
 import {api} from "../api/client.js";
 import {phone, PhoneError} from "../api/phone.js";
 import {transport} from "../api/transport.js";
@@ -33,7 +34,15 @@ const waitsLine = computed(() => {
         : `${waiting.value} things wait to send and go once you are back.`;
 });
 transport.carry({"X-Phone": "1"});
-watch(connection, (now) => now && api.point(BASE, () => now.environment), {flush: "sync"});
+watch(
+    connection,
+    (now) => {
+        if (!now) return;
+        api.point(BASE, () => now.environment);
+        loadViewerSettings();
+    },
+    {flush: "sync"}
+);
 
 const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 

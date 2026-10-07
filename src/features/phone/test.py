@@ -455,6 +455,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     shown = [(item["type"], item.get("label", "")) for item in fed["items"]]
     assert ("thought", "Weighing it") in shown and any(kind == "card" and label.startswith("Agent committed") for kind, label in shown), \
         "the agent's thoughts and chat marks reach the phone"
+    record.set_setting("viewer", {"chat_hidden": ["thoughts", "notes"]})
+    kept = [(item["type"], item.get("label", "")) for item in call(base, "/p/feed", key=key).body["items"]]
+    assert ("thought", "Weighing it") not in kept and not any(label.startswith("Agent committed") for _, label in kept), \
+        "a kind hidden in the viewer's chat setting is left out of the phone's feed too"
+    record.set_setting("viewer", {})
     assert call(base, "/p/stop", {}, key).status == 422 and call(base, "/p/pause", {}, key).status == 422, "with no agent running there is nothing to stop or pause"
     running = call(base, "/p/feed", key=key).body["running"]
     assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"
