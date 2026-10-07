@@ -146,27 +146,45 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     (project / "docs" / "sub" / "twin.txt").write_text("b")
     (project / "node_modules").mkdir()
     (project / "docs" / ".hidden").write_text("x")
-    walked, names = project_files.walk(project)
-    assert [p.name for p in project_files.project_paths(project)] == [p.name for p in walked] and "guide.txt" in names, "the project is walked once and its files are listed by name"
-    assert project_files.walked(project) == (walked, names), "a recent walk is reused"
-    project_files.WALKED[str(project)] = (time.time() - project_files.WALK_FOR - 1, walked, names)
-    import threading
-    walking, release, refresher = threading.Event(), threading.Event(), []
+    from dataclasses import replace
     real_walk = project_files.walk
+    project_files.WALKED.pop(str(project))
 
-    def held_walk(folder):
-        refresher.append(threading.current_thread())
-        walking.set()
-        release.wait()
-        return real_walk(folder)
-    monkeypatch.setattr(project_files, "walk", held_walk)
-    project_files.walked(project)
-    walking.wait()
-    assert str(project) in project_files.WALKING, "an old walk is refreshed in the background"
-    release.set()
-    refresher[0].join()
-    monkeypatch.setattr(project_files, "walk", real_walk)
-    assert str(project) not in project_files.WALKING and project_files.WALKED[str(project)][0] > time.time() - 5, "the refreshed walk is kept and no longer under way"
+    def held_refresh() -> tuple[list, dict]:
+        walking, release, refresher = threading.Event(), threading.Event(), []
+
+        def held_walk(folder):
+            refresher.append(threading.current_thread())
+            walking.set()
+            release.wait()
+            return real_walk(folder)
+        monkeypatch.setattr(project_files, "walk", held_walk)
+        answered = project_files.walked(project)
+        walking.wait()
+        assert str(project) in project_files.WALKING and project_files.walked(project) == answered and refresher[0] is not threading.current_thread(), \
+            "one walk runs in the background while every request answers at once with what is held"
+        with pytest.raises(Refused, match="still being listed" if not answered[0] else "no file"):
+            project_files.read_source(project, "nothing-here.txt")
+        release.set()
+        refresher[0].join()
+        monkeypatch.setattr(project_files, "walk", real_walk)
+        assert len(refresher) == 1, "a walk under way is never started twice"
+        return answered
+    assert held_refresh() == ([], {}), "a request never walks the project itself: before the first walk it answers with no files"
+    walked, names = project_files.walked(project)
+    assert [p.name for p in project_files.project_paths(project)] == [p.name for p in walked] and "guide.txt" in names, "the project is walked once and its files are listed by name"
+    assert project_files.walked(project) == (walked, names) and str(project) not in project_files.WALKING, "a recent walk is reused"
+    project_files.WALKED[str(project)] = replace(project_files.WALKED[str(project)], at=time.time() - project_files.WALK_FOR - 1)
+    assert held_refresh() == (walked, names), "an old walk is answered while it is refreshed in the background"
+    assert str(project) not in project_files.WALKING and project_files.WALKED[str(project)].at > time.time() - 5, "the refreshed walk is kept and no longer under way"
+    slow = replace(project_files.WALKED[str(project)], at=time.time() - project_files.WALK_FOR - 1, took=project_files.WALK_FOR)
+    project_files.WALKED[str(project)] = slow
+    assert project_files.walked(project) == (slow.paths, slow.by_name) and str(project) not in project_files.WALKING, "a slow walk rests ten times as long as it took before the next"
+    limit = project_files.WALK_LIMIT
+    monkeypatch.setattr(project_files, "WALK_LIMIT", 1)
+    assert len(project_files.walk(project)[0]) < len(walked), "a walk stops at the end of the folder that reaches its limit of files"
+    monkeypatch.setattr(project_files, "WALK_LIMIT", limit)
+    project_files.walk(project)
     assert project_files.matching(project, "guide.txt") == ["docs/guide.txt"] and project_files.matching(project, "./sub/twin.txt") == ["docs/sub/twin.txt"], \
         "a file is found by its name or by the end of its path"
     assert project_files.read_source(project, "guide.txt").text == "one", "a bare file name is found anywhere in the project"
@@ -422,6 +440,8 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     for folder in ("a", "b"):
         (project / folder).mkdir(exist_ok=True)
         (project / folder / "twin.txt").write_text(folder)
+    from engine.project_files import walk
+    walk(project.resolve())
     assert ask("GET", f"/api/{record.env}/file", {"path": "twin.txt"}).body == {"matches": ["a/twin.txt", "b/twin.txt"]}, "a name that fits two files offers both"
 
     class Quiet(http.Queue):

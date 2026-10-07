@@ -80,6 +80,8 @@ def test_a_file_name_is_a_chip_when_one_project_file_has_it_and_the_agent_hears_
     for path in ("web/Turn.vue", "a/test.py", "b/test.py"):
         (project / path).parent.mkdir(parents=True, exist_ok=True)
         (project / path).write_text("x")
+    from engine.project_files import walk
+    walk(project)
     row = Todos(record, actor=USER).create("files", brief="Turn.vue, test.py, `web/Turn.vue` and `web/Gone.vue`")
     viewed = shaped(row, record, VIEWER)["brief"]
     assert viewed.count("[[file web/Turn.vue|") == 2, f"a unique name and an existing path in code both open the file: {viewed}"

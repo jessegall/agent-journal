@@ -25,6 +25,9 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_pat
     rules.create("A journal capability that fits in a few words is a feature", keywords="word")
     pins.create("the package is at the root", keywords="word", brief="the journal is copied into each project")
     Reminders(record, actor=USER).create("run tests/old.py first")
+    assert [e.ref for e in evidence(record) if e.ref in ("fact:1", "fact:2")] == [], "a name is never called gone before the project's files are listed"
+    from engine.project_files import walk
+    walk(project)
     assert [e.ref for e in evidence(record) if e.ref == "fact:1"] == [], \
         "nothing wrong with a claim whose file exists and whose verbs are known"
     found = evidence(record)

@@ -1,6 +1,7 @@
 import mimetypes
 import os
 import re
+import stat
 import threading
 import time
 from dataclasses import dataclass
@@ -8,13 +9,30 @@ from pathlib import Path
 
 from resources.base import Missing, Refused
 
-WALKED: dict[str, tuple] = {}
-WALKING: set[str] = set()
 WALK_FOR = 5.0
+WALK_REST = 10
+WALK_LIMIT = 200000
 UNLISTED = ("__pycache__", "node_modules")
 SOURCE_LIMIT = 400000
 SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|passw|token|service-account|kubeconfig|^auth\.json$|^wp-config\.php$|\.(pem|key|p12|pfx|keystore|jks|kdbx|env|p8|ppk|tfstate|tfvars|gpg|asc)$", re.I)
 STYLE = re.compile(r"\.(css|scss|sass|less|svg)$", re.I)
+
+
+@dataclass(frozen=True)
+class Walk:
+    at: float
+    took: float
+    paths: list[Path]
+    by_name: dict[str, list[str]]
+
+    def is_stale(self) -> bool:
+        return time.time() - self.at >= max(WALK_FOR, self.took * WALK_REST)
+
+
+UNWALKED = Walk(0.0, 0.0, [], {})
+WALKED: dict[str, Walk] = {}
+WALKING: set[str] = set()
+WALK_LOCK = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -39,13 +57,19 @@ def readable_path(project: Path, target: Path) -> bool:
         parts = target.resolve().relative_to(project.resolve()).parts
     except ValueError:
         return False
-    return bool(parts) and all(not part.startswith(".") and (not SECRET.search(part) or index == len(parts) - 1 and STYLE.search(part)) for index, part in enumerate(parts))
+    return bool(parts) and all(readable_part(part, index == len(parts) - 1) for index, part in enumerate(parts))
+
+
+def readable_part(part: str, last: bool) -> bool:
+    return not part.startswith(".") and (not SECRET.search(part) or last and bool(STYLE.search(part)))
 
 
 def read_source(project: Path, asked: str) -> ProjectSource:
     target = project_path(project, asked)
     if not target.is_file():
-        matches = matching(project, asked)
+        listed, matches = is_listed(project), matching(project, asked)
+        if not listed:
+            raise Refused(f"the project's files are still being listed, so {asked!r} is not found yet")
         if len(matches) != 1:
             raise Refused(f"{len(matches)} files in the project are called {asked!r}" if matches else f"no file {asked!r} in the project")
         target = project_path(project, matches[0])
@@ -55,33 +79,50 @@ def read_source(project: Path, asked: str) -> ProjectSource:
 
 
 def walked(project: Path) -> tuple[list[Path], dict[str, list[str]]]:
-    held = WALKED.get(str(project))
-    if not held:
-        return walk(project)
-    if time.time() - held[0] >= WALK_FOR and str(project) not in WALKING:
+    held = WALKED.get(str(project), UNWALKED)
+    if held.is_stale():
+        refresh(project)
+    return held.paths, held.by_name
+
+
+def is_listed(project: Path) -> bool:
+    return str(project) in WALKED
+
+
+def refresh(project: Path) -> None:
+    with WALK_LOCK:
+        if str(project) in WALKING:
+            return
         WALKING.add(str(project))
-        threading.Thread(target=walk, args=(project,), daemon=True).start()
-    return held[1], held[2]
+    threading.Thread(target=walk, args=(project,), daemon=True).start()
 
 
 def walk(project: Path) -> tuple[list[Path], dict[str, list[str]]]:
-    paths, by_name = [], {}
+    began, paths, by_name = time.time(), [], {}
     try:
         for folder, dirs, names in os.walk(project):
-            dirs[:] = [name for name in dirs if not name.startswith(".") and name not in UNLISTED]
-            for path in (Path(folder) / name for name in names):
-                if not path.is_file():
-                    continue
-                try:
-                    project_path(project, str(path.relative_to(project)))
-                except Refused:
+            dirs[:] = [name for name in dirs if readable_part(name, False) and name not in UNLISTED]
+            for path in (Path(folder) / name for name in names if readable_part(name, True)):
+                if not walkable(project, path):
                     continue
                 paths.append(path)
                 by_name.setdefault(path.name, []).append(str(path.relative_to(project)))
-        WALKED[str(project)] = (time.time(), paths, by_name)
+            if len(paths) >= WALK_LIMIT:
+                break
+        WALKED[str(project)] = Walk(time.time(), time.time() - began, paths, by_name)
     finally:
         WALKING.discard(str(project))
     return paths, by_name
+
+
+def walkable(project: Path, path: Path) -> bool:
+    try:
+        mode = path.lstat().st_mode
+    except FileNotFoundError:
+        return False
+    if stat.S_ISREG(mode):
+        return True
+    return stat.S_ISLNK(mode) and path.is_file() and readable_path(project, path)
 
 
 def project_paths(project: Path) -> list[Path]:

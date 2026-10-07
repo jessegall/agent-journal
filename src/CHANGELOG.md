@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.12 — A large project no longer hangs the viewer
+Text that names a file by its bare name, such as a to-do brief that says queue.php, is linked by looking the name up in a list of the project's files. When no list was held yet, every request built it itself by walking the whole project, several requests at once; in a project with a few hundred thousand files, such as one with Xcode build folders, every environment page then waited minutes and the server stayed busy. The list is now built only in the background, one walk at a time, rests ten times as long as its last walk took, stops at 200,000 files and reads each file with one check instead of resolving its path. A page answers at once; a bare file name links once the list is ready, and until then the record check calls no file gone. Nothing to do.
+
 ## 2.254.11 — Every voice has a humour of its own, and the journal's words stay plain in every voice
 Each profile now has a Humour part: how it answers a meme, a joke, criticism of its work or anger, in one line of its own manner before it puts the matter right. The Butler is dry and witty, the Homie answers in slang and street talk, the Coach is cheerful or calm, the Colleague brief and good-humoured. You edit it with the rest of a profile, on the desktop and on the phone; the four that ship stay locked, and Make a copy gives you one to change. The voices no longer have their own words for helpers: in every voice the agent says helper, subagent, to-do and environment, and the voice shapes only its tone and how it addresses you. Nothing to do.
 
