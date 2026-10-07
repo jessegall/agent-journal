@@ -52,6 +52,13 @@ class SubagentRow(Loaded):
     model: str = ""
     ended: float = 0.0
     status: str = ""
+    running: bool = False
+    session: str = ""
+
+    @property
+    def address(self) -> str:
+        return self.session or self.id
+
 
 class SeatReport:
     def __init__(self, record, agent):

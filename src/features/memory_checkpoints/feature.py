@@ -2,7 +2,7 @@ from features.base import Feature
 from features.memory_checkpoints.commands import Reread
 from features.memory_checkpoints.details import MemoryCheckpointsDetails
 from features.memory_checkpoints.handlers import DecideAtMarks, DecideAtMarksOnChange, MarkWhatWasKept, ReleaseOnceDecided, owed_reading
-from features.nudges import Nudge
+from features.nudges.sending import Nudge
 from features.journal import Journal
 
 

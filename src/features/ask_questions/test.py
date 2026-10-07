@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-from controllers.types import Messages, Questions
+from controllers.types import Messages, Nudges, Questions
 from features.ask_questions.choices import offers_choices
-from resources.base import AGENT, USER, Refused
+from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.kit import idle, nudges
 from tests.conftest import fresh, holds
 from commands.http import dispatch
@@ -109,6 +109,9 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     mark = Agents(record, actor=USER).primary().data["cards"][-1]
     assert (mark["label"], mark.get("name"), mark["side"]) == (f"You answered question {asked.n}", None, USER), \
         "the user's answer shows in the chat as a mark on their side, naming the question without the answer"
+    answered, = [n for n in Nudges(record, actor=SYSTEM).all() if n.title == f"question {asked.n} is answered - act on the answer"]
+    assert ("this one" in answered.brief, "work.created" in answered.until) == (True, True), \
+        "the agent is told to act on the answer, and told again until it starts, logs or ends work"
 
 
 def test_a_question_keeps_who_answered_and_the_agent_must_say_why():

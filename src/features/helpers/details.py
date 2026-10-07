@@ -1,5 +1,8 @@
-from features.base import FeatureDetails
+from features.base import Behaviour, FeatureDetails, Line
 from features.groups import Group
+from features.helpers.handlers import still_unreported
+from features.settings import Setting
+from features.trigger import MINUTES, Trigger
 
 
 class HelpersDetails(FeatureDetails):
@@ -24,6 +27,20 @@ class HelpersDetails(FeatureDetails):
         agent_type from .codex/agents. The subagent shows in the viewer's agent list and its answer
         comes back to you.
 
+        A helper or subagent that has worked in the project already knows it. New work that is
+        related to its job, or touches the same code, goes to it with a message, journal helper say
+        <n> "<the new work>" for a helper and SendMessage (send_input on Codex) for a subagent,
+        instead of a fresh dispatch; keep one around while related work may follow. When you
+        dispatch a new helper while an idle one already touched the files its job names, the answer
+        names that one.
+
+        At most helpers.kept (8) helpers and subagents are kept for reuse; 0 turns the limit off. At
+        the limit, while one of them waits for work, a new dispatch is refused with the idle ones
+        listed, those that touched the same files first, each with the line that sends it the work.
+        journal helper finish <n> or journal agent retire <id> frees a place, and when all of them
+        are busy the dispatch goes through. Reviewers and critics start fresh, so they are never
+        held back.
+
         journal helper dispatch <name> "<job>" --provider codex --model <model> --brief "<the bounded
         job>" starts a helper in an environment of its own, named after you and the helper, which
         stays out of the environment lists; --worktree gives it a worktree cut from the working
@@ -40,4 +57,55 @@ class HelpersDetails(FeatureDetails):
         landed>": it shows as done, waiting for its merge, and closes once its worktree is taken.
         Stopping the helper, or its turn ending in an error, gives back the rows it has not
         finished; finishing it gives back the rest.
+
+        A helper whose agent stops running before it reports, as after a restart of the machine, is
+        named to you at once; one that has done nothing for a while is named so you can check on it.
     """
+
+    behaviours = [
+        Behaviour(
+            name="watch",
+            title="Tell the agent when a helper stops or goes quiet before it reports",
+            trigger=Trigger(every=1, unit=MINUTES),
+        ),
+    ]
+
+    settings = [
+        Setting(
+            name="kept",
+            default=8,
+            title="Agents kept for reuse",
+            abstract="0 turns the limit off",
+            unit="agents",
+        ),
+        Setting(
+            name="quiet_after",
+            default=20,
+            title="A helper counts as quiet after",
+            unit="minutes",
+            under="watch",
+        ),
+    ]
+
+    lines = [
+        Line(
+            name="stopped",
+            title="helper {{n}}, {{name}}, stopped running before it reported",
+            brief="""
+                its agent is gone, so journal helper say cannot reach it. Dispatch the job again, or
+                journal helper finish {{n}} and do the job yourself
+            """,
+            until=("helper.completed", "helper.deleted"),
+            owed=still_unreported,
+            while_waiting=True,
+        ),
+        Line(
+            name="quiet",
+            title="helper {{n}}, {{name}}, has done nothing for {{minutes}} minutes",
+            brief="""
+                check on it: journal helper say {{n}} "<what you want to know>", or journal helper stop
+                {{n}} if it is stuck
+            """,
+            while_waiting=True,
+        ),
+    ]

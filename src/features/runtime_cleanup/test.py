@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from pathlib import Path
 
 
 from engine import runtime
@@ -186,6 +187,8 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     finally:
         shutil.rmtree = removing
     assert not packed.exists() and len(tries) == 2, "a folder a late write kept busy is removed on the next try, so packing never fails over it"
+    assert {Path(folder).name for folder in tries} == {".late-writer.removing"}, \
+        "the folder leaves its place in one rename before it is deleted, so nothing reads it half removed"
 
 
 def test_an_installed_update_tidies_at_once():

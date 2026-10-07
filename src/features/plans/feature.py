@@ -16,7 +16,7 @@ from features.plans.handlers import (
     blocked_plans,
     still_plans,
 )
-from features.nudges import Nudge
+from features.nudges.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from features.plans.progress import held
 from features.work_tracking.next import ROW_HOLDS

@@ -1,4 +1,5 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.messages.answering import still_unanswered
 from features.settings import Setting
 from features.trigger import IDLE, Trigger, USES
 from features.groups import Group
@@ -97,6 +98,8 @@ class MessagesDetails(FeatureDetails):
         Line(
             name="answer",
             title="answer {{messages}} before you write anything",
+            until=("message.completed",),
+            owed=still_unanswered,
             brief="a reply, a reaction, or journal message processed <n>",
         ),
         Line(
