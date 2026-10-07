@@ -14,6 +14,7 @@ from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
 from engine.wording import slugged
+from resources.types import EnvironmentKind
 
 
 def kickoff(row, folder: Path, todo: int, handed: list[Todo]) -> str:
@@ -101,7 +102,7 @@ class Helpers(Controller):
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         driver = DRIVERS[provider]
-        home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder)
+        home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         listed = Todos(self.record, actor=SYSTEM)
         for given in handed:

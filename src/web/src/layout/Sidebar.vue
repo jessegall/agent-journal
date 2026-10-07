@@ -12,8 +12,9 @@ import {href, route} from "../route.js";
 import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
 import {rows} from "../sync/rows.js";
+import {isMain} from "../domain/environments.js";
 
-const envs = computed(() => rows("environment").filter((e) => !e.completed && !e.data.owner));
+const envs = computed(() => rows("environment").filter((e) => !e.completed && isMain(e)));
 const pages = computed(() => store.pages || []);
 const domains = computed(() => (store.organization && store.organization.domains) || []);
 const creating = ref(false);

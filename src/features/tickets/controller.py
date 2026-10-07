@@ -27,6 +27,7 @@ from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING,
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
 from resources.shapes import rank_before
 from controllers.marks import action
+from resources.types import EnvironmentKind
 
 LAUNCHING_FOR = 60.0
 RETURNS_BEFORE_ESCALATING = 2
@@ -169,7 +170,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         name = f"{self.type}-{ticket.n}"
         environments = Environments(self.record, actor=self.actor)
         if not environments.rows.by_title(name):
-            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref, launched_from=self.record.env)
+            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
         place = Record(self.record.root, name)
         prompted(place)
         for feature in QUIET_IN_TICKETS:

@@ -192,6 +192,7 @@ def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only
     from commands.launch import asked_for, banner, choose, defaults
     from features.agent_sessions.launch import prepared
     from features.helpers.controller import Helpers
+    from resources.types import EnvironmentKind
     from engine.sessions import Sessions
     features.load()
     record = fresh()
@@ -226,13 +227,12 @@ def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only
     assert choose("Pick", [], ["a", "b"], 0, ask=lambda prompt: (_ for _ in ()).throw(EOFError)) is None, "a closed input answers nothing"
     assert "agent-journal" in banner("claude", record.root.parent) and "claude".capitalize() in banner("claude", record.root.parent), "the banner names the agent about to start"
     helper = Helpers(record, actor=SYSTEM).create("a long job", name="Hedy", provider="claude", model="sonnet", environment="helper-hedy")
-    prepared(record, "helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent)
+    prepared(record, "helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent, EnvironmentKind.HELPER)
     Sessions(record.root).bind("claude-2", "helper-hedy", pid=os.getpid(), provider="claude")
     offered = []
     monkeypatch.setattr(launch, "choose", lambda *given: offered.append(given[2]) or choose(*given))
     asked_for(record, ask=script(""), answering=True)
-    badges = {choice.label: choice.badges for choice in offered[0] if hasattr(choice, "badges")}
-    assert badges["helper-hedy"] == ("helper Hedy",), "a helper's environment is listed as the helper's, never as an agent working"
+    assert "helper-hedy" not in [choice.label for choice in offered[0]], "a helper's environment is never offered to start in"
 
 
 def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_it_was_asked_for(monkeypatch, capsys):

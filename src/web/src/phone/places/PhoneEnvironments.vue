@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {phone} from "../../api/phone.js";
 import {removeWords, sentence, sweepWords} from "../../domain/journals.js";
+import {isMain} from "../../domain/environments.js";
 import {plainDoing} from "../doing.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import Cell from "../kit/Cell.vue";
@@ -42,7 +43,7 @@ async function load() {
     try {
         const [listed, got] = await Promise.all([api.list("environment"), phone.places()]);
         rows.value = listed.rows
-            .filter((row) => !row.completed && !row.data.owner)
+            .filter((row) => !row.completed && isMain(row))
             .sort((a, b) => here(b) - here(a) || a.title.localeCompare(b.title));
         place.value = got.places.find((one) => one.root === got.at) || null;
     } catch (error) {

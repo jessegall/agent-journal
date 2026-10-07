@@ -1,5 +1,6 @@
 import time
 from dataclasses import asdict, dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import ClassVar
 
@@ -506,6 +507,14 @@ class Plugin(Shape, Resource):
     scope = PROJECT
 
 
+class EnvironmentKind(StrEnum):
+    """Who works in an environment; only a main one is listed for the user to work in."""
+    MAIN = "main"
+    HELPER = "helper"
+    SUBAGENT = "subagent"
+    TICKET = "ticket"
+
+
 class Environment(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Environment",
@@ -514,7 +523,7 @@ class Environment(Shape, Resource):
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, "", name="owner", journal_only=True), Field(TEXT, "", name="launched_from", journal_only=True), Field(NUMBER, 0, name="launched"),
-        Field(TEXT, "", name="folder", journal_only=True),
+        Field(TEXT, "", name="folder", journal_only=True), Field(TEXT, "", name="kind", journal_only=True),
     ]
     listed_open = True
     type = "environment"
@@ -529,7 +538,10 @@ class Environment(Shape, Resource):
 
     @property
     def helping(self) -> bool:
-        return self.owner.startswith(f"{HELPER}:")
+        return self.kind == EnvironmentKind.HELPER
+
+    def is_main(self) -> bool:
+        return self.kind == EnvironmentKind.MAIN
 
     def owned_by(self, kind: str) -> int:
         return int(self.owner.split(":")[1]) if self.owner.startswith(f"{kind}:") else 0
