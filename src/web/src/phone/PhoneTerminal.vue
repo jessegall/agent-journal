@@ -27,7 +27,7 @@ usePoll(
 <template>
     <div class="screen phone-terminal">
         <NavBar title="Terminal" :back="back" @back="emit('back')" />
-        <BigTitle title="Terminal" sub="What the agent's terminal shows; a command you type runs there" />
+        <BigTitle title="Terminal" sub="Shows what the agent's terminal shows. A command you type runs there." />
         <template v-if="agents && !agent">
             <div class="screen-scroll">
                 <EmptyList icon="terminal" title="No agent yet" reason="Start the agent in this environment and its terminal shows here." />

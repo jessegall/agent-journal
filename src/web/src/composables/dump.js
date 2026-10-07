@@ -193,7 +193,7 @@ export function useDump(every, selected, rowsOf, sequenceKey) {
         if (phase.value === "quiet")
             return `No update for ${Math.round((now.value - dump.value.updated) / 60)} min; the agent may be busy elsewhere`;
         if (phase.value === "filing" && !log.value.length) return "Reading the files";
-        if (summing.value) return "Summing up";
+        if (summing.value) return "Writing a summary";
         return "";
     });
 

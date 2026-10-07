@@ -29,7 +29,7 @@ const emit = defineEmits(["take", "leave"]);
         <TextDisplay class="dump-summary" :text="summary" />
     </template>
     <template v-if="suggestions.length">
-        <CellGroup head="Offers">
+        <CellGroup head="Suggestions from the agent">
             <template v-for="offer in suggestions" :key="offer.pick">
                 <Cell :label="offer.ask || offer.label" :sub="ANSWERED[offer.state] || ''" still>
                     <template v-if="!offer.state" #end>

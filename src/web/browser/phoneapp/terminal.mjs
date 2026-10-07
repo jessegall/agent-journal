@@ -10,7 +10,7 @@ const state = await pairedState();
 async function terminal(page) {
     await home(page);
     await page.getByRole("button", {name: /^Main agent/}).dispatchEvent("click");
-    await page.getByRole("button", {name: "Its terminal"}).click();
+    await page.getByRole("button", {name: "Agent terminal"}).click();
 }
 
 await runScenarios(
